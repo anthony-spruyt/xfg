@@ -1,0 +1,14 @@
+{
+  "search.exclude": {
+    "**/node_modules": true
+  },
+  "search.useIgnoreFiles": false,
+  "search.useGlobalIgnoreFiles": false,
+  "files.autoSave": "afterDelay",
+  "files.autoSaveWorkspaceFilesOnly": true,
+  "editor.formatOnSave": true,
+  "editor.codeActions.triggerOnFocusChange": false,
+  "explorer.sortOrder": "type",
+  "editor.tabSize": 2,
+  "chat.agent.enabled": false
+}

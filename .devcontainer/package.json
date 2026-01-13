@@ -1,0 +1,9 @@
+{
+  "name": "devcontainer-tools",
+  "private": true,
+  "description": "Global tools for devcontainer",
+  "dependencies": {
+    "@aikidosec/safe-chain": "1.4.1",
+    "@anthropic-ai/claude-code": "2.1.5"
+  }
+}

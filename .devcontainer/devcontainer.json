@@ -1,0 +1,33 @@
+{
+  "name": "Ubuntu",
+  "image": "mcr.microsoft.com/devcontainers/base:jammy",
+  "runArgs": ["--env-file", "${localEnv:HOME}/.secrets/.env"],
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh/agent.sock,target=/ssh-agent,type=bind",
+    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,readonly"
+  ],
+  "containerEnv": {
+    "SSH_AUTH_SOCK": "/ssh-agent"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli": {},
+    "ghcr.io/devcontainers/features/docker-in-docker": {},
+    "ghcr.io/devcontainers/features/node": {},
+    "ghcr.io/devcontainers/features/python": {},
+    "ghcr.io/devcontainers/features/azure-cli": {}
+  },
+  "initializeCommand": "bash -lc 'eval $(keychain --eval --agents ssh id_ed25519); flock -x ~/.ssh/agent.lock -c \"rm -rf $HOME/.ssh/agent.sock; ln -sf $SSH_AUTH_SOCK $HOME/.ssh/agent.sock\"'",
+  "postCreateCommand": "bash -lc \"cd ${containerWorkspaceFolder} && ./.devcontainer/post-create.sh\"",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.vscode-yaml",
+        "mhutchie.git-graph",
+        "esbenp.prettier-vscode",
+        "anthropic.claude-code",
+        "github.vscode-github-actions"
+      ]
+    }
+  }
+}

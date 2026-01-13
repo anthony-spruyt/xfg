@@ -1,0 +1,16 @@
+{
+  "prop1": "main",
+  "prop2": {
+    "prop3": "MyService"
+  },
+  "prop4": {
+    "prop5": [
+      {
+        "prop6": "platform"
+      },
+      {
+        "prop7": "engineering"
+      }
+    ]
+  }
+}
