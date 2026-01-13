@@ -16,11 +16,13 @@ A CLI tool that syncs JSON configuration files across multiple Git repositories 
 
 ## Installation
 
-### Using Dev Container (Recommended)
+### From npm
 
-Open this repository in VS Code with the Dev Containers extension. The container includes all dependencies pre-installed and the project pre-built.
+```bash
+npm install -g json-config-sync
+```
 
-### Manual Installation
+### From Source
 
 ```bash
 git clone https://github.com/anthony-spruyt/json-config-sync.git
@@ -28,6 +30,10 @@ cd json-config-sync
 npm install
 npm run build
 ```
+
+### Using Dev Container
+
+Open this repository in VS Code with the Dev Containers extension. The container includes all dependencies pre-installed and the project pre-built.
 
 ## Prerequisites
 
@@ -50,17 +56,15 @@ az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG proje
 
 ## Usage
 
-After installation, run from the project directory:
-
 ```bash
 # Basic usage
-npx json-config-sync --config ./config.yaml
+json-config-sync --config ./config.yaml
 
 # Dry run (no changes made)
-npx json-config-sync --config ./config.yaml --dry-run
+json-config-sync --config ./config.yaml --dry-run
 
 # Custom work directory
-npx json-config-sync --config ./config.yaml --work-dir ./my-temp
+json-config-sync --config ./config.yaml --work-dir ./my-temp
 ```
 
 ### Options
@@ -139,7 +143,7 @@ repos:
 Running:
 
 ```bash
-npx json-config-sync --config ./config.yaml
+json-config-sync --config ./config.yaml
 ```
 
 Will:
