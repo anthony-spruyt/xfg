@@ -16,7 +16,15 @@ A CLI tool that syncs JSON configuration files across multiple Git repositories 
 
 ## Installation
 
+### Using Dev Container (Recommended)
+
+Open this repository in VS Code with the Dev Containers extension. The container includes all dependencies pre-installed and the project pre-built.
+
+### Manual Installation
+
 ```bash
+git clone https://github.com/anthony-spruyt/json-config-sync.git
+cd json-config-sync
 npm install
 npm run build
 ```
@@ -41,6 +49,8 @@ az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG proje
 ```
 
 ## Usage
+
+After installation, run from the project directory:
 
 ```bash
 # Basic usage
