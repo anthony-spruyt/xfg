@@ -1,0 +1,24 @@
+---
+version: 2
+updates:
+  # Devcontainer features
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: daily
+
+  # GitHub Actions (SHA-pinned)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: daily
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  # npm packages in devcontainer
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: daily
