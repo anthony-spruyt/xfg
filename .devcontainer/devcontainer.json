@@ -22,11 +22,12 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "redhat.vscode-yaml",
-        "mhutchie.git-graph",
-        "esbenp.prettier-vscode",
         "anthropic.claude-code",
-        "github.vscode-github-actions"
+        "bierner.markdown-mermaid",
+        "blueglassblock.better-json5",
+        "esbenp.prettier-vscode",
+        "mhutchie.git-graph",
+        "redhat.vscode-yaml"
       ]
     }
   }
