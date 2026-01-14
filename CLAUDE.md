@@ -143,8 +143,38 @@ npm run build              # Compile TypeScript to dist/
 npm test                   # Run all unit tests
 npm run test:integration   # Build + integration test (requires gh auth)
 npm run dev                # Run with fixtures/test-repos-input.yaml
-npm run release:patch      # Bump patch version, create tag, push
 ```
+
+## Release Process
+
+Branch protection prevents direct pushes to main, so releases require a PR workflow:
+
+```bash
+# 1. Create release branch from main
+git checkout main && git pull
+git checkout -b release/vX.Y.Z
+
+# 2. Bump version (patch/minor/major)
+npm version patch --no-git-tag-version   # or minor/major
+
+# 3. Commit, push, and create PR
+git add -A && git commit -m "chore: release vX.Y.Z"
+git push -u origin release/vX.Y.Z
+gh pr create --title "chore: release vX.Y.Z" --body "Release vX.Y.Z"
+
+# 4. Wait for CI, then merge
+gh pr merge --squash --delete-branch
+
+# 5. Create and push tag (triggers npm publish + GitHub Release)
+git checkout main && git pull
+git tag -a vX.Y.Z -m "Release vX.Y.Z"
+git push origin vX.Y.Z
+```
+
+The `release.yml` workflow automatically:
+- Builds and tests
+- Publishes to npm with provenance
+- Creates a GitHub Release with auto-generated notes
 
 **Integration Tests**: Requires `gh` CLI authentication. Uses real GitHub repo `anthony-spruyt/json-config-sync-test`. Cleans up state before running (closes PRs, deletes branch, removes file).
 

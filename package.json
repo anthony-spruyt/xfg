@@ -28,10 +28,7 @@
     "dev": "ts-node src/index.ts",
     "test": "node --import tsx --test src/config.test.ts src/merge.test.ts src/env.test.ts",
     "test:integration": "npm run build && node --import tsx --test src/integration.test.ts",
-    "prepublishOnly": "npm run build",
-    "release:patch": "npm version patch && git push --follow-tags",
-    "release:minor": "npm version minor && git push --follow-tags",
-    "release:major": "npm version major && git push --follow-tags"
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "config",
