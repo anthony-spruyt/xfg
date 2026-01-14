@@ -21,6 +21,7 @@ A CLI tool that syncs JSON or YAML configuration files across multiple GitHub an
 - [CI/CD Integration](#cicd-integration)
 - [Output Examples](#output-examples)
 - [Troubleshooting](#troubleshooting)
+- [IDE Integration](#ide-integration)
 - [Development](#development)
 - [License](#license)
 
@@ -503,6 +504,40 @@ If cloning fails behind a corporate proxy:
 git config --global http.proxy http://proxy.example.com:8080
 git config --global https.proxy http://proxy.example.com:8080
 ```
+
+## IDE Integration
+
+### VS Code YAML Schema Support
+
+For autocomplete and validation in VS Code, install the [YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) and add a schema reference to your config file:
+
+**Option 1: Inline comment**
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/json-config-sync/main/config-schema.json
+fileName: my.config.json
+content:
+  key: value
+repos:
+  - git: git@github.com:org/repo.git
+```
+
+**Option 2: VS Code settings** (`.vscode/settings.json`)
+
+```json
+{
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/anthony-spruyt/json-config-sync/main/config-schema.json": ["**/sync-config.yaml", "**/config-sync.yaml"]
+  }
+}
+```
+
+This enables:
+
+- Autocomplete for `fileName`, `mergeStrategy`, `repos`, `content`, `git`, `override`
+- Enum suggestions for `mergeStrategy` values (`replace`, `append`, `prepend`)
+- Validation of required fields
+- Hover documentation for each field
 
 ## Development
 

@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/anthony-spruyt/json-config-sync/config-schema.json",
+  "title": "json-config-sync Configuration",
+  "description": "Configuration file for json-config-sync CLI tool that syncs JSON/YAML config files across multiple Git repositories",
+  "type": "object",
+  "required": ["fileName", "repos"],
+  "properties": {
+    "fileName": {
+      "type": "string",
+      "description": "Target filename. Extension determines output format: .json → JSON, .yaml/.yml → YAML"
+    },
+    "mergeStrategy": {
+      "type": "string",
+      "enum": ["replace", "append", "prepend"],
+      "default": "replace",
+      "description": "Default array merge strategy for all repos. 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base"
+    },
+    "content": {
+      "type": "object",
+      "description": "Base configuration inherited by all repos. Supports environment variables: ${VAR}, ${VAR:-default}, ${VAR:?message}",
+      "additionalProperties": true
+    },
+    "repos": {
+      "type": "array",
+      "description": "List of repository configurations",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/repo"
+      }
+    }
+  },
+  "definitions": {
+    "repo": {
+      "type": "object",
+      "description": "Repository configuration",
+      "required": ["git"],
+      "properties": {
+        "git": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Single Git repository URL"
+            },
+            {
+              "type": "array",
+              "description": "Multiple Git repository URLs (each becomes a separate sync target)",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
+          ],
+          "description": "Git repository URL(s). Supports GitHub (git@github.com:owner/repo.git, https://github.com/owner/repo.git) and Azure DevOps formats"
+        },
+        "content": {
+          "type": "object",
+          "description": "Per-repo content overlay merged onto base content. Use $arrayMerge directive to control array merging",
+          "additionalProperties": true
+        },
+        "override": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, use only this repo's content and skip merging with base content"
+        }
+      }
+    }
+  }
+}
