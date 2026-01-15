@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { isAbsolute } from "node:path";
 import { parse, stringify } from "yaml";
 import {
   deepMerge,
@@ -46,6 +47,13 @@ export interface Config {
 function validateRawConfig(config: RawConfig): void {
   if (!config.fileName) {
     throw new Error("Config missing required field: fileName");
+  }
+
+  // Validate fileName doesn't allow path traversal
+  if (config.fileName.includes("..") || isAbsolute(config.fileName)) {
+    throw new Error(
+      `Invalid fileName: must be a relative path without '..' components`,
+    );
   }
 
   if (!config.repos || !Array.isArray(config.repos)) {

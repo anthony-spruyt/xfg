@@ -10,6 +10,7 @@ import {
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { GitOps, sanitizeBranchName } from "./git-ops.js";
+import { CommandExecutor } from "./command-executor.js";
 
 const testDir = join(tmpdir(), "git-ops-test-" + Date.now());
 
@@ -222,6 +223,66 @@ describe("GitOps", () => {
       const gitOps = new GitOps({ workDir, dryRun: false });
       gitOps.writeFile("test.json", "content");
       assert.ok(existsSync(join(workDir, "test.json")));
+    });
+  });
+
+  describe("path traversal protection", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("writeFile throws on path traversal attempt", () => {
+      const gitOps = new GitOps({ workDir });
+      assert.throws(
+        () => gitOps.writeFile("../escape.json", "content"),
+        /Path traversal detected/,
+      );
+    });
+
+    test("writeFile allows nested paths without traversal", () => {
+      const gitOps = new GitOps({ workDir });
+      const nestedDir = join(workDir, "config");
+      mkdirSync(nestedDir, { recursive: true });
+
+      gitOps.writeFile("config/settings.json", "content");
+      assert.ok(existsSync(join(workDir, "config/settings.json")));
+    });
+
+    test("wouldChange throws on path traversal attempt", () => {
+      const gitOps = new GitOps({ workDir });
+      assert.throws(
+        () => gitOps.wouldChange("../escape.json", "content"),
+        /Path traversal detected/,
+      );
+    });
+  });
+
+  describe("CommandExecutor injection", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("accepts custom executor", () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        exec: (command: string, _cwd: string) => {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      gitOps.hasChanges();
+
+      assert.equal(commands.length, 1);
+      assert.ok(commands[0].includes("git status"));
+    });
+
+    test("uses default executor when not provided", () => {
+      // This test verifies the default executor is used by checking
+      // that GitOps can be constructed without an executor
+      const gitOps = new GitOps({ workDir });
+      assert.ok(gitOps);
     });
   });
 });

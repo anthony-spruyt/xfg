@@ -77,6 +77,46 @@ repos:
       );
     });
 
+    test("throws when fileName contains path traversal", () => {
+      const path = createTestConfig(`
+fileName: ../escape.json
+repos:
+  - git: git@github.com:org/repo.git
+    content:
+      key: value
+`);
+      assert.throws(
+        () => loadConfig(path),
+        /Invalid fileName: must be a relative path without '\.\.' components/,
+      );
+    });
+
+    test("throws when fileName is absolute path", () => {
+      const path = createTestConfig(`
+fileName: /etc/passwd
+repos:
+  - git: git@github.com:org/repo.git
+    content:
+      key: value
+`);
+      assert.throws(
+        () => loadConfig(path),
+        /Invalid fileName: must be a relative path without '\.\.' components/,
+      );
+    });
+
+    test("allows nested relative paths without traversal", () => {
+      const path = createTestConfig(`
+fileName: config/settings.json
+repos:
+  - git: git@github.com:org/repo.git
+    content:
+      key: value
+`);
+      const config = loadConfig(path);
+      assert.equal(config.fileName, "config/settings.json");
+    });
+
     test("allows missing repo.content when root content exists", () => {
       const path = createTestConfig(`
 fileName: config.json

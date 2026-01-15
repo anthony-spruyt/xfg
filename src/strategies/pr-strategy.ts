@@ -1,6 +1,8 @@
 import { PRResult } from "../pr-creator.js";
+import { RepoInfo } from "../repo-detector.js";
 
 export interface PRStrategyOptions {
+  repoInfo: RepoInfo;
   title: string;
   body: string;
   branchName: string;

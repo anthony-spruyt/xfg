@@ -1,4 +1,3 @@
-import { execSync } from "node:child_process";
 import {
   rmSync,
   existsSync,
@@ -6,29 +5,29 @@ import {
   writeFileSync,
   readFileSync,
 } from "node:fs";
-import { join } from "node:path";
+import { join, resolve, sep } from "node:path";
 import { escapeShellArg } from "./shell-utils.js";
+import { CommandExecutor, defaultExecutor } from "./command-executor.js";
 
 export interface GitOpsOptions {
   workDir: string;
   dryRun?: boolean;
+  executor?: CommandExecutor;
 }
 
 export class GitOps {
   private workDir: string;
   private dryRun: boolean;
+  private executor: CommandExecutor;
 
   constructor(options: GitOpsOptions) {
     this.workDir = options.workDir;
     this.dryRun = options.dryRun ?? false;
+    this.executor = options.executor ?? defaultExecutor;
   }
 
   private exec(command: string, cwd?: string): string {
-    return execSync(command, {
-      cwd: cwd ?? this.workDir,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    }).trim();
+    return this.executor.exec(command, cwd ?? this.workDir);
   }
 
   cleanWorkspace(): void {
@@ -47,17 +46,28 @@ export class GitOps {
       // Check if branch exists on remote
       this.exec(`git fetch origin ${escapeShellArg(branchName)}`, this.workDir);
       this.exec(`git checkout ${escapeShellArg(branchName)}`, this.workDir);
-    } catch {
-      // Branch doesn't exist, create it
-      try {
-        this.exec(
-          `git checkout -b ${escapeShellArg(branchName)}`,
-          this.workDir,
+      return;
+    } catch (error) {
+      // Only proceed to create branch if error indicates branch doesn't exist
+      const message = error instanceof Error ? error.message : String(error);
+      const isBranchNotFound =
+        message.includes("couldn't find remote ref") ||
+        message.includes("pathspec") ||
+        message.includes("did not match any");
+
+      if (!isBranchNotFound) {
+        throw new Error(
+          `Failed to fetch/checkout branch '${branchName}': ${message}`,
         );
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        throw new Error(`Failed to create branch '${branchName}': ${message}`);
       }
+    }
+
+    // Branch doesn't exist on remote, create it locally
+    try {
+      this.exec(`git checkout -b ${escapeShellArg(branchName)}`, this.workDir);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to create branch '${branchName}': ${message}`);
     }
   }
 
@@ -66,6 +76,14 @@ export class GitOps {
       return;
     }
     const filePath = join(this.workDir, fileName);
+
+    // Runtime path traversal check
+    const resolvedPath = resolve(filePath);
+    const resolvedWorkDir = resolve(this.workDir);
+    if (!resolvedPath.startsWith(resolvedWorkDir + sep)) {
+      throw new Error(`Path traversal detected: ${fileName}`);
+    }
+
     writeFileSync(filePath, content + "\n", "utf-8");
   }
 
@@ -75,6 +93,14 @@ export class GitOps {
    */
   wouldChange(fileName: string, content: string): boolean {
     const filePath = join(this.workDir, fileName);
+
+    // Runtime path traversal check
+    const resolvedPath = resolve(filePath);
+    const resolvedWorkDir = resolve(this.workDir);
+    if (!resolvedPath.startsWith(resolvedWorkDir + sep)) {
+      throw new Error(`Path traversal detected: ${fileName}`);
+    }
+
     const newContent = content + "\n";
 
     if (!existsSync(filePath)) {

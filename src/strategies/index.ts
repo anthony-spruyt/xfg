@@ -9,7 +9,9 @@ export { GitHubPRStrategy } from "./github-pr-strategy.js";
 export { AzurePRStrategy } from "./azure-pr-strategy.js";
 
 /**
- * Factory function to get the appropriate PR strategy for a repository
+ * Factory function to get the appropriate PR strategy for a repository.
+ * Note: repoInfo is passed via PRStrategyOptions.execute() rather than constructor
+ * to ensure LSP compliance (all strategies have identical constructors).
  */
 export function getPRStrategy(repoInfo: RepoInfo): PRStrategy {
   if (isGitHubRepo(repoInfo)) {
@@ -17,7 +19,7 @@ export function getPRStrategy(repoInfo: RepoInfo): PRStrategy {
   }
 
   if (isAzureDevOpsRepo(repoInfo)) {
-    return new AzurePRStrategy(repoInfo);
+    return new AzurePRStrategy();
   }
 
   // Type exhaustiveness check - should never reach here

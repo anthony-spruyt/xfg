@@ -80,6 +80,7 @@ export async function createPR(options: PROptions): Promise<PRResult> {
   // Get the appropriate strategy and execute
   const strategy = getPRStrategy(repoInfo);
   return strategy.execute({
+    repoInfo,
     title,
     body,
     branchName,
