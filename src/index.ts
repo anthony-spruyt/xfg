@@ -3,22 +3,12 @@
 import { program } from "commander";
 import { resolve, join } from "node:path";
 import { existsSync } from "node:fs";
-import { randomUUID } from "node:crypto";
 import { loadConfig, convertContentToString } from "./config.js";
 import { parseGitUrl, getRepoDisplayName } from "./repo-detector.js";
 import { GitOps, sanitizeBranchName } from "./git-ops.js";
 import { createPR } from "./pr-creator.js";
 import { logger } from "./logger.js";
-
-/**
- * Generates a unique workspace directory name to avoid collisions
- * when multiple CLI instances run concurrently.
- */
-function generateWorkspaceName(index: number): string {
-  const timestamp = Date.now();
-  const uuid = randomUUID().slice(0, 8);
-  return `repo-${timestamp}-${index}-${uuid}`;
-}
+import { generateWorkspaceName } from "./workspace-utils.js";
 
 interface CLIOptions {
   config: string;

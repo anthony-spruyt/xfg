@@ -49,7 +49,15 @@ export class GitOps {
       this.exec(`git checkout ${escapeShellArg(branchName)}`, this.workDir);
     } catch {
       // Branch doesn't exist, create it
-      this.exec(`git checkout -b ${escapeShellArg(branchName)}`, this.workDir);
+      try {
+        this.exec(
+          `git checkout -b ${escapeShellArg(branchName)}`,
+          this.workDir,
+        );
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`Failed to create branch '${branchName}': ${message}`);
+      }
     }
   }
 

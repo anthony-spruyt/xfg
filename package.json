@@ -26,7 +26,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "test": "node --import tsx --test src/config.test.ts src/merge.test.ts src/env.test.ts src/repo-detector.test.ts src/pr-creator.test.ts",
+    "test": "node --import tsx --test src/config.test.ts src/merge.test.ts src/env.test.ts src/repo-detector.test.ts src/pr-creator.test.ts src/git-ops.test.ts src/logger.test.ts src/workspace-utils.test.ts",
     "test:integration": "npm run build && node --import tsx --test src/integration.test.ts",
     "prepublishOnly": "npm run build"
   },
