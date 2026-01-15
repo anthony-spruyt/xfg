@@ -3,12 +3,12 @@
 import { program } from "commander";
 import { resolve, join } from "node:path";
 import { existsSync } from "node:fs";
-import { loadConfig, convertContentToString } from "./config.js";
+import { loadConfig } from "./config.js";
 import { parseGitUrl, getRepoDisplayName } from "./repo-detector.js";
-import { GitOps, sanitizeBranchName } from "./git-ops.js";
-import { createPR } from "./pr-creator.js";
+import { sanitizeBranchName } from "./git-ops.js";
 import { logger } from "./logger.js";
 import { generateWorkspaceName } from "./workspace-utils.js";
+import { RepositoryProcessor } from "./repository-processor.js";
 
 interface CLIOptions {
   config: string;
@@ -48,6 +48,8 @@ async function main(): Promise<void> {
   console.log(`Target file: ${config.fileName}`);
   console.log(`Branch: ${branchName}\n`);
 
+  const processor = new RepositoryProcessor();
+
   for (let i = 0; i < config.repos.length; i++) {
     const repoConfig = config.repos[i];
     const current = i + 1;
@@ -69,84 +71,23 @@ async function main(): Promise<void> {
     try {
       logger.progress(current, repoName, "Processing...");
 
-      const gitOps = new GitOps({ workDir, dryRun: options.dryRun });
-
-      // Step 1: Clean workspace
-      logger.info("Cleaning workspace...");
-      gitOps.cleanWorkspace();
-
-      // Step 2: Clone repo
-      logger.info("Cloning repository...");
-      gitOps.clone(repoInfo.gitUrl);
-
-      // Step 3: Get default branch for PR base
-      const { branch: baseBranch, method: detectionMethod } =
-        gitOps.getDefaultBranch();
-      logger.info(
-        `Default branch: ${baseBranch} (detected via ${detectionMethod})`,
-      );
-
-      // Step 4: Create/checkout branch
-      logger.info(`Switching to branch: ${branchName}`);
-      gitOps.createBranch(branchName);
-
-      // Determine if creating or updating (check BEFORE writing)
-      const action: "create" | "update" = existsSync(
-        join(workDir, config.fileName),
-      )
-        ? "update"
-        : "create";
-
-      // Step 5: Write config file
-      logger.info(`Writing ${config.fileName}...`);
-      const fileContent = convertContentToString(
-        repoConfig.content,
-        config.fileName,
-      );
-
-      // Step 6: Check for changes
-      // In dry-run mode, compare content directly since we don't write the file
-      // In normal mode, write the file first then check git status
-      const wouldHaveChanges = options.dryRun
-        ? gitOps.wouldChange(config.fileName, fileContent)
-        : (() => {
-            gitOps.writeFile(config.fileName, fileContent);
-            return gitOps.hasChanges();
-          })();
-
-      if (!wouldHaveChanges) {
-        logger.skip(current, repoName, "No changes detected");
-        continue;
-      }
-
-      // Step 7: Commit
-      logger.info("Committing changes...");
-      gitOps.commit(`chore: sync ${config.fileName}`);
-
-      // Step 8: Push
-      logger.info("Pushing to remote...");
-      gitOps.push(branchName);
-
-      // Step 9: Create PR
-      logger.info("Creating pull request...");
-      const prResult = await createPR({
-        repoInfo,
-        branchName,
-        baseBranch,
+      const result = await processor.process(repoConfig, repoInfo, {
         fileName: config.fileName,
-        action,
+        branchName,
         workDir,
         dryRun: options.dryRun,
       });
 
-      if (prResult.success) {
+      if (result.skipped) {
+        logger.skip(current, repoName, result.message);
+      } else if (result.success) {
         logger.success(
           current,
           repoName,
-          prResult.url ? `PR: ${prResult.url}` : prResult.message,
+          result.prUrl ? `PR: ${result.prUrl}` : result.message,
         );
       } else {
-        logger.error(current, repoName, prResult.message);
+        logger.error(current, repoName, result.message);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

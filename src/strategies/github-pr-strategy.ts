@@ -2,13 +2,18 @@ import { execSync } from "node:child_process";
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { escapeShellArg } from "../shell-utils.js";
+import { isGitHubRepo } from "../repo-detector.js";
 import { PRResult } from "../pr-creator.js";
 import { BasePRStrategy, PRStrategyOptions } from "./pr-strategy.js";
 import { logger } from "../logger.js";
 
 export class GitHubPRStrategy extends BasePRStrategy {
   async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {
-    const { branchName, workDir } = options;
+    const { repoInfo, branchName, workDir } = options;
+
+    if (!isGitHubRepo(repoInfo)) {
+      throw new Error("Expected GitHub repository");
+    }
 
     try {
       const existingPR = execSync(
@@ -30,7 +35,11 @@ export class GitHubPRStrategy extends BasePRStrategy {
   }
 
   async create(options: PRStrategyOptions): Promise<PRResult> {
-    const { title, body, branchName, baseBranch, workDir } = options;
+    const { repoInfo, title, body, branchName, baseBranch, workDir } = options;
+
+    if (!isGitHubRepo(repoInfo)) {
+      throw new Error("Expected GitHub repository");
+    }
 
     // Write body to temp file to avoid shell escaping issues
     const bodyFile = join(workDir, this.bodyFilePath);

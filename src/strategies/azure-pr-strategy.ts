@@ -2,7 +2,7 @@ import { execSync } from "node:child_process";
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { escapeShellArg } from "../shell-utils.js";
-import { AzureDevOpsRepoInfo } from "../repo-detector.js";
+import { AzureDevOpsRepoInfo, isAzureDevOpsRepo } from "../repo-detector.js";
 import { PRResult } from "../pr-creator.js";
 import { BasePRStrategy, PRStrategyOptions } from "./pr-strategy.js";
 import { logger } from "../logger.js";
@@ -23,7 +23,11 @@ export class AzurePRStrategy extends BasePRStrategy {
 
   async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {
     const { repoInfo, branchName, baseBranch, workDir } = options;
-    const azureRepoInfo = repoInfo as AzureDevOpsRepoInfo;
+
+    if (!isAzureDevOpsRepo(repoInfo)) {
+      throw new Error("Expected Azure DevOps repository");
+    }
+    const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
     const orgUrl = this.getOrgUrl(azureRepoInfo);
 
     try {
@@ -47,7 +51,11 @@ export class AzurePRStrategy extends BasePRStrategy {
 
   async create(options: PRStrategyOptions): Promise<PRResult> {
     const { repoInfo, title, body, branchName, baseBranch, workDir } = options;
-    const azureRepoInfo = repoInfo as AzureDevOpsRepoInfo;
+
+    if (!isAzureDevOpsRepo(repoInfo)) {
+      throw new Error("Expected Azure DevOps repository");
+    }
+    const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
     const orgUrl = this.getOrgUrl(azureRepoInfo);
 
     // Write description to temp file to avoid shell escaping issues
