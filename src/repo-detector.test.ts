@@ -35,10 +35,17 @@ describe("detectRepoType", () => {
     );
   });
 
-  test("defaults to GitHub for unknown URLs", () => {
-    assert.strictEqual(
-      detectRepoType("git@gitlab.com:owner/repo.git"),
-      "github",
+  test("throws for unknown URL formats", () => {
+    assert.throws(
+      () => detectRepoType("git@gitlab.com:owner/repo.git"),
+      /Unrecognized git URL format/,
+    );
+  });
+
+  test("throws for ftp URLs", () => {
+    assert.throws(
+      () => detectRepoType("ftp://example.com/repo"),
+      /Unrecognized git URL format/,
     );
   });
 });

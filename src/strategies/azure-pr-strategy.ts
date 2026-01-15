@@ -75,7 +75,9 @@ export class AzurePRStrategy extends BasePRStrategy {
     const descFile = join(workDir, this.bodyFilePath);
     writeFileSync(descFile, body, "utf-8");
 
-    const command = `az repos pr create --repository ${escapeShellArg(azureRepoInfo.repo)} --source-branch ${escapeShellArg(branchName)} --target-branch ${escapeShellArg(baseBranch)} --title ${escapeShellArg(title)} --description @${escapeShellArg(descFile)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --query "pullRequestId" -o tsv`;
+    // Note: Azure CLI @file syntax expects the path directly after @, without escaping
+    // The path is already validated as an absolute path within workDir
+    const command = `az repos pr create --repository ${escapeShellArg(azureRepoInfo.repo)} --source-branch ${escapeShellArg(branchName)} --target-branch ${escapeShellArg(baseBranch)} --title ${escapeShellArg(title)} --description @${descFile} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --query "pullRequestId" -o tsv`;
 
     try {
       const prId = await withRetry(() => this.executor.exec(command, workDir), {
@@ -88,9 +90,15 @@ export class AzurePRStrategy extends BasePRStrategy {
         message: "PR created successfully",
       };
     } finally {
-      // Clean up temp file
-      if (existsSync(descFile)) {
-        unlinkSync(descFile);
+      // Clean up temp file - log warning on failure instead of throwing
+      try {
+        if (existsSync(descFile)) {
+          unlinkSync(descFile);
+        }
+      } catch (cleanupError) {
+        logger.info(
+          `Warning: Failed to clean up temp file ${descFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`,
+        );
       }
     }
   }

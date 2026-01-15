@@ -8,7 +8,36 @@ import { parseGitUrl, getRepoDisplayName } from "./repo-detector.js";
 import { sanitizeBranchName } from "./git-ops.js";
 import { logger } from "./logger.js";
 import { generateWorkspaceName } from "./workspace-utils.js";
-import { RepositoryProcessor } from "./repository-processor.js";
+import {
+  RepositoryProcessor,
+  ProcessorResult,
+} from "./repository-processor.js";
+import { RepoConfig } from "./config.js";
+import { RepoInfo } from "./repo-detector.js";
+import { ProcessorOptions } from "./repository-processor.js";
+
+/**
+ * Processor interface for dependency injection in tests.
+ */
+export interface IRepositoryProcessor {
+  process(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: ProcessorOptions,
+  ): Promise<ProcessorResult>;
+}
+
+/**
+ * Factory function type for creating processors.
+ * Allows dependency injection for testing.
+ */
+export type ProcessorFactory = () => IRepositoryProcessor;
+
+/**
+ * Default factory that creates a real RepositoryProcessor.
+ */
+export const defaultProcessorFactory: ProcessorFactory = () =>
+  new RepositoryProcessor();
 
 interface CLIOptions {
   config: string;
@@ -55,7 +84,7 @@ async function main(): Promise<void> {
   console.log(`Target file: ${config.fileName}`);
   console.log(`Branch: ${branchName}\n`);
 
-  const processor = new RepositoryProcessor();
+  const processor = defaultProcessorFactory();
 
   for (let i = 0; i < config.repos.length; i++) {
     const repoConfig = config.repos[i];

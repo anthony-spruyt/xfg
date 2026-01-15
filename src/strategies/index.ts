@@ -4,7 +4,7 @@ import { GitHubPRStrategy } from "./github-pr-strategy.js";
 import { AzurePRStrategy } from "./azure-pr-strategy.js";
 
 export type { PRStrategy, PRStrategyOptions } from "./pr-strategy.js";
-export { BasePRStrategy } from "./pr-strategy.js";
+export { BasePRStrategy, PRWorkflowExecutor } from "./pr-strategy.js";
 export { GitHubPRStrategy } from "./github-pr-strategy.js";
 export { AzurePRStrategy } from "./azure-pr-strategy.js";
 

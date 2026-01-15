@@ -285,4 +285,110 @@ describe("GitOps", () => {
       assert.ok(gitOps);
     });
   });
+
+  describe("createBranch error handling", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("throws on fetch/checkout failure that is NOT branch-not-found", async () => {
+      // Simulate an auth failure during fetch (not a missing branch)
+      const gitOps = new GitOps({
+        workDir,
+        executor: {
+          async exec(command: string, _cwd: string): Promise<string> {
+            if (command.includes("git fetch")) {
+              throw new Error("Permission denied (publickey)");
+            }
+            return "";
+          },
+        },
+        retries: 0,
+      });
+
+      await assert.rejects(
+        async () => gitOps.createBranch("feature-branch"),
+        /Failed to fetch\/checkout branch.*Permission denied/,
+      );
+    });
+
+    test("creates new branch when fetch indicates branch not found", async () => {
+      let checkoutBCalled = false;
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: {
+          async exec(command: string, _cwd: string): Promise<string> {
+            if (command.includes("git fetch")) {
+              throw new Error("couldn't find remote ref feature-branch");
+            }
+            if (command.includes("git checkout -b")) {
+              checkoutBCalled = true;
+              return "";
+            }
+            return "";
+          },
+        },
+        retries: 0,
+      });
+      await gitOps.createBranch("feature-branch");
+
+      assert.ok(checkoutBCalled, "Should have called checkout -b");
+    });
+
+    test("throws on checkout -b failure", async () => {
+      const gitOps = new GitOps({
+        workDir,
+        executor: {
+          async exec(command: string, _cwd: string): Promise<string> {
+            if (command.includes("git fetch")) {
+              throw new Error("pathspec 'feature-branch' did not match any");
+            }
+            if (command.includes("git checkout -b")) {
+              throw new Error(
+                "fatal: A branch named 'feature-branch' already exists",
+              );
+            }
+            return "";
+          },
+        },
+        retries: 0,
+      });
+
+      await assert.rejects(
+        async () => gitOps.createBranch("feature-branch"),
+        /Failed to create branch.*already exists/,
+      );
+    });
+
+    test("reuses existing branch when fetch and checkout succeed", async () => {
+      let checkoutBCalled = false;
+      let checkoutCalled = false;
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: {
+          async exec(command: string, _cwd: string): Promise<string> {
+            if (command.includes("git fetch origin")) {
+              return "";
+            }
+            if (command.includes("git checkout -b")) {
+              checkoutBCalled = true;
+              return "";
+            }
+            if (command.includes("git checkout")) {
+              checkoutCalled = true;
+              return "";
+            }
+            return "";
+          },
+        },
+        retries: 0,
+      });
+      await gitOps.createBranch("feature-branch");
+
+      assert.ok(checkoutCalled, "Should have called checkout (without -b)");
+      assert.ok(!checkoutBCalled, "Should NOT have called checkout -b");
+    });
+  });
 });

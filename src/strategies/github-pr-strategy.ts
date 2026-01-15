@@ -76,9 +76,15 @@ export class GitHubPRStrategy extends BasePRStrategy {
         message: "PR created successfully",
       };
     } finally {
-      // Clean up temp file
-      if (existsSync(bodyFile)) {
-        unlinkSync(bodyFile);
+      // Clean up temp file - log warning on failure instead of throwing
+      try {
+        if (existsSync(bodyFile)) {
+          unlinkSync(bodyFile);
+        }
+      } catch (cleanupError) {
+        logger.info(
+          `Warning: Failed to clean up temp file ${bodyFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`,
+        );
       }
     }
   }

@@ -5,6 +5,25 @@
 
 export type ArrayMergeStrategy = "replace" | "append" | "prepend";
 
+/**
+ * Handler function type for array merge strategies.
+ */
+export type ArrayMergeHandler = (
+  base: unknown[],
+  overlay: unknown[],
+) => unknown[];
+
+/**
+ * Strategy map for array merge operations.
+ * Extensible: add new strategies by adding to this map.
+ */
+export const arrayMergeStrategies: Map<ArrayMergeStrategy, ArrayMergeHandler> =
+  new Map([
+    ["replace", (_base, overlay) => overlay],
+    ["append", (base, overlay) => [...base, ...overlay]],
+    ["prepend", (base, overlay) => [...overlay, ...base]],
+  ]);
+
 export interface MergeContext {
   arrayStrategies: Map<string, ArrayMergeStrategy>;
   defaultArrayStrategy: ArrayMergeStrategy;
@@ -25,16 +44,12 @@ function mergeArrays(
   overlay: unknown[],
   strategy: ArrayMergeStrategy,
 ): unknown[] {
-  switch (strategy) {
-    case "replace":
-      return overlay;
-    case "append":
-      return [...base, ...overlay];
-    case "prepend":
-      return [...overlay, ...base];
-    default:
-      return overlay;
+  const handler = arrayMergeStrategies.get(strategy);
+  if (handler) {
+    return handler(base, overlay);
   }
+  // Fallback to replace for unknown strategies
+  return overlay;
 }
 
 /**

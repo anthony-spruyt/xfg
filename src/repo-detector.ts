@@ -32,17 +32,35 @@ export function isAzureDevOpsRepo(info: RepoInfo): info is AzureDevOpsRepoInfo {
   return info.type === "azure-devops";
 }
 
+/**
+ * Valid URL patterns for supported repository types.
+ */
+const GITHUB_URL_PATTERNS = [/^git@github\.com:/, /^https?:\/\/github\.com\//];
+
+const AZURE_DEVOPS_URL_PATTERNS = [
+  /^git@ssh\.dev\.azure\.com:/,
+  /^https?:\/\/dev\.azure\.com\//,
+];
+
 export function detectRepoType(gitUrl: string): RepoType {
-  // Check for Azure DevOps SSH format: git@ssh.dev.azure.com:...
-  // Use broader pattern to catch malformed Azure URLs
-  if (/^git@ssh\.dev\.azure\.com:/.test(gitUrl)) {
-    return "azure-devops";
+  // Check for Azure DevOps formats
+  for (const pattern of AZURE_DEVOPS_URL_PATTERNS) {
+    if (pattern.test(gitUrl)) {
+      return "azure-devops";
+    }
   }
-  // Check for Azure DevOps HTTPS format: https://dev.azure.com/...
-  if (/^https?:\/\/dev\.azure\.com\//.test(gitUrl)) {
-    return "azure-devops";
+
+  // Check for GitHub formats
+  for (const pattern of GITHUB_URL_PATTERNS) {
+    if (pattern.test(gitUrl)) {
+      return "github";
+    }
   }
-  return "github";
+
+  // Throw for unrecognized URL formats
+  throw new Error(
+    `Unrecognized git URL format: ${gitUrl}. Supported formats: GitHub (git@github.com: or https://github.com/) and Azure DevOps (git@ssh.dev.azure.com: or https://dev.azure.com/)`,
+  );
 }
 
 export function parseGitUrl(gitUrl: string): RepoInfo {

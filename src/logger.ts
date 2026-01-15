@@ -1,5 +1,9 @@
 import chalk from "chalk";
 
+export interface ILogger {
+  info(message: string): void;
+}
+
 export interface LoggerStats {
   total: number;
   succeeded: number;

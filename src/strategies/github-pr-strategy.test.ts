@@ -320,6 +320,79 @@ describe("GitHubPRStrategy with mock executor", () => {
   });
 });
 
+describe("GitHubPRStrategy cleanup error handling", () => {
+  const githubRepoInfo: GitHubRepoInfo = {
+    type: "github",
+    gitUrl: "git@github.com:owner/repo.git",
+    owner: "owner",
+    repo: "repo",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  test("succeeds and cleans up temp file on success", async () => {
+    mockExecutor.responses.set(
+      "gh pr create",
+      "https://github.com/owner/repo/pull/123",
+    );
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: githubRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    };
+
+    const result = await strategy.create(options);
+
+    assert.equal(result.success, true);
+    const bodyFile = join(testDir, ".pr-body.md");
+    assert.equal(existsSync(bodyFile), false, "Temp file should be cleaned up");
+  });
+
+  test("cleans up temp file even when PR creation fails", async () => {
+    mockExecutor.responses.set("gh pr create", new Error("PR creation failed"));
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: githubRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    };
+
+    await assert.rejects(() => strategy.create(options));
+
+    const bodyFile = join(testDir, ".pr-body.md");
+    assert.equal(
+      existsSync(bodyFile),
+      false,
+      "Temp file should be cleaned up even on error",
+    );
+  });
+});
+
 describe("GitHubPRStrategy URL extraction", () => {
   test("extracts URL from gh output with extra text", () => {
     const regex = /https:\/\/github\.com\/[^\s]+/;
