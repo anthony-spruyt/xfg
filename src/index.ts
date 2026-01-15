@@ -14,6 +14,7 @@ interface CLIOptions {
   config: string;
   dryRun?: boolean;
   workDir?: string;
+  retries?: number;
 }
 
 program
@@ -23,6 +24,12 @@ program
   .requiredOption("-c, --config <path>", "Path to YAML config file")
   .option("-d, --dry-run", "Show what would be done without making changes")
   .option("-w, --work-dir <path>", "Temporary directory for cloning", "./tmp")
+  .option(
+    "-r, --retries <number>",
+    "Number of retries for network operations (0 to disable)",
+    (v) => parseInt(v, 10),
+    3,
+  )
   .parse();
 
 const options = program.opts<CLIOptions>();
@@ -76,6 +83,7 @@ async function main(): Promise<void> {
         branchName,
         workDir,
         dryRun: options.dryRun,
+        retries: options.retries,
       });
 
       if (result.skipped) {

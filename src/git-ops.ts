@@ -5,29 +5,44 @@ import {
   writeFileSync,
   readFileSync,
 } from "node:fs";
-import { join, resolve, sep } from "node:path";
+import { join, resolve, relative, isAbsolute } from "node:path";
 import { escapeShellArg } from "./shell-utils.js";
 import { CommandExecutor, defaultExecutor } from "./command-executor.js";
+import { withRetry } from "./retry-utils.js";
 
 export interface GitOpsOptions {
   workDir: string;
   dryRun?: boolean;
   executor?: CommandExecutor;
+  /** Number of retries for network operations (default: 3) */
+  retries?: number;
 }
 
 export class GitOps {
   private workDir: string;
   private dryRun: boolean;
   private executor: CommandExecutor;
+  private retries: number;
 
   constructor(options: GitOpsOptions) {
     this.workDir = options.workDir;
     this.dryRun = options.dryRun ?? false;
     this.executor = options.executor ?? defaultExecutor;
+    this.retries = options.retries ?? 3;
   }
 
-  private exec(command: string, cwd?: string): string {
+  private async exec(command: string, cwd?: string): Promise<string> {
     return this.executor.exec(command, cwd ?? this.workDir);
+  }
+
+  /**
+   * Run a command with retry logic for transient failures.
+   * Used for network operations like clone, fetch, push.
+   */
+  private async execWithRetry(command: string, cwd?: string): Promise<string> {
+    return withRetry(() => this.exec(command, cwd), {
+      retries: this.retries,
+    });
   }
 
   cleanWorkspace(): void {
@@ -37,14 +52,20 @@ export class GitOps {
     mkdirSync(this.workDir, { recursive: true });
   }
 
-  clone(gitUrl: string): void {
-    this.exec(`git clone ${escapeShellArg(gitUrl)} .`, this.workDir);
+  async clone(gitUrl: string): Promise<void> {
+    await this.execWithRetry(
+      `git clone ${escapeShellArg(gitUrl)} .`,
+      this.workDir,
+    );
   }
 
-  createBranch(branchName: string): void {
+  async createBranch(branchName: string): Promise<void> {
     try {
-      // Check if branch exists on remote
-      this.exec(`git fetch origin ${escapeShellArg(branchName)}`, this.workDir);
+      // Check if branch exists on remote (network operation with retry)
+      await this.execWithRetry(
+        `git fetch origin ${escapeShellArg(branchName)}`,
+        this.workDir,
+      );
       this.exec(`git checkout ${escapeShellArg(branchName)}`, this.workDir);
       return;
     } catch (error) {
@@ -77,14 +98,17 @@ export class GitOps {
     }
     const filePath = join(this.workDir, fileName);
 
-    // Runtime path traversal check
+    // Runtime path traversal check using relative path
     const resolvedPath = resolve(filePath);
     const resolvedWorkDir = resolve(this.workDir);
-    if (!resolvedPath.startsWith(resolvedWorkDir + sep)) {
+    const relativePath = relative(resolvedWorkDir, resolvedPath);
+    if (relativePath.startsWith("..") || isAbsolute(relativePath)) {
       throw new Error(`Path traversal detected: ${fileName}`);
     }
 
-    writeFileSync(filePath, content + "\n", "utf-8");
+    // Normalize trailing newline - ensure exactly one
+    const normalized = content.endsWith("\n") ? content : content + "\n";
+    writeFileSync(filePath, normalized, "utf-8");
   }
 
   /**
@@ -94,14 +118,16 @@ export class GitOps {
   wouldChange(fileName: string, content: string): boolean {
     const filePath = join(this.workDir, fileName);
 
-    // Runtime path traversal check
+    // Runtime path traversal check using relative path
     const resolvedPath = resolve(filePath);
     const resolvedWorkDir = resolve(this.workDir);
-    if (!resolvedPath.startsWith(resolvedWorkDir + sep)) {
+    const relativePath = relative(resolvedWorkDir, resolvedPath);
+    if (relativePath.startsWith("..") || isAbsolute(relativePath)) {
       throw new Error(`Path traversal detected: ${fileName}`);
     }
 
-    const newContent = content + "\n";
+    // Normalize trailing newline - ensure exactly one
+    const newContent = content.endsWith("\n") ? content : content + "\n";
 
     if (!existsSync(filePath)) {
       // File doesn't exist, so writing it would be a change
@@ -117,30 +143,36 @@ export class GitOps {
     }
   }
 
-  hasChanges(): boolean {
-    const status = this.exec("git status --porcelain", this.workDir);
+  async hasChanges(): Promise<boolean> {
+    const status = await this.exec("git status --porcelain", this.workDir);
     return status.length > 0;
   }
 
-  commit(message: string): void {
+  async commit(message: string): Promise<void> {
     if (this.dryRun) {
       return;
     }
-    this.exec("git add -A", this.workDir);
-    this.exec(`git commit -m ${escapeShellArg(message)}`, this.workDir);
+    await this.exec("git add -A", this.workDir);
+    await this.exec(`git commit -m ${escapeShellArg(message)}`, this.workDir);
   }
 
-  push(branchName: string): void {
+  async push(branchName: string): Promise<void> {
     if (this.dryRun) {
       return;
     }
-    this.exec(`git push -u origin ${escapeShellArg(branchName)}`, this.workDir);
+    await this.execWithRetry(
+      `git push -u origin ${escapeShellArg(branchName)}`,
+      this.workDir,
+    );
   }
 
-  getDefaultBranch(): { branch: string; method: string } {
+  async getDefaultBranch(): Promise<{ branch: string; method: string }> {
     try {
-      // Try to get the default branch from remote
-      const remoteInfo = this.exec("git remote show origin", this.workDir);
+      // Try to get the default branch from remote (network operation with retry)
+      const remoteInfo = await this.execWithRetry(
+        "git remote show origin",
+        this.workDir,
+      );
       const match = remoteInfo.match(/HEAD branch: (\S+)/);
       if (match) {
         return { branch: match[1], method: "remote HEAD" };
@@ -149,16 +181,16 @@ export class GitOps {
       // Fallback methods
     }
 
-    // Try common default branch names
+    // Try common default branch names (local operations, no retry needed)
     try {
-      this.exec("git rev-parse --verify origin/main", this.workDir);
+      await this.exec("git rev-parse --verify origin/main", this.workDir);
       return { branch: "main", method: "origin/main exists" };
     } catch {
       // Try master
     }
 
     try {
-      this.exec("git rev-parse --verify origin/master", this.workDir);
+      await this.exec("git rev-parse --verify origin/master", this.workDir);
       return { branch: "master", method: "origin/master exists" };
     } catch {
       // Default to main

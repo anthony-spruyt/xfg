@@ -15,6 +15,8 @@ export interface PROptions {
   action: "create" | "update";
   workDir: string;
   dryRun?: boolean;
+  /** Number of retries for API operations (default: 3) */
+  retries?: number;
 }
 
 export interface PRResult {
@@ -65,6 +67,7 @@ export async function createPR(options: PROptions): Promise<PRResult> {
     action,
     workDir,
     dryRun,
+    retries,
   } = options;
 
   const title = `chore: sync ${fileName}`;
@@ -86,5 +89,6 @@ export async function createPR(options: PROptions): Promise<PRResult> {
     branchName,
     baseBranch,
     workDir,
+    retries,
   });
 }

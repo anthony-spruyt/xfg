@@ -11,6 +11,8 @@ export interface ProcessorOptions {
   branchName: string;
   workDir: string;
   dryRun?: boolean;
+  /** Number of retries for network operations (default: 3) */
+  retries?: number;
 }
 
 export interface ProcessorResult {
@@ -30,9 +32,9 @@ export class RepositoryProcessor {
     options: ProcessorOptions,
   ): Promise<ProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
-    const { fileName, branchName, workDir, dryRun } = options;
+    const { fileName, branchName, workDir, dryRun, retries } = options;
 
-    this.gitOps = new GitOps({ workDir, dryRun });
+    this.gitOps = new GitOps({ workDir, dryRun, retries });
 
     try {
       // Step 1: Clean workspace
@@ -41,35 +43,38 @@ export class RepositoryProcessor {
 
       // Step 2: Clone repo
       logger.info("Cloning repository...");
-      this.gitOps.clone(repoInfo.gitUrl);
+      await this.gitOps.clone(repoInfo.gitUrl);
 
       // Step 3: Get default branch for PR base
       const { branch: baseBranch, method: detectionMethod } =
-        this.gitOps.getDefaultBranch();
+        await this.gitOps.getDefaultBranch();
       logger.info(
         `Default branch: ${baseBranch} (detected via ${detectionMethod})`,
       );
 
       // Step 4: Create/checkout branch
       logger.info(`Switching to branch: ${branchName}`);
-      this.gitOps.createBranch(branchName);
-
-      // Determine if creating or updating (check BEFORE writing)
-      const action: "create" | "update" = existsSync(join(workDir, fileName))
-        ? "update"
-        : "create";
+      await this.gitOps.createBranch(branchName);
 
       // Step 5: Write config file
       logger.info(`Writing ${fileName}...`);
       const fileContent = convertContentToString(repoConfig.content, fileName);
 
-      // Step 6: Check for changes
-      const wouldHaveChanges = dryRun
-        ? this.gitOps.wouldChange(fileName, fileContent)
-        : (() => {
-            this.gitOps!.writeFile(fileName, fileContent);
-            return this.gitOps!.hasChanges();
-          })();
+      // Step 6: Check for changes and determine action atomically
+      // Check file existence immediately before write to avoid race condition
+      const filePath = join(workDir, fileName);
+      let action: "create" | "update";
+      let wouldHaveChanges: boolean;
+
+      if (dryRun) {
+        action = existsSync(filePath) ? "update" : "create";
+        wouldHaveChanges = this.gitOps.wouldChange(fileName, fileContent);
+      } else {
+        // Capture action and write atomically (in same sync block)
+        action = existsSync(filePath) ? "update" : "create";
+        this.gitOps!.writeFile(fileName, fileContent);
+        wouldHaveChanges = await this.gitOps!.hasChanges();
+      }
 
       if (!wouldHaveChanges) {
         return {
@@ -82,11 +87,11 @@ export class RepositoryProcessor {
 
       // Step 7: Commit
       logger.info("Committing changes...");
-      this.gitOps.commit(`chore: sync ${fileName}`);
+      await this.gitOps.commit(`chore: sync ${fileName}`);
 
       // Step 8: Push
       logger.info("Pushing to remote...");
-      this.gitOps.push(branchName);
+      await this.gitOps.push(branchName);
 
       // Step 9: Create PR
       logger.info("Creating pull request...");
@@ -98,6 +103,7 @@ export class RepositoryProcessor {
         action,
         workDir,
         dryRun,
+        retries,
       });
 
       return {

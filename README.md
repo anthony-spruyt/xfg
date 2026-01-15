@@ -70,6 +70,7 @@ json-config-sync --config ./config.yaml
 - **GitHub & Azure DevOps** - Works with both platforms
 - **Dry-Run Mode** - Preview changes without creating PRs
 - **Error Resilience** - Continues processing if individual repos fail
+- **Automatic Retries** - Retries transient network errors with exponential backoff
 
 ## Installation
 
@@ -126,11 +127,12 @@ json-config-sync --config ./config.yaml --work-dir ./my-temp
 
 ### Options
 
-| Option       | Alias | Description                                        | Required |
-| ------------ | ----- | -------------------------------------------------- | -------- |
-| `--config`   | `-c`  | Path to YAML config file                           | Yes      |
-| `--dry-run`  | `-d`  | Show what would be done without making changes     | No       |
-| `--work-dir` | `-w`  | Temporary directory for cloning (default: `./tmp`) | No       |
+| Option       | Alias | Description                                           | Required |
+| ------------ | ----- | ----------------------------------------------------- | -------- |
+| `--config`   | `-c`  | Path to YAML config file                              | Yes      |
+| `--dry-run`  | `-d`  | Show what would be done without making changes        | No       |
+| `--work-dir` | `-w`  | Temporary directory for cloning (default: `./tmp`)    | No       |
+| `--retries`  | `-r`  | Number of retries for network operations (default: 3) | No       |
 
 ## Configuration Format
 
@@ -504,6 +506,20 @@ If cloning fails behind a corporate proxy:
 git config --global http.proxy http://proxy.example.com:8080
 git config --global https.proxy http://proxy.example.com:8080
 ```
+
+### Transient Network Errors
+
+The tool automatically retries transient errors (timeouts, connection resets, rate limits) with exponential backoff. By default, it retries 3 times before failing.
+
+```bash
+# Increase retries for unreliable networks
+json-config-sync --config ./config.yaml --retries 5
+
+# Disable retries
+json-config-sync --config ./config.yaml --retries 0
+```
+
+Permanent errors (authentication failures, permission denied, repository not found) are not retried.
 
 ## IDE Integration
 

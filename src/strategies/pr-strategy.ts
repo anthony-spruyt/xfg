@@ -1,5 +1,6 @@
 import { PRResult } from "../pr-creator.js";
 import { RepoInfo } from "../repo-detector.js";
+import { CommandExecutor, defaultExecutor } from "../command-executor.js";
 
 export interface PRStrategyOptions {
   repoInfo: RepoInfo;
@@ -8,6 +9,8 @@ export interface PRStrategyOptions {
   branchName: string;
   baseBranch: string;
   workDir: string;
+  /** Number of retries for API operations (default: 3) */
+  retries?: number;
 }
 
 export interface PRStrategy {
@@ -31,6 +34,11 @@ export interface PRStrategy {
 
 export abstract class BasePRStrategy implements PRStrategy {
   protected bodyFilePath: string = ".pr-body.md";
+  protected executor: CommandExecutor;
+
+  constructor(executor?: CommandExecutor) {
+    this.executor = executor ?? defaultExecutor;
+  }
 
   abstract checkExistingPR(options: PRStrategyOptions): Promise<string | null>;
   abstract create(options: PRStrategyOptions): Promise<PRResult>;
