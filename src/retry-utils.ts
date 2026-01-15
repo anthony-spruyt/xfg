@@ -2,10 +2,11 @@ import pRetry, { AbortError } from "p-retry";
 import { logger } from "./logger.js";
 
 /**
- * Patterns indicating permanent errors that should NOT be retried.
+ * Default patterns indicating permanent errors that should NOT be retried.
  * These typically indicate configuration issues, auth failures, or invalid resources.
+ * Export allows customization for different environments.
  */
-const PERMANENT_ERROR_PATTERNS = [
+export const DEFAULT_PERMANENT_ERROR_PATTERNS: RegExp[] = [
   /permission\s*denied/i,
   /authentication\s*failed/i,
   /bad\s*credentials/i,
@@ -26,10 +27,11 @@ const PERMANENT_ERROR_PATTERNS = [
 ];
 
 /**
- * Patterns indicating transient errors that SHOULD be retried.
+ * Default patterns indicating transient errors that SHOULD be retried.
  * These typically indicate temporary network or service issues.
+ * Export allows customization for different environments.
  */
-const TRANSIENT_ERROR_PATTERNS = [
+export const DEFAULT_TRANSIENT_ERROR_PATTERNS: RegExp[] = [
   /timed?\s*out/i,
   /ETIMEDOUT/,
   /ECONNRESET/,
@@ -59,21 +61,29 @@ export interface RetryOptions {
   retries?: number;
   /** Callback when a retry attempt fails */
   onRetry?: (error: Error, attempt: number) => void;
+  /** Custom permanent error patterns (defaults to DEFAULT_PERMANENT_ERROR_PATTERNS) */
+  permanentErrorPatterns?: RegExp[];
+  /** Custom transient error patterns (defaults to DEFAULT_TRANSIENT_ERROR_PATTERNS) */
+  transientErrorPatterns?: RegExp[];
 }
 
 /**
  * Classifies an error as permanent (should not retry) or transient (should retry).
  * @param error The error to classify
+ * @param patterns Custom patterns to use (defaults to DEFAULT_PERMANENT_ERROR_PATTERNS)
  * @returns true if the error is permanent, false if it might be transient
  */
-export function isPermanentError(error: Error): boolean {
+export function isPermanentError(
+  error: Error,
+  patterns: RegExp[] = DEFAULT_PERMANENT_ERROR_PATTERNS,
+): boolean {
   const message = error.message;
   const stderr =
     (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
   const combined = `${message} ${stderr}`;
 
   // Check permanent patterns first - these always stop retries
-  for (const pattern of PERMANENT_ERROR_PATTERNS) {
+  for (const pattern of patterns) {
     if (pattern.test(combined)) {
       return true;
     }
@@ -85,15 +95,19 @@ export function isPermanentError(error: Error): boolean {
 /**
  * Checks if an error matches known transient patterns.
  * @param error The error to check
+ * @param patterns Custom patterns to use (defaults to DEFAULT_TRANSIENT_ERROR_PATTERNS)
  * @returns true if the error appears to be transient
  */
-export function isTransientError(error: Error): boolean {
+export function isTransientError(
+  error: Error,
+  patterns: RegExp[] = DEFAULT_TRANSIENT_ERROR_PATTERNS,
+): boolean {
   const message = error.message;
   const stderr =
     (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
   const combined = `${message} ${stderr}`;
 
-  for (const pattern of TRANSIENT_ERROR_PATTERNS) {
+  for (const pattern of patterns) {
     if (pattern.test(combined)) {
       return true;
     }
@@ -116,13 +130,17 @@ export async function withRetry<T>(
   options?: RetryOptions,
 ): Promise<T> {
   const retries = options?.retries ?? 3;
+  const permanentPatterns = options?.permanentErrorPatterns;
 
   return pRetry(
     async () => {
       try {
         return await fn();
       } catch (error) {
-        if (error instanceof Error && isPermanentError(error)) {
+        if (
+          error instanceof Error &&
+          isPermanentError(error, permanentPatterns)
+        ) {
           // Wrap in AbortError to stop retrying immediately
           throw new AbortError(error.message);
         }

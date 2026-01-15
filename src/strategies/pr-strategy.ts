@@ -13,6 +13,11 @@ export interface PRStrategyOptions {
   retries?: number;
 }
 
+/**
+ * Interface for PR creation strategies (platform-specific implementations).
+ * Strategies focus on platform-specific logic (checkExistingPR, create).
+ * Use PRWorkflowExecutor for full workflow orchestration with error handling.
+ */
 export interface PRStrategy {
   /**
    * Check if a PR already exists for the given branch
@@ -28,6 +33,7 @@ export interface PRStrategy {
 
   /**
    * Execute the full PR creation workflow
+   * @deprecated Use PRWorkflowExecutor.execute() for better SRP
    */
   execute(options: PRStrategyOptions): Promise<PRResult>;
 }
@@ -48,10 +54,35 @@ export abstract class BasePRStrategy implements PRStrategy {
    * 1. Check for existing PR
    * 2. If exists, return it
    * 3. Otherwise, create new PR
+   *
+   * @deprecated Use PRWorkflowExecutor.execute() for better SRP
+   */
+  async execute(options: PRStrategyOptions): Promise<PRResult> {
+    const executor = new PRWorkflowExecutor(this);
+    return executor.execute(options);
+  }
+}
+
+/**
+ * Orchestrates the PR creation workflow with error handling.
+ * Follows Single Responsibility Principle by separating workflow orchestration
+ * from platform-specific PR creation logic.
+ *
+ * Workflow:
+ * 1. Check for existing PR on the branch
+ * 2. If exists, return existing PR URL
+ * 3. Otherwise, create new PR
+ * 4. Handle errors and return failure result
+ */
+export class PRWorkflowExecutor {
+  constructor(private readonly strategy: PRStrategy) {}
+
+  /**
+   * Execute the full PR creation workflow with error handling.
    */
   async execute(options: PRStrategyOptions): Promise<PRResult> {
     try {
-      const existingUrl = await this.checkExistingPR(options);
+      const existingUrl = await this.strategy.checkExistingPR(options);
       if (existingUrl) {
         return {
           url: existingUrl,
@@ -59,7 +90,7 @@ export abstract class BasePRStrategy implements PRStrategy {
           message: `PR already exists: ${existingUrl}`,
         };
       }
-      return await this.create(options);
+      return await this.strategy.create(options);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       return {

@@ -273,6 +273,150 @@ describe("AzurePRStrategy with mock executor", () => {
   });
 });
 
+describe("AzurePRStrategy cleanup error handling", () => {
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  test("succeeds and cleans up temp file on success", async () => {
+    const azureRepoInfo: AzureDevOpsRepoInfo = {
+      type: "azure-devops",
+      gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
+      owner: "myorg",
+      repo: "myrepo",
+      organization: "myorg",
+      project: "myproject",
+    };
+
+    mockExecutor.responses.set("az repos pr create", "123");
+
+    const strategy = new AzurePRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: azureRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    };
+
+    const result = await strategy.create(options);
+
+    assert.equal(result.success, true);
+    const descFile = join(testDir, ".pr-description.md");
+    assert.equal(existsSync(descFile), false, "Temp file should be cleaned up");
+  });
+
+  test("cleans up temp file even when PR creation fails", async () => {
+    const azureRepoInfo: AzureDevOpsRepoInfo = {
+      type: "azure-devops",
+      gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
+      owner: "myorg",
+      repo: "myrepo",
+      organization: "myorg",
+      project: "myproject",
+    };
+
+    mockExecutor.responses.set(
+      "az repos pr create",
+      new Error("PR creation failed"),
+    );
+
+    const strategy = new AzurePRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: azureRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    };
+
+    await assert.rejects(() => strategy.create(options));
+
+    const descFile = join(testDir, ".pr-description.md");
+    assert.equal(
+      existsSync(descFile),
+      false,
+      "Temp file should be cleaned up even on error",
+    );
+  });
+});
+
+describe("AzurePRStrategy Azure CLI command format", () => {
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  test("uses @/path format for description file, not @'/path'", async () => {
+    const azureRepoInfo: AzureDevOpsRepoInfo = {
+      type: "azure-devops",
+      gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
+      owner: "myorg",
+      repo: "myrepo",
+      organization: "myorg",
+      project: "myproject",
+    };
+
+    mockExecutor.responses.set("az repos pr create", "123");
+
+    const strategy = new AzurePRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: azureRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    };
+
+    await strategy.create(options);
+
+    // Verify the command uses @/path/file format, not @'/path/file'
+    const command = mockExecutor.calls[0].command;
+    const descFile = join(testDir, ".pr-description.md");
+
+    // Should contain @/path directly without quotes around the path
+    assert.ok(
+      command.includes(`--description @${descFile}`),
+      `Command should use @<path> format without escaping. Got: ${command}`,
+    );
+
+    // Should NOT contain @'/path' (escaped format)
+    assert.ok(
+      !command.includes(`@'${descFile}'`),
+      `Command should NOT use @'<path>' format. Got: ${command}`,
+    );
+  });
+});
+
 describe("AzurePRStrategy URL building", () => {
   test("builds correct PR URL with special characters", () => {
     const org = "my-org";

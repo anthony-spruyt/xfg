@@ -9,6 +9,24 @@ import { join, resolve, relative, isAbsolute } from "node:path";
 import { escapeShellArg } from "./shell-utils.js";
 import { CommandExecutor, defaultExecutor } from "./command-executor.js";
 import { withRetry } from "./retry-utils.js";
+import { logger } from "./logger.js";
+
+/**
+ * Patterns indicating a git branch does not exist.
+ * Used to distinguish "branch not found" from other errors.
+ */
+const BRANCH_NOT_FOUND_PATTERNS = [
+  "couldn't find remote ref",
+  "pathspec",
+  "did not match any",
+];
+
+/**
+ * Checks if an error message indicates a branch was not found.
+ */
+function isBranchNotFoundError(message: string): boolean {
+  return BRANCH_NOT_FOUND_PATTERNS.some((pattern) => message.includes(pattern));
+}
 
 export interface GitOpsOptions {
   workDir: string;
@@ -45,6 +63,22 @@ export class GitOps {
     });
   }
 
+  /**
+   * Validates that a file path doesn't escape the workspace directory.
+   * @returns The resolved absolute file path
+   * @throws Error if path traversal is detected
+   */
+  private validatePath(fileName: string): string {
+    const filePath = join(this.workDir, fileName);
+    const resolvedPath = resolve(filePath);
+    const resolvedWorkDir = resolve(this.workDir);
+    const relativePath = relative(resolvedWorkDir, resolvedPath);
+    if (relativePath.startsWith("..") || isAbsolute(relativePath)) {
+      throw new Error(`Path traversal detected: ${fileName}`);
+    }
+    return filePath;
+  }
+
   cleanWorkspace(): void {
     if (existsSync(this.workDir)) {
       rmSync(this.workDir, { recursive: true, force: true });
@@ -66,17 +100,16 @@ export class GitOps {
         `git fetch origin ${escapeShellArg(branchName)}`,
         this.workDir,
       );
-      this.exec(`git checkout ${escapeShellArg(branchName)}`, this.workDir);
+      await this.execWithRetry(
+        `git checkout ${escapeShellArg(branchName)}`,
+        this.workDir,
+      );
       return;
     } catch (error) {
       // Only proceed to create branch if error indicates branch doesn't exist
       const message = error instanceof Error ? error.message : String(error);
-      const isBranchNotFound =
-        message.includes("couldn't find remote ref") ||
-        message.includes("pathspec") ||
-        message.includes("did not match any");
 
-      if (!isBranchNotFound) {
+      if (!isBranchNotFoundError(message)) {
         throw new Error(
           `Failed to fetch/checkout branch '${branchName}': ${message}`,
         );
@@ -85,7 +118,10 @@ export class GitOps {
 
     // Branch doesn't exist on remote, create it locally
     try {
-      this.exec(`git checkout -b ${escapeShellArg(branchName)}`, this.workDir);
+      await this.exec(
+        `git checkout -b ${escapeShellArg(branchName)}`,
+        this.workDir,
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to create branch '${branchName}': ${message}`);
@@ -96,15 +132,7 @@ export class GitOps {
     if (this.dryRun) {
       return;
     }
-    const filePath = join(this.workDir, fileName);
-
-    // Runtime path traversal check using relative path
-    const resolvedPath = resolve(filePath);
-    const resolvedWorkDir = resolve(this.workDir);
-    const relativePath = relative(resolvedWorkDir, resolvedPath);
-    if (relativePath.startsWith("..") || isAbsolute(relativePath)) {
-      throw new Error(`Path traversal detected: ${fileName}`);
-    }
+    const filePath = this.validatePath(fileName);
 
     // Normalize trailing newline - ensure exactly one
     const normalized = content.endsWith("\n") ? content : content + "\n";
@@ -116,15 +144,7 @@ export class GitOps {
    * Works in both normal and dry-run modes by comparing content directly.
    */
   wouldChange(fileName: string, content: string): boolean {
-    const filePath = join(this.workDir, fileName);
-
-    // Runtime path traversal check using relative path
-    const resolvedPath = resolve(filePath);
-    const resolvedWorkDir = resolve(this.workDir);
-    const relativePath = relative(resolvedWorkDir, resolvedPath);
-    if (relativePath.startsWith("..") || isAbsolute(relativePath)) {
-      throw new Error(`Path traversal detected: ${fileName}`);
-    }
+    const filePath = this.validatePath(fileName);
 
     // Normalize trailing newline - ensure exactly one
     const newContent = content.endsWith("\n") ? content : content + "\n";
@@ -177,23 +197,26 @@ export class GitOps {
       if (match) {
         return { branch: match[1], method: "remote HEAD" };
       }
-    } catch {
-      // Fallback methods
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      logger.info(`Debug: git remote show origin failed - ${msg}`);
     }
 
     // Try common default branch names (local operations, no retry needed)
     try {
       await this.exec("git rev-parse --verify origin/main", this.workDir);
       return { branch: "main", method: "origin/main exists" };
-    } catch {
-      // Try master
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      logger.info(`Debug: origin/main check failed - ${msg}`);
     }
 
     try {
       await this.exec("git rev-parse --verify origin/master", this.workDir);
       return { branch: "master", method: "origin/master exists" };
-    } catch {
-      // Default to main
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      logger.info(`Debug: origin/master check failed - ${msg}`);
     }
 
     return { branch: "main", method: "fallback default" };

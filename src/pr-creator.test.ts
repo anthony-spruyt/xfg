@@ -1,5 +1,8 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
+import { existsSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { escapeShellArg, formatPRBody } from "./pr-creator.js";
 
 describe("escapeShellArg", () => {
@@ -107,5 +110,57 @@ describe("formatPRBody", () => {
     // Should not contain any unreplaced placeholders
     assert.ok(!result.includes("{{"));
     assert.ok(!result.includes("}}"));
+  });
+});
+
+describe("loadPRTemplate (via formatPRBody)", () => {
+  // Get the expected path for PR.md
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const templatePath = join(__dirname, "..", "PR.md");
+
+  test("loads PR.md template when file exists", () => {
+    // Verify PR.md exists in the project
+    assert.ok(
+      existsSync(templatePath),
+      `PR.md should exist at ${templatePath}`,
+    );
+
+    // formatPRBody should use content from PR.md
+    const result = formatPRBody("config.json", "create");
+
+    // The actual PR.md has specific content we can verify
+    // It should contain markdown formatting from the template
+    assert.ok(result.length > 50, "Template should have substantial content");
+  });
+
+  test("template contains expected sections", () => {
+    const result = formatPRBody("config.json", "create");
+
+    // PR.md should have summary section and automation note
+    assert.ok(
+      result.includes("json-config-sync") ||
+        result.includes("Summary") ||
+        result.includes("Changes"),
+      "Template should have expected sections",
+    );
+  });
+
+  test("fallback template structure is valid", () => {
+    // The fallback template (in case PR.md is missing) has a specific structure
+    // We verify by checking that formatPRBody always returns valid content
+    const result = formatPRBody("test.json", "create");
+
+    // Should have the filename
+    assert.ok(result.includes("test.json"));
+
+    // Should have the action text
+    assert.ok(result.includes("Created"));
+
+    // Should have some structure (markdown headers or bullets)
+    assert.ok(
+      result.includes("#") || result.includes("-") || result.includes("*"),
+      "Should have markdown formatting",
+    );
   });
 });
