@@ -1,4 +1,3 @@
-import { execSync } from "node:child_process";
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { escapeShellArg } from "../shell-utils.js";
@@ -6,25 +5,32 @@ import { isGitHubRepo } from "../repo-detector.js";
 import { PRResult } from "../pr-creator.js";
 import { BasePRStrategy, PRStrategyOptions } from "./pr-strategy.js";
 import { logger } from "../logger.js";
+import { withRetry, isPermanentError } from "../retry-utils.js";
 
 export class GitHubPRStrategy extends BasePRStrategy {
   async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {
-    const { repoInfo, branchName, workDir } = options;
+    const { repoInfo, branchName, workDir, retries = 3 } = options;
 
     if (!isGitHubRepo(repoInfo)) {
       throw new Error("Expected GitHub repository");
     }
 
+    const command = `gh pr list --head ${escapeShellArg(branchName)} --json url --jq '.[0].url'`;
+
     try {
-      const existingPR = execSync(
-        `gh pr list --head ${escapeShellArg(branchName)} --json url --jq '.[0].url'`,
-        { cwd: workDir, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] },
-      ).trim();
+      const existingPR = await withRetry(
+        () => this.executor.exec(command, workDir),
+        { retries },
+      );
 
       return existingPR || null;
     } catch (error) {
-      // Log unexpected errors for debugging (expected: empty result means no PR)
       if (error instanceof Error) {
+        // Throw on permanent errors (auth failures, etc.)
+        if (isPermanentError(error)) {
+          throw error;
+        }
+        // Log unexpected errors for debugging (expected: empty result means no PR)
         const stderr = (error as { stderr?: string }).stderr ?? "";
         if (stderr && !stderr.includes("no pull requests match")) {
           logger.info(`Debug: GitHub PR check failed - ${stderr.trim()}`);
@@ -35,7 +41,15 @@ export class GitHubPRStrategy extends BasePRStrategy {
   }
 
   async create(options: PRStrategyOptions): Promise<PRResult> {
-    const { repoInfo, title, body, branchName, baseBranch, workDir } = options;
+    const {
+      repoInfo,
+      title,
+      body,
+      branchName,
+      baseBranch,
+      workDir,
+      retries = 3,
+    } = options;
 
     if (!isGitHubRepo(repoInfo)) {
       throw new Error("Expected GitHub repository");
@@ -45,11 +59,13 @@ export class GitHubPRStrategy extends BasePRStrategy {
     const bodyFile = join(workDir, this.bodyFilePath);
     writeFileSync(bodyFile, body, "utf-8");
 
+    const command = `gh pr create --title ${escapeShellArg(title)} --body-file ${escapeShellArg(bodyFile)} --base ${escapeShellArg(baseBranch)} --head ${escapeShellArg(branchName)}`;
+
     try {
-      const result = execSync(
-        `gh pr create --title ${escapeShellArg(title)} --body-file ${escapeShellArg(bodyFile)} --base ${escapeShellArg(baseBranch)} --head ${escapeShellArg(branchName)}`,
-        { cwd: workDir, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] },
-      ).trim();
+      const result = await withRetry(
+        () => this.executor.exec(command, workDir),
+        { retries },
+      );
 
       // Extract URL from output
       const urlMatch = result.match(/https:\/\/github\.com\/[^\s]+/);

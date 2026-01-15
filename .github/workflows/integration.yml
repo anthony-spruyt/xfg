@@ -5,6 +5,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Prevent concurrent runs - they race on the shared test repo branch
+concurrency:
+  group: integration-test
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
