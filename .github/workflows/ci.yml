@@ -45,8 +45,29 @@ jobs:
           path: dist/
           retention-days: 1
 
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.29.0
+        with:
+          scan-type: fs
+          trivy-config: trivy.yaml
+
   integration-test:
-    needs: build
+    needs: [build, security]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 

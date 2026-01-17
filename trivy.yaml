@@ -1,0 +1,12 @@
+---
+# https://trivy.dev/latest/docs/references/configuration/config-file/
+disable-telemetry: true
+exit-code: 1
+exit-on-eol: 2
+scan:
+  scanners:
+    - vuln
+    - secret
+vulnerability:
+  ignore-unfixed: true
+ignorefile: .trivyignore.yaml
