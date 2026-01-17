@@ -61,6 +61,7 @@
       "Skill(hookify:writing-rules:*)",
       "WebFetch(domain:docs.ceph.com)",
       "WebFetch(domain:docs.cilium.io)",
+      "WebFetch(domain:docs.github.com)",
       "WebFetch(domain:docs.goauthentik.io)",
       "WebFetch(domain:docs.n8n.io)",
       "WebFetch(domain:docs.siderolabs.com)",
@@ -126,7 +127,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/common-hookify-bridge.py"
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/common-hookify-bridge.py\""
           }
         ]
       },
@@ -135,7 +136,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/common-hookify-bridge.py"
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/common-hookify-bridge.py\""
           }
         ]
       }
@@ -146,7 +147,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/common-hookify-bridge.py --post"
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/common-hookify-bridge.py\" --post"
           }
         ]
       },
