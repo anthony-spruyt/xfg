@@ -126,7 +126,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/common-hookify-bridge.py"
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/common-hookify-bridge.py\""
           }
         ]
       },
@@ -135,7 +135,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/common-hookify-bridge.py"
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/common-hookify-bridge.py\""
           }
         ]
       }
@@ -146,7 +146,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/hooks/common-hookify-bridge.py --post"
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/common-hookify-bridge.py\" --post"
           }
         ]
       },
