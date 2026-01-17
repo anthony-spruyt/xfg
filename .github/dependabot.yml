@@ -17,8 +17,14 @@ updates:
         patterns:
           - "*"
 
-  # npm packages in devcontainer
+  # npm packages (root)
   - package-ecosystem: "npm"
     directory: "/"
+    schedule:
+      interval: daily
+
+  # npm packages (devcontainer)
+  - package-ecosystem: "npm"
+    directory: "/.devcontainer"
     schedule:
       interval: daily
