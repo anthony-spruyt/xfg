@@ -1,6 +1,12 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { interpolateEnvVars, type EnvInterpolationOptions } from "./env.js";
+import {
+  interpolateEnvVars,
+  interpolateEnvVarsInString,
+  interpolateEnvVarsInLines,
+  interpolateContent,
+  type EnvInterpolationOptions,
+} from "./env.js";
 
 describe("interpolateEnvVars", () => {
   const originalEnv = { ...process.env };
@@ -177,5 +183,144 @@ describe("interpolateEnvVars", () => {
   test("handles empty object", () => {
     const result = interpolateEnvVars({});
     assert.deepEqual(result, {});
+  });
+});
+
+describe("interpolateEnvVarsInString", () => {
+  const originalEnv = { ...process.env };
+
+  beforeEach(() => {
+    process.env.TEST_VAR = "test-value";
+    process.env.DIR = "build";
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test("interpolates in plain string", () => {
+    const result = interpolateEnvVarsInString("value is ${TEST_VAR}");
+    assert.equal(result, "value is test-value");
+  });
+
+  test("handles multiline string", () => {
+    const input = "line1\n${TEST_VAR}\nline3";
+    const result = interpolateEnvVarsInString(input);
+    assert.equal(result, "line1\ntest-value\nline3");
+  });
+
+  test("handles multiple vars in one string", () => {
+    const result = interpolateEnvVarsInString("${TEST_VAR} and ${DIR}");
+    assert.equal(result, "test-value and build");
+  });
+
+  test("handles default values", () => {
+    const result = interpolateEnvVarsInString("${MISSING:-default-val}");
+    assert.equal(result, "default-val");
+  });
+
+  test("throws on missing required var", () => {
+    assert.throws(
+      () => interpolateEnvVarsInString("${MISSING_VAR}"),
+      /Missing required environment variable: MISSING_VAR/,
+    );
+  });
+
+  test("leaves placeholder in non-strict mode", () => {
+    const result = interpolateEnvVarsInString("${MISSING_VAR}", {
+      strict: false,
+    });
+    assert.equal(result, "${MISSING_VAR}");
+  });
+});
+
+describe("interpolateEnvVarsInLines", () => {
+  const originalEnv = { ...process.env };
+
+  beforeEach(() => {
+    process.env.DIR = "build";
+    process.env.EXTRA = "extra";
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test("interpolates each line", () => {
+    const result = interpolateEnvVarsInLines(["${DIR}/", "other"]);
+    assert.deepEqual(result, ["build/", "other"]);
+  });
+
+  test("handles multiple vars across lines", () => {
+    const result = interpolateEnvVarsInLines([
+      "${DIR}/output",
+      "${EXTRA}/files",
+    ]);
+    assert.deepEqual(result, ["build/output", "extra/files"]);
+  });
+
+  test("handles empty array", () => {
+    const result = interpolateEnvVarsInLines([]);
+    assert.deepEqual(result, []);
+  });
+
+  test("handles lines without vars", () => {
+    const result = interpolateEnvVarsInLines(["static", "content"]);
+    assert.deepEqual(result, ["static", "content"]);
+  });
+
+  test("throws on missing required var in any line", () => {
+    assert.throws(
+      () => interpolateEnvVarsInLines(["${DIR}/", "${MISSING}"]),
+      /Missing required environment variable: MISSING/,
+    );
+  });
+});
+
+describe("interpolateContent", () => {
+  const originalEnv = { ...process.env };
+
+  beforeEach(() => {
+    process.env.VAR = "value";
+    process.env.DIR = "build";
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test("handles string content", () => {
+    const result = interpolateContent("prefix-${VAR}");
+    assert.equal(result, "prefix-value");
+  });
+
+  test("handles string array content", () => {
+    const result = interpolateContent(["${VAR}", "static"]);
+    assert.deepEqual(result, ["value", "static"]);
+  });
+
+  test("handles object content", () => {
+    const result = interpolateContent({ key: "${VAR}" });
+    assert.deepEqual(result, { key: "value" });
+  });
+
+  test("handles nested object content", () => {
+    const result = interpolateContent({
+      outer: { inner: "${VAR}" },
+    });
+    assert.deepEqual(result, { outer: { inner: "value" } });
+  });
+
+  test("handles mixed content types within object", () => {
+    const result = interpolateContent({
+      stringVal: "${VAR}",
+      arrayVal: ["${DIR}"],
+      numVal: 123,
+    });
+    assert.deepEqual(result, {
+      stringVal: "value",
+      arrayVal: ["build"],
+      numVal: 123,
+    });
   });
 });

@@ -4,7 +4,7 @@
 [![npm version](https://img.shields.io/npm/v/@aspruyt/json-config-sync.svg)](https://www.npmjs.com/package/@aspruyt/json-config-sync)
 [![npm downloads](https://img.shields.io/npm/dw/@aspruyt/json-config-sync.svg)](https://www.npmjs.com/package/@aspruyt/json-config-sync)
 
-A CLI tool that syncs JSON or YAML configuration files across multiple GitHub and Azure DevOps repositories by creating pull requests. Output format is automatically detected from the target filename extension.
+A CLI tool that syncs JSON, YAML, or text configuration files across multiple GitHub and Azure DevOps repositories by creating pull requests. Output format is automatically detected from the target filename extension (`.json` → JSON, `.yaml`/`.yml` → YAML, other → text).
 
 ## Table of Contents
 
@@ -60,7 +60,8 @@ json-config-sync --config ./config.yaml
 ## Features
 
 - **Multi-File Sync** - Sync multiple config files in a single run
-- **JSON/YAML Output** - Automatically outputs JSON or YAML based on filename extension
+- **Multi-Format Output** - JSON, YAML, or plain text based on filename extension
+- **Text Files** - Sync `.gitignore`, `.markdownlintignore`, etc. with string or lines array
 - **Content Inheritance** - Define base config once, override per-repo as needed
 - **Multi-Repo Targeting** - Apply same config to multiple repos with array syntax
 - **Environment Variables** - Use `${VAR}` syntax for dynamic values
@@ -167,13 +168,13 @@ repos: # List of repositories
 
 ### Per-File Fields
 
-| Field           | Description                                                | Required |
-| --------------- | ---------------------------------------------------------- | -------- |
-| `content`       | Base config inherited by all repos (omit for empty file)   | No       |
-| `mergeStrategy` | Array merge strategy: `replace`, `append`, `prepend`       | No       |
-| `createOnly`    | If `true`, only create file if it doesn't exist            | No       |
-| `header`        | Comment line(s) at top of YAML files (string or array)     | No       |
-| `schemaUrl`     | Adds `# yaml-language-server: $schema=<url>` to YAML files | No       |
+| Field           | Description                                                                                      | Required |
+| --------------- | ------------------------------------------------------------------------------------------------ | -------- |
+| `content`       | Base config: object for JSON/YAML files, string or string[] for text files (omit for empty file) | No       |
+| `mergeStrategy` | Merge strategy: `replace`, `append`, `prepend` (for arrays and text lines)                       | No       |
+| `createOnly`    | If `true`, only create file if it doesn't exist                                                  | No       |
+| `header`        | Comment line(s) at top of YAML files (string or array)                                           | No       |
+| `schemaUrl`     | Adds `# yaml-language-server: $schema=<url>` to YAML files                                       | No       |
 
 ### Per-Repo Fields
 
@@ -449,6 +450,41 @@ scan:
 ```
 
 **Note:** `header` and `schemaUrl` only apply to YAML output files (`.yaml`, `.yml`). They are ignored for JSON files.
+
+### Text Files
+
+Sync text files like `.gitignore`, `.markdownlintignore`, or `.env.example` using string or lines array content:
+
+```yaml
+files:
+  # String content (multiline text)
+  .markdownlintignore:
+    createOnly: true
+    content: |-
+      # Claude Code generated files
+      .claude/
+
+  # Lines array with merge strategy
+  .gitignore:
+    mergeStrategy: append
+    content:
+      - "node_modules/"
+      - "dist/"
+
+repos:
+  - git: git@github.com:org/repo.git
+    files:
+      .gitignore:
+        content:
+          - "coverage/" # Appended to base lines
+```
+
+**Content Types:**
+
+- **String content** (`content: |-`) - Direct text output with environment variable interpolation. Merging always replaces the base.
+- **Lines array** (`content: ['line1', 'line2']`) - Each line joined with newlines. Supports merge strategies (`append`, `prepend`, `replace`).
+
+**Validation:** JSON/YAML file extensions (`.json`, `.yaml`, `.yml`) require object content. Other extensions require string or string[] content.
 
 ## Supported Git URL Formats
 

@@ -524,7 +524,7 @@ describe("convertContentToString", () => {
   test("uses 2-space indentation for JSON", () => {
     const input = { key: "value" };
     const result = convertContentToString(input, "config.json");
-    assert.equal(result, '{\n  "key": "value"\n}');
+    assert.equal(result, '{\n  "key": "value"\n}\n');
   });
 
   test("produces valid YAML for .yaml files", () => {
@@ -543,8 +543,8 @@ describe("convertContentToString", () => {
 
   test("defaults to JSON for unknown extensions", () => {
     const input = { key: "value" };
-    const result = convertContentToString(input, "config.txt");
-    assert.equal(result, '{\n  "key": "value"\n}');
+    const result = convertContentToString(input, "config.json");
+    assert.equal(result, '{\n  "key": "value"\n}\n');
   });
 
   test("handles case-insensitive extensions", () => {

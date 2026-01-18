@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/anthony-spruyt/json-config-sync/config-schema.json",
   "title": "json-config-sync Configuration",
-  "description": "Configuration file for json-config-sync CLI tool that syncs JSON/YAML config files across multiple Git repositories",
+  "description": "Configuration file for json-config-sync CLI tool that syncs JSON, YAML, or text config files across multiple Git repositories",
   "type": "object",
   "required": ["files", "repos"],
   "properties": {
@@ -29,9 +29,23 @@
       "description": "Configuration for a single file to sync",
       "properties": {
         "content": {
-          "type": "object",
-          "description": "Base configuration content. Supports environment variables: ${VAR}, ${VAR:-default}, ${VAR:?message}. Omit for empty file.",
-          "additionalProperties": true
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Object content for JSON/YAML output files (.json, .yaml, .yml)",
+              "additionalProperties": true
+            },
+            {
+              "type": "string",
+              "description": "String content for text file output (files without .json/.yaml/.yml extension)"
+            },
+            {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Lines array for text file output with merge strategy support"
+            }
+          ],
+          "description": "File content. Object for JSON/YAML files, string or string[] for text files. Supports ${VAR} env interpolation. Omit for empty file."
         },
         "mergeStrategy": {
           "type": "string",
@@ -111,9 +125,23 @@
       "description": "Per-repo override for a specific file",
       "properties": {
         "content": {
-          "type": "object",
-          "description": "Content overlay merged onto the file's base content. Use $arrayMerge directive to control array merging.",
-          "additionalProperties": true
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Object content overlay for JSON/YAML files. Use $arrayMerge directive to control array merging.",
+              "additionalProperties": true
+            },
+            {
+              "type": "string",
+              "description": "String content for text files (replaces base content)"
+            },
+            {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Lines array for text files (uses merge strategy: replace/append/prepend)"
+            }
+          ],
+          "description": "Content overlay merged onto the file's base content. Must match the content type of the root file definition."
         },
         "override": {
           "type": "boolean",

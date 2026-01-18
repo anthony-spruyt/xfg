@@ -279,3 +279,110 @@ describe("convertContentToString JSON ignores comments", () => {
     assert.ok(result.includes('"key"'));
   });
 });
+
+describe("convertContentToString with text content", () => {
+  describe("string content", () => {
+    test("outputs string with trailing newline", () => {
+      const result = convertContentToString("line1\nline2", ".gitignore");
+      assert.equal(result, "line1\nline2\n");
+    });
+
+    test("preserves existing trailing newline", () => {
+      const result = convertContentToString(
+        "line1\nline2\n",
+        ".markdownlintignore",
+      );
+      assert.equal(result, "line1\nline2\n");
+    });
+
+    test("handles single line", () => {
+      const result = convertContentToString("node_modules/", ".gitignore");
+      assert.equal(result, "node_modules/\n");
+    });
+
+    test("handles empty string", () => {
+      const result = convertContentToString("", ".gitignore");
+      assert.equal(result, "\n");
+    });
+
+    test("ignores header option for text files", () => {
+      const result = convertContentToString("content", ".gitignore", {
+        header: ["ignored"],
+      });
+      assert.equal(result, "content\n");
+      assert.ok(!result.includes("ignored"));
+    });
+
+    test("ignores schemaUrl option for text files", () => {
+      const result = convertContentToString("content", ".gitignore", {
+        schemaUrl: "https://example.com/schema.json",
+      });
+      assert.equal(result, "content\n");
+      assert.ok(!result.includes("schema"));
+    });
+  });
+
+  describe("string array content", () => {
+    test("joins lines with newlines", () => {
+      const result = convertContentToString(
+        ["line1", "line2", "line3"],
+        ".gitignore",
+      );
+      assert.equal(result, "line1\nline2\nline3\n");
+    });
+
+    test("handles single line array", () => {
+      const result = convertContentToString(["only-line"], ".gitignore");
+      assert.equal(result, "only-line\n");
+    });
+
+    test("handles empty array", () => {
+      const result = convertContentToString([], ".gitignore");
+      assert.equal(result, "");
+    });
+
+    test("ignores header option for text files", () => {
+      const result = convertContentToString(["content"], ".gitignore", {
+        header: ["ignored"],
+      });
+      assert.equal(result, "content\n");
+      assert.ok(!result.includes("ignored"));
+    });
+
+    test("ignores schemaUrl option for text files", () => {
+      const result = convertContentToString(["content"], ".gitignore", {
+        schemaUrl: "https://example.com/schema.json",
+      });
+      assert.equal(result, "content\n");
+      assert.ok(!result.includes("schema"));
+    });
+  });
+
+  describe("various text file extensions", () => {
+    test("handles .gitignore", () => {
+      const result = convertContentToString("node_modules/", ".gitignore");
+      assert.equal(result, "node_modules/\n");
+    });
+
+    test("handles .markdownlintignore", () => {
+      const result = convertContentToString(".claude/", ".markdownlintignore");
+      assert.equal(result, ".claude/\n");
+    });
+
+    test("handles .env.example", () => {
+      const result = convertContentToString(
+        "API_KEY=your-key-here",
+        ".env.example",
+      );
+      assert.equal(result, "API_KEY=your-key-here\n");
+    });
+
+    test("handles .prettierignore", () => {
+      const result = convertContentToString(
+        ["dist/", "coverage/"],
+        ".prettierignore",
+      );
+      assert.equal(result, "dist/\ncoverage/\n");
+    });
+  });
+});

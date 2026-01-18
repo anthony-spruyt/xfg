@@ -4,6 +4,34 @@ import type { RawConfig } from "./config.js";
 const VALID_STRATEGIES = ["replace", "append", "prepend"];
 
 /**
+ * Check if content is text type (string or string[]).
+ */
+function isTextContent(content: unknown): boolean {
+  return (
+    typeof content === "string" ||
+    (Array.isArray(content) &&
+      content.every((item) => typeof item === "string"))
+  );
+}
+
+/**
+ * Check if content is object type (for JSON/YAML output).
+ */
+function isObjectContent(content: unknown): boolean {
+  return (
+    typeof content === "object" && content !== null && !Array.isArray(content)
+  );
+}
+
+/**
+ * Check if file extension is for structured output (JSON/YAML).
+ */
+function isStructuredFileExtension(fileName: string): boolean {
+  const ext = fileName.toLowerCase().split(".").pop();
+  return ext === "json" || ext === "yaml" || ext === "yml";
+}
+
+/**
  * Validates raw config structure before normalization.
  * @throws Error if validation fails
  */
@@ -26,13 +54,29 @@ export function validateRawConfig(config: RawConfig): void {
       throw new Error(`File '${fileName}' must have a configuration object`);
     }
 
-    if (
-      fileConfig.content !== undefined &&
-      (typeof fileConfig.content !== "object" ||
-        fileConfig.content === null ||
-        Array.isArray(fileConfig.content))
-    ) {
-      throw new Error(`File '${fileName}' content must be an object`);
+    // Validate content type
+    if (fileConfig.content !== undefined) {
+      const hasText = isTextContent(fileConfig.content);
+      const hasObject = isObjectContent(fileConfig.content);
+
+      if (!hasText && !hasObject) {
+        throw new Error(
+          `File '${fileName}' content must be an object, string, or array of strings`,
+        );
+      }
+
+      // Validate content type matches file extension
+      const isStructured = isStructuredFileExtension(fileName);
+      if (isStructured && hasText) {
+        throw new Error(
+          `File '${fileName}' has JSON/YAML extension but string content. Use object content for structured files.`,
+        );
+      }
+      if (!isStructured && hasObject) {
+        throw new Error(
+          `File '${fileName}' has text extension but object content. Use string or string[] for text files, or use .json/.yaml/.yml extension.`,
+        );
+      }
     }
 
     if (
@@ -112,15 +156,29 @@ export function validateRawConfig(config: RawConfig): void {
           );
         }
 
-        if (
-          fileOverride.content !== undefined &&
-          (typeof fileOverride.content !== "object" ||
-            fileOverride.content === null ||
-            Array.isArray(fileOverride.content))
-        ) {
-          throw new Error(
-            `Repo at index ${i}: file '${fileName}' content must be an object`,
-          );
+        // Validate content type
+        if (fileOverride.content !== undefined) {
+          const hasText = isTextContent(fileOverride.content);
+          const hasObject = isObjectContent(fileOverride.content);
+
+          if (!hasText && !hasObject) {
+            throw new Error(
+              `Repo at index ${i}: file '${fileName}' content must be an object, string, or array of strings`,
+            );
+          }
+
+          // Validate content type matches file extension
+          const isStructured = isStructuredFileExtension(fileName);
+          if (isStructured && hasText) {
+            throw new Error(
+              `Repo at index ${i}: file '${fileName}' has JSON/YAML extension but string content. Use object content for structured files.`,
+            );
+          }
+          if (!isStructured && hasObject) {
+            throw new Error(
+              `Repo at index ${i}: file '${fileName}' has text extension but object content. Use string or string[] for text files, or use .json/.yaml/.yml extension.`,
+            );
+          }
         }
 
         if (

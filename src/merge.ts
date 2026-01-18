@@ -204,3 +204,56 @@ export function createMergeContext(
     defaultArrayStrategy: defaultStrategy,
   };
 }
+
+// =============================================================================
+// Text Content Utilities
+// =============================================================================
+
+/**
+ * Check if content is text type (string or string[]).
+ */
+export function isTextContent(content: unknown): content is string | string[] {
+  return (
+    typeof content === "string" ||
+    (Array.isArray(content) &&
+      content.every((item) => typeof item === "string"))
+  );
+}
+
+/**
+ * Merge two text content values.
+ * For strings: overlay replaces base entirely.
+ * For string arrays: applies merge strategy.
+ * For mixed types: overlay replaces base.
+ */
+export function mergeTextContent(
+  base: string | string[],
+  overlay: string | string[],
+  strategy: ArrayMergeStrategy = "replace",
+): string | string[] {
+  // If overlay is a string, it always replaces
+  if (typeof overlay === "string") {
+    return overlay;
+  }
+
+  // If overlay is an array
+  if (Array.isArray(overlay)) {
+    // If base is also an array, apply merge strategy
+    if (Array.isArray(base)) {
+      switch (strategy) {
+        case "append":
+          return [...base, ...overlay];
+        case "prepend":
+          return [...overlay, ...base];
+        case "replace":
+        default:
+          return overlay;
+      }
+    }
+    // Base is string, overlay is array - overlay replaces
+    return overlay;
+  }
+
+  // Fallback (shouldn't reach here with proper types)
+  return overlay;
+}

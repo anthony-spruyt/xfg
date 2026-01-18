@@ -2,9 +2,17 @@ import {
   deepMerge,
   stripMergeDirectives,
   createMergeContext,
+  isTextContent,
+  mergeTextContent,
 } from "./merge.js";
-import { interpolateEnvVars } from "./env.js";
-import type { RawConfig, Config, RepoConfig, FileContent } from "./config.js";
+import { interpolateContent } from "./env.js";
+import type {
+  RawConfig,
+  Config,
+  RepoConfig,
+  FileContent,
+  ContentValue,
+} from "./config.js";
 
 /**
  * Normalizes header to array format.
@@ -45,23 +53,32 @@ export function normalizeConfig(raw: RawConfig): Config {
         const fileStrategy = fileConfig.mergeStrategy ?? "replace";
 
         // Step 3: Compute merged content for this file
-        let mergedContent: Record<string, unknown> | null;
+        let mergedContent: ContentValue | null;
 
         if (repoOverride?.override) {
           // Override mode: use only repo file content (may be undefined for empty file)
           if (repoOverride.content === undefined) {
             mergedContent = null;
+          } else if (isTextContent(repoOverride.content)) {
+            // Text content: use as-is (no merge directives to strip)
+            mergedContent = structuredClone(repoOverride.content);
           } else {
             mergedContent = stripMergeDirectives(
-              structuredClone(repoOverride.content),
+              structuredClone(repoOverride.content as Record<string, unknown>),
             );
           }
         } else if (fileConfig.content === undefined) {
           // Root file has no content = empty file (unless repo provides content)
           if (repoOverride?.content) {
-            mergedContent = stripMergeDirectives(
-              structuredClone(repoOverride.content),
-            );
+            if (isTextContent(repoOverride.content)) {
+              mergedContent = structuredClone(repoOverride.content);
+            } else {
+              mergedContent = stripMergeDirectives(
+                structuredClone(
+                  repoOverride.content as Record<string, unknown>,
+                ),
+              );
+            }
           } else {
             mergedContent = null;
           }
@@ -69,19 +86,29 @@ export function normalizeConfig(raw: RawConfig): Config {
           // No repo override: use file base content as-is
           mergedContent = structuredClone(fileConfig.content);
         } else {
-          // Merge mode: deep merge file base + repo overlay
-          const ctx = createMergeContext(fileStrategy);
-          mergedContent = deepMerge(
-            structuredClone(fileConfig.content),
-            repoOverride.content,
-            ctx,
-          );
-          mergedContent = stripMergeDirectives(mergedContent);
+          // Merge mode: handle text vs object content
+          if (isTextContent(fileConfig.content)) {
+            // Text content merging
+            mergedContent = mergeTextContent(
+              fileConfig.content,
+              repoOverride.content as string | string[],
+              fileStrategy,
+            );
+          } else {
+            // Object content: deep merge file base + repo overlay
+            const ctx = createMergeContext(fileStrategy);
+            mergedContent = deepMerge(
+              structuredClone(fileConfig.content as Record<string, unknown>),
+              repoOverride.content as Record<string, unknown>,
+              ctx,
+            );
+            mergedContent = stripMergeDirectives(mergedContent);
+          }
         }
 
         // Step 4: Interpolate env vars (only if content exists)
         if (mergedContent !== null) {
-          mergedContent = interpolateEnvVars(mergedContent, { strict: true });
+          mergedContent = interpolateContent(mergedContent, { strict: true });
         }
 
         // Resolve fields: per-repo overrides root level

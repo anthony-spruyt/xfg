@@ -73,18 +73,17 @@ function buildCommentOnlyYaml(
 }
 
 /**
- * Converts content object to string in the appropriate format.
- * Handles null content (empty files) and comments (YAML only).
+ * Converts content to string in the appropriate format.
+ * Handles null content (empty files), text content (string/string[]), and object content (JSON/YAML).
  */
 export function convertContentToString(
-  content: Record<string, unknown> | null,
+  content: Record<string, unknown> | string | string[] | null,
   fileName: string,
   options?: ConvertOptions,
 ): string {
-  const format = detectOutputFormat(fileName);
-
   // Handle empty file case
   if (content === null) {
+    const format = detectOutputFormat(fileName);
     if (format === "yaml" && options) {
       const commentOnly = buildCommentOnlyYaml(
         options.header,
@@ -96,6 +95,22 @@ export function convertContentToString(
     }
     return "";
   }
+
+  // Handle string content (text file)
+  if (typeof content === "string") {
+    // Ensure trailing newline for text files
+    return content.endsWith("\n") ? content : content + "\n";
+  }
+
+  // Handle string[] content (text file with lines)
+  if (Array.isArray(content)) {
+    // Join lines with newlines and ensure trailing newline
+    const text = content.join("\n");
+    return text.length > 0 ? text + "\n" : "";
+  }
+
+  // Handle object content (JSON/YAML)
+  const format = detectOutputFormat(fileName);
 
   if (format === "yaml") {
     // Use Document API for YAML to support comments
@@ -116,5 +131,5 @@ export function convertContentToString(
   }
 
   // JSON format - comments not supported, ignore header/schemaUrl
-  return JSON.stringify(content, null, 2);
+  return JSON.stringify(content, null, 2) + "\n";
 }
