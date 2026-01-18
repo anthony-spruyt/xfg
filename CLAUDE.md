@@ -13,7 +13,7 @@ TypeScript CLI tool that syncs JSON, YAML, or text configuration files across mu
 The config loading process normalizes raw YAML input into a standardized format:
 
 ```
-Raw YAML → Parse → Validate → Expand git arrays → Deep merge per file → Env interpolate → Config
+Raw YAML → Parse → Resolve file refs → Validate → Expand git arrays → Deep merge per file → Env interpolate → Config
 ```
 
 **Types**:
@@ -25,10 +25,11 @@ Raw YAML → Parse → Validate → Expand git arrays → Deep merge per file �
 
 **Pipeline Steps**:
 
-1. **Validation**: Check required fields (`files`, `repos`), validate file names (no path traversal)
-2. **Git Array Expansion**: `git: [url1, url2]` becomes two separate repo entries
-3. **Content Merge**: For each file, per-repo `content` overlays onto root-level file `content` using deep merge
-4. **Env Interpolation**: Replace `${VAR}` placeholders with environment values
+1. **File Reference Resolution**: Replace `@path/to/file` content with actual file contents (JSON/YAML parsed as objects, other files as strings)
+2. **Validation**: Check required fields (`files`, `repos`), validate file names (no path traversal)
+3. **Git Array Expansion**: `git: [url1, url2]` becomes two separate repo entries
+4. **Content Merge**: For each file, per-repo `content` overlays onto root-level file `content` using deep merge
+5. **Env Interpolation**: Replace `${VAR}` placeholders with environment values
 
 ### Content Inheritance (3 levels)
 
@@ -52,6 +53,14 @@ Raw YAML → Parse → Validate → Expand git arrays → Deep merge per file �
 - String content: `content: "line1\nline2"` or multiline `content: |-`
 - Lines array: `content: ["line1", "line2"]` - supports merge strategies (append/prepend/replace)
 - Validation enforces: `.json`/`.yaml`/`.yml` must have object content; other extensions must have string/string[] content
+
+**File References**: Use `content: "@path/to/file"` to load content from external template files:
+
+- Paths are relative to the config file's directory
+- JSON/YAML files are parsed as objects; other files are returned as strings
+- Resolved before validation, so content type checking works on resolved content
+- Per-repo overlays can merge onto resolved file content
+- Security: paths restricted to config directory tree (no `../` escapes, no absolute paths)
 
 **Subdirectory Support**: File names can include paths (e.g., `.github/workflows/ci.yml`). Parent directories are created automatically. Quote paths containing `/` in YAML keys.
 

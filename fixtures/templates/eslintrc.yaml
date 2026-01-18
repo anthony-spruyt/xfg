@@ -1,0 +1,9 @@
+root: true
+env:
+  node: true
+  es2021: true
+extends:
+  - eslint:recommended
+rules:
+  no-console: warn
+  no-unused-vars: error

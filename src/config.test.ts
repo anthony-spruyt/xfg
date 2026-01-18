@@ -510,6 +510,94 @@ repos:
       assert.equal(config.repos[3].git, "git@github.com:org/repo4.git");
       assert.deepEqual(config.repos[3].files[0].content, { legacy: true });
     });
+
+    test("file references are resolved before validation", () => {
+      // Create a template file in the test directory
+      const templatePath = join(testDir, "templates", "base.json");
+      mkdirSync(join(testDir, "templates"), { recursive: true });
+      writeFileSync(templatePath, '{"base": true, "version": "1.0"}', "utf-8");
+
+      const path = createTestConfig(`
+files:
+  config.json:
+    content: "@templates/base.json"
+repos:
+  - git: git@github.com:org/repo.git
+`);
+      const config = loadConfig(path);
+      assert.deepEqual(config.repos[0].files[0].content, {
+        base: true,
+        version: "1.0",
+      });
+    });
+
+    test("file references work with per-repo merging", () => {
+      const templatePath = join(testDir, "templates", "base.json");
+      mkdirSync(join(testDir, "templates"), { recursive: true });
+      writeFileSync(
+        templatePath,
+        '{"base": true, "features": ["core"]}',
+        "utf-8",
+      );
+
+      const path = createTestConfig(`
+files:
+  config.json:
+    content: "@templates/base.json"
+repos:
+  - git: git@github.com:org/repo.git
+    files:
+      config.json:
+        content:
+          custom: added
+`);
+      const config = loadConfig(path);
+      assert.deepEqual(config.repos[0].files[0].content, {
+        base: true,
+        features: ["core"],
+        custom: "added",
+      });
+    });
+
+    test("file references work for text files", () => {
+      const templatePath = join(testDir, "templates", "gitignore.txt");
+      mkdirSync(join(testDir, "templates"), { recursive: true });
+      writeFileSync(templatePath, "node_modules/\ndist/", "utf-8");
+
+      const path = createTestConfig(`
+files:
+  .gitignore:
+    content: "@templates/gitignore.txt"
+repos:
+  - git: git@github.com:org/repo.git
+`);
+      const config = loadConfig(path);
+      assert.strictEqual(
+        config.repos[0].files[0].content,
+        "node_modules/\ndist/",
+      );
+    });
+
+    test("file reference with header and schemaUrl", () => {
+      const templatePath = join(testDir, "templates", "eslint.yaml");
+      mkdirSync(join(testDir, "templates"), { recursive: true });
+      writeFileSync(templatePath, "root: true\nenv:\n  node: true", "utf-8");
+
+      const path = createTestConfig(`
+files:
+  .eslintrc.yaml:
+    content: "@templates/eslint.yaml"
+    header: "Auto-generated"
+    schemaUrl: "https://example.com/schema"
+repos:
+  - git: git@github.com:org/repo.git
+`);
+      const config = loadConfig(path);
+      const file = config.repos[0].files[0];
+      assert.deepEqual(file.content, { root: true, env: { node: true } });
+      assert.deepEqual(file.header, ["Auto-generated"]);
+      assert.strictEqual(file.schemaUrl, "https://example.com/schema");
+    });
   });
 });
 

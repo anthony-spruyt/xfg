@@ -1,8 +1,10 @@
 import { readFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { parse } from "yaml";
 import type { ArrayMergeStrategy } from "./merge.js";
 import { validateRawConfig } from "./config-validator.js";
 import { normalizeConfig } from "./config-normalizer.js";
+import { resolveFileReferencesInConfig } from "./file-reference-resolver.js";
 
 // Re-export formatter functions for backwards compatibility
 export { convertContentToString } from "./config-formatter.js";
@@ -75,6 +77,7 @@ export interface Config {
 
 export function loadConfig(filePath: string): Config {
   const content = readFileSync(filePath, "utf-8");
+  const configDir = dirname(filePath);
 
   let rawConfig: RawConfig;
   try {
@@ -83,6 +86,9 @@ export function loadConfig(filePath: string): Config {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to parse YAML config at ${filePath}: ${message}`);
   }
+
+  // Resolve file references before validation so content type checking works
+  rawConfig = resolveFileReferencesInConfig(rawConfig, { configDir });
 
   validateRawConfig(rawConfig);
 

@@ -64,6 +64,7 @@ json-config-sync --config ./config.yaml
 - **Multi-Format Output** - JSON, YAML, or plain text based on filename extension
 - **Subdirectory Support** - Sync files to any path (e.g., `.github/workflows/ci.yml`)
 - **Text Files** - Sync `.gitignore`, `.markdownlintignore`, etc. with string or lines array
+- **File References** - Use `@path/to/file` to load content from external template files
 - **Content Inheritance** - Define base config once, override per-repo as needed
 - **Multi-Repo Targeting** - Apply same config to multiple repos with array syntax
 - **Environment Variables** - Use `${VAR}` syntax for dynamic values
@@ -170,13 +171,13 @@ repos: # List of repositories
 
 ### Per-File Fields
 
-| Field           | Description                                                                                      | Required |
-| --------------- | ------------------------------------------------------------------------------------------------ | -------- |
-| `content`       | Base config: object for JSON/YAML files, string or string[] for text files (omit for empty file) | No       |
-| `mergeStrategy` | Merge strategy: `replace`, `append`, `prepend` (for arrays and text lines)                       | No       |
-| `createOnly`    | If `true`, only create file if it doesn't exist                                                  | No       |
-| `header`        | Comment line(s) at top of YAML files (string or array)                                           | No       |
-| `schemaUrl`     | Adds `# yaml-language-server: $schema=<url>` to YAML files                                       | No       |
+| Field           | Description                                                                                                                                         | Required |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `content`       | Base config: object for JSON/YAML files, string or string[] for text files, or `@path/to/file` to load from external template (omit for empty file) | No       |
+| `mergeStrategy` | Merge strategy: `replace`, `append`, `prepend` (for arrays and text lines)                                                                          | No       |
+| `createOnly`    | If `true`, only create file if it doesn't exist                                                                                                     | No       |
+| `header`        | Comment line(s) at top of YAML files (string or array)                                                                                              | No       |
+| `schemaUrl`     | Adds `# yaml-language-server: $schema=<url>` to YAML files                                                                                          | No       |
 
 ### Per-Repo Fields
 
@@ -518,6 +519,46 @@ repos:
 ```
 
 **Note:** Quote file paths containing `/` in YAML keys. Parent directories are created if they don't exist.
+
+### File References
+
+Instead of inline content, you can reference external template files using the `@path/to/file` syntax:
+
+```yaml
+files:
+  .prettierrc.json:
+    content: "@templates/prettierrc.json"
+  .eslintrc.yaml:
+    content: "@templates/eslintrc.yaml"
+    header: "Auto-generated - do not edit"
+    schemaUrl: "https://json.schemastore.org/eslintrc"
+  .gitignore:
+    content: "@templates/gitignore.txt"
+
+repos:
+  - git: git@github.com:org/repo.git
+```
+
+**How it works:**
+
+- File references start with `@` followed by a relative path
+- Paths are resolved relative to the config file's directory
+- JSON/YAML files are parsed as objects, other files as strings
+- Metadata fields (`header`, `schemaUrl`, `createOnly`, `mergeStrategy`) remain in the config
+- Per-repo overlays still work - they merge onto the resolved file content
+
+**Example directory structure:**
+
+```
+config/
+  sync-config.yaml         # content: "@templates/prettier.json"
+  templates/
+    prettier.json          # Actual Prettier config
+    eslintrc.yaml          # Actual ESLint config
+    gitignore.txt          # Template .gitignore content
+```
+
+**Security:** File references are restricted to the config file's directory tree. Paths like `@../../../etc/passwd` or `@/etc/passwd` are blocked.
 
 ## Supported Git URL Formats
 

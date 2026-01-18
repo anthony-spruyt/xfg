@@ -37,7 +37,7 @@
             },
             {
               "type": "string",
-              "description": "String content for text file output (files without .json/.yaml/.yml extension)"
+              "description": "String content for text files, or file reference (@path/to/file) to load content from an external file"
             },
             {
               "type": "array",
@@ -45,7 +45,7 @@
               "description": "Lines array for text file output with merge strategy support"
             }
           ],
-          "description": "File content. Object for JSON/YAML files, string or string[] for text files. Supports ${VAR} env interpolation. Omit for empty file."
+          "description": "File content. Object for JSON/YAML files, string or string[] for text files. Use @path/to/file to reference external template files (paths relative to config file). Supports ${VAR} env interpolation. Omit for empty file."
         },
         "mergeStrategy": {
           "type": "string",
@@ -133,7 +133,7 @@
             },
             {
               "type": "string",
-              "description": "String content for text files (replaces base content)"
+              "description": "String content for text files, or file reference (@path/to/file) to load content from an external file"
             },
             {
               "type": "array",
@@ -141,7 +141,7 @@
               "description": "Lines array for text files (uses merge strategy: replace/append/prepend)"
             }
           ],
-          "description": "Content overlay merged onto the file's base content. Must match the content type of the root file definition."
+          "description": "Content overlay merged onto the file's base content. Use @path/to/file to reference external template files. Must match the content type of the root file definition."
         },
         "override": {
           "type": "boolean",
