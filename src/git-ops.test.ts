@@ -395,13 +395,17 @@ describe("GitOps", () => {
       );
     });
 
-    test("writeFile allows nested paths without traversal", () => {
+    test("writeFile creates parent directories automatically", () => {
       const gitOps = new GitOps({ workDir });
-      const nestedDir = join(workDir, "config");
-      mkdirSync(nestedDir, { recursive: true });
-
+      // Should auto-create parent directory
       gitOps.writeFile("config/settings.json", "content");
       assert.ok(existsSync(join(workDir, "config/settings.json")));
+    });
+
+    test("writeFile creates deeply nested directories", () => {
+      const gitOps = new GitOps({ workDir });
+      gitOps.writeFile(".github/workflows/ci.yml", "name: CI");
+      assert.ok(existsSync(join(workDir, ".github/workflows/ci.yml")));
     });
 
     test("wouldChange throws on path traversal attempt", () => {

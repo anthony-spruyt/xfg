@@ -62,6 +62,7 @@ json-config-sync --config ./config.yaml
 
 - **Multi-File Sync** - Sync multiple config files in a single run
 - **Multi-Format Output** - JSON, YAML, or plain text based on filename extension
+- **Subdirectory Support** - Sync files to any path (e.g., `.github/workflows/ci.yml`)
 - **Text Files** - Sync `.gitignore`, `.markdownlintignore`, etc. with string or lines array
 - **Content Inheritance** - Define base config once, override per-repo as needed
 - **Multi-Repo Targeting** - Apply same config to multiple repos with array syntax
@@ -486,6 +487,37 @@ repos:
 - **Lines array** (`content: ['line1', 'line2']`) - Each line joined with newlines. Supports merge strategies (`append`, `prepend`, `replace`).
 
 **Validation:** JSON/YAML file extensions (`.json`, `.yaml`, `.yml`) require object content. Other extensions require string or string[] content.
+
+### Subdirectory Paths
+
+Sync files to any subdirectory path - parent directories are created automatically:
+
+```yaml
+files:
+  # GitHub Actions workflow
+  ".github/workflows/ci.yml":
+    content:
+      name: CI
+      on: [push, pull_request]
+      jobs:
+        build:
+          runs-on: ubuntu-latest
+          steps:
+            - uses: actions/checkout@v4
+
+  # Nested config directory
+  "config/settings/app.json":
+    content:
+      environment: production
+      debug: false
+
+repos:
+  - git:
+      - git@github.com:org/frontend.git
+      - git@github.com:org/backend.git
+```
+
+**Note:** Quote file paths containing `/` in YAML keys. Parent directories are created if they don't exist.
 
 ## Supported Git URL Formats
 

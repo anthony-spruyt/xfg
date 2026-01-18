@@ -53,6 +53,8 @@ Raw YAML → Parse → Validate → Expand git arrays → Deep merge per file �
 - Lines array: `content: ["line1", "line2"]` - supports merge strategies (append/prepend/replace)
 - Validation enforces: `.json`/`.yaml`/`.yml` must have object content; other extensions must have string/string[] content
 
+**Subdirectory Support**: File names can include paths (e.g., `.github/workflows/ci.yml`). Parent directories are created automatically. Quote paths containing `/` in YAML keys.
+
 ### Deep Merge (merge.ts)
 
 Recursive object merging with configurable array handling:

@@ -5,7 +5,7 @@ import {
   writeFileSync,
   readFileSync,
 } from "node:fs";
-import { join, resolve, relative, isAbsolute } from "node:path";
+import { join, resolve, relative, isAbsolute, dirname } from "node:path";
 import { escapeShellArg } from "./shell-utils.js";
 import { CommandExecutor, defaultExecutor } from "./command-executor.js";
 import { withRetry } from "./retry-utils.js";
@@ -136,6 +136,9 @@ export class GitOps {
       return;
     }
     const filePath = this.validatePath(fileName);
+
+    // Create parent directories if they don't exist
+    mkdirSync(dirname(filePath), { recursive: true });
 
     // Normalize trailing newline - ensure exactly one
     const normalized = content.endsWith("\n") ? content : content + "\n";
