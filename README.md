@@ -3,6 +3,7 @@
 [![CI](https://github.com/anthony-spruyt/json-config-sync/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/anthony-spruyt/json-config-sync/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/@aspruyt/json-config-sync.svg)](https://www.npmjs.com/package/@aspruyt/json-config-sync)
 [![npm downloads](https://img.shields.io/npm/dw/@aspruyt/json-config-sync.svg)](https://www.npmjs.com/package/@aspruyt/json-config-sync)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A CLI tool that syncs JSON, YAML, or text configuration files across multiple GitHub and Azure DevOps repositories by creating pull requests. Output format is automatically detected from the target filename extension (`.json` → JSON, `.yaml`/`.yml` → YAML, other → text).
 
