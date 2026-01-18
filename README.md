@@ -66,6 +66,8 @@ json-config-sync --config ./config.yaml
 - **Environment Variables** - Use `${VAR}` syntax for dynamic values
 - **Merge Strategies** - Control how arrays merge (replace, append, prepend)
 - **Override Mode** - Skip merging entirely for specific repos
+- **Empty Files** - Create files with no content (e.g., `.prettierignore`)
+- **YAML Comments** - Add header comments and schema directives to YAML files
 - **GitHub & Azure DevOps** - Works with both platforms
 - **Dry-Run Mode** - Preview changes without creating PRs
 - **Error Resilience** - Continues processing if individual repos fail
@@ -165,11 +167,13 @@ repos: # List of repositories
 
 ### Per-File Fields
 
-| Field           | Description                                          | Required |
-| --------------- | ---------------------------------------------------- | -------- |
-| `content`       | Base config inherited by all repos                   | Yes      |
-| `mergeStrategy` | Array merge strategy: `replace`, `append`, `prepend` | No       |
-| `createOnly`    | If `true`, only create file if it doesn't exist      | No       |
+| Field           | Description                                                | Required |
+| --------------- | ---------------------------------------------------------- | -------- |
+| `content`       | Base config inherited by all repos (omit for empty file)   | No       |
+| `mergeStrategy` | Array merge strategy: `replace`, `append`, `prepend`       | No       |
+| `createOnly`    | If `true`, only create file if it doesn't exist            | No       |
+| `header`        | Comment line(s) at top of YAML files (string or array)     | No       |
+| `schemaUrl`     | Adds `# yaml-language-server: $schema=<url>` to YAML files | No       |
 
 ### Per-Repo Fields
 
@@ -185,6 +189,8 @@ repos: # List of repositories
 | `content`    | Content overlay merged onto file's base content         | No       |
 | `override`   | If `true`, ignore base content and use only this repo's | No       |
 | `createOnly` | Override root-level `createOnly` for this repo          | No       |
+| `header`     | Override root-level `header` for this repo              | No       |
+| `schemaUrl`  | Override root-level `schemaUrl` for this repo           | No       |
 
 **File Exclusion:** Set a file to `false` to exclude it from a specific repo:
 
@@ -397,6 +403,52 @@ repos:
       .trivyignore.yaml:
         createOnly: false # Override: always sync this file
 ```
+
+### YAML Comments and Empty Files
+
+Add schema directives and comments to YAML files, or create empty files:
+
+```yaml
+files:
+  # YAML file with schema directive and header comment
+  trivy.yaml:
+    schemaUrl: https://trivy.dev/latest/docs/references/configuration/config-file/
+    header: "Trivy security scanner configuration"
+    content:
+      exit-code: 1
+      scan:
+        scanners:
+          - vuln
+
+  # Empty file (content omitted)
+  .prettierignore:
+    createOnly: true
+    # No content = empty file
+
+  # YAML with multi-line header
+  config.yaml:
+    header:
+      - "Auto-generated configuration"
+      - "Do not edit manually"
+    content:
+      version: 1
+
+repos:
+  - git: git@github.com:org/repo.git
+```
+
+**Output for trivy.yaml:**
+
+```yaml
+# yaml-language-server: $schema=https://trivy.dev/latest/docs/references/configuration/config-file/
+# Trivy security scanner configuration
+exit-code: 1
+scan:
+  scanners:
+    - vuln
+```
+
+**Note:** `header` and `schemaUrl` only apply to YAML output files (`.yaml`, `.yml`). They are ignored for JSON files.
 
 ## Supported Git URL Formats
 

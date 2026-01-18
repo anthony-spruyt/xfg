@@ -27,11 +27,10 @@
     "fileConfig": {
       "type": "object",
       "description": "Configuration for a single file to sync",
-      "required": ["content"],
       "properties": {
         "content": {
           "type": "object",
-          "description": "Base configuration content. Supports environment variables: ${VAR}, ${VAR:-default}, ${VAR:?message}",
+          "description": "Base configuration content. Supports environment variables: ${VAR}, ${VAR:-default}, ${VAR:?message}. Omit for empty file.",
           "additionalProperties": true
         },
         "mergeStrategy": {
@@ -44,6 +43,26 @@
           "type": "boolean",
           "default": false,
           "description": "If true, only create this file if it doesn't already exist in the target repo. Useful for files like .trivyignore or .prettierignore where you want to provide defaults but let repos customize. Default: false"
+        },
+        "header": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Single comment line"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Multiple comment lines"
+            }
+          ],
+          "description": "Comment line(s) added at the top of YAML output files. Each line gets a '# ' prefix. Ignored for JSON files."
+        },
+        "schemaUrl": {
+          "type": "string",
+          "description": "URL for yaml-language-server schema directive. Adds '# yaml-language-server: $schema=<url>' at the top of YAML files. Ignored for JSON files."
         }
       }
     },
@@ -99,11 +118,31 @@
         "override": {
           "type": "boolean",
           "default": false,
-          "description": "If true, use only this content and skip merging with base. Requires 'content' to be specified. Default: false"
+          "description": "If true, use only this content and skip merging with base. Default: false"
         },
         "createOnly": {
           "type": "boolean",
           "description": "Override the root-level createOnly setting for this specific repo"
+        },
+        "header": {
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Single comment line"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Multiple comment lines"
+            }
+          ],
+          "description": "Override the root-level header for this specific repo"
+        },
+        "schemaUrl": {
+          "type": "string",
+          "description": "Override the root-level schemaUrl for this specific repo"
         }
       }
     }

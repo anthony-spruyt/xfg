@@ -598,4 +598,199 @@ describe("normalizeConfig", () => {
       });
     });
   });
+
+  describe("empty file handling", () => {
+    test("undefined content results in null FileContent", () => {
+      const raw: RawConfig = {
+        files: {
+          ".prettierignore": {},
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].content, null);
+    });
+
+    test("empty file with createOnly", () => {
+      const raw: RawConfig = {
+        files: {
+          ".prettierignore": { createOnly: true },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].content, null);
+      assert.equal(result.repos[0].files[0].createOnly, true);
+    });
+
+    test("repo content merges into undefined root content", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.yaml": {},
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.yaml": { content: { key: "value" } },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].files[0].content, { key: "value" });
+    });
+
+    test("override with no content creates empty file", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.yaml": { content: { base: "value" } },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.yaml": { override: true },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].content, null);
+    });
+  });
+
+  describe("header normalization", () => {
+    test("string header normalized to array", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.yaml": { content: {}, header: "Single comment" },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].files[0].header, ["Single comment"]);
+    });
+
+    test("array header passed through", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.yaml": { content: {}, header: ["Line 1", "Line 2"] },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].files[0].header, ["Line 1", "Line 2"]);
+    });
+
+    test("per-repo header overrides root header", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.yaml": { content: {}, header: "Root header" },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.yaml": { header: "Repo header" },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].files[0].header, ["Repo header"]);
+    });
+
+    test("header is undefined when not specified", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.yaml": { content: {} },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].header, undefined);
+    });
+  });
+
+  describe("schemaUrl propagation", () => {
+    test("root schemaUrl passed to FileContent", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.yaml": {
+            content: {},
+            schemaUrl: "https://example.com/schema.json",
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(
+        result.repos[0].files[0].schemaUrl,
+        "https://example.com/schema.json",
+      );
+    });
+
+    test("per-repo schemaUrl overrides root", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.yaml": {
+            content: {},
+            schemaUrl: "https://root.com/schema.json",
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.yaml": { schemaUrl: "https://repo.com/schema.json" },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(
+        result.repos[0].files[0].schemaUrl,
+        "https://repo.com/schema.json",
+      );
+    });
+
+    test("schemaUrl is undefined when not specified", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.yaml": { content: {} },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].schemaUrl, undefined);
+    });
+
+    test("empty file with schemaUrl", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.yaml": { schemaUrl: "https://example.com/schema.json" },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].content, null);
+      assert.equal(
+        result.repos[0].files[0].schemaUrl,
+        "https://example.com/schema.json",
+      );
+    });
+  });
 });

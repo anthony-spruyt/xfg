@@ -160,3 +160,122 @@ describe("convertContentToString", () => {
     );
   });
 });
+
+describe("convertContentToString with empty files", () => {
+  test("null content returns empty string for JSON", () => {
+    const result = convertContentToString(null, "config.json");
+    assert.equal(result, "");
+  });
+
+  test("null content returns empty string for YAML", () => {
+    const result = convertContentToString(null, "config.yaml");
+    assert.equal(result, "");
+  });
+
+  test("null content with schemaUrl returns comment for YAML", () => {
+    const result = convertContentToString(null, "config.yaml", {
+      schemaUrl: "https://example.com/schema.json",
+    });
+    assert.ok(
+      result.includes(
+        "# yaml-language-server: $schema=https://example.com/schema.json",
+      ),
+    );
+  });
+
+  test("null content with header returns comments for YAML", () => {
+    const result = convertContentToString(null, "config.yaml", {
+      header: ["This is a header comment"],
+    });
+    assert.ok(result.includes("# This is a header comment"));
+  });
+
+  test("null content with schemaUrl is ignored for JSON", () => {
+    const result = convertContentToString(null, "config.json", {
+      schemaUrl: "https://example.com/schema.json",
+    });
+    assert.equal(result, "");
+  });
+});
+
+describe("convertContentToString with YAML header comments", () => {
+  test("schemaUrl adds yaml-language-server directive", () => {
+    const content = { key: "value" };
+    const result = convertContentToString(content, "config.yaml", {
+      schemaUrl: "https://example.com/schema.json",
+    });
+    assert.ok(
+      result.includes(
+        "# yaml-language-server: $schema=https://example.com/schema.json",
+      ),
+    );
+    assert.ok(result.includes("key: value"));
+  });
+
+  test("header adds comment lines", () => {
+    const content = { key: "value" };
+    const result = convertContentToString(content, "config.yaml", {
+      header: ["This is a comment"],
+    });
+    assert.ok(result.includes("# This is a comment"));
+    assert.ok(result.includes("key: value"));
+  });
+
+  test("multi-line header works correctly", () => {
+    const content = { key: "value" };
+    const result = convertContentToString(content, "config.yaml", {
+      header: ["Line 1", "Line 2"],
+    });
+    assert.ok(result.includes("# Line 1"));
+    assert.ok(result.includes("# Line 2"));
+  });
+
+  test("schemaUrl appears before header", () => {
+    const content = { key: "value" };
+    const result = convertContentToString(content, "config.yaml", {
+      schemaUrl: "https://example.com/schema.json",
+      header: ["Custom comment"],
+    });
+    const schemaIndex = result.indexOf("yaml-language-server");
+    const headerIndex = result.indexOf("Custom comment");
+    assert.ok(
+      schemaIndex < headerIndex,
+      "Schema URL should appear before header",
+    );
+  });
+
+  test("header and schemaUrl combined", () => {
+    const content = { key: "value" };
+    const result = convertContentToString(content, "config.yaml", {
+      schemaUrl: "https://example.com/schema.json",
+      header: ["Custom comment"],
+    });
+    assert.ok(
+      result.includes(
+        "# yaml-language-server: $schema=https://example.com/schema.json",
+      ),
+    );
+    assert.ok(result.includes("# Custom comment"));
+    assert.ok(result.includes("key: value"));
+  });
+});
+
+describe("convertContentToString JSON ignores comments", () => {
+  test("header is ignored for JSON files", () => {
+    const content = { key: "value" };
+    const result = convertContentToString(content, "config.json", {
+      header: ["This is a comment"],
+    });
+    assert.ok(!result.includes("comment"));
+    assert.ok(result.includes('"key"'));
+  });
+
+  test("schemaUrl is ignored for JSON files", () => {
+    const content = { key: "value" };
+    const result = convertContentToString(content, "config.json", {
+      schemaUrl: "https://example.com/schema.json",
+    });
+    assert.ok(!result.includes("schema"));
+    assert.ok(result.includes('"key"'));
+  });
+});

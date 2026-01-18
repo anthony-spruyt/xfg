@@ -409,6 +409,166 @@ describe("validateRawConfig", () => {
     });
   });
 
+  describe("header validation", () => {
+    test("allows header as string", () => {
+      const config = createValidConfig({
+        files: { "config.yaml": { content: {}, header: "Comment line" } },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows header as array of strings", () => {
+      const config = createValidConfig({
+        files: { "config.yaml": { content: {}, header: ["Line 1", "Line 2"] } },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when header is not string or array", () => {
+      const config = createValidConfig({
+        files: { "config.yaml": { content: {}, header: 123 as never } },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /header must be a string or array of strings/,
+      );
+    });
+
+    test("throws when header array contains non-strings", () => {
+      const config = createValidConfig({
+        files: {
+          "config.yaml": { content: {}, header: ["valid", 123] as never },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /header must be a string or array of strings/,
+      );
+    });
+
+    test("allows per-repo header override", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { "config.json": { header: "Repo-specific header" } },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when per-repo header is invalid", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { "config.json": { header: { invalid: true } as never } },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /header must be a string or array of strings/,
+      );
+    });
+  });
+
+  describe("schemaUrl validation", () => {
+    test("allows schemaUrl as string", () => {
+      const config = createValidConfig({
+        files: {
+          "config.yaml": {
+            content: {},
+            schemaUrl: "https://example.com/schema.json",
+          },
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when schemaUrl is not a string", () => {
+      const config = createValidConfig({
+        files: { "config.yaml": { content: {}, schemaUrl: 123 as never } },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /schemaUrl must be a string/,
+      );
+    });
+
+    test("allows per-repo schemaUrl override", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.json": { schemaUrl: "https://example.com/schema.json" },
+            },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when per-repo schemaUrl is invalid", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { "config.json": { schemaUrl: ["invalid"] as never } },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /schemaUrl must be a string/,
+      );
+    });
+  });
+
+  describe("empty content validation", () => {
+    test("allows undefined content for empty file", () => {
+      const config: RawConfig = {
+        files: {
+          ".prettierignore": {},
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows empty file with header", () => {
+      const config: RawConfig = {
+        files: {
+          "config.yaml": { header: "Schema-only file" },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows empty file with schemaUrl", () => {
+      const config: RawConfig = {
+        files: {
+          "config.yaml": { schemaUrl: "https://example.com/schema.json" },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows empty file with createOnly", () => {
+      const config: RawConfig = {
+        files: {
+          ".prettierignore": { createOnly: true },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+  });
+
   describe("valid configurations", () => {
     test("accepts minimal valid config", () => {
       const config: RawConfig = {

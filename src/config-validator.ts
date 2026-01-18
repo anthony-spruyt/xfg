@@ -50,6 +50,25 @@ export function validateRawConfig(config: RawConfig): void {
     ) {
       throw new Error(`File '${fileName}' createOnly must be a boolean`);
     }
+
+    if (fileConfig.header !== undefined) {
+      if (
+        typeof fileConfig.header !== "string" &&
+        (!Array.isArray(fileConfig.header) ||
+          !fileConfig.header.every((h) => typeof h === "string"))
+      ) {
+        throw new Error(
+          `File '${fileName}' header must be a string or array of strings`,
+        );
+      }
+    }
+
+    if (
+      fileConfig.schemaUrl !== undefined &&
+      typeof fileConfig.schemaUrl !== "string"
+    ) {
+      throw new Error(`File '${fileName}' schemaUrl must be a string`);
+    }
   }
 
   if (!config.repos || !Array.isArray(config.repos)) {
@@ -110,6 +129,27 @@ export function validateRawConfig(config: RawConfig): void {
         ) {
           throw new Error(
             `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' createOnly must be a boolean`,
+          );
+        }
+
+        if (fileOverride.header !== undefined) {
+          if (
+            typeof fileOverride.header !== "string" &&
+            (!Array.isArray(fileOverride.header) ||
+              !fileOverride.header.every((h) => typeof h === "string"))
+          ) {
+            throw new Error(
+              `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' header must be a string or array of strings`,
+            );
+          }
+        }
+
+        if (
+          fileOverride.schemaUrl !== undefined &&
+          typeof fileOverride.schemaUrl !== "string"
+        ) {
+          throw new Error(
+            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' schemaUrl must be a string`,
           );
         }
       }

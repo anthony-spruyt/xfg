@@ -1,6 +1,14 @@
-import { stringify } from "yaml";
+import { Document, stringify } from "yaml";
 
 export type OutputFormat = "json" | "yaml";
+
+/**
+ * Options for content conversion.
+ */
+export interface ConvertOptions {
+  header?: string[];
+  schemaUrl?: string;
+}
 
 /**
  * Detects output format from file extension.
@@ -14,17 +22,99 @@ export function detectOutputFormat(fileName: string): OutputFormat {
 }
 
 /**
+ * Builds header comment string from header lines and schemaUrl.
+ * Returns undefined if no comments to add.
+ * Each line gets a space prefix since yaml library adds # directly.
+ */
+function buildHeaderComment(
+  header?: string[],
+  schemaUrl?: string,
+): string | undefined {
+  const lines: string[] = [];
+
+  // Add yaml-language-server schema directive first (if present)
+  if (schemaUrl) {
+    lines.push(` yaml-language-server: $schema=${schemaUrl}`);
+  }
+
+  // Add custom header lines (with space prefix for proper formatting)
+  if (header && header.length > 0) {
+    lines.push(...header.map((h) => ` ${h}`));
+  }
+
+  if (lines.length === 0) return undefined;
+
+  // Join with newlines - the yaml library adds # prefix to each line
+  return lines.join("\n");
+}
+
+/**
+ * Builds comment-only output for empty YAML files with headers.
+ */
+function buildCommentOnlyYaml(
+  header?: string[],
+  schemaUrl?: string,
+): string | undefined {
+  const lines: string[] = [];
+
+  // Add yaml-language-server schema directive first (if present)
+  if (schemaUrl) {
+    lines.push(`# yaml-language-server: $schema=${schemaUrl}`);
+  }
+
+  // Add custom header lines
+  if (header && header.length > 0) {
+    lines.push(...header.map((h) => `# ${h}`));
+  }
+
+  if (lines.length === 0) return undefined;
+
+  return lines.join("\n") + "\n";
+}
+
+/**
  * Converts content object to string in the appropriate format.
+ * Handles null content (empty files) and comments (YAML only).
  */
 export function convertContentToString(
-  content: Record<string, unknown>,
+  content: Record<string, unknown> | null,
   fileName: string,
+  options?: ConvertOptions,
 ): string {
   const format = detectOutputFormat(fileName);
 
-  if (format === "yaml") {
-    return stringify(content, { indent: 2 });
+  // Handle empty file case
+  if (content === null) {
+    if (format === "yaml" && options) {
+      const commentOnly = buildCommentOnlyYaml(
+        options.header,
+        options.schemaUrl,
+      );
+      if (commentOnly) {
+        return commentOnly;
+      }
+    }
+    return "";
   }
 
+  if (format === "yaml") {
+    // Use Document API for YAML to support comments
+    const doc = new Document(content);
+
+    // Add header comment if present
+    if (options) {
+      const headerComment = buildHeaderComment(
+        options.header,
+        options.schemaUrl,
+      );
+      if (headerComment) {
+        doc.commentBefore = headerComment;
+      }
+    }
+
+    return stringify(doc, { indent: 2 });
+  }
+
+  // JSON format - comments not supported, ignore header/schemaUrl
   return JSON.stringify(content, null, 2);
 }

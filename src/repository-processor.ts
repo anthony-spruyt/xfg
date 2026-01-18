@@ -90,7 +90,14 @@ export class RepositoryProcessor {
         }
 
         this.log.info(`Writing ${file.fileName}...`);
-        const fileContent = convertContentToString(file.content, file.fileName);
+        const fileContent = convertContentToString(
+          file.content,
+          file.fileName,
+          {
+            header: file.header,
+            schemaUrl: file.schemaUrl,
+          },
+        );
 
         // Determine action type (create vs update)
         const action: "create" | "update" = fileExists ? "update" : "create";

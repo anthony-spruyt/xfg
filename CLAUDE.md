@@ -39,6 +39,13 @@ Raw YAML → Parse → Validate → Expand git arrays → Deep merge per file �
 
 **Create-Only Mode**: Set `files[fileName].createOnly: true` to only create a file if it doesn't exist. Per-repo can override with `repos[].files[fileName].createOnly: false`.
 
+**Empty Files**: Omit `content` to create an empty file. Useful for files like `.prettierignore` that just need to exist.
+
+**YAML Comments**: For YAML output files, use `header` and/or `schemaUrl` to add comments at the top of the file:
+
+- `schemaUrl`: Adds `# yaml-language-server: $schema=<url>` directive for IDE support
+- `header`: Adds custom comment lines (string or array of strings)
+
 ### Deep Merge (merge.ts)
 
 Recursive object merging with configurable array handling:
@@ -145,10 +152,23 @@ files:
     content:
       singleQuote: true
 
+  trivy.yaml:
+    schemaUrl: https://trivy.dev/latest/docs/references/configuration/config-file/
+    header: "Trivy security scanner configuration"
+    content:
+      exit-code: 1
+      scan:
+        scanners:
+          - vuln
+
   .trivyignore.yaml:
     createOnly: true # Only create if file doesn't exist
     content:
       vulnerabilities: []
+
+  .prettierignore:
+    createOnly: true
+    # content omitted = empty file
 
 repos:
   - git: # Can be string or array of strings
