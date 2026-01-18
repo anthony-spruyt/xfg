@@ -3,6 +3,8 @@ import { strict as assert } from "node:assert";
 import {
   deepMerge,
   stripMergeDirectives,
+  isTextContent,
+  mergeTextContent,
   type ArrayMergeStrategy,
   type MergeContext,
 } from "./merge.js";
@@ -259,5 +261,139 @@ describe("stripMergeDirectives", () => {
     const obj = { $arrayMerge: "append", $override: true };
     const result = stripMergeDirectives(obj);
     assert.deepEqual(result, {});
+  });
+});
+
+describe("isTextContent", () => {
+  test("returns true for string", () => {
+    assert.ok(isTextContent("hello"));
+  });
+
+  test("returns true for empty string", () => {
+    assert.ok(isTextContent(""));
+  });
+
+  test("returns true for string array", () => {
+    assert.ok(isTextContent(["a", "b", "c"]));
+  });
+
+  test("returns true for empty string array", () => {
+    assert.ok(isTextContent([]));
+  });
+
+  test("returns false for object", () => {
+    assert.ok(!isTextContent({ key: "value" }));
+  });
+
+  test("returns false for null", () => {
+    assert.ok(!isTextContent(null));
+  });
+
+  test("returns false for number", () => {
+    assert.ok(!isTextContent(123));
+  });
+
+  test("returns false for mixed array", () => {
+    assert.ok(!isTextContent(["string", 123]));
+  });
+
+  test("returns false for array of objects", () => {
+    assert.ok(!isTextContent([{ key: "value" }]));
+  });
+});
+
+describe("mergeTextContent", () => {
+  describe("string overlay", () => {
+    test("string overlay replaces string base", () => {
+      const result = mergeTextContent("base", "overlay");
+      assert.equal(result, "overlay");
+    });
+
+    test("string overlay replaces array base", () => {
+      const result = mergeTextContent(["base1", "base2"], "overlay");
+      assert.equal(result, "overlay");
+    });
+
+    test("ignores strategy when overlay is string", () => {
+      const result = mergeTextContent(["base"], "overlay", "append");
+      assert.equal(result, "overlay");
+    });
+  });
+
+  describe("array overlay with replace strategy", () => {
+    test("array replaces array with default strategy", () => {
+      const result = mergeTextContent(["base"], ["overlay"]);
+      assert.deepEqual(result, ["overlay"]);
+    });
+
+    test("array replaces array with explicit replace", () => {
+      const result = mergeTextContent(["base"], ["overlay"], "replace");
+      assert.deepEqual(result, ["overlay"]);
+    });
+
+    test("array replaces string base", () => {
+      const result = mergeTextContent("base", ["overlay1", "overlay2"]);
+      assert.deepEqual(result, ["overlay1", "overlay2"]);
+    });
+  });
+
+  describe("array overlay with append strategy", () => {
+    test("appends overlay after base", () => {
+      const result = mergeTextContent(
+        ["base1", "base2"],
+        ["overlay"],
+        "append",
+      );
+      assert.deepEqual(result, ["base1", "base2", "overlay"]);
+    });
+
+    test("appends multiple overlay items", () => {
+      const result = mergeTextContent(
+        ["base"],
+        ["overlay1", "overlay2"],
+        "append",
+      );
+      assert.deepEqual(result, ["base", "overlay1", "overlay2"]);
+    });
+
+    test("append to empty array returns overlay", () => {
+      const result = mergeTextContent([], ["overlay"], "append");
+      assert.deepEqual(result, ["overlay"]);
+    });
+
+    test("append empty overlay returns base", () => {
+      const result = mergeTextContent(["base"], [], "append");
+      assert.deepEqual(result, ["base"]);
+    });
+  });
+
+  describe("array overlay with prepend strategy", () => {
+    test("prepends overlay before base", () => {
+      const result = mergeTextContent(
+        ["base1", "base2"],
+        ["overlay"],
+        "prepend",
+      );
+      assert.deepEqual(result, ["overlay", "base1", "base2"]);
+    });
+
+    test("prepends multiple overlay items", () => {
+      const result = mergeTextContent(
+        ["base"],
+        ["overlay1", "overlay2"],
+        "prepend",
+      );
+      assert.deepEqual(result, ["overlay1", "overlay2", "base"]);
+    });
+
+    test("prepend to empty array returns overlay", () => {
+      const result = mergeTextContent([], ["overlay"], "prepend");
+      assert.deepEqual(result, ["overlay"]);
+    });
+
+    test("prepend empty overlay returns base", () => {
+      const result = mergeTextContent(["base"], [], "prepend");
+      assert.deepEqual(result, ["base"]);
+    });
   });
 });

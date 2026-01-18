@@ -11,9 +11,12 @@ export { convertContentToString } from "./config-formatter.js";
 // Raw Config Types (as parsed from YAML)
 // =============================================================================
 
+// Content can be object (JSON/YAML), string (text), or string[] (text lines)
+export type ContentValue = Record<string, unknown> | string | string[];
+
 // Per-file configuration at root level
 export interface RawFileConfig {
-  content?: Record<string, unknown>;
+  content?: ContentValue;
   mergeStrategy?: ArrayMergeStrategy;
   createOnly?: boolean;
   header?: string | string[];
@@ -22,7 +25,7 @@ export interface RawFileConfig {
 
 // Per-repo file override
 export interface RawRepoFileOverride {
-  content?: Record<string, unknown>;
+  content?: ContentValue;
   override?: boolean;
   createOnly?: boolean;
   header?: string | string[];
@@ -49,7 +52,7 @@ export interface RawConfig {
 // File content for a single file in a repo
 export interface FileContent {
   fileName: string;
-  content: Record<string, unknown> | null;
+  content: ContentValue | null;
   createOnly?: boolean;
   header?: string[];
   schemaUrl?: string;

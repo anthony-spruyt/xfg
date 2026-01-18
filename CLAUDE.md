@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-TypeScript CLI tool that syncs JSON or YAML configuration files across multiple Git repositories by automatically creating pull requests. Output format is automatically detected from the target filename extension (`.json` → JSON, `.yaml`/`.yml` → YAML). Supports both GitHub and Azure DevOps platforms.
+TypeScript CLI tool that syncs JSON, YAML, or text configuration files across multiple Git repositories by automatically creating pull requests. Output format is determined by content type: object content outputs JSON/YAML (based on file extension), while string or string array content outputs plain text. Supports both GitHub and Azure DevOps platforms.
 
 ## Architecture
 
@@ -21,6 +21,7 @@ Raw YAML → Parse → Validate → Expand git arrays → Deep merge per file �
 - `RawConfig` / `RawRepoConfig`: As parsed from YAML (flexible input format)
 - `Config` / `RepoConfig`: Normalized output (each entry has single git URL + array of files with merged content)
 - `FileContent`: Individual file with fileName and merged content
+- `ContentValue`: Content type union - `Record<string, unknown> | string | string[]`
 
 **Pipeline Steps**:
 
@@ -46,6 +47,12 @@ Raw YAML → Parse → Validate → Expand git arrays → Deep merge per file �
 - `schemaUrl`: Adds `# yaml-language-server: $schema=<url>` directive for IDE support
 - `header`: Adds custom comment lines (string or array of strings)
 
+**Text Files**: For non-JSON/YAML files (`.gitignore`, `.markdownlintignore`, etc.), use string or string array content:
+
+- String content: `content: "line1\nline2"` or multiline `content: |-`
+- Lines array: `content: ["line1", "line2"]` - supports merge strategies (append/prepend/replace)
+- Validation enforces: `.json`/`.yaml`/`.yml` must have object content; other extensions must have string/string[] content
+
 ### Deep Merge (merge.ts)
 
 Recursive object merging with configurable array handling:
@@ -55,6 +62,8 @@ Recursive object merging with configurable array handling:
 - `deepMerge(base, overlay, ctx)`: Merge two objects, overlay wins for conflicts
 - `stripMergeDirectives(obj)`: Remove `$`-prefixed keys from output
 - `createMergeContext(strategy)`: Create context with default array strategy
+- `isTextContent(content)`: Type guard for string or string[] content
+- `mergeTextContent(base, overlay, strategy)`: Merge text content with strategy support
 
 **Array Merge Strategies**:
 
@@ -139,62 +148,15 @@ Returns `RepoInfo` with normalized fields (owner, repo, organization, project) u
 
 ## Configuration Format
 
-YAML structure with multi-file support:
+See README.md for detailed examples and `config-schema.json` for validation. Key structure:
 
-```yaml
-files:
-  eslint.config.json:
-    mergeStrategy: append # Per-file array merge: replace | append | prepend
-    content:
-      extends: ["@company/base"]
+- `files`: Map of filenames to content/options (object for JSON/YAML, string/string[] for text)
+- `repos`: Array with `git` URL(s) and optional per-repo `files` overrides
+- `mergeStrategy`: Controls array/lines merging (replace/append/prepend)
+- `createOnly`: Only create if file doesn't exist
+- `header`/`schemaUrl`: YAML comment options
 
-  .prettierrc.yaml:
-    content:
-      singleQuote: true
-
-  trivy.yaml:
-    schemaUrl: https://trivy.dev/latest/docs/references/configuration/config-file/
-    header: "Trivy security scanner configuration"
-    content:
-      exit-code: 1
-      scan:
-        scanners:
-          - vuln
-
-  .trivyignore.yaml:
-    createOnly: true # Only create if file doesn't exist
-    content:
-      vulnerabilities: []
-
-  .prettierignore:
-    createOnly: true
-    # content omitted = empty file
-
-repos:
-  - git: # Can be string or array of strings
-      - git@github.com:org/repo1.git
-      - git@github.com:org/repo2.git
-    files: # Optional per-repo file overrides
-      eslint.config.json:
-        content: # Overlay merged onto base content
-          extends: ["plugin:react/recommended"]
-
-  - git: git@github.com:org/repo3.git
-    # All files inherited as-is (no overrides)
-
-  - git: git@github.com:org/legacy.git
-    files:
-      eslint.config.json:
-        override: true # Skip merging, use only this content
-        content:
-          extends: ["eslint:recommended"]
-
-  - git: git@github.com:org/no-prettier.git
-    files:
-      .prettierrc.yaml: false # Exclude this file from this repo
-```
-
-Output formatting: JSON uses 2-space indentation via `JSON.stringify()`. YAML uses 2-space indentation via the `yaml` package's `stringify()`. Trailing newline is always added.
+Output: 2-space indentation, trailing newline always added.
 
 ## Development Commands
 
@@ -231,13 +193,7 @@ git tag -a vX.Y.Z -m "Release vX.Y.Z"
 git push origin vX.Y.Z
 ```
 
-The `release.yml` workflow automatically:
-
-- Builds and tests
-- Publishes to npm with provenance
-- Creates a GitHub Release with auto-generated notes
-
-**Integration Tests**: Requires `gh` CLI authentication. Uses real GitHub repo `anthony-spruyt/json-config-sync-test`. Cleans up state before running (closes PRs, deletes branch, removes file).
+The release workflow automatically builds, tests, publishes to npm with provenance, and creates a GitHub Release.
 
 ## External Dependencies
 
@@ -256,38 +212,6 @@ The `release.yml` workflow automatically:
 
 ## Testing Approach
 
-**Unit Tests**: Modular test files per module:
+**Unit Tests**: Each `src/*.ts` module has a corresponding `*.test.ts` file. Uses fixtures in `fixtures/` directory.
 
-- `config.test.ts`: Config validation, normalization, multi-file handling
-- `config-validator.test.ts`: Validation rules, file name security
-- `config-normalizer.test.ts`: Normalization pipeline, content merging
-- `merge.test.ts`: Deep merge logic, array strategies, directives
-- `env.test.ts`: Environment variable interpolation
-
-Use fixtures in `fixtures/` directory.
-
-**Integration Tests**: End-to-end test that:
-
-1. Sets up clean state in test repo
-2. Runs CLI with `fixtures/integration-test-config.yaml`
-3. Verifies PR creation via `gh` CLI
-4. Checks file content in PR branch
-
-**No Mocking**: Git operations and CLI tools are not mocked. Integration test uses real GitHub API.
-
-## File Structure
-
-```
-src/
-  index.ts               # CLI entry point, orchestration
-  config.ts              # Config loading, types
-  config-validator.ts    # Config validation
-  config-normalizer.ts   # Config normalization pipeline
-  merge.ts               # Deep merge with array strategies
-  env.ts                 # Environment variable interpolation
-  git-ops.ts             # Git clone, branch, commit, push
-  repo-detector.ts       # GitHub/Azure URL parsing
-  pr-creator.ts          # PR creation via gh/az CLI
-  logger.ts              # Console output formatting
-  *.test.ts              # Unit tests per module
-```
+**Integration Tests**: End-to-end test using real GitHub repo (`anthony-spruyt/json-config-sync-test`). Requires `gh` CLI authentication. No mocking of git/CLI operations.

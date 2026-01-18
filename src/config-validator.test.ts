@@ -630,4 +630,187 @@ describe("validateRawConfig", () => {
       assert.doesNotThrow(() => validateRawConfig(config));
     });
   });
+
+  describe("text file content validation", () => {
+    test("accepts string content for text files", () => {
+      const config: RawConfig = {
+        files: {
+          ".gitignore": { content: "node_modules/\ndist/\n" },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("accepts string array content for text files", () => {
+      const config: RawConfig = {
+        files: {
+          ".gitignore": { content: ["node_modules/", "dist/"] },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("accepts text content with mergeStrategy", () => {
+      const config: RawConfig = {
+        files: {
+          ".gitignore": {
+            content: ["node_modules/"],
+            mergeStrategy: "append",
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("accepts text content with createOnly", () => {
+      const config: RawConfig = {
+        files: {
+          ".markdownlintignore": {
+            content: "# Ignore claude files\n.claude/",
+            createOnly: true,
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when JSON file has string content", () => {
+      const config: RawConfig = {
+        files: {
+          "config.json": { content: "not valid json content" as never },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.throws(
+        () => validateRawConfig(config),
+        /has JSON\/YAML extension but string content/,
+      );
+    });
+
+    test("throws when YAML file has string content", () => {
+      const config: RawConfig = {
+        files: {
+          "config.yaml": { content: "key: value" as never },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.throws(
+        () => validateRawConfig(config),
+        /has JSON\/YAML extension but string content/,
+      );
+    });
+
+    test("throws when YML file has string array content", () => {
+      const config: RawConfig = {
+        files: {
+          "config.yml": { content: ["line1", "line2"] as never },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.throws(
+        () => validateRawConfig(config),
+        /has JSON\/YAML extension but string content/,
+      );
+    });
+
+    test("throws when text file has object content", () => {
+      const config: RawConfig = {
+        files: {
+          ".gitignore": { content: { key: "value" } as never },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.throws(
+        () => validateRawConfig(config),
+        /has text extension but object content/,
+      );
+    });
+
+    test("throws when .env file has object content", () => {
+      const config: RawConfig = {
+        files: {
+          ".env.example": { content: { KEY: "value" } as never },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.throws(
+        () => validateRawConfig(config),
+        /has text extension but object content/,
+      );
+    });
+
+    test("throws when array has non-string elements", () => {
+      const config: RawConfig = {
+        files: {
+          ".gitignore": { content: ["valid", 123, "also valid"] as never },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.throws(
+        () => validateRawConfig(config),
+        /content must be an object, string, or array of strings/,
+      );
+    });
+
+    test("throws when per-repo JSON file override has string content", () => {
+      const config: RawConfig = {
+        files: {
+          "config.json": { content: { key: "value" } },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.json": { content: "string content" as never },
+            },
+          },
+        ],
+      };
+      assert.throws(
+        () => validateRawConfig(config),
+        /has JSON\/YAML extension but string content/,
+      );
+    });
+
+    test("throws when per-repo text file override has object content", () => {
+      const config: RawConfig = {
+        files: {
+          ".gitignore": { content: "node_modules/" },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              ".gitignore": { content: { invalid: true } as never },
+            },
+          },
+        ],
+      };
+      assert.throws(
+        () => validateRawConfig(config),
+        /has text extension but object content/,
+      );
+    });
+
+    test("accepts per-repo text file override with string array", () => {
+      const config: RawConfig = {
+        files: {
+          ".gitignore": { content: ["node_modules/"], mergeStrategy: "append" },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              ".gitignore": { content: ["dist/"] },
+            },
+          },
+        ],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+  });
 });
