@@ -4,6 +4,7 @@ import {
   mkdirSync,
   writeFileSync,
   readFileSync,
+  chmodSync,
 } from "node:fs";
 import { join, resolve, relative, isAbsolute, dirname } from "node:path";
 import { escapeShellArg } from "./shell-utils.js";
@@ -108,8 +109,9 @@ export class GitOps {
   }
 
   /**
-   * Marks a file as executable in git using update-index --chmod=+x.
-   * This modifies the file mode in git's index, not the filesystem.
+   * Marks a file as executable both on the filesystem and in git's index.
+   * - Filesystem: Uses chmod to set 755 permissions (rwxr-xr-x)
+   * - Git index: Uses update-index --chmod=+x so the mode is committed
    * @param fileName - The file path relative to the work directory
    */
   async setExecutable(fileName: string): Promise<void> {
@@ -117,7 +119,11 @@ export class GitOps {
       return;
     }
     const filePath = this.validatePath(fileName);
-    // Use relative path from workDir for git command
+
+    // Set filesystem permissions (755 = rwxr-xr-x)
+    chmodSync(filePath, 0o755);
+
+    // Also update git's index so the executable bit is committed
     const relativePath = relative(this.workDir, filePath);
     await this.exec(
       `git update-index --add --chmod=+x ${escapeShellArg(relativePath)}`,

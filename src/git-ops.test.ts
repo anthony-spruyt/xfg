@@ -6,6 +6,7 @@ import {
   writeFileSync,
   readFileSync,
   existsSync,
+  statSync,
 } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -563,6 +564,65 @@ describe("GitOps", () => {
 
       assert.equal(commands.length, 1);
       assert.ok(commands[0].includes("scripts/deploy.sh"));
+    });
+
+    test("sets filesystem executable permission (chmod 755)", async () => {
+      const mockExecutor: CommandExecutor = {
+        async exec(_command: string, _cwd: string): Promise<string> {
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      const filePath = join(workDir, "script.sh");
+      writeFileSync(filePath, "#!/bin/bash\necho hello\n");
+
+      // Verify file is NOT executable before setExecutable
+      const modeBefore = statSync(filePath).mode;
+      const executableBefore = (modeBefore & 0o111) !== 0;
+      assert.equal(
+        executableBefore,
+        false,
+        "File should not be executable before setExecutable",
+      );
+
+      await gitOps.setExecutable("script.sh");
+
+      // Verify file IS executable after setExecutable
+      const modeAfter = statSync(filePath).mode;
+      const executableAfter = (modeAfter & 0o111) !== 0;
+      assert.equal(
+        executableAfter,
+        true,
+        "File should be executable after setExecutable",
+      );
+    });
+
+    test("does not set filesystem permissions in dry-run mode", async () => {
+      const mockExecutor: CommandExecutor = {
+        async exec(_command: string, _cwd: string): Promise<string> {
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        dryRun: true,
+        executor: mockExecutor,
+      });
+      const filePath = join(workDir, "script.sh");
+      writeFileSync(filePath, "#!/bin/bash\necho hello\n");
+
+      await gitOps.setExecutable("script.sh");
+
+      // Verify file is still NOT executable (dry-run should skip chmod)
+      const mode = statSync(filePath).mode;
+      const executable = (mode & 0o111) !== 0;
+      assert.equal(
+        executable,
+        false,
+        "File should not be executable in dry-run mode",
+      );
     });
   });
 });
