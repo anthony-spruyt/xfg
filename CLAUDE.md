@@ -64,7 +64,7 @@ Raw YAML → Parse → Resolve file refs → Validate → Expand git arrays → 
 
 **Subdirectory Support**: File names can include paths (e.g., `.github/workflows/ci.yml`). Parent directories are created automatically. Quote paths containing `/` in YAML keys.
 
-**Executable Files**: Files ending in `.sh` are auto-marked executable via `git update-index --chmod=+x`. Use `executable: false` to disable. Non-.sh files can be marked executable with `executable: true`. Per-repo can override root-level `executable` setting.
+**Executable Files**: Files ending in `.sh` are auto-marked executable via `git update-index --add --chmod=+x`. Use `executable: false` to disable. Non-.sh files can be marked executable with `executable: true`. Per-repo can override root-level `executable` setting.
 
 ### Deep Merge (merge.ts)
 

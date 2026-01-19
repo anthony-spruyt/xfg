@@ -84,7 +84,7 @@
         },
         "executable": {
           "type": "boolean",
-          "description": "Mark the file as executable via git update-index --chmod=+x. Shell scripts (.sh) are auto-executable unless explicitly set to false. Non-.sh files can be marked executable by setting to true."
+          "description": "Mark the file as executable via git update-index --add --chmod=+x. Shell scripts (.sh) are auto-executable unless explicitly set to false. Non-.sh files can be marked executable by setting to true."
         }
       }
     },

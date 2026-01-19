@@ -158,7 +158,7 @@ export class GitOps {
     // Use relative path from workDir for git command
     const relativePath = relative(this.workDir, filePath);
     await this.exec(
-      `git update-index --chmod=+x ${escapeShellArg(relativePath)}`,
+      `git update-index --add --chmod=+x ${escapeShellArg(relativePath)}`,
       this.workDir,
     );
   }

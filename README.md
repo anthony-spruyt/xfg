@@ -540,7 +540,7 @@ repos:
 
 ### Executable Files
 
-Shell scripts (`.sh` files) are automatically marked as executable using `git update-index --chmod=+x`. You can control this behavior:
+Shell scripts (`.sh` files) are automatically marked as executable using `git update-index --add --chmod=+x`. You can control this behavior:
 
 ```yaml
 files:

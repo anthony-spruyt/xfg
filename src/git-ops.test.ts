@@ -572,7 +572,7 @@ describe("GitOps", () => {
       await gitOps.setExecutable("script.sh");
 
       assert.equal(commands.length, 1);
-      assert.ok(commands[0].includes("git update-index --chmod=+x"));
+      assert.ok(commands[0].includes("git update-index --add --chmod=+x"));
       assert.ok(commands[0].includes("script.sh"));
     });
 
