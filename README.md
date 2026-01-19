@@ -5,7 +5,7 @@
 [![npm downloads](https://img.shields.io/npm/dw/@aspruyt/json-config-sync.svg)](https://www.npmjs.com/package/@aspruyt/json-config-sync)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A CLI tool that syncs JSON, YAML, or text configuration files across multiple GitHub and Azure DevOps repositories by creating pull requests. Output format is automatically detected from the target filename extension (`.json` → JSON, `.yaml`/`.yml` → YAML, other → text).
+A CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple GitHub and Azure DevOps repositories by creating pull requests. Output format is automatically detected from the target filename extension (`.json` → JSON, `.json5` → JSON5, `.yaml`/`.yml` → YAML, other → text).
 
 ## Table of Contents
 
@@ -536,7 +536,7 @@ repos:
 - **String content** (`content: |-`) - Direct text output with environment variable interpolation. Merging always replaces the base.
 - **Lines array** (`content: ['line1', 'line2']`) - Each line joined with newlines. Supports merge strategies (`append`, `prepend`, `replace`).
 
-**Validation:** JSON/YAML file extensions (`.json`, `.yaml`, `.yml`) require object content. Other extensions require string or string[] content.
+**Validation:** JSON/JSON5/YAML file extensions (`.json`, `.json5`, `.yaml`, `.yml`) require object content. Other extensions require string or string[] content.
 
 ### Executable Files
 
@@ -630,7 +630,7 @@ repos:
 
 - File references start with `@` followed by a relative path
 - Paths are resolved relative to the config file's directory
-- JSON/YAML files are parsed as objects, other files as strings
+- JSON/JSON5/YAML files are parsed as objects, other files as strings
 - Metadata fields (`header`, `schemaUrl`, `createOnly`, `mergeStrategy`) remain in the config
 - Per-repo overlays still work - they merge onto the resolved file content
 
@@ -728,7 +728,7 @@ flowchart TB
 
     subgraph Processing["For Each Repository"]
         CLONE[Clone Repo] --> BRANCH[Create/Checkout Branch<br/>--branch or chore/sync-config]
-        BRANCH --> WRITE[Write All Config Files<br/>JSON or YAML]
+        BRANCH --> WRITE[Write All Config Files<br/>JSON, JSON5, or YAML]
         WRITE --> CHECK{Changes?}
         CHECK -->|No| SKIP[Skip - No Changes]
         CHECK -->|Yes| COMMIT[Commit Changes]
@@ -758,7 +758,7 @@ For each repository in the config, the tool:
 4. Cleans the temporary workspace
 5. Clones the repository
 6. Creates/checks out branch (custom `--branch` or default `chore/sync-config`)
-7. Writes all config files (JSON or YAML based on filename extension)
+7. Writes all config files (JSON, JSON5, or YAML based on filename extension)
 8. Checks for changes (skips if no changes)
 9. Commits and pushes changes
 10. Creates a pull request

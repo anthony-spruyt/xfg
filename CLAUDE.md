@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-TypeScript CLI tool that syncs JSON, YAML, or text configuration files across multiple Git repositories by automatically creating pull requests. Output format is determined by content type: object content outputs JSON/YAML (based on file extension), while string or string array content outputs plain text. Supports both GitHub and Azure DevOps platforms.
+TypeScript CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple Git repositories by automatically creating pull requests. Output format is determined by content type: object content outputs JSON/JSON5/YAML (based on file extension), while string or string array content outputs plain text. Supports both GitHub and Azure DevOps platforms.
 
 ## Architecture
 
@@ -25,7 +25,7 @@ Raw YAML → Parse → Resolve file refs → Validate → Expand git arrays → 
 
 **Pipeline Steps**:
 
-1. **File Reference Resolution**: Replace `@path/to/file` content with actual file contents (JSON/YAML parsed as objects, other files as strings)
+1. **File Reference Resolution**: Replace `@path/to/file` content with actual file contents (JSON/JSON5/YAML parsed as objects, other files as strings)
 2. **Validation**: Check required fields (`files`, `repos`), validate file names (no path traversal)
 3. **Git Array Expansion**: `git: [url1, url2]` becomes two separate repo entries
 4. **Content Merge**: For each file, per-repo `content` overlays onto root-level file `content` using deep merge
@@ -52,12 +52,12 @@ Raw YAML → Parse → Resolve file refs → Validate → Expand git arrays → 
 
 - String content: `content: "line1\nline2"` or multiline `content: |-`
 - Lines array: `content: ["line1", "line2"]` - supports merge strategies (append/prepend/replace)
-- Validation enforces: `.json`/`.yaml`/`.yml` must have object content; other extensions must have string/string[] content
+- Validation enforces: `.json`/`.json5`/`.yaml`/`.yml` must have object content; other extensions must have string/string[] content
 
 **File References**: Use `content: "@path/to/file"` to load content from external template files:
 
 - Paths are relative to the config file's directory
-- JSON/YAML files are parsed as objects; other files are returned as strings
+- JSON/JSON5/YAML files are parsed as objects; other files are returned as strings
 - Resolved before validation, so content type checking works on resolved content
 - Per-repo overlays can merge onto resolved file content
 - Security: paths restricted to config directory tree (no `../` escapes, no absolute paths)

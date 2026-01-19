@@ -152,6 +152,33 @@ describe("File Reference Resolver", () => {
         /Invalid YAML in "@templates\/invalid.yaml"/,
       );
     });
+
+    test("resolves JSON5 file to parsed object", () => {
+      const json5Path = join(testDir, "templates", "config.json5");
+      // JSON5 allows comments and trailing commas
+      writeFileSync(
+        json5Path,
+        `{
+  // This is a comment
+  "key": "value",
+  "num": 42,
+}`,
+        "utf-8",
+      );
+
+      const result = resolveFileReference("@templates/config.json5", testDir);
+      assert.deepStrictEqual(result, { key: "value", num: 42 });
+    });
+
+    test("throws on invalid JSON5 with clear error", () => {
+      const invalidPath = join(testDir, "templates", "invalid.json5");
+      writeFileSync(invalidPath, "{ invalid json5", "utf-8");
+
+      assert.throws(
+        () => resolveFileReference("@templates/invalid.json5", testDir),
+        /Invalid JSON5 in "@templates\/invalid.json5"/,
+      );
+    });
   });
 
   describe("resolveFileReferencesInConfig", () => {

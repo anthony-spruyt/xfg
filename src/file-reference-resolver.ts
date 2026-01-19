@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve, isAbsolute, normalize, extname } from "node:path";
+import JSON5 from "json5";
 import { parse as parseYaml } from "yaml";
 import type { ContentValue, RawConfig } from "./config.js";
 
@@ -70,6 +71,14 @@ export function resolveFileReference(
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       throw new Error(`Invalid JSON in "${reference}": ${msg}`);
+    }
+  }
+  if (ext === ".json5") {
+    try {
+      return JSON5.parse(content) as Record<string, unknown>;
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      throw new Error(`Invalid JSON5 in "${reference}": ${msg}`);
     }
   }
   if (ext === ".yaml" || ext === ".yml") {

@@ -28,7 +28,7 @@ function isObjectContent(content: unknown): boolean {
  */
 function isStructuredFileExtension(fileName: string): boolean {
   const ext = fileName.toLowerCase().split(".").pop();
-  return ext === "json" || ext === "yaml" || ext === "yml";
+  return ext === "json" || ext === "json5" || ext === "yaml" || ext === "yml";
 }
 
 /**

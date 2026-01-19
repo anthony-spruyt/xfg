@@ -1,6 +1,6 @@
 import { Document, stringify } from "yaml";
 
-export type OutputFormat = "json" | "yaml";
+export type OutputFormat = "json" | "json5" | "yaml";
 
 /**
  * Options for content conversion.
@@ -17,6 +17,9 @@ export function detectOutputFormat(fileName: string): OutputFormat {
   const ext = fileName.toLowerCase().split(".").pop();
   if (ext === "yaml" || ext === "yml") {
     return "yaml";
+  }
+  if (ext === "json5") {
+    return "json5";
   }
   return "json";
 }
@@ -128,6 +131,12 @@ export function convertContentToString(
     }
 
     return stringify(doc, { indent: 2 });
+  }
+
+  if (format === "json5") {
+    // JSON5 format - output standard JSON (which is valid JSON5)
+    // Using JSON.stringify for standard JSON output that's compatible everywhere
+    return JSON.stringify(content, null, 2) + "\n";
   }
 
   // JSON format - comments not supported, ignore header/schemaUrl

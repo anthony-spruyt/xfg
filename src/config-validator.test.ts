@@ -717,6 +717,29 @@ describe("validateRawConfig", () => {
       );
     });
 
+    test("accepts object content for .json5 files", () => {
+      const config: RawConfig = {
+        files: {
+          "config.json5": { content: { key: "value" } },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when JSON5 file has string content", () => {
+      const config: RawConfig = {
+        files: {
+          "config.json5": { content: "string content" as never },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.throws(
+        () => validateRawConfig(config),
+        /has JSON\/YAML extension but string content/,
+      );
+    });
+
     test("throws when text file has object content", () => {
       const config: RawConfig = {
         files: {

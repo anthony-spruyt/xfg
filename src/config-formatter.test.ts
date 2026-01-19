@@ -52,6 +52,18 @@ describe("detectOutputFormat", () => {
     assert.equal(detectOutputFormat("path/to/config.json"), "json");
     assert.equal(detectOutputFormat("path/to/config.yaml"), "yaml");
   });
+
+  test("returns json5 for .json5 extension", () => {
+    assert.equal(detectOutputFormat("config.json5"), "json5");
+  });
+
+  test("handles uppercase .JSON5 extension", () => {
+    assert.equal(detectOutputFormat("config.JSON5"), "json5");
+  });
+
+  test("handles path with .json5 extension", () => {
+    assert.equal(detectOutputFormat("path/to/config.json5"), "json5");
+  });
 });
 
 describe("convertContentToString", () => {
@@ -257,6 +269,56 @@ describe("convertContentToString with YAML header comments", () => {
     );
     assert.ok(result.includes("# Custom comment"));
     assert.ok(result.includes("key: value"));
+  });
+});
+
+describe("convertContentToString with JSON5 format", () => {
+  test("converts to JSON5 with 2-space indent for .json5 files", () => {
+    const content = { key: "value", nested: { a: 1 } };
+    const result = convertContentToString(content, "config.json5");
+
+    // Should be valid JSON (JSON5.stringify outputs valid JSON by default)
+    const parsed = JSON.parse(result);
+    assert.deepEqual(parsed, content);
+
+    // Should have 2-space indentation
+    assert.ok(result.includes('  "key"'));
+  });
+
+  test("handles arrays in JSON5 format", () => {
+    const content = { items: ["a", "b", "c"] };
+    const result = convertContentToString(content, "config.json5");
+    const parsed = JSON.parse(result);
+    assert.deepEqual(parsed.items, ["a", "b", "c"]);
+  });
+
+  test("handles nested objects in JSON5 format", () => {
+    const content = {
+      level1: {
+        level2: {
+          level3: "deep",
+        },
+      },
+    };
+    const result = convertContentToString(content, "config.json5");
+    const parsed = JSON.parse(result);
+    assert.equal(parsed.level1.level2.level3, "deep");
+  });
+
+  test("null content returns empty string for JSON5", () => {
+    const result = convertContentToString(null, "config.json5");
+    assert.equal(result, "");
+  });
+
+  test("header and schemaUrl are ignored for JSON5 files", () => {
+    const content = { key: "value" };
+    const result = convertContentToString(content, "config.json5", {
+      header: ["This is a comment"],
+      schemaUrl: "https://example.com/schema.json",
+    });
+    assert.ok(!result.includes("comment"));
+    assert.ok(!result.includes("schema"));
+    assert.ok(result.includes('"key"'));
   });
 });
 
