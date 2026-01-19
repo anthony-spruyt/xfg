@@ -1,6 +1,6 @@
 {
   "name": "@aspruyt/json-config-sync",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "description": "CLI tool to sync JSON or YAML configuration files across multiple GitHub and Azure DevOps repositories",
   "type": "module",
   "main": "dist/index.js",
