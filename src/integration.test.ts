@@ -277,14 +277,16 @@ describe("Integration Test", () => {
     // First check if file exists and get its sha
     let fileSha = "";
     try {
+      // Use separate command to check existence - gh api exits non-zero on 404
       fileSha = exec(
-        `gh api repos/${TEST_REPO}/contents/${createOnlyFile} --jq '.sha' 2>/dev/null || echo ""`,
+        `gh api repos/${TEST_REPO}/contents/${createOnlyFile} --jq '.sha'`,
       );
     } catch {
-      // File doesn't exist
+      // File doesn't exist - fileSha remains empty
+      fileSha = "";
     }
 
-    if (fileSha) {
+    if (fileSha && !fileSha.includes("Not Found")) {
       // Update existing file
       exec(
         `gh api --method PUT repos/${TEST_REPO}/contents/${createOnlyFile} -f message="test: update ${createOnlyFile} for createOnly test" -f content="${existingContentBase64}" -f sha="${fileSha}"`,
