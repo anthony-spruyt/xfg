@@ -223,6 +223,38 @@ repos:
   - git: git@github.com:org/backend.git
 ```
 
+#### Escaping Variable Syntax
+
+If your target file needs literal `${VAR}` syntax (e.g., for devcontainer.json, shell scripts, or other templating systems), use `$$` to escape:
+
+```yaml
+files:
+  .devcontainer/devcontainer.json:
+    content:
+      name: my-dev-container
+      remoteEnv:
+        # Escaped - outputs literal ${localWorkspaceFolder} for VS Code
+        LOCAL_WORKSPACE_FOLDER: "$${localWorkspaceFolder}"
+        CONTAINER_WORKSPACE: "$${containerWorkspaceFolder}"
+        # Interpolated - replaced with actual env value
+        API_KEY: "${API_KEY}"
+```
+
+Output:
+
+```json
+{
+  "name": "my-dev-container",
+  "remoteEnv": {
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}",
+    "CONTAINER_WORKSPACE": "${containerWorkspaceFolder}",
+    "API_KEY": "actual-api-key-value"
+  }
+}
+```
+
+This follows the same escape convention used by Docker Compose.
+
 ### Merge Directives
 
 Control array merging with the `$arrayMerge` directive:
