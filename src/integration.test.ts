@@ -46,7 +46,7 @@ describe("Integration Test", () => {
     } catch {
       console.log("  Repo is empty, initializing with README...");
       exec(
-        `gh api --method PUT repos/${TEST_REPO}/contents/README.md -f message="Initial commit" -f content="$(echo '# Test Repository\n\nThis repo is used for integration testing json-config-sync.' | base64 -w0)"`,
+        `gh api --method PUT repos/${TEST_REPO}/contents/README.md -f message="Initial commit" -f content="$(echo '# Test Repository\n\nThis repo is used for integration testing xfg.' | base64 -w0)"`,
       );
       console.log("  Repo initialized");
     }
@@ -113,7 +113,7 @@ describe("Integration Test", () => {
     const configPath = join(fixturesDir, "integration-test-config.yaml");
 
     // Run the sync tool
-    console.log("Running json-config-sync...");
+    console.log("Running xfg...");
     const output = exec(`node dist/index.js --config ${configPath}`, {
       cwd: projectRoot,
     });
@@ -195,7 +195,7 @@ describe("Integration Test", () => {
     assert.ok(prNumberBefore, "Expected a PR to exist from previous test");
 
     // Run the sync tool again
-    console.log("\nRunning json-config-sync again (re-sync)...");
+    console.log("\nRunning xfg again (re-sync)...");
     const output = exec(`node dist/index.js --config ${configPath}`, {
       cwd: projectRoot,
     });
@@ -300,7 +300,7 @@ describe("Integration Test", () => {
     console.log("  File created on main");
 
     // 4. Run sync with createOnly config
-    console.log("\nRunning json-config-sync with createOnly config...");
+    console.log("\nRunning xfg with createOnly config...");
     const configPath = join(fixturesDir, "integration-test-createonly.yaml");
     const output = exec(`node dist/index.js --config ${configPath}`, {
       cwd: projectRoot,
