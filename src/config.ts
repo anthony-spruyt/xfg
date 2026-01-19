@@ -21,6 +21,7 @@ export interface RawFileConfig {
   content?: ContentValue;
   mergeStrategy?: ArrayMergeStrategy;
   createOnly?: boolean;
+  executable?: boolean;
   header?: string | string[];
   schemaUrl?: string;
 }
@@ -30,6 +31,7 @@ export interface RawRepoFileOverride {
   content?: ContentValue;
   override?: boolean;
   createOnly?: boolean;
+  executable?: boolean;
   header?: string | string[];
   schemaUrl?: string;
 }
@@ -56,6 +58,7 @@ export interface FileContent {
   fileName: string;
   content: ContentValue | null;
   createOnly?: boolean;
+  executable?: boolean;
   header?: string[];
   schemaUrl?: string;
 }

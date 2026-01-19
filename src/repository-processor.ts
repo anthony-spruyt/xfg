@@ -6,6 +6,23 @@ import { GitOps, GitOpsOptions } from "./git-ops.js";
 import { createPR, PRResult, FileAction } from "./pr-creator.js";
 import { logger, ILogger } from "./logger.js";
 
+/**
+ * Determines if a file should be marked as executable.
+ * .sh files are auto-executable unless explicit executable: false is set.
+ * Non-.sh files are executable only if executable: true is explicitly set.
+ */
+function shouldBeExecutable(file: FileContent): boolean {
+  const isShellScript = file.fileName.endsWith(".sh");
+
+  if (file.executable !== undefined) {
+    // Explicit setting takes precedence
+    return file.executable;
+  }
+
+  // Default: .sh files are executable, others are not
+  return isShellScript;
+}
+
 export interface ProcessorOptions {
   branchName: string;
   workDir: string;
@@ -110,6 +127,22 @@ export class RepositoryProcessor {
         } else {
           // Write the file
           this.gitOps.writeFile(file.fileName, fileContent);
+        }
+      }
+
+      // Step 5b: Set executable permission for files that need it
+      const skippedFileNames = new Set(
+        changedFiles.filter((f) => f.action === "skip").map((f) => f.fileName),
+      );
+      for (const file of repoConfig.files) {
+        // Skip files that were excluded (createOnly + exists)
+        if (skippedFileNames.has(file.fileName)) {
+          continue;
+        }
+
+        if (shouldBeExecutable(file)) {
+          this.log.info(`Setting executable: ${file.fileName}`);
+          await this.gitOps!.setExecutable(file.fileName);
         }
       }
 

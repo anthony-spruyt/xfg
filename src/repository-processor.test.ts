@@ -252,4 +252,189 @@ describe("RepositoryProcessor", () => {
       assert.notEqual(result.skipped, true, "Should not have skipped=true");
     });
   });
+
+  describe("executable file handling", () => {
+    // Mock logger that captures log messages
+    const createMockLogger = (): ILogger & { messages: string[] } => ({
+      messages: [] as string[],
+      info(message: string) {
+        this.messages.push(message);
+      },
+    });
+
+    // Mock GitOps that tracks setExecutable calls
+    class MockGitOpsWithExecutable extends GitOps {
+      fileExists = false;
+      contentMatches = false;
+      setExecutableCalls: string[] = [];
+
+      constructor(options: GitOpsOptions) {
+        super(options);
+      }
+
+      override cleanWorkspace(): void {
+        mkdirSync(this.getWorkDir(), { recursive: true });
+      }
+
+      override async clone(_gitUrl: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async getDefaultBranch(): Promise<{
+        branch: string;
+        method: string;
+      }> {
+        return { branch: "main", method: "mock" };
+      }
+
+      override async createBranch(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override writeFile(fileName: string, content: string): void {
+        const filePath = join(this.getWorkDir(), fileName);
+        mkdirSync(join(this.getWorkDir()), { recursive: true });
+        writeFileSync(filePath, content, "utf-8");
+      }
+
+      override wouldChange(_fileName: string, _content: string): boolean {
+        return true;
+      }
+
+      override async hasChanges(): Promise<boolean> {
+        return true;
+      }
+
+      override async commit(_message: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async push(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async setExecutable(fileName: string): Promise<void> {
+        this.setExecutableCalls.push(fileName);
+      }
+
+      private getWorkDir(): string {
+        return (this as unknown as { workDir: string }).workDir;
+      }
+
+      setupFileExists(exists: boolean, contentMatches: boolean): void {
+        this.fileExists = exists;
+        this.contentMatches = contentMatches;
+      }
+    }
+
+    test("should call setExecutable for .sh files by default", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsWithExecutable | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsWithExecutable(opts);
+        mockGitOps.setupFileExists(false, false);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `exec-test-sh-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "deploy.sh", content: "#!/bin/bash" }],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: true,
+      });
+
+      assert.ok(mockGitOps!.setExecutableCalls.includes("deploy.sh"));
+    });
+
+    test("should not call setExecutable for non-.sh files by default", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsWithExecutable | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsWithExecutable(opts);
+        mockGitOps.setupFileExists(false, false);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `exec-test-json-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: true,
+      });
+
+      assert.ok(!mockGitOps!.setExecutableCalls.includes("config.json"));
+    });
+
+    test("should respect executable: false for .sh files", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsWithExecutable | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsWithExecutable(opts);
+        mockGitOps.setupFileExists(false, false);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `exec-test-false-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          { fileName: "script.sh", content: "#!/bin/bash", executable: false },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: true,
+      });
+
+      assert.ok(!mockGitOps!.setExecutableCalls.includes("script.sh"));
+    });
+
+    test("should call setExecutable for non-.sh files when executable: true", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsWithExecutable | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsWithExecutable(opts);
+        mockGitOps.setupFileExists(false, false);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `exec-test-true-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "run", content: "#!/bin/bash", executable: true }],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: true,
+      });
+
+      assert.ok(mockGitOps!.setExecutableCalls.includes("run"));
+    });
+  });
 });

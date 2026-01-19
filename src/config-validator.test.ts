@@ -813,4 +813,81 @@ describe("validateRawConfig", () => {
       assert.doesNotThrow(() => validateRawConfig(config));
     });
   });
+
+  describe("executable validation", () => {
+    test("allows executable: true at root file level", () => {
+      const config = createValidConfig({
+        files: { "deploy.sh": { content: "#!/bin/bash", executable: true } },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows executable: false at root file level", () => {
+      const config = createValidConfig({
+        files: { "script.sh": { content: "#!/bin/bash", executable: false } },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows undefined executable at root file level", () => {
+      const config = createValidConfig({
+        files: { "script.sh": { content: "#!/bin/bash" } },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when executable is not a boolean at root level", () => {
+      const config = createValidConfig({
+        files: {
+          "script.sh": { content: "#!/bin/bash", executable: "yes" as never },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /executable must be a boolean/,
+      );
+    });
+
+    test("allows executable: true at per-repo level", () => {
+      const config = createValidConfig({
+        files: { run: { content: "#!/bin/bash" } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { run: { executable: true } },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows executable: false at per-repo level", () => {
+      const config = createValidConfig({
+        files: { "script.sh": { content: "#!/bin/bash" } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { "script.sh": { executable: false } },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when executable is not a boolean at per-repo level", () => {
+      const config = createValidConfig({
+        files: { "script.sh": { content: "#!/bin/bash" } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { "script.sh": { executable: 123 as never } },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /executable must be a boolean/,
+      );
+    });
+  });
 });

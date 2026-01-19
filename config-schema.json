@@ -77,6 +77,10 @@
         "schemaUrl": {
           "type": "string",
           "description": "URL for yaml-language-server schema directive. Adds '# yaml-language-server: $schema=<url>' at the top of YAML files. Ignored for JSON files."
+        },
+        "executable": {
+          "type": "boolean",
+          "description": "Mark the file as executable via git update-index --chmod=+x. Shell scripts (.sh) are auto-executable unless explicitly set to false. Non-.sh files can be marked executable by setting to true."
         }
       }
     },
@@ -171,6 +175,10 @@
         "schemaUrl": {
           "type": "string",
           "description": "Override the root-level schemaUrl for this specific repo"
+        },
+        "executable": {
+          "type": "boolean",
+          "description": "Override the root-level executable setting for this specific repo. Set to true to mark executable, or false to disable auto-executable behavior for .sh files."
         }
       }
     }

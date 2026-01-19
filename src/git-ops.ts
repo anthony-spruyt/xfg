@@ -146,6 +146,24 @@ export class GitOps {
   }
 
   /**
+   * Marks a file as executable in git using update-index --chmod=+x.
+   * This modifies the file mode in git's index, not the filesystem.
+   * @param fileName - The file path relative to the work directory
+   */
+  async setExecutable(fileName: string): Promise<void> {
+    if (this.dryRun) {
+      return;
+    }
+    const filePath = this.validatePath(fileName);
+    // Use relative path from workDir for git command
+    const relativePath = relative(this.workDir, filePath);
+    await this.exec(
+      `git update-index --chmod=+x ${escapeShellArg(relativePath)}`,
+      this.workDir,
+    );
+  }
+
+  /**
    * Checks if writing the given content would result in changes.
    * Works in both normal and dry-run modes by comparing content directly.
    */

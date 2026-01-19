@@ -793,4 +793,101 @@ describe("normalizeConfig", () => {
       );
     });
   });
+
+  describe("executable propagation", () => {
+    test("passes root-level executable: true to FileContent", () => {
+      const raw: RawConfig = {
+        files: {
+          "deploy.sh": { content: "#!/bin/bash", executable: true },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].executable, true);
+    });
+
+    test("passes root-level executable: false to FileContent", () => {
+      const raw: RawConfig = {
+        files: {
+          "script.sh": { content: "#!/bin/bash", executable: false },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].executable, false);
+    });
+
+    test("executable is undefined when not specified", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: { key: "value" } },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].executable, undefined);
+    });
+
+    test("per-repo executable overrides root-level", () => {
+      const raw: RawConfig = {
+        files: {
+          "script.sh": { content: "#!/bin/bash", executable: true },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "script.sh": { executable: false },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].executable, false);
+    });
+
+    test("per-repo executable: true overrides undefined root", () => {
+      const raw: RawConfig = {
+        files: {
+          run: { content: "#!/bin/bash" },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              run: { executable: true },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].executable, true);
+    });
+
+    test("different repos can have different executable values", () => {
+      const raw: RawConfig = {
+        files: {
+          "script.sh": { content: "#!/bin/bash", executable: true },
+        },
+        repos: [
+          { git: "git@github.com:org/repo1.git" },
+          {
+            git: "git@github.com:org/repo2.git",
+            files: {
+              "script.sh": { executable: false },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].executable, true);
+      assert.equal(result.repos[1].files[0].executable, false);
+    });
+  });
 });

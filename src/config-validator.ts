@@ -95,6 +95,13 @@ export function validateRawConfig(config: RawConfig): void {
       throw new Error(`File '${fileName}' createOnly must be a boolean`);
     }
 
+    if (
+      fileConfig.executable !== undefined &&
+      typeof fileConfig.executable !== "boolean"
+    ) {
+      throw new Error(`File '${fileName}' executable must be a boolean`);
+    }
+
     if (fileConfig.header !== undefined) {
       if (
         typeof fileConfig.header !== "string" &&
@@ -187,6 +194,15 @@ export function validateRawConfig(config: RawConfig): void {
         ) {
           throw new Error(
             `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' createOnly must be a boolean`,
+          );
+        }
+
+        if (
+          fileOverride.executable !== undefined &&
+          typeof fileOverride.executable !== "boolean"
+        ) {
+          throw new Error(
+            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' executable must be a boolean`,
           );
         }
 

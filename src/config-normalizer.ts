@@ -113,6 +113,7 @@ export function normalizeConfig(raw: RawConfig): Config {
 
         // Resolve fields: per-repo overrides root level
         const createOnly = repoOverride?.createOnly ?? fileConfig.createOnly;
+        const executable = repoOverride?.executable ?? fileConfig.executable;
         const header = normalizeHeader(
           repoOverride?.header ?? fileConfig.header,
         );
@@ -122,6 +123,7 @@ export function normalizeConfig(raw: RawConfig): Config {
           fileName,
           content: mergedContent,
           createOnly,
+          executable,
           header,
           schemaUrl,
         });

@@ -176,6 +176,7 @@ repos: # List of repositories
 | `content`       | Base config: object for JSON/YAML files, string or string[] for text files, or `@path/to/file` to load from external template (omit for empty file) | No       |
 | `mergeStrategy` | Merge strategy: `replace`, `append`, `prepend` (for arrays and text lines)                                                                          | No       |
 | `createOnly`    | If `true`, only create file if it doesn't exist                                                                                                     | No       |
+| `executable`    | Mark file as executable. `.sh` files are auto-executable unless set to `false`. Set to `true` for non-.sh files.                                    | No       |
 | `header`        | Comment line(s) at top of YAML files (string or array)                                                                                              | No       |
 | `schemaUrl`     | Adds `# yaml-language-server: $schema=<url>` to YAML files                                                                                          | No       |
 
@@ -193,6 +194,7 @@ repos: # List of repositories
 | `content`    | Content overlay merged onto file's base content         | No       |
 | `override`   | If `true`, ignore base content and use only this repo's | No       |
 | `createOnly` | Override root-level `createOnly` for this repo          | No       |
+| `executable` | Override root-level `executable` for this repo          | No       |
 | `header`     | Override root-level `header` for this repo              | No       |
 | `schemaUrl`  | Override root-level `schemaUrl` for this repo           | No       |
 
@@ -488,6 +490,44 @@ repos:
 - **Lines array** (`content: ['line1', 'line2']`) - Each line joined with newlines. Supports merge strategies (`append`, `prepend`, `replace`).
 
 **Validation:** JSON/YAML file extensions (`.json`, `.yaml`, `.yml`) require object content. Other extensions require string or string[] content.
+
+### Executable Files
+
+Shell scripts (`.sh` files) are automatically marked as executable using `git update-index --chmod=+x`. You can control this behavior:
+
+```yaml
+files:
+  # .sh files are auto-executable (no config needed)
+  deploy.sh:
+    content: |-
+      #!/bin/bash
+      echo "Deploying..."
+
+  # Disable auto-executable for a specific .sh file
+  template.sh:
+    executable: false
+    content: "# This is just a template"
+
+  # Make a non-.sh file executable
+  run:
+    executable: true
+    content: |-
+      #!/usr/bin/env python3
+      print("Hello")
+
+repos:
+  - git: git@github.com:org/repo.git
+    files:
+      # Override executable per-repo
+      deploy.sh:
+        executable: false # Disable for this repo
+```
+
+**Behavior:**
+
+- `.sh` files: Automatically executable unless `executable: false`
+- Other files: Not executable unless `executable: true`
+- Per-repo settings override root-level settings
 
 ### Subdirectory Paths
 

@@ -551,4 +551,75 @@ describe("GitOps", () => {
       assert.ok(!checkoutBCalled, "Should NOT have called checkout -b");
     });
   });
+
+  describe("setExecutable", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("calls git update-index with chmod flag", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      // Create the file first (setExecutable validates path)
+      writeFileSync(join(workDir, "script.sh"), "#!/bin/bash\n");
+      await gitOps.setExecutable("script.sh");
+
+      assert.equal(commands.length, 1);
+      assert.ok(commands[0].includes("git update-index --chmod=+x"));
+      assert.ok(commands[0].includes("script.sh"));
+    });
+
+    test("does not execute in dry-run mode", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        dryRun: true,
+        executor: mockExecutor,
+      });
+      writeFileSync(join(workDir, "script.sh"), "#!/bin/bash\n");
+      await gitOps.setExecutable("script.sh");
+
+      assert.equal(commands.length, 0);
+    });
+
+    test("throws on path traversal attempt", async () => {
+      const gitOps = new GitOps({ workDir });
+      await assert.rejects(
+        async () => gitOps.setExecutable("../escape.sh"),
+        /Path traversal detected/,
+      );
+    });
+
+    test("handles subdirectory paths", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      mkdirSync(join(workDir, "scripts"), { recursive: true });
+      writeFileSync(join(workDir, "scripts", "deploy.sh"), "#!/bin/bash\n");
+      await gitOps.setExecutable("scripts/deploy.sh");
+
+      assert.equal(commands.length, 1);
+      assert.ok(commands[0].includes("scripts/deploy.sh"));
+    });
+  });
 });
