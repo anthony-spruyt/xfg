@@ -1,6 +1,7 @@
 /**
  * Environment variable interpolation utilities.
  * Supports ${VAR}, ${VAR:-default}, and ${VAR:?message} syntax.
+ * Use $${VAR} to escape and output literal ${VAR}.
  */
 
 export interface EnvInterpolationOptions {
@@ -30,6 +31,19 @@ const DEFAULT_OPTIONS: EnvInterpolationOptions = {
 const ENV_VAR_REGEX = /\$\{([^}:]+)(?::([?-])([^}]*))?\}/g;
 
 /**
+ * Regex to match escaped environment variable placeholders.
+ * $${...} outputs literal ${...} without interpolation.
+ * Example: $${VAR} -> ${VAR}, $${VAR:-default} -> ${VAR:-default}
+ */
+const ESCAPED_VAR_REGEX = /\$\$\{([^}]+)\}/g;
+
+/**
+ * Placeholder prefix for temporarily storing escaped sequences.
+ * Uses null bytes which won't appear in normal content.
+ */
+const ESCAPE_PLACEHOLDER = "\x00ESCAPED_VAR\x00";
+
+/**
  * Check if a value is a plain object (not null, not array).
  */
 function isPlainObject(val: unknown): val is Record<string, unknown> {
@@ -38,12 +52,25 @@ function isPlainObject(val: unknown): val is Record<string, unknown> {
 
 /**
  * Process a single string value, replacing environment variable placeholders.
+ * Supports escaping with $${VAR} syntax to output literal ${VAR}.
  */
 function processString(
   value: string,
   options: EnvInterpolationOptions,
 ): string {
-  return value.replace(
+  // Phase 1: Replace escaped $${...} with placeholders
+  const escapedContent: string[] = [];
+  let processed = value.replace(
+    ESCAPED_VAR_REGEX,
+    (_match, content: string) => {
+      const index = escapedContent.length;
+      escapedContent.push(content);
+      return `${ESCAPE_PLACEHOLDER}${index}\x00`;
+    },
+  );
+
+  // Phase 2: Interpolate remaining ${...}
+  processed = processed.replace(
     ENV_VAR_REGEX,
     (match, varName: string, modifier?: string, defaultOrMsg?: string) => {
       const envValue = process.env[varName];
@@ -73,6 +100,17 @@ function processString(
       return match;
     },
   );
+
+  // Phase 3: Restore escaped sequences as literal ${...}
+  processed = processed.replace(
+    new RegExp(`${ESCAPE_PLACEHOLDER}(\\d+)\x00`, "g"),
+    (_match, indexStr: string) => {
+      const index = parseInt(indexStr, 10);
+      return `\${${escapedContent[index]}}`;
+    },
+  );
+
+  return processed;
 }
 
 /**
@@ -105,10 +143,11 @@ function processValue(
 /**
  * Interpolate environment variables in a JSON object.
  *
- * Supports three syntaxes:
+ * Supports these syntaxes:
  * - ${VAR} - Replace with env value, error if missing (in strict mode)
  * - ${VAR:-default} - Replace with env value, or use default if missing
  * - ${VAR:?message} - Replace with env value, or throw error with message if missing
+ * - $${VAR} - Escape: outputs literal ${VAR} without interpolation
  *
  * @param json - The JSON object to process
  * @param options - Interpolation options (default: strict mode)

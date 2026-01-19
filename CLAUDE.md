@@ -98,6 +98,9 @@ Replaces environment variable placeholders in string values:
 - `${VAR}`: Required variable (errors if missing in strict mode)
 - `${VAR:-default}`: Use default if variable is not set
 - `${VAR:?message}`: Required with custom error message
+- `$${VAR}`: Escape - outputs literal `${VAR}` without interpolation
+
+**Escape Mechanism**: Use `$$` prefix to prevent interpolation. `$${VAR}` outputs `${VAR}` literally. Useful for devcontainer.json, shell scripts, and other templating systems that use `${...}` syntax.
 
 **Options**:
 

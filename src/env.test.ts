@@ -324,3 +324,134 @@ describe("interpolateContent", () => {
     });
   });
 });
+
+describe("escape mechanism with $$ syntax", () => {
+  const originalEnv = { ...process.env };
+
+  beforeEach(() => {
+    process.env.TEST_VAR = "test-value";
+    process.env.HOME = "/home/user";
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  // Basic escape functionality
+  test("$${VAR} outputs literal ${VAR}", () => {
+    const input = { key: "$${VAR}" };
+    const result = interpolateEnvVars(input);
+    assert.deepEqual(result, { key: "${VAR}" });
+  });
+
+  test("$${VAR:-default} outputs literal ${VAR:-default}", () => {
+    const input = { key: "$${MISSING:-fallback}" };
+    const result = interpolateEnvVars(input);
+    assert.deepEqual(result, { key: "${MISSING:-fallback}" });
+  });
+
+  test("$${VAR:?message} outputs literal ${VAR:?message}", () => {
+    const input = { key: "$${REQUIRED:?Must be set}" };
+    const result = interpolateEnvVars(input);
+    assert.deepEqual(result, { key: "${REQUIRED:?Must be set}" });
+  });
+
+  // Mixed escaped and non-escaped
+  test("mixes escaped and interpolated vars in same string", () => {
+    const input = { key: "${TEST_VAR} and $${NOT_INTERPOLATED}" };
+    const result = interpolateEnvVars(input);
+    assert.deepEqual(result, { key: "test-value and ${NOT_INTERPOLATED}" });
+  });
+
+  test("multiple escaped vars in one string", () => {
+    const input = { key: "$${VAR1} and $${VAR2}" };
+    const result = interpolateEnvVars(input);
+    assert.deepEqual(result, { key: "${VAR1} and ${VAR2}" });
+  });
+
+  // Real-world use case: devcontainer.json
+  test("devcontainer remoteEnv pattern", () => {
+    const input = {
+      remoteEnv: {
+        LOCAL_WORKSPACE_FOLDER: "$${localWorkspaceFolder}",
+        CONTAINER_WORKSPACE: "$${containerWorkspaceFolder}",
+        ACTUAL_VALUE: "${TEST_VAR}",
+      },
+    };
+    const result = interpolateEnvVars(input);
+    assert.deepEqual(result, {
+      remoteEnv: {
+        LOCAL_WORKSPACE_FOLDER: "${localWorkspaceFolder}",
+        CONTAINER_WORKSPACE: "${containerWorkspaceFolder}",
+        ACTUAL_VALUE: "test-value",
+      },
+    });
+  });
+
+  // Nested objects
+  test("handles escaped vars in nested objects", () => {
+    const input = {
+      outer: {
+        inner: {
+          template: "$${TEMPLATE_VAR}",
+        },
+      },
+    };
+    const result = interpolateEnvVars(input);
+    assert.deepEqual(result, {
+      outer: { inner: { template: "${TEMPLATE_VAR}" } },
+    });
+  });
+
+  // Arrays
+  test("handles escaped vars in arrays", () => {
+    const input = {
+      items: ["$${VAR1}", "${TEST_VAR}", "$${VAR2}"],
+    };
+    const result = interpolateEnvVars(input);
+    assert.deepEqual(result, {
+      items: ["${VAR1}", "test-value", "${VAR2}"],
+    });
+  });
+
+  // String interpolation function
+  test("interpolateEnvVarsInString handles escaped vars", () => {
+    const result = interpolateEnvVarsInString("template: $${localEnv:HOME}");
+    assert.equal(result, "template: ${localEnv:HOME}");
+  });
+
+  // Lines array
+  test("interpolateEnvVarsInLines handles escaped vars", () => {
+    const result = interpolateEnvVarsInLines([
+      "# Use $${VAR} for local env",
+      "export PATH=${HOME}",
+    ]);
+    assert.deepEqual(result, [
+      "# Use ${VAR} for local env",
+      "export PATH=/home/user",
+    ]);
+  });
+
+  // Edge cases
+  test("consecutive escaped vars", () => {
+    const input = { key: "$${A}$${B}" };
+    const result = interpolateEnvVars(input);
+    assert.deepEqual(result, { key: "${A}${B}" });
+  });
+
+  test("escaped var at start and end of string", () => {
+    const input = { key: "$${START} middle $${END}" };
+    const result = interpolateEnvVars(input);
+    assert.deepEqual(result, { key: "${START} middle ${END}" });
+  });
+
+  test("interpolateContent handles escaped vars in string", () => {
+    const result = interpolateContent("prefix-$${VAR}");
+    assert.equal(result, "prefix-${VAR}");
+  });
+
+  test("interpolateContent handles escaped vars in array", () => {
+    const result = interpolateContent(["$${VAR}", "static"]);
+    assert.deepEqual(result, ["${VAR}", "static"]);
+  });
+});
