@@ -21,6 +21,10 @@
       "items": {
         "$ref": "#/definitions/repo"
       }
+    },
+    "prOptions": {
+      "$ref": "#/definitions/prOptions",
+      "description": "Global PR merge options. Can be overridden per-repo."
     }
   },
   "definitions": {
@@ -121,6 +125,37 @@
               }
             ]
           }
+        },
+        "prOptions": {
+          "$ref": "#/definitions/prOptions",
+          "description": "Per-repo PR merge options. Overrides global prOptions."
+        }
+      }
+    },
+    "prOptions": {
+      "type": "object",
+      "description": "PR merge behavior options",
+      "properties": {
+        "merge": {
+          "type": "string",
+          "enum": ["manual", "auto", "force"],
+          "default": "manual",
+          "description": "Merge mode: 'manual' leaves PR open for review (default), 'auto' enables auto-merge when checks pass, 'force' bypasses requirements using admin privileges"
+        },
+        "mergeStrategy": {
+          "type": "string",
+          "enum": ["merge", "squash", "rebase"],
+          "default": "merge",
+          "description": "How to merge the PR: 'merge' creates a merge commit, 'squash' squashes all commits, 'rebase' rebases commits onto base"
+        },
+        "deleteBranch": {
+          "type": "boolean",
+          "default": false,
+          "description": "Delete the source branch after merge completes"
+        },
+        "bypassReason": {
+          "type": "string",
+          "description": "Reason for bypassing policies (Azure DevOps only, required when merge=force)"
         }
       }
     },

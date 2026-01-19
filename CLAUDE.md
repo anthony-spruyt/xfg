@@ -109,7 +109,7 @@ Replaces environment variable placeholders in string values:
 
 ### Orchestration Flow (index.ts)
 
-The tool processes repositories sequentially with a 9-step workflow per repo:
+The tool processes repositories sequentially with a 10-step workflow per repo:
 
 1. Clean workspace (remove old clones)
 2. Clone repository
@@ -120,6 +120,7 @@ The tool processes repositories sequentially with a 9-step workflow per repo:
 7. Commit changes
 8. Push to remote
 9. Create PR (platform-specific)
+10. Merge PR (if `prOptions.merge` is `auto` or `force`)
 
 **Error Resilience**: If any repo fails, the tool continues processing remaining repos. Errors are logged and summarized at the end. Exit code 1 only if failures occurred.
 
@@ -143,6 +144,30 @@ Returns `RepoInfo` with normalized fields (owner, repo, organization, project) u
 **Template System**: Loads PR body from `PR.md` file (included in npm package). Uses `{{FILES}}` placeholders for file list. Writes body to temp file to avoid shell escaping issues with multiline strings.
 
 **PR Title**: Lists up to 3 files in title, or shows count for more files.
+
+### PR Merge Options (strategies/)
+
+After PR creation, the tool can automatically merge or enable auto-merge based on `prOptions`:
+
+**Types** (config.ts):
+
+- `MergeMode`: `"manual"` | `"auto"` | `"force"`
+- `MergeStrategy`: `"merge"` | `"squash"` | `"rebase"`
+- `PRMergeOptions`: Config interface with `merge`, `mergeStrategy`, `deleteBranch`, `bypassReason`
+
+**Option Inheritance**: Global `prOptions` → per-repo `prOptions` → CLI flags (highest priority)
+
+**Merge Modes**:
+
+| Mode     | GitHub                                     | Azure DevOps                              |
+| -------- | ------------------------------------------ | ----------------------------------------- |
+| `manual` | Leave PR open (default)                    | Leave PR open                             |
+| `auto`   | `gh pr merge --auto` (requires repo setup) | `az repos pr update --auto-complete true` |
+| `force`  | `gh pr merge --admin` (bypass checks)      | `--bypass-policy true --status completed` |
+
+**GitHub Auto-Merge Handling**: Before enabling auto-merge, checks if `allow_auto_merge` is enabled on the repository via `gh api`. If not enabled, logs a warning with instructions and falls back to manual mode.
+
+**CLI Flags**: `--merge`, `--merge-strategy`, `--delete-branch` override config file settings.
 
 ### Git Operations (git-ops.ts)
 
@@ -168,6 +193,7 @@ See README.md for detailed examples and `config-schema.json` for validation. Key
 
 - `files`: Map of filenames to content/options (object for JSON/YAML, string/string[] for text)
 - `repos`: Array with `git` URL(s) and optional per-repo `files` overrides
+- `prOptions`: Global PR merge options (`merge`, `mergeStrategy`, `deleteBranch`, `bypassReason`)
 - `mergeStrategy`: Controls array/lines merging (replace/append/prepend)
 - `createOnly`: Only create if file doesn't exist
 - `header`/`schemaUrl`: YAML comment options

@@ -10,6 +10,20 @@ import { resolveFileReferencesInConfig } from "./file-reference-resolver.js";
 export { convertContentToString } from "./config-formatter.js";
 
 // =============================================================================
+// PR Merge Options Types
+// =============================================================================
+
+export type MergeMode = "manual" | "auto" | "force";
+export type MergeStrategy = "merge" | "squash" | "rebase";
+
+export interface PRMergeOptions {
+  merge?: MergeMode;
+  mergeStrategy?: MergeStrategy;
+  deleteBranch?: boolean;
+  bypassReason?: string;
+}
+
+// =============================================================================
 // Raw Config Types (as parsed from YAML)
 // =============================================================================
 
@@ -41,12 +55,14 @@ export interface RawRepoFileOverride {
 export interface RawRepoConfig {
   git: string | string[];
   files?: Record<string, RawRepoFileOverride | false>;
+  prOptions?: PRMergeOptions;
 }
 
 // Root config structure
 export interface RawConfig {
   files: Record<string, RawFileConfig>;
   repos: RawRepoConfig[];
+  prOptions?: PRMergeOptions;
 }
 
 // =============================================================================
@@ -67,6 +83,7 @@ export interface FileContent {
 export interface RepoConfig {
   git: string;
   files: FileContent[];
+  prOptions?: PRMergeOptions;
 }
 
 // Normalized config

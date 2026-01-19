@@ -601,6 +601,148 @@ repos:
   });
 });
 
+describe("prOptions", () => {
+  beforeEach(() => {
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(testDir, { recursive: true, force: true });
+  });
+
+  test("parses global prOptions", () => {
+    const path = createTestConfig(`
+files:
+  config.json:
+    content:
+      key: value
+prOptions:
+  merge: auto
+  mergeStrategy: squash
+  deleteBranch: true
+repos:
+  - git: git@github.com:org/repo.git
+`);
+    const config = loadConfig(path);
+    assert.deepEqual(config.repos[0].prOptions, {
+      merge: "auto",
+      mergeStrategy: "squash",
+      deleteBranch: true,
+    });
+  });
+
+  test("parses per-repo prOptions", () => {
+    const path = createTestConfig(`
+files:
+  config.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:org/repo.git
+    prOptions:
+      merge: force
+      bypassReason: "Automated sync"
+`);
+    const config = loadConfig(path);
+    assert.deepEqual(config.repos[0].prOptions, {
+      merge: "force",
+      bypassReason: "Automated sync",
+    });
+  });
+
+  test("per-repo prOptions overrides global", () => {
+    const path = createTestConfig(`
+files:
+  config.json:
+    content:
+      key: value
+prOptions:
+  merge: auto
+  mergeStrategy: squash
+  deleteBranch: true
+repos:
+  - git: git@github.com:org/repo.git
+    prOptions:
+      merge: force
+`);
+    const config = loadConfig(path);
+    assert.deepEqual(config.repos[0].prOptions, {
+      merge: "force",
+      mergeStrategy: "squash",
+      deleteBranch: true,
+    });
+  });
+
+  test("per-repo prOptions partial override", () => {
+    const path = createTestConfig(`
+files:
+  config.json:
+    content:
+      key: value
+prOptions:
+  merge: auto
+  mergeStrategy: squash
+repos:
+  - git: git@github.com:org/repo1.git
+  - git: git@github.com:org/repo2.git
+    prOptions:
+      mergeStrategy: rebase
+`);
+    const config = loadConfig(path);
+    // First repo uses global settings
+    assert.deepEqual(config.repos[0].prOptions, {
+      merge: "auto",
+      mergeStrategy: "squash",
+    });
+    // Second repo overrides mergeStrategy but inherits merge
+    assert.deepEqual(config.repos[1].prOptions, {
+      merge: "auto",
+      mergeStrategy: "rebase",
+    });
+  });
+
+  test("no prOptions returns undefined", () => {
+    const path = createTestConfig(`
+files:
+  config.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:org/repo.git
+`);
+    const config = loadConfig(path);
+    assert.strictEqual(config.repos[0].prOptions, undefined);
+  });
+
+  test("prOptions with git array expansion", () => {
+    const path = createTestConfig(`
+files:
+  config.json:
+    content:
+      key: value
+prOptions:
+  merge: auto
+repos:
+  - git:
+      - git@github.com:org/repo1.git
+      - git@github.com:org/repo2.git
+    prOptions:
+      mergeStrategy: squash
+`);
+    const config = loadConfig(path);
+    assert.equal(config.repos.length, 2);
+    // Both expanded repos should have merged prOptions
+    assert.deepEqual(config.repos[0].prOptions, {
+      merge: "auto",
+      mergeStrategy: "squash",
+    });
+    assert.deepEqual(config.repos[1].prOptions, {
+      merge: "auto",
+      mergeStrategy: "squash",
+    });
+  });
+});
+
 describe("convertContentToString", () => {
   test("produces valid JSON for .json files", () => {
     const input = { key: "value", nested: { foo: "bar" } };

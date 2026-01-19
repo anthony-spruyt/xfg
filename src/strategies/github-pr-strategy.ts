@@ -1,11 +1,17 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { escapeShellArg } from "../shell-utils.js";
-import { isGitHubRepo } from "../repo-detector.js";
+import { isGitHubRepo, GitHubRepoInfo } from "../repo-detector.js";
 import { PRResult } from "../pr-creator.js";
-import { BasePRStrategy, PRStrategyOptions } from "./pr-strategy.js";
+import {
+  BasePRStrategy,
+  PRStrategyOptions,
+  MergeOptions,
+  MergeResult,
+} from "./pr-strategy.js";
 import { logger } from "../logger.js";
 import { withRetry, isPermanentError } from "../retry-utils.js";
+import type { MergeStrategy } from "../config.js";
 
 export class GitHubPRStrategy extends BasePRStrategy {
   async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {
@@ -87,5 +93,150 @@ export class GitHubPRStrategy extends BasePRStrategy {
         );
       }
     }
+  }
+
+  /**
+   * Check if auto-merge is enabled on the repository.
+   */
+  async checkAutoMergeEnabled(
+    repoInfo: GitHubRepoInfo,
+    workDir: string,
+    retries: number = 3,
+  ): Promise<boolean> {
+    const command = `gh api repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --jq '.allow_auto_merge // false'`;
+
+    try {
+      const result = await withRetry(
+        () => this.executor.exec(command, workDir),
+        { retries },
+      );
+      return result.trim() === "true";
+    } catch (error) {
+      // If we can't check, assume auto-merge is not enabled
+      logger.info(
+        `Warning: Could not check auto-merge status: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Build merge strategy flag for gh pr merge command.
+   */
+  private getMergeStrategyFlag(strategy?: MergeStrategy): string {
+    switch (strategy) {
+      case "squash":
+        return "--squash";
+      case "rebase":
+        return "--rebase";
+      case "merge":
+      default:
+        return "--merge";
+    }
+  }
+
+  async merge(options: MergeOptions): Promise<MergeResult> {
+    const { prUrl, config, workDir, retries = 3 } = options;
+
+    // Manual mode: do nothing
+    if (config.mode === "manual") {
+      return {
+        success: true,
+        message: "PR left open for manual review",
+        merged: false,
+      };
+    }
+
+    const strategyFlag = this.getMergeStrategyFlag(config.strategy);
+    const deleteBranchFlag = config.deleteBranch ? "--delete-branch" : "";
+
+    if (config.mode === "auto") {
+      // Check if auto-merge is enabled on the repo
+      // Extract owner/repo from PR URL
+      const match = prUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
+      if (match) {
+        const repoInfo: GitHubRepoInfo = {
+          type: "github",
+          gitUrl: prUrl,
+          owner: match[1],
+          repo: match[2],
+        };
+        const autoMergeEnabled = await this.checkAutoMergeEnabled(
+          repoInfo,
+          workDir,
+          retries,
+        );
+
+        if (!autoMergeEnabled) {
+          logger.info(
+            `Warning: Auto-merge not enabled for '${repoInfo.owner}/${repoInfo.repo}'. PR left open for manual review.`,
+          );
+          logger.info(
+            `To enable: gh repo edit ${repoInfo.owner}/${repoInfo.repo} --enable-auto-merge (requires admin)`,
+          );
+          return {
+            success: true,
+            message: `Auto-merge not enabled for repository. PR left open for manual review.`,
+            merged: false,
+            autoMergeEnabled: false,
+          };
+        }
+      }
+
+      // Enable auto-merge
+      const command =
+        `gh pr merge ${escapeShellArg(prUrl)} --auto ${strategyFlag} ${deleteBranchFlag}`.trim();
+
+      try {
+        await withRetry(() => this.executor.exec(command, workDir), {
+          retries,
+        });
+
+        return {
+          success: true,
+          message: "Auto-merge enabled. PR will merge when checks pass.",
+          merged: false,
+          autoMergeEnabled: true,
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return {
+          success: false,
+          message: `Failed to enable auto-merge: ${message}`,
+          merged: false,
+        };
+      }
+    }
+
+    if (config.mode === "force") {
+      // Force merge using admin privileges
+      const command =
+        `gh pr merge ${escapeShellArg(prUrl)} --admin ${strategyFlag} ${deleteBranchFlag}`.trim();
+
+      try {
+        await withRetry(() => this.executor.exec(command, workDir), {
+          retries,
+        });
+
+        return {
+          success: true,
+          message: "PR merged successfully using admin privileges.",
+          merged: true,
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return {
+          success: false,
+          message: `Failed to force merge: ${message}`,
+          merged: false,
+        };
+      }
+    }
+
+    return {
+      success: false,
+      message: `Unknown merge mode: ${config.mode}`,
+      merged: false,
+    };
   }
 }

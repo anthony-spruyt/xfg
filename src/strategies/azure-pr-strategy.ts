@@ -3,7 +3,12 @@ import { join } from "node:path";
 import { escapeShellArg } from "../shell-utils.js";
 import { AzureDevOpsRepoInfo, isAzureDevOpsRepo } from "../repo-detector.js";
 import { PRResult } from "../pr-creator.js";
-import { BasePRStrategy, PRStrategyOptions } from "./pr-strategy.js";
+import {
+  BasePRStrategy,
+  PRStrategyOptions,
+  MergeOptions,
+  MergeResult,
+} from "./pr-strategy.js";
 import { logger } from "../logger.js";
 import { withRetry, isPermanentError } from "../retry-utils.js";
 import { CommandExecutor } from "../command-executor.js";
@@ -100,5 +105,118 @@ export class AzurePRStrategy extends BasePRStrategy {
         );
       }
     }
+  }
+
+  /**
+   * Extract PR ID and repo info from Azure DevOps PR URL.
+   */
+  private parsePRUrl(prUrl: string): {
+    prId: string;
+    organization: string;
+    project: string;
+    repo: string;
+  } | null {
+    // URL format: https://dev.azure.com/{org}/{project}/_git/{repo}/pullrequest/{prId}
+    const match = prUrl.match(
+      /dev\.azure\.com\/([^/]+)\/([^/]+)\/_git\/([^/]+)\/pullrequest\/(\d+)/,
+    );
+    if (!match) return null;
+
+    return {
+      organization: decodeURIComponent(match[1]),
+      project: decodeURIComponent(match[2]),
+      repo: decodeURIComponent(match[3]),
+      prId: match[4],
+    };
+  }
+
+  async merge(options: MergeOptions): Promise<MergeResult> {
+    const { prUrl, config, workDir, retries = 3 } = options;
+
+    // Manual mode: do nothing
+    if (config.mode === "manual") {
+      return {
+        success: true,
+        message: "PR left open for manual review",
+        merged: false,
+      };
+    }
+
+    // Parse PR URL to extract details
+    const prInfo = this.parsePRUrl(prUrl);
+    if (!prInfo) {
+      return {
+        success: false,
+        message: `Invalid Azure DevOps PR URL: ${prUrl}`,
+        merged: false,
+      };
+    }
+
+    const orgUrl = `https://dev.azure.com/${encodeURIComponent(prInfo.organization)}`;
+    const squashFlag = config.strategy === "squash" ? "--squash true" : "";
+    const deleteBranchFlag = config.deleteBranch
+      ? "--delete-source-branch true"
+      : "";
+
+    if (config.mode === "auto") {
+      // Enable auto-complete (no pre-check needed - always available in Azure DevOps)
+      const command =
+        `az repos pr update --id ${escapeShellArg(prInfo.prId)} --auto-complete true ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(prInfo.project)}`.trim();
+
+      try {
+        await withRetry(() => this.executor.exec(command, workDir), {
+          retries,
+        });
+
+        return {
+          success: true,
+          message:
+            "Auto-complete enabled. PR will merge when all policies pass.",
+          merged: false,
+          autoMergeEnabled: true,
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return {
+          success: false,
+          message: `Failed to enable auto-complete: ${message}`,
+          merged: false,
+        };
+      }
+    }
+
+    if (config.mode === "force") {
+      // Bypass policies and complete the PR
+      const bypassReason =
+        config.bypassReason ?? "Automated config sync via json-config-sync";
+
+      const command =
+        `az repos pr update --id ${escapeShellArg(prInfo.prId)} --bypass-policy true --bypass-policy-reason ${escapeShellArg(bypassReason)} --status completed ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(prInfo.project)}`.trim();
+
+      try {
+        await withRetry(() => this.executor.exec(command, workDir), {
+          retries,
+        });
+
+        return {
+          success: true,
+          message: "PR completed by bypassing policies.",
+          merged: true,
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return {
+          success: false,
+          message: `Failed to bypass policies and complete PR: ${message}`,
+          merged: false,
+        };
+      }
+    }
+
+    return {
+      success: false,
+      message: `Unknown merge mode: ${config.mode}`,
+      merged: false,
+    };
   }
 }

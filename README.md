@@ -73,6 +73,7 @@ json-config-sync --config ./config.yaml
 - **Empty Files** - Create files with no content (e.g., `.prettierignore`)
 - **YAML Comments** - Add header comments and schema directives to YAML files
 - **GitHub & Azure DevOps** - Works with both platforms
+- **Auto-Merge PRs** - Automatically merge PRs when checks pass, or force merge with admin privileges
 - **Dry-Run Mode** - Preview changes without creating PRs
 - **Error Resilience** - Continues processing if individual repos fail
 - **Automatic Retries** - Retries transient network errors with exponential backoff
@@ -135,13 +136,16 @@ json-config-sync --config ./config.yaml --branch feature/update-eslint
 
 ### Options
 
-| Option       | Alias | Description                                           | Required |
-| ------------ | ----- | ----------------------------------------------------- | -------- |
-| `--config`   | `-c`  | Path to YAML config file                              | Yes      |
-| `--dry-run`  | `-d`  | Show what would be done without making changes        | No       |
-| `--work-dir` | `-w`  | Temporary directory for cloning (default: `./tmp`)    | No       |
-| `--retries`  | `-r`  | Number of retries for network operations (default: 3) | No       |
-| `--branch`   | `-b`  | Override branch name (default: `chore/sync-config`)   | No       |
+| Option             | Alias | Description                                                                          | Required |
+| ------------------ | ----- | ------------------------------------------------------------------------------------ | -------- |
+| `--config`         | `-c`  | Path to YAML config file                                                             | Yes      |
+| `--dry-run`        | `-d`  | Show what would be done without making changes                                       | No       |
+| `--work-dir`       | `-w`  | Temporary directory for cloning (default: `./tmp`)                                   | No       |
+| `--retries`        | `-r`  | Number of retries for network operations (default: 3)                                | No       |
+| `--branch`         | `-b`  | Override branch name (default: `chore/sync-config`)                                  | No       |
+| `--merge`          | `-m`  | PR merge mode: `manual` (default), `auto` (merge when checks pass), `force` (bypass) | No       |
+| `--merge-strategy` |       | Merge strategy: `merge` (default), `squash`, `rebase`                                | No       |
+| `--delete-branch`  |       | Delete source branch after merge                                                     | No       |
 
 ## Configuration Format
 
@@ -164,10 +168,11 @@ repos: # List of repositories
 
 ### Root-Level Fields
 
-| Field   | Description                        | Required |
-| ------- | ---------------------------------- | -------- |
-| `files` | Map of target filenames to configs | Yes      |
-| `repos` | Array of repository configurations | Yes      |
+| Field       | Description                                          | Required |
+| ----------- | ---------------------------------------------------- | -------- |
+| `files`     | Map of target filenames to configs                   | Yes      |
+| `repos`     | Array of repository configurations                   | Yes      |
+| `prOptions` | Global PR merge options (can be overridden per-repo) | No       |
 
 ### Per-File Fields
 
@@ -182,10 +187,20 @@ repos: # List of repositories
 
 ### Per-Repo Fields
 
-| Field   | Description                        | Required |
-| ------- | ---------------------------------- | -------- |
-| `git`   | Git URL (string) or array of URLs  | Yes      |
-| `files` | Per-repo file overrides (optional) | No       |
+| Field       | Description                                  | Required |
+| ----------- | -------------------------------------------- | -------- |
+| `git`       | Git URL (string) or array of URLs            | Yes      |
+| `files`     | Per-repo file overrides (optional)           | No       |
+| `prOptions` | Per-repo PR merge options (overrides global) | No       |
+
+### PR Options Fields
+
+| Field           | Description                                                                 | Default  |
+| --------------- | --------------------------------------------------------------------------- | -------- |
+| `merge`         | Merge mode: `manual` (leave open), `auto` (merge when checks pass), `force` | `manual` |
+| `mergeStrategy` | How to merge: `merge`, `squash`, `rebase`                                   | `merge`  |
+| `deleteBranch`  | Delete source branch after merge                                            | `false`  |
+| `bypassReason`  | Reason for bypassing policies (Azure DevOps only, required for `force`)     | -        |
 
 ### Per-Repo File Override Fields
 
@@ -631,6 +646,60 @@ config/
 ```
 
 **Security:** File references are restricted to the config file's directory tree. Paths like `@../../../etc/passwd` or `@/etc/passwd` are blocked.
+
+### Auto-Merge PRs
+
+Configure PRs to merge automatically when checks pass, or force merge using admin privileges:
+
+```yaml
+files:
+  .prettierrc.json:
+    content:
+      semi: false
+      singleQuote: true
+
+# Global PR options - apply to all repos
+prOptions:
+  merge: auto # auto-merge when checks pass
+  mergeStrategy: squash # squash commits
+  deleteBranch: true # cleanup after merge
+
+repos:
+  # These repos use global prOptions (auto-merge)
+  - git:
+      - git@github.com:org/frontend.git
+      - git@github.com:org/backend.git
+
+  # This repo overrides to force merge (bypass required reviews)
+  - git: git@github.com:org/internal-tool.git
+    prOptions:
+      merge: force
+      bypassReason: "Automated config sync" # Azure DevOps only
+```
+
+**Merge Modes:**
+
+| Mode     | GitHub Behavior                         | Azure DevOps Behavior                  |
+| -------- | --------------------------------------- | -------------------------------------- |
+| `manual` | Leave PR open for review (default)      | Leave PR open for review               |
+| `auto`   | Enable auto-merge (requires repo setup) | Enable auto-complete                   |
+| `force`  | Merge with `--admin` (bypass checks)    | Bypass policies with `--bypass-policy` |
+
+**GitHub Auto-Merge Note:** The `auto` mode requires auto-merge to be enabled in the repository settings. If not enabled, the tool will warn and leave the PR open for manual review. Enable it with:
+
+```bash
+gh repo edit org/repo --enable-auto-merge
+```
+
+**CLI Override:** You can override config file settings with CLI flags:
+
+```bash
+# Force merge all PRs (useful for urgent updates)
+json-config-sync --config ./config.yaml --merge force
+
+# Enable auto-merge with squash
+json-config-sync --config ./config.yaml --merge auto --merge-strategy squash --delete-branch
+```
 
 ## Supported Git URL Formats
 

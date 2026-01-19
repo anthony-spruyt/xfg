@@ -418,3 +418,266 @@ describe("GitHubPRStrategy URL extraction", () => {
     assert.equal(match, null);
   });
 });
+
+describe("GitHubPRStrategy merge", () => {
+  const githubRepoInfo: GitHubRepoInfo = {
+    type: "github",
+    gitUrl: "git@github.com:owner/repo.git",
+    owner: "owner",
+    repo: "repo",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  describe("checkAutoMergeEnabled", () => {
+    test("returns true when auto-merge is enabled", async () => {
+      mockExecutor.responses.set("gh api repos", "true");
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const result = await strategy.checkAutoMergeEnabled(
+        githubRepoInfo,
+        testDir,
+        0,
+      );
+
+      assert.equal(result, true);
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].command.includes("gh api repos"));
+      assert.ok(mockExecutor.calls[0].command.includes("allow_auto_merge"));
+    });
+
+    test("returns false when auto-merge is disabled", async () => {
+      mockExecutor.responses.set("gh api repos", "false");
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const result = await strategy.checkAutoMergeEnabled(
+        githubRepoInfo,
+        testDir,
+        0,
+      );
+
+      assert.equal(result, false);
+    });
+
+    test("returns false on API error", async () => {
+      mockExecutor.responses.set("gh api repos", new Error("API error"));
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const result = await strategy.checkAutoMergeEnabled(
+        githubRepoInfo,
+        testDir,
+        0,
+      );
+
+      assert.equal(result, false);
+    });
+  });
+
+  describe("merge with manual mode", () => {
+    test("returns success without making any calls", async () => {
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        config: { mode: "manual" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, true);
+      assert.equal(result.merged, false);
+      assert.ok(result.message.includes("manual review"));
+      assert.equal(mockExecutor.calls.length, 0);
+    });
+  });
+
+  describe("merge with auto mode", () => {
+    test("enables auto-merge when repo has it enabled", async () => {
+      mockExecutor.responses.set("gh api repos", "true");
+      mockExecutor.responses.set("gh pr merge", "");
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        config: { mode: "auto" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, true);
+      assert.equal(result.merged, false);
+      assert.equal(result.autoMergeEnabled, true);
+      assert.ok(result.message.includes("Auto-merge enabled"));
+
+      // Should call gh api to check, then gh pr merge --auto
+      assert.equal(mockExecutor.calls.length, 2);
+      assert.ok(mockExecutor.calls[1].command.includes("gh pr merge"));
+      assert.ok(mockExecutor.calls[1].command.includes("--auto"));
+    });
+
+    test("falls back to manual when auto-merge not enabled on repo", async () => {
+      mockExecutor.responses.set("gh api repos", "false");
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        config: { mode: "auto" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, true);
+      assert.equal(result.merged, false);
+      assert.equal(result.autoMergeEnabled, false);
+      assert.ok(result.message.includes("Auto-merge not enabled"));
+
+      // Should only call gh api to check, not gh pr merge
+      assert.equal(mockExecutor.calls.length, 1);
+    });
+
+    test("uses squash strategy when configured", async () => {
+      mockExecutor.responses.set("gh api repos", "true");
+      mockExecutor.responses.set("gh pr merge", "");
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        config: { mode: "auto", strategy: "squash" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      const mergeCall = mockExecutor.calls.find((c) =>
+        c.command.includes("gh pr merge"),
+      );
+      assert.ok(mergeCall, "Should have called gh pr merge");
+      assert.ok(mergeCall.command.includes("--squash"));
+    });
+
+    test("uses rebase strategy when configured", async () => {
+      mockExecutor.responses.set("gh api repos", "true");
+      mockExecutor.responses.set("gh pr merge", "");
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        config: { mode: "auto", strategy: "rebase" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      const mergeCall = mockExecutor.calls.find((c) =>
+        c.command.includes("gh pr merge"),
+      );
+      assert.ok(mergeCall);
+      assert.ok(mergeCall.command.includes("--rebase"));
+    });
+
+    test("uses delete-branch flag when configured", async () => {
+      mockExecutor.responses.set("gh api repos", "true");
+      mockExecutor.responses.set("gh pr merge", "");
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        config: { mode: "auto", deleteBranch: true },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      const mergeCall = mockExecutor.calls.find((c) =>
+        c.command.includes("gh pr merge"),
+      );
+      assert.ok(mergeCall);
+      assert.ok(mergeCall.command.includes("--delete-branch"));
+    });
+
+    test("returns failure when gh pr merge fails", async () => {
+      mockExecutor.responses.set("gh api repos", "true");
+      mockExecutor.responses.set("gh pr merge", new Error("Merge failed"));
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        config: { mode: "auto" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, false);
+      assert.equal(result.merged, false);
+      assert.ok(result.message.includes("Failed to enable auto-merge"));
+    });
+  });
+
+  describe("merge with force mode", () => {
+    test("uses admin flag to bypass requirements", async () => {
+      mockExecutor.responses.set("gh pr merge", "");
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        config: { mode: "force" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, true);
+      assert.equal(result.merged, true);
+      assert.ok(result.message.includes("admin privileges"));
+
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].command.includes("gh pr merge"));
+      assert.ok(mockExecutor.calls[0].command.includes("--admin"));
+    });
+
+    test("uses merge strategy with force mode", async () => {
+      mockExecutor.responses.set("gh pr merge", "");
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        config: { mode: "force", strategy: "squash", deleteBranch: true },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      const mergeCall = mockExecutor.calls[0];
+      assert.ok(mergeCall.command.includes("--admin"));
+      assert.ok(mergeCall.command.includes("--squash"));
+      assert.ok(mergeCall.command.includes("--delete-branch"));
+    });
+
+    test("returns failure when force merge fails", async () => {
+      mockExecutor.responses.set(
+        "gh pr merge",
+        new Error("Must be admin to merge"),
+      );
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        config: { mode: "force" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, false);
+      assert.equal(result.merged, false);
+      assert.ok(result.message.includes("Failed to force merge"));
+    });
+  });
+});

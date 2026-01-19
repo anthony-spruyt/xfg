@@ -2,7 +2,11 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { RepoInfo } from "./repo-detector.js";
-import { getPRStrategy } from "./strategies/index.js";
+import {
+  getPRStrategy,
+  MergeResult,
+  PRMergeConfig,
+} from "./strategies/index.js";
 
 // Re-export for backwards compatibility and testing
 export { escapeShellArg } from "./shell-utils.js";
@@ -142,6 +146,42 @@ export async function createPR(options: PROptions): Promise<PRResult> {
     body,
     branchName,
     baseBranch,
+    workDir,
+    retries,
+  });
+}
+
+export interface MergePROptions {
+  repoInfo: RepoInfo;
+  prUrl: string;
+  mergeConfig: PRMergeConfig;
+  workDir: string;
+  dryRun?: boolean;
+  retries?: number;
+}
+
+export async function mergePR(options: MergePROptions): Promise<MergeResult> {
+  const { repoInfo, prUrl, mergeConfig, workDir, dryRun, retries } = options;
+
+  if (dryRun) {
+    const modeText =
+      mergeConfig.mode === "force"
+        ? "force merge"
+        : mergeConfig.mode === "auto"
+          ? "enable auto-merge"
+          : "leave open for manual review";
+    return {
+      success: true,
+      message: `[DRY RUN] Would ${modeText}`,
+      merged: false,
+    };
+  }
+
+  // Get the appropriate strategy and execute merge
+  const strategy = getPRStrategy(repoInfo);
+  return strategy.merge({
+    prUrl,
+    config: mergeConfig,
     workDir,
     retries,
   });
