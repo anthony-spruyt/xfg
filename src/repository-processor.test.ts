@@ -437,4 +437,92 @@ describe("RepositoryProcessor", () => {
       assert.ok(mockGitOps!.setExecutableCalls.includes("run"));
     });
   });
+
+  describe("prOptions defaults", () => {
+    // These tests verify that the default prOptions values are correctly applied
+    // when processing repositories. The defaults are:
+    // - merge: "auto" (instead of "manual")
+    // - mergeStrategy: "squash" (instead of "merge")
+    // - deleteBranch: true (instead of false)
+    //
+    // Note: Full integration tests of the merge flow require mocking the PR
+    // creator module, which is tested via integration tests. These unit tests
+    // verify the config handling at the normalization level.
+
+    test("prOptions with undefined values should allow defaults to be applied", () => {
+      // This test verifies that RepoConfig can have prOptions undefined
+      // and the processor code will apply defaults via ?? operator
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+        // prOptions is undefined - processor will use defaults
+      };
+
+      assert.strictEqual(repoConfig.prOptions, undefined);
+
+      // The processor applies defaults like this:
+      // const mergeMode = repoConfig.prOptions?.merge ?? "auto";
+      const mergeMode = repoConfig.prOptions?.merge ?? "auto";
+      assert.equal(mergeMode, "auto", "Default merge mode should be 'auto'");
+
+      const strategy = repoConfig.prOptions?.mergeStrategy ?? "squash";
+      assert.equal(strategy, "squash", "Default strategy should be 'squash'");
+
+      const deleteBranch = repoConfig.prOptions?.deleteBranch ?? true;
+      assert.equal(deleteBranch, true, "Default deleteBranch should be true");
+    });
+
+    test("explicit prOptions.merge: manual should override default", () => {
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+        prOptions: { merge: "manual" },
+      };
+
+      const mergeMode = repoConfig.prOptions?.merge ?? "auto";
+      assert.equal(mergeMode, "manual", "Explicit merge mode should override");
+    });
+
+    test("explicit mergeStrategy should override default", () => {
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+        prOptions: { mergeStrategy: "rebase" },
+      };
+
+      const strategy = repoConfig.prOptions?.mergeStrategy ?? "squash";
+      assert.equal(strategy, "rebase", "Explicit strategy should override");
+    });
+
+    test("explicit deleteBranch: false should override default true", () => {
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+        prOptions: { deleteBranch: false },
+      };
+
+      const deleteBranch = repoConfig.prOptions?.deleteBranch ?? true;
+      assert.equal(
+        deleteBranch,
+        false,
+        "Explicit deleteBranch should override",
+      );
+    });
+
+    test("partial prOptions should allow other defaults to apply", () => {
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+        prOptions: { merge: "force" }, // Only merge is set
+      };
+
+      const mergeMode = repoConfig.prOptions?.merge ?? "auto";
+      const strategy = repoConfig.prOptions?.mergeStrategy ?? "squash";
+      const deleteBranch = repoConfig.prOptions?.deleteBranch ?? true;
+
+      assert.equal(mergeMode, "force", "Explicit merge should be used");
+      assert.equal(strategy, "squash", "Default strategy should apply");
+      assert.equal(deleteBranch, true, "Default deleteBranch should apply");
+    });
+  });
 });

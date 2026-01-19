@@ -216,7 +216,7 @@ export class RepositoryProcessor {
       });
 
       // Step 10: Handle merge options if configured
-      const mergeMode = repoConfig.prOptions?.merge ?? "manual";
+      const mergeMode = repoConfig.prOptions?.merge ?? "auto";
       let mergeResult: ProcessorResult["mergeResult"] | undefined;
 
       if (prResult.success && prResult.url && mergeMode !== "manual") {
@@ -224,8 +224,8 @@ export class RepositoryProcessor {
 
         const mergeConfig: PRMergeConfig = {
           mode: mergeMode,
-          strategy: repoConfig.prOptions?.mergeStrategy,
-          deleteBranch: repoConfig.prOptions?.deleteBranch,
+          strategy: repoConfig.prOptions?.mergeStrategy ?? "squash",
+          deleteBranch: repoConfig.prOptions?.deleteBranch ?? true,
           bypassReason: repoConfig.prOptions?.bypassReason,
         };
 

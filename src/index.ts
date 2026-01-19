@@ -77,7 +77,7 @@ program
   )
   .option(
     "-m, --merge <mode>",
-    "PR merge mode: manual (default), auto (merge when checks pass), force (bypass requirements)",
+    "PR merge mode: manual, auto (default, merge when checks pass), force (bypass requirements)",
     (value: string): MergeMode => {
       const valid: MergeMode[] = ["manual", "auto", "force"];
       if (!valid.includes(value as MergeMode)) {
@@ -90,7 +90,7 @@ program
   )
   .option(
     "--merge-strategy <strategy>",
-    "Merge strategy: merge (default), squash, rebase",
+    "Merge strategy: merge, squash (default), rebase",
     (value: string): MergeStrategy => {
       const valid: MergeStrategy[] = ["merge", "squash", "rebase"];
       if (!valid.includes(value as MergeStrategy)) {

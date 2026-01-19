@@ -139,19 +139,19 @@
         "merge": {
           "type": "string",
           "enum": ["manual", "auto", "force"],
-          "default": "manual",
-          "description": "Merge mode: 'manual' leaves PR open for review (default), 'auto' enables auto-merge when checks pass, 'force' bypasses requirements using admin privileges"
+          "default": "auto",
+          "description": "Merge mode: 'manual' leaves PR open for review, 'auto' enables auto-merge when checks pass, 'force' bypasses requirements using admin privileges. Default: auto"
         },
         "mergeStrategy": {
           "type": "string",
           "enum": ["merge", "squash", "rebase"],
-          "default": "merge",
-          "description": "How to merge the PR: 'merge' creates a merge commit, 'squash' squashes all commits, 'rebase' rebases commits onto base"
+          "default": "squash",
+          "description": "How to merge the PR: 'merge' creates a merge commit, 'squash' squashes all commits, 'rebase' rebases commits onto base. Default: squash"
         },
         "deleteBranch": {
           "type": "boolean",
-          "default": false,
-          "description": "Delete the source branch after merge completes"
+          "default": true,
+          "description": "Delete the source branch after merge completes. Default: true"
         },
         "bypassReason": {
           "type": "string",
