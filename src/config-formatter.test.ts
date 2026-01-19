@@ -83,8 +83,8 @@ describe("convertContentToString", () => {
     const content = { key: "value", nested: { a: 1 } };
     const result = convertContentToString(content, "config.yaml");
 
-    // Should contain YAML format (no quotes around simple strings, colons)
-    assert.ok(result.includes("key: value"));
+    // Should contain YAML format with quoted strings
+    assert.ok(result.includes('key: "value"'));
     assert.ok(result.includes("nested:"));
     assert.ok(result.includes("  a: 1"));
   });
@@ -92,7 +92,7 @@ describe("convertContentToString", () => {
   test("converts to YAML for .yml files", () => {
     const content = { key: "value" };
     const result = convertContentToString(content, "config.yml");
-    assert.ok(result.includes("key: value"));
+    assert.ok(result.includes('key: "value"'));
   });
 
   test("handles arrays in JSON format", () => {
@@ -105,9 +105,9 @@ describe("convertContentToString", () => {
   test("handles arrays in YAML format", () => {
     const content = { items: ["a", "b", "c"] };
     const result = convertContentToString(content, "config.yaml");
-    assert.ok(result.includes("- a"));
-    assert.ok(result.includes("- b"));
-    assert.ok(result.includes("- c"));
+    assert.ok(result.includes('- "a"'));
+    assert.ok(result.includes('- "b"'));
+    assert.ok(result.includes('- "c"'));
   });
 
   test("handles empty object", () => {
@@ -135,7 +135,7 @@ describe("convertContentToString", () => {
     const yamlResult = convertContentToString(content, "config.yaml");
     assert.ok(yamlResult.includes("level1:"));
     assert.ok(yamlResult.includes("level2:"));
-    assert.ok(yamlResult.includes("level3: deep"));
+    assert.ok(yamlResult.includes('level3: "deep"'));
   });
 
   test("handles special characters in JSON", () => {
@@ -221,7 +221,7 @@ describe("convertContentToString with YAML header comments", () => {
         "# yaml-language-server: $schema=https://example.com/schema.json",
       ),
     );
-    assert.ok(result.includes("key: value"));
+    assert.ok(result.includes('key: "value"'));
   });
 
   test("header adds comment lines", () => {
@@ -230,7 +230,7 @@ describe("convertContentToString with YAML header comments", () => {
       header: ["This is a comment"],
     });
     assert.ok(result.includes("# This is a comment"));
-    assert.ok(result.includes("key: value"));
+    assert.ok(result.includes('key: "value"'));
   });
 
   test("multi-line header works correctly", () => {
@@ -268,7 +268,7 @@ describe("convertContentToString with YAML header comments", () => {
       ),
     );
     assert.ok(result.includes("# Custom comment"));
-    assert.ok(result.includes("key: value"));
+    assert.ok(result.includes('key: "value"'));
   });
 });
 
@@ -446,5 +446,92 @@ describe("convertContentToString with text content", () => {
       );
       assert.equal(result, "dist/\ncoverage/\n");
     });
+  });
+});
+
+describe("convertContentToString YAML string quoting", () => {
+  // All strings are quoted for YAML 1.1 compatibility.
+  // The yaml library outputs YAML 1.2 where values like "06:00" are plain strings,
+  // but many tools (e.g., Dependabot) use YAML 1.1 parsers that interpret
+  // unquoted "06:00" as sexagesimal (360) or "yes"/"no" as booleans.
+
+  test("quotes time values to prevent sexagesimal interpretation", () => {
+    const content = {
+      schedule: {
+        time: "06:00",
+        timezone: "Australia/Melbourne",
+      },
+    };
+    const result = convertContentToString(content, "config.yaml");
+    assert.ok(
+      result.includes('time: "06:00"'),
+      `Expected time to be quoted, got: ${result}`,
+    );
+    assert.ok(
+      result.includes('timezone: "Australia/Melbourne"'),
+      `Expected timezone to be quoted, got: ${result}`,
+    );
+  });
+
+  test("quotes boolean-like string values", () => {
+    const content = { a: "yes", b: "no", c: "on", d: "off" };
+    const result = convertContentToString(content, "config.yaml");
+    assert.ok(result.includes('a: "yes"'), "yes should be quoted");
+    assert.ok(result.includes('b: "no"'), "no should be quoted");
+    assert.ok(result.includes('c: "on"'), "on should be quoted");
+    assert.ok(result.includes('d: "off"'), "off should be quoted");
+  });
+
+  test("does not quote actual booleans", () => {
+    const content = { enabled: true, disabled: false };
+    const result = convertContentToString(content, "config.yaml");
+    assert.ok(result.includes("enabled: true"), "Boolean true stays unquoted");
+    assert.ok(
+      result.includes("disabled: false"),
+      "Boolean false stays unquoted",
+    );
+  });
+
+  test("does not quote actual null", () => {
+    const content = { empty: null };
+    const result = convertContentToString(content, "config.yaml");
+    assert.ok(
+      result.includes("empty: null") || result.includes("empty:"),
+      "Actual null stays unquoted",
+    );
+  });
+
+  test("does not quote numbers", () => {
+    const content = { count: 42, ratio: 3.14 };
+    const result = convertContentToString(content, "config.yaml");
+    assert.ok(result.includes("count: 42"), "Numbers stay unquoted");
+    assert.ok(result.includes("ratio: 3.14"), "Floats stay unquoted");
+  });
+
+  test("quotes all strings in nested structures", () => {
+    const content = {
+      updates: [
+        {
+          schedule: {
+            interval: "daily",
+            time: "06:00",
+          },
+        },
+      ],
+    };
+    const result = convertContentToString(content, "dependabot.yaml");
+    assert.ok(
+      result.includes('interval: "daily"'),
+      "interval should be quoted",
+    );
+    assert.ok(result.includes('time: "06:00"'), "time should be quoted");
+  });
+
+  test("quotes strings in arrays", () => {
+    const content = { options: ["yes", "no", "maybe"] };
+    const result = convertContentToString(content, "config.yaml");
+    assert.ok(result.includes('- "yes"'), "yes in array should be quoted");
+    assert.ok(result.includes('- "no"'), "no in array should be quoted");
+    assert.ok(result.includes('- "maybe"'), "maybe in array should be quoted");
   });
 });

@@ -130,7 +130,15 @@ export function convertContentToString(
       }
     }
 
-    return stringify(doc, { indent: 2 });
+    // Quote all string values for YAML 1.1 compatibility.
+    // The yaml library outputs YAML 1.2 where "06:00" is a plain string,
+    // but many tools (e.g., Dependabot) use YAML 1.1 parsers that interpret
+    // unquoted values like "06:00" as sexagesimal (360) or "yes"/"no" as booleans.
+    return stringify(doc, {
+      indent: 2,
+      defaultStringType: "QUOTE_DOUBLE",
+      defaultKeyType: "PLAIN",
+    });
   }
 
   if (format === "json5") {
