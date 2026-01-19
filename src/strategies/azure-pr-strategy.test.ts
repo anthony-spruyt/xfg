@@ -435,3 +435,221 @@ describe("AzurePRStrategy URL building", () => {
     assert.equal(expectedOrgUrl, "https://dev.azure.com/test-organization");
   });
 });
+
+describe("AzurePRStrategy merge", () => {
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  const validPRUrl =
+    "https://dev.azure.com/myorg/myproject/_git/myrepo/pullrequest/123";
+
+  describe("merge with manual mode", () => {
+    test("returns success without making any calls", async () => {
+      const strategy = new AzurePRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: validPRUrl,
+        config: { mode: "manual" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, true);
+      assert.equal(result.merged, false);
+      assert.ok(result.message.includes("manual review"));
+      assert.equal(mockExecutor.calls.length, 0);
+    });
+  });
+
+  describe("merge with auto mode", () => {
+    test("enables auto-complete", async () => {
+      mockExecutor.responses.set("az repos pr update", "");
+
+      const strategy = new AzurePRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: validPRUrl,
+        config: { mode: "auto" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, true);
+      assert.equal(result.merged, false);
+      assert.equal(result.autoMergeEnabled, true);
+      assert.ok(result.message.includes("Auto-complete enabled"));
+
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].command.includes("az repos pr update"));
+      assert.ok(mockExecutor.calls[0].command.includes("--auto-complete true"));
+    });
+
+    test("uses squash flag when configured", async () => {
+      mockExecutor.responses.set("az repos pr update", "");
+
+      const strategy = new AzurePRStrategy(mockExecutor);
+      await strategy.merge({
+        prUrl: validPRUrl,
+        config: { mode: "auto", strategy: "squash" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      const command = mockExecutor.calls[0].command;
+      assert.ok(command.includes("--squash true"));
+    });
+
+    test("uses delete-source-branch flag when configured", async () => {
+      mockExecutor.responses.set("az repos pr update", "");
+
+      const strategy = new AzurePRStrategy(mockExecutor);
+      await strategy.merge({
+        prUrl: validPRUrl,
+        config: { mode: "auto", deleteBranch: true },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      const command = mockExecutor.calls[0].command;
+      assert.ok(command.includes("--delete-source-branch true"));
+    });
+
+    test("returns failure when command fails", async () => {
+      mockExecutor.responses.set(
+        "az repos pr update",
+        new Error("Update failed"),
+      );
+
+      const strategy = new AzurePRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: validPRUrl,
+        config: { mode: "auto" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, false);
+      assert.equal(result.merged, false);
+      assert.ok(result.message.includes("Failed to enable auto-complete"));
+    });
+  });
+
+  describe("merge with force mode", () => {
+    test("bypasses policies and completes PR", async () => {
+      mockExecutor.responses.set("az repos pr update", "");
+
+      const strategy = new AzurePRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: validPRUrl,
+        config: { mode: "force" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, true);
+      assert.equal(result.merged, true);
+      assert.ok(result.message.includes("bypassing policies"));
+
+      assert.equal(mockExecutor.calls.length, 1);
+      const command = mockExecutor.calls[0].command;
+      assert.ok(command.includes("--bypass-policy true"));
+      assert.ok(command.includes("--status completed"));
+    });
+
+    test("uses custom bypass reason when provided", async () => {
+      mockExecutor.responses.set("az repos pr update", "");
+
+      const strategy = new AzurePRStrategy(mockExecutor);
+      await strategy.merge({
+        prUrl: validPRUrl,
+        config: { mode: "force", bypassReason: "Urgent hotfix" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      const command = mockExecutor.calls[0].command;
+      assert.ok(command.includes("--bypass-policy-reason"));
+      assert.ok(command.includes("Urgent hotfix"));
+    });
+
+    test("uses default bypass reason when not provided", async () => {
+      mockExecutor.responses.set("az repos pr update", "");
+
+      const strategy = new AzurePRStrategy(mockExecutor);
+      await strategy.merge({
+        prUrl: validPRUrl,
+        config: { mode: "force" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      const command = mockExecutor.calls[0].command;
+      assert.ok(command.includes("--bypass-policy-reason"));
+      assert.ok(command.includes("json-config-sync"));
+    });
+
+    test("uses squash and delete-branch with force mode", async () => {
+      mockExecutor.responses.set("az repos pr update", "");
+
+      const strategy = new AzurePRStrategy(mockExecutor);
+      await strategy.merge({
+        prUrl: validPRUrl,
+        config: { mode: "force", strategy: "squash", deleteBranch: true },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      const command = mockExecutor.calls[0].command;
+      assert.ok(command.includes("--bypass-policy true"));
+      assert.ok(command.includes("--squash true"));
+      assert.ok(command.includes("--delete-source-branch true"));
+    });
+
+    test("returns failure when command fails", async () => {
+      mockExecutor.responses.set(
+        "az repos pr update",
+        new Error("Permission denied"),
+      );
+
+      const strategy = new AzurePRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: validPRUrl,
+        config: { mode: "force" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, false);
+      assert.equal(result.merged, false);
+      assert.ok(result.message.includes("Failed to bypass policies"));
+    });
+  });
+
+  describe("merge with invalid PR URL", () => {
+    test("returns failure for invalid URL format", async () => {
+      const strategy = new AzurePRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: "https://invalid-url.com/not-azure",
+        config: { mode: "auto" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, false);
+      assert.equal(result.merged, false);
+      assert.ok(result.message.includes("Invalid Azure DevOps PR URL"));
+      assert.equal(mockExecutor.calls.length, 0);
+    });
+  });
+});

@@ -1,10 +1,16 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { RepoConfig, FileContent, convertContentToString } from "./config.js";
+import {
+  RepoConfig,
+  FileContent,
+  convertContentToString,
+  PRMergeOptions,
+} from "./config.js";
 import { RepoInfo, getRepoDisplayName } from "./repo-detector.js";
 import { GitOps, GitOpsOptions } from "./git-ops.js";
-import { createPR, PRResult, FileAction } from "./pr-creator.js";
+import { createPR, mergePR, PRResult, FileAction } from "./pr-creator.js";
 import { logger, ILogger } from "./logger.js";
+import type { PRMergeConfig } from "./strategies/index.js";
 
 /**
  * Determines if a file should be marked as executable.
@@ -43,6 +49,11 @@ export interface ProcessorResult {
   message: string;
   prUrl?: string;
   skipped?: boolean;
+  mergeResult?: {
+    merged: boolean;
+    autoMergeEnabled?: boolean;
+    message: string;
+  };
 }
 
 export class RepositoryProcessor {
@@ -204,11 +215,48 @@ export class RepositoryProcessor {
         retries,
       });
 
+      // Step 10: Handle merge options if configured
+      const mergeMode = repoConfig.prOptions?.merge ?? "manual";
+      let mergeResult: ProcessorResult["mergeResult"] | undefined;
+
+      if (prResult.success && prResult.url && mergeMode !== "manual") {
+        this.log.info(`Handling merge (mode: ${mergeMode})...`);
+
+        const mergeConfig: PRMergeConfig = {
+          mode: mergeMode,
+          strategy: repoConfig.prOptions?.mergeStrategy,
+          deleteBranch: repoConfig.prOptions?.deleteBranch,
+          bypassReason: repoConfig.prOptions?.bypassReason,
+        };
+
+        const result = await mergePR({
+          repoInfo,
+          prUrl: prResult.url,
+          mergeConfig,
+          workDir,
+          dryRun,
+          retries,
+        });
+
+        mergeResult = {
+          merged: result.merged ?? false,
+          autoMergeEnabled: result.autoMergeEnabled,
+          message: result.message,
+        };
+
+        if (!result.success) {
+          this.log.info(`Warning: Merge operation failed - ${result.message}`);
+        } else {
+          this.log.info(result.message);
+        }
+      }
+
       return {
         success: prResult.success,
         repoName,
         message: prResult.message,
         prUrl: prResult.url,
+        mergeResult,
       };
     } finally {
       // Always cleanup workspace on completion or failure

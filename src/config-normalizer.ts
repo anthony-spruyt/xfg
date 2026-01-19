@@ -12,6 +12,7 @@ import type {
   RepoConfig,
   FileContent,
   ContentValue,
+  PRMergeOptions,
 } from "./config.js";
 
 /**
@@ -23,6 +24,32 @@ function normalizeHeader(
   if (header === undefined) return undefined;
   if (typeof header === "string") return [header];
   return header;
+}
+
+/**
+ * Merges PR options: per-repo overrides global defaults.
+ * Returns undefined if no options are set.
+ */
+function mergePROptions(
+  global: PRMergeOptions | undefined,
+  perRepo: PRMergeOptions | undefined,
+): PRMergeOptions | undefined {
+  if (!global && !perRepo) return undefined;
+  if (!global) return perRepo;
+  if (!perRepo) return global;
+
+  const result: PRMergeOptions = {};
+  const merge = perRepo.merge ?? global.merge;
+  const mergeStrategy = perRepo.mergeStrategy ?? global.mergeStrategy;
+  const deleteBranch = perRepo.deleteBranch ?? global.deleteBranch;
+  const bypassReason = perRepo.bypassReason ?? global.bypassReason;
+
+  if (merge !== undefined) result.merge = merge;
+  if (mergeStrategy !== undefined) result.mergeStrategy = mergeStrategy;
+  if (deleteBranch !== undefined) result.deleteBranch = deleteBranch;
+  if (bypassReason !== undefined) result.bypassReason = bypassReason;
+
+  return Object.keys(result).length > 0 ? result : undefined;
 }
 
 /**
@@ -129,9 +156,13 @@ export function normalizeConfig(raw: RawConfig): Config {
         });
       }
 
+      // Merge PR options: per-repo overrides global
+      const prOptions = mergePROptions(raw.prOptions, rawRepo.prOptions);
+
       expandedRepos.push({
         git: gitUrl,
         files,
+        prOptions,
       });
     }
   }

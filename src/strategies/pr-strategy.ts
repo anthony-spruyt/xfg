@@ -1,6 +1,21 @@
 import { PRResult } from "../pr-creator.js";
 import { RepoInfo } from "../repo-detector.js";
 import { CommandExecutor, defaultExecutor } from "../command-executor.js";
+import type { MergeMode, MergeStrategy } from "../config.js";
+
+export interface PRMergeConfig {
+  mode: MergeMode;
+  strategy?: MergeStrategy;
+  deleteBranch?: boolean;
+  bypassReason?: string;
+}
+
+export interface MergeResult {
+  success: boolean;
+  message: string;
+  merged?: boolean;
+  autoMergeEnabled?: boolean;
+}
 
 export interface PRStrategyOptions {
   repoInfo: RepoInfo;
@@ -13,9 +28,16 @@ export interface PRStrategyOptions {
   retries?: number;
 }
 
+export interface MergeOptions {
+  prUrl: string;
+  config: PRMergeConfig;
+  workDir: string;
+  retries?: number;
+}
+
 /**
  * Interface for PR creation strategies (platform-specific implementations).
- * Strategies focus on platform-specific logic (checkExistingPR, create).
+ * Strategies focus on platform-specific logic (checkExistingPR, create, merge).
  * Use PRWorkflowExecutor for full workflow orchestration with error handling.
  */
 export interface PRStrategy {
@@ -30,6 +52,12 @@ export interface PRStrategy {
    * @returns Result with URL and status
    */
   create(options: PRStrategyOptions): Promise<PRResult>;
+
+  /**
+   * Merge or enable auto-merge for a PR
+   * @returns Result with merge status
+   */
+  merge(options: MergeOptions): Promise<MergeResult>;
 
   /**
    * Execute the full PR creation workflow
@@ -48,6 +76,7 @@ export abstract class BasePRStrategy implements PRStrategy {
 
   abstract checkExistingPR(options: PRStrategyOptions): Promise<string | null>;
   abstract create(options: PRStrategyOptions): Promise<PRResult>;
+  abstract merge(options: MergeOptions): Promise<MergeResult>;
 
   /**
    * Execute the full PR creation workflow:

@@ -4,7 +4,7 @@ import { program } from "commander";
 import { resolve, join, dirname } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { loadConfig } from "./config.js";
+import { loadConfig, MergeMode, MergeStrategy } from "./config.js";
 
 // Get version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -53,6 +53,9 @@ interface CLIOptions {
   workDir?: string;
   retries?: number;
   branch?: string;
+  merge?: MergeMode;
+  mergeStrategy?: MergeStrategy;
+  deleteBranch?: boolean;
 }
 
 program
@@ -72,6 +75,33 @@ program
     "-b, --branch <name>",
     "Override the branch name (default: chore/sync-{filename} or chore/sync-config)",
   )
+  .option(
+    "-m, --merge <mode>",
+    "PR merge mode: manual (default), auto (merge when checks pass), force (bypass requirements)",
+    (value: string): MergeMode => {
+      const valid: MergeMode[] = ["manual", "auto", "force"];
+      if (!valid.includes(value as MergeMode)) {
+        throw new Error(
+          `Invalid merge mode: ${value}. Valid: ${valid.join(", ")}`,
+        );
+      }
+      return value as MergeMode;
+    },
+  )
+  .option(
+    "--merge-strategy <strategy>",
+    "Merge strategy: merge (default), squash, rebase",
+    (value: string): MergeStrategy => {
+      const valid: MergeStrategy[] = ["merge", "squash", "rebase"];
+      if (!valid.includes(value as MergeStrategy)) {
+        throw new Error(
+          `Invalid merge strategy: ${value}. Valid: ${valid.join(", ")}`,
+        );
+      }
+      return value as MergeStrategy;
+    },
+  )
+  .option("--delete-branch", "Delete source branch after merge")
   .parse();
 
 const options = program.opts<CLIOptions>();
@@ -145,6 +175,19 @@ async function main(): Promise<void> {
 
   for (let i = 0; i < config.repos.length; i++) {
     const repoConfig = config.repos[i];
+
+    // Apply CLI merge overrides to repo config
+    if (options.merge || options.mergeStrategy || options.deleteBranch) {
+      repoConfig.prOptions = {
+        ...repoConfig.prOptions,
+        merge: options.merge ?? repoConfig.prOptions?.merge,
+        mergeStrategy:
+          options.mergeStrategy ?? repoConfig.prOptions?.mergeStrategy,
+        deleteBranch:
+          options.deleteBranch ?? repoConfig.prOptions?.deleteBranch,
+      };
+    }
+
     const current = i + 1;
 
     let repoInfo;
@@ -174,11 +217,15 @@ async function main(): Promise<void> {
       if (result.skipped) {
         logger.skip(current, repoName, result.message);
       } else if (result.success) {
-        logger.success(
-          current,
-          repoName,
-          result.prUrl ? `PR: ${result.prUrl}` : result.message,
-        );
+        let message = result.prUrl ? `PR: ${result.prUrl}` : result.message;
+        if (result.mergeResult) {
+          if (result.mergeResult.merged) {
+            message += " (merged)";
+          } else if (result.mergeResult.autoMergeEnabled) {
+            message += " (auto-merge enabled)";
+          }
+        }
+        logger.success(current, repoName, message);
       } else {
         logger.error(current, repoName, result.message);
       }
