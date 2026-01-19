@@ -2,10 +2,12 @@ import { RepoInfo, isGitHubRepo, isAzureDevOpsRepo } from "../repo-detector.js";
 import type { PRStrategy } from "./pr-strategy.js";
 import { GitHubPRStrategy } from "./github-pr-strategy.js";
 import { AzurePRStrategy } from "./azure-pr-strategy.js";
+import { CommandExecutor } from "../command-executor.js";
 
 export type {
   PRStrategy,
   PRStrategyOptions,
+  CloseExistingPROptions,
   PRMergeConfig,
   MergeOptions,
   MergeResult,
@@ -16,16 +18,19 @@ export { AzurePRStrategy } from "./azure-pr-strategy.js";
 
 /**
  * Factory function to get the appropriate PR strategy for a repository.
- * Note: repoInfo is passed via PRStrategyOptions.execute() rather than constructor
- * to ensure LSP compliance (all strategies have identical constructors).
+ * @param repoInfo - Repository information
+ * @param executor - Optional command executor for shell commands
  */
-export function getPRStrategy(repoInfo: RepoInfo): PRStrategy {
+export function getPRStrategy(
+  repoInfo: RepoInfo,
+  executor?: CommandExecutor,
+): PRStrategy {
   if (isGitHubRepo(repoInfo)) {
-    return new GitHubPRStrategy();
+    return new GitHubPRStrategy(executor);
   }
 
   if (isAzureDevOpsRepo(repoInfo)) {
-    return new AzurePRStrategy();
+    return new AzurePRStrategy(executor);
   }
 
   // Type exhaustiveness check - should never reach here

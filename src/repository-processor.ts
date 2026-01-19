@@ -10,7 +10,9 @@ import { RepoInfo, getRepoDisplayName } from "./repo-detector.js";
 import { GitOps, GitOpsOptions } from "./git-ops.js";
 import { createPR, mergePR, PRResult, FileAction } from "./pr-creator.js";
 import { logger, ILogger } from "./logger.js";
+import { getPRStrategy } from "./strategies/index.js";
 import type { PRMergeConfig } from "./strategies/index.js";
+import { CommandExecutor, defaultExecutor } from "./command-executor.js";
 
 /**
  * Determines if a file should be marked as executable.
@@ -35,6 +37,8 @@ export interface ProcessorOptions {
   dryRun?: boolean;
   /** Number of retries for network operations (default: 3) */
   retries?: number;
+  /** Command executor for shell commands (for testing) */
+  executor?: CommandExecutor;
 }
 
 /**
@@ -78,6 +82,7 @@ export class RepositoryProcessor {
   ): Promise<ProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
     const { branchName, workDir, dryRun, retries } = options;
+    const executor = options.executor ?? defaultExecutor;
 
     this.gitOps = this.gitOpsFactory({ workDir, dryRun, retries });
 
@@ -97,8 +102,25 @@ export class RepositoryProcessor {
         `Default branch: ${baseBranch} (detected via ${detectionMethod})`,
       );
 
-      // Step 4: Create/checkout branch
-      this.log.info(`Switching to branch: ${branchName}`);
+      // Step 3.5: Close existing PR if exists (fresh start approach)
+      // This ensures isolated sync attempts - each run starts from clean state
+      if (!dryRun) {
+        this.log.info("Checking for existing PR...");
+        const strategy = getPRStrategy(repoInfo, executor);
+        const closed = await strategy.closeExistingPR({
+          repoInfo,
+          branchName,
+          baseBranch,
+          workDir,
+          retries,
+        });
+        if (closed) {
+          this.log.info("Closed existing PR and deleted branch for fresh sync");
+        }
+      }
+
+      // Step 4: Create branch (always fresh from base branch)
+      this.log.info(`Creating branch: ${branchName}`);
       await this.gitOps.createBranch(branchName);
 
       // Step 5: Write all config files and track changes
@@ -106,15 +128,22 @@ export class RepositoryProcessor {
 
       for (const file of repoConfig.files) {
         const filePath = join(workDir, file.fileName);
-        const fileExists = existsSync(filePath);
+        const fileExistsLocal = existsSync(filePath);
 
-        // Handle createOnly - skip if file already exists
-        if (file.createOnly && fileExists) {
-          this.log.info(
-            `Skipping ${file.fileName} (createOnly: already exists)`,
+        // Handle createOnly - check against BASE branch, not current working directory
+        // This ensures consistent behavior: createOnly means "only create if doesn't exist on main"
+        if (file.createOnly) {
+          const existsOnBase = await this.gitOps.fileExistsOnBranch(
+            file.fileName,
+            baseBranch,
           );
-          changedFiles.push({ fileName: file.fileName, action: "skip" });
-          continue;
+          if (existsOnBase) {
+            this.log.info(
+              `Skipping ${file.fileName} (createOnly: exists on ${baseBranch})`,
+            );
+            changedFiles.push({ fileName: file.fileName, action: "skip" });
+            continue;
+          }
         }
 
         this.log.info(`Writing ${file.fileName}...`);
@@ -128,7 +157,9 @@ export class RepositoryProcessor {
         );
 
         // Determine action type (create vs update)
-        const action: "create" | "update" = fileExists ? "update" : "create";
+        const action: "create" | "update" = fileExistsLocal
+          ? "update"
+          : "create";
 
         if (dryRun) {
           // In dry-run, check if file would change without writing
@@ -195,9 +226,21 @@ export class RepositoryProcessor {
       }
 
       // Step 7: Commit
-      this.log.info("Committing changes...");
+      this.log.info("Staging changes...");
       const commitMessage = this.formatCommitMessage(changedFiles);
-      await this.gitOps.commit(commitMessage);
+      const committed = await this.gitOps.commit(commitMessage);
+
+      if (!committed) {
+        this.log.info("No staged changes after git add -A, skipping commit");
+        return {
+          success: true,
+          repoName,
+          message: "No changes detected after staging",
+          skipped: true,
+        };
+      }
+
+      this.log.info(`Committed: ${commitMessage}`);
 
       // Step 8: Push
       this.log.info("Pushing to remote...");

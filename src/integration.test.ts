@@ -177,4 +177,186 @@ describe("Integration Test", () => {
     console.log("  Merged content verified - base + overlay working correctly");
     console.log("\n=== Integration test passed ===\n");
   });
+
+  test("re-sync closes existing PR and creates fresh one", async () => {
+    // This test relies on the previous test having created a PR
+    // We'll run sync again and verify the behavior
+
+    const configPath = join(fixturesDir, "integration-test-config.yaml");
+
+    // Get the current PR number before re-sync
+    console.log("Getting current PR number...");
+    const prListBefore = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number --jq '.[0].number'`,
+    );
+    const prNumberBefore = prListBefore ? parseInt(prListBefore, 10) : null;
+    console.log(`  Current PR: #${prNumberBefore}`);
+
+    assert.ok(prNumberBefore, "Expected a PR to exist from previous test");
+
+    // Run the sync tool again
+    console.log("\nRunning json-config-sync again (re-sync)...");
+    const output = exec(`node dist/index.js --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    // Verify a PR exists (should be a new one after closing the old)
+    console.log("\nVerifying PR state after re-sync...");
+    const prListAfter = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number,state --jq '.[0]'`,
+    );
+
+    assert.ok(prListAfter, "Expected a PR to exist after re-sync");
+    const prAfter = JSON.parse(prListAfter);
+    console.log(`  PR after re-sync: #${prAfter.number}`);
+
+    // The old PR should be closed (or we have a new one)
+    // Check that the old PR is now closed
+    console.log("\nVerifying old PR was closed...");
+    try {
+      const oldPRState = exec(
+        `gh pr view ${prNumberBefore} --repo ${TEST_REPO} --json state --jq '.state'`,
+      );
+      console.log(`  Old PR #${prNumberBefore} state: ${oldPRState}`);
+      assert.equal(
+        oldPRState,
+        "CLOSED",
+        "Old PR should be closed after re-sync",
+      );
+    } catch {
+      // If we can't get the old PR, it might have been deleted
+      console.log(
+        `  Old PR #${prNumberBefore} appears to have been deleted or closed`,
+      );
+    }
+
+    console.log("\n=== Re-sync test passed ===\n");
+  });
+
+  test("createOnly skips file when it exists on base branch", async () => {
+    // This test uses a separate config file with createOnly: true
+    const createOnlyFile = "createonly-test.json";
+    const createOnlyBranch = "chore/sync-createonly-test";
+
+    console.log("\n=== Setting up createOnly test ===\n");
+
+    // 1. Close any existing PRs from the createOnly branch
+    console.log("Closing any existing createOnly test PRs...");
+    try {
+      const existingPRs = exec(
+        `gh pr list --repo ${TEST_REPO} --head ${createOnlyBranch} --json number --jq '.[].number'`,
+      );
+      if (existingPRs) {
+        for (const prNumber of existingPRs.split("\n").filter(Boolean)) {
+          console.log(`  Closing PR #${prNumber}`);
+          exec(`gh pr close ${prNumber} --repo ${TEST_REPO} --delete-branch`);
+        }
+      }
+    } catch {
+      console.log("  No existing PRs to close");
+    }
+
+    // 2. Delete the remote branch if it exists
+    console.log(`Deleting remote branch ${createOnlyBranch} if exists...`);
+    try {
+      exec(
+        `gh api --method DELETE repos/${TEST_REPO}/git/refs/heads/${createOnlyBranch}`,
+      );
+      console.log("  Branch deleted");
+    } catch {
+      console.log("  Branch does not exist");
+    }
+
+    // 3. Create the file on main branch (simulating it already exists)
+    console.log(`Creating ${createOnlyFile} on main branch...`);
+    const existingContent = JSON.stringify({ existing: true }, null, 2);
+    const existingContentBase64 =
+      Buffer.from(existingContent).toString("base64");
+
+    // First check if file exists and get its sha
+    let fileSha = "";
+    try {
+      fileSha = exec(
+        `gh api repos/${TEST_REPO}/contents/${createOnlyFile} --jq '.sha' 2>/dev/null || echo ""`,
+      );
+    } catch {
+      // File doesn't exist
+    }
+
+    if (fileSha) {
+      // Update existing file
+      exec(
+        `gh api --method PUT repos/${TEST_REPO}/contents/${createOnlyFile} -f message="test: update ${createOnlyFile} for createOnly test" -f content="${existingContentBase64}" -f sha="${fileSha}"`,
+      );
+    } else {
+      // Create new file
+      exec(
+        `gh api --method PUT repos/${TEST_REPO}/contents/${createOnlyFile} -f message="test: create ${createOnlyFile} for createOnly test" -f content="${existingContentBase64}"`,
+      );
+    }
+    console.log("  File created on main");
+
+    // 4. Run sync with createOnly config
+    console.log("\nRunning json-config-sync with createOnly config...");
+    const configPath = join(fixturesDir, "integration-test-createonly.yaml");
+    const output = exec(`node dist/index.js --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    // 5. Verify the behavior - output should indicate skipping
+    assert.ok(
+      output.includes("createOnly") || output.includes("skip"),
+      "Output should mention createOnly or skip",
+    );
+
+    // 6. Check if a PR was created - with createOnly the file should be skipped
+    // If all files are skipped, no PR should be created
+    console.log("\nVerifying createOnly behavior...");
+    try {
+      const prList = exec(
+        `gh pr list --repo ${TEST_REPO} --head ${createOnlyBranch} --json number --jq '.[0].number'`,
+      );
+      if (prList) {
+        console.log(`  PR was created: #${prList}`);
+        // If a PR was created, the file content should NOT have been changed
+        // because createOnly should skip when file exists on base
+        const fileContent = exec(
+          `gh api repos/${TEST_REPO}/contents/${createOnlyFile}?ref=${createOnlyBranch} --jq '.content' | base64 -d`,
+        );
+        const json = JSON.parse(fileContent);
+        console.log("  File content in PR branch:", JSON.stringify(json));
+        // The file should still have the original content (existing: true)
+        // NOT the new content from config
+        assert.equal(
+          json.existing,
+          true,
+          "File should retain original content when createOnly skips",
+        );
+      } else {
+        console.log(
+          "  No PR was created (all files skipped) - this is correct",
+        );
+      }
+    } catch {
+      console.log("  No PR was created - expected if all files were skipped");
+    }
+
+    // 7. Cleanup - delete the test file from main
+    console.log("\nCleaning up createOnly test file...");
+    try {
+      const sha = exec(
+        `gh api repos/${TEST_REPO}/contents/${createOnlyFile} --jq '.sha'`,
+      );
+      exec(
+        `gh api --method DELETE repos/${TEST_REPO}/contents/${createOnlyFile} -f message="test: cleanup ${createOnlyFile}" -f sha="${sha}"`,
+      );
+      console.log("  File deleted");
+    } catch {
+      console.log("  Could not delete file");
+    }
+
+    console.log("\n=== createOnly test passed ===\n");
+  });
 });

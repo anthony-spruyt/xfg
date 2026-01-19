@@ -36,6 +36,17 @@ export interface MergeOptions {
 }
 
 /**
+ * Options for closing an existing PR.
+ */
+export interface CloseExistingPROptions {
+  repoInfo: RepoInfo;
+  branchName: string;
+  baseBranch: string;
+  workDir: string;
+  retries?: number;
+}
+
+/**
  * Interface for PR creation strategies (platform-specific implementations).
  * Strategies focus on platform-specific logic (checkExistingPR, create, merge).
  * Use PRWorkflowExecutor for full workflow orchestration with error handling.
@@ -46,6 +57,13 @@ export interface PRStrategy {
    * @returns PR URL if exists, null otherwise
    */
   checkExistingPR(options: PRStrategyOptions): Promise<string | null>;
+
+  /**
+   * Close an existing PR and delete its branch.
+   * Used for fresh start approach - always create new PR from clean state.
+   * @returns true if PR was closed, false if no PR existed
+   */
+  closeExistingPR(options: CloseExistingPROptions): Promise<boolean>;
 
   /**
    * Create a new PR
@@ -75,6 +93,7 @@ export abstract class BasePRStrategy implements PRStrategy {
   }
 
   abstract checkExistingPR(options: PRStrategyOptions): Promise<string | null>;
+  abstract closeExistingPR(options: CloseExistingPROptions): Promise<boolean>;
   abstract create(options: PRStrategyOptions): Promise<PRResult>;
   abstract merge(options: MergeOptions): Promise<MergeResult>;
 
