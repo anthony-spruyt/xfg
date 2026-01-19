@@ -6,6 +6,7 @@ import { PRResult } from "../pr-creator.js";
 import {
   BasePRStrategy,
   PRStrategyOptions,
+  CloseExistingPROptions,
   MergeOptions,
   MergeResult,
 } from "./pr-strategy.js";
@@ -43,6 +44,52 @@ export class GitHubPRStrategy extends BasePRStrategy {
         }
       }
       return null;
+    }
+  }
+
+  async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
+    const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
+
+    if (!isGitHubRepo(repoInfo)) {
+      throw new Error("Expected GitHub repository");
+    }
+
+    // First check if there's an existing PR
+    const existingUrl = await this.checkExistingPR({
+      repoInfo,
+      branchName,
+      baseBranch,
+      workDir,
+      retries,
+      title: "", // Not used for check
+      body: "", // Not used for check
+    });
+
+    if (!existingUrl) {
+      return false;
+    }
+
+    // Extract PR number from URL
+    const prNumber = existingUrl.match(/\/pull\/(\d+)/)?.[1];
+    if (!prNumber) {
+      logger.info(
+        `Warning: Could not extract PR number from URL: ${existingUrl}`,
+      );
+      return false;
+    }
+
+    // Close the PR and delete the branch
+    const command = `gh pr close ${escapeShellArg(prNumber)} --repo ${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --delete-branch`;
+
+    try {
+      await withRetry(() => this.executor.exec(command, workDir), { retries });
+      return true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.info(
+        `Warning: Failed to close existing PR #${prNumber}: ${message}`,
+      );
+      return false;
     }
   }
 

@@ -142,8 +142,17 @@ describe("RepositoryProcessor", () => {
         return true;
       }
 
-      override async commit(_message: string): Promise<void> {
-        // No-op for mock
+      override async fileExistsOnBranch(
+        _fileName: string,
+        _branch: string,
+      ): Promise<boolean> {
+        // For tests, assume file doesn't exist on base branch unless specified
+        return false;
+      }
+
+      override async commit(_message: string): Promise<boolean> {
+        // Return true to indicate commit was made
+        return true;
       }
 
       override async push(_branchName: string): Promise<void> {

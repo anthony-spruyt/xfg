@@ -29,9 +29,16 @@ export class ShellCommandExecutor implements CommandExecutor {
       }).trim();
     } catch (error) {
       // Ensure stderr is always a string for consistent error handling
-      const execError = error as { stderr?: Buffer | string };
+      const execError = error as {
+        stderr?: Buffer | string;
+        message?: string;
+      };
       if (execError.stderr && typeof execError.stderr !== "string") {
         execError.stderr = execError.stderr.toString();
+      }
+      // Include stderr in error message for better debugging
+      if (execError.stderr && execError.message) {
+        execError.message = `${execError.message}\n${execError.stderr}`;
       }
       throw error;
     }

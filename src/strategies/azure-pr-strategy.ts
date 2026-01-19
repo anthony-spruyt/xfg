@@ -6,6 +6,7 @@ import { PRResult } from "../pr-creator.js";
 import {
   BasePRStrategy,
   PRStrategyOptions,
+  CloseExistingPROptions,
   MergeOptions,
   MergeResult,
 } from "./pr-strategy.js";
@@ -57,6 +58,66 @@ export class AzurePRStrategy extends BasePRStrategy {
       }
       return null;
     }
+  }
+
+  async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
+    const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
+
+    if (!isAzureDevOpsRepo(repoInfo)) {
+      throw new Error("Expected Azure DevOps repository");
+    }
+    const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
+    const orgUrl = this.getOrgUrl(azureRepoInfo);
+
+    // First check if there's an existing PR
+    const existingUrl = await this.checkExistingPR({
+      repoInfo,
+      branchName,
+      baseBranch,
+      workDir,
+      retries,
+      title: "", // Not used for check
+      body: "", // Not used for check
+    });
+
+    if (!existingUrl) {
+      return false;
+    }
+
+    // Extract PR ID from URL
+    const prInfo = this.parsePRUrl(existingUrl);
+    if (!prInfo) {
+      logger.info(`Warning: Could not parse PR URL: ${existingUrl}`);
+      return false;
+    }
+
+    // Abandon the PR (Azure DevOps equivalent of closing)
+    const abandonCommand = `az repos pr update --id ${escapeShellArg(prInfo.prId)} --status abandoned --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(prInfo.project)}`;
+
+    try {
+      await withRetry(() => this.executor.exec(abandonCommand, workDir), {
+        retries,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.info(`Warning: Failed to abandon PR #${prInfo.prId}: ${message}`);
+      return false;
+    }
+
+    // Delete the source branch
+    const deleteBranchCommand = `az repos ref delete --name refs/heads/${escapeShellArg(branchName)} --repository ${escapeShellArg(azureRepoInfo.repo)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)}`;
+
+    try {
+      await withRetry(() => this.executor.exec(deleteBranchCommand, workDir), {
+        retries,
+      });
+    } catch (error) {
+      // Branch deletion failure is not critical - PR is already abandoned
+      const message = error instanceof Error ? error.message : String(error);
+      logger.info(`Warning: Failed to delete branch ${branchName}: ${message}`);
+    }
+
+    return true;
   }
 
   async create(options: PRStrategyOptions): Promise<PRResult> {

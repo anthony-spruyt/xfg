@@ -11,23 +11,6 @@ import { CommandExecutor, defaultExecutor } from "./command-executor.js";
 import { withRetry } from "./retry-utils.js";
 import { logger } from "./logger.js";
 
-/**
- * Patterns indicating a git branch does not exist.
- * Used to distinguish "branch not found" from other errors.
- */
-const BRANCH_NOT_FOUND_PATTERNS = [
-  "couldn't find remote ref",
-  "pathspec",
-  "did not match any",
-];
-
-/**
- * Checks if an error message indicates a branch was not found.
- */
-function isBranchNotFoundError(message: string): boolean {
-  return BRANCH_NOT_FOUND_PATTERNS.some((pattern) => message.includes(pattern));
-}
-
 export interface GitOpsOptions {
   workDir: string;
   dryRun?: boolean;
@@ -93,33 +76,12 @@ export class GitOps {
     );
   }
 
+  /**
+   * Create a new branch from the current HEAD.
+   * Always creates fresh - existing branches should be cleaned up beforehand
+   * by closing any existing PRs (which deletes the remote branch).
+   */
   async createBranch(branchName: string): Promise<void> {
-    try {
-      // Check if branch exists on remote (network operation with retry)
-      await this.execWithRetry(
-        `git fetch origin ${escapeShellArg(branchName)}`,
-        this.workDir,
-      );
-      // Ensure clean workspace before checkout (defensive - handles edge cases)
-      await this.exec("git reset --hard HEAD", this.workDir);
-      await this.exec("git clean -fd", this.workDir);
-      await this.execWithRetry(
-        `git checkout ${escapeShellArg(branchName)}`,
-        this.workDir,
-      );
-      return;
-    } catch (error) {
-      // Only proceed to create branch if error indicates branch doesn't exist
-      const message = error instanceof Error ? error.message : String(error);
-
-      if (!isBranchNotFoundError(message)) {
-        throw new Error(
-          `Failed to fetch/checkout branch '${branchName}': ${message}`,
-        );
-      }
-    }
-
-    // Branch doesn't exist on remote, create it locally
     try {
       await this.exec(
         `git checkout -b ${escapeShellArg(branchName)}`,
@@ -192,12 +154,57 @@ export class GitOps {
     return status.length > 0;
   }
 
-  async commit(message: string): Promise<void> {
+  /**
+   * Check if there are staged changes ready to commit.
+   * Uses `git diff --cached --quiet` which exits with 1 if there are staged changes.
+   */
+  async hasStagedChanges(): Promise<boolean> {
+    try {
+      await this.exec("git diff --cached --quiet", this.workDir);
+      return false; // Exit code 0 = no staged changes
+    } catch {
+      return true; // Exit code 1 = there are staged changes
+    }
+  }
+
+  /**
+   * Check if a file exists on a specific branch.
+   * Used for createOnly checks against the base branch (not the working directory).
+   */
+  async fileExistsOnBranch(fileName: string, branch: string): Promise<boolean> {
+    try {
+      await this.exec(
+        `git show ${escapeShellArg(branch)}:${escapeShellArg(fileName)}`,
+        this.workDir,
+      );
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Stage all changes and commit with the given message.
+   * Uses --no-verify to skip pre-commit hooks (config sync should always succeed).
+   * @returns true if a commit was made, false if there were no staged changes
+   */
+  async commit(message: string): Promise<boolean> {
     if (this.dryRun) {
-      return;
+      return true;
     }
     await this.exec("git add -A", this.workDir);
-    await this.exec(`git commit -m ${escapeShellArg(message)}`, this.workDir);
+
+    // Check if there are actually staged changes after git add
+    if (!(await this.hasStagedChanges())) {
+      return false; // No changes to commit
+    }
+
+    // Use --no-verify to skip pre-commit hooks
+    await this.exec(
+      `git commit --no-verify -m ${escapeShellArg(message)}`,
+      this.workDir,
+    );
+    return true;
   }
 
   async push(branchName: string): Promise<void> {
