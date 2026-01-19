@@ -17,7 +17,7 @@ const fixturesDir = join(__dirname, "..", "fixtures");
 const templatesDir = join(fixturesDir, "templates");
 
 // Create a temporary directory for test fixtures
-const testDir = join(tmpdir(), "json-config-sync-file-ref-test-" + Date.now());
+const testDir = join(tmpdir(), "xfg-file-ref-test-" + Date.now());
 
 describe("File Reference Resolver", () => {
   beforeEach(() => {

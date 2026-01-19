@@ -256,4 +256,4 @@ The release workflow automatically builds, tests, publishes to npm with provenan
 
 **Unit Tests**: Each `src/*.ts` module has a corresponding `*.test.ts` file. Uses fixtures in `fixtures/` directory.
 
-**Integration Tests**: End-to-end test using real GitHub repo (`anthony-spruyt/json-config-sync-test`). Requires `gh` CLI authentication. No mocking of git/CLI operations.
+**Integration Tests**: End-to-end test using real GitHub repo (`anthony-spruyt/xfg-test`). Requires `gh` CLI authentication. No mocking of git/CLI operations.

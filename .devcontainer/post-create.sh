@@ -25,7 +25,7 @@ npm install -g "@anthropic-ai/claude-code@$(node -p "require('./package.json').d
 
 # Install and build the project
 echo "Installing project dependencies..."
-cd "${containerWorkspaceFolder:-/workspaces/json-config-sync}"
+cd "${containerWorkspaceFolder:-/workspaces/xfg}"
 npm install
 
 echo "Building project..."

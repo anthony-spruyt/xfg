@@ -1,11 +1,11 @@
 {
-  "name": "@aspruyt/json-config-sync",
-  "version": "3.11.0",
+  "name": "@aspruyt/xfg",
+  "version": "1.0.0",
   "description": "CLI tool to sync JSON or YAML configuration files across multiple GitHub and Azure DevOps repositories",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "json-config-sync": "./dist/index.js"
+    "xfg": "./dist/index.js"
   },
   "files": [
     "dist",
@@ -13,11 +13,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anthony-spruyt/json-config-sync.git"
+    "url": "git+https://github.com/anthony-spruyt/xfg.git"
   },
-  "homepage": "https://github.com/anthony-spruyt/json-config-sync#readme",
+  "homepage": "https://github.com/anthony-spruyt/xfg#readme",
   "bugs": {
-    "url": "https://github.com/anthony-spruyt/json-config-sync/issues"
+    "url": "https://github.com/anthony-spruyt/xfg/issues"
   },
   "engines": {
     "node": ">=18"

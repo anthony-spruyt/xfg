@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/anthony-spruyt/json-config-sync/config-schema.json",
-  "title": "json-config-sync Configuration",
-  "description": "Configuration file for json-config-sync CLI tool that syncs JSON, YAML, or text config files across multiple Git repositories",
+  "$id": "https://github.com/anthony-spruyt/xfg/config-schema.json",
+  "title": "xfg Configuration",
+  "description": "Configuration file for xfg CLI tool that syncs JSON, YAML, or text config files across multiple Git repositories",
   "type": "object",
   "required": ["files", "repos"],
   "properties": {

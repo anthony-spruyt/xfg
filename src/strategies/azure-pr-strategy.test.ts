@@ -596,7 +596,7 @@ describe("AzurePRStrategy merge", () => {
 
       const command = mockExecutor.calls[0].command;
       assert.ok(command.includes("--bypass-policy-reason"));
-      assert.ok(command.includes("json-config-sync"));
+      assert.ok(command.includes("xfg"));
     });
 
     test("uses squash and delete-branch with force mode", async () => {

@@ -59,7 +59,7 @@ interface CLIOptions {
 }
 
 program
-  .name("json-config-sync")
+  .name("xfg")
   .description("Sync JSON configuration files across multiple repositories")
   .version(packageJson.version)
   .requiredOption("-c, --config <path>", "Path to YAML config file")

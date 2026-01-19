@@ -54,7 +54,7 @@ describe("CLI", () => {
   describe("argument parsing", () => {
     test("shows help with --help", () => {
       const result = runCLI(["--help"]);
-      assert.ok(result.stdout.includes("json-config-sync"));
+      assert.ok(result.stdout.includes("xfg"));
       assert.ok(result.stdout.includes("-c, --config"));
       assert.ok(result.stdout.includes("-d, --dry-run"));
       assert.ok(result.stdout.includes("-w, --work-dir"));

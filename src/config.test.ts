@@ -12,7 +12,7 @@ const __dirname = dirname(__filename);
 const fixturesDir = join(__dirname, "..", "fixtures");
 
 // Create a temporary directory for test fixtures
-const testDir = join(tmpdir(), "json-config-sync-test-" + Date.now());
+const testDir = join(tmpdir(), "xfg-test-" + Date.now());
 
 function createTestConfig(content: string): string {
   const filePath = join(testDir, `config-${Date.now()}.yaml`);

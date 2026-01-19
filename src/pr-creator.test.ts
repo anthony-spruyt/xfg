@@ -188,7 +188,7 @@ describe("loadPRTemplate (via formatPRBody)", () => {
 
     // PR.md should have summary section and automation note
     assert.ok(
-      result.includes("json-config-sync") ||
+      result.includes("xfg") ||
         result.includes("Summary") ||
         result.includes("Changes"),
       "Template should have expected sections",

@@ -10,7 +10,7 @@ const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, "..");
 const fixturesDir = join(projectRoot, "fixtures");
 
-const TEST_REPO = "anthony-spruyt/json-config-sync-test";
+const TEST_REPO = "anthony-spruyt/xfg-test";
 const TARGET_FILE = "my.config.json";
 const BRANCH_NAME = "chore/sync-my-config";
 
