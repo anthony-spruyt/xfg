@@ -1,6 +1,6 @@
 # xfg
 
-[![CI](https://github.com/anthony-spruyt/xfg/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/anthony-spruyt/xfg/actions/workflows/ci.yml)
+[![CI](https://github.com/anthony-spruyt/xfg/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/anthony-spruyt/xfg/actions/workflows/ci.yaml)
 [![npm version](https://img.shields.io/npm/v/@aspruyt/xfg.svg)](https://www.npmjs.com/package/@aspruyt/xfg)
 [![npm downloads](https://img.shields.io/npm/dw/@aspruyt/xfg.svg)](https://www.npmjs.com/package/@aspruyt/xfg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -62,7 +62,7 @@ xfg --config ./config.yaml
 
 - **Multi-File Sync** - Sync multiple config files in a single run
 - **Multi-Format Output** - JSON, YAML, or plain text based on filename extension
-- **Subdirectory Support** - Sync files to any path (e.g., `.github/workflows/ci.yml`)
+- **Subdirectory Support** - Sync files to any path (e.g., `.github/workflows/ci.yaml`)
 - **Text Files** - Sync `.gitignore`, `.markdownlintignore`, etc. with string or lines array
 - **File References** - Use `@path/to/file` to load content from external template files
 - **Content Inheritance** - Define base config once, override per-repo as needed
@@ -583,7 +583,7 @@ Sync files to any subdirectory path - parent directories are created automatical
 ```yaml
 files:
   # GitHub Actions workflow
-  ".github/workflows/ci.yml":
+  ".github/workflows/ci.yaml":
     content:
       name: CI
       on: [push, pull_request]
