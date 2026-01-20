@@ -566,6 +566,115 @@ describe("GitHubPRStrategy URL extraction edge cases (TDD for issue #92)", () =>
   });
 });
 
+describe("GitHubPRStrategy closeExistingPR", () => {
+  const githubRepoInfo: GitHubRepoInfo = {
+    type: "github",
+    gitUrl: "git@github.com:owner/repo.git",
+    owner: "owner",
+    repo: "repo",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  const testDirClose = join(process.cwd(), "test-github-strategy-close-tmp");
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDirClose)) {
+      rmSync(testDirClose, { recursive: true, force: true });
+    }
+    mkdirSync(testDirClose, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDirClose)) {
+      rmSync(testDirClose, { recursive: true, force: true });
+    }
+  });
+
+  test("returns false when no PR exists", async () => {
+    mockExecutor.responses.set("gh pr list", "");
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const result = await strategy.closeExistingPR({
+      repoInfo: githubRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirClose,
+      retries: 0,
+    });
+
+    assert.equal(result, false);
+  });
+
+  test("closes PR and returns true when PR exists", async () => {
+    mockExecutor.responses.set(
+      "gh pr list",
+      "https://github.com/owner/repo/pull/123",
+    );
+    mockExecutor.responses.set("gh pr close", "");
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const result = await strategy.closeExistingPR({
+      repoInfo: githubRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirClose,
+      retries: 0,
+    });
+
+    assert.equal(result, true);
+    const closeCall = mockExecutor.calls.find((c) =>
+      c.command.includes("gh pr close"),
+    );
+    assert.ok(closeCall);
+    assert.ok(closeCall.command.includes("123"));
+    assert.ok(closeCall.command.includes("--delete-branch"));
+  });
+
+  test("throws error when PR number cannot be extracted from URL (issue #93)", async () => {
+    // This tests the fix for issue #93: when checkExistingPR returns a URL
+    // but we can't extract the PR number, we should throw an error rather
+    // than returning false (which would incorrectly indicate no PR exists)
+    mockExecutor.responses.set(
+      "gh pr list",
+      "https://github.com/owner/repo/invalid-url-format",
+    );
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+
+    await assert.rejects(
+      () =>
+        strategy.closeExistingPR({
+          repoInfo: githubRepoInfo,
+          branchName: "test-branch",
+          baseBranch: "main",
+          workDir: testDirClose,
+          retries: 0,
+        }),
+      /Could not extract PR number from URL/,
+    );
+  });
+
+  test("returns false when close command fails", async () => {
+    mockExecutor.responses.set(
+      "gh pr list",
+      "https://github.com/owner/repo/pull/123",
+    );
+    mockExecutor.responses.set("gh pr close", new Error("Close failed"));
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const result = await strategy.closeExistingPR({
+      repoInfo: githubRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirClose,
+      retries: 0,
+    });
+
+    assert.equal(result, false);
+  });
+});
+
 describe("GitHubPRStrategy merge", () => {
   const githubRepoInfo: GitHubRepoInfo = {
     type: "github",

@@ -72,10 +72,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     // Extract PR number from URL
     const prNumber = existingUrl.match(/\/pull\/(\d+)/)?.[1];
     if (!prNumber) {
-      logger.info(
-        `Warning: Could not extract PR number from URL: ${existingUrl}`,
-      );
-      return false;
+      throw new Error(`Could not extract PR number from URL: ${existingUrl}`);
     }
 
     // Close the PR and delete the branch
