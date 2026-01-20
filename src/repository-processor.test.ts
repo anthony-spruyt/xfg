@@ -88,6 +88,16 @@ describe("RepositoryProcessor", () => {
       info(message: string) {
         this.messages.push(message);
       },
+      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
+        // No-op for mock
+      },
+      diffSummary(
+        _newCount: number,
+        _modifiedCount: number,
+        _unchangedCount: number,
+      ) {
+        // No-op for mock
+      },
     });
 
     // Mock GitOps that simulates different scenarios
@@ -268,6 +278,16 @@ describe("RepositoryProcessor", () => {
       messages: [] as string[],
       info(message: string) {
         this.messages.push(message);
+      },
+      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
+        // No-op for mock
+      },
+      diffSummary(
+        _newCount: number,
+        _modifiedCount: number,
+        _unchangedCount: number,
+      ) {
+        // No-op for mock
       },
     });
 

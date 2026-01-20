@@ -13,6 +13,13 @@ import { logger, ILogger } from "./logger.js";
 import { getPRStrategy } from "./strategies/index.js";
 import type { PRMergeConfig } from "./strategies/index.js";
 import { CommandExecutor, defaultExecutor } from "./command-executor.js";
+import {
+  getFileStatus,
+  generateDiff,
+  createDiffStats,
+  incrementDiffStats,
+  DiffStats,
+} from "./diff-utils.js";
 
 /**
  * Determines if a file should be marked as executable.
@@ -136,6 +143,7 @@ export class RepositoryProcessor {
       // For config files (JSON/YAML), these approaches produce identical results in practice.
       // Edge cases (repos with unusual git attributes on config files) are essentially nonexistent.
       const changedFiles: FileAction[] = [];
+      const diffStats: DiffStats = createDiffStats();
 
       for (const file of repoConfig.files) {
         const filePath = join(workDir, file.fileName);
@@ -173,10 +181,25 @@ export class RepositoryProcessor {
           : "create";
 
         if (dryRun) {
-          // In dry-run, check if file would change without writing
-          if (this.gitOps.wouldChange(file.fileName, fileContent)) {
+          // In dry-run, check if file would change and show diff
+          const existingContent = this.gitOps.getFileContent(file.fileName);
+          const changed = this.gitOps.wouldChange(file.fileName, fileContent);
+          const status = getFileStatus(existingContent !== null, changed);
+
+          // Track stats
+          incrementDiffStats(diffStats, status);
+
+          if (changed) {
             changedFiles.push({ fileName: file.fileName, action });
           }
+
+          // Generate and display diff
+          const diffLines = generateDiff(
+            existingContent,
+            fileContent,
+            file.fileName,
+          );
+          this.log.fileDiff(file.fileName, status, diffLines);
         } else {
           // Write the file
           this.gitOps.writeFile(file.fileName, fileContent);
@@ -197,6 +220,15 @@ export class RepositoryProcessor {
           this.log.info(`Setting executable: ${file.fileName}`);
           await this.gitOps!.setExecutable(file.fileName);
         }
+      }
+
+      // Show diff summary in dry-run mode
+      if (dryRun) {
+        this.log.diffSummary(
+          diffStats.newCount,
+          diffStats.modifiedCount,
+          diffStats.unchangedCount,
+        );
       }
 
       // Step 6: Check for changes (exclude skipped files)

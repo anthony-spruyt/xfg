@@ -1,7 +1,14 @@
 import chalk from "chalk";
+import { FileStatus, formatStatusBadge } from "./diff-utils.js";
 
 export interface ILogger {
   info(message: string): void;
+  fileDiff(fileName: string, status: FileStatus, diffLines: string[]): void;
+  diffSummary(
+    newCount: number,
+    modifiedCount: number,
+    unchangedCount: number,
+  ): void;
 }
 
 export interface LoggerStats {
@@ -56,6 +63,42 @@ export class Logger {
       chalk.red(`[${current}/${this.stats.total}] ✗`) +
         ` ${repoName}: ${error}`,
     );
+  }
+
+  /**
+   * Display a file diff with status badge.
+   * Used in dry-run mode to show what would change.
+   */
+  fileDiff(fileName: string, status: FileStatus, diffLines: string[]): void {
+    const badge = formatStatusBadge(status);
+    console.log(`    ${badge} ${fileName}`);
+
+    // Only show diff lines for NEW or MODIFIED files
+    if (status !== "UNCHANGED" && diffLines.length > 0) {
+      for (const line of diffLines) {
+        console.log(`      ${line}`);
+      }
+    }
+  }
+
+  /**
+   * Display summary statistics for dry-run diff.
+   */
+  diffSummary(
+    newCount: number,
+    modifiedCount: number,
+    unchangedCount: number,
+  ): void {
+    const parts: string[] = [];
+    if (newCount > 0) parts.push(chalk.green(`${newCount} new`));
+    if (modifiedCount > 0)
+      parts.push(chalk.yellow(`${modifiedCount} modified`));
+    if (unchangedCount > 0)
+      parts.push(chalk.gray(`${unchangedCount} unchanged`));
+
+    if (parts.length > 0) {
+      console.log(chalk.gray(`    Summary: ${parts.join(", ")}`));
+    }
   }
 
   summary(): void {
