@@ -6,6 +6,10 @@
  * @returns The escaped string wrapped in single quotes
  */
 export function escapeShellArg(arg: string): string {
+  // Defense-in-depth: reject null bytes even if upstream validation should catch them
+  if (arg.includes("\0")) {
+    throw new Error("Shell argument contains null byte");
+  }
   // Use single quotes and escape any single quotes within
   // 'string' -> quote ends, escaped quote, quote starts again
   return `'${arg.replace(/'/g, "'\\''")}'`;
