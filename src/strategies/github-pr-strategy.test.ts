@@ -275,7 +275,7 @@ describe("GitHubPRStrategy with mock executor", () => {
       mockExecutor.responses.set("gh pr list", "");
       mockExecutor.responses.set(
         "gh pr create",
-        "https://github.com/owner/repo/pull/new",
+        "https://github.com/owner/repo/pull/999",
       );
 
       const strategy = new GitHubPRStrategy(mockExecutor);
@@ -292,7 +292,7 @@ describe("GitHubPRStrategy with mock executor", () => {
       const result = await strategy.execute(options);
 
       assert.equal(result.success, true);
-      assert.equal(result.url, "https://github.com/owner/repo/pull/new");
+      assert.equal(result.url, "https://github.com/owner/repo/pull/999");
       // Should call both checkExistingPR and create
       assert.equal(mockExecutor.calls.length, 2);
     });
@@ -416,6 +416,153 @@ describe("GitHubPRStrategy URL extraction", () => {
 
     const match = output.match(regex);
     assert.equal(match, null);
+  });
+});
+
+describe("GitHubPRStrategy URL extraction edge cases (TDD for issue #92)", () => {
+  const githubRepoInfo: GitHubRepoInfo = {
+    type: "github",
+    gitUrl: "git@github.com:owner/repo.git",
+    owner: "owner",
+    repo: "repo",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  const testDirEdge = join(process.cwd(), "test-github-strategy-edge-tmp");
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDirEdge)) {
+      rmSync(testDirEdge, { recursive: true, force: true });
+    }
+    mkdirSync(testDirEdge, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDirEdge)) {
+      rmSync(testDirEdge, { recursive: true, force: true });
+    }
+  });
+
+  test("throws error when output contains no URL", async () => {
+    // BUG: Currently returns the error message as the URL instead of throwing
+    mockExecutor.responses.set(
+      "gh pr create",
+      "Error: failed to create pull request",
+    );
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: githubRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirEdge,
+      retries: 0,
+    };
+
+    await assert.rejects(
+      () => strategy.create(options),
+      /Could not parse PR URL/,
+    );
+  });
+
+  test("does not capture trailing punctuation in URL", async () => {
+    // BUG: [^\s]+ captures trailing period/punctuation
+    mockExecutor.responses.set(
+      "gh pr create",
+      "PR created: https://github.com/owner/repo/pull/123.",
+    );
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: githubRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirEdge,
+      retries: 0,
+    };
+
+    const result = await strategy.create(options);
+
+    assert.equal(
+      result.url,
+      "https://github.com/owner/repo/pull/123",
+      "URL should not include trailing period",
+    );
+  });
+
+  test("rejects non-PR GitHub URLs (issue URL)", async () => {
+    // BUG: Current regex matches any GitHub URL, not just PR URLs
+    mockExecutor.responses.set(
+      "gh pr create",
+      "See related: https://github.com/owner/repo/issues/456",
+    );
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: githubRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirEdge,
+      retries: 0,
+    };
+
+    await assert.rejects(
+      () => strategy.create(options),
+      /Could not parse PR URL/,
+    );
+  });
+
+  test("rejects non-PR GitHub URLs (commit URL)", async () => {
+    // BUG: Current regex matches any GitHub URL, not just PR URLs
+    mockExecutor.responses.set(
+      "gh pr create",
+      "Based on commit https://github.com/owner/repo/commit/abc123",
+    );
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: githubRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirEdge,
+      retries: 0,
+    };
+
+    await assert.rejects(
+      () => strategy.create(options),
+      /Could not parse PR URL/,
+    );
+  });
+
+  test("extracts valid PR URL with trailing newline", async () => {
+    mockExecutor.responses.set(
+      "gh pr create",
+      "https://github.com/owner/repo/pull/789\n",
+    );
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: githubRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirEdge,
+      retries: 0,
+    };
+
+    const result = await strategy.create(options);
+
+    assert.equal(result.url, "https://github.com/owner/repo/pull/789");
   });
 });
 

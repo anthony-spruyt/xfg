@@ -120,11 +120,17 @@ export class GitHubPRStrategy extends BasePRStrategy {
         { retries },
       );
 
-      // Extract URL from output
-      const urlMatch = result.match(/https:\/\/github\.com\/[^\s]+/);
+      // Extract URL from output - use strict regex for valid PR URLs only
+      const urlMatch = result.match(
+        /https:\/\/github\.com\/[\w-]+\/[\w.-]+\/pull\/\d+/,
+      );
+
+      if (!urlMatch) {
+        throw new Error(`Could not parse PR URL from output: ${result}`);
+      }
 
       return {
-        url: urlMatch?.[0] ?? result,
+        url: urlMatch[0],
         success: true,
         message: "PR created successfully",
       };
