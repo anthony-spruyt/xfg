@@ -161,6 +161,21 @@ export class GitOps {
   }
 
   /**
+   * Get list of files that have changes according to git status.
+   * Returns relative file paths for files that are modified, added, or untracked.
+   * Uses the same this.exec() pattern as other methods in this class.
+   */
+  async getChangedFiles(): Promise<string[]> {
+    const status = await this.exec("git status --porcelain", this.workDir);
+    if (!status) return [];
+
+    return status
+      .split("\n")
+      .filter((line) => line.length > 0)
+      .map((line) => line.slice(3)); // Remove status prefix (e.g., " M ", "?? ", "A  ")
+  }
+
+  /**
    * Check if there are staged changes ready to commit.
    * Uses `git diff --cached --quiet` which exits with 1 if there are staged changes.
    */

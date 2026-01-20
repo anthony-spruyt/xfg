@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+# Integration test config - tests that unchanged files are not included in PR
+# This test has two files:
+# - unchanged-test.json: content matches what's already in the repo (should not appear in PR)
+# - changed-test.json: new content (should appear in PR)
+files:
+  unchanged-test.json:
+    content:
+      unchanged: true
+  changed-test.json:
+    content:
+      changed: true
+      timestamp: test-run
+
+repos:
+  - git: https://github.com/anthony-spruyt/xfg-test.git

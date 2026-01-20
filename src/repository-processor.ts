@@ -196,16 +196,24 @@ export class RepositoryProcessor {
         hasChanges = await this.gitOps.hasChanges();
         // If there are changes, determine which files changed
         if (hasChanges) {
-          // Rebuild the changed files list by checking git status
-          // Skip files that were already marked as skipped (createOnly)
+          // Get the actual list of changed files from git status
+          const gitChangedFiles = new Set(await this.gitOps.getChangedFiles());
+
+          // Preserve skipped files (createOnly)
           const skippedFiles = new Set(
             changedFiles
               .filter((f) => f.action === "skip")
               .map((f) => f.fileName),
           );
+
+          // Only add files that actually changed according to git
           for (const file of repoConfig.files) {
             if (skippedFiles.has(file.fileName)) {
               continue; // Already tracked as skipped
+            }
+            // Only include files that git reports as changed
+            if (!gitChangedFiles.has(file.fileName)) {
+              continue; // File didn't actually change
             }
             const filePath = join(workDir, file.fileName);
             const action: "create" | "update" = existsSync(filePath)

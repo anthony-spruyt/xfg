@@ -361,4 +361,146 @@ describe("Integration Test", () => {
 
     console.log("\n=== createOnly test passed ===\n");
   });
+
+  test("PR title only includes files that actually changed (issue #90)", async () => {
+    // This test verifies the bug fix for issue #90:
+    // When some files in the config don't actually change (content matches repo),
+    // they should NOT appear in the PR title or commit message.
+    // NOTE: This test uses the same exec() helper defined at line 19-35, which
+    // is safe because all commands are hardcoded (not derived from user input).
+
+    const unchangedFile = "unchanged-test.json";
+    const changedFile = "changed-test.json";
+    const testBranch = "chore/sync-config";
+
+    console.log("\n=== Setting up unchanged files test (issue #90) ===\n");
+
+    // 1. Close any existing PRs from this branch
+    console.log("Closing any existing PRs...");
+    try {
+      const existingPRs = exec(
+        `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number --jq '.[].number'`,
+      );
+      if (existingPRs) {
+        for (const prNumber of existingPRs.split("\n").filter(Boolean)) {
+          console.log(`  Closing PR #${prNumber}`);
+          exec(`gh pr close ${prNumber} --repo ${TEST_REPO} --delete-branch`);
+        }
+      }
+    } catch {
+      console.log("  No existing PRs to close");
+    }
+
+    // 2. Delete the remote branch if it exists
+    console.log(`Deleting remote branch ${testBranch} if exists...`);
+    try {
+      exec(
+        `gh api --method DELETE repos/${TEST_REPO}/git/refs/heads/${testBranch}`,
+      );
+      console.log("  Branch deleted");
+    } catch {
+      console.log("  Branch does not exist");
+    }
+
+    // 3. Create the "unchanged" file on main branch with content that matches config
+    // The config has: { "unchanged": true }
+    console.log(
+      `Creating ${unchangedFile} on main branch (will NOT change)...`,
+    );
+    const unchangedContent =
+      JSON.stringify({ unchanged: true }, null, 2) + "\n";
+    const unchangedContentBase64 =
+      Buffer.from(unchangedContent).toString("base64");
+
+    // Check if file exists and get its sha
+    let fileSha = "";
+    try {
+      fileSha = exec(
+        `gh api repos/${TEST_REPO}/contents/${unchangedFile} --jq '.sha'`,
+      );
+    } catch {
+      fileSha = "";
+    }
+
+    if (fileSha && !fileSha.includes("Not Found")) {
+      exec(
+        `gh api --method PUT repos/${TEST_REPO}/contents/${unchangedFile} -f message="test: setup ${unchangedFile} for issue #90 test" -f content="${unchangedContentBase64}" -f sha="${fileSha}"`,
+      );
+    } else {
+      exec(
+        `gh api --method PUT repos/${TEST_REPO}/contents/${unchangedFile} -f message="test: setup ${unchangedFile} for issue #90 test" -f content="${unchangedContentBase64}"`,
+      );
+    }
+    console.log("  File created with content matching config");
+
+    // 4. Delete changed-test.json if it exists (to ensure it will be created)
+    console.log(`Deleting ${changedFile} if exists...`);
+    try {
+      const changedSha = exec(
+        `gh api repos/${TEST_REPO}/contents/${changedFile} --jq '.sha'`,
+      );
+      if (changedSha && !changedSha.includes("Not Found")) {
+        exec(
+          `gh api --method DELETE repos/${TEST_REPO}/contents/${changedFile} -f message="test: cleanup ${changedFile}" -f sha="${changedSha}"`,
+        );
+        console.log("  File deleted");
+      }
+    } catch {
+      console.log("  File does not exist");
+    }
+
+    // 5. Run sync with the test config
+    console.log("\nRunning xfg with unchanged files config...");
+    const configPath = join(fixturesDir, "integration-test-unchanged.yaml");
+    const output = exec(`node dist/index.js --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    // 6. Get the PR and check its title
+    console.log("\nVerifying PR title...");
+    const prInfo = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number,title --jq '.[0]'`,
+    );
+
+    assert.ok(prInfo, "Expected a PR to be created");
+    const pr = JSON.parse(prInfo);
+    console.log(`  PR #${pr.number}: ${pr.title}`);
+
+    // THE KEY ASSERTION: PR title should only mention the changed file
+    // With the bug: title would be "chore: sync changed-test.json, unchanged-test.json"
+    // After fix: title should be "chore: sync changed-test.json"
+    assert.ok(
+      pr.title.includes(changedFile),
+      `PR title should include ${changedFile}`,
+    );
+    assert.ok(
+      !pr.title.includes(unchangedFile),
+      `PR title should NOT include ${unchangedFile} (bug #90: unchanged files incorrectly listed)`,
+    );
+
+    // 7. Cleanup
+    console.log("\nCleaning up test files...");
+    try {
+      const sha1 = exec(
+        `gh api repos/${TEST_REPO}/contents/${unchangedFile} --jq '.sha'`,
+      );
+      exec(
+        `gh api --method DELETE repos/${TEST_REPO}/contents/${unchangedFile} -f message="test: cleanup ${unchangedFile}" -f sha="${sha1}"`,
+      );
+      console.log(`  Deleted ${unchangedFile}`);
+    } catch {
+      console.log(`  Could not delete ${unchangedFile}`);
+    }
+
+    try {
+      // Note: changed-test.json only exists on the PR branch, not main
+      // It will be cleaned up when the PR is closed
+      console.log(`  ${changedFile} exists only on PR branch`);
+    } catch {
+      console.log(`  ${changedFile} not found`);
+    }
+
+    console.log("\n=== Unchanged files test (issue #90) passed ===\n");
+  });
 });
