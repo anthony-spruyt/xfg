@@ -1,4 +1,4 @@
-import { isAbsolute } from "node:path";
+import { extname, isAbsolute } from "node:path";
 import type { RawConfig } from "./config.js";
 
 const VALID_STRATEGIES = ["replace", "append", "prepend"];
@@ -27,8 +27,10 @@ function isObjectContent(content: unknown): boolean {
  * Check if file extension is for structured output (JSON/YAML).
  */
 function isStructuredFileExtension(fileName: string): boolean {
-  const ext = fileName.toLowerCase().split(".").pop();
-  return ext === "json" || ext === "json5" || ext === "yaml" || ext === "yml";
+  const ext = extname(fileName).toLowerCase();
+  return (
+    ext === ".json" || ext === ".json5" || ext === ".yaml" || ext === ".yml"
+  );
 }
 
 /**

@@ -632,6 +632,16 @@ describe("validateRawConfig", () => {
   });
 
   describe("text file content validation", () => {
+    test("file named 'json' without extension is text file", () => {
+      const config: RawConfig = {
+        files: {
+          json: { content: "some text content" }, // file named "json" with no extension
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
     test("accepts string content for text files", () => {
       const config: RawConfig = {
         files: {
