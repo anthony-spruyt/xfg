@@ -185,7 +185,7 @@ After PR creation, the tool can automatically merge or enable auto-merge based o
 3. Check if `origin/master` exists
 4. Default to `main`
 
-**Dry Run**: When `--dry-run` flag is used, commits and pushes are skipped, but file writes and branch creation still occur locally for validation.
+**Dry Run**: When `--dry-run` flag is used, file writes, commits, and pushes are skipped. Change detection uses `wouldChange()` for read-only content comparison. Branch creation still occurs locally.
 
 ## Configuration Format
 

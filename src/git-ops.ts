@@ -132,6 +132,24 @@ export class GitOps {
   }
 
   /**
+   * Get the content of a file in the workspace.
+   * Returns null if the file doesn't exist.
+   */
+  getFileContent(fileName: string): string | null {
+    const filePath = this.validatePath(fileName);
+
+    if (!existsSync(filePath)) {
+      return null;
+    }
+
+    try {
+      return readFileSync(filePath, "utf-8");
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Checks if writing the given content would result in changes.
    * Works in both normal and dry-run modes by comparing content directly.
    */
