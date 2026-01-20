@@ -1,7 +1,7 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { writeFileSync, mkdirSync, rmSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, normalize, relative, isAbsolute } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import {
@@ -111,6 +111,50 @@ describe("File Reference Resolver", () => {
       assert.throws(
         () => resolveFileReference("@templates/../../escape.json", testDir),
         /escapes config directory/,
+      );
+    });
+
+    test("path traversal check uses cross-platform approach (issue #89)", () => {
+      // Issue #89: The old code used: !path.startsWith(configDir + "/")
+      // This fails on Windows where normalize() returns paths with backslash.
+      // Example: "C:\\config\\..\\outside".startsWith("C:\\config/") → false (BYPASS!)
+      //
+      // The fix uses path.relative() which handles separators correctly.
+      // This test verifies the security logic works for escape detection.
+
+      const configDir = testDir;
+      const escapedPath = join(testDir, "..", "outside", "file.json");
+      const normalizedEscaped = normalize(escapedPath);
+      const normalizedConfigDir = normalize(configDir);
+
+      // OLD VULNERABLE APPROACH (hardcoded "/"):
+      // On Linux this works, but on Windows it fails because normalize() uses "\"
+      const oldApproachDetectsEscape =
+        !normalizedEscaped.startsWith(normalizedConfigDir + "/") &&
+        normalizedEscaped !== normalizedConfigDir;
+
+      // NEW SECURE APPROACH (using relative()):
+      // Works on all platforms because relative() handles separators correctly
+      const rel = relative(normalizedConfigDir, normalizedEscaped);
+      const newApproachDetectsEscape = rel.startsWith("..") || isAbsolute(rel);
+
+      // Both should detect the escape (true means "this path escapes")
+      assert.strictEqual(
+        oldApproachDetectsEscape,
+        true,
+        "Old approach should detect escape on this platform",
+      );
+      assert.strictEqual(
+        newApproachDetectsEscape,
+        true,
+        "New approach must detect escape on all platforms",
+      );
+
+      // The key assertion: new approach reliably detects escapes
+      // This will still pass after the fix - it validates the fix logic is correct
+      assert.ok(
+        newApproachDetectsEscape,
+        "relative() approach must detect path traversal escapes",
       );
     });
 

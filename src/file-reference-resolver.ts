@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { resolve, isAbsolute, normalize, extname } from "node:path";
+import { resolve, isAbsolute, normalize, extname, relative } from "node:path";
 import JSON5 from "json5";
 import { parse as parseYaml } from "yaml";
 import type { ContentValue, RawConfig } from "./config.js";
@@ -43,11 +43,11 @@ export function resolveFileReference(
   const normalizedConfigDir = normalize(configDir);
 
   // Security: ensure path stays within config directory tree
-  // Use path separator to ensure we're checking directory boundaries
-  if (
-    !normalizedResolved.startsWith(normalizedConfigDir + "/") &&
-    normalizedResolved !== normalizedConfigDir
-  ) {
+  // Fix for issue #89: Use path.relative() instead of hardcoded "/" separator
+  // The old approach (!path.startsWith(configDir + "/")) fails on Windows
+  // where normalize() returns paths with backslash separators.
+  const pathFromConfig = relative(normalizedConfigDir, normalizedResolved);
+  if (pathFromConfig.startsWith("..") || isAbsolute(pathFromConfig)) {
     throw new Error(
       `File reference "${reference}" escapes config directory. ` +
         `References must be within "${configDir}".`,
