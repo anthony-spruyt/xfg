@@ -158,10 +158,11 @@ describe("escapeShellArg", () => {
       assert.strictEqual(escaped, "'$(cat /etc/passwd)'");
     });
 
-    test("handles null bytes", () => {
+    test("throws on null bytes", () => {
       const withNull = "test\x00injected";
-      const escaped = escapeShellArg(withNull);
-      assert.strictEqual(escaped, "'test\x00injected'");
+      assert.throws(() => escapeShellArg(withNull), {
+        message: "Shell argument contains null byte",
+      });
     });
   });
 });
