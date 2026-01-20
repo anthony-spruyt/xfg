@@ -794,6 +794,30 @@ describe("normalizeConfig", () => {
     });
   });
 
+  describe("type safety", () => {
+    test("throws when merging text base with object overlay", () => {
+      const raw: RawConfig = {
+        files: {
+          ".gitignore": { content: "node_modules" }, // text content
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              // @ts-expect-error - intentionally testing runtime type mismatch
+              ".gitignore": { content: { invalid: "object" } }, // object content - type mismatch
+            },
+          },
+        ],
+      };
+
+      assert.throws(
+        () => normalizeConfig(raw),
+        /Expected text content for .gitignore, got object/,
+      );
+    });
+  });
+
   describe("executable propagation", () => {
     test("passes root-level executable: true to FileContent", () => {
       const raw: RawConfig = {

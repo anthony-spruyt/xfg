@@ -115,10 +115,15 @@ export function normalizeConfig(raw: RawConfig): Config {
         } else {
           // Merge mode: handle text vs object content
           if (isTextContent(fileConfig.content)) {
-            // Text content merging
+            // Text content merging - validate overlay is also text
+            if (!isTextContent(repoOverride.content)) {
+              throw new Error(
+                `Expected text content for ${fileName}, got object`,
+              );
+            }
             mergedContent = mergeTextContent(
               fileConfig.content,
-              repoOverride.content as string | string[],
+              repoOverride.content,
               fileStrategy,
             );
           } else {
