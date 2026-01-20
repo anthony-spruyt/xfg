@@ -5,7 +5,7 @@
 [![npm downloads](https://img.shields.io/npm/dw/@aspruyt/xfg.svg)](https://www.npmjs.com/package/@aspruyt/xfg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple GitHub and Azure DevOps repositories by creating pull requests. Output format is automatically detected from the target filename extension (`.json` → JSON, `.json5` → JSON5, `.yaml`/`.yml` → YAML, other → text).
+A CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple GitHub, Azure DevOps, and GitLab repositories by creating pull requests (or merge requests for GitLab). Output format is automatically detected from the target filename extension (`.json` → JSON, `.json5` → JSON5, `.yaml`/`.yml` → YAML, other → text).
 
 ## Table of Contents
 
@@ -72,7 +72,7 @@ xfg --config ./config.yaml
 - **Override Mode** - Skip merging entirely for specific repos
 - **Empty Files** - Create files with no content (e.g., `.prettierignore`)
 - **YAML Comments** - Add header comments and schema directives to YAML files
-- **GitHub & Azure DevOps** - Works with both platforms
+- **Multi-Platform** - Works with GitHub, Azure DevOps, and GitLab (including self-hosted)
 - **Auto-Merge PRs** - Automatically merge PRs when checks pass, or force merge with admin privileges
 - **Dry-Run Mode** - Preview changes without creating PRs
 - **Error Resilience** - Continues processing if individual repos fail
@@ -116,6 +116,20 @@ Before using with Azure DevOps repositories, authenticate with the Azure CLI:
 ```bash
 az login
 az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG project=YOUR_PROJECT
+```
+
+### GitLab Authentication
+
+Before using with GitLab repositories, authenticate with the GitLab CLI:
+
+```bash
+glab auth login
+```
+
+For self-hosted GitLab instances:
+
+```bash
+glab auth login --hostname gitlab.example.com
 ```
 
 ## Usage
@@ -679,11 +693,11 @@ repos:
 
 **Merge Modes:**
 
-| Mode     | GitHub Behavior                                      | Azure DevOps Behavior                  |
-| -------- | ---------------------------------------------------- | -------------------------------------- |
-| `manual` | Leave PR open for review                             | Leave PR open for review               |
-| `auto`   | Enable auto-merge (requires repo setup, **default**) | Enable auto-complete (**default**)     |
-| `force`  | Merge with `--admin` (bypass checks)                 | Bypass policies with `--bypass-policy` |
+| Mode     | GitHub Behavior                                      | Azure DevOps Behavior                  | GitLab Behavior                            |
+| -------- | ---------------------------------------------------- | -------------------------------------- | ------------------------------------------ |
+| `manual` | Leave PR open for review                             | Leave PR open for review               | Leave MR open for review                   |
+| `auto`   | Enable auto-merge (requires repo setup, **default**) | Enable auto-complete (**default**)     | Merge when pipeline succeeds (**default**) |
+| `force`  | Merge with `--admin` (bypass checks)                 | Bypass policies with `--bypass-policy` | Merge immediately                          |
 
 **GitHub Auto-Merge Note:** The `auto` mode requires auto-merge to be enabled in the repository settings. If not enabled, the tool will warn and leave the PR open for manual review. Enable it with:
 
@@ -713,6 +727,14 @@ xfg --config ./config.yaml --merge force
 - SSH: `git@ssh.dev.azure.com:v3/organization/project/repo`
 - HTTPS: `https://dev.azure.com/organization/project/_git/repo`
 
+### GitLab
+
+- SSH: `git@gitlab.com:owner/repo.git`
+- HTTPS: `https://gitlab.com/owner/repo.git`
+- Nested groups: `git@gitlab.com:org/group/subgroup/repo.git`
+- Self-hosted SSH: `git@gitlab.example.com:owner/repo.git`
+- Self-hosted HTTPS: `https://gitlab.example.com/owner/repo.git`
+
 ## How It Works
 
 ```mermaid
@@ -737,11 +759,13 @@ flowchart TB
     end
 
     subgraph Platform["PR Creation"]
-        COMMIT --> PR_DETECT{GitHub or<br/>Azure DevOps?}
+        COMMIT --> PR_DETECT{Platform?}
         PR_DETECT -->|GitHub| GH_PR[Create PR via gh CLI]
         PR_DETECT -->|Azure DevOps| AZ_PR[Create PR via az CLI]
-        GH_PR --> PR_CREATED[PR Created]
+        PR_DETECT -->|GitLab| GL_PR[Create MR via glab CLI]
+        GH_PR --> PR_CREATED[PR/MR Created]
         AZ_PR --> PR_CREATED
+        GL_PR --> PR_CREATED
     end
 
     subgraph AutoMerge["Auto-Merge (default)"]
@@ -890,11 +914,25 @@ az login
 az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG
 ```
 
+**GitLab:**
+
+```bash
+# Check authentication status
+glab auth status
+
+# Re-authenticate if needed
+glab auth login
+
+# For self-hosted instances
+glab auth login --hostname gitlab.example.com
+```
+
 ### Permission Denied
 
 - Ensure your token has write access to the target repositories
 - For GitHub, the token needs `repo` scope
 - For Azure DevOps, ensure the user/service account has "Contribute to pull requests" permission
+- For GitLab, ensure the user has at least "Developer" role on the project
 
 ### Branch Already Exists
 

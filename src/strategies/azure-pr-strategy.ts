@@ -25,7 +25,7 @@ export class AzurePRStrategy extends BasePRStrategy {
   }
 
   private buildPRUrl(repoInfo: AzureDevOpsRepoInfo, prId: string): string {
-    return `https://dev.azure.com/${encodeURIComponent(repoInfo.organization)}/${encodeURIComponent(repoInfo.project)}/_git/${encodeURIComponent(repoInfo.repo)}/pullrequest/${prId}`;
+    return `https://dev.azure.com/${encodeURIComponent(repoInfo.organization)}/${encodeURIComponent(repoInfo.project)}/_git/${encodeURIComponent(repoInfo.repo)}/pullrequest/${prId.trim()}`;
   }
 
   async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {

@@ -4,6 +4,7 @@ import {
   parseGitUrl,
   detectRepoType,
   getRepoDisplayName,
+  isGitLabRepo,
 } from "./repo-detector.js";
 
 describe("detectRepoType", () => {
@@ -35,16 +36,58 @@ describe("detectRepoType", () => {
     );
   });
 
-  test("throws for unknown URL formats", () => {
-    assert.throws(
-      () => detectRepoType("git@gitlab.com:owner/repo.git"),
-      /Unrecognized git URL format/,
+  test("detects GitLab SaaS SSH URL", () => {
+    assert.strictEqual(
+      detectRepoType("git@gitlab.com:owner/repo.git"),
+      "gitlab",
+    );
+  });
+
+  test("detects GitLab SaaS HTTPS URL", () => {
+    assert.strictEqual(
+      detectRepoType("https://gitlab.com/owner/repo.git"),
+      "gitlab",
+    );
+  });
+
+  test("detects GitLab SaaS nested group SSH URL", () => {
+    assert.strictEqual(
+      detectRepoType("git@gitlab.com:org/group/subgroup/repo.git"),
+      "gitlab",
+    );
+  });
+
+  test("detects GitLab SaaS nested group HTTPS URL", () => {
+    assert.strictEqual(
+      detectRepoType("https://gitlab.com/org/group/subgroup/repo.git"),
+      "gitlab",
+    );
+  });
+
+  test("detects GitLab self-hosted SSH URL", () => {
+    assert.strictEqual(
+      detectRepoType("git@gitlab.example.com:owner/repo.git"),
+      "gitlab",
+    );
+  });
+
+  test("detects GitLab self-hosted HTTPS URL", () => {
+    assert.strictEqual(
+      detectRepoType("https://gitlab.example.com/owner/repo.git"),
+      "gitlab",
     );
   });
 
   test("throws for ftp URLs", () => {
     assert.throws(
       () => detectRepoType("ftp://example.com/repo"),
+      /Unrecognized git URL format/,
+    );
+  });
+
+  test("throws for URLs without owner/repo structure", () => {
+    assert.throws(
+      () => detectRepoType("git@unknown.com:invalid"),
       /Unrecognized git URL format/,
     );
   });
@@ -164,6 +207,122 @@ describe("parseGitUrl", () => {
       );
     });
   });
+
+  describe("GitLab URLs", () => {
+    test("parses SaaS SSH format: git@gitlab.com:owner/repo.git", () => {
+      const result = parseGitUrl("git@gitlab.com:owner/repo.git");
+      assert.strictEqual(result.type, "gitlab");
+      if (isGitLabRepo(result)) {
+        assert.strictEqual(result.owner, "owner");
+        assert.strictEqual(result.namespace, "owner");
+        assert.strictEqual(result.repo, "repo");
+        assert.strictEqual(result.host, "gitlab.com");
+      }
+    });
+
+    test("parses SaaS SSH format without .git suffix", () => {
+      const result = parseGitUrl("git@gitlab.com:owner/repo");
+      assert.strictEqual(result.type, "gitlab");
+      if (isGitLabRepo(result)) {
+        assert.strictEqual(result.owner, "owner");
+        assert.strictEqual(result.repo, "repo");
+      }
+    });
+
+    test("parses SaaS HTTPS format: https://gitlab.com/owner/repo.git", () => {
+      const result = parseGitUrl("https://gitlab.com/owner/repo.git");
+      assert.strictEqual(result.type, "gitlab");
+      if (isGitLabRepo(result)) {
+        assert.strictEqual(result.owner, "owner");
+        assert.strictEqual(result.namespace, "owner");
+        assert.strictEqual(result.repo, "repo");
+        assert.strictEqual(result.host, "gitlab.com");
+      }
+    });
+
+    test("parses SaaS HTTPS format without .git suffix", () => {
+      const result = parseGitUrl("https://gitlab.com/owner/repo");
+      assert.strictEqual(result.type, "gitlab");
+      if (isGitLabRepo(result)) {
+        assert.strictEqual(result.owner, "owner");
+        assert.strictEqual(result.repo, "repo");
+      }
+    });
+
+    test("parses nested group SSH: git@gitlab.com:org/group/subgroup/repo.git", () => {
+      const result = parseGitUrl("git@gitlab.com:org/group/subgroup/repo.git");
+      assert.strictEqual(result.type, "gitlab");
+      if (isGitLabRepo(result)) {
+        assert.strictEqual(result.owner, "org");
+        assert.strictEqual(result.namespace, "org/group/subgroup");
+        assert.strictEqual(result.repo, "repo");
+        assert.strictEqual(result.host, "gitlab.com");
+      }
+    });
+
+    test("parses nested group HTTPS: https://gitlab.com/org/group/subgroup/repo.git", () => {
+      const result = parseGitUrl(
+        "https://gitlab.com/org/group/subgroup/repo.git",
+      );
+      assert.strictEqual(result.type, "gitlab");
+      if (isGitLabRepo(result)) {
+        assert.strictEqual(result.owner, "org");
+        assert.strictEqual(result.namespace, "org/group/subgroup");
+        assert.strictEqual(result.repo, "repo");
+        assert.strictEqual(result.host, "gitlab.com");
+      }
+    });
+
+    test("parses self-hosted SSH: git@gitlab.example.com:owner/repo.git", () => {
+      const result = parseGitUrl("git@gitlab.example.com:owner/repo.git");
+      assert.strictEqual(result.type, "gitlab");
+      if (isGitLabRepo(result)) {
+        assert.strictEqual(result.host, "gitlab.example.com");
+        assert.strictEqual(result.namespace, "owner");
+        assert.strictEqual(result.repo, "repo");
+      }
+    });
+
+    test("parses self-hosted HTTPS: https://gitlab.example.com/owner/repo.git", () => {
+      const result = parseGitUrl("https://gitlab.example.com/owner/repo.git");
+      assert.strictEqual(result.type, "gitlab");
+      if (isGitLabRepo(result)) {
+        assert.strictEqual(result.host, "gitlab.example.com");
+        assert.strictEqual(result.namespace, "owner");
+        assert.strictEqual(result.repo, "repo");
+      }
+    });
+
+    test("handles repo names with dots: my.repo.git", () => {
+      const result = parseGitUrl("git@gitlab.com:owner/my.repo.git");
+      assert.strictEqual(result.type, "gitlab");
+      if (isGitLabRepo(result)) {
+        assert.strictEqual(result.repo, "my.repo");
+      }
+    });
+
+    test("handles repo names with multiple dots", () => {
+      const result = parseGitUrl("https://gitlab.com/org/config.sync.test.git");
+      assert.strictEqual(result.type, "gitlab");
+      if (isGitLabRepo(result)) {
+        assert.strictEqual(result.repo, "config.sync.test");
+      }
+    });
+
+    test("handles repo names with hyphens: my-repo", () => {
+      const result = parseGitUrl("git@gitlab.com:owner/my-repo.git");
+      if (isGitLabRepo(result)) {
+        assert.strictEqual(result.repo, "my-repo");
+      }
+    });
+
+    test("handles repo names with underscores: my_repo", () => {
+      const result = parseGitUrl("git@gitlab.com:owner/my_repo.git");
+      if (isGitLabRepo(result)) {
+        assert.strictEqual(result.repo, "my_repo");
+      }
+    });
+  });
 });
 
 describe("getRepoDisplayName", () => {
@@ -187,5 +346,29 @@ describe("getRepoDisplayName", () => {
       project: "project",
     });
     assert.strictEqual(result, "org/project/repo");
+  });
+
+  test("formats GitLab repos as namespace/repo", () => {
+    const result = getRepoDisplayName({
+      type: "gitlab",
+      gitUrl: "git@gitlab.com:owner/repo.git",
+      owner: "owner",
+      namespace: "owner",
+      repo: "repo",
+      host: "gitlab.com",
+    });
+    assert.strictEqual(result, "owner/repo");
+  });
+
+  test("formats GitLab repos with nested groups as full namespace/repo", () => {
+    const result = getRepoDisplayName({
+      type: "gitlab",
+      gitUrl: "git@gitlab.com:org/group/subgroup/repo.git",
+      owner: "org",
+      namespace: "org/group/subgroup",
+      repo: "repo",
+      host: "gitlab.com",
+    });
+    assert.strictEqual(result, "org/group/subgroup/repo");
   });
 });

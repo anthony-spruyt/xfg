@@ -1,7 +1,7 @@
 {
   "name": "@aspruyt/xfg",
   "version": "1.1.0",
-  "description": "CLI tool to sync JSON or YAML configuration files across multiple GitHub and Azure DevOps repositories",
+  "description": "CLI tool to sync JSON or YAML configuration files across multiple GitHub, Azure DevOps, and GitLab repositories",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -26,7 +26,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "test": "node --import tsx --test src/config.test.ts src/merge.test.ts src/env.test.ts src/repo-detector.test.ts src/pr-creator.test.ts src/git-ops.test.ts src/logger.test.ts src/workspace-utils.test.ts src/strategies/pr-strategy.test.ts src/strategies/github-pr-strategy.test.ts src/strategies/azure-pr-strategy.test.ts src/repository-processor.test.ts src/retry-utils.test.ts src/command-executor.test.ts src/shell-utils.test.ts src/index.test.ts src/config-formatter.test.ts src/config-validator.test.ts src/config-normalizer.test.ts src/diff-utils.test.ts",
+    "test": "node --import tsx --test src/config.test.ts src/merge.test.ts src/env.test.ts src/repo-detector.test.ts src/pr-creator.test.ts src/git-ops.test.ts src/logger.test.ts src/workspace-utils.test.ts src/strategies/pr-strategy.test.ts src/strategies/github-pr-strategy.test.ts src/strategies/azure-pr-strategy.test.ts src/strategies/gitlab-pr-strategy.test.ts src/repository-processor.test.ts src/retry-utils.test.ts src/command-executor.test.ts src/shell-utils.test.ts src/index.test.ts src/config-formatter.test.ts src/config-validator.test.ts src/config-normalizer.test.ts src/diff-utils.test.ts",
     "test:integration": "npm run build && node --import tsx --test src/integration.test.ts",
     "prepublishOnly": "npm run build"
   },
@@ -39,7 +39,9 @@
     "cli",
     "github",
     "azure-devops",
-    "pull-request"
+    "gitlab",
+    "pull-request",
+    "merge-request"
   ],
   "author": "Anthony Spruyt",
   "license": "MIT",

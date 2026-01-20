@@ -3,7 +3,12 @@ import assert from "node:assert";
 import { getPRStrategy } from "./index.js";
 import { GitHubPRStrategy } from "./github-pr-strategy.js";
 import { AzurePRStrategy } from "./azure-pr-strategy.js";
-import { GitHubRepoInfo, AzureDevOpsRepoInfo } from "../repo-detector.js";
+import { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
+import {
+  GitHubRepoInfo,
+  AzureDevOpsRepoInfo,
+  GitLabRepoInfo,
+} from "../repo-detector.js";
 import {
   PRStrategyOptions,
   PRStrategy,
@@ -36,6 +41,34 @@ describe("getPRStrategy", () => {
 
     const strategy = getPRStrategy(repoInfo);
     assert.ok(strategy instanceof AzurePRStrategy);
+  });
+
+  test("returns GitLabPRStrategy for GitLab repos", () => {
+    const repoInfo: GitLabRepoInfo = {
+      type: "gitlab",
+      gitUrl: "git@gitlab.com:owner/repo.git",
+      owner: "owner",
+      namespace: "owner",
+      repo: "repo",
+      host: "gitlab.com",
+    };
+
+    const strategy = getPRStrategy(repoInfo);
+    assert.ok(strategy instanceof GitLabPRStrategy);
+  });
+
+  test("returns GitLabPRStrategy for GitLab nested group repos", () => {
+    const repoInfo: GitLabRepoInfo = {
+      type: "gitlab",
+      gitUrl: "git@gitlab.com:org/group/subgroup/repo.git",
+      owner: "org",
+      namespace: "org/group/subgroup",
+      repo: "repo",
+      host: "gitlab.com",
+    };
+
+    const strategy = getPRStrategy(repoInfo);
+    assert.ok(strategy instanceof GitLabPRStrategy);
   });
 });
 

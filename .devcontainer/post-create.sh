@@ -23,6 +23,10 @@ export PATH="$HOME/.safe-chain/shims:$PATH"
 echo "Installing remaining npm tools (now protected by safe-chain)..."
 npm install -g "@anthropic-ai/claude-code@$(node -p "require('./package.json').dependencies['@anthropic-ai/claude-code']")" --safe-chain-skip-minimum-package-age
 
+# Install GitLab CLI (glab)
+echo "Installing GitLab CLI..."
+curl -fsSL https://gitlab.com/gitlab-org/cli/-/raw/main/scripts/install.sh | sudo sh
+
 # Install and build the project
 echo "Installing project dependencies..."
 cd "${containerWorkspaceFolder:-/workspaces/xfg}"

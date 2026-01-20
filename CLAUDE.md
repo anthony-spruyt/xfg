@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-TypeScript CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple Git repositories by automatically creating pull requests. Output format is determined by content type: object content outputs JSON/JSON5/YAML (based on file extension), while string or string array content outputs plain text. Supports both GitHub and Azure DevOps platforms.
+TypeScript CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple Git repositories by automatically creating pull requests. Output format is determined by content type: object content outputs JSON/JSON5/YAML (based on file extension), while string or string array content outputs plain text. Supports GitHub, Azure DevOps, and GitLab platforms (including self-hosted GitLab instances).
 
 ## Architecture
 
@@ -126,20 +126,24 @@ The tool processes repositories sequentially with a 10-step workflow per repo:
 
 ### Platform Detection (repo-detector.ts)
 
-Auto-detects GitHub vs Azure DevOps from git URL patterns:
+Auto-detects GitHub, Azure DevOps, or GitLab from git URL patterns:
 
 - GitHub SSH: `git@github.com:owner/repo.git`
 - GitHub HTTPS: `https://github.com/owner/repo.git`
 - Azure SSH: `git@ssh.dev.azure.com:v3/org/project/repo`
 - Azure HTTPS: `https://dev.azure.com/org/project/_git/repo`
+- GitLab SaaS SSH: `git@gitlab.com:owner/repo.git`
+- GitLab SaaS HTTPS: `https://gitlab.com/owner/repo.git`
+- GitLab Self-hosted: Fallback detection for any domain with GitLab URL patterns
+- GitLab Nested Groups: `gitlab.com/org/group/subgroup/repo`
 
-Returns `RepoInfo` with normalized fields (owner, repo, organization, project) used by PR creator.
+Returns `RepoInfo` with normalized fields (owner, repo, organization, project, namespace, host) used by PR/MR creator.
 
 ### PR Creation Strategy (pr-creator.ts)
 
 **Idempotency**: Checks for existing PR on branch before creating new one. Returns URL of existing PR if found.
 
-**Shell Safety**: Uses `escapeShellArg()` to wrap all user-provided strings passed to `gh`/`az` CLI. Special handling: wraps in single quotes and escapes embedded single quotes as `'\''`.
+**Shell Safety**: Uses `escapeShellArg()` to wrap all user-provided strings passed to `gh`/`az`/`glab` CLI. Special handling: wraps in single quotes and escapes embedded single quotes as `'\''`.
 
 **Template System**: Loads PR body from `PR.md` file (included in npm package). Uses `{{FILES}}` placeholders for file list. Writes body to temp file to avoid shell escaping issues with multiline strings.
 
@@ -159,13 +163,15 @@ After PR creation, the tool can automatically merge or enable auto-merge based o
 
 **Merge Modes**:
 
-| Mode     | GitHub                                     | Azure DevOps                              |
-| -------- | ------------------------------------------ | ----------------------------------------- |
-| `manual` | Leave PR open (default)                    | Leave PR open                             |
-| `auto`   | `gh pr merge --auto` (requires repo setup) | `az repos pr update --auto-complete true` |
-| `force`  | `gh pr merge --admin` (bypass checks)      | `--bypass-policy true --status completed` |
+| Mode     | GitHub                                     | Azure DevOps                              | GitLab                                   |
+| -------- | ------------------------------------------ | ----------------------------------------- | ---------------------------------------- |
+| `manual` | Leave PR open (default)                    | Leave PR open                             | Leave MR open                            |
+| `auto`   | `gh pr merge --auto` (requires repo setup) | `az repos pr update --auto-complete true` | `glab mr merge --when-pipeline-succeeds` |
+| `force`  | `gh pr merge --admin` (bypass checks)      | `--bypass-policy true --status completed` | `glab mr merge -y` (merge immediately)   |
 
 **GitHub Auto-Merge Handling**: Before enabling auto-merge, checks if `allow_auto_merge` is enabled on the repository via `gh api`. If not enabled, logs a warning with instructions and falls back to manual mode.
+
+**GitLab Merge Handling**: Uses `glab mr merge --when-pipeline-succeeds` for auto mode (merges when CI pipeline passes). Force mode merges immediately without waiting for pipeline.
 
 **CLI Flags**: `--merge`, `--merge-strategy`, `--delete-branch` override config file settings.
 
@@ -245,6 +251,7 @@ The release workflow automatically builds, tests, publishes to npm with provenan
 - `git` CLI (for cloning/pushing)
 - `gh` CLI (for GitHub repos) - must be authenticated via `gh auth login`
 - `az` CLI (for Azure DevOps repos) - must be authenticated and configured
+- `glab` CLI (for GitLab repos) - must be authenticated via `glab auth login`
 
 **Package Structure**:
 

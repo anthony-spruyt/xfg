@@ -1,7 +1,13 @@
-import { RepoInfo, isGitHubRepo, isAzureDevOpsRepo } from "../repo-detector.js";
+import {
+  RepoInfo,
+  isGitHubRepo,
+  isAzureDevOpsRepo,
+  isGitLabRepo,
+} from "../repo-detector.js";
 import type { PRStrategy } from "./pr-strategy.js";
 import { GitHubPRStrategy } from "./github-pr-strategy.js";
 import { AzurePRStrategy } from "./azure-pr-strategy.js";
+import { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
 import { CommandExecutor } from "../command-executor.js";
 
 export type {
@@ -15,6 +21,7 @@ export type {
 export { BasePRStrategy, PRWorkflowExecutor } from "./pr-strategy.js";
 export { GitHubPRStrategy } from "./github-pr-strategy.js";
 export { AzurePRStrategy } from "./azure-pr-strategy.js";
+export { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
 
 /**
  * Factory function to get the appropriate PR strategy for a repository.
@@ -31,6 +38,10 @@ export function getPRStrategy(
 
   if (isAzureDevOpsRepo(repoInfo)) {
     return new AzurePRStrategy(executor);
+  }
+
+  if (isGitLabRepo(repoInfo)) {
+    return new GitLabPRStrategy(executor);
   }
 
   // Type exhaustiveness check - should never reach here

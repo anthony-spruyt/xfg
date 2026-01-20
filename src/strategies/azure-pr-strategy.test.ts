@@ -3,7 +3,7 @@ import assert from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { AzurePRStrategy } from "./azure-pr-strategy.js";
-import { AzureDevOpsRepoInfo } from "../repo-detector.js";
+import { AzureDevOpsRepoInfo, GitHubRepoInfo } from "../repo-detector.js";
 import { PRStrategyOptions } from "./pr-strategy.js";
 import { CommandExecutor } from "../command-executor.js";
 
@@ -651,5 +651,244 @@ describe("AzurePRStrategy merge", () => {
       assert.ok(result.message.includes("Invalid Azure DevOps PR URL"));
       assert.equal(mockExecutor.calls.length, 0);
     });
+  });
+});
+
+describe("AzurePRStrategy closeExistingPR", () => {
+  const azureRepoInfo: AzureDevOpsRepoInfo = {
+    type: "azure-devops",
+    gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
+    owner: "myorg",
+    repo: "myrepo",
+    organization: "myorg",
+    project: "myproject",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  const testDirClose = join(process.cwd(), "test-azure-strategy-close-tmp");
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDirClose)) {
+      rmSync(testDirClose, { recursive: true, force: true });
+    }
+    mkdirSync(testDirClose, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDirClose)) {
+      rmSync(testDirClose, { recursive: true, force: true });
+    }
+  });
+
+  test("returns false when no PR exists", async () => {
+    mockExecutor.responses.set("az repos pr list", "");
+
+    const strategy = new AzurePRStrategy(mockExecutor);
+    const result = await strategy.closeExistingPR({
+      repoInfo: azureRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirClose,
+      retries: 0,
+    });
+
+    assert.equal(result, false);
+  });
+
+  test("closes PR (abandons) and deletes branch when PR exists", async () => {
+    mockExecutor.responses.set("az repos pr list", "123");
+    mockExecutor.responses.set("az repos pr update", "");
+    mockExecutor.responses.set("az repos ref delete", "");
+
+    const strategy = new AzurePRStrategy(mockExecutor);
+    const result = await strategy.closeExistingPR({
+      repoInfo: azureRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirClose,
+      retries: 0,
+    });
+
+    assert.equal(result, true);
+    const abandonCall = mockExecutor.calls.find((c) =>
+      c.command.includes("az repos pr update"),
+    );
+    assert.ok(abandonCall, "Should call az repos pr update");
+    assert.ok(abandonCall.command.includes("--status abandoned"));
+    assert.ok(abandonCall.command.includes("--id"));
+  });
+
+  test("deletes branch after closing PR", async () => {
+    mockExecutor.responses.set("az repos pr list", "123");
+    mockExecutor.responses.set("az repos pr update", "");
+    mockExecutor.responses.set("az repos ref delete", "");
+
+    const strategy = new AzurePRStrategy(mockExecutor);
+    await strategy.closeExistingPR({
+      repoInfo: azureRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirClose,
+      retries: 0,
+    });
+
+    const deleteBranchCall = mockExecutor.calls.find((c) =>
+      c.command.includes("az repos ref delete"),
+    );
+    assert.ok(deleteBranchCall, "Should call az repos ref delete");
+    assert.ok(deleteBranchCall.command.includes("test-branch"));
+  });
+
+  test("returns true even when branch deletion fails", async () => {
+    mockExecutor.responses.set("az repos pr list", "123");
+    mockExecutor.responses.set("az repos pr update", "");
+    mockExecutor.responses.set(
+      "az repos ref delete",
+      new Error("Branch deletion failed"),
+    );
+
+    const strategy = new AzurePRStrategy(mockExecutor);
+    const result = await strategy.closeExistingPR({
+      repoInfo: azureRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirClose,
+      retries: 0,
+    });
+
+    // Should still return true because PR was abandoned successfully
+    assert.equal(result, true);
+  });
+
+  test("returns false when abandon command fails", async () => {
+    mockExecutor.responses.set("az repos pr list", "123");
+    mockExecutor.responses.set(
+      "az repos pr update",
+      new Error("Abandon failed"),
+    );
+
+    const strategy = new AzurePRStrategy(mockExecutor);
+    const result = await strategy.closeExistingPR({
+      repoInfo: azureRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirClose,
+      retries: 0,
+    });
+
+    assert.equal(result, false);
+  });
+});
+
+describe("AzurePRStrategy URL extraction edge cases", () => {
+  const azureRepoInfo: AzureDevOpsRepoInfo = {
+    type: "azure-devops",
+    gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
+    owner: "myorg",
+    repo: "myrepo",
+    organization: "myorg",
+    project: "myproject",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  const testDirEdge = join(process.cwd(), "test-azure-strategy-edge-tmp");
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDirEdge)) {
+      rmSync(testDirEdge, { recursive: true, force: true });
+    }
+    mkdirSync(testDirEdge, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDirEdge)) {
+      rmSync(testDirEdge, { recursive: true, force: true });
+    }
+  });
+
+  test("handles PR ID with whitespace in output", async () => {
+    // Azure CLI output may include whitespace/newlines
+    mockExecutor.responses.set("az repos pr create", "  456  \n");
+
+    const strategy = new AzurePRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: azureRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirEdge,
+      retries: 0,
+    };
+
+    const result = await strategy.create(options);
+
+    assert.equal(result.success, true);
+    // buildPRUrl trims whitespace from PR ID
+    assert.ok(result.url?.includes("pullrequest/456"));
+  });
+
+  test("handles empty response from create command", async () => {
+    mockExecutor.responses.set("az repos pr create", "");
+
+    const strategy = new AzurePRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: azureRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirEdge,
+      retries: 0,
+    };
+
+    const result = await strategy.create(options);
+
+    // Azure strategy builds URL from any output, even empty
+    // The URL will have no PR ID but it still returns success
+    assert.equal(result.success, true);
+  });
+});
+
+describe("AzurePRStrategy type guards", () => {
+  const githubRepoInfo: GitHubRepoInfo = {
+    type: "github",
+    gitUrl: "git@github.com:owner/repo.git",
+    owner: "owner",
+    repo: "repo",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  test("closeExistingPR throws for non-Azure repo", async () => {
+    const strategy = new AzurePRStrategy(mockExecutor);
+
+    await assert.rejects(
+      () =>
+        strategy.closeExistingPR({
+          repoInfo: githubRepoInfo,
+          branchName: "test-branch",
+          baseBranch: "main",
+          workDir: testDir,
+          retries: 0,
+        }),
+      /Expected Azure DevOps repository/,
+    );
   });
 });
