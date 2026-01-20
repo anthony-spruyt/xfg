@@ -124,6 +124,17 @@ export class RepositoryProcessor {
       await this.gitOps.createBranch(branchName);
 
       // Step 5: Write all config files and track changes
+      //
+      // DESIGN NOTE: Change detection differs between dry-run and normal mode:
+      // - Dry-run: Uses wouldChange() for read-only content comparison (no side effects)
+      // - Normal: Uses git status after writing (source of truth for what git will commit)
+      //
+      // This is intentional. git status is more accurate because it respects .gitattributes
+      // (line ending normalization, filters) and detects executable bit changes. However,
+      // it requires actually writing files, which defeats dry-run's purpose.
+      //
+      // For config files (JSON/YAML), these approaches produce identical results in practice.
+      // Edge cases (repos with unusual git attributes on config files) are essentially nonexistent.
       const changedFiles: FileAction[] = [];
 
       for (const file of repoConfig.files) {
