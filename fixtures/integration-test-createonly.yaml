@@ -9,4 +9,3 @@ files:
 
 repos:
   - git: https://github.com/anthony-spruyt/xfg-test.git
-    branch: chore/sync-createonly-test

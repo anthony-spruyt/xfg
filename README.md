@@ -136,16 +136,16 @@ xfg --config ./config.yaml --branch feature/update-eslint
 
 ### Options
 
-| Option             | Alias | Description                                                                          | Required |
-| ------------------ | ----- | ------------------------------------------------------------------------------------ | -------- |
-| `--config`         | `-c`  | Path to YAML config file                                                             | Yes      |
-| `--dry-run`        | `-d`  | Show what would be done without making changes                                       | No       |
-| `--work-dir`       | `-w`  | Temporary directory for cloning (default: `./tmp`)                                   | No       |
-| `--retries`        | `-r`  | Number of retries for network operations (default: 3)                                | No       |
-| `--branch`         | `-b`  | Override branch name (default: `chore/sync-config`)                                  | No       |
-| `--merge`          | `-m`  | PR merge mode: `manual` (default), `auto` (merge when checks pass), `force` (bypass) | No       |
-| `--merge-strategy` |       | Merge strategy: `merge` (default), `squash`, `rebase`                                | No       |
-| `--delete-branch`  |       | Delete source branch after merge                                                     | No       |
+| Option             | Alias | Description                                                                    | Required |
+| ------------------ | ----- | ------------------------------------------------------------------------------ | -------- |
+| `--config`         | `-c`  | Path to YAML config file                                                       | Yes      |
+| `--dry-run`        | `-d`  | Show what would be done without making changes                                 | No       |
+| `--work-dir`       | `-w`  | Temporary directory for cloning (default: `./tmp`)                             | No       |
+| `--retries`        | `-r`  | Number of retries for network operations (default: 3)                          | No       |
+| `--branch`         | `-b`  | Override branch name (default: `chore/sync-{filename}` or `chore/sync-config`) | No       |
+| `--merge`          | `-m`  | PR merge mode: `manual`, `auto` (default), `force` (bypass checks)             | No       |
+| `--merge-strategy` |       | Merge strategy: `merge`, `squash` (default), `rebase`                          | No       |
+| `--delete-branch`  |       | Delete source branch after merge                                               | No       |
 
 ## Configuration Format
 
@@ -197,9 +197,9 @@ repos: # List of repositories
 
 | Field           | Description                                                                 | Default  |
 | --------------- | --------------------------------------------------------------------------- | -------- |
-| `merge`         | Merge mode: `manual` (leave open), `auto` (merge when checks pass), `force` | `manual` |
-| `mergeStrategy` | How to merge: `merge`, `squash`, `rebase`                                   | `merge`  |
-| `deleteBranch`  | Delete source branch after merge                                            | `false`  |
+| `merge`         | Merge mode: `manual` (leave open), `auto` (merge when checks pass), `force` | `auto`   |
+| `mergeStrategy` | How to merge: `merge`, `squash`, `rebase`                                   | `squash` |
+| `deleteBranch`  | Delete source branch after merge                                            | `true`   |
 | `bypassReason`  | Reason for bypassing policies (Azure DevOps only, required for `force`)     | -        |
 
 ### Per-Repo File Override Fields
@@ -649,7 +649,7 @@ config/
 
 ### Auto-Merge PRs
 
-Configure PRs to merge automatically when checks pass, or force merge using admin privileges:
+By default, xfg enables auto-merge on PRs when checks pass. You can override this behavior per-repo or via CLI flags:
 
 ```yaml
 files:
@@ -658,17 +658,17 @@ files:
       semi: false
       singleQuote: true
 
-# Global PR options - apply to all repos
-prOptions:
-  merge: auto # auto-merge when checks pass
-  mergeStrategy: squash # squash commits
-  deleteBranch: true # cleanup after merge
-
+# Default behavior (auto-merge with squash, delete branch) - no prOptions needed
 repos:
-  # These repos use global prOptions (auto-merge)
+  # These repos use defaults (auto-merge with squash, delete branch)
   - git:
       - git@github.com:org/frontend.git
       - git@github.com:org/backend.git
+
+  # This repo overrides to manual (leave PR open for review)
+  - git: git@github.com:org/needs-review.git
+    prOptions:
+      merge: manual
 
   # This repo overrides to force merge (bypass required reviews)
   - git: git@github.com:org/internal-tool.git
@@ -679,11 +679,11 @@ repos:
 
 **Merge Modes:**
 
-| Mode     | GitHub Behavior                         | Azure DevOps Behavior                  |
-| -------- | --------------------------------------- | -------------------------------------- |
-| `manual` | Leave PR open for review (default)      | Leave PR open for review               |
-| `auto`   | Enable auto-merge (requires repo setup) | Enable auto-complete                   |
-| `force`  | Merge with `--admin` (bypass checks)    | Bypass policies with `--bypass-policy` |
+| Mode     | GitHub Behavior                                      | Azure DevOps Behavior                  |
+| -------- | ---------------------------------------------------- | -------------------------------------- |
+| `manual` | Leave PR open for review                             | Leave PR open for review               |
+| `auto`   | Enable auto-merge (requires repo setup, **default**) | Enable auto-complete (**default**)     |
+| `force`  | Merge with `--admin` (bypass checks)                 | Bypass policies with `--bypass-policy` |
 
 **GitHub Auto-Merge Note:** The `auto` mode requires auto-merge to be enabled in the repository settings. If not enabled, the tool will warn and leave the PR open for manual review. Enable it with:
 
@@ -694,11 +694,11 @@ gh repo edit org/repo --enable-auto-merge
 **CLI Override:** You can override config file settings with CLI flags:
 
 ```bash
+# Disable auto-merge, leave PRs open for review
+xfg --config ./config.yaml --merge manual
+
 # Force merge all PRs (useful for urgent updates)
 xfg --config ./config.yaml --merge force
-
-# Enable auto-merge with squash
-xfg --config ./config.yaml --merge auto --merge-strategy squash --delete-branch
 ```
 
 ## Supported Git URL Formats
@@ -727,23 +727,28 @@ flowchart TB
     end
 
     subgraph Processing["For Each Repository"]
-        CLONE[Clone Repo] --> BRANCH[Create/Checkout Branch<br/>--branch or chore/sync-config]
-        BRANCH --> WRITE[Write All Config Files<br/>JSON, JSON5, or YAML]
+        CLONE[Clone Repo] --> DETECT_BRANCH[Detect Default Branch]
+        DETECT_BRANCH --> CLOSE_PR[Close Existing PR<br/>if exists]
+        CLOSE_PR --> BRANCH[Create Fresh Branch]
+        BRANCH --> WRITE[Write Config Files]
         WRITE --> CHECK{Changes?}
         CHECK -->|No| SKIP[Skip - No Changes]
-        CHECK -->|Yes| COMMIT[Commit Changes]
-        COMMIT --> PUSH[Push to Remote]
+        CHECK -->|Yes| COMMIT[Commit & Push]
     end
 
-    subgraph Platform["Platform Detection"]
-        PUSH --> DETECT{GitHub or<br/>Azure DevOps?}
+    subgraph Platform["PR Creation"]
+        COMMIT --> PR_DETECT{GitHub or<br/>Azure DevOps?}
+        PR_DETECT -->|GitHub| GH_PR[Create PR via gh CLI]
+        PR_DETECT -->|Azure DevOps| AZ_PR[Create PR via az CLI]
+        GH_PR --> PR_CREATED[PR Created]
+        AZ_PR --> PR_CREATED
     end
 
-    subgraph Output
-        DETECT -->|GitHub| GH_PR[Create PR via gh CLI]
-        DETECT -->|Azure DevOps| AZ_PR[Create PR via az CLI]
-        GH_PR --> GH_URL[/"GitHub PR URL"/]
-        AZ_PR --> AZ_URL[/"Azure DevOps PR URL"/]
+    subgraph AutoMerge["Auto-Merge (default)"]
+        PR_CREATED --> MERGE_MODE{Merge Mode?}
+        MERGE_MODE -->|manual| OPEN[Leave PR Open]
+        MERGE_MODE -->|auto| AUTO[Enable Auto-Merge]
+        MERGE_MODE -->|force| FORCE[Bypass & Merge]
     end
 
     YAML --> EXPAND
@@ -757,11 +762,14 @@ For each repository in the config, the tool:
 3. Interpolates environment variables
 4. Cleans the temporary workspace
 5. Clones the repository
-6. Creates/checks out branch (custom `--branch` or default `chore/sync-config`)
-7. Writes all config files (JSON, JSON5, or YAML based on filename extension)
-8. Checks for changes (skips if no changes)
-9. Commits and pushes changes
-10. Creates a pull request
+6. Detects the default branch (main/master)
+7. Closes any existing PR on the branch and deletes the remote branch (fresh start)
+8. Creates a fresh branch from the default branch
+9. Writes all config files (JSON, JSON5, YAML, or text based on filename extension)
+10. Checks for changes (skips if no changes)
+11. Commits and pushes changes
+12. Creates a pull request
+13. Handles auto-merge based on configuration (auto by default)
 
 ## CI/CD Integration
 
@@ -890,10 +898,12 @@ az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG
 
 ### Branch Already Exists
 
-The tool automatically reuses existing branches. If you see unexpected behavior:
+The tool uses a fresh-start approach: it closes any existing PR on the branch and deletes the branch before creating a new one. This ensures each sync attempt is isolated and avoids merge conflicts from stale branches.
+
+If you see issues with stale branches:
 
 ```bash
-# Delete the remote branch to start fresh
+# Manually delete the remote branch if needed
 git push origin --delete chore/sync-config
 ```
 
@@ -985,7 +995,3 @@ npm test
 # Build
 npm run build
 ```
-
-## License
-
-MIT

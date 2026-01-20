@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Make all shell scripts executable (runs from repo root via postCreateCommand)
-sudo find . -type f -name '*.sh' -exec chmod u+x {} +
+find . -type f -name '*.sh' -exec chmod +x {} +
 
 # Change to script directory for package.json access
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
