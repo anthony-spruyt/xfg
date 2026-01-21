@@ -44,8 +44,10 @@ export class GitLabPRStrategy extends BasePRStrategy {
   ): { host: string; namespace: string; repo: string; mrIid: string } | null {
     // URL format: https://gitlab.com/namespace/repo/-/merge_requests/123
     // Nested: https://gitlab.com/org/group/subgroup/repo/-/merge_requests/123
+    // Use specific path segment pattern to avoid ReDoS (polynomial regex)
+    // Pattern: protocol://host/path-segments/-/merge_requests/id
     const match = mrUrl.match(
-      /https?:\/\/([^/]+)\/(.+)\/-\/merge_requests\/(\d+)/,
+      /https?:\/\/([^/]+)\/((?:[^/]+\/)*[^/]+)\/-\/merge_requests\/(\d+)/,
     );
     if (!match) return null;
 
