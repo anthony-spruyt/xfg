@@ -65,6 +65,7 @@ nav:
       - Content Types: configuration/content-types.md
       - Content Inheritance: configuration/inheritance.md
       - Environment Variables: configuration/env-variables.md
+      - Templating: configuration/templating.md
       - Merge Strategies: configuration/merge-strategies.md
       - File References: configuration/file-references.md
       - PR Options: configuration/pr-options.md

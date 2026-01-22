@@ -994,4 +994,196 @@ describe("validateRawConfig", () => {
       );
     });
   });
+
+  describe("template validation", () => {
+    test("allows template: true at root file level", () => {
+      const config = createValidConfig({
+        files: {
+          "README.md": { content: "# ${xfg:repo.name}", template: true },
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows template: false at root file level", () => {
+      const config = createValidConfig({
+        files: { "config.json": { content: {}, template: false } },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows undefined template at root file level", () => {
+      const config = createValidConfig({
+        files: { "config.json": { content: {} } },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when template is not a boolean at root level", () => {
+      const config = createValidConfig({
+        files: {
+          "config.json": { content: {}, template: "yes" as never },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /template must be a boolean/,
+      );
+    });
+
+    test("allows template: true at per-repo level", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { "config.json": { template: true } },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows template: false at per-repo level", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { "config.json": { template: false } },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when template is not a boolean at per-repo level", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { "config.json": { template: 123 as never } },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /template must be a boolean/,
+      );
+    });
+  });
+
+  describe("vars validation", () => {
+    test("allows valid vars object at root file level", () => {
+      const config = createValidConfig({
+        files: {
+          "config.json": {
+            content: {},
+            template: true,
+            vars: { env: "prod", region: "us-east-1" },
+          },
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows undefined vars at root file level", () => {
+      const config = createValidConfig({
+        files: { "config.json": { content: {}, template: true } },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows empty vars object at root file level", () => {
+      const config = createValidConfig({
+        files: {
+          "config.json": { content: {}, template: true, vars: {} },
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when vars is not an object at root level", () => {
+      const config = createValidConfig({
+        files: {
+          "config.json": { content: {}, vars: "invalid" as never },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /vars must be an object with string values/,
+      );
+    });
+
+    test("throws when vars is an array at root level", () => {
+      const config = createValidConfig({
+        files: {
+          "config.json": { content: {}, vars: ["a", "b"] as never },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /vars must be an object with string values/,
+      );
+    });
+
+    test("throws when vars contains non-string value at root level", () => {
+      const config = createValidConfig({
+        files: {
+          "config.json": {
+            content: {},
+            vars: { env: "prod", count: 123 } as never,
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /vars\.count must be a string/,
+      );
+    });
+
+    test("allows valid vars object at per-repo level", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.json": { vars: { env: "staging" } },
+            },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when vars is not an object at per-repo level", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { "config.json": { vars: null as never } },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /vars must be an object with string values/,
+      );
+    });
+
+    test("throws when vars contains non-string value at per-repo level", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.json": { vars: { flag: true } as never },
+            },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /vars\.flag must be a string/,
+      );
+    });
+  });
 });

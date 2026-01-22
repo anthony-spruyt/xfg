@@ -28,7 +28,7 @@
     },
     "prTemplate": {
       "type": "string",
-      "description": "Custom PR body template. Can be inline markdown or a file reference (@path/to/template.md relative to config file). Available placeholders: {{FILE_CHANGES}} - bulleted list of changed files with actions."
+      "description": "Custom PR body template. Can be inline markdown or a file reference (@path/to/template.md relative to config file). Supports ${xfg:...} templating variables: ${xfg:pr.fileChanges} (bulleted file list), ${xfg:pr.fileCount}, ${xfg:pr.title}, plus all repo variables (repo.name, repo.owner, repo.fullName, etc.)."
     },
     "githubHosts": {
       "type": "array",
@@ -97,6 +97,18 @@
         "executable": {
           "type": "boolean",
           "description": "Mark the file as executable via git update-index --add --chmod=+x. Shell scripts (.sh) are auto-executable unless explicitly set to false. Non-.sh files can be marked executable by setting to true."
+        },
+        "template": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable xfg templating for this file. When true, ${xfg:variable} placeholders are replaced with repo-specific values. Available variables: repo.name, repo.owner, repo.fullName, repo.url, repo.platform, repo.host, file.name, date, and any custom vars. Use $${xfg:...} to output literal ${xfg:...}. Default: false"
+        },
+        "vars": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Custom template variables for this file. Accessible as ${xfg:varName} when template: true. Per-repo vars merge with (and override) these root-level vars."
         }
       }
     },
@@ -226,6 +238,17 @@
         "executable": {
           "type": "boolean",
           "description": "Override the root-level executable setting for this specific repo. Set to true to mark executable, or false to disable auto-executable behavior for .sh files."
+        },
+        "template": {
+          "type": "boolean",
+          "description": "Override the root-level template setting for this specific repo. Set to true to enable xfg templating, or false to disable it."
+        },
+        "vars": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Per-repo custom template variables. These merge with (and override) root-level vars for this file. Accessible as ${xfg:varName} when template: true."
         }
       }
     }

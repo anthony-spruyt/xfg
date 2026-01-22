@@ -823,11 +823,14 @@ describe("normalizeConfig", () => {
       const raw: RawConfig = {
         files: { "config.json": { content: { key: "value" } } },
         repos: [{ git: "git@github.com:org/repo.git" }],
-        prTemplate: "## Custom Template\n\n{{FILE_CHANGES}}",
+        prTemplate: "## Custom Template\n\n${xfg:pr.fileChanges}",
       };
 
       const result = normalizeConfig(raw);
-      assert.equal(result.prTemplate, "## Custom Template\n\n{{FILE_CHANGES}}");
+      assert.equal(
+        result.prTemplate,
+        "## Custom Template\n\n${xfg:pr.fileChanges}",
+      );
     });
 
     test("missing prTemplate results in undefined", () => {
@@ -935,6 +938,224 @@ describe("normalizeConfig", () => {
       const result = normalizeConfig(raw);
       assert.equal(result.repos[0].files[0].executable, true);
       assert.equal(result.repos[1].files[0].executable, false);
+    });
+  });
+
+  describe("template propagation", () => {
+    test("template: true from root is propagated", () => {
+      const raw: RawConfig = {
+        files: {
+          "README.md": { content: "# ${xfg:repo.name}", template: true },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].template, true);
+    });
+
+    test("template is undefined when not specified", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: { key: "value" } },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].template, undefined);
+    });
+
+    test("per-repo template overrides root-level", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: {}, template: true },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.json": { template: false },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].template, false);
+    });
+
+    test("per-repo template: true overrides undefined root", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: {} },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.json": { template: true },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].template, true);
+    });
+
+    test("different repos can have different template values", () => {
+      const raw: RawConfig = {
+        files: {
+          "README.md": { content: "# ${xfg:repo.name}", template: true },
+        },
+        repos: [
+          { git: "git@github.com:org/repo1.git" },
+          {
+            git: "git@github.com:org/repo2.git",
+            files: {
+              "README.md": { template: false },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].template, true);
+      assert.equal(result.repos[1].files[0].template, false);
+    });
+  });
+
+  describe("vars merging", () => {
+    test("root-level vars are propagated", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": {
+            content: {},
+            template: true,
+            vars: { env: "prod", region: "us-east-1" },
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].files[0].vars, {
+        env: "prod",
+        region: "us-east-1",
+      });
+    });
+
+    test("vars is undefined when not specified", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: {}, template: true },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].vars, undefined);
+    });
+
+    test("per-repo vars merge with root-level vars", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": {
+            content: {},
+            template: true,
+            vars: { env: "prod", region: "us-east-1" },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.json": { vars: { cluster: "main" } },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].files[0].vars, {
+        env: "prod",
+        region: "us-east-1",
+        cluster: "main",
+      });
+    });
+
+    test("per-repo vars override root-level vars for same key", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": {
+            content: {},
+            template: true,
+            vars: { env: "prod", region: "us-east-1" },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.json": { vars: { env: "staging" } },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].files[0].vars, {
+        env: "staging",
+        region: "us-east-1",
+      });
+    });
+
+    test("per-repo vars only (no root vars)", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: {}, template: true },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.json": { vars: { env: "dev" } },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].files[0].vars, { env: "dev" });
+    });
+
+    test("different repos can have different vars", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": {
+            content: {},
+            template: true,
+            vars: { env: "prod" },
+          },
+        },
+        repos: [
+          { git: "git@github.com:org/repo1.git" },
+          {
+            git: "git@github.com:org/repo2.git",
+            files: {
+              "config.json": { vars: { env: "staging", region: "eu-west-1" } },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].files[0].vars, { env: "prod" });
+      assert.deepEqual(result.repos[1].files[0].vars, {
+        env: "staging",
+        region: "eu-west-1",
+      });
     });
   });
 });

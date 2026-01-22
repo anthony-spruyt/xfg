@@ -38,6 +38,8 @@ export interface RawFileConfig {
   executable?: boolean;
   header?: string | string[];
   schemaUrl?: string;
+  template?: boolean;
+  vars?: Record<string, string>;
 }
 
 // Per-repo file override
@@ -48,6 +50,8 @@ export interface RawRepoFileOverride {
   executable?: boolean;
   header?: string | string[];
   schemaUrl?: string;
+  template?: boolean;
+  vars?: Record<string, string>;
 }
 
 // Repo configuration
@@ -79,6 +83,8 @@ export interface FileContent {
   executable?: boolean;
   header?: string[];
   schemaUrl?: string;
+  template?: boolean;
+  vars?: Record<string, string>;
 }
 
 // Normalized repo config with all files to sync

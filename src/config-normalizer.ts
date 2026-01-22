@@ -151,6 +151,15 @@ export function normalizeConfig(raw: RawConfig): Config {
         );
         const schemaUrl = repoOverride?.schemaUrl ?? fileConfig.schemaUrl;
 
+        // Template: per-repo overrides root level
+        const template = repoOverride?.template ?? fileConfig.template;
+
+        // Vars: merge root + per-repo (per-repo takes precedence)
+        const vars =
+          fileConfig.vars || repoOverride?.vars
+            ? { ...fileConfig.vars, ...repoOverride?.vars }
+            : undefined;
+
         files.push({
           fileName,
           content: mergedContent,
@@ -158,6 +167,8 @@ export function normalizeConfig(raw: RawConfig): Config {
           executable,
           header,
           schemaUrl,
+          template,
+          vars,
         });
       }
 

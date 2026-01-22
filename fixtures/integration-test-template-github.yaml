@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+# Integration test config - tests template feature with ${xfg:...} variables
+# Also tests PR template interpolation
+
+prTemplate: |
+  ## Test PR for ${xfg:repo.fullName}
+
+  This PR updates ${xfg:pr.fileCount} file(s).
+
+  ### Changes
+
+  ${xfg:pr.fileChanges}
+
+  ### Metadata
+
+  - Repository: ${xfg:repo.name}
+  - Owner: ${xfg:repo.owner}
+  - Platform: ${xfg:repo.platform}
+
+files:
+  template-test.json:
+    template: true
+    vars:
+      customVar: "custom-value"
+    content:
+      repoName: "${xfg:repo.name}"
+      repoOwner: "${xfg:repo.owner}"
+      repoFullName: "${xfg:repo.fullName}"
+      platform: "${xfg:repo.platform}"
+      custom: "${xfg:customVar}"
+      escaped: "$${xfg:repo.name}"
+      static: "not-interpolated"
+
+repos:
+  - git: https://github.com/anthony-spruyt/xfg-test.git

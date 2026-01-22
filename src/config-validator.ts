@@ -122,6 +122,30 @@ export function validateRawConfig(config: RawConfig): void {
     ) {
       throw new Error(`File '${fileName}' schemaUrl must be a string`);
     }
+
+    if (
+      fileConfig.template !== undefined &&
+      typeof fileConfig.template !== "boolean"
+    ) {
+      throw new Error(`File '${fileName}' template must be a boolean`);
+    }
+
+    if (fileConfig.vars !== undefined) {
+      if (
+        typeof fileConfig.vars !== "object" ||
+        fileConfig.vars === null ||
+        Array.isArray(fileConfig.vars)
+      ) {
+        throw new Error(
+          `File '${fileName}' vars must be an object with string values`,
+        );
+      }
+      for (const [key, value] of Object.entries(fileConfig.vars)) {
+        if (typeof value !== "string") {
+          throw new Error(`File '${fileName}' vars.${key} must be a string`);
+        }
+      }
+    }
   }
 
   if (!config.repos || !Array.isArray(config.repos)) {
@@ -254,6 +278,34 @@ export function validateRawConfig(config: RawConfig): void {
           throw new Error(
             `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' schemaUrl must be a string`,
           );
+        }
+
+        if (
+          fileOverride.template !== undefined &&
+          typeof fileOverride.template !== "boolean"
+        ) {
+          throw new Error(
+            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' template must be a boolean`,
+          );
+        }
+
+        if (fileOverride.vars !== undefined) {
+          if (
+            typeof fileOverride.vars !== "object" ||
+            fileOverride.vars === null ||
+            Array.isArray(fileOverride.vars)
+          ) {
+            throw new Error(
+              `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' vars must be an object with string values`,
+            );
+          }
+          for (const [key, value] of Object.entries(fileOverride.vars)) {
+            if (typeof value !== "string") {
+              throw new Error(
+                `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' vars.${key} must be a string`,
+              );
+            }
+          }
         }
       }
     }
