@@ -781,4 +781,562 @@ describe("RepositoryProcessor", () => {
       );
     });
   });
+
+  describe("createOnly handling", () => {
+    const createMockLogger = (): ILogger & { messages: string[] } => ({
+      messages: [] as string[],
+      info(message: string) {
+        this.messages.push(message);
+      },
+      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
+        // No-op for mock
+      },
+      diffSummary(
+        _newCount: number,
+        _modifiedCount: number,
+        _unchangedCount: number,
+      ) {
+        // No-op for mock
+      },
+    });
+
+    class MockGitOpsForCreateOnly extends GitOps {
+      fileExistsOnBaseBranch = false;
+
+      constructor(options: GitOpsOptions) {
+        super(options);
+      }
+
+      override cleanWorkspace(): void {
+        mkdirSync(this.getWorkDir(), { recursive: true });
+      }
+
+      override async clone(_gitUrl: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async getDefaultBranch(): Promise<{
+        branch: string;
+        method: string;
+      }> {
+        return { branch: "main", method: "mock" };
+      }
+
+      override async createBranch(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override writeFile(fileName: string, content: string): void {
+        const filePath = join(this.getWorkDir(), fileName);
+        mkdirSync(this.getWorkDir(), { recursive: true });
+        writeFileSync(filePath, content, "utf-8");
+      }
+
+      override wouldChange(_fileName: string, _content: string): boolean {
+        return true;
+      }
+
+      override async hasChanges(): Promise<boolean> {
+        return !this.fileExistsOnBaseBranch;
+      }
+
+      override async fileExistsOnBranch(
+        _fileName: string,
+        _branch: string,
+      ): Promise<boolean> {
+        return this.fileExistsOnBaseBranch;
+      }
+
+      override async commit(_message: string): Promise<boolean> {
+        return true;
+      }
+
+      override async push(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      private getWorkDir(): string {
+        return (this as unknown as { workDir: string }).workDir;
+      }
+    }
+
+    test("should skip file with createOnly when file exists on base branch", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForCreateOnly | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForCreateOnly(opts);
+        mockGitOps.fileExistsOnBaseBranch = true;
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `createonly-exists-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "config.json",
+            content: { key: "value" },
+            createOnly: true,
+          },
+        ],
+      };
+
+      const result = await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: true,
+      });
+
+      // Should be skipped because file exists and createOnly is true
+      assert.equal(result.skipped, true, "Should be skipped");
+      const skipMessage = mockLogger.messages.find(
+        (m) => m.includes("Skipping") && m.includes("createOnly"),
+      );
+      assert.ok(skipMessage, "Should log skip message for createOnly");
+    });
+
+    test("should create file with createOnly when file does not exist on base branch", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForCreateOnly | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForCreateOnly(opts);
+        mockGitOps.fileExistsOnBaseBranch = false;
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `createonly-new-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "config.json",
+            content: { key: "value" },
+            createOnly: true,
+          },
+        ],
+      };
+
+      const result = await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: true,
+      });
+
+      // Should not be skipped because file doesn't exist
+      assert.notEqual(result.skipped, true, "Should not be skipped");
+    });
+  });
+
+  describe("template handling", () => {
+    const createMockLogger = (): ILogger & { messages: string[] } => ({
+      messages: [] as string[],
+      info(message: string) {
+        this.messages.push(message);
+      },
+      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
+        // No-op for mock
+      },
+      diffSummary(
+        _newCount: number,
+        _modifiedCount: number,
+        _unchangedCount: number,
+      ) {
+        // No-op for mock
+      },
+    });
+
+    class MockGitOpsForTemplate extends GitOps {
+      writtenContent: Map<string, string> = new Map();
+
+      constructor(options: GitOpsOptions) {
+        super(options);
+      }
+
+      override cleanWorkspace(): void {
+        mkdirSync(this.getWorkDir(), { recursive: true });
+      }
+
+      override async clone(_gitUrl: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async getDefaultBranch(): Promise<{
+        branch: string;
+        method: string;
+      }> {
+        return { branch: "main", method: "mock" };
+      }
+
+      override async createBranch(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override writeFile(fileName: string, content: string): void {
+        const filePath = join(this.getWorkDir(), fileName);
+        mkdirSync(this.getWorkDir(), { recursive: true });
+        writeFileSync(filePath, content, "utf-8");
+        this.writtenContent.set(fileName, content);
+      }
+
+      override getFileContent(_fileName: string): string | null {
+        return null;
+      }
+
+      override wouldChange(_fileName: string, _content: string): boolean {
+        return true;
+      }
+
+      override async hasChanges(): Promise<boolean> {
+        return true;
+      }
+
+      override async getChangedFiles(): Promise<string[]> {
+        return Array.from(this.writtenContent.keys());
+      }
+
+      override async commit(_message: string): Promise<boolean> {
+        return true;
+      }
+
+      override async push(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      private getWorkDir(): string {
+        return (this as unknown as { workDir: string }).workDir;
+      }
+    }
+
+    test("should interpolate xfg template variables when template is enabled", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForTemplate | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForTemplate(opts);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `template-test-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "README.md",
+            content: "# ${xfg:repo.name}\n\nOwner: ${xfg:repo.owner}",
+            template: true,
+          },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+      });
+
+      const writtenContent = mockGitOps!.writtenContent.get("README.md");
+      assert.ok(writtenContent, "Should have written README.md");
+      assert.ok(
+        writtenContent.includes("# repo"),
+        "Should interpolate repo.name",
+      );
+      assert.ok(
+        writtenContent.includes("Owner: test"),
+        "Should interpolate repo.owner",
+      );
+    });
+
+    test("should use custom vars in template when provided", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForTemplate | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForTemplate(opts);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `template-vars-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "config.txt",
+            content: "Team: ${xfg:team}",
+            template: true,
+            vars: { team: "Platform" },
+          },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+      });
+
+      const writtenContent = mockGitOps!.writtenContent.get("config.txt");
+      assert.ok(writtenContent, "Should have written config.txt");
+      assert.ok(
+        writtenContent.includes("Team: Platform"),
+        "Should interpolate custom var",
+      );
+    });
+  });
+
+  describe("commit message formatting", () => {
+    const createMockLogger = (): ILogger & { messages: string[] } => ({
+      messages: [] as string[],
+      info(message: string) {
+        this.messages.push(message);
+      },
+      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
+        // No-op for mock
+      },
+      diffSummary(
+        _newCount: number,
+        _modifiedCount: number,
+        _unchangedCount: number,
+      ) {
+        // No-op for mock
+      },
+    });
+
+    class MockGitOpsForCommit extends GitOps {
+      lastCommitMessage: string | null = null;
+
+      constructor(options: GitOpsOptions) {
+        super(options);
+      }
+
+      override cleanWorkspace(): void {
+        mkdirSync(this.getWorkDir(), { recursive: true });
+      }
+
+      override async clone(_gitUrl: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async getDefaultBranch(): Promise<{
+        branch: string;
+        method: string;
+      }> {
+        return { branch: "main", method: "mock" };
+      }
+
+      override async createBranch(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override writeFile(fileName: string, content: string): void {
+        const filePath = join(this.getWorkDir(), fileName);
+        mkdirSync(this.getWorkDir(), { recursive: true });
+        writeFileSync(filePath, content, "utf-8");
+      }
+
+      override wouldChange(_fileName: string, _content: string): boolean {
+        return true;
+      }
+
+      override async hasChanges(): Promise<boolean> {
+        return true;
+      }
+
+      override async getChangedFiles(): Promise<string[]> {
+        return ["config1.json", "config2.json", "config3.json"];
+      }
+
+      override async commit(message: string): Promise<boolean> {
+        this.lastCommitMessage = message;
+        return true;
+      }
+
+      override async push(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      private getWorkDir(): string {
+        return (this as unknown as { workDir: string }).workDir;
+      }
+    }
+
+    test("should format commit message for 2-3 files with file names", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForCommit | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForCommit(opts);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `commit-msg-23-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          { fileName: "config1.json", content: { key: "value1" } },
+          { fileName: "config2.json", content: { key: "value2" } },
+          { fileName: "config3.json", content: { key: "value3" } },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+      });
+
+      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
+      assert.ok(
+        mockGitOps!.lastCommitMessage.includes("config1.json"),
+        "Should include first file name",
+      );
+      assert.ok(
+        mockGitOps!.lastCommitMessage.includes("config2.json"),
+        "Should include second file name",
+      );
+    });
+
+    test("should format commit message for more than 3 files with count", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForCommit | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForCommit(opts);
+        // Override to return 4 files
+        mockGitOps.getChangedFiles = async () => [
+          "config1.json",
+          "config2.json",
+          "config3.json",
+          "config4.json",
+        ];
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `commit-msg-many-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          { fileName: "config1.json", content: { key: "value1" } },
+          { fileName: "config2.json", content: { key: "value2" } },
+          { fileName: "config3.json", content: { key: "value3" } },
+          { fileName: "config4.json", content: { key: "value4" } },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+      });
+
+      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
+      assert.ok(
+        mockGitOps!.lastCommitMessage.includes("4 config files"),
+        `Should show file count, got: ${mockGitOps!.lastCommitMessage}`,
+      );
+    });
+  });
+
+  describe("cleanup error handling", () => {
+    const createMockLogger = (): ILogger & { messages: string[] } => ({
+      messages: [] as string[],
+      info(message: string) {
+        this.messages.push(message);
+      },
+      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
+        // No-op for mock
+      },
+      diffSummary(
+        _newCount: number,
+        _modifiedCount: number,
+        _unchangedCount: number,
+      ) {
+        // No-op for mock
+      },
+    });
+
+    class MockGitOpsWithCleanupError extends GitOps {
+      cleanupCallCount = 0;
+      shouldFailCleanup = false;
+
+      constructor(options: GitOpsOptions) {
+        super(options);
+      }
+
+      override cleanWorkspace(): void {
+        this.cleanupCallCount++;
+        if (this.shouldFailCleanup && this.cleanupCallCount > 1) {
+          throw new Error("Cleanup failed");
+        }
+        mkdirSync(this.getWorkDir(), { recursive: true });
+      }
+
+      override async clone(_gitUrl: string): Promise<void> {
+        throw new Error("Clone failed"); // Trigger error path
+      }
+
+      override async getDefaultBranch(): Promise<{
+        branch: string;
+        method: string;
+      }> {
+        return { branch: "main", method: "mock" };
+      }
+
+      private getWorkDir(): string {
+        return (this as unknown as { workDir: string }).workDir;
+      }
+    }
+
+    test("should suppress cleanup errors in finally block", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsWithCleanupError | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsWithCleanupError(opts);
+        mockGitOps.shouldFailCleanup = true;
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `cleanup-error-${Date.now()}`);
+
+      // The processor throws errors from clone, it doesn't catch them
+      // The test verifies that cleanup errors in finally block are suppressed
+      // (i.e., the original clone error is thrown, not the cleanup error)
+      try {
+        await processor.process(mockRepoConfig, mockRepoInfo, {
+          branchName: "chore/sync-config",
+          workDir: localWorkDir,
+          dryRun: false,
+        });
+        assert.fail("Should have thrown an error");
+      } catch (error) {
+        // Should throw clone error, not cleanup error
+        assert.ok(error instanceof Error);
+        assert.ok(
+          error.message.includes("Clone failed"),
+          "Error should be from clone, not cleanup",
+        );
+      }
+
+      // Cleanup should have been attempted twice (initial + finally)
+      assert.ok(
+        mockGitOps!.cleanupCallCount >= 2,
+        "Should attempt cleanup in finally block",
+      );
+    });
+  });
 });

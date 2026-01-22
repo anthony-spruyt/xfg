@@ -284,6 +284,161 @@ repos:
         "Should show validation error for branch with spaces",
       );
     });
+
+    test("rejects invalid --merge value", () => {
+      writeFileSync(
+        testConfigPath,
+        `
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test/repo.git
+`,
+      );
+
+      const result = runCLI([
+        "-c",
+        testConfigPath,
+        "--dry-run",
+        "--merge",
+        "invalid-mode",
+        "-w",
+        `${testDir}/work`,
+      ]);
+      assert.equal(result.success, false);
+      const output = result.stdout + result.stderr;
+      assert.ok(
+        output.includes("Invalid merge mode") ||
+          output.includes("manual, auto, force, direct"),
+        "Should show validation error for invalid merge mode",
+      );
+    });
+
+    test("accepts valid --merge values", () => {
+      writeFileSync(
+        testConfigPath,
+        `
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test/repo.git
+`,
+      );
+
+      // Test each valid merge mode
+      for (const mode of ["manual", "auto", "force", "direct"]) {
+        const result = runCLI([
+          "-c",
+          testConfigPath,
+          "--dry-run",
+          "--merge",
+          mode,
+          "-w",
+          `${testDir}/work`,
+        ]);
+        const output = result.stdout + result.stderr;
+        assert.ok(
+          !output.includes("Invalid merge mode"),
+          `Should accept --merge ${mode}`,
+        );
+      }
+    });
+
+    test("rejects invalid --merge-strategy value", () => {
+      writeFileSync(
+        testConfigPath,
+        `
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test/repo.git
+`,
+      );
+
+      const result = runCLI([
+        "-c",
+        testConfigPath,
+        "--dry-run",
+        "--merge-strategy",
+        "invalid-strategy",
+        "-w",
+        `${testDir}/work`,
+      ]);
+      assert.equal(result.success, false);
+      const output = result.stdout + result.stderr;
+      assert.ok(
+        output.includes("Invalid merge strategy") ||
+          output.includes("merge, squash, rebase"),
+        "Should show validation error for invalid merge strategy",
+      );
+    });
+
+    test("accepts valid --merge-strategy values", () => {
+      writeFileSync(
+        testConfigPath,
+        `
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test/repo.git
+`,
+      );
+
+      // Test each valid merge strategy
+      for (const strategy of ["merge", "squash", "rebase"]) {
+        const result = runCLI([
+          "-c",
+          testConfigPath,
+          "--dry-run",
+          "--merge-strategy",
+          strategy,
+          "-w",
+          `${testDir}/work`,
+        ]);
+        const output = result.stdout + result.stderr;
+        assert.ok(
+          !output.includes("Invalid merge strategy"),
+          `Should accept --merge-strategy ${strategy}`,
+        );
+      }
+    });
+
+    test("accepts --delete-branch flag", () => {
+      writeFileSync(
+        testConfigPath,
+        `
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test/repo.git
+`,
+      );
+
+      const result = runCLI([
+        "-c",
+        testConfigPath,
+        "--dry-run",
+        "--delete-branch",
+        "-w",
+        `${testDir}/work`,
+      ]);
+      const output = result.stdout + result.stderr;
+      // Should not error on parsing - if it gets to loading config, flag was accepted
+      assert.ok(
+        output.includes("Loading config") || output.includes("Processing"),
+        "Should accept --delete-branch flag",
+      );
+    });
   });
 
   describe("config validation", () => {
@@ -414,6 +569,105 @@ repos:
       assert.ok(
         output.includes("Branch:") || output.includes("chore/"),
         "Should display branch name",
+      );
+    });
+
+    test("displays multiple file names (2-3 files)", () => {
+      writeFileSync(
+        testConfigPath,
+        `
+files:
+  config.json:
+    content:
+      key: value
+  settings.yaml:
+    content:
+      setting: true
+repos:
+  - git: git@github.com:test/repo.git
+`,
+      );
+
+      const result = runCLI([
+        "-c",
+        testConfigPath,
+        "--dry-run",
+        "-w",
+        `${testDir}/work`,
+      ]);
+      const output = result.stdout + result.stderr;
+      // Should show file names joined with comma
+      assert.ok(
+        output.includes("config.json") && output.includes("settings.yaml"),
+        "Should display multiple file names",
+      );
+    });
+
+    test("displays file count for more than 3 files", () => {
+      writeFileSync(
+        testConfigPath,
+        `
+files:
+  config1.json:
+    content:
+      key: value1
+  config2.json:
+    content:
+      key: value2
+  config3.json:
+    content:
+      key: value3
+  config4.json:
+    content:
+      key: value4
+repos:
+  - git: git@github.com:test/repo.git
+`,
+      );
+
+      const result = runCLI([
+        "-c",
+        testConfigPath,
+        "--dry-run",
+        "-w",
+        `${testDir}/work`,
+      ]);
+      const output = result.stdout + result.stderr;
+      // Should show "4 files" instead of listing all
+      assert.ok(
+        output.includes("4 files"),
+        "Should display file count for >3 files",
+      );
+    });
+
+    test("uses default branch name for multiple files", () => {
+      writeFileSync(
+        testConfigPath,
+        `
+files:
+  config.json:
+    content:
+      key: value
+  settings.yaml:
+    content:
+      setting: true
+repos:
+  - git: git@github.com:test/repo.git
+`,
+      );
+
+      const result = runCLI([
+        "-c",
+        testConfigPath,
+        "--dry-run",
+        "-w",
+        `${testDir}/work`,
+      ]);
+      const output = result.stdout + result.stderr;
+      // With multiple files and no --branch, should use chore/sync-config
+      assert.ok(
+        output.includes("chore/sync-config"),
+        "Should use default branch name for multiple files",
       );
     });
   });
