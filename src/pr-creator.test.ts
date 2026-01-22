@@ -7,6 +7,8 @@ import {
   escapeShellArg,
   formatPRBody,
   formatPRTitle,
+  createPR,
+  mergePR,
   FileAction,
 } from "./pr-creator.js";
 import type { GitHubRepoInfo } from "./repo-detector.js";
@@ -372,5 +374,105 @@ describe("skip action handling", () => {
       // Edge case: no actual changes - should handle gracefully
       assert.ok(typeof result === "string");
     });
+  });
+});
+
+describe("createPR", () => {
+  const repoInfo = createMockRepoInfo();
+
+  test("returns dry-run message when dryRun is true", async () => {
+    const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
+    const result = await createPR({
+      repoInfo,
+      branchName: "chore/sync-config",
+      baseBranch: "main",
+      files,
+      workDir: "/tmp/test",
+      dryRun: true,
+    });
+
+    assert.equal(result.success, true);
+    assert.ok(result.message.includes("[DRY RUN]"));
+    assert.ok(result.message.includes("Would create PR"));
+    assert.ok(result.message.includes("chore: sync config.json"));
+  });
+
+  test("dry-run message includes PR title with multiple files", async () => {
+    const files: FileAction[] = [
+      { fileName: "a.json", action: "create" },
+      { fileName: "b.json", action: "update" },
+    ];
+    const result = await createPR({
+      repoInfo,
+      branchName: "chore/sync-config",
+      baseBranch: "main",
+      files,
+      workDir: "/tmp/test",
+      dryRun: true,
+    });
+
+    assert.equal(result.success, true);
+    assert.ok(result.message.includes("a.json, b.json"));
+  });
+});
+
+describe("mergePR", () => {
+  const repoInfo = createMockRepoInfo();
+
+  test("returns dry-run message for force mode", async () => {
+    const result = await mergePR({
+      repoInfo,
+      prUrl: "https://github.com/test-org/test-repo/pull/1",
+      mergeConfig: {
+        mode: "force",
+        strategy: "squash",
+        deleteBranch: true,
+      },
+      workDir: "/tmp/test",
+      dryRun: true,
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(result.merged, false);
+    assert.ok(result.message.includes("[DRY RUN]"));
+    assert.ok(result.message.includes("force merge"));
+  });
+
+  test("returns dry-run message for auto mode", async () => {
+    const result = await mergePR({
+      repoInfo,
+      prUrl: "https://github.com/test-org/test-repo/pull/1",
+      mergeConfig: {
+        mode: "auto",
+        strategy: "squash",
+        deleteBranch: true,
+      },
+      workDir: "/tmp/test",
+      dryRun: true,
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(result.merged, false);
+    assert.ok(result.message.includes("[DRY RUN]"));
+    assert.ok(result.message.includes("enable auto-merge"));
+  });
+
+  test("returns dry-run message for manual mode", async () => {
+    const result = await mergePR({
+      repoInfo,
+      prUrl: "https://github.com/test-org/test-repo/pull/1",
+      mergeConfig: {
+        mode: "manual",
+        strategy: "squash",
+        deleteBranch: true,
+      },
+      workDir: "/tmp/test",
+      dryRun: true,
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(result.merged, false);
+    assert.ok(result.message.includes("[DRY RUN]"));
+    assert.ok(result.message.includes("manual review"));
   });
 });

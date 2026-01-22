@@ -625,4 +625,331 @@ describe("GitOps", () => {
       );
     });
   });
+
+  describe("commit", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("returns true in dry-run mode without running commands", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        dryRun: true,
+        executor: mockExecutor,
+      });
+      const result = await gitOps.commit("test commit");
+
+      assert.equal(result, true);
+      assert.equal(commands.length, 0);
+    });
+
+    test("stages and commits changes when there are staged changes", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          // git diff --cached --quiet exits with code 1 when there are changes
+          if (command.includes("git diff --cached --quiet")) {
+            throw new Error("exit code 1");
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      const result = await gitOps.commit("test commit");
+
+      assert.equal(result, true);
+      assert.ok(commands.some((c) => c.includes("git add -A")));
+      assert.ok(commands.some((c) => c.includes("git commit")));
+      assert.ok(commands.some((c) => c.includes("--no-verify")));
+    });
+
+    test("returns false when no staged changes after git add", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          // git diff --cached --quiet exits with code 0 when no changes
+          if (command.includes("git diff --cached --quiet")) {
+            return ""; // No error = no staged changes
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      const result = await gitOps.commit("test commit");
+
+      assert.equal(result, false);
+      assert.ok(commands.some((c) => c.includes("git add -A")));
+      // Should not have called git commit since there were no changes
+      assert.ok(!commands.some((c) => c.includes("git commit")));
+    });
+  });
+
+  describe("push", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("does nothing in dry-run mode", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        dryRun: true,
+        executor: mockExecutor,
+      });
+      await gitOps.push("feature-branch");
+
+      assert.equal(commands.length, 0);
+    });
+
+    test("pushes to origin with -u flag", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      await gitOps.push("feature-branch");
+
+      assert.equal(commands.length, 1);
+      assert.ok(commands[0].includes("git push -u origin"));
+      assert.ok(commands[0].includes("feature-branch"));
+    });
+  });
+
+  describe("getDefaultBranch", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("returns branch from remote HEAD when available", async () => {
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          if (command.includes("git remote show origin")) {
+            return "HEAD branch: main\n  Remote branches:";
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      const result = await gitOps.getDefaultBranch();
+
+      assert.equal(result.branch, "main");
+      assert.equal(result.method, "remote HEAD");
+    });
+
+    test("falls back to origin/main when remote show fails", async () => {
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          if (command.includes("git remote show origin")) {
+            throw new Error("remote show failed");
+          }
+          if (command.includes("git rev-parse --verify origin/main")) {
+            return "abc123"; // main exists
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      const result = await gitOps.getDefaultBranch();
+
+      assert.equal(result.branch, "main");
+      assert.equal(result.method, "origin/main exists");
+    });
+
+    test("falls back to origin/master when main does not exist", async () => {
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          if (command.includes("git remote show origin")) {
+            throw new Error("remote show failed");
+          }
+          if (command.includes("git rev-parse --verify origin/main")) {
+            throw new Error("main does not exist");
+          }
+          if (command.includes("git rev-parse --verify origin/master")) {
+            return "abc123"; // master exists
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      const result = await gitOps.getDefaultBranch();
+
+      assert.equal(result.branch, "master");
+      assert.equal(result.method, "origin/master exists");
+    });
+
+    test("falls back to main as default when nothing works", async () => {
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          if (command.includes("git remote show origin")) {
+            throw new Error("remote show failed");
+          }
+          if (command.includes("git rev-parse --verify origin/main")) {
+            throw new Error("main does not exist");
+          }
+          if (command.includes("git rev-parse --verify origin/master")) {
+            throw new Error("master does not exist");
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      const result = await gitOps.getDefaultBranch();
+
+      assert.equal(result.branch, "main");
+      assert.equal(result.method, "fallback default");
+    });
+  });
+
+  describe("getFileContent", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("returns file content when file exists", () => {
+      writeFileSync(join(workDir, "test.json"), '{"key": "value"}');
+
+      const gitOps = new GitOps({ workDir });
+      const content = gitOps.getFileContent("test.json");
+
+      assert.equal(content, '{"key": "value"}');
+    });
+
+    test("returns null when file does not exist", () => {
+      const gitOps = new GitOps({ workDir });
+      const content = gitOps.getFileContent("nonexistent.json");
+
+      assert.equal(content, null);
+    });
+
+    test("throws on path traversal attempt", () => {
+      const gitOps = new GitOps({ workDir });
+      assert.throws(
+        () => gitOps.getFileContent("../escape.json"),
+        /Path traversal detected/,
+      );
+    });
+  });
+
+  describe("getChangedFiles", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("returns empty array when no changes", async () => {
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          if (command.includes("git status --porcelain")) {
+            return "";
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      const files = await gitOps.getChangedFiles();
+
+      assert.deepEqual(files, []);
+    });
+
+    test("returns list of changed files", async () => {
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          if (command.includes("git status --porcelain")) {
+            return " M config.json\n?? new-file.txt\nA  added.json";
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      const files = await gitOps.getChangedFiles();
+
+      assert.deepEqual(files, ["config.json", "new-file.txt", "added.json"]);
+    });
+  });
+
+  describe("fileExistsOnBranch", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("returns true when file exists on branch", async () => {
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          if (command.includes("git show")) {
+            return "file content";
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      const exists = await gitOps.fileExistsOnBranch("config.json", "main");
+
+      assert.equal(exists, true);
+    });
+
+    test("returns false when file does not exist on branch", async () => {
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          if (command.includes("git show")) {
+            throw new Error("file not found");
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      const exists = await gitOps.fileExistsOnBranch("config.json", "main");
+
+      assert.equal(exists, false);
+    });
+  });
 });

@@ -5,6 +5,9 @@ node_modules/
 dist/
 site/
 
+# Coverage
+coverage/
+
 # Temp work directory
 tmp/
 
