@@ -192,7 +192,9 @@ async function main(): Promise<void> {
 
     let repoInfo;
     try {
-      repoInfo = parseGitUrl(repoConfig.git);
+      repoInfo = parseGitUrl(repoConfig.git, {
+        githubHosts: config.githubHosts,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error(current, repoConfig.git, message);

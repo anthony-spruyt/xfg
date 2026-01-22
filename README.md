@@ -55,7 +55,7 @@ xfg --config ./config.yaml
 - **Override Mode** - Skip merging entirely for specific repos
 - **Empty Files** - Create files with no content (e.g., `.prettierignore`)
 - **YAML Comments** - Add header comments and schema directives to YAML files
-- **Multi-Platform** - Works with GitHub, Azure DevOps, and GitLab (including self-hosted)
+- **Multi-Platform** - Works with GitHub (including GitHub Enterprise Server), Azure DevOps, and GitLab (including self-hosted)
 - **Auto-Merge PRs** - Automatically merge PRs when checks pass, or force merge with admin privileges
 - **Dry-Run Mode** - Preview changes without creating PRs
 - **Error Resilience** - Continues processing if individual repos fail

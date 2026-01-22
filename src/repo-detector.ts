@@ -1,5 +1,10 @@
 export type RepoType = "github" | "azure-devops" | "gitlab";
 
+// Context for repo detection with optional GitHub Enterprise hosts
+export interface RepoDetectorContext {
+  githubHosts?: string[];
+}
+
 // Base interface with common fields
 interface BaseRepoInfo {
   gitUrl: string;
@@ -10,6 +15,7 @@ interface BaseRepoInfo {
 export interface GitHubRepoInfo extends BaseRepoInfo {
   type: "github";
   owner: string;
+  host: string; // "github.com" or GHE hostname
 }
 
 // Azure DevOps-specific type
@@ -42,6 +48,25 @@ export function isAzureDevOpsRepo(info: RepoInfo): info is AzureDevOpsRepoInfo {
 
 export function isGitLabRepo(info: RepoInfo): info is GitLabRepoInfo {
   return info.type === "gitlab";
+}
+
+/**
+ * Extract hostname from a git URL.
+ */
+function extractHostFromUrl(gitUrl: string): string | null {
+  // SSH: git@hostname:path
+  const sshMatch = gitUrl.match(/^git@([^:]+):/);
+  if (sshMatch) {
+    return sshMatch[1];
+  }
+
+  // HTTPS: https://hostname/path
+  const httpsMatch = gitUrl.match(/^https?:\/\/([^/]+)/);
+  if (httpsMatch) {
+    return httpsMatch[1];
+  }
+
+  return null;
 }
 
 /**
@@ -83,8 +108,20 @@ function isGitLabStyleUrl(gitUrl: string): boolean {
   return false;
 }
 
-export function detectRepoType(gitUrl: string): RepoType {
-  // Check for Azure DevOps formats first (most specific patterns)
+export function detectRepoType(
+  gitUrl: string,
+  context?: RepoDetectorContext,
+): RepoType {
+  // Check for GitHub Enterprise hosts first (if configured)
+  if (context?.githubHosts?.length) {
+    const host = extractHostFromUrl(gitUrl)?.toLowerCase();
+    const normalizedHosts = context.githubHosts.map((h) => h.toLowerCase());
+    if (host && normalizedHosts.includes(host)) {
+      return "github";
+    }
+  }
+
+  // Check for Azure DevOps formats (most specific patterns)
   for (const pattern of AZURE_DEVOPS_URL_PATTERNS) {
     if (pattern.test(gitUrl)) {
       return "azure-devops";
@@ -116,8 +153,11 @@ export function detectRepoType(gitUrl: string): RepoType {
   );
 }
 
-export function parseGitUrl(gitUrl: string): RepoInfo {
-  const type = detectRepoType(gitUrl);
+export function parseGitUrl(
+  gitUrl: string,
+  context?: RepoDetectorContext,
+): RepoInfo {
+  const type = detectRepoType(gitUrl, context);
 
   if (type === "azure-devops") {
     return parseAzureDevOpsUrl(gitUrl);
@@ -127,26 +167,29 @@ export function parseGitUrl(gitUrl: string): RepoInfo {
     return parseGitLabUrl(gitUrl);
   }
 
-  return parseGitHubUrl(gitUrl);
+  // For GitHub, extract the host from the URL
+  const host = extractHostFromUrl(gitUrl) ?? "github.com";
+  return parseGitHubUrl(gitUrl, host);
 }
 
-function parseGitHubUrl(gitUrl: string): GitHubRepoInfo {
-  // Handle SSH format: git@github.com:owner/repo.git
+function parseGitHubUrl(gitUrl: string, host: string): GitHubRepoInfo {
+  // Handle SSH format: git@hostname:owner/repo.git
   // Use (.+?) with end anchor to handle repo names with dots (e.g., my.repo.git)
-  const sshMatch = gitUrl.match(/git@github\.com:([^/]+)\/(.+?)(?:\.git)?$/);
+  const sshMatch = gitUrl.match(/^git@[^:]+:([^/]+)\/(.+?)(?:\.git)?$/);
   if (sshMatch) {
     return {
       type: "github",
       gitUrl,
       owner: sshMatch[1],
       repo: sshMatch[2],
+      host,
     };
   }
 
-  // Handle HTTPS format: https://github.com/owner/repo.git
+  // Handle HTTPS format: https://hostname/owner/repo.git
   // Use (.+?) with end anchor to handle repo names with dots
   const httpsMatch = gitUrl.match(
-    /https?:\/\/github\.com\/([^/]+)\/(.+?)(?:\.git)?$/,
+    /^https?:\/\/[^/]+\/([^/]+)\/(.+?)(?:\.git)?$/,
   );
   if (httpsMatch) {
     return {
@@ -154,6 +197,7 @@ function parseGitHubUrl(gitUrl: string): GitHubRepoInfo {
       gitUrl,
       owner: httpsMatch[1],
       repo: httpsMatch[2],
+      host,
     };
   }
 

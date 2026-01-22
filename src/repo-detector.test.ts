@@ -5,6 +5,7 @@ import {
   detectRepoType,
   getRepoDisplayName,
   isGitLabRepo,
+  isGitHubRepo,
 } from "./repo-detector.js";
 
 describe("detectRepoType", () => {
@@ -370,5 +371,130 @@ describe("getRepoDisplayName", () => {
       host: "gitlab.com",
     });
     assert.strictEqual(result, "org/group/subgroup/repo");
+  });
+});
+
+describe("GitHub Enterprise Server support", () => {
+  describe("detectRepoType with githubHosts context", () => {
+    test("detects GHE SSH URL when host is in githubHosts", () => {
+      const context = { githubHosts: ["github.mycompany.com"] };
+      assert.strictEqual(
+        detectRepoType("git@github.mycompany.com:owner/repo.git", context),
+        "github",
+      );
+    });
+
+    test("detects GHE HTTPS URL when host is in githubHosts", () => {
+      const context = { githubHosts: ["ghe.internal.net"] };
+      assert.strictEqual(
+        detectRepoType("https://ghe.internal.net/owner/repo.git", context),
+        "github",
+      );
+    });
+
+    test("GHE URL falls through to GitLab without context", () => {
+      // Without githubHosts context, unknown hosts are treated as GitLab
+      assert.strictEqual(
+        detectRepoType("git@github.mycompany.com:owner/repo.git"),
+        "gitlab",
+      );
+    });
+
+    test("github.com URLs still work with GHE context", () => {
+      const context = { githubHosts: ["github.mycompany.com"] };
+      assert.strictEqual(
+        detectRepoType("git@github.com:owner/repo.git", context),
+        "github",
+      );
+    });
+
+    test("detects GHE with multiple hosts in context", () => {
+      const context = {
+        githubHosts: ["ghe1.example.com", "ghe2.example.com"],
+      };
+      assert.strictEqual(
+        detectRepoType("git@ghe2.example.com:owner/repo.git", context),
+        "github",
+      );
+    });
+
+    test("hostname matching is case-insensitive", () => {
+      const context = { githubHosts: ["GITHUB.MYCOMPANY.COM"] };
+      assert.strictEqual(
+        detectRepoType("git@github.mycompany.com:owner/repo.git", context),
+        "github",
+      );
+    });
+
+    test("URL hostname case is normalized", () => {
+      const context = { githubHosts: ["github.mycompany.com"] };
+      assert.strictEqual(
+        detectRepoType("git@GITHUB.MYCOMPANY.COM:owner/repo.git", context),
+        "github",
+      );
+    });
+  });
+
+  describe("parseGitUrl with githubHosts context", () => {
+    test("parses GHE SSH URL with host field", () => {
+      const context = { githubHosts: ["github.mycompany.com"] };
+      const result = parseGitUrl(
+        "git@github.mycompany.com:owner/repo.git",
+        context,
+      );
+      assert.strictEqual(result.type, "github");
+      if (isGitHubRepo(result)) {
+        assert.strictEqual(result.owner, "owner");
+        assert.strictEqual(result.repo, "repo");
+        assert.strictEqual(result.host, "github.mycompany.com");
+      }
+    });
+
+    test("parses GHE HTTPS URL with host field", () => {
+      const context = { githubHosts: ["ghe.internal.net"] };
+      const result = parseGitUrl(
+        "https://ghe.internal.net/owner/repo.git",
+        context,
+      );
+      assert.strictEqual(result.type, "github");
+      if (isGitHubRepo(result)) {
+        assert.strictEqual(result.owner, "owner");
+        assert.strictEqual(result.repo, "repo");
+        assert.strictEqual(result.host, "ghe.internal.net");
+      }
+    });
+
+    test("parses github.com URL with host field", () => {
+      const result = parseGitUrl("git@github.com:owner/repo.git");
+      assert.strictEqual(result.type, "github");
+      if (isGitHubRepo(result)) {
+        assert.strictEqual(result.host, "github.com");
+      }
+    });
+
+    test("parses GHE URL without .git suffix", () => {
+      const context = { githubHosts: ["github.mycompany.com"] };
+      const result = parseGitUrl(
+        "git@github.mycompany.com:owner/repo",
+        context,
+      );
+      assert.strictEqual(result.type, "github");
+      if (isGitHubRepo(result)) {
+        assert.strictEqual(result.repo, "repo");
+        assert.strictEqual(result.host, "github.mycompany.com");
+      }
+    });
+
+    test("parses GHE URL with dots in repo name", () => {
+      const context = { githubHosts: ["github.mycompany.com"] };
+      const result = parseGitUrl(
+        "git@github.mycompany.com:owner/my.repo.name.git",
+        context,
+      );
+      assert.strictEqual(result.type, "github");
+      if (isGitHubRepo(result)) {
+        assert.strictEqual(result.repo, "my.repo.name");
+      }
+    });
   });
 });

@@ -847,6 +847,77 @@ describe("validateRawConfig", () => {
     });
   });
 
+  describe("githubHosts validation", () => {
+    test("accepts valid githubHosts array", () => {
+      const config = createValidConfig({
+        githubHosts: ["github.mycompany.com", "ghe.internal.net"],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("accepts empty githubHosts array", () => {
+      const config = createValidConfig({
+        githubHosts: [],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("accepts undefined githubHosts", () => {
+      const config = createValidConfig();
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when githubHosts is not an array", () => {
+      const config = createValidConfig({
+        githubHosts: "github.mycompany.com" as never,
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /githubHosts must be an array of strings/,
+      );
+    });
+
+    test("throws when githubHosts contains non-strings", () => {
+      const config = createValidConfig({
+        githubHosts: ["valid.com", 123] as never,
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /githubHosts must be an array of strings/,
+      );
+    });
+
+    test("throws when githubHosts contains empty string", () => {
+      const config = createValidConfig({
+        githubHosts: ["github.mycompany.com", ""],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /githubHosts entries must be non-empty hostnames/,
+      );
+    });
+
+    test("throws when githubHosts contains URL instead of hostname", () => {
+      const config = createValidConfig({
+        githubHosts: ["https://github.mycompany.com"],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /githubHosts entries must be hostnames only, not URLs/,
+      );
+    });
+
+    test("throws when githubHosts contains path", () => {
+      const config = createValidConfig({
+        githubHosts: ["github.mycompany.com/path"],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /githubHosts entries must be hostnames only/,
+      );
+    });
+  });
+
   describe("executable validation", () => {
     test("allows executable: true at root file level", () => {
       const config = createValidConfig({

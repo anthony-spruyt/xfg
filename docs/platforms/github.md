@@ -13,6 +13,64 @@
 gh auth login
 ```
 
+## GitHub Enterprise Server
+
+xfg supports GitHub Enterprise Server (GHE) instances in addition to github.com.
+
+### GHE URL Formats
+
+| Format | Example                                       |
+| ------ | --------------------------------------------- |
+| SSH    | `git@github.mycompany.com:owner/repo.git`     |
+| HTTPS  | `https://github.mycompany.com/owner/repo.git` |
+
+### Configuration
+
+To use GHE repositories, add the hostname(s) to the `githubHosts` array in your config:
+
+```yaml
+githubHosts:
+  - github.mycompany.com
+  - ghe.internal.net
+
+files:
+  config.json:
+    content:
+      key: value
+
+repos:
+  - git: git@github.mycompany.com:owner/repo.git
+  - git: https://ghe.internal.net/org/project.git
+```
+
+### Authentication
+
+Authenticate with each GHE instance using the `--hostname` flag:
+
+```bash
+gh auth login --hostname github.mycompany.com
+```
+
+### Mixed Environments
+
+You can use github.com and GHE repositories in the same config file:
+
+```yaml
+githubHosts:
+  - github.mycompany.com
+
+files:
+  shared-config.json:
+    content:
+      version: "1.0"
+
+repos:
+  # github.com (no config needed)
+  - git: git@github.com:myorg/public-repo.git
+  # GitHub Enterprise
+  - git: git@github.mycompany.com:myorg/private-repo.git
+```
+
 ## Required Permissions
 
 Your token needs the `repo` scope to create PRs in target repositories.
