@@ -31,18 +31,20 @@ const DEFAULT_OPTIONS: XfgInterpolationOptions = {
 /**
  * Regex to match xfg template variable placeholders.
  * Captures the variable name including dot notation.
+ * Variable names can only contain: a-z, A-Z, 0-9, dots, and underscores.
  *
  * Examples:
  * - ${xfg:repo.name} -> varName=repo.name
  * - ${xfg:myVar} -> varName=myVar
  */
-const XFG_VAR_REGEX = /\$\{xfg:([^}]+)\}/g;
+const XFG_VAR_REGEX = /\$\{xfg:([a-zA-Z0-9._]+)\}/g;
 
 /**
  * Regex to match escaped xfg template variable placeholders.
  * $${xfg:...} outputs literal ${xfg:...} without interpolation.
+ * Variable names can only contain: a-z, A-Z, 0-9, dots, and underscores.
  */
-const ESCAPED_XFG_VAR_REGEX = /\$\$\{xfg:([^}]+)\}/g;
+const ESCAPED_XFG_VAR_REGEX = /\$\$\{xfg:([a-zA-Z0-9._]+)\}/g;
 
 /**
  * Placeholder prefix for temporarily storing escaped sequences.

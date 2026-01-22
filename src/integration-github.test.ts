@@ -509,4 +509,182 @@ describe("GitHub Integration Test", () => {
 
     console.log("\n=== Unchanged files test (issue #90) passed ===\n");
   });
+
+  test("template feature interpolates ${xfg:...} variables in files and PR body", async () => {
+    // This test verifies the template feature (issue #133):
+    // 1. Files with template: true should have ${xfg:...} variables interpolated
+    // 2. Custom prTemplate should have ${xfg:...} variables interpolated in PR body
+    // NOTE: This test uses the same exec() helper defined at line 19-35, which
+    // is safe because all commands are hardcoded (not derived from user input).
+
+    const templateFile = "template-test.json";
+    const testBranch = "chore/sync-template-test";
+
+    console.log("\n=== Setting up template feature test (issue #133) ===\n");
+
+    // 1. Close any existing PRs from this branch
+    console.log("Closing any existing PRs...");
+    try {
+      const existingPRs = exec(
+        `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number --jq '.[].number'`,
+      );
+      if (existingPRs) {
+        for (const prNumber of existingPRs.split("\n").filter(Boolean)) {
+          console.log(`  Closing PR #${prNumber}`);
+          exec(`gh pr close ${prNumber} --repo ${TEST_REPO} --delete-branch`);
+        }
+      }
+    } catch {
+      console.log("  No existing PRs to close");
+    }
+
+    // 2. Delete the remote branch if it exists
+    console.log(`Deleting remote branch ${testBranch} if exists...`);
+    try {
+      exec(
+        `gh api --method DELETE repos/${TEST_REPO}/git/refs/heads/${testBranch}`,
+      );
+      console.log("  Branch deleted");
+    } catch {
+      console.log("  Branch does not exist");
+    }
+
+    // 3. Delete template-test.json if it exists on main
+    console.log(`Deleting ${templateFile} if exists...`);
+    try {
+      const sha = exec(
+        `gh api repos/${TEST_REPO}/contents/${templateFile} --jq '.sha'`,
+      );
+      if (sha && !sha.includes("Not Found")) {
+        exec(
+          `gh api --method DELETE repos/${TEST_REPO}/contents/${templateFile} -f message="test: cleanup ${templateFile}" -f sha="${sha}"`,
+        );
+        console.log("  File deleted");
+      }
+    } catch {
+      console.log("  File does not exist");
+    }
+
+    // 4. Run sync with the template test config
+    console.log("\nRunning xfg with template config...");
+    const configPath = join(
+      fixturesDir,
+      "integration-test-template-github.yaml",
+    );
+    const output = exec(`node dist/index.js --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    // 5. Get the PR and verify it was created
+    console.log("\nVerifying PR was created...");
+    const prInfo = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number,title --jq '.[0]'`,
+    );
+
+    assert.ok(prInfo, "Expected a PR to be created");
+    const pr = JSON.parse(prInfo);
+    console.log(`  PR #${pr.number}: ${pr.title}`);
+
+    // 6. Verify the file content has interpolated values
+    console.log("\nVerifying template interpolation...");
+    const fileContent = exec(
+      `gh api repos/${TEST_REPO}/contents/${templateFile}?ref=${testBranch} --jq '.content' | base64 -d`,
+    );
+
+    assert.ok(fileContent, "File should exist in PR branch");
+    const json = JSON.parse(fileContent);
+    console.log("  File content:", JSON.stringify(json, null, 2));
+
+    // Verify built-in variables were interpolated
+    assert.equal(
+      json.repoName,
+      "xfg-test",
+      "repo.name should be interpolated to 'xfg-test'",
+    );
+    assert.equal(
+      json.repoOwner,
+      "anthony-spruyt",
+      "repo.owner should be interpolated to 'anthony-spruyt'",
+    );
+    assert.equal(
+      json.repoFullName,
+      "anthony-spruyt/xfg-test",
+      "repo.fullName should be interpolated correctly",
+    );
+    assert.equal(
+      json.platform,
+      "github",
+      "repo.platform should be interpolated to 'github'",
+    );
+
+    // Verify custom variable was interpolated
+    assert.equal(
+      json.custom,
+      "custom-value",
+      "Custom var should be interpolated",
+    );
+
+    // Verify escape mechanism works - $${xfg:...} should output literal ${xfg:...}
+    assert.equal(
+      json.escaped,
+      "\${xfg:repo.name}",
+      "Escaped variable should output literal \${xfg:repo.name}",
+    );
+
+    // Verify static values are unchanged
+    assert.equal(
+      json.static,
+      "not-interpolated",
+      "Static values should remain unchanged",
+    );
+
+    console.log("  All file template interpolations verified correctly");
+
+    // 7. Verify PR body template interpolation
+    console.log("\nVerifying PR body template interpolation...");
+    const prBody = exec(
+      `gh pr view ${pr.number} --repo ${TEST_REPO} --json body --jq '.body'`,
+    );
+    console.log("  PR body:", prBody);
+
+    // Verify PR body contains interpolated values
+    assert.ok(
+      prBody.includes("anthony-spruyt/xfg-test"),
+      "PR body should contain interpolated repo.fullName",
+    );
+    assert.ok(
+      prBody.includes("1 file(s)"),
+      "PR body should contain interpolated pr.fileCount",
+    );
+    assert.ok(
+      prBody.includes("template-test.json"),
+      "PR body should contain file name from pr.fileChanges",
+    );
+    assert.ok(
+      prBody.includes("- Repository: xfg-test"),
+      "PR body should contain interpolated repo.name",
+    );
+    assert.ok(
+      prBody.includes("- Owner: anthony-spruyt"),
+      "PR body should contain interpolated repo.owner",
+    );
+    assert.ok(
+      prBody.includes("- Platform: github"),
+      "PR body should contain interpolated repo.platform",
+    );
+
+    console.log("  All PR body template interpolations verified correctly");
+
+    // 8. Cleanup
+    console.log("\nCleaning up...");
+    try {
+      exec(`gh pr close ${pr.number} --repo ${TEST_REPO} --delete-branch`);
+      console.log(`  Closed PR #${pr.number}`);
+    } catch {
+      console.log("  Could not close PR");
+    }
+
+    console.log("\n=== Template feature test (issue #133) passed ===\n");
+  });
 });

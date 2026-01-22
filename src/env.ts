@@ -34,8 +34,10 @@ const ENV_VAR_REGEX = /\$\{([^}:]+)(?::([?-])([^}]*))?\}/g;
  * Regex to match escaped environment variable placeholders.
  * $${...} outputs literal ${...} without interpolation.
  * Example: $${VAR} -> ${VAR}, $${VAR:-default} -> ${VAR:-default}
+ *
+ * Note: Does NOT match $${xfg:...} patterns - those are handled by xfg templating.
  */
-const ESCAPED_VAR_REGEX = /\$\$\{([^}]+)\}/g;
+const ESCAPED_VAR_REGEX = /\$\$\{((?!xfg:)[^}]+)\}/g;
 
 /**
  * Placeholder prefix for temporarily storing escaped sequences.
