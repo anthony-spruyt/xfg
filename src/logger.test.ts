@@ -253,5 +253,26 @@ describe("Logger", () => {
       // Should not output anything
       assert.equal(consoleLogs.length, 0);
     });
+
+    test("logs summary with deleted files", () => {
+      logger.diffSummary(1, 2, 1, 3);
+
+      const output = consoleLogs.join("\n");
+      assert.ok(output.includes("Summary"));
+      assert.ok(output.includes("1 new"));
+      assert.ok(output.includes("2 modified"));
+      assert.ok(output.includes("3 deleted"));
+      assert.ok(output.includes("1 unchanged"));
+    });
+
+    test("logs summary with only deleted files", () => {
+      logger.diffSummary(0, 0, 0, 2);
+
+      const output = consoleLogs.join("\n");
+      assert.ok(!output.includes("new"));
+      assert.ok(!output.includes("modified"));
+      assert.ok(output.includes("2 deleted"));
+      assert.ok(!output.includes("unchanged"));
+    });
   });
 });

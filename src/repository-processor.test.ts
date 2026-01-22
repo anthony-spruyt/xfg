@@ -1339,4 +1339,295 @@ describe("RepositoryProcessor", () => {
       );
     });
   });
+
+  describe("orphaned file deletion", () => {
+    const createMockLogger = (): ILogger & {
+      messages: string[];
+      diffStatuses: Array<{ fileName: string; status: string }>;
+    } => ({
+      messages: [] as string[],
+      diffStatuses: [] as Array<{ fileName: string; status: string }>,
+      info(message: string) {
+        this.messages.push(message);
+      },
+      fileDiff(fileName: string, status: unknown, _diffLines: string[]) {
+        this.diffStatuses.push({ fileName, status: String(status) });
+      },
+      diffSummary(
+        _newCount: number,
+        _modifiedCount: number,
+        _unchangedCount: number,
+        _deletedCount?: number,
+      ) {
+        // No-op for mock
+      },
+    });
+
+    class MockGitOpsForDeletion extends GitOps {
+      deletedFiles: string[] = [];
+      existingFiles: Set<string> = new Set();
+      lastCommitMessage: string | null = null;
+
+      constructor(options: GitOpsOptions) {
+        super(options);
+      }
+
+      override cleanWorkspace(): void {
+        mkdirSync(this.getWorkDir(), { recursive: true });
+      }
+
+      override async clone(_gitUrl: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async getDefaultBranch(): Promise<{
+        branch: string;
+        method: string;
+      }> {
+        return { branch: "main", method: "mock" };
+      }
+
+      override async createBranch(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override writeFile(fileName: string, content: string): void {
+        const filePath = join(this.getWorkDir(), fileName);
+        mkdirSync(this.getWorkDir(), { recursive: true });
+        writeFileSync(filePath, content, "utf-8");
+        this.existingFiles.add(fileName);
+      }
+
+      override wouldChange(_fileName: string, _content: string): boolean {
+        return true;
+      }
+
+      override async hasChanges(): Promise<boolean> {
+        return true;
+      }
+
+      override async getChangedFiles(): Promise<string[]> {
+        return Array.from(this.existingFiles);
+      }
+
+      override async commit(message: string): Promise<boolean> {
+        this.lastCommitMessage = message;
+        return true;
+      }
+
+      override async push(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override fileExists(fileName: string): boolean {
+        return this.existingFiles.has(fileName);
+      }
+
+      override deleteFile(fileName: string): void {
+        this.deletedFiles.push(fileName);
+        this.existingFiles.delete(fileName);
+      }
+
+      private getWorkDir(): string {
+        return (this as unknown as { workDir: string }).workDir;
+      }
+
+      // Setup helper to simulate existing files
+      setupExistingFile(fileName: string): void {
+        this.existingFiles.add(fileName);
+      }
+    }
+
+    test("should delete orphaned file when removed from config", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForDeletion | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForDeletion(opts);
+        // Simulate orphaned.json exists in the repo (from previous sync)
+        mockGitOps.setupExistingFile("orphaned.json");
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `delete-orphaned-${Date.now()}`);
+
+      // Create manifest file to track orphaned.json
+      mkdirSync(localWorkDir, { recursive: true });
+      writeFileSync(
+        join(localWorkDir, ".xfg.json"),
+        JSON.stringify({ version: 1, managedFiles: ["orphaned.json"] }),
+      );
+
+      // Config only has config.json (orphaned.json removed)
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "config.json",
+            content: { key: "value" },
+            deleteOrphaned: true,
+          },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+      });
+
+      // Should have deleted orphaned.json
+      assert.ok(
+        mockGitOps!.deletedFiles.includes("orphaned.json"),
+        "Should delete orphaned file",
+      );
+    });
+
+    test("should skip deletion with noDelete option", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForDeletion | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForDeletion(opts);
+        mockGitOps.setupExistingFile("orphaned.json");
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `nodelete-${Date.now()}`);
+
+      // Create manifest file
+      mkdirSync(localWorkDir, { recursive: true });
+      writeFileSync(
+        join(localWorkDir, ".xfg.json"),
+        JSON.stringify({ version: 1, managedFiles: ["orphaned.json"] }),
+      );
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+        noDelete: true,
+      });
+
+      // Should NOT have deleted anything
+      assert.equal(
+        mockGitOps!.deletedFiles.length,
+        0,
+        "Should not delete files with noDelete flag",
+      );
+      assert.ok(
+        mockLogger.messages.some((m) => m.includes("--no-delete")),
+        "Should log that deletion was skipped",
+      );
+    });
+
+    test("should show DELETED status in dry-run mode", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForDeletion | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForDeletion(opts);
+        mockGitOps.setupExistingFile("orphaned.json");
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `dryrun-delete-${Date.now()}`);
+
+      // Create manifest file
+      mkdirSync(localWorkDir, { recursive: true });
+      writeFileSync(
+        join(localWorkDir, ".xfg.json"),
+        JSON.stringify({ version: 1, managedFiles: ["orphaned.json"] }),
+      );
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "config.json",
+            content: { key: "value" },
+            deleteOrphaned: true,
+          },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: true,
+      });
+
+      // Should NOT actually delete file
+      assert.equal(
+        mockGitOps!.deletedFiles.length,
+        0,
+        "Should not delete files in dry-run",
+      );
+
+      // Should show DELETED status in log
+      assert.ok(
+        mockLogger.diffStatuses.some(
+          (s) => s.fileName === "orphaned.json" && s.status === "DELETED",
+        ),
+        "Should log DELETED status for orphaned file",
+      );
+    });
+
+    test("should track deleted file in changed files list", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForDeletion | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForDeletion(opts);
+        mockGitOps.setupExistingFile("orphaned.json");
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `track-delete-${Date.now()}`);
+
+      // Create manifest file
+      mkdirSync(localWorkDir, { recursive: true });
+      writeFileSync(
+        join(localWorkDir, ".xfg.json"),
+        JSON.stringify({ version: 1, managedFiles: ["orphaned.json"] }),
+      );
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "config.json",
+            content: { key: "value" },
+            deleteOrphaned: true,
+          },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+      });
+
+      // orphaned.json should have been deleted
+      assert.ok(
+        mockGitOps!.deletedFiles.includes("orphaned.json"),
+        "Should delete orphaned file",
+      );
+      // Commit message should include the deleted file
+      assert.ok(
+        mockGitOps!.lastCommitMessage?.includes("orphaned.json"),
+        `Commit message should include deleted file, got: ${mockGitOps!.lastCommitMessage}`,
+      );
+    });
+  });
 });

@@ -48,6 +48,14 @@ describe("formatStatusBadge", () => {
       "Badge should contain [UNCHANGED] in brackets",
     );
   });
+
+  test("returns badge with correct text for DELETED status", () => {
+    const badge = formatStatusBadge("DELETED");
+    assert.ok(
+      badge.includes("[DELETED]"),
+      "Badge should contain [DELETED] in brackets",
+    );
+  });
 });
 
 describe("formatDiffLine", () => {
@@ -139,6 +147,7 @@ describe("diffStats", () => {
     assert.equal(stats.newCount, 0);
     assert.equal(stats.modifiedCount, 0);
     assert.equal(stats.unchangedCount, 0);
+    assert.equal(stats.deletedCount, 0);
   });
 
   test("incrementDiffStats increments NEW count", () => {
@@ -165,6 +174,15 @@ describe("diffStats", () => {
     assert.equal(stats.unchangedCount, 1);
   });
 
+  test("incrementDiffStats increments DELETED count", () => {
+    const stats = createDiffStats();
+    incrementDiffStats(stats, "DELETED");
+    assert.equal(stats.newCount, 0);
+    assert.equal(stats.modifiedCount, 0);
+    assert.equal(stats.unchangedCount, 0);
+    assert.equal(stats.deletedCount, 1);
+  });
+
   test("incrementDiffStats accumulates counts", () => {
     const stats = createDiffStats();
     incrementDiffStats(stats, "NEW");
@@ -173,8 +191,11 @@ describe("diffStats", () => {
     incrementDiffStats(stats, "UNCHANGED");
     incrementDiffStats(stats, "UNCHANGED");
     incrementDiffStats(stats, "UNCHANGED");
+    incrementDiffStats(stats, "DELETED");
+    incrementDiffStats(stats, "DELETED");
     assert.equal(stats.newCount, 2);
     assert.equal(stats.modifiedCount, 1);
     assert.equal(stats.unchangedCount, 3);
+    assert.equal(stats.deletedCount, 2);
   });
 });

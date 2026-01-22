@@ -119,6 +119,24 @@ describe("formatPRBody", () => {
     assert.ok(result.includes("Updated"));
   });
 
+  test('uses "Deleted" for delete action', () => {
+    const files: FileAction[] = [{ fileName: "config.json", action: "delete" }];
+    const result = formatPRBody(files, repoInfo);
+    assert.ok(result.includes("Deleted"));
+  });
+
+  test("handles mixed create, update, and delete actions", () => {
+    const files: FileAction[] = [
+      { fileName: "new.json", action: "create" },
+      { fileName: "existing.json", action: "update" },
+      { fileName: "old.json", action: "delete" },
+    ];
+    const result = formatPRBody(files, repoInfo);
+    assert.ok(result.includes("Created `new.json`"));
+    assert.ok(result.includes("Updated `existing.json`"));
+    assert.ok(result.includes("Deleted `old.json`"));
+  });
+
   test("preserves markdown formatting", () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
     const result = formatPRBody(files, repoInfo);

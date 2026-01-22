@@ -42,7 +42,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage/lcov.info
-          fail_ci_if_error: false
+          fail_ci_if_error: true
 
       - name: Upload build artifact
         if: github.event_name == 'push'

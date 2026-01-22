@@ -10,7 +10,7 @@ files:
     deleteOrphaned: false
 
 repos:
-  - git: git@github.com:anthony-spruyt/xfg-test.git
+  - git: https://github.com/anthony-spruyt/xfg-test.git
 
 prOptions:
   merge: force
