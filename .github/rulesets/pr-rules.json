@@ -33,6 +33,12 @@
           },
           {
             "context": "security"
+          },
+          {
+            "context": "codecov/patch"
+          },
+          {
+            "context": "codecov/project"
           }
         ]
       }
