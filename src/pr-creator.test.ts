@@ -398,6 +398,28 @@ describe("skip action handling", () => {
 describe("createPR", () => {
   const repoInfo = createMockRepoInfo();
 
+  test("uses provided executor when not in dry-run", async () => {
+    const mockExecutor = {
+      async exec(): Promise<string> {
+        return "https://github.com/owner/repo/pull/123";
+      },
+    };
+
+    const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
+    const result = await createPR({
+      repoInfo,
+      branchName: "chore/sync-config",
+      baseBranch: "main",
+      files,
+      workDir: "/tmp/test",
+      dryRun: false,
+      executor: mockExecutor,
+    });
+
+    assert.equal(result.success, true);
+    assert.ok(result.url?.includes("pull/123"));
+  });
+
   test("returns dry-run message when dryRun is true", async () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
     const result = await createPR({
@@ -436,6 +458,29 @@ describe("createPR", () => {
 
 describe("mergePR", () => {
   const repoInfo = createMockRepoInfo();
+
+  test("uses provided executor when not in dry-run", async () => {
+    const mockExecutor = {
+      async exec(): Promise<string> {
+        return "";
+      },
+    };
+
+    const result = await mergePR({
+      repoInfo,
+      prUrl: "https://github.com/test-org/test-repo/pull/1",
+      mergeConfig: {
+        mode: "force",
+        strategy: "squash",
+        deleteBranch: true,
+      },
+      workDir: "/tmp/test",
+      dryRun: false,
+      executor: mockExecutor,
+    });
+
+    assert.equal(result.success, true);
+  });
 
   test("returns dry-run message for force mode", async () => {
     const result = await mergePR({
