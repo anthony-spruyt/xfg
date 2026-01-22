@@ -163,4 +163,95 @@ describe("Logger", () => {
       assert.equal(logger2.hasFailures(), false);
     });
   });
+
+  describe("fileDiff", () => {
+    test("logs file name with status badge for NEW file", () => {
+      logger.fileDiff("config.json", "NEW", ["+line1", "+line2"]);
+
+      const output = consoleLogs.join("\n");
+      assert.ok(output.includes("config.json"));
+      assert.ok(output.includes("+line1"));
+      assert.ok(output.includes("+line2"));
+    });
+
+    test("logs file name with status badge for MODIFIED file", () => {
+      logger.fileDiff("config.json", "MODIFIED", ["-old", "+new"]);
+
+      const output = consoleLogs.join("\n");
+      assert.ok(output.includes("config.json"));
+      assert.ok(output.includes("-old"));
+      assert.ok(output.includes("+new"));
+    });
+
+    test("logs file name without diff lines for UNCHANGED file", () => {
+      logger.fileDiff("config.json", "UNCHANGED", []);
+
+      const output = consoleLogs.join("\n");
+      assert.ok(output.includes("config.json"));
+      // Should only have one log entry (the file name line)
+      assert.equal(consoleLogs.length, 1);
+    });
+
+    test("does not show diff lines for UNCHANGED even if provided", () => {
+      logger.fileDiff("config.json", "UNCHANGED", ["should", "not", "show"]);
+
+      // UNCHANGED files should not show diff lines
+      const output = consoleLogs.join("\n");
+      assert.ok(!output.includes("should"));
+    });
+
+    test("handles empty diff lines for NEW file", () => {
+      logger.fileDiff("empty.json", "NEW", []);
+
+      const output = consoleLogs.join("\n");
+      assert.ok(output.includes("empty.json"));
+      assert.equal(consoleLogs.length, 1);
+    });
+  });
+
+  describe("diffSummary", () => {
+    test("logs summary with all counts", () => {
+      logger.diffSummary(2, 3, 1);
+
+      const output = consoleLogs.join("\n");
+      assert.ok(output.includes("Summary"));
+      assert.ok(output.includes("2 new"));
+      assert.ok(output.includes("3 modified"));
+      assert.ok(output.includes("1 unchanged"));
+    });
+
+    test("logs summary with only new files", () => {
+      logger.diffSummary(5, 0, 0);
+
+      const output = consoleLogs.join("\n");
+      assert.ok(output.includes("5 new"));
+      assert.ok(!output.includes("modified"));
+      assert.ok(!output.includes("unchanged"));
+    });
+
+    test("logs summary with only modified files", () => {
+      logger.diffSummary(0, 3, 0);
+
+      const output = consoleLogs.join("\n");
+      assert.ok(!output.includes("new"));
+      assert.ok(output.includes("3 modified"));
+      assert.ok(!output.includes("unchanged"));
+    });
+
+    test("logs summary with only unchanged files", () => {
+      logger.diffSummary(0, 0, 4);
+
+      const output = consoleLogs.join("\n");
+      assert.ok(!output.includes("new"));
+      assert.ok(!output.includes("modified"));
+      assert.ok(output.includes("4 unchanged"));
+    });
+
+    test("logs nothing when all counts are zero", () => {
+      logger.diffSummary(0, 0, 0);
+
+      // Should not output anything
+      assert.equal(consoleLogs.length, 0);
+    });
+  });
 });
