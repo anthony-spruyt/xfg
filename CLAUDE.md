@@ -12,6 +12,17 @@ Full documentation is available at https://anthony-spruyt.github.io/xfg/
 
 The docs site is built with MkDocs Material and auto-deploys via GitHub Actions when changes are made to `docs/` or `mkdocs.yml`.
 
+**IMPORTANT: When updating documentation, update BOTH locations:**
+
+- `README.md` - Quick start, features overview, badges
+- `docs/` - Full documentation (GitHub Pages site)
+
+Examples that appear in both places:
+
+- GitHub Action usage examples
+- CLI usage examples
+- Token/authentication requirements
+
 ## Architecture
 
 ### Config Normalization Pipeline (config.ts)

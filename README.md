@@ -32,7 +32,7 @@ jobs:
       - uses: anthony-spruyt/xfg@v1
         with:
           config: ./sync-config.yaml
-          github-token: ${{ secrets.SYNC_TOKEN }}
+          github-token: ${{ secrets.GH_PAT }} # PAT with repo scope for cross-repo access
 ```
 
 ### CLI
