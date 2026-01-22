@@ -161,7 +161,8 @@ export function validateRawConfig(config: RawConfig): void {
 
         if (fileOverride.override && !fileOverride.content) {
           throw new Error(
-            `Repo ${getGitDisplayName(repo.git)} has override: true for file '${fileName}' but no content defined`,
+            `Repo ${getGitDisplayName(repo.git)} has override: true for file '${fileName}' but no content defined. ` +
+              `Use content: "" for an empty text file override, or content: {} for an empty JSON/YAML override.`,
           );
         }
 
