@@ -19,7 +19,7 @@ describe("detectOutputFormat", () => {
 
   test("returns yaml for .yml extension", () => {
     const result = detectOutputFormat("config.yml");
-    assert.equal(result, "yml" === "yml" ? "yaml" : "json");
+    assert.equal(result, "yaml");
   });
 
   test("handles uppercase extensions", () => {

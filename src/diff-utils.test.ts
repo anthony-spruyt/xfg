@@ -25,41 +25,59 @@ describe("getFileStatus", () => {
 });
 
 describe("formatStatusBadge", () => {
-  test("returns colored badge for NEW status", () => {
+  test("returns badge with correct text for NEW status", () => {
     const badge = formatStatusBadge("NEW");
-    assert.ok(badge.includes("NEW"));
+    assert.ok(
+      badge.includes("[NEW]"),
+      "Badge should contain [NEW] in brackets",
+    );
   });
 
-  test("returns colored badge for MODIFIED status", () => {
+  test("returns badge with correct text for MODIFIED status", () => {
     const badge = formatStatusBadge("MODIFIED");
-    assert.ok(badge.includes("MODIFIED"));
+    assert.ok(
+      badge.includes("[MODIFIED]"),
+      "Badge should contain [MODIFIED] in brackets",
+    );
   });
 
-  test("returns colored badge for UNCHANGED status", () => {
+  test("returns badge with correct text for UNCHANGED status", () => {
     const badge = formatStatusBadge("UNCHANGED");
-    assert.ok(badge.includes("UNCHANGED"));
+    assert.ok(
+      badge.includes("[UNCHANGED]"),
+      "Badge should contain [UNCHANGED] in brackets",
+    );
   });
 });
 
 describe("formatDiffLine", () => {
-  test("formats addition lines in green", () => {
+  test("formats addition lines", () => {
     const result = formatDiffLine("+added line");
-    assert.ok(result.includes("+added line"));
+    assert.ok(result.includes("+added line"), "Result should contain the line");
   });
 
-  test("formats deletion lines in red", () => {
+  test("formats deletion lines", () => {
     const result = formatDiffLine("-deleted line");
-    assert.ok(result.includes("-deleted line"));
+    assert.ok(
+      result.includes("-deleted line"),
+      "Result should contain the line",
+    );
   });
 
-  test("formats hunk headers in cyan", () => {
+  test("formats hunk headers", () => {
     const result = formatDiffLine("@@ -1,3 +1,4 @@");
-    assert.ok(result.includes("@@ -1,3 +1,4 @@"));
+    assert.ok(
+      result.includes("@@ -1,3 +1,4 @@"),
+      "Result should contain hunk header",
+    );
   });
 
   test("returns context lines unchanged", () => {
     const result = formatDiffLine(" context line");
-    assert.ok(result.includes(" context line"));
+    assert.ok(
+      result.includes(" context line"),
+      "Result should contain context line",
+    );
   });
 });
 
