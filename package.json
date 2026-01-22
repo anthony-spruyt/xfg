@@ -1,6 +1,6 @@
 {
   "name": "@aspruyt/xfg",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "CLI tool to sync JSON, JSON5, YAML, or text configuration files across multiple Git repositories by creating pull requests",
   "type": "module",
   "main": "dist/index.js",
