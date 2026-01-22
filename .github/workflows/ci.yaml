@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-github-${{ github.ref }}
+      group: integration-github
       cancel-in-progress: false
 
     steps:
@@ -112,7 +112,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-ado-${{ github.ref }}
+      group: integration-ado
       cancel-in-progress: false
 
     steps:
@@ -156,7 +156,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-gitlab-${{ github.ref }}
+      group: integration-gitlab
       cancel-in-progress: false
 
     steps:
