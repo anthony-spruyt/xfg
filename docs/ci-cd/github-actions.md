@@ -10,7 +10,7 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 - uses: anthony-spruyt/xfg@v1
   with:
     config: ./sync-config.yml
-    github-token: ${{ secrets.SYNC_TOKEN }}
+    github-token: ${{ secrets.GH_PAT }} # PAT with repo scope for cross-repo access
 ```
 
 ### Action Inputs
