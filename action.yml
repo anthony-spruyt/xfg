@@ -104,7 +104,7 @@ runs:
         GITLAB_TOKEN: ${{ inputs.gitlab-token }}
       run: |
         # Build command with required arguments
-        CMD="npx @aspruyt/xfg"
+        CMD="npx --yes @aspruyt/xfg"
         CMD="$CMD --config ${{ inputs.config }}"
         CMD="$CMD --work-dir ${{ inputs.work-dir }}"
         CMD="$CMD --retries ${{ inputs.retries }}"
