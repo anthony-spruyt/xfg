@@ -55,6 +55,7 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Use Cases: use-cases.md
   - Getting Started:
       - Installation: getting-started/index.md
       - Prerequisites: getting-started/prerequisites.md
