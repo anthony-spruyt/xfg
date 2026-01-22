@@ -36,9 +36,6 @@
           },
           {
             "context": "codecov/patch"
-          },
-          {
-            "context": "codecov/project"
           }
         ]
       }
