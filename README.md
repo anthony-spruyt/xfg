@@ -4,6 +4,7 @@
 [![codecov](https://codecov.io/gh/anthony-spruyt/xfg/graph/badge.svg)](https://codecov.io/gh/anthony-spruyt/xfg)
 [![npm version](https://img.shields.io/npm/v/@aspruyt/xfg.svg)](https://www.npmjs.com/package/@aspruyt/xfg)
 [![npm downloads](https://img.shields.io/npm/dw/@aspruyt/xfg.svg)](https://www.npmjs.com/package/@aspruyt/xfg)
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-xfg-blue?logo=github)](https://github.com/marketplace/actions/xfg-config-file-sync)
 [![docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://anthony-spruyt.github.io/xfg/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -13,6 +14,29 @@ A CLI tool that syncs JSON, JSON5, YAML, or text configuration files across mult
 
 ## Quick Start
 
+### GitHub Action
+
+```yaml
+# .github/workflows/sync-configs.yml
+name: Sync Configs
+on:
+  push:
+    branches: [main]
+    paths: [sync-config.yaml]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anthony-spruyt/xfg@v1
+        with:
+          config: ./sync-config.yaml
+          github-token: ${{ secrets.SYNC_TOKEN }}
+```
+
+### CLI
+
 ```bash
 # Install
 npm install -g @aspruyt/xfg
@@ -20,8 +44,14 @@ npm install -g @aspruyt/xfg
 # Authenticate (GitHub)
 gh auth login
 
-# Create config.yaml
-cat > config.yaml << 'EOF'
+# Run
+xfg --config ./config.yaml
+```
+
+### Example Config
+
+```yaml
+# sync-config.yaml
 files:
   .prettierrc.json:
     content:
@@ -35,10 +65,6 @@ repos:
       - git@github.com:your-org/frontend-app.git
       - git@github.com:your-org/backend-api.git
       - git@github.com:your-org/shared-lib.git
-EOF
-
-# Run
-xfg --config ./config.yaml
 ```
 
 **Result:** PRs are created in all three repos with identical `.prettierrc.json` files.
