@@ -89,7 +89,8 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
     const repoFlag = this.getRepoFlag(repoInfo);
     // Use glab mr list with JSON output for reliable parsing
-    const command = `glab mr list --source-branch ${escapeShellArg(branchName)} --state opened -R ${escapeShellArg(repoFlag)} -F json`;
+    // Note: glab mr list returns open MRs by default (use -c for closed, -M for merged)
+    const command = `glab mr list --source-branch ${escapeShellArg(branchName)} -R ${escapeShellArg(repoFlag)} -F json`;
 
     try {
       const result = await withRetry(
