@@ -1382,6 +1382,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/delete-orphaned/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delete Orphaned Files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1930,6 +1958,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#skip-orphan-deletion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Skip Orphan Deletion
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2170,6 +2209,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#skip-orphan-deletion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Skip Orphan Deletion
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2269,6 +2319,12 @@
 <td>Delete source branch after merge</td>
 <td><code>true</code></td>
 </tr>
+<tr>
+<td><code>--no-delete</code></td>
+<td></td>
+<td>Skip deletion of orphaned files even if configured</td>
+<td><code>false</code></td>
+</tr>
 </tbody>
 </table>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
@@ -2297,6 +2353,10 @@
 </span></code></pre></div>
 <h3 id="custom-work-directory">Custom Work Directory<a class="headerlink" href="#custom-work-directory" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>xfg<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--work-dir<span class="w"> </span>./my-temp
+</span></code></pre></div>
+<h3 id="skip-orphan-deletion">Skip Orphan Deletion<a class="headerlink" href="#skip-orphan-deletion" title="Permanent link">&para;</a></h3>
+<p>Skip deletion of orphaned files even when <code>deleteOrphaned: true</code> is configured:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>xfg<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--no-delete
 </span></code></pre></div>
 <h2 id="priority-order">Priority Order<a class="headerlink" href="#priority-order" title="Permanent link">&para;</a></h2>
 <p>CLI flags override config file settings:</p>

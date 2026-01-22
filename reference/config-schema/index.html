@@ -1382,6 +1382,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/delete-orphaned/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delete Orphaned Files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1932,6 +1960,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#per-repo-file-override" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-Repo File Override
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pr-options" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2128,6 +2167,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#per-repo-file-override" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-Repo File Override
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pr-options" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2239,6 +2289,12 @@
 <td>No</td>
 <td>GitHub Enterprise Server hostnames</td>
 </tr>
+<tr>
+<td><code>deleteOrphaned</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>Global default for orphan file deletion</td>
+</tr>
 </tbody>
 </table>
 <h3 id="file-config">File Config<a class="headerlink" href="#file-config" title="Permanent link">&para;</a></h3>
@@ -2288,6 +2344,24 @@
 <td>No</td>
 <td>YAML schema directive URL</td>
 </tr>
+<tr>
+<td><code>template</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>Enable <code>${xfg:...}</code> variable support</td>
+</tr>
+<tr>
+<td><code>vars</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Custom template variables</td>
+</tr>
+<tr>
+<td><code>deleteOrphaned</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>Track file for orphan deletion</td>
+</tr>
 </tbody>
 </table>
 <h3 id="repo-config">Repo Config<a class="headerlink" href="#repo-config" title="Permanent link">&para;</a></h3>
@@ -2318,6 +2392,73 @@
 <td><code>PROptions</code></td>
 <td>No</td>
 <td>Per-repo PR options</td>
+</tr>
+</tbody>
+</table>
+<h3 id="per-repo-file-override">Per-Repo File Override<a class="headerlink" href="#per-repo-file-override" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>content</code></td>
+<td><code>object/string/array</code></td>
+<td>No</td>
+<td>Content overlay merged onto base</td>
+</tr>
+<tr>
+<td><code>override</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>If true, ignore base content entirely</td>
+</tr>
+<tr>
+<td><code>createOnly</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>Override root-level createOnly</td>
+</tr>
+<tr>
+<td><code>executable</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>Override root-level executable</td>
+</tr>
+<tr>
+<td><code>header</code></td>
+<td><code>string/array</code></td>
+<td>No</td>
+<td>Override root-level header</td>
+</tr>
+<tr>
+<td><code>schemaUrl</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>Override root-level schemaUrl</td>
+</tr>
+<tr>
+<td><code>template</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>Override root-level template</td>
+</tr>
+<tr>
+<td><code>vars</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Per-repo template variables</td>
+</tr>
+<tr>
+<td><code>deleteOrphaned</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>Override file-level deleteOrphaned</td>
 </tr>
 </tbody>
 </table>

@@ -868,6 +868,45 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#delete-orphaned-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delete Orphaned Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Delete Orphaned Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inheritance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disabling-at-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disabling at Runtime
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1498,6 +1537,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/delete-orphaned/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delete Orphaned Files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2086,6 +2153,45 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#delete-orphaned-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delete Orphaned Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Delete Orphaned Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inheritance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inheritance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disabling-at-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disabling at Runtime
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2152,6 +2258,11 @@
 <td>Custom PR body template (inline or <code>@path/to/file</code> reference)</td>
 <td>No</td>
 </tr>
+<tr>
+<td><code>deleteOrphaned</code></td>
+<td>Global default for orphan deletion. Files removed from config are deleted from repos.</td>
+<td>No</td>
+</tr>
 </tbody>
 </table>
 <h2 id="per-file-fields">Per-File Fields<a class="headerlink" href="#per-file-fields" title="Permanent link">&para;</a></h2>
@@ -2202,6 +2313,11 @@
 <tr>
 <td><code>vars</code></td>
 <td>Custom template variables (object with string values). Accessible as <code>${xfg:varName}</code>.</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>deleteOrphaned</code></td>
+<td>If <code>true</code>, track file for orphan deletion. Removing it from config will delete it from repos.</td>
 <td>No</td>
 </tr>
 </tbody>
@@ -2283,6 +2399,11 @@
 <td>Per-repo template variables (merged with root vars, overrides conflicts)</td>
 <td>No</td>
 </tr>
+<tr>
+<td><code>deleteOrphaned</code></td>
+<td>Override file-level or global <code>deleteOrphaned</code> for this repo</td>
+<td>No</td>
+</tr>
 </tbody>
 </table>
 <h2 id="file-exclusion">File Exclusion<a class="headerlink" href="#file-exclusion" title="Permanent link">&para;</a></h2>
@@ -2291,6 +2412,42 @@
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/repo.git</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">files</span><span class="p">:</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">      </span><span class="nt">eslint.json</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"> </span><span class="c1"># This repo won&#39;t receive eslint.json</span>
+</span></code></pre></div>
+<h2 id="delete-orphaned-files">Delete Orphaned Files<a class="headerlink" href="#delete-orphaned-files" title="Permanent link">&para;</a></h2>
+<p>Files with <code>deleteOrphaned: true</code> are tracked in a <code>.xfg.json</code> manifest file in each target repository. When a tracked file is removed from your xfg config, it will be automatically deleted from the target repos on the next sync.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">files</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">.prettierrc.json</span><span class="p">:</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> semi</span><span class="p">:</span><span class="w"> </span><span class="nv">false</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">deleteOrphaned</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"> </span><span class="c1"># Track this file - removing it from config deletes it from repos</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/repo.git</span>
+</span></code></pre></div>
+<h3 id="inheritance">Inheritance<a class="headerlink" href="#inheritance" title="Permanent link">&para;</a></h3>
+<p><code>deleteOrphaned</code> follows the standard inheritance pattern:</p>
+<ol>
+<li><strong>Global default</strong> - Set at root level applies to all files</li>
+<li><strong>Per-file</strong> - Overrides global default for specific files</li>
+<li><strong>Per-repo</strong> - Overrides both global and per-file for specific repos</li>
+</ol>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">deleteOrphaned</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"> </span><span class="c1"># Global: track all files by default</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nt">files</span><span class="p">:</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">.prettierrc.json</span><span class="p">:</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> semi</span><span class="p">:</span><span class="w"> </span><span class="nv">false</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">.eslintrc.json</span><span class="p">:</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> extends</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;standard&quot;</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="nt">deleteOrphaned</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"> </span><span class="c1"># This file won&#39;t be tracked</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/special-repo.git</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="nt">files</span><span class="p">:</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">      </span><span class="nt">.prettierrc.json</span><span class="p">:</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">        </span><span class="nt">deleteOrphaned</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"> </span><span class="c1"># Don&#39;t track for this repo only</span>
+</span></code></pre></div>
+<h3 id="disabling-at-runtime">Disabling at Runtime<a class="headerlink" href="#disabling-at-runtime" title="Permanent link">&para;</a></h3>
+<p>Use the <code>--no-delete</code> CLI flag to skip deletion even if configured:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>xfg<span class="w"> </span>--config<span class="w"> </span>config.yaml<span class="w"> </span>--no-delete
 </span></code></pre></div>
 
 
