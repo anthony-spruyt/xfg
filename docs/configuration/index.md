@@ -38,6 +38,8 @@ repos: # List of repositories
 | `executable`    | Mark file as executable. `.sh` files are auto-executable unless set to `false`. Set to `true` for non-.sh files.                                    | No       |
 | `header`        | Comment line(s) at top of YAML files (string or array)                                                                                              | No       |
 | `schemaUrl`     | Adds `# yaml-language-server: $schema=<url>` to YAML files                                                                                          | No       |
+| `template`      | If `true`, enable `${xfg:...}` variable substitution. See [Templating](templating.md).                                                              | No       |
+| `vars`          | Custom template variables (object with string values). Accessible as `${xfg:varName}`.                                                              | No       |
 
 ## Per-Repo Fields
 
@@ -49,14 +51,16 @@ repos: # List of repositories
 
 ## Per-Repo File Override Fields
 
-| Field        | Description                                             | Required |
-| ------------ | ------------------------------------------------------- | -------- |
-| `content`    | Content overlay merged onto file's base content         | No       |
-| `override`   | If `true`, ignore base content and use only this repo's | No       |
-| `createOnly` | Override root-level `createOnly` for this repo          | No       |
-| `executable` | Override root-level `executable` for this repo          | No       |
-| `header`     | Override root-level `header` for this repo              | No       |
-| `schemaUrl`  | Override root-level `schemaUrl` for this repo           | No       |
+| Field        | Description                                                              | Required |
+| ------------ | ------------------------------------------------------------------------ | -------- |
+| `content`    | Content overlay merged onto file's base content                          | No       |
+| `override`   | If `true`, ignore base content and use only this repo's                  | No       |
+| `createOnly` | Override root-level `createOnly` for this repo                           | No       |
+| `executable` | Override root-level `executable` for this repo                           | No       |
+| `header`     | Override root-level `header` for this repo                               | No       |
+| `schemaUrl`  | Override root-level `schemaUrl` for this repo                            | No       |
+| `template`   | Override root-level `template` for this repo                             | No       |
+| `vars`       | Per-repo template variables (merged with root vars, overrides conflicts) | No       |
 
 ## File Exclusion
 

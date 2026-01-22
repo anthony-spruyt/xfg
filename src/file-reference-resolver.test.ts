@@ -399,7 +399,7 @@ describe("File Reference Resolver", () => {
       const templatePath = join(testDir, "templates", "pr-body.md");
       writeFileSync(
         templatePath,
-        "## PR Template\n\n{{FILE_CHANGES}}",
+        "## PR Template\n\n${xfg:pr.fileChanges}",
         "utf-8",
       );
 
@@ -412,7 +412,7 @@ describe("File Reference Resolver", () => {
       const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
       assert.strictEqual(
         result.prTemplate,
-        "## PR Template\n\n{{FILE_CHANGES}}",
+        "## PR Template\n\n${xfg:pr.fileChanges}",
       );
     });
 
@@ -420,13 +420,13 @@ describe("File Reference Resolver", () => {
       const raw: RawConfig = {
         files: { "config.json": { content: { key: "value" } } },
         repos: [{ git: "git@github.com:org/repo.git" }],
-        prTemplate: "## Inline Template\n\n{{FILE_CHANGES}}",
+        prTemplate: "## Inline Template\n\n${xfg:pr.fileChanges}",
       };
 
       const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
       assert.strictEqual(
         result.prTemplate,
-        "## Inline Template\n\n{{FILE_CHANGES}}",
+        "## Inline Template\n\n${xfg:pr.fileChanges}",
       );
     });
 

@@ -1,10 +1,10 @@
 ## Summary
 
-Automated sync of configuration files.
+Automated sync of configuration files to ${xfg:repo.fullName}.
 
 ## Changes
 
-{{FILE_CHANGES}}
+${xfg:pr.fileChanges}
 
 ## Source
 

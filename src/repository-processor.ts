@@ -3,10 +3,12 @@ import { join } from "node:path";
 import {
   RepoConfig,
   FileContent,
+  ContentValue,
   convertContentToString,
   PRMergeOptions,
 } from "./config.js";
 import { RepoInfo, getRepoDisplayName } from "./repo-detector.js";
+import { interpolateXfgContent } from "./xfg-template.js";
 import { GitOps, GitOpsOptions } from "./git-ops.js";
 import { createPR, mergePR, PRResult, FileAction } from "./pr-creator.js";
 import { logger, ILogger } from "./logger.js";
@@ -168,8 +170,23 @@ export class RepositoryProcessor {
         }
 
         this.log.info(`Writing ${file.fileName}...`);
+
+        // Apply xfg templating if enabled
+        let contentToWrite: ContentValue | null = file.content;
+        if (file.template && contentToWrite !== null) {
+          contentToWrite = interpolateXfgContent(
+            contentToWrite,
+            {
+              repoInfo,
+              fileName: file.fileName,
+              vars: file.vars,
+            },
+            { strict: true },
+          );
+        }
+
         const fileContent = convertContentToString(
-          file.content,
+          contentToWrite,
           file.fileName,
           {
             header: file.header,

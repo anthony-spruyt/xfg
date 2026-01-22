@@ -9,6 +9,21 @@ import {
   formatPRTitle,
   FileAction,
 } from "./pr-creator.js";
+import type { GitHubRepoInfo } from "./repo-detector.js";
+
+// Helper to create a mock repo info for tests
+function createMockRepoInfo(
+  overrides: Partial<GitHubRepoInfo> = {},
+): GitHubRepoInfo {
+  return {
+    type: "github",
+    gitUrl: "git@github.com:test-org/test-repo.git",
+    owner: "test-org",
+    repo: "test-repo",
+    host: "github.com",
+    ...overrides,
+  };
+}
 
 describe("escapeShellArg", () => {
   test("wraps simple strings in single quotes", () => {
@@ -82,27 +97,29 @@ describe("escapeShellArg", () => {
 });
 
 describe("formatPRBody", () => {
+  const repoInfo = createMockRepoInfo();
+
   test("includes file name in body for single file", () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
-    const result = formatPRBody(files);
+    const result = formatPRBody(files, repoInfo);
     assert.ok(result.includes("config.json"));
   });
 
   test('uses "Created" for create action', () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
-    const result = formatPRBody(files);
+    const result = formatPRBody(files, repoInfo);
     assert.ok(result.includes("Created"));
   });
 
   test('uses "Updated" for update action', () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "update" }];
-    const result = formatPRBody(files);
+    const result = formatPRBody(files, repoInfo);
     assert.ok(result.includes("Updated"));
   });
 
   test("preserves markdown formatting", () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
-    const result = formatPRBody(files);
+    const result = formatPRBody(files, repoInfo);
     // Should contain markdown headers or formatting
     assert.ok(
       result.includes("##") || result.includes("*") || result.includes("-"),
@@ -114,7 +131,7 @@ describe("formatPRBody", () => {
       { fileName: "config.json", action: "create" },
       { fileName: "settings.yaml", action: "update" },
     ];
-    const result = formatPRBody(files);
+    const result = formatPRBody(files, repoInfo);
     assert.ok(result.includes("config.json"));
     assert.ok(result.includes("settings.yaml"));
     assert.ok(result.includes("Created"));
@@ -123,29 +140,48 @@ describe("formatPRBody", () => {
 
   test("uses custom template when provided", () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
-    const customTemplate = "## Custom\n\n{{FILE_CHANGES}}\n\nDone.";
-    const result = formatPRBody(files, customTemplate);
+    const customTemplate = "## Custom\n\n${xfg:pr.fileChanges}\n\nDone.";
+    const result = formatPRBody(files, repoInfo, customTemplate);
     assert.ok(result.includes("## Custom"));
     assert.ok(result.includes("Created `config.json`"));
     assert.ok(result.includes("Done."));
   });
 
-  test("replaces {{FILE_CHANGES}} placeholder in custom template", () => {
+  test("replaces ${xfg:pr.fileChanges} placeholder in custom template", () => {
     const files: FileAction[] = [
       { fileName: "a.json", action: "create" },
       { fileName: "b.yaml", action: "update" },
     ];
-    const customTemplate = "Changes:\n{{FILE_CHANGES}}";
-    const result = formatPRBody(files, customTemplate);
+    const customTemplate = "Changes:\n${xfg:pr.fileChanges}";
+    const result = formatPRBody(files, repoInfo, customTemplate);
     assert.ok(result.includes("Changes:"));
     assert.ok(result.includes("- Created `a.json`"));
     assert.ok(result.includes("- Updated `b.yaml`"));
   });
 
-  test("handles template without {{FILE_CHANGES}} placeholder", () => {
+  test("interpolates repo variables in custom template", () => {
+    const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
+    const customTemplate =
+      "Sync to ${xfg:repo.fullName}\n\n${xfg:pr.fileChanges}";
+    const result = formatPRBody(files, repoInfo, customTemplate);
+    assert.ok(result.includes("Sync to test-org/test-repo"));
+    assert.ok(result.includes("Created `config.json`"));
+  });
+
+  test("interpolates pr.fileCount in custom template", () => {
+    const files: FileAction[] = [
+      { fileName: "a.json", action: "create" },
+      { fileName: "b.json", action: "update" },
+    ];
+    const customTemplate = "Changed ${xfg:pr.fileCount} files";
+    const result = formatPRBody(files, repoInfo, customTemplate);
+    assert.ok(result.includes("Changed 2 files"));
+  });
+
+  test("handles template without placeholders", () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
     const customTemplate = "Static template with no placeholder";
-    const result = formatPRBody(files, customTemplate);
+    const result = formatPRBody(files, repoInfo, customTemplate);
     assert.strictEqual(result, "Static template with no placeholder");
   });
 });
@@ -193,6 +229,7 @@ describe("loadPRTemplate (via formatPRBody)", () => {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   const templatePath = join(__dirname, "..", "PR.md");
+  const repoInfo = createMockRepoInfo();
 
   test("loads PR.md template when file exists", () => {
     // Verify PR.md exists in the project
@@ -203,7 +240,7 @@ describe("loadPRTemplate (via formatPRBody)", () => {
 
     // formatPRBody should use content from PR.md
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
-    const result = formatPRBody(files);
+    const result = formatPRBody(files, repoInfo);
 
     // The actual PR.md has specific content we can verify
     // It should contain markdown formatting from the template
@@ -212,7 +249,7 @@ describe("loadPRTemplate (via formatPRBody)", () => {
 
   test("template contains expected sections", () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
-    const result = formatPRBody(files);
+    const result = formatPRBody(files, repoInfo);
 
     // PR.md should have summary section and automation note
     assert.ok(
@@ -227,7 +264,7 @@ describe("loadPRTemplate (via formatPRBody)", () => {
     // The fallback template (in case PR.md is missing) has a specific structure
     // We verify by checking that formatPRBody always returns valid content
     const files: FileAction[] = [{ fileName: "test.json", action: "create" }];
-    const result = formatPRBody(files);
+    const result = formatPRBody(files, repoInfo);
 
     // Should have the filename
     assert.ok(result.includes("test.json"));
@@ -241,16 +278,29 @@ describe("loadPRTemplate (via formatPRBody)", () => {
       "Should have markdown formatting",
     );
   });
+
+  test("interpolates repo variables in default template", () => {
+    const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
+    const result = formatPRBody(files, repoInfo);
+
+    // Default PR.md uses ${xfg:repo.fullName}
+    assert.ok(
+      result.includes("test-org/test-repo"),
+      "Should interpolate repo.fullName",
+    );
+  });
 });
 
 describe("skip action handling", () => {
+  const repoInfo = createMockRepoInfo();
+
   describe("formatPRBody with skip action", () => {
     test("excludes skipped files from changes list", () => {
       const files: FileAction[] = [
         { fileName: "config.json", action: "create" },
         { fileName: "skipped.json", action: "skip" },
       ];
-      const result = formatPRBody(files);
+      const result = formatPRBody(files, repoInfo);
       assert.ok(result.includes("config.json"));
       assert.ok(!result.includes("skipped.json"));
     });
@@ -259,7 +309,7 @@ describe("skip action handling", () => {
       const files: FileAction[] = [
         { fileName: "skipped.json", action: "skip" },
       ];
-      const result = formatPRBody(files);
+      const result = formatPRBody(files, repoInfo);
       // Should still return valid markdown, even if empty changes
       assert.ok(typeof result === "string");
     });
@@ -270,7 +320,7 @@ describe("skip action handling", () => {
         { fileName: "updated.json", action: "update" },
         { fileName: "skipped.json", action: "skip" },
       ];
-      const result = formatPRBody(files);
+      const result = formatPRBody(files, repoInfo);
       assert.ok(result.includes("Created"));
       assert.ok(result.includes("Updated"));
       assert.ok(result.includes("created.json"));

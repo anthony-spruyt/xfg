@@ -51,6 +51,7 @@ xfg --config ./config.yaml
 - **Content Inheritance** - Define base config once, override per-repo as needed
 - **Multi-Repo Targeting** - Apply same config to multiple repos with array syntax
 - **Environment Variables** - Use `${VAR}` syntax for dynamic values
+- **Templating** - Use `${xfg:repo.name}` syntax for dynamic repo-specific content
 - **Merge Strategies** - Control how arrays merge (replace, append, prepend)
 - **Override Mode** - Skip merging entirely for specific repos
 - **Empty Files** - Create files with no content (e.g., `.prettierignore`)

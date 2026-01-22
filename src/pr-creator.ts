@@ -7,6 +7,7 @@ import {
   MergeResult,
   PRMergeConfig,
 } from "./strategies/index.js";
+import { interpolateXfgContent } from "./xfg-template.js";
 
 // Re-export for backwards compatibility and testing
 export { escapeShellArg } from "./shell-utils.js";
@@ -48,11 +49,11 @@ function loadDefaultTemplate(): string {
   // Fallback template
   return `## Summary
 
-Automated sync of configuration files.
+Automated sync of configuration files to \${xfg:repo.fullName}.
 
 ## Changes
 
-{{FILE_CHANGES}}
+\${xfg:pr.fileChanges}
 
 ## Source
 
@@ -77,16 +78,37 @@ function formatFileChanges(files: FileAction[]): string {
 }
 
 /**
- * Format PR body using template with {{FILE_CHANGES}} placeholder
+ * Format PR body using template with ${xfg:...} variables.
+ *
+ * Available PR-specific variables:
+ * - ${xfg:pr.fileChanges} - formatted list of changed files
+ * - ${xfg:pr.fileCount} - number of changed files
+ * - ${xfg:pr.title} - the PR title
+ *
+ * Plus all standard repo variables (repo.name, repo.owner, etc.)
  */
 export function formatPRBody(
   files: FileAction[],
+  repoInfo: RepoInfo,
   customTemplate?: string,
 ): string {
   const template = customTemplate ?? loadDefaultTemplate();
   const fileChanges = formatFileChanges(files);
+  const changedFiles = files.filter((f) => f.action !== "skip");
+  const title = formatPRTitle(files);
 
-  return template.replace(/\{\{FILE_CHANGES\}\}/g, fileChanges);
+  // Create context with PR-specific variables
+  const result = interpolateXfgContent(template, {
+    repoInfo,
+    fileName: "PR.md",
+    vars: {
+      "pr.fileChanges": fileChanges,
+      "pr.fileCount": String(changedFiles.length),
+      "pr.title": title,
+    },
+  });
+
+  return result as string;
 }
 
 /**
@@ -120,7 +142,7 @@ export async function createPR(options: PROptions): Promise<PRResult> {
   } = options;
 
   const title = formatPRTitle(files);
-  const body = formatPRBody(files, prTemplate);
+  const body = formatPRBody(files, repoInfo, prTemplate);
 
   if (dryRun) {
     return {
