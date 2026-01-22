@@ -1,0 +1,97 @@
+site_name: xfg
+site_description: Sync JSON, YAML, or text configuration files across multiple Git repositories
+site_url: https://anthony-spruyt.github.io/xfg/
+repo_name: anthony-spruyt/xfg
+repo_url: https://github.com/anthony-spruyt/xfg
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/index.md
+      - Prerequisites: getting-started/prerequisites.md
+  - Usage: usage/index.md
+  - Configuration:
+      - Overview: configuration/index.md
+      - Content Types: configuration/content-types.md
+      - Content Inheritance: configuration/inheritance.md
+      - Environment Variables: configuration/env-variables.md
+      - Merge Strategies: configuration/merge-strategies.md
+      - File References: configuration/file-references.md
+      - PR Options: configuration/pr-options.md
+      - PR Templates: configuration/pr-templates.md
+  - Examples:
+      - Overview: examples/index.md
+      - Multi-File Sync: examples/multi-file-sync.md
+      - Shared Config Across Teams: examples/shared-config.md
+      - Environment-Specific Values: examples/env-specific.md
+      - Per-File Merge Strategies: examples/merge-strategies.md
+      - Create-Only Files: examples/create-only.md
+      - YAML Comments & Empty Files: examples/yaml-comments.md
+      - Text Files: examples/text-files.md
+      - Executable Files: examples/executable-files.md
+      - Subdirectory Paths: examples/subdirectory-paths.md
+      - File References: examples/file-references.md
+      - Auto-Merge PRs: examples/auto-merge.md
+  - Platforms:
+      - Overview: platforms/index.md
+      - GitHub: platforms/github.md
+      - Azure DevOps: platforms/azure-devops.md
+      - GitLab: platforms/gitlab.md
+  - CI/CD:
+      - Overview: ci-cd/index.md
+      - GitHub Actions: ci-cd/github-actions.md
+      - Azure Pipelines: ci-cd/azure-pipelines.md
+  - Reference:
+      - CLI Options: reference/cli-options.md
+      - Config Schema: reference/config-schema.md
+  - Troubleshooting: troubleshooting.md
+  - IDE Integration: ide-integration.md

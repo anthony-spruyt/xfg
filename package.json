@@ -1,7 +1,7 @@
 {
   "name": "@aspruyt/xfg",
   "version": "1.4.0",
-  "description": "CLI tool to sync JSON or YAML configuration files across multiple GitHub, Azure DevOps, and GitLab repositories",
+  "description": "CLI tool to sync JSON, JSON5, YAML, or text configuration files across multiple Git repositories by creating pull requests",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -15,7 +15,7 @@
     "type": "git",
     "url": "git+https://github.com/anthony-spruyt/xfg.git"
   },
-  "homepage": "https://github.com/anthony-spruyt/xfg#readme",
+  "homepage": "https://anthony-spruyt.github.io/xfg/",
   "bugs": {
     "url": "https://github.com/anthony-spruyt/xfg/issues"
   },
@@ -36,7 +36,9 @@
     "config",
     "sync",
     "json",
+    "json5",
     "yaml",
+    "text",
     "git",
     "cli",
     "github",
