@@ -211,7 +211,6 @@ jobs:
         with:
           config: ./fixtures/integration-test-config-github.yaml
           github-token: ${{ secrets.GH_PAT }}
-          dry-run: true
 
   release:
     needs:
