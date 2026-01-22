@@ -160,6 +160,12 @@ export function normalizeConfig(raw: RawConfig): Config {
             ? { ...fileConfig.vars, ...repoOverride?.vars }
             : undefined;
 
+        // deleteOrphaned: per-repo overrides per-file overrides global
+        const deleteOrphaned =
+          repoOverride?.deleteOrphaned ??
+          fileConfig.deleteOrphaned ??
+          raw.deleteOrphaned;
+
         files.push({
           fileName,
           content: mergedContent,
@@ -169,6 +175,7 @@ export function normalizeConfig(raw: RawConfig): Config {
           schemaUrl,
           template,
           vars,
+          deleteOrphaned,
         });
       }
 
@@ -187,5 +194,6 @@ export function normalizeConfig(raw: RawConfig): Config {
     repos: expandedRepos,
     prTemplate: raw.prTemplate,
     githubHosts: raw.githubHosts,
+    deleteOrphaned: raw.deleteOrphaned,
   };
 }

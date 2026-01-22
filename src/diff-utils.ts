@@ -1,6 +1,6 @@
 import chalk from "chalk";
 
-export type FileStatus = "NEW" | "MODIFIED" | "UNCHANGED";
+export type FileStatus = "NEW" | "MODIFIED" | "UNCHANGED" | "DELETED";
 
 /**
  * Determines file status based on existence and change detection.
@@ -21,6 +21,8 @@ export function formatStatusBadge(status: FileStatus): string {
       return chalk.yellow("[MODIFIED]");
     case "UNCHANGED":
       return chalk.gray("[UNCHANGED]");
+    case "DELETED":
+      return chalk.red("[DELETED]");
   }
 }
 
@@ -259,13 +261,14 @@ export interface DiffStats {
   newCount: number;
   modifiedCount: number;
   unchangedCount: number;
+  deletedCount: number;
 }
 
 /**
  * Create an empty diff stats object.
  */
 export function createDiffStats(): DiffStats {
-  return { newCount: 0, modifiedCount: 0, unchangedCount: 0 };
+  return { newCount: 0, modifiedCount: 0, unchangedCount: 0, deletedCount: 0 };
 }
 
 /**
@@ -281,6 +284,9 @@ export function incrementDiffStats(stats: DiffStats, status: FileStatus): void {
       break;
     case "UNCHANGED":
       stats.unchangedCount++;
+      break;
+    case "DELETED":
+      stats.deletedCount++;
       break;
   }
 }

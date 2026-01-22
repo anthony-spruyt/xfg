@@ -952,4 +952,88 @@ describe("GitOps", () => {
       assert.equal(exists, false);
     });
   });
+
+  describe("fileExists", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("returns true when file exists", () => {
+      writeFileSync(join(workDir, "test.json"), '{"key": "value"}');
+
+      const gitOps = new GitOps({ workDir });
+      const exists = gitOps.fileExists("test.json");
+
+      assert.equal(exists, true);
+    });
+
+    test("returns false when file does not exist", () => {
+      const gitOps = new GitOps({ workDir });
+      const exists = gitOps.fileExists("nonexistent.json");
+
+      assert.equal(exists, false);
+    });
+
+    test("throws on path traversal attempt", () => {
+      const gitOps = new GitOps({ workDir });
+      assert.throws(
+        () => gitOps.fileExists("../escape.json"),
+        /Path traversal detected/,
+      );
+    });
+  });
+
+  describe("deleteFile", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("deletes existing file", () => {
+      const filePath = join(workDir, "test.json");
+      writeFileSync(filePath, '{"key": "value"}');
+      assert.ok(existsSync(filePath));
+
+      const gitOps = new GitOps({ workDir });
+      gitOps.deleteFile("test.json");
+
+      assert.ok(!existsSync(filePath));
+    });
+
+    test("does nothing when file does not exist", () => {
+      const gitOps = new GitOps({ workDir });
+      // Should not throw
+      gitOps.deleteFile("nonexistent.json");
+    });
+
+    test("does nothing in dry-run mode", () => {
+      const filePath = join(workDir, "test.json");
+      writeFileSync(filePath, '{"key": "value"}');
+
+      const gitOps = new GitOps({ workDir, dryRun: true });
+      gitOps.deleteFile("test.json");
+
+      assert.ok(existsSync(filePath));
+    });
+
+    test("throws on path traversal attempt", () => {
+      const gitOps = new GitOps({ workDir });
+      assert.throws(
+        () => gitOps.deleteFile("../escape.json"),
+        /Path traversal detected/,
+      );
+    });
+
+    test("handles subdirectory paths", () => {
+      const subDir = join(workDir, "subdir");
+      mkdirSync(subDir, { recursive: true });
+      const filePath = join(subDir, "nested.json");
+      writeFileSync(filePath, '{"key": "value"}');
+      assert.ok(existsSync(filePath));
+
+      const gitOps = new GitOps({ workDir });
+      gitOps.deleteFile("subdir/nested.json");
+
+      assert.ok(!existsSync(filePath));
+    });
+  });
 });

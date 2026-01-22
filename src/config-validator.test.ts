@@ -1186,4 +1186,116 @@ describe("validateRawConfig", () => {
       );
     });
   });
+
+  describe("deleteOrphaned validation", () => {
+    test("allows deleteOrphaned: true at global level", () => {
+      const config = createValidConfig({
+        deleteOrphaned: true,
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows deleteOrphaned: false at global level", () => {
+      const config = createValidConfig({
+        deleteOrphaned: false,
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows undefined deleteOrphaned at global level", () => {
+      const config = createValidConfig();
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when deleteOrphaned is not a boolean at global level", () => {
+      const config = createValidConfig({
+        deleteOrphaned: "yes" as never,
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /Global deleteOrphaned must be a boolean/,
+      );
+    });
+
+    test("allows deleteOrphaned: true at root file level", () => {
+      const config = createValidConfig({
+        files: {
+          "config.json": { content: { key: "value" }, deleteOrphaned: true },
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows deleteOrphaned: false at root file level", () => {
+      const config = createValidConfig({
+        files: {
+          "config.json": { content: { key: "value" }, deleteOrphaned: false },
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows undefined deleteOrphaned at root file level", () => {
+      const config = createValidConfig({
+        files: {
+          "config.json": { content: { key: "value" } },
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when deleteOrphaned is not a boolean at root file level", () => {
+      const config = createValidConfig({
+        files: {
+          "config.json": {
+            content: { key: "value" },
+            deleteOrphaned: 1 as never,
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /deleteOrphaned must be a boolean/,
+      );
+    });
+
+    test("allows deleteOrphaned: true at per-repo level", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { "config.json": { deleteOrphaned: true } },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows deleteOrphaned: false at per-repo level", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { "config.json": { deleteOrphaned: false } },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when deleteOrphaned is not a boolean at per-repo level", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: { "config.json": { deleteOrphaned: "true" as never } },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /deleteOrphaned must be a boolean/,
+      );
+    });
+  });
 });

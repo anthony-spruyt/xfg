@@ -37,24 +37,28 @@ Or configure in `.vscode/settings.json`:
 
 ### Root Object
 
-| Field         | Type        | Required | Description                        |
-| ------------- | ----------- | -------- | ---------------------------------- |
-| `files`       | `object`    | Yes      | Map of filenames to file configs   |
-| `repos`       | `array`     | Yes      | List of repository configurations  |
-| `prOptions`   | `PROptions` | No       | Global PR merge options            |
-| `prTemplate`  | `string`    | No       | Custom PR body template            |
-| `githubHosts` | `array`     | No       | GitHub Enterprise Server hostnames |
+| Field            | Type        | Required | Description                             |
+| ---------------- | ----------- | -------- | --------------------------------------- |
+| `files`          | `object`    | Yes      | Map of filenames to file configs        |
+| `repos`          | `array`     | Yes      | List of repository configurations       |
+| `prOptions`      | `PROptions` | No       | Global PR merge options                 |
+| `prTemplate`     | `string`    | No       | Custom PR body template                 |
+| `githubHosts`    | `array`     | No       | GitHub Enterprise Server hostnames      |
+| `deleteOrphaned` | `boolean`   | No       | Global default for orphan file deletion |
 
 ### File Config
 
-| Field           | Type                  | Required | Description                         |
-| --------------- | --------------------- | -------- | ----------------------------------- |
-| `content`       | `object/string/array` | No       | File content or `@path/to/file` ref |
-| `mergeStrategy` | `string`              | No       | `replace`, `append`, `prepend`      |
-| `createOnly`    | `boolean`             | No       | Only create if doesn't exist        |
-| `executable`    | `boolean`             | No       | Mark file as executable             |
-| `header`        | `string/array`        | No       | YAML header comment(s)              |
-| `schemaUrl`     | `string`              | No       | YAML schema directive URL           |
+| Field            | Type                  | Required | Description                          |
+| ---------------- | --------------------- | -------- | ------------------------------------ |
+| `content`        | `object/string/array` | No       | File content or `@path/to/file` ref  |
+| `mergeStrategy`  | `string`              | No       | `replace`, `append`, `prepend`       |
+| `createOnly`     | `boolean`             | No       | Only create if doesn't exist         |
+| `executable`     | `boolean`             | No       | Mark file as executable              |
+| `header`         | `string/array`        | No       | YAML header comment(s)               |
+| `schemaUrl`      | `string`              | No       | YAML schema directive URL            |
+| `template`       | `boolean`             | No       | Enable `${xfg:...}` variable support |
+| `vars`           | `object`              | No       | Custom template variables            |
+| `deleteOrphaned` | `boolean`             | No       | Track file for orphan deletion       |
 
 ### Repo Config
 
@@ -63,6 +67,20 @@ Or configure in `.vscode/settings.json`:
 | `git`       | `string/array` | Yes      | Git URL(s)              |
 | `files`     | `object`       | No       | Per-repo file overrides |
 | `prOptions` | `PROptions`    | No       | Per-repo PR options     |
+
+### Per-Repo File Override
+
+| Field            | Type                  | Required | Description                           |
+| ---------------- | --------------------- | -------- | ------------------------------------- |
+| `content`        | `object/string/array` | No       | Content overlay merged onto base      |
+| `override`       | `boolean`             | No       | If true, ignore base content entirely |
+| `createOnly`     | `boolean`             | No       | Override root-level createOnly        |
+| `executable`     | `boolean`             | No       | Override root-level executable        |
+| `header`         | `string/array`        | No       | Override root-level header            |
+| `schemaUrl`      | `string`              | No       | Override root-level schemaUrl         |
+| `template`       | `boolean`             | No       | Override root-level template          |
+| `vars`           | `object`              | No       | Per-repo template variables           |
+| `deleteOrphaned` | `boolean`             | No       | Override file-level deleteOrphaned    |
 
 ### PR Options
 

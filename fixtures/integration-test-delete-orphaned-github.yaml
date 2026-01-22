@@ -1,0 +1,16 @@
+# Integration test config for deleteOrphaned feature
+# This config is used in the first phase to create the file with deleteOrphaned: true
+
+files:
+  orphan-test.json:
+    content:
+      orphanTest: true
+      willBeDeleted: true
+    deleteOrphaned: true
+
+repos:
+  - git: git@github.com:anthony-spruyt/xfg-test.git
+
+prOptions:
+  merge: force
+  deleteBranch: true

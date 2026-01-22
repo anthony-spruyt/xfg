@@ -8,6 +8,7 @@ export interface ILogger {
     newCount: number,
     modifiedCount: number,
     unchangedCount: number,
+    deletedCount?: number,
   ): void;
 }
 
@@ -88,11 +89,14 @@ export class Logger {
     newCount: number,
     modifiedCount: number,
     unchangedCount: number,
+    deletedCount?: number,
   ): void {
     const parts: string[] = [];
     if (newCount > 0) parts.push(chalk.green(`${newCount} new`));
     if (modifiedCount > 0)
       parts.push(chalk.yellow(`${modifiedCount} modified`));
+    if (deletedCount && deletedCount > 0)
+      parts.push(chalk.red(`${deletedCount} deleted`));
     if (unchangedCount > 0)
       parts.push(chalk.gray(`${unchangedCount} unchanged`));
 

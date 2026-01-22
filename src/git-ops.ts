@@ -223,6 +223,33 @@ export class GitOps {
   }
 
   /**
+   * Check if a file exists in the working directory.
+   */
+  fileExists(fileName: string): boolean {
+    const filePath = this.validatePath(fileName);
+    return existsSync(filePath);
+  }
+
+  /**
+   * Delete a file from the working directory.
+   * Does nothing in dry-run mode.
+   *
+   * @param fileName - The file path relative to the work directory
+   */
+  deleteFile(fileName: string): void {
+    if (this.dryRun) {
+      return;
+    }
+    const filePath = this.validatePath(fileName);
+
+    if (!existsSync(filePath)) {
+      return; // File doesn't exist, nothing to delete
+    }
+
+    rmSync(filePath);
+  }
+
+  /**
    * Stage all changes and commit with the given message.
    * Uses --no-verify to skip pre-commit hooks (config sync should always succeed).
    * @returns true if a commit was made, false if there were no staged changes

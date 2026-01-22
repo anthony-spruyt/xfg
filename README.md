@@ -87,6 +87,7 @@ repos:
 - **Multi-Platform** - Works with GitHub (including GitHub Enterprise Server), Azure DevOps, and GitLab (including self-hosted)
 - **Auto-Merge PRs** - Automatically merge PRs when checks pass, or force merge with admin privileges
 - **Direct Push Mode** - Push directly to default branch without creating PRs
+- **Delete Orphaned Files** - Automatically remove files from repos when deleted from config (manifest-tracked)
 - **Dry-Run Mode** - Preview changes without creating PRs
 - **Error Resilience** - Continues processing if individual repos fail
 - **Automatic Retries** - Retries transient network errors with exponential backoff

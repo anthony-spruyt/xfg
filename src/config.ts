@@ -40,6 +40,7 @@ export interface RawFileConfig {
   schemaUrl?: string;
   template?: boolean;
   vars?: Record<string, string>;
+  deleteOrphaned?: boolean;
 }
 
 // Per-repo file override
@@ -52,6 +53,7 @@ export interface RawRepoFileOverride {
   schemaUrl?: string;
   template?: boolean;
   vars?: Record<string, string>;
+  deleteOrphaned?: boolean;
 }
 
 // Repo configuration
@@ -69,6 +71,7 @@ export interface RawConfig {
   prOptions?: PRMergeOptions;
   prTemplate?: string;
   githubHosts?: string[];
+  deleteOrphaned?: boolean;
 }
 
 // =============================================================================
@@ -85,6 +88,7 @@ export interface FileContent {
   schemaUrl?: string;
   template?: boolean;
   vars?: Record<string, string>;
+  deleteOrphaned?: boolean;
 }
 
 // Normalized repo config with all files to sync
@@ -99,6 +103,7 @@ export interface Config {
   repos: RepoConfig[];
   prTemplate?: string;
   githubHosts?: string[];
+  deleteOrphaned?: boolean;
 }
 
 // =============================================================================

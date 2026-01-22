@@ -56,6 +56,7 @@ interface CLIOptions {
   merge?: MergeMode;
   mergeStrategy?: MergeStrategy;
   deleteBranch?: boolean;
+  noDelete?: boolean;
 }
 
 program
@@ -102,6 +103,10 @@ program
     },
   )
   .option("--delete-branch", "Delete source branch after merge")
+  .option(
+    "--no-delete",
+    "Skip deletion of orphaned files even if deleteOrphaned is configured",
+  )
   .parse();
 
 const options = program.opts<CLIOptions>();
@@ -215,6 +220,7 @@ async function main(): Promise<void> {
         dryRun: options.dryRun,
         retries: options.retries,
         prTemplate: config.prTemplate,
+        noDelete: options.noDelete,
       });
 
       if (result.skipped) {
