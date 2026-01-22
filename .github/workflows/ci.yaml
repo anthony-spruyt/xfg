@@ -204,13 +204,51 @@ jobs:
       group: integration-github
       cancel-in-progress: false
 
+    env:
+      GH_TOKEN: ${{ secrets.GH_PAT }}
+      TEST_REPO: anthony-spruyt/xfg-test
+      BRANCH_NAME: chore/sync-my-config
+
     steps:
       - uses: actions/checkout@v6
+
+      - name: Setup - clean up from previous runs
+        run: |
+          echo "Closing any existing PRs from branch ${BRANCH_NAME}..."
+          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number --jq '.[].number' || true)
+          for pr in $PR_NUMBERS; do
+            echo "  Closing PR #${pr}"
+            gh pr close $pr --repo ${TEST_REPO} --delete-branch || true
+          done
+
+          echo "Deleting remote branch ${BRANCH_NAME} if exists..."
+          gh api --method DELETE repos/${TEST_REPO}/git/refs/heads/${BRANCH_NAME} 2>/dev/null || echo "  Branch does not exist"
 
       - uses: ./
         with:
           config: ./fixtures/integration-test-config-github.yaml
           github-token: ${{ secrets.GH_PAT }}
+
+      - name: Validate - verify PR was created
+        run: |
+          echo "Verifying PR was created..."
+          PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number,title,url --jq '.[0]')
+          if [ -z "$PR_INFO" ]; then
+            echo "ERROR: No PR was created"
+            exit 1
+          fi
+          echo "PR created successfully:"
+          echo "$PR_INFO" | jq .
+
+      - name: Cleanup - close PR
+        if: always()
+        run: |
+          echo "Cleaning up - closing PRs..."
+          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number --jq '.[].number' || true)
+          for pr in $PR_NUMBERS; do
+            echo "  Closing PR #${pr}"
+            gh pr close $pr --repo ${TEST_REPO} --delete-branch || true
+          done
 
   release:
     needs:
