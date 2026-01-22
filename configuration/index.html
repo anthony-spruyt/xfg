@@ -968,6 +968,34 @@
   
   
     <li class="md-nav__item">
+      <a href="templating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Templating
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="merge-strategies/" class="md-nav__link">
         
   
@@ -2166,6 +2194,16 @@
 <td>Adds <code># yaml-language-server: $schema=&lt;url&gt;</code> to YAML files</td>
 <td>No</td>
 </tr>
+<tr>
+<td><code>template</code></td>
+<td>If <code>true</code>, enable <code>${xfg:...}</code> variable substitution. See <a href="templating/">Templating</a>.</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>vars</code></td>
+<td>Custom template variables (object with string values). Accessible as <code>${xfg:varName}</code>.</td>
+<td>No</td>
+</tr>
 </tbody>
 </table>
 <h2 id="per-repo-fields">Per-Repo Fields<a class="headerlink" href="#per-repo-fields" title="Permanent link">&para;</a></h2>
@@ -2233,6 +2271,16 @@
 <tr>
 <td><code>schemaUrl</code></td>
 <td>Override root-level <code>schemaUrl</code> for this repo</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>template</code></td>
+<td>Override root-level <code>template</code> for this repo</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>vars</code></td>
+<td>Per-repo template variables (merged with root vars, overrides conflicts)</td>
 <td>No</td>
 </tr>
 </tbody>

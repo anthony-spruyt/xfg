@@ -855,6 +855,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../templating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Templating
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../merge-strategies/" class="md-nav__link">
         
   
@@ -1021,10 +1049,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#available-placeholders" class="md-nav__link">
+  <a href="#available-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Available Placeholders
+        Available Variables
       
     </span>
   </a>
@@ -2004,10 +2032,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#available-placeholders" class="md-nav__link">
+  <a href="#available-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Available Placeholders
+        Available Variables
       
     </span>
   </a>
@@ -2057,14 +2085,14 @@
 
 
 <h1 id="pr-templates">PR Templates<a class="headerlink" href="#pr-templates" title="Permanent link">&para;</a></h1>
-<p>Customize the PR body with a template.</p>
+<p>Customize the PR body with a template using <code>${xfg:...}</code> variables.</p>
 <h2 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h2>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">prTemplate</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="no">## Configuration Update</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="no">This PR synchronizes the following files:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="no">This PR synchronizes files to ${xfg:repo.fullName}:</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="no">{{FILE_CHANGES}}</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="no">${xfg:pr.fileChanges}</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="no">Please review and merge.</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
@@ -2086,43 +2114,81 @@
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nt">repos</span><span class="p">:</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="c1"># ...</span>
 </span></code></pre></div>
-<h2 id="available-placeholders">Available Placeholders<a class="headerlink" href="#available-placeholders" title="Permanent link">&para;</a></h2>
+<h2 id="available-variables">Available Variables<a class="headerlink" href="#available-variables" title="Permanent link">&para;</a></h2>
+<p>PR templates support all <a href="../templating/">templating variables</a>, plus PR-specific variables:</p>
 <table>
 <thead>
 <tr>
-<th>Placeholder</th>
+<th>Variable</th>
 <th>Description</th>
 <th>Example Output</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>{{FILE_CHANGES}}</code></td>
+<td><code>${xfg:pr.fileChanges}</code></td>
 <td>Bulleted list of files with actions</td>
 <td><code>- Created \</code>config.json`\n- Updated `settings.yaml``</td>
+</tr>
+<tr>
+<td><code>${xfg:pr.fileCount}</code></td>
+<td>Number of changed files</td>
+<td><code>3</code></td>
+</tr>
+<tr>
+<td><code>${xfg:pr.title}</code></td>
+<td>The generated PR title</td>
+<td><code>chore: sync config.json, settings.yaml</code></td>
+</tr>
+<tr>
+<td><code>${xfg:repo.name}</code></td>
+<td>Repository name</td>
+<td><code>my-repo</code></td>
+</tr>
+<tr>
+<td><code>${xfg:repo.owner}</code></td>
+<td>Repository owner</td>
+<td><code>my-org</code></td>
+</tr>
+<tr>
+<td><code>${xfg:repo.fullName}</code></td>
+<td>Full repository path</td>
+<td><code>my-org/my-repo</code></td>
+</tr>
+<tr>
+<td><code>${xfg:repo.platform}</code></td>
+<td>Platform type</td>
+<td><code>github</code>, <code>azure-devops</code>, <code>gitlab</code></td>
 </tr>
 </tbody>
 </table>
 <h2 id="default-template">Default Template<a class="headerlink" href="#default-template" title="Permanent link">&para;</a></h2>
-<p>If <code>prTemplate</code> is not specified, xfg uses a built-in template with:</p>
-<ul>
-<li>Summary section</li>
-<li>Changes section (list of files)</li>
-<li>Source information</li>
-</ul>
-<h2 id="example-template">Example Template<a class="headerlink" href="#example-template" title="Permanent link">&para;</a></h2>
+<p>If <code>prTemplate</code> is not specified, xfg uses a built-in template:</p>
 <div class="language-markdown highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="gu">## Summary</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>Automated configuration sync from the central config repository.
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>Automated sync of configuration files to ${xfg:repo.fullName}.
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="gu">## Changes</span>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>{{FILE_CHANGES}}
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>${xfg:pr.fileChanges}
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="gu">## Notes</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="gu">## Source</span>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="k">-</span><span class="w"> </span>Review changes before merging
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="k">-</span><span class="w"> </span>Contact <span class="ni">@platform</span>-team with questions
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>Configuration synced using [<span class="nt">xfg</span>](<span class="na">https://github.com/anthony-spruyt/xfg</span>).
+</span></code></pre></div>
+<h2 id="example-template">Example Template<a class="headerlink" href="#example-template" title="Permanent link">&para;</a></h2>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="gu">## Summary</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Automated configuration sync to ${xfg:repo.fullName}.
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="gu">## Changes (${xfg:pr.fileCount} files)</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>${xfg:pr.fileChanges}
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="gu">## Notes</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="k">-</span><span class="w"> </span>Review changes before merging
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="k">-</span><span class="w"> </span>Contact <span class="ni">@platform</span>-team with questions
 </span></code></pre></div>
 
 
