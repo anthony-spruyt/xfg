@@ -35,9 +35,15 @@ jobs:
         run: npm run build
 
       - name: Run unit tests with coverage
+        if: github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/')
         run: npm run test:coverage
 
+      - name: Run unit tests (no coverage)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        run: npm test
+
       - name: Upload coverage to Codecov
+        if: github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/')
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -258,13 +264,7 @@ jobs:
           done
 
   release:
-    needs:
-      [
-        integration-test-github,
-        integration-test-ado,
-        integration-test-gitlab,
-        integration-test-action,
-      ]
+    needs: [build, security]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     environment: npm
