@@ -1634,6 +1634,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#direct-push-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Direct Push Mode
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2086,6 +2097,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#direct-push-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Direct Push Mode
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2170,6 +2192,20 @@
 <li>Create the PR</li>
 <li>Enable auto-complete or bypass policies as configured</li>
 </ol>
+<h2 id="direct-push-mode">Direct Push Mode<a class="headerlink" href="#direct-push-mode" title="Permanent link">&para;</a></h2>
+<p>With <code>merge: direct</code>, xfg skips PR creation entirely and pushes directly to the default branch:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">prOptions</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">merge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">direct</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@ssh.dev.azure.com:v3/org/project/repo</span>
+</span></code></pre></div>
+<p>This is useful for repos without branch policies or when PR review isn't required. If the branch has policies that block direct pushes, the push will fail with a helpful error suggesting to use <code>merge: force</code> instead.</p>
+<p><strong>When to use <code>direct</code> vs <code>force</code>:</strong></p>
+<ul>
+<li><code>direct</code>: Repo has no branch policies, or you want to skip PR workflow entirely</li>
+<li><code>force</code>: Repo has branch policies, but you have permissions to bypass them (creates a PR and completes with <code>--bypass-policy</code>)</li>
+</ul>
 
 
 

@@ -1043,6 +1043,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#direct-push-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Direct Push Mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#github-auto-merge-note" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2065,6 +2076,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#direct-push-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Direct Push Mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#github-auto-merge-note" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2120,7 +2142,7 @@
 <tbody>
 <tr>
 <td><code>merge</code></td>
-<td>Merge mode: <code>manual</code> (leave open), <code>auto</code> (merge when checks pass), <code>force</code></td>
+<td>Merge mode: <code>manual</code> (leave open), <code>auto</code> (merge when checks pass), <code>force</code>, <code>direct</code></td>
 <td><code>auto</code></td>
 </tr>
 <tr>
@@ -2169,6 +2191,12 @@
 <td>Bypass policies with <code>--bypass-policy</code></td>
 <td>Merge immediately</td>
 </tr>
+<tr>
+<td><code>direct</code></td>
+<td>Push directly to default branch (no PR)</td>
+<td>Push directly to default branch (no PR)</td>
+<td>Push directly to default branch (no MR)</td>
+</tr>
 </tbody>
 </table>
 <h2 id="global-vs-per-repo-options">Global vs Per-Repo Options<a class="headerlink" href="#global-vs-per-repo-options" title="Permanent link">&para;</a></h2>
@@ -2204,11 +2232,28 @@
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Force merge all PRs (useful for urgent updates)</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>xfg<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--merge<span class="w"> </span>force
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Push directly to default branch without creating PRs</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>xfg<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--merge<span class="w"> </span>direct
 </span></code></pre></div>
+<h2 id="direct-push-mode">Direct Push Mode<a class="headerlink" href="#direct-push-mode" title="Permanent link">&para;</a></h2>
+<p>The <code>direct</code> mode pushes changes directly to the default branch without creating a PR. This is useful for:</p>
+<ul>
+<li>Repos without branch protection</li>
+<li>Internal tools where PR review isn't required</li>
+<li>Quick config updates where you have direct push permissions</li>
+</ul>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">prOptions</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">merge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">direct</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/internal-tool.git</span>
+</span></code></pre></div>
+<p><strong>Note:</strong> If the target branch has branch protection enabled, the push will fail with a helpful error message suggesting to use <code>merge: force</code> instead.</p>
 <h2 id="github-auto-merge-note">GitHub Auto-Merge Note<a class="headerlink" href="#github-auto-merge-note" title="Permanent link">&para;</a></h2>
 <p>The <code>auto</code> mode requires auto-merge to be enabled in the repository settings. If not enabled, the tool will warn and leave the PR open for manual review.</p>
 <p>Enable it with:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>gh<span class="w"> </span>repo<span class="w"> </span>edit<span class="w"> </span>org/repo<span class="w"> </span>--enable-auto-merge
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>gh<span class="w"> </span>repo<span class="w"> </span>edit<span class="w"> </span>org/repo<span class="w"> </span>--enable-auto-merge
 </span></code></pre></div>
 <h2 id="priority-order">Priority Order<a class="headerlink" href="#priority-order" title="Permanent link">&para;</a></h2>
 <ol>

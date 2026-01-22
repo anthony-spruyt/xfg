@@ -2036,14 +2036,8 @@
 
 
 <h1 id="xfg">xfg<a class="headerlink" href="#xfg" title="Permanent link">&para;</a></h1>
-<p>A CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple GitHub, Azure DevOps, and GitLab repositories by creating pull requests (or merge requests for GitLab).</p>
-<p>Output format is automatically detected from the target filename extension:</p>
-<ul>
-<li><code>.json</code> → JSON</li>
-<li><code>.json5</code> → JSON5</li>
-<li><code>.yaml</code> / <code>.yml</code> → YAML</li>
-<li>Other extensions → Plain text</li>
-</ul>
+<p>A CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple GitHub, Azure DevOps, and GitLab repositories. By default, changes are made via pull requests (or merge requests for GitLab), but you can also push directly to the default branch.</p>
+<p>Output format is detected from the target filename extension. JSON and YAML files support deep merging and content inheritance, while plain text files support line-based merging.</p>
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Install</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@aspruyt/xfg
@@ -2089,6 +2083,7 @@
 <li><strong>YAML Comments</strong> - Add header comments and schema directives to YAML files</li>
 <li><strong>Multi-Platform</strong> - Works with GitHub, Azure DevOps, and GitLab (including self-hosted)</li>
 <li><strong>Auto-Merge PRs</strong> - Automatically merge PRs when checks pass, or force merge with admin privileges</li>
+<li><strong>Direct Push Mode</strong> - Push directly to default branch without creating PRs</li>
 <li><strong>Dry-Run Mode</strong> - Preview changes without creating PRs</li>
 <li><strong>Error Resilience</strong> - Continues processing if individual repos fail</li>
 <li><strong>Automatic Retries</strong> - Retries transient network errors with exponential backoff</li>
@@ -2107,22 +2102,28 @@
 
     subgraph Processing["For Each Repository"]
         CLONE[Clone Repo] --&gt; DETECT_BRANCH[Detect Default Branch]
-        DETECT_BRANCH --&gt; CLOSE_PR[Close Existing PR&lt;br/&gt;if exists]
+        DETECT_BRANCH --&gt; MODE_CHECK{Direct Mode?}
+        MODE_CHECK --&gt;|No| CLOSE_PR[Close Existing PR&lt;br/&gt;if exists]
         CLOSE_PR --&gt; BRANCH[Create Fresh Branch]
+        MODE_CHECK --&gt;|Yes| STAY[Stay on Default Branch]
         BRANCH --&gt; WRITE[Write Config Files]
+        STAY --&gt; WRITE
         WRITE --&gt; CHECK{Changes?}
         CHECK --&gt;|No| SKIP[Skip - No Changes]
         CHECK --&gt;|Yes| COMMIT[Commit &amp; Push]
     end
 
-    subgraph Platform["PR Creation"]
-        COMMIT --&gt; PR_DETECT{Platform?}
+    subgraph Platform["PR/Direct Push"]
+        COMMIT --&gt; DIRECT_CHECK{Direct Mode?}
+        DIRECT_CHECK --&gt;|Yes| DIRECT_PUSH[Push to Default Branch]
+        DIRECT_CHECK --&gt;|No| PR_DETECT{Platform?}
         PR_DETECT --&gt;|GitHub| GH_PR[Create PR via gh CLI]
         PR_DETECT --&gt;|Azure DevOps| AZ_PR[Create PR via az CLI]
         PR_DETECT --&gt;|GitLab| GL_PR[Create MR via glab CLI]
         GH_PR --&gt; PR_CREATED[PR/MR Created]
         AZ_PR --&gt; PR_CREATED
         GL_PR --&gt; PR_CREATED
+        DIRECT_PUSH --&gt; DONE[Done]
     end
 
     subgraph AutoMerge["Auto-Merge (default)"]
@@ -2142,13 +2143,11 @@
 <li>Cleans the temporary workspace</li>
 <li>Clones the repository</li>
 <li>Detects the default branch (main/master)</li>
-<li>Closes any existing PR on the branch and deletes the remote branch (fresh start)</li>
-<li>Creates a fresh branch from the default branch</li>
+<li><strong>PR modes:</strong> Closes any existing PR on the branch and creates a fresh branch | <strong>Direct mode:</strong> Stays on default branch</li>
 <li>Writes all config files (JSON, JSON5, YAML, or text based on filename extension)</li>
 <li>Checks for changes (skips if no changes)</li>
 <li>Commits and pushes changes</li>
-<li>Creates a pull request</li>
-<li>Handles auto-merge based on configuration (auto by default)</li>
+<li><strong>PR modes:</strong> Creates a pull request and handles auto-merge | <strong>Direct mode:</strong> Done (changes are on default branch)</li>
 </ol>
 
 

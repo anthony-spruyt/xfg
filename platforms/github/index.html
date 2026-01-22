@@ -1656,6 +1656,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#direct-push-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Direct Push Mode
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2186,6 +2197,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#direct-push-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Direct Push Mode
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2303,6 +2325,20 @@
 <li>Enable auto-merge with <code>gh pr merge --auto</code> (if configured)</li>
 <li>Force merge with <code>gh pr merge --admin</code> (if <code>merge: force</code>)</li>
 </ol>
+<h2 id="direct-push-mode">Direct Push Mode<a class="headerlink" href="#direct-push-mode" title="Permanent link">&para;</a></h2>
+<p>With <code>merge: direct</code>, xfg skips PR creation entirely and pushes directly to the default branch:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">prOptions</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">merge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">direct</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/internal-tool.git</span>
+</span></code></pre></div>
+<p>This is useful for repos without branch protection or when PR review isn't required. If the branch is protected, the push will fail with a helpful error suggesting to use <code>merge: force</code> instead.</p>
+<p><strong>When to use <code>direct</code> vs <code>force</code>:</strong></p>
+<ul>
+<li><code>direct</code>: Repo has no branch protection, or you want to skip PR workflow entirely</li>
+<li><code>force</code>: Repo has branch protection, but you have admin privileges to bypass it (creates a PR and merges with <code>--admin</code>)</li>
+</ul>
 
 
 
