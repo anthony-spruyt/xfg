@@ -26,11 +26,11 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "test": "node --import tsx --test src/config.test.ts src/merge.test.ts src/env.test.ts src/repo-detector.test.ts src/pr-creator.test.ts src/git-ops.test.ts src/logger.test.ts src/workspace-utils.test.ts src/strategies/pr-strategy.test.ts src/strategies/github-pr-strategy.test.ts src/strategies/azure-pr-strategy.test.ts src/strategies/gitlab-pr-strategy.test.ts src/repository-processor.test.ts src/retry-utils.test.ts src/command-executor.test.ts src/shell-utils.test.ts src/index.test.ts src/config-formatter.test.ts src/config-validator.test.ts src/config-normalizer.test.ts src/diff-utils.test.ts src/xfg-template.test.ts src/file-reference-resolver.test.ts src/manifest.test.ts",
-    "test:coverage": "c8 --check-coverage --lines 95 --reporter=text --reporter=lcov --all --src=src --exclude='src/**/*.test.ts' --exclude='src/integration-*.test.ts' npm test",
-    "test:integration:github": "npm run build && node --import tsx --test src/integration-github.test.ts",
-    "test:integration:ado": "npm run build && node --import tsx --test src/integration-ado.test.ts",
-    "test:integration:gitlab": "npm run build && node --import tsx --test src/integration-gitlab.test.ts",
+    "test": "node --import tsx scripts/run-tests.js",
+    "test:coverage": "c8 --check-coverage --lines 95 --reporter=text --reporter=lcov --all --src=src --exclude='src/**/*.test.ts' --exclude='scripts/**' npm test",
+    "test:integration:github": "npm run build && node --import tsx --test test/integration/github.test.ts",
+    "test:integration:ado": "npm run build && node --import tsx --test test/integration/ado.test.ts",
+    "test:integration:gitlab": "npm run build && node --import tsx --test test/integration/gitlab.test.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
