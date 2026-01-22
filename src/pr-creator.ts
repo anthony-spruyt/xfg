@@ -8,6 +8,7 @@ import {
   PRMergeConfig,
 } from "./strategies/index.js";
 import { interpolateXfgContent } from "./xfg-template.js";
+import { CommandExecutor } from "./command-executor.js";
 
 // Re-export for backwards compatibility and testing
 export { escapeShellArg } from "./shell-utils.js";
@@ -28,6 +29,8 @@ export interface PROptions {
   retries?: number;
   /** Custom PR body template */
   prTemplate?: string;
+  /** Optional command executor for shell commands (for testing) */
+  executor?: CommandExecutor;
 }
 
 export interface PRResult {
@@ -152,6 +155,7 @@ export async function createPR(options: PROptions): Promise<PRResult> {
     dryRun,
     retries,
     prTemplate,
+    executor,
   } = options;
 
   const title = formatPRTitle(files);
@@ -165,7 +169,7 @@ export async function createPR(options: PROptions): Promise<PRResult> {
   }
 
   // Get the appropriate strategy and execute
-  const strategy = getPRStrategy(repoInfo);
+  const strategy = getPRStrategy(repoInfo, executor);
   return strategy.execute({
     repoInfo,
     title,
@@ -184,10 +188,13 @@ export interface MergePROptions {
   workDir: string;
   dryRun?: boolean;
   retries?: number;
+  /** Optional command executor for shell commands (for testing) */
+  executor?: CommandExecutor;
 }
 
 export async function mergePR(options: MergePROptions): Promise<MergeResult> {
-  const { repoInfo, prUrl, mergeConfig, workDir, dryRun, retries } = options;
+  const { repoInfo, prUrl, mergeConfig, workDir, dryRun, retries, executor } =
+    options;
 
   if (dryRun) {
     const modeText =
@@ -204,7 +211,7 @@ export async function mergePR(options: MergePROptions): Promise<MergeResult> {
   }
 
   // Get the appropriate strategy and execute merge
-  const strategy = getPRStrategy(repoInfo);
+  const strategy = getPRStrategy(repoInfo, executor);
   return strategy.merge({
     prUrl,
     config: mergeConfig,
