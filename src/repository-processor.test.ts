@@ -803,6 +803,76 @@ describe("RepositoryProcessor", () => {
     });
   });
 
+  describe("PR creation with executor", () => {
+    class MockGitOpsForPR extends GitOps {
+      override cleanWorkspace(): void {
+        mkdirSync(this.getWorkDir(), { recursive: true });
+      }
+      override async clone(): Promise<void> {}
+      override async getDefaultBranch() {
+        return { branch: "main", method: "mock" };
+      }
+      override async createBranch(): Promise<void> {}
+      override writeFile(fileName: string, content: string): void {
+        const filePath = join(this.getWorkDir(), fileName);
+        mkdirSync(this.getWorkDir(), { recursive: true });
+        writeFileSync(filePath, content, "utf-8");
+      }
+      override async hasChanges(): Promise<boolean> {
+        return true;
+      }
+      override async getChangedFiles(): Promise<string[]> {
+        return ["config.json"];
+      }
+      override async commit(): Promise<boolean> {
+        return true;
+      }
+      override async push(): Promise<void> {}
+
+      private getWorkDir(): string {
+        return (this as unknown as { workDir: string }).workDir;
+      }
+    }
+
+    test("should pass executor to createPR when not in direct mode", async () => {
+      const mockLogger = {
+        messages: [],
+        info(message: string) {
+          (this as any).messages.push(message);
+        },
+        fileDiff() {},
+        diffSummary() {},
+      };
+
+      const mockFactory: GitOpsFactory = (opts) => new MockGitOpsForPR(opts);
+
+      const mockExecutor = {
+        async exec(): Promise<string> {
+          return "https://github.com/test/repo/pull/123";
+        },
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger as any);
+      const localWorkDir = join(testDir, `pr-executor-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+        // Not using direct mode - should create PR
+      };
+
+      const result = await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+        executor: mockExecutor,
+      });
+
+      assert.equal(result.success, true);
+      assert.ok(result.prUrl?.includes("pull/123"), "Should have PR URL");
+    });
+  });
+
   describe("createOnly handling", () => {
     const createMockLogger = (): ILogger & { messages: string[] } => ({
       messages: [] as string[],
