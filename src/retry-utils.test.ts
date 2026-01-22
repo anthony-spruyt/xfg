@@ -63,6 +63,32 @@ describe("isPermanentError", () => {
     error.stderr = "fatal: Authentication failed";
     assert.equal(isPermanentError(error), true);
   });
+
+  test("returns true for GH_TOKEN environment variable error", () => {
+    const error = new Error(
+      "gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable",
+    );
+    assert.equal(isPermanentError(error), true);
+  });
+
+  test("returns true for GITHUB_TOKEN environment variable error", () => {
+    const error = new Error(
+      "error: GITHUB_TOKEN environment variable is required",
+    );
+    assert.equal(isPermanentError(error), true);
+  });
+
+  test("returns true for AZURE_DEVOPS_EXT_PAT environment variable error", () => {
+    const error = new Error(
+      "az: To use Azure CLI, set the AZURE_DEVOPS_EXT_PAT environment variable",
+    );
+    assert.equal(isPermanentError(error), true);
+  });
+
+  test("returns true for GITLAB_TOKEN environment variable error", () => {
+    const error = new Error("glab: GITLAB_TOKEN environment variable not set");
+    assert.equal(isPermanentError(error), true);
+  });
 });
 
 describe("isTransientError", () => {
