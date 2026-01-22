@@ -92,7 +92,7 @@ export class AzurePRStrategy extends BasePRStrategy {
     }
 
     // Abandon the PR (Azure DevOps equivalent of closing)
-    const abandonCommand = `az repos pr update --id ${escapeShellArg(prInfo.prId)} --status abandoned --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(prInfo.project)}`;
+    const abandonCommand = `az repos pr update --id ${escapeShellArg(prInfo.prId)} --status abandoned --org ${escapeShellArg(orgUrl)}`;
 
     try {
       await withRetry(() => this.executor.exec(abandonCommand, workDir), {
@@ -104,13 +104,22 @@ export class AzurePRStrategy extends BasePRStrategy {
       return false;
     }
 
-    // Delete the source branch
-    const deleteBranchCommand = `az repos ref delete --name refs/heads/${escapeShellArg(branchName)} --repository ${escapeShellArg(azureRepoInfo.repo)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)}`;
-
+    // Delete the source branch - need to get object_id first
     try {
-      await withRetry(() => this.executor.exec(deleteBranchCommand, workDir), {
-        retries,
-      });
+      // Get the branch's object_id
+      const getRefCommand = `az repos ref list --repository ${escapeShellArg(azureRepoInfo.repo)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --filter heads/${escapeShellArg(branchName)} --query "[0].objectId" -o tsv`;
+      const objectId = await withRetry(
+        () => this.executor.exec(getRefCommand, workDir),
+        { retries },
+      );
+
+      if (objectId) {
+        const deleteBranchCommand = `az repos ref delete --name refs/heads/${escapeShellArg(branchName)} --repository ${escapeShellArg(azureRepoInfo.repo)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --object-id ${escapeShellArg(objectId)}`;
+        await withRetry(
+          () => this.executor.exec(deleteBranchCommand, workDir),
+          { retries },
+        );
+      }
     } catch (error) {
       // Branch deletion failure is not critical - PR is already abandoned
       const message = error instanceof Error ? error.message : String(error);
@@ -222,7 +231,7 @@ export class AzurePRStrategy extends BasePRStrategy {
     if (config.mode === "auto") {
       // Enable auto-complete (no pre-check needed - always available in Azure DevOps)
       const command =
-        `az repos pr update --id ${escapeShellArg(prInfo.prId)} --auto-complete true ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(prInfo.project)}`.trim();
+        `az repos pr update --id ${escapeShellArg(prInfo.prId)} --auto-complete true ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)}`.trim();
 
       try {
         await withRetry(() => this.executor.exec(command, workDir), {
@@ -252,7 +261,7 @@ export class AzurePRStrategy extends BasePRStrategy {
         config.bypassReason ?? "Automated config sync via xfg";
 
       const command =
-        `az repos pr update --id ${escapeShellArg(prInfo.prId)} --bypass-policy true --bypass-policy-reason ${escapeShellArg(bypassReason)} --status completed ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(prInfo.project)}`.trim();
+        `az repos pr update --id ${escapeShellArg(prInfo.prId)} --bypass-policy true --bypass-policy-reason ${escapeShellArg(bypassReason)} --status completed ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)}`.trim();
 
       try {
         await withRetry(() => this.executor.exec(command, workDir), {

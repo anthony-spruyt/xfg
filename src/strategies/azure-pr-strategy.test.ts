@@ -722,6 +722,7 @@ describe("AzurePRStrategy closeExistingPR", () => {
   test("deletes branch after closing PR", async () => {
     mockExecutor.responses.set("az repos pr list", "123");
     mockExecutor.responses.set("az repos pr update", "");
+    mockExecutor.responses.set("az repos ref list", "abc123def456"); // object_id for branch
     mockExecutor.responses.set("az repos ref delete", "");
 
     const strategy = new AzurePRStrategy(mockExecutor);
@@ -738,11 +739,16 @@ describe("AzurePRStrategy closeExistingPR", () => {
     );
     assert.ok(deleteBranchCall, "Should call az repos ref delete");
     assert.ok(deleteBranchCall.command.includes("test-branch"));
+    assert.ok(
+      deleteBranchCall.command.includes("abc123def456"),
+      "Should include object_id",
+    );
   });
 
   test("returns true even when branch deletion fails", async () => {
     mockExecutor.responses.set("az repos pr list", "123");
     mockExecutor.responses.set("az repos pr update", "");
+    mockExecutor.responses.set("az repos ref list", "abc123def456"); // object_id for branch
     mockExecutor.responses.set(
       "az repos ref delete",
       new Error("Branch deletion failed"),
