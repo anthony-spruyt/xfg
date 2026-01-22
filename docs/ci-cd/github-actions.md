@@ -1,6 +1,97 @@
 # GitHub Actions
 
+## Using the GitHub Action
+
+The simplest way to use xfg in GitHub Actions is with the official action:
+
+```yaml
+- uses: actions/checkout@v4
+
+- uses: anthony-spruyt/xfg@v1
+  with:
+    config: ./sync-config.yml
+    github-token: ${{ secrets.SYNC_TOKEN }}
+```
+
+### Action Inputs
+
+| Input                | Required | Default               | Description                                                |
+| -------------------- | -------- | --------------------- | ---------------------------------------------------------- |
+| `config`             | Yes      | -                     | Path to YAML config file                                   |
+| `dry-run`            | No       | `false`               | Preview mode - show what would change without creating PRs |
+| `work-dir`           | No       | `./tmp`               | Directory for cloning repositories                         |
+| `retries`            | No       | `3`                   | Number of network retries                                  |
+| `branch`             | No       | -                     | Override sync branch name                                  |
+| `merge`              | No       | -                     | PR merge mode (`manual`/`auto`/`force`/`direct`)           |
+| `merge-strategy`     | No       | -                     | Merge strategy (`merge`/`squash`/`rebase`)                 |
+| `delete-branch`      | No       | `false`               | Delete branch after merge                                  |
+| `github-token`       | No       | `${{ github.token }}` | GitHub token for authentication                            |
+| `azure-devops-token` | No       | -                     | Azure DevOps Personal Access Token                         |
+| `gitlab-token`       | No       | -                     | GitLab token for authentication                            |
+
+### Multi-Platform Example
+
+Sync configs across GitHub, Azure DevOps, and GitLab repositories:
+
+```yaml
+- uses: anthony-spruyt/xfg@v1
+  with:
+    config: ./sync-config.yml
+    github-token: ${{ secrets.GH_PAT }}
+    azure-devops-token: ${{ secrets.AZURE_DEVOPS_PAT }}
+    gitlab-token: ${{ secrets.GITLAB_TOKEN }}
+    merge: auto
+    merge-strategy: squash
+    delete-branch: true
+```
+
+### Auto-Merge Example
+
+Automatically merge PRs when CI passes:
+
+```yaml
+- uses: anthony-spruyt/xfg@v1
+  with:
+    config: ./sync-config.yml
+    github-token: ${{ secrets.GH_PAT }}
+    merge: auto
+```
+
+### Direct Push Example
+
+Push directly to the default branch without creating PRs:
+
+```yaml
+- uses: anthony-spruyt/xfg@v1
+  with:
+    config: ./sync-config.yml
+    github-token: ${{ secrets.GH_PAT }}
+    merge: direct
+```
+
+### Token Requirements by Platform
+
+**GitHub:**
+
+- Requires a Personal Access Token (PAT) with `repo` scope
+- The default `${{ github.token }}` only has access to the current repository
+- For cross-repo syncing, create a PAT and store it as a secret
+
+**Azure DevOps:**
+
+- Requires a Personal Access Token with `Code (Read & Write)` and `Pull Request Threads (Read & Write)` permissions
+- Must also have access to the target project
+
+**GitLab:**
+
+- Requires a Personal Access Token with `api` scope
+- Or a Project Access Token with `api` scope for single-project access
+
+---
+
 ## Workflow Example
+
+If you prefer manual setup over the action, you can install and run xfg directly:
 
 ```yaml
 name: Sync Configs
