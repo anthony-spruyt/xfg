@@ -394,6 +394,82 @@ describe("File Reference Resolver", () => {
     });
   });
 
+  describe("prTemplate resolution", () => {
+    test("resolves prTemplate file reference", () => {
+      const templatePath = join(testDir, "templates", "pr-body.md");
+      writeFileSync(
+        templatePath,
+        "## PR Template\n\n{{FILE_CHANGES}}",
+        "utf-8",
+      );
+
+      const raw: RawConfig = {
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        prTemplate: "@templates/pr-body.md",
+      };
+
+      const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
+      assert.strictEqual(
+        result.prTemplate,
+        "## PR Template\n\n{{FILE_CHANGES}}",
+      );
+    });
+
+    test("prTemplate string content passed through unchanged", () => {
+      const raw: RawConfig = {
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        prTemplate: "## Inline Template\n\n{{FILE_CHANGES}}",
+      };
+
+      const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
+      assert.strictEqual(
+        result.prTemplate,
+        "## Inline Template\n\n{{FILE_CHANGES}}",
+      );
+    });
+
+    test("prTemplate file reference must resolve to text file", () => {
+      const jsonPath = join(testDir, "templates", "pr.json");
+      writeFileSync(jsonPath, '{"not": "a template"}', "utf-8");
+
+      const raw: RawConfig = {
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        prTemplate: "@templates/pr.json",
+      };
+
+      assert.throws(
+        () => resolveFileReferencesInConfig(raw, { configDir: testDir }),
+        /prTemplate file reference.*must resolve to a text file/,
+      );
+    });
+
+    test("prTemplate file reference security checks apply", () => {
+      const raw: RawConfig = {
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        prTemplate: "@../escape.md",
+      };
+
+      assert.throws(
+        () => resolveFileReferencesInConfig(raw, { configDir: testDir }),
+        /escapes config directory/,
+      );
+    });
+
+    test("missing prTemplate results in undefined", () => {
+      const raw: RawConfig = {
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
+      assert.strictEqual(result.prTemplate, undefined);
+    });
+  });
+
   describe("integration with real fixtures", () => {
     test("resolves JSON template from fixtures", () => {
       const result = resolveFileReference(

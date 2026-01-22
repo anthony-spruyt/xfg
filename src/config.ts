@@ -63,6 +63,7 @@ export interface RawConfig {
   files: Record<string, RawFileConfig>;
   repos: RawRepoConfig[];
   prOptions?: PRMergeOptions;
+  prTemplate?: string;
 }
 
 // =============================================================================
@@ -89,6 +90,7 @@ export interface RepoConfig {
 // Normalized config
 export interface Config {
   repos: RepoConfig[];
+  prTemplate?: string;
 }
 
 // =============================================================================

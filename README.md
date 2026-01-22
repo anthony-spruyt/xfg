@@ -182,11 +182,12 @@ repos: # List of repositories
 
 ### Root-Level Fields
 
-| Field       | Description                                          | Required |
-| ----------- | ---------------------------------------------------- | -------- |
-| `files`     | Map of target filenames to configs                   | Yes      |
-| `repos`     | Array of repository configurations                   | Yes      |
-| `prOptions` | Global PR merge options (can be overridden per-repo) | No       |
+| Field        | Description                                                   | Required |
+| ------------ | ------------------------------------------------------------- | -------- |
+| `files`      | Map of target filenames to configs                            | Yes      |
+| `repos`      | Array of repository configurations                            | Yes      |
+| `prOptions`  | Global PR merge options (can be overridden per-repo)          | No       |
+| `prTemplate` | Custom PR body template (inline or `@path/to/file` reference) | No       |
 
 ### Per-File Fields
 
@@ -215,6 +216,33 @@ repos: # List of repositories
 | `mergeStrategy` | How to merge: `merge`, `squash`, `rebase`                                   | `squash` |
 | `deleteBranch`  | Delete source branch after merge                                            | `true`   |
 | `bypassReason`  | Reason for bypassing policies (Azure DevOps only, required for `force`)     | -        |
+
+### PR Template Customization
+
+Customize the PR body with a template. Use the `{{FILE_CHANGES}}` placeholder for the list of changed files:
+
+```yaml
+# Inline template
+prTemplate: |
+  ## Configuration Update
+
+  This PR synchronizes the following files:
+
+  {{FILE_CHANGES}}
+
+  Please review and merge.
+
+# Or reference an external file
+prTemplate: "@templates/pr-body.md"
+```
+
+**Available Placeholders:**
+
+| Placeholder        | Description                         | Example Output                                           |
+| ------------------ | ----------------------------------- | -------------------------------------------------------- |
+| `{{FILE_CHANGES}}` | Bulleted list of files with actions | `- Created \`config.json\`\n- Updated \`settings.yaml\`` |
+
+**Default Template:** If not specified, uses the built-in template with Summary, Changes, and Source sections.
 
 ### Per-Repo File Override Fields
 

@@ -212,6 +212,7 @@ async function main(): Promise<void> {
         workDir,
         dryRun: options.dryRun,
         retries: options.retries,
+        prTemplate: config.prTemplate,
       });
 
       if (result.skipped) {

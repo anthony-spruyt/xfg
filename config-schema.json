@@ -25,6 +25,10 @@
     "prOptions": {
       "$ref": "#/definitions/prOptions",
       "description": "Global PR merge options. Can be overridden per-repo."
+    },
+    "prTemplate": {
+      "type": "string",
+      "description": "Custom PR body template. Can be inline markdown or a file reference (@path/to/template.md relative to config file). Available placeholders: {{FILE_CHANGES}} - bulleted list of changed files with actions."
     }
   },
   "definitions": {

@@ -818,6 +818,29 @@ describe("normalizeConfig", () => {
     });
   });
 
+  describe("prTemplate propagation", () => {
+    test("prTemplate passed through to Config", () => {
+      const raw: RawConfig = {
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        prTemplate: "## Custom Template\n\n{{FILE_CHANGES}}",
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.prTemplate, "## Custom Template\n\n{{FILE_CHANGES}}");
+    });
+
+    test("missing prTemplate results in undefined", () => {
+      const raw: RawConfig = {
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.prTemplate, undefined);
+    });
+  });
+
   describe("executable propagation", () => {
     test("passes root-level executable: true to FileContent", () => {
       const raw: RawConfig = {

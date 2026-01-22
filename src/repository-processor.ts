@@ -46,6 +46,8 @@ export interface ProcessorOptions {
   retries?: number;
   /** Command executor for shell commands (for testing) */
   executor?: CommandExecutor;
+  /** Custom PR body template */
+  prTemplate?: string;
 }
 
 /**
@@ -88,7 +90,7 @@ export class RepositoryProcessor {
     options: ProcessorOptions,
   ): Promise<ProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
-    const { branchName, workDir, dryRun, retries } = options;
+    const { branchName, workDir, dryRun, retries, prTemplate } = options;
     const executor = options.executor ?? defaultExecutor;
 
     this.gitOps = this.gitOpsFactory({ workDir, dryRun, retries });
@@ -307,6 +309,7 @@ export class RepositoryProcessor {
         workDir,
         dryRun,
         retries,
+        prTemplate,
       });
 
       // Step 10: Handle merge options if configured

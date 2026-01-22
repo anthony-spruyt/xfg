@@ -174,5 +174,6 @@ export function normalizeConfig(raw: RawConfig): Config {
 
   return {
     repos: expandedRepos,
+    prTemplate: raw.prTemplate,
   };
 }

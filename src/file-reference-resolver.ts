@@ -128,6 +128,17 @@ export function resolveFileReferencesInConfig(
   // Deep clone to avoid mutating input
   const result: RawConfig = JSON.parse(JSON.stringify(raw));
 
+  // Resolve prTemplate file reference
+  if (result.prTemplate && isFileReference(result.prTemplate)) {
+    const resolved = resolveFileReference(result.prTemplate, configDir);
+    if (typeof resolved !== "string") {
+      throw new Error(
+        `prTemplate file reference "${result.prTemplate}" must resolve to a text file, not JSON/YAML`,
+      );
+    }
+    result.prTemplate = resolved;
+  }
+
   // Resolve root-level file content
   if (result.files) {
     for (const [fileName, fileConfig] of Object.entries(result.files)) {

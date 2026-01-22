@@ -1,10 +1,10 @@
 ## Summary
 
-Automated sync of `{{FILE_NAME}}` configuration file.
+Automated sync of configuration files.
 
 ## Changes
 
-- {{ACTION}} `{{FILE_NAME}}` in repository root
+{{FILE_CHANGES}}
 
 ## Source
 

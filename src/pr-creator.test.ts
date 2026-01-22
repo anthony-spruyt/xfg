@@ -120,6 +120,34 @@ describe("formatPRBody", () => {
     assert.ok(result.includes("Created"));
     assert.ok(result.includes("Updated"));
   });
+
+  test("uses custom template when provided", () => {
+    const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
+    const customTemplate = "## Custom\n\n{{FILE_CHANGES}}\n\nDone.";
+    const result = formatPRBody(files, customTemplate);
+    assert.ok(result.includes("## Custom"));
+    assert.ok(result.includes("Created `config.json`"));
+    assert.ok(result.includes("Done."));
+  });
+
+  test("replaces {{FILE_CHANGES}} placeholder in custom template", () => {
+    const files: FileAction[] = [
+      { fileName: "a.json", action: "create" },
+      { fileName: "b.yaml", action: "update" },
+    ];
+    const customTemplate = "Changes:\n{{FILE_CHANGES}}";
+    const result = formatPRBody(files, customTemplate);
+    assert.ok(result.includes("Changes:"));
+    assert.ok(result.includes("- Created `a.json`"));
+    assert.ok(result.includes("- Updated `b.yaml`"));
+  });
+
+  test("handles template without {{FILE_CHANGES}} placeholder", () => {
+    const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
+    const customTemplate = "Static template with no placeholder";
+    const result = formatPRBody(files, customTemplate);
+    assert.strictEqual(result, "Static template with no placeholder");
+  });
 });
 
 describe("formatPRTitle", () => {
