@@ -5,7 +5,7 @@
 [![npm downloads](https://img.shields.io/npm/dw/@aspruyt/xfg.svg)](https://www.npmjs.com/package/@aspruyt/xfg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple GitHub, Azure DevOps, and GitLab repositories by creating pull requests.
+A CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple GitHub, Azure DevOps, and GitLab repositories. By default, changes are made via pull requests, but you can also push directly to the default branch.
 
 **[Full Documentation](https://anthony-spruyt.github.io/xfg/)**
 
@@ -58,6 +58,7 @@ xfg --config ./config.yaml
 - **YAML Comments** - Add header comments and schema directives to YAML files
 - **Multi-Platform** - Works with GitHub (including GitHub Enterprise Server), Azure DevOps, and GitLab (including self-hosted)
 - **Auto-Merge PRs** - Automatically merge PRs when checks pass, or force merge with admin privileges
+- **Direct Push Mode** - Push directly to default branch without creating PRs
 - **Dry-Run Mode** - Preview changes without creating PRs
 - **Error Resilience** - Continues processing if individual repos fail
 - **Automatic Retries** - Retries transient network errors with exponential backoff

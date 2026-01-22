@@ -13,7 +13,7 @@ export { convertContentToString } from "./config-formatter.js";
 // PR Merge Options Types
 // =============================================================================
 
-export type MergeMode = "manual" | "auto" | "force";
+export type MergeMode = "manual" | "auto" | "force" | "direct";
 export type MergeStrategy = "merge" | "squash" | "rebase";
 
 export interface PRMergeOptions {

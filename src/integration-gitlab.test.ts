@@ -620,4 +620,79 @@ describe("GitLab Integration Test", () => {
 
     console.log("\n=== Unchanged files test (issue #90) passed ===\n");
   });
+
+  test("direct mode pushes directly to main branch without creating MR (issue #134)", async () => {
+    // This test verifies the direct mode feature (issue #134):
+    // Files are pushed directly to the default branch without creating a MR.
+    // NOTE: This test uses the same exec() helper defined at line 23-39, which
+    // is safe because all commands are hardcoded (not derived from user input).
+
+    const directFile = "direct-test.config.json";
+
+    console.log("\n=== Setting up direct mode test (issue #134) ===\n");
+
+    // 1. Delete the direct test file if it exists in the default branch
+    console.log(`Deleting ${directFile} if exists...`);
+    try {
+      const defaultBranch = getDefaultBranch();
+      pushFileChange(
+        directFile,
+        null,
+        `test: cleanup ${directFile}`,
+        defaultBranch,
+      );
+      console.log("  File deleted");
+    } catch {
+      console.log("  File does not exist");
+    }
+
+    // 2. Run sync with direct mode config
+    console.log("\nRunning xfg with direct mode config...");
+    const configPath = join(fixturesDir, "integration-test-direct-gitlab.yaml");
+    const output = exec(`node dist/index.js --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    // 3. Verify the output mentions direct push
+    assert.ok(
+      output.includes("Pushed directly") || output.includes("direct"),
+      "Output should mention direct push",
+    );
+
+    // 4. Verify NO MR was created
+    console.log("\nVerifying no MR was created...");
+    const mr = getMRByBranch("chore/sync-direct-test");
+    assert.ok(!mr, "No MR should be created in direct mode");
+    console.log("  No MR found - this is correct for direct mode");
+
+    // 5. Verify the file exists directly on main branch
+    console.log("\nVerifying file exists on main branch...");
+    const defaultBranch = getDefaultBranch();
+    const fileInfo = getFileContent(directFile, defaultBranch);
+
+    assert.ok(fileInfo, "File should exist on main branch");
+    const json = JSON.parse(fileInfo.content);
+    console.log("  File content:", JSON.stringify(json, null, 2));
+
+    assert.equal(json.directMode, true, "File should have directMode: true");
+
+    console.log("  Direct push verified - file is on main without MR");
+
+    // 6. Cleanup - delete the test file from main
+    console.log("\nCleaning up direct test file...");
+    try {
+      pushFileChange(
+        directFile,
+        null,
+        `test: cleanup ${directFile}`,
+        defaultBranch,
+      );
+      console.log("  File deleted");
+    } catch {
+      console.log("  Could not delete file");
+    }
+
+    console.log("\n=== Direct mode test (issue #134) passed ===\n");
+  });
 });

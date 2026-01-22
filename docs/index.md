@@ -1,13 +1,8 @@
 # xfg
 
-A CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple GitHub, Azure DevOps, and GitLab repositories by creating pull requests (or merge requests for GitLab).
+A CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple GitHub, Azure DevOps, and GitLab repositories. By default, changes are made via pull requests (or merge requests for GitLab), but you can also push directly to the default branch.
 
-Output format is automatically detected from the target filename extension:
-
-- `.json` → JSON
-- `.json5` → JSON5
-- `.yaml` / `.yml` → YAML
-- Other extensions → Plain text
+Output format is detected from the target filename extension. JSON and YAML files support deep merging and content inheritance, while plain text files support line-based merging.
 
 ## Quick Start
 
@@ -58,6 +53,7 @@ xfg --config ./config.yaml
 - **YAML Comments** - Add header comments and schema directives to YAML files
 - **Multi-Platform** - Works with GitHub, Azure DevOps, and GitLab (including self-hosted)
 - **Auto-Merge PRs** - Automatically merge PRs when checks pass, or force merge with admin privileges
+- **Direct Push Mode** - Push directly to default branch without creating PRs
 - **Dry-Run Mode** - Preview changes without creating PRs
 - **Error Resilience** - Continues processing if individual repos fail
 - **Automatic Retries** - Retries transient network errors with exponential backoff
@@ -79,22 +75,28 @@ flowchart TB
 
     subgraph Processing["For Each Repository"]
         CLONE[Clone Repo] --> DETECT_BRANCH[Detect Default Branch]
-        DETECT_BRANCH --> CLOSE_PR[Close Existing PR<br/>if exists]
+        DETECT_BRANCH --> MODE_CHECK{Direct Mode?}
+        MODE_CHECK -->|No| CLOSE_PR[Close Existing PR<br/>if exists]
         CLOSE_PR --> BRANCH[Create Fresh Branch]
+        MODE_CHECK -->|Yes| STAY[Stay on Default Branch]
         BRANCH --> WRITE[Write Config Files]
+        STAY --> WRITE
         WRITE --> CHECK{Changes?}
         CHECK -->|No| SKIP[Skip - No Changes]
         CHECK -->|Yes| COMMIT[Commit & Push]
     end
 
-    subgraph Platform["PR Creation"]
-        COMMIT --> PR_DETECT{Platform?}
+    subgraph Platform["PR/Direct Push"]
+        COMMIT --> DIRECT_CHECK{Direct Mode?}
+        DIRECT_CHECK -->|Yes| DIRECT_PUSH[Push to Default Branch]
+        DIRECT_CHECK -->|No| PR_DETECT{Platform?}
         PR_DETECT -->|GitHub| GH_PR[Create PR via gh CLI]
         PR_DETECT -->|Azure DevOps| AZ_PR[Create PR via az CLI]
         PR_DETECT -->|GitLab| GL_PR[Create MR via glab CLI]
         GH_PR --> PR_CREATED[PR/MR Created]
         AZ_PR --> PR_CREATED
         GL_PR --> PR_CREATED
+        DIRECT_PUSH --> DONE[Done]
     end
 
     subgraph AutoMerge["Auto-Merge (default)"]
@@ -116,10 +118,8 @@ For each repository in the config, the tool:
 4. Cleans the temporary workspace
 5. Clones the repository
 6. Detects the default branch (main/master)
-7. Closes any existing PR on the branch and deletes the remote branch (fresh start)
-8. Creates a fresh branch from the default branch
-9. Writes all config files (JSON, JSON5, YAML, or text based on filename extension)
-10. Checks for changes (skips if no changes)
-11. Commits and pushes changes
-12. Creates a pull request
-13. Handles auto-merge based on configuration (auto by default)
+7. **PR modes:** Closes any existing PR on the branch and creates a fresh branch | **Direct mode:** Stays on default branch
+8. Writes all config files (JSON, JSON5, YAML, or text based on filename extension)
+9. Checks for changes (skips if no changes)
+10. Commits and pushes changes
+11. **PR modes:** Creates a pull request and handles auto-merge | **Direct mode:** Done (changes are on default branch)

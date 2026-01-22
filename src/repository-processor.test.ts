@@ -554,4 +554,231 @@ describe("RepositoryProcessor", () => {
       assert.equal(deleteBranch, true, "Default deleteBranch should apply");
     });
   });
+
+  describe("direct mode", () => {
+    // Mock logger that captures log messages
+    const createMockLogger = (): ILogger & { messages: string[] } => ({
+      messages: [] as string[],
+      info(message: string) {
+        this.messages.push(message);
+      },
+      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
+        // No-op for mock
+      },
+      diffSummary(
+        _newCount: number,
+        _modifiedCount: number,
+        _unchangedCount: number,
+      ) {
+        // No-op for mock
+      },
+    });
+
+    // Mock GitOps for direct mode testing
+    class MockGitOpsForDirectMode extends GitOps {
+      createBranchCalled = false;
+      pushBranch: string | null = null;
+      shouldRejectPush = false;
+
+      constructor(options: GitOpsOptions) {
+        super(options);
+      }
+
+      override cleanWorkspace(): void {
+        mkdirSync(this.getWorkDir(), { recursive: true });
+      }
+
+      override async clone(_gitUrl: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async getDefaultBranch(): Promise<{
+        branch: string;
+        method: string;
+      }> {
+        return { branch: "main", method: "mock" };
+      }
+
+      override async createBranch(_branchName: string): Promise<void> {
+        this.createBranchCalled = true;
+      }
+
+      override writeFile(fileName: string, content: string): void {
+        const filePath = join(this.getWorkDir(), fileName);
+        mkdirSync(this.getWorkDir(), { recursive: true });
+        writeFileSync(filePath, content, "utf-8");
+      }
+
+      override wouldChange(_fileName: string, _content: string): boolean {
+        return true;
+      }
+
+      override async hasChanges(): Promise<boolean> {
+        return true;
+      }
+
+      override async getChangedFiles(): Promise<string[]> {
+        return ["config.json"];
+      }
+
+      override async commit(_message: string): Promise<boolean> {
+        return true;
+      }
+
+      override async push(branchName: string): Promise<void> {
+        this.pushBranch = branchName;
+        if (this.shouldRejectPush) {
+          throw new Error("Push rejected (branch protection)");
+        }
+      }
+
+      private getWorkDir(): string {
+        return (this as unknown as { workDir: string }).workDir;
+      }
+    }
+
+    test("direct mode should not create a sync branch", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForDirectMode | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForDirectMode(opts);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `direct-mode-no-branch-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+        prOptions: { merge: "direct" },
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: true,
+      });
+
+      assert.equal(
+        mockGitOps!.createBranchCalled,
+        false,
+        "Should not create a sync branch in direct mode",
+      );
+    });
+
+    test("direct mode should push to default branch", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForDirectMode | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForDirectMode(opts);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `direct-mode-push-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+        prOptions: { merge: "direct" },
+      };
+
+      const result = await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+      });
+
+      assert.equal(
+        mockGitOps!.pushBranch,
+        "main",
+        "Should push to default branch (main)",
+      );
+      assert.equal(result.success, true, "Should succeed");
+      assert.ok(
+        result.message.includes("Pushed directly to main"),
+        "Message should indicate direct push",
+      );
+      assert.equal(result.prUrl, undefined, "Should not have a PR URL");
+    });
+
+    test("direct mode should return helpful error on branch protection", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForDirectMode | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForDirectMode(opts);
+        mockGitOps.shouldRejectPush = true;
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(
+        testDir,
+        `direct-mode-protection-${Date.now()}`,
+      );
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+        prOptions: { merge: "direct" },
+      };
+
+      const result = await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false, "Should fail");
+      assert.ok(
+        result.message.includes("rejected"),
+        "Message should mention rejection",
+      );
+      assert.ok(
+        result.message.includes("branch protection"),
+        "Message should mention branch protection",
+      );
+      assert.ok(
+        result.message.includes("merge: force"),
+        "Message should suggest using force mode",
+      );
+    });
+
+    test("direct mode should log warning when mergeStrategy is set", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForDirectMode | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForDirectMode(opts);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `direct-mode-warning-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+        prOptions: { merge: "direct", mergeStrategy: "squash" },
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: true,
+      });
+
+      const warningMessage = mockLogger.messages.find(
+        (m) => m.includes("mergeStrategy") && m.includes("ignored"),
+      );
+      assert.ok(
+        warningMessage,
+        "Should log warning about mergeStrategy being ignored",
+      );
+    });
+  });
 });
