@@ -1,0 +1,135 @@
+name: "xfg - Config File Sync"
+description: "Sync JSON, JSON5, YAML, or text configuration files across multiple Git repositories via pull requests or direct push"
+author: "Anthony Spruyt"
+
+branding:
+  icon: "git-merge"
+  color: "blue"
+
+inputs:
+  config:
+    description: "Path to YAML config file"
+    required: true
+  dry-run:
+    description: "Preview mode - show what would change without creating PRs"
+    required: false
+    default: "false"
+  work-dir:
+    description: "Directory for cloning repositories"
+    required: false
+    default: "./tmp"
+  retries:
+    description: "Number of network retries"
+    required: false
+    default: "3"
+  branch:
+    description: "Override sync branch name"
+    required: false
+  merge:
+    description: "PR merge mode (manual/auto/force/direct)"
+    required: false
+  merge-strategy:
+    description: "Merge strategy (merge/squash/rebase)"
+    required: false
+  delete-branch:
+    description: "Delete branch after merge"
+    required: false
+    default: "false"
+  github-token:
+    description: "GitHub token for authentication"
+    required: false
+    default: ${{ github.token }}
+  azure-devops-token:
+    description: "Azure DevOps Personal Access Token"
+    required: false
+  gitlab-token:
+    description: "GitLab token for authentication"
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+        cache: "npm"
+        cache-dependency-path: "**/package-lock.json"
+
+    - name: Install GitLab CLI
+      if: ${{ inputs.gitlab-token != '' }}
+      shell: bash
+      run: |
+        curl -sSL "https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository" | sudo bash
+        sudo apt-get install -y glab
+
+    - name: Install Azure DevOps CLI extension
+      if: ${{ inputs.azure-devops-token != '' }}
+      shell: bash
+      run: az extension add --name azure-devops --yes
+
+    - name: Configure git
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        AZURE_DEVOPS_TOKEN: ${{ inputs.azure-devops-token }}
+        GITLAB_TOKEN: ${{ inputs.gitlab-token }}
+      run: |
+        # Configure git user
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+        # GitHub - URL rewrite for authentication
+        if [ -n "${GITHUB_TOKEN}" ]; then
+          git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+        fi
+
+        # Azure DevOps - inline credential helper
+        if [ -n "${AZURE_DEVOPS_TOKEN}" ]; then
+          git config --global credential."https://dev.azure.com".helper '!f() { echo "username=pat"; echo "password='"${AZURE_DEVOPS_TOKEN}"'"; }; f'
+          git config --global credential."https://dev.azure.com".useHttpPath true
+        fi
+
+        # GitLab - inline credential helper
+        if [ -n "${GITLAB_TOKEN}" ]; then
+          git config --global credential."https://gitlab.com".helper '!f() { echo "username=oauth2"; echo "password='"${GITLAB_TOKEN}"'"; }; f'
+          git config --global credential."https://gitlab.com".useHttpPath true
+        fi
+
+    - name: Run xfg
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        AZURE_DEVOPS_EXT_PAT: ${{ inputs.azure-devops-token }}
+        GITLAB_TOKEN: ${{ inputs.gitlab-token }}
+      run: |
+        # Build command with required arguments
+        CMD="npx @aspruyt/xfg"
+        CMD="$CMD --config ${{ inputs.config }}"
+        CMD="$CMD --work-dir ${{ inputs.work-dir }}"
+        CMD="$CMD --retries ${{ inputs.retries }}"
+
+        # Add optional flags
+        if [ "${{ inputs.dry-run }}" = "true" ]; then
+          CMD="$CMD --dry-run"
+        fi
+
+        if [ -n "${{ inputs.branch }}" ]; then
+          CMD="$CMD --branch ${{ inputs.branch }}"
+        fi
+
+        if [ -n "${{ inputs.merge }}" ]; then
+          CMD="$CMD --merge ${{ inputs.merge }}"
+        fi
+
+        if [ -n "${{ inputs.merge-strategy }}" ]; then
+          CMD="$CMD --merge-strategy ${{ inputs.merge-strategy }}"
+        fi
+
+        if [ "${{ inputs.delete-branch }}" = "true" ]; then
+          CMD="$CMD --delete-branch"
+        fi
+
+        # Execute
+        echo "Running: $CMD"
+        eval "$CMD"
