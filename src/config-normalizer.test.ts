@@ -1158,4 +1158,165 @@ describe("normalizeConfig", () => {
       });
     });
   });
+
+  describe("deleteOrphaned propagation", () => {
+    test("global deleteOrphaned: true propagates to all files", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: { key: "value" } },
+          "settings.yaml": { content: { enabled: true } },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        deleteOrphaned: true,
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].deleteOrphaned, true);
+      assert.equal(result.repos[0].files[1].deleteOrphaned, true);
+      assert.equal(result.deleteOrphaned, true);
+    });
+
+    test("deleteOrphaned is undefined when not specified", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: { key: "value" } },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].deleteOrphaned, undefined);
+      assert.equal(result.deleteOrphaned, undefined);
+    });
+
+    test("per-file deleteOrphaned overrides global default", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: { key: "value" }, deleteOrphaned: true },
+          "settings.yaml": { content: { enabled: true } },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        deleteOrphaned: false,
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].deleteOrphaned, true);
+      assert.equal(result.repos[0].files[1].deleteOrphaned, false);
+    });
+
+    test("per-repo deleteOrphaned overrides per-file and global", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: { key: "value" }, deleteOrphaned: true },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.json": { deleteOrphaned: false },
+            },
+          },
+        ],
+        deleteOrphaned: true,
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].deleteOrphaned, false);
+    });
+
+    test("different repos can have different deleteOrphaned values", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: { key: "value" }, deleteOrphaned: true },
+        },
+        repos: [
+          { git: "git@github.com:org/repo1.git" },
+          {
+            git: "git@github.com:org/repo2.git",
+            files: {
+              "config.json": { deleteOrphaned: false },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      // repo1 inherits per-file deleteOrphaned: true
+      assert.equal(result.repos[0].files[0].deleteOrphaned, true);
+      // repo2 overrides to false
+      assert.equal(result.repos[1].files[0].deleteOrphaned, false);
+    });
+
+    test("per-repo deleteOrphaned: true overrides undefined per-file and global", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: { key: "value" } },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.json": { deleteOrphaned: true },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].deleteOrphaned, true);
+    });
+
+    test("deleteOrphaned works with file exclusion", () => {
+      const raw: RawConfig = {
+        files: {
+          "config.json": { content: { key: "value" }, deleteOrphaned: true },
+          "settings.yaml": { content: { enabled: true }, deleteOrphaned: true },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "config.json": false, // excluded
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      // Only settings.yaml should be included
+      assert.equal(result.repos[0].files.length, 1);
+      assert.equal(result.repos[0].files[0].fileName, "settings.yaml");
+      assert.equal(result.repos[0].files[0].deleteOrphaned, true);
+    });
+
+    test("inheritance order: per-repo > per-file > global", () => {
+      const raw: RawConfig = {
+        files: {
+          "file1.json": { content: {} }, // inherits global
+          "file2.json": { content: {}, deleteOrphaned: false }, // per-file overrides global
+          "file3.json": { content: {}, deleteOrphaned: true }, // per-file overrides global
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "file2.json": { deleteOrphaned: true }, // per-repo overrides per-file
+              "file3.json": { deleteOrphaned: false }, // per-repo overrides per-file
+            },
+          },
+        ],
+        deleteOrphaned: true, // global default
+      };
+
+      const result = normalizeConfig(raw);
+      const files = result.repos[0].files;
+      const file1 = files.find((f) => f.fileName === "file1.json");
+      const file2 = files.find((f) => f.fileName === "file2.json");
+      const file3 = files.find((f) => f.fileName === "file3.json");
+
+      assert.equal(file1?.deleteOrphaned, true); // from global
+      assert.equal(file2?.deleteOrphaned, true); // per-repo overrides per-file false
+      assert.equal(file3?.deleteOrphaned, false); // per-repo overrides per-file true
+    });
+  });
 });

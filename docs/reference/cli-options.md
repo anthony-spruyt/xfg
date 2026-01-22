@@ -18,6 +18,7 @@ xfg --config <path> [options]
 | `--merge`          | `-m`  | PR merge mode: `manual`, `auto`, `force`, `direct` | `auto`                                         |
 | `--merge-strategy` |       | Merge strategy: `merge`, `squash`, `rebase`        | `squash`                                       |
 | `--delete-branch`  |       | Delete source branch after merge                   | `true`                                         |
+| `--no-delete`      |       | Skip deletion of orphaned files even if configured | `false`                                        |
 
 ## Examples
 
@@ -64,6 +65,14 @@ xfg --config ./config.yaml --retries 5
 
 ```bash
 xfg --config ./config.yaml --work-dir ./my-temp
+```
+
+### Skip Orphan Deletion
+
+Skip deletion of orphaned files even when `deleteOrphaned: true` is configured:
+
+```bash
+xfg --config ./config.yaml --no-delete
 ```
 
 ## Priority Order

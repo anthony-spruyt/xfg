@@ -21,3 +21,4 @@ This section contains real-world examples demonstrating xfg's capabilities.
 - [Create-Only Files](create-only.md) - Files that are created once but not overwritten
 - [File References](file-references.md) - Load content from external template files
 - [Auto-Merge PRs](auto-merge.md) - Automatic PR merging options
+- [Delete Orphaned Files](delete-orphaned.md) - Auto-delete files removed from config

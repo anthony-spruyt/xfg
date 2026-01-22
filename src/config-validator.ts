@@ -146,6 +146,21 @@ export function validateRawConfig(config: RawConfig): void {
         }
       }
     }
+
+    if (
+      fileConfig.deleteOrphaned !== undefined &&
+      typeof fileConfig.deleteOrphaned !== "boolean"
+    ) {
+      throw new Error(`File '${fileName}' deleteOrphaned must be a boolean`);
+    }
+  }
+
+  // Validate global deleteOrphaned
+  if (
+    config.deleteOrphaned !== undefined &&
+    typeof config.deleteOrphaned !== "boolean"
+  ) {
+    throw new Error("Global deleteOrphaned must be a boolean");
   }
 
   if (!config.repos || !Array.isArray(config.repos)) {
@@ -306,6 +321,15 @@ export function validateRawConfig(config: RawConfig): void {
               );
             }
           }
+        }
+
+        if (
+          fileOverride.deleteOrphaned !== undefined &&
+          typeof fileOverride.deleteOrphaned !== "boolean"
+        ) {
+          throw new Error(
+            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' deleteOrphaned must be a boolean`,
+          );
         }
       }
     }

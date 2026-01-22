@@ -83,6 +83,7 @@ nav:
       - Subdirectory Paths: examples/subdirectory-paths.md
       - File References: examples/file-references.md
       - Auto-Merge PRs: examples/auto-merge.md
+      - Delete Orphaned Files: examples/delete-orphaned.md
   - Platforms:
       - Overview: platforms/index.md
       - GitHub: platforms/github.md

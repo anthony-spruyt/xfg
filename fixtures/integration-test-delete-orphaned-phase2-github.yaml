@@ -1,0 +1,17 @@
+# Integration test config for deleteOrphaned feature - Phase 2
+# This config has the orphan-test.json removed, which should trigger deletion
+
+files:
+  # orphan-test.json is intentionally NOT here
+  # The manifest in the repo should still have it tracked, triggering deletion
+  remaining-file.json:
+    content:
+      remaining: true
+    deleteOrphaned: false
+
+repos:
+  - git: git@github.com:anthony-spruyt/xfg-test.git
+
+prOptions:
+  merge: force
+  deleteBranch: true

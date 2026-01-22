@@ -22,6 +22,12 @@ import {
   incrementDiffStats,
   DiffStats,
 } from "./diff-utils.js";
+import {
+  loadManifest,
+  saveManifest,
+  updateManifest,
+  MANIFEST_FILENAME,
+} from "./manifest.js";
 
 /**
  * Determines if a file should be marked as executable.
@@ -50,6 +56,8 @@ export interface ProcessorOptions {
   executor?: CommandExecutor;
   /** Custom PR body template */
   prTemplate?: string;
+  /** Skip deleting orphaned files even if deleteOrphaned is configured */
+  noDelete?: boolean;
 }
 
 /**
@@ -258,12 +266,75 @@ export class RepositoryProcessor {
         }
       }
 
+      // Step 5c: Handle orphaned file deletion (manifest-based tracking)
+      const existingManifest = loadManifest(workDir);
+
+      // Build map of files with their deleteOrphaned setting
+      const filesWithDeleteOrphaned = new Map<string, boolean | undefined>();
+      for (const file of repoConfig.files) {
+        // Skip files that were excluded (createOnly + exists)
+        if (skippedFileNames.has(file.fileName)) {
+          continue;
+        }
+        filesWithDeleteOrphaned.set(file.fileName, file.deleteOrphaned);
+      }
+
+      // Update manifest and get list of files to delete
+      const { manifest: newManifest, filesToDelete } = updateManifest(
+        existingManifest,
+        filesWithDeleteOrphaned,
+      );
+
+      // Delete orphaned files (unless --no-delete flag is set)
+      if (filesToDelete.length > 0 && !options.noDelete) {
+        for (const fileName of filesToDelete) {
+          // Only delete if file actually exists in the working directory
+          if (this.gitOps!.fileExists(fileName)) {
+            if (dryRun) {
+              // In dry-run, show what would be deleted
+              this.log.fileDiff(fileName, "DELETED", []);
+              incrementDiffStats(diffStats, "DELETED");
+            } else {
+              this.log.info(`Deleting orphaned file: ${fileName}`);
+              this.gitOps!.deleteFile(fileName);
+            }
+            changedFiles.push({ fileName, action: "delete" });
+          }
+        }
+      } else if (filesToDelete.length > 0 && options.noDelete) {
+        this.log.info(
+          `Skipping deletion of ${filesToDelete.length} orphaned file(s) (--no-delete flag)`,
+        );
+      }
+
+      // Save updated manifest (tracks files with deleteOrphaned: true)
+      // Only save if there are managed files or if we had a previous manifest
+      if (newManifest.managedFiles.length > 0 || existingManifest !== null) {
+        if (!dryRun) {
+          saveManifest(workDir, newManifest);
+        }
+        // Track manifest file as changed if it would be different
+        const existingManifestFiles = existingManifest?.managedFiles ?? [];
+        const newManifestFiles = newManifest.managedFiles;
+        const manifestChanged =
+          JSON.stringify(existingManifestFiles) !==
+          JSON.stringify(newManifestFiles);
+        if (manifestChanged) {
+          const manifestExisted = existingManifest !== null;
+          changedFiles.push({
+            fileName: MANIFEST_FILENAME,
+            action: manifestExisted ? "update" : "create",
+          });
+        }
+      }
+
       // Show diff summary in dry-run mode
       if (dryRun) {
         this.log.diffSummary(
           diffStats.newCount,
           diffStats.modifiedCount,
           diffStats.unchangedCount,
+          diffStats.deletedCount,
         );
       }
 
@@ -437,7 +508,18 @@ export class RepositoryProcessor {
    */
   private formatCommitMessage(files: FileAction[]): string {
     const changedFiles = files.filter((f) => f.action !== "skip");
+    const deletedFiles = changedFiles.filter((f) => f.action === "delete");
+    const syncedFiles = changedFiles.filter((f) => f.action !== "delete");
 
+    // If only deletions, use "remove" prefix
+    if (syncedFiles.length === 0 && deletedFiles.length > 0) {
+      if (deletedFiles.length === 1) {
+        return `chore: remove ${deletedFiles[0].fileName}`;
+      }
+      return `chore: remove ${deletedFiles.length} orphaned config files`;
+    }
+
+    // Mixed or only syncs
     if (changedFiles.length === 1) {
       return `chore: sync ${changedFiles[0].fileName}`;
     }

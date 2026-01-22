@@ -37,6 +37,11 @@
         "pattern": "^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$"
       },
       "description": "List of GitHub Enterprise Server hostnames. URLs matching these hosts will be treated as GitHub repositories instead of falling back to GitLab detection. Example: ['github.mycompany.com', 'ghe.internal.net']"
+    },
+    "deleteOrphaned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Global default for orphan deletion. When true, files removed from the xfg config will be deleted from target repos (tracked via .xfg.json manifest). Can be overridden per-file or per-repo. Default: false"
     }
   },
   "definitions": {
@@ -109,6 +114,11 @@
             "type": "string"
           },
           "description": "Custom template variables for this file. Accessible as ${xfg:varName} when template: true. Per-repo vars merge with (and override) these root-level vars."
+        },
+        "deleteOrphaned": {
+          "type": "boolean",
+          "default": false,
+          "description": "Track this file for orphan deletion. When true, if this file is removed from the config, it will be deleted from target repos. Tracked via .xfg.json manifest. Overrides global deleteOrphaned setting. Default: false"
         }
       }
     },
@@ -249,6 +259,10 @@
             "type": "string"
           },
           "description": "Per-repo custom template variables. These merge with (and override) root-level vars for this file. Accessible as ${xfg:varName} when template: true."
+        },
+        "deleteOrphaned": {
+          "type": "boolean",
+          "description": "Override the file-level or global deleteOrphaned setting for this specific repo. Set to true to enable orphan tracking, or false to disable it for this repo."
         }
       }
     }

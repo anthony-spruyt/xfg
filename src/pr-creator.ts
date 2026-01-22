@@ -14,7 +14,7 @@ export { escapeShellArg } from "./shell-utils.js";
 
 export interface FileAction {
   fileName: string;
-  action: "create" | "update" | "skip";
+  action: "create" | "update" | "skip" | "delete";
 }
 
 export interface PROptions {
@@ -71,7 +71,20 @@ function formatFileChanges(files: FileAction[]): string {
   const changedFiles = files.filter((f) => f.action !== "skip");
   return changedFiles
     .map((f) => {
-      const actionText = f.action === "create" ? "Created" : "Updated";
+      let actionText: string;
+      switch (f.action) {
+        case "create":
+          actionText = "Created";
+          break;
+        case "update":
+          actionText = "Updated";
+          break;
+        case "delete":
+          actionText = "Deleted";
+          break;
+        default:
+          actionText = "Changed";
+      }
       return `- ${actionText} \`${f.fileName}\``;
     })
     .join("\n");

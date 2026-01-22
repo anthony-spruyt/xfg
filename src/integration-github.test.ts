@@ -769,4 +769,151 @@ describe("GitHub Integration Test", () => {
 
     console.log("\n=== Direct mode test (issue #134) passed ===\n");
   });
+
+  test("deleteOrphaned removes files when removed from config (issue #132)", async () => {
+    // This test verifies the deleteOrphaned feature (issue #132):
+    // 1. Sync a file with deleteOrphaned: true (tracked in .xfg.json manifest)
+    // 2. Remove the file from config
+    // 3. Re-sync and verify the file is deleted
+    // NOTE: This test uses the same exec() helper defined at line 19-35, which
+    // is safe because all commands are hardcoded (not derived from user input).
+
+    const orphanFile = "orphan-test.json";
+    const manifestFile = ".xfg.json";
+    const remainingFile = "remaining-file.json";
+    const testBranch = "chore/sync-config";
+
+    console.log("\n=== Setting up deleteOrphaned test (issue #132) ===\n");
+
+    // 1. Close any existing PRs from this branch
+    console.log("Closing any existing PRs...");
+    try {
+      const existingPRs = exec(
+        `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number --jq '.[].number'`,
+      );
+      if (existingPRs) {
+        for (const prNumber of existingPRs.split("\n").filter(Boolean)) {
+          console.log(`  Closing PR #${prNumber}`);
+          exec(`gh pr close ${prNumber} --repo ${TEST_REPO} --delete-branch`);
+        }
+      }
+    } catch {
+      console.log("  No existing PRs to close");
+    }
+
+    // 2. Delete the remote branch if it exists
+    console.log(`Deleting remote branch ${testBranch} if exists...`);
+    try {
+      exec(
+        `gh api --method DELETE repos/${TEST_REPO}/git/refs/heads/${testBranch}`,
+      );
+      console.log("  Branch deleted");
+    } catch {
+      console.log("  Branch does not exist");
+    }
+
+    // 3. Clean up test files if they exist on main
+    for (const file of [orphanFile, manifestFile, remainingFile]) {
+      console.log(`Deleting ${file} if exists...`);
+      try {
+        const sha = exec(
+          `gh api repos/${TEST_REPO}/contents/${file} --jq '.sha'`,
+        );
+        if (sha && !sha.includes("Not Found")) {
+          exec(
+            `gh api --method DELETE repos/${TEST_REPO}/contents/${file} -f message="test: cleanup ${file}" -f sha="${sha}"`,
+          );
+          console.log(`  ${file} deleted`);
+        }
+      } catch {
+        console.log(`  ${file} does not exist`);
+      }
+    }
+
+    // 4. Phase 1: Run sync with deleteOrphaned config to create the file
+    console.log("\n--- Phase 1: Create file with deleteOrphaned: true ---\n");
+    const configPath1 = join(
+      fixturesDir,
+      "integration-test-delete-orphaned-github.yaml",
+    );
+    const output1 = exec(`node dist/index.js --config ${configPath1}`, {
+      cwd: projectRoot,
+    });
+    console.log(output1);
+
+    // 5. Verify the file exists on main branch (after force merge)
+    console.log("\nVerifying orphan-test.json exists on main...");
+    const fileContent = exec(
+      `gh api repos/${TEST_REPO}/contents/${orphanFile} --jq '.content' | base64 -d`,
+    );
+    assert.ok(fileContent, "orphan-test.json should exist on main");
+    const json = JSON.parse(fileContent);
+    console.log("  File content:", JSON.stringify(json));
+    assert.equal(json.orphanTest, true, "File should have orphanTest: true");
+
+    // 6. Verify manifest exists and tracks the file
+    console.log("\nVerifying .xfg.json manifest exists...");
+    const manifestContent = exec(
+      `gh api repos/${TEST_REPO}/contents/${manifestFile} --jq '.content' | base64 -d`,
+    );
+    assert.ok(manifestContent, ".xfg.json should exist on main");
+    const manifest = JSON.parse(manifestContent);
+    console.log("  Manifest content:", JSON.stringify(manifest));
+    assert.ok(
+      manifest.managedFiles.includes(orphanFile),
+      "Manifest should track orphan-test.json",
+    );
+
+    // 7. Phase 2: Run sync with config that removes the file
+    console.log("\n--- Phase 2: Remove file from config (should delete) ---\n");
+    const configPath2 = join(
+      fixturesDir,
+      "integration-test-delete-orphaned-phase2-github.yaml",
+    );
+    const output2 = exec(`node dist/index.js --config ${configPath2}`, {
+      cwd: projectRoot,
+    });
+    console.log(output2);
+
+    // 8. Verify the file has been deleted from main
+    console.log("\nVerifying orphan-test.json was deleted...");
+    try {
+      exec(`gh api repos/${TEST_REPO}/contents/${orphanFile} --jq '.sha'`);
+      assert.fail("orphan-test.json should have been deleted");
+    } catch {
+      console.log("  orphan-test.json correctly deleted");
+    }
+
+    // 9. Verify manifest was updated (orphan-test.json removed from managedFiles)
+    console.log("\nVerifying manifest was updated...");
+    const manifestContent2 = exec(
+      `gh api repos/${TEST_REPO}/contents/${manifestFile} --jq '.content' | base64 -d`,
+    );
+    const manifest2 = JSON.parse(manifestContent2);
+    console.log("  Updated manifest:", JSON.stringify(manifest2));
+    assert.ok(
+      !manifest2.managedFiles.includes(orphanFile),
+      "Manifest should no longer track orphan-test.json",
+    );
+
+    // 10. Cleanup
+    console.log("\nCleaning up...");
+    for (const file of [manifestFile, remainingFile]) {
+      try {
+        const sha = exec(
+          `gh api repos/${TEST_REPO}/contents/${file} --jq '.sha'`,
+        );
+        if (sha && !sha.includes("Not Found")) {
+          exec(
+            `gh api --method DELETE repos/${TEST_REPO}/contents/${file} -f message="test: cleanup ${file}" -f sha="${sha}"`,
+          );
+          console.log(`  Deleted ${file}`);
+        }
+      } catch {
+        console.log(`  Could not delete ${file}`);
+      }
+    }
+
+    console.log("\n=== deleteOrphaned test (issue #132) passed ===\n");
+  });
 });
