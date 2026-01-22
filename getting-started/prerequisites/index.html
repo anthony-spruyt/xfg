@@ -2018,14 +2018,17 @@
 <p>Before using with GitHub repositories, authenticate with the GitHub CLI:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>gh<span class="w"> </span>auth<span class="w"> </span>login
 </span></code></pre></div>
+<p>For GitHub Enterprise Server instances:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>gh<span class="w"> </span>auth<span class="w"> </span>login<span class="w"> </span>--hostname<span class="w"> </span>github.mycompany.com
+</span></code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Required Scopes</p>
 </div>
 <p>Your token needs the <code>repo</code> scope to create PRs in target repositories.</p>
 <h2 id="azure-devops-authentication">Azure DevOps Authentication<a class="headerlink" href="#azure-devops-authentication" title="Permanent link">&para;</a></h2>
 <p>Before using with Azure DevOps repositories, authenticate with the Azure CLI:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>az<span class="w"> </span>login
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>az<span class="w"> </span>devops<span class="w"> </span>configure<span class="w"> </span>--defaults<span class="w"> </span><span class="nv">organization</span><span class="o">=</span>https://dev.azure.com/YOUR_ORG<span class="w"> </span><span class="nv">project</span><span class="o">=</span>YOUR_PROJECT
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>az<span class="w"> </span>login
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>az<span class="w"> </span>devops<span class="w"> </span>configure<span class="w"> </span>--defaults<span class="w"> </span><span class="nv">organization</span><span class="o">=</span>https://dev.azure.com/YOUR_ORG<span class="w"> </span><span class="nv">project</span><span class="o">=</span>YOUR_PROJECT
 </span></code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Required Permissions</p>
@@ -2033,10 +2036,10 @@
 <p>Ensure the user/service account has "Contribute to pull requests" permission.</p>
 <h2 id="gitlab-authentication">GitLab Authentication<a class="headerlink" href="#gitlab-authentication" title="Permanent link">&para;</a></h2>
 <p>Before using with GitLab repositories, authenticate with the GitLab CLI:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>glab<span class="w"> </span>auth<span class="w"> </span>login
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>glab<span class="w"> </span>auth<span class="w"> </span>login
 </span></code></pre></div>
 <p>For self-hosted GitLab instances:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>glab<span class="w"> </span>auth<span class="w"> </span>login<span class="w"> </span>--hostname<span class="w"> </span>gitlab.example.com
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>glab<span class="w"> </span>auth<span class="w"> </span>login<span class="w"> </span>--hostname<span class="w"> </span>gitlab.example.com
 </span></code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Required Permissions</p>
