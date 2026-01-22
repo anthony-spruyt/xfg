@@ -447,6 +447,7 @@ export class RepositoryProcessor {
         dryRun,
         retries,
         prTemplate,
+        executor,
       });
 
       // Step 10: Handle merge options if configured
@@ -469,6 +470,7 @@ export class RepositoryProcessor {
           workDir,
           dryRun,
           retries,
+          executor,
         });
 
         mergeResult = {

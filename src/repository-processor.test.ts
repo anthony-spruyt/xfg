@@ -8,8 +8,18 @@ import { RepoConfig } from "./config.js";
 import { GitHubRepoInfo } from "./repo-detector.js";
 import { GitOps, GitOpsOptions } from "./git-ops.js";
 import { ILogger } from "./logger.js";
+import { CommandExecutor } from "./command-executor.js";
 
 const testDir = join(tmpdir(), "repo-processor-test-" + Date.now());
+
+// Mock executor that returns empty results for all commands (prevents real CLI calls during tests)
+function createMockExecutor(): CommandExecutor {
+  return {
+    async exec(): Promise<string> {
+      return "";
+    },
+  };
+}
 
 describe("RepositoryProcessor", () => {
   let workDir: string;
@@ -51,6 +61,7 @@ describe("RepositoryProcessor", () => {
           branchName: "chore/sync-config",
           workDir,
           dryRun: true,
+          executor: createMockExecutor(),
         });
       } catch {
         // Expected to fail without real git repo
@@ -70,6 +81,7 @@ describe("RepositoryProcessor", () => {
           branchName: "chore/sync-config",
           workDir,
           dryRun: false,
+          executor: createMockExecutor(),
         });
       } catch {
         // Expected to fail - no real git repo
@@ -207,6 +219,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: true,
+        executor: createMockExecutor(),
       });
 
       assert.equal(result.skipped, true, "Should be skipped");
@@ -378,6 +391,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: true,
+        executor: createMockExecutor(),
       });
 
       assert.ok(mockGitOps!.setExecutableCalls.includes("deploy.sh"));
@@ -405,6 +419,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: true,
+        executor: createMockExecutor(),
       });
 
       assert.ok(!mockGitOps!.setExecutableCalls.includes("config.json"));
@@ -434,6 +449,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: true,
+        executor: createMockExecutor(),
       });
 
       assert.ok(!mockGitOps!.setExecutableCalls.includes("script.sh"));
@@ -461,6 +477,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: true,
+        executor: createMockExecutor(),
       });
 
       assert.ok(mockGitOps!.setExecutableCalls.includes("run"));
@@ -659,6 +676,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: true,
+        executor: createMockExecutor(),
       });
 
       assert.equal(
@@ -690,6 +708,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: false,
+        executor: createMockExecutor(),
       });
 
       assert.equal(
@@ -731,6 +750,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: false,
+        executor: createMockExecutor(),
       });
 
       assert.equal(result.success, false, "Should fail");
@@ -770,6 +790,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: true,
+        executor: createMockExecutor(),
       });
 
       const warningMessage = mockLogger.messages.find(
@@ -888,6 +909,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: true,
+        executor: createMockExecutor(),
       });
 
       // Should be skipped because file exists and createOnly is true
@@ -926,6 +948,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: true,
+        executor: createMockExecutor(),
       });
 
       // Should not be skipped because file doesn't exist
@@ -1040,6 +1063,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: false,
+        executor: createMockExecutor(),
       });
 
       const writtenContent = mockGitOps!.writtenContent.get("README.md");
@@ -1082,6 +1106,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: false,
+        executor: createMockExecutor(),
       });
 
       const writtenContent = mockGitOps!.writtenContent.get("config.txt");
@@ -1194,6 +1219,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: false,
+        executor: createMockExecutor(),
       });
 
       assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
@@ -1240,6 +1266,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: false,
+        executor: createMockExecutor(),
       });
 
       assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
@@ -1321,6 +1348,7 @@ describe("RepositoryProcessor", () => {
           branchName: "chore/sync-config",
           workDir: localWorkDir,
           dryRun: false,
+          executor: createMockExecutor(),
         });
         assert.fail("Should have thrown an error");
       } catch (error) {
@@ -1475,6 +1503,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: false,
+        executor: createMockExecutor(),
       });
 
       // Should have deleted orphaned.json
@@ -1513,6 +1542,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: false,
+        executor: createMockExecutor(),
         noDelete: true,
       });
 
@@ -1563,6 +1593,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: true,
+        executor: createMockExecutor(),
       });
 
       // Should NOT actually delete file
@@ -1616,6 +1647,7 @@ describe("RepositoryProcessor", () => {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
         dryRun: false,
+        executor: createMockExecutor(),
       });
 
       // orphaned.json should have been deleted

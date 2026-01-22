@@ -24,6 +24,10 @@ export const DEFAULT_PERMANENT_ERROR_PATTERNS: RegExp[] = [
   /not\s*a\s*git\s*repository/i,
   /non-fast-forward/i,
   /remote\s*rejected/i,
+  /set\s+the\s+GH_TOKEN\s+environment\s+variable/i,
+  /GITHUB_TOKEN\s+environment\s+variable/i,
+  /set\s+the\s+AZURE_DEVOPS_EXT_PAT\s+environment\s+variable/i,
+  /GITLAB_TOKEN\s+environment\s+variable/i,
 ];
 
 /**
