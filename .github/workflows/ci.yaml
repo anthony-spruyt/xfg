@@ -150,8 +150,54 @@ jobs:
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         run: npm run test:integration:ado
 
+  integration-test-gitlab:
+    needs: [build, security]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: integration-gitlab-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Install GitLab CLI
+        run: |
+          curl -sSL "https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository" | sudo bash
+          sudo apt-get install -y glab
+
+      - name: Configure git credential helper for GitLab
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          chmod +x .github/scripts/git-credential-gitlab.sh
+          git config --global credential."https://gitlab.com".helper "$(pwd)/.github/scripts/git-credential-gitlab.sh"
+          git config --global credential."https://gitlab.com".useHttpPath true
+
+      - name: Run GitLab integration tests
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: npm run test:integration:gitlab
+
   release:
-    needs: [integration-test-github, integration-test-ado]
+    needs:
+      [integration-test-github, integration-test-ado, integration-test-gitlab]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     environment: npm
