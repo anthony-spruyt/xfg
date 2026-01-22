@@ -10,6 +10,12 @@ Before using with GitHub repositories, authenticate with the GitHub CLI:
 gh auth login
 ```
 
+For GitHub Enterprise Server instances:
+
+```bash
+gh auth login --hostname github.mycompany.com
+```
+
 !!! note "Required Scopes"
 Your token needs the `repo` scope to create PRs in target repositories.
 

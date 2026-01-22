@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TypeScript CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple Git repositories by automatically creating pull requests. Output format is determined by content type: object content outputs JSON/JSON5/YAML (based on file extension), while string or string array content outputs plain text. Supports GitHub, Azure DevOps, and GitLab platforms (including self-hosted GitLab instances).
 
+## Documentation
+
+Full documentation is available at https://anthony-spruyt.github.io/xfg/
+
+The docs site is built with MkDocs Material and auto-deploys via GitHub Actions when changes are made to `docs/` or `mkdocs.yml`.
+
 ## Architecture
 
 ### Config Normalization Pipeline (config.ts)
@@ -213,7 +219,8 @@ npm run build                   # Compile TypeScript to dist/
 npm test                        # Run all unit tests
 npm run test:integration:github # Build + GitHub integration test (requires gh auth)
 npm run test:integration:ado    # Build + Azure DevOps integration test (requires az auth)
-npm run dev                     # Run with fixtures/test-repos-input.yaml
+npm run test:integration:gitlab # Build + GitLab integration test (requires glab auth)
+npm run dev                     # Run CLI via ts-node (pass config file as argument)
 ```
 
 ## Release Process

@@ -64,6 +64,7 @@ export interface RawConfig {
   repos: RawRepoConfig[];
   prOptions?: PRMergeOptions;
   prTemplate?: string;
+  githubHosts?: string[];
 }
 
 // =============================================================================
@@ -91,6 +92,7 @@ export interface RepoConfig {
 export interface Config {
   repos: RepoConfig[];
   prTemplate?: string;
+  githubHosts?: string[];
 }
 
 // =============================================================================

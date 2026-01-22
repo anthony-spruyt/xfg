@@ -50,6 +50,7 @@ describe("GitHubPRStrategy with mock executor", () => {
     gitUrl: "git@github.com:owner/repo.git",
     owner: "owner",
     repo: "repo",
+    host: "github.com",
   };
 
   let mockExecutor: ReturnType<typeof createMockExecutor>;
@@ -326,6 +327,7 @@ describe("GitHubPRStrategy cleanup error handling", () => {
     gitUrl: "git@github.com:owner/repo.git",
     owner: "owner",
     repo: "repo",
+    host: "github.com",
   };
 
   let mockExecutor: ReturnType<typeof createMockExecutor>;
@@ -425,6 +427,7 @@ describe("GitHubPRStrategy URL extraction edge cases (TDD for issue #92)", () =>
     gitUrl: "git@github.com:owner/repo.git",
     owner: "owner",
     repo: "repo",
+    host: "github.com",
   };
 
   let mockExecutor: ReturnType<typeof createMockExecutor>;
@@ -572,6 +575,7 @@ describe("GitHubPRStrategy closeExistingPR", () => {
     gitUrl: "git@github.com:owner/repo.git",
     owner: "owner",
     repo: "repo",
+    host: "github.com",
   };
 
   let mockExecutor: ReturnType<typeof createMockExecutor>;
@@ -675,12 +679,121 @@ describe("GitHubPRStrategy closeExistingPR", () => {
   });
 });
 
+describe("GitHubPRStrategy with GitHub Enterprise Server", () => {
+  const gheRepoInfo: GitHubRepoInfo = {
+    type: "github",
+    gitUrl: "git@github.mycompany.com:owner/repo.git",
+    owner: "owner",
+    repo: "repo",
+    host: "github.mycompany.com",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  test("uses HOST/OWNER/REPO format for GHE in pr list", async () => {
+    mockExecutor.responses.set("gh pr list", "");
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: gheRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    };
+
+    await strategy.checkExistingPR(options);
+
+    assert.ok(mockExecutor.calls[0].command.includes("--repo"));
+    assert.ok(
+      mockExecutor.calls[0].command.includes(
+        "'github.mycompany.com/owner/repo'",
+      ),
+    );
+  });
+
+  test("uses --hostname flag for gh api on GHE", async () => {
+    mockExecutor.responses.set("gh api", "true");
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    await strategy.checkAutoMergeEnabled(gheRepoInfo, testDir, 0);
+
+    assert.ok(mockExecutor.calls[0].command.includes("--hostname"));
+    assert.ok(mockExecutor.calls[0].command.includes("'github.mycompany.com'"));
+  });
+
+  test("extracts GHE PR URL correctly", async () => {
+    mockExecutor.responses.set(
+      "gh pr create",
+      "https://github.mycompany.com/owner/repo/pull/123",
+    );
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: gheRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    };
+
+    const result = await strategy.create(options);
+
+    assert.equal(
+      result.url,
+      "https://github.mycompany.com/owner/repo/pull/123",
+    );
+  });
+
+  test("uses HOST/OWNER/REPO format for GHE in pr close", async () => {
+    mockExecutor.responses.set(
+      "gh pr list",
+      "https://github.mycompany.com/owner/repo/pull/123",
+    );
+    mockExecutor.responses.set("gh pr close", "");
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    await strategy.closeExistingPR({
+      repoInfo: gheRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+
+    const closeCall = mockExecutor.calls.find((c) =>
+      c.command.includes("gh pr close"),
+    );
+    assert.ok(closeCall);
+    assert.ok(closeCall.command.includes("'github.mycompany.com/owner/repo'"));
+  });
+});
+
 describe("GitHubPRStrategy merge", () => {
   const githubRepoInfo: GitHubRepoInfo = {
     type: "github",
     gitUrl: "git@github.com:owner/repo.git",
     owner: "owner",
     repo: "repo",
+    host: "github.com",
   };
 
   let mockExecutor: ReturnType<typeof createMockExecutor>;

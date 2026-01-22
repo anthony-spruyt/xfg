@@ -29,6 +29,14 @@
     "prTemplate": {
       "type": "string",
       "description": "Custom PR body template. Can be inline markdown or a file reference (@path/to/template.md relative to config file). Available placeholders: {{FILE_CHANGES}} - bulleted list of changed files with actions."
+    },
+    "githubHosts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$"
+      },
+      "description": "List of GitHub Enterprise Server hostnames. URLs matching these hosts will be treated as GitHub repositories instead of falling back to GitLab detection. Example: ['github.mycompany.com', 'ghe.internal.net']"
     }
   },
   "definitions": {

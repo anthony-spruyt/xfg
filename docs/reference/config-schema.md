@@ -37,12 +37,13 @@ Or configure in `.vscode/settings.json`:
 
 ### Root Object
 
-| Field        | Type        | Required | Description                       |
-| ------------ | ----------- | -------- | --------------------------------- |
-| `files`      | `object`    | Yes      | Map of filenames to file configs  |
-| `repos`      | `array`     | Yes      | List of repository configurations |
-| `prOptions`  | `PROptions` | No       | Global PR merge options           |
-| `prTemplate` | `string`    | No       | Custom PR body template           |
+| Field         | Type        | Required | Description                        |
+| ------------- | ----------- | -------- | ---------------------------------- |
+| `files`       | `object`    | Yes      | Map of filenames to file configs   |
+| `repos`       | `array`     | Yes      | List of repository configurations  |
+| `prOptions`   | `PROptions` | No       | Global PR merge options            |
+| `prTemplate`  | `string`    | No       | Custom PR body template            |
+| `githubHosts` | `array`     | No       | GitHub Enterprise Server hostnames |
 
 ### File Config
 

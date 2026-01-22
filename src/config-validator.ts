@@ -128,6 +128,32 @@ export function validateRawConfig(config: RawConfig): void {
     throw new Error("Config missing required field: repos (must be an array)");
   }
 
+  // Validate githubHosts if provided
+  if (config.githubHosts !== undefined) {
+    if (
+      !Array.isArray(config.githubHosts) ||
+      !config.githubHosts.every((h) => typeof h === "string")
+    ) {
+      throw new Error("githubHosts must be an array of strings");
+    }
+
+    for (const host of config.githubHosts) {
+      if (!host) {
+        throw new Error("githubHosts entries must be non-empty hostnames");
+      }
+      if (host.includes("://")) {
+        throw new Error(
+          `githubHosts entries must be hostnames only, not URLs. Got: ${host}`,
+        );
+      }
+      if (host.includes("/")) {
+        throw new Error(
+          `githubHosts entries must be hostnames only, not paths. Got: ${host}`,
+        );
+      }
+    }
+  }
+
   // Validate each repo
   for (let i = 0; i < config.repos.length; i++) {
     const repo = config.repos[i];

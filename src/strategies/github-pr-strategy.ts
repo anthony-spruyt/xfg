@@ -14,6 +14,43 @@ import { logger } from "../logger.js";
 import { withRetry, isPermanentError } from "../retry-utils.js";
 import type { MergeStrategy } from "../config.js";
 
+/**
+ * Get the repo flag value for gh CLI commands.
+ * Returns HOST/OWNER/REPO for GHE, OWNER/REPO for github.com.
+ */
+function getRepoFlag(repoInfo: GitHubRepoInfo): string {
+  if (repoInfo.host && repoInfo.host !== "github.com") {
+    return `${repoInfo.host}/${repoInfo.owner}/${repoInfo.repo}`;
+  }
+  return `${repoInfo.owner}/${repoInfo.repo}`;
+}
+
+/**
+ * Get the hostname flag for gh api commands.
+ * Returns "--hostname HOST" for GHE, empty string for github.com.
+ */
+function getHostnameFlag(repoInfo: GitHubRepoInfo): string {
+  if (repoInfo.host && repoInfo.host !== "github.com") {
+    return `--hostname ${escapeShellArg(repoInfo.host)}`;
+  }
+  return "";
+}
+
+/**
+ * Escape special regex characters in a string.
+ */
+function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Build regex to match PR URLs for the given host.
+ */
+function buildPRUrlRegex(host: string): RegExp {
+  const escapedHost = escapeRegExp(host);
+  return new RegExp(`https://${escapedHost}/[\\w-]+/[\\w.-]+/pull/\\d+`);
+}
+
 export class GitHubPRStrategy extends BasePRStrategy {
   async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {
     const { repoInfo, branchName, workDir, retries = 3 } = options;
@@ -22,7 +59,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
       throw new Error("Expected GitHub repository");
     }
 
-    const command = `gh pr list --head ${escapeShellArg(branchName)} --json url --jq '.[0].url'`;
+    const repoFlag = getRepoFlag(repoInfo);
+    const command = `gh pr list --repo ${escapeShellArg(repoFlag)} --head ${escapeShellArg(branchName)} --json url --jq '.[0].url'`;
 
     try {
       const existingPR = await withRetry(
@@ -76,7 +114,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
 
     // Close the PR and delete the branch
-    const command = `gh pr close ${escapeShellArg(prNumber)} --repo ${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --delete-branch`;
+    const repoFlag = getRepoFlag(repoInfo);
+    const command = `gh pr close ${escapeShellArg(prNumber)} --repo ${escapeShellArg(repoFlag)} --delete-branch`;
 
     try {
       await withRetry(() => this.executor.exec(command, workDir), { retries });
@@ -118,9 +157,9 @@ export class GitHubPRStrategy extends BasePRStrategy {
       );
 
       // Extract URL from output - use strict regex for valid PR URLs only
-      const urlMatch = result.match(
-        /https:\/\/github\.com\/[\w-]+\/[\w.-]+\/pull\/\d+/,
-      );
+      const host = repoInfo.host || "github.com";
+      const urlRegex = buildPRUrlRegex(host);
+      const urlMatch = result.match(urlRegex);
 
       if (!urlMatch) {
         throw new Error(`Could not parse PR URL from output: ${result}`);
@@ -153,7 +192,9 @@ export class GitHubPRStrategy extends BasePRStrategy {
     workDir: string,
     retries: number = 3,
   ): Promise<boolean> {
-    const command = `gh api repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --jq '.allow_auto_merge // false'`;
+    const hostnameFlag = getHostnameFlag(repoInfo);
+    const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
+    const command = `gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --jq '.allow_auto_merge // false'`;
 
     try {
       const result = await withRetry(
@@ -202,14 +243,15 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     if (config.mode === "auto") {
       // Check if auto-merge is enabled on the repo
-      // Extract owner/repo from PR URL
-      const match = prUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
+      // Extract host/owner/repo from PR URL (supports both github.com and GHE)
+      const match = prUrl.match(/https:\/\/([^/]+)\/([^/]+)\/([^/]+)/);
       if (match) {
         const repoInfo: GitHubRepoInfo = {
           type: "github",
           gitUrl: prUrl,
-          owner: match[1],
-          repo: match[2],
+          owner: match[2],
+          repo: match[3],
+          host: match[1],
         };
         const autoMergeEnabled = await this.checkAutoMergeEnabled(
           repoInfo,
@@ -222,7 +264,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
             `Warning: Auto-merge not enabled for '${repoInfo.owner}/${repoInfo.repo}'. PR left open for manual review.`,
           );
           logger.info(
-            `To enable: gh repo edit ${repoInfo.owner}/${repoInfo.repo} --enable-auto-merge (requires admin)`,
+            `To enable: gh repo edit ${getRepoFlag(repoInfo)} --enable-auto-merge (requires admin)`,
           );
           return {
             success: true,
