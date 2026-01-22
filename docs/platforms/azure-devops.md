@@ -46,3 +46,22 @@ xfg uses the `az repos pr` CLI commands to:
 
 1. Create the PR
 2. Enable auto-complete or bypass policies as configured
+
+## Direct Push Mode
+
+With `merge: direct`, xfg skips PR creation entirely and pushes directly to the default branch:
+
+```yaml
+prOptions:
+  merge: direct
+
+repos:
+  - git: git@ssh.dev.azure.com:v3/org/project/repo
+```
+
+This is useful for repos without branch policies or when PR review isn't required. If the branch has policies that block direct pushes, the push will fail with a helpful error suggesting to use `merge: force` instead.
+
+**When to use `direct` vs `force`:**
+
+- `direct`: Repo has no branch policies, or you want to skip PR workflow entirely
+- `force`: Repo has branch policies, but you have permissions to bypass them (creates a PR and completes with `--bypass-policy`)

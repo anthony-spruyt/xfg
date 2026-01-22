@@ -77,9 +77,9 @@ program
   )
   .option(
     "-m, --merge <mode>",
-    "PR merge mode: manual, auto (default, merge when checks pass), force (bypass requirements)",
+    "PR merge mode: manual, auto (default, merge when checks pass), force (bypass requirements), direct (push to default branch, no PR)",
     (value: string): MergeMode => {
-      const valid: MergeMode[] = ["manual", "auto", "force"];
+      const valid: MergeMode[] = ["manual", "auto", "force", "direct"];
       if (!valid.includes(value as MergeMode)) {
         throw new Error(
           `Invalid merge mode: ${value}. Valid: ${valid.join(", ")}`,

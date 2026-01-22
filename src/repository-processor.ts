@@ -97,6 +97,17 @@ export class RepositoryProcessor {
 
     this.gitOps = this.gitOpsFactory({ workDir, dryRun, retries });
 
+    // Determine merge mode early - affects workflow steps
+    const mergeMode = repoConfig.prOptions?.merge ?? "auto";
+    const isDirectMode = mergeMode === "direct";
+
+    // Warn if mergeStrategy is set with direct mode (irrelevant)
+    if (isDirectMode && repoConfig.prOptions?.mergeStrategy) {
+      this.log.info(
+        `Warning: mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode (no PR created)`,
+      );
+    }
+
     try {
       // Step 1: Clean workspace
       this.log.info("Cleaning workspace...");
@@ -115,7 +126,8 @@ export class RepositoryProcessor {
 
       // Step 3.5: Close existing PR if exists (fresh start approach)
       // This ensures isolated sync attempts - each run starts from clean state
-      if (!dryRun) {
+      // Skip for direct mode - no PR involved
+      if (!dryRun && !isDirectMode) {
         this.log.info("Checking for existing PR...");
         const strategy = getPRStrategy(repoInfo, executor);
         const closed = await strategy.closeExistingPR({
@@ -131,8 +143,13 @@ export class RepositoryProcessor {
       }
 
       // Step 4: Create branch (always fresh from base branch)
-      this.log.info(`Creating branch: ${branchName}`);
-      await this.gitOps.createBranch(branchName);
+      // Skip for direct mode - stay on default branch
+      if (!isDirectMode) {
+        this.log.info(`Creating branch: ${branchName}`);
+        await this.gitOps.createBranch(branchName);
+      } else {
+        this.log.info(`Direct mode: staying on ${baseBranch}`);
+      }
 
       // Step 5: Write all config files and track changes
       //
@@ -313,10 +330,42 @@ export class RepositoryProcessor {
       this.log.info(`Committed: ${commitMessage}`);
 
       // Step 8: Push
-      this.log.info("Pushing to remote...");
-      await this.gitOps.push(branchName);
+      // In direct mode, push to default branch; otherwise push to sync branch
+      const pushBranch = isDirectMode ? baseBranch : branchName;
+      this.log.info(`Pushing to ${pushBranch}...`);
+      try {
+        await this.gitOps.push(pushBranch);
+      } catch (error) {
+        // Handle branch protection errors in direct mode
+        if (isDirectMode) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          if (
+            errorMessage.includes("rejected") ||
+            errorMessage.includes("protected") ||
+            errorMessage.includes("denied")
+          ) {
+            return {
+              success: false,
+              repoName,
+              message: `Push to '${baseBranch}' was rejected (likely branch protection). To use 'direct' mode, the target branch must allow direct pushes. Use 'merge: force' to create a PR and merge with admin privileges.`,
+            };
+          }
+        }
+        throw error;
+      }
 
-      // Step 9: Create PR
+      // Direct mode: no PR creation, return success
+      if (isDirectMode) {
+        this.log.info(`Changes pushed directly to ${baseBranch}`);
+        return {
+          success: true,
+          repoName,
+          message: `Pushed directly to ${baseBranch}`,
+        };
+      }
+
+      // Step 9: Create PR (non-direct modes only)
       this.log.info("Creating pull request...");
       const prResult: PRResult = await createPR({
         repoInfo,
@@ -330,7 +379,6 @@ export class RepositoryProcessor {
       });
 
       // Step 10: Handle merge options if configured
-      const mergeMode = repoConfig.prOptions?.merge ?? "auto";
       let mergeResult: ProcessorResult["mergeResult"] | undefined;
 
       if (prResult.success && prResult.url && mergeMode !== "manual") {

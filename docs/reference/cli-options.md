@@ -8,16 +8,16 @@ xfg --config <path> [options]
 
 ## Options
 
-| Option             | Alias | Description                                    | Default                                        |
-| ------------------ | ----- | ---------------------------------------------- | ---------------------------------------------- |
-| `--config`         | `-c`  | Path to YAML config file                       | **Required**                                   |
-| `--dry-run`        | `-d`  | Show what would be done without making changes | `false`                                        |
-| `--work-dir`       | `-w`  | Temporary directory for cloning                | `./tmp`                                        |
-| `--retries`        | `-r`  | Number of retries for network operations       | `3`                                            |
-| `--branch`         | `-b`  | Override branch name                           | `chore/sync-{filename}` or `chore/sync-config` |
-| `--merge`          | `-m`  | PR merge mode: `manual`, `auto`, `force`       | `auto`                                         |
-| `--merge-strategy` |       | Merge strategy: `merge`, `squash`, `rebase`    | `squash`                                       |
-| `--delete-branch`  |       | Delete source branch after merge               | `true`                                         |
+| Option             | Alias | Description                                        | Default                                        |
+| ------------------ | ----- | -------------------------------------------------- | ---------------------------------------------- |
+| `--config`         | `-c`  | Path to YAML config file                           | **Required**                                   |
+| `--dry-run`        | `-d`  | Show what would be done without making changes     | `false`                                        |
+| `--work-dir`       | `-w`  | Temporary directory for cloning                    | `./tmp`                                        |
+| `--retries`        | `-r`  | Number of retries for network operations           | `3`                                            |
+| `--branch`         | `-b`  | Override branch name                               | `chore/sync-{filename}` or `chore/sync-config` |
+| `--merge`          | `-m`  | PR merge mode: `manual`, `auto`, `force`, `direct` | `auto`                                         |
+| `--merge-strategy` |       | Merge strategy: `merge`, `squash`, `rebase`        | `squash`                                       |
+| `--delete-branch`  |       | Delete source branch after merge                   | `true`                                         |
 
 ## Examples
 
@@ -49,6 +49,9 @@ xfg --config ./config.yaml --merge manual
 
 # Force merge (bypass checks)
 xfg --config ./config.yaml --merge force
+
+# Push directly to default branch (no PR)
+xfg --config ./config.yaml --merge direct
 ```
 
 ### Increase Retries

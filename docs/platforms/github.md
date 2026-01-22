@@ -100,3 +100,22 @@ xfg uses the `gh` CLI to:
 1. Create the PR with `gh pr create`
 2. Enable auto-merge with `gh pr merge --auto` (if configured)
 3. Force merge with `gh pr merge --admin` (if `merge: force`)
+
+## Direct Push Mode
+
+With `merge: direct`, xfg skips PR creation entirely and pushes directly to the default branch:
+
+```yaml
+prOptions:
+  merge: direct
+
+repos:
+  - git: git@github.com:org/internal-tool.git
+```
+
+This is useful for repos without branch protection or when PR review isn't required. If the branch is protected, the push will fail with a helpful error suggesting to use `merge: force` instead.
+
+**When to use `direct` vs `force`:**
+
+- `direct`: Repo has no branch protection, or you want to skip PR workflow entirely
+- `force`: Repo has branch protection, but you have admin privileges to bypass it (creates a PR and merges with `--admin`)

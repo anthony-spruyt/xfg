@@ -162,9 +162,9 @@
       "properties": {
         "merge": {
           "type": "string",
-          "enum": ["manual", "auto", "force"],
+          "enum": ["manual", "auto", "force", "direct"],
           "default": "auto",
-          "description": "Merge mode: 'manual' leaves PR open for review, 'auto' enables auto-merge when checks pass, 'force' bypasses requirements using admin privileges. Default: auto"
+          "description": "Merge mode: 'manual' leaves PR open for review, 'auto' enables auto-merge when checks pass, 'force' bypasses requirements using admin privileges, 'direct' pushes directly to default branch without creating a PR. Default: auto"
         },
         "mergeStrategy": {
           "type": "string",

@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+# Integration test config for GitLab - tests direct push mode (no MR created)
+files:
+  direct-test.config.json:
+    content:
+      directMode: true
+      timestamp: direct-push-test
+
+prOptions:
+  merge: direct
+
+repos:
+  - git: https://gitlab.com/anthony-spruyt1/xfg-test.git

@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+# Integration test config for Azure DevOps - tests direct push mode (no PR created)
+files:
+  direct-test.config.json:
+    content:
+      directMode: true
+      timestamp: direct-push-test
+
+prOptions:
+  merge: direct
+
+repos:
+  - git: https://dev.azure.com/aspruyt/fxg/_git/fxg-test

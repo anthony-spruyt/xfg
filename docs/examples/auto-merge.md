@@ -32,11 +32,12 @@ repos:
 
 ## Merge Modes
 
-| Mode     | GitHub Behavior                      | Azure DevOps Behavior    | GitLab Behavior              |
-| -------- | ------------------------------------ | ------------------------ | ---------------------------- |
-| `manual` | Leave PR open for review             | Leave PR open for review | Leave MR open for review     |
-| `auto`   | Enable auto-merge (default)          | Enable auto-complete     | Merge when pipeline succeeds |
-| `force`  | Merge with `--admin` (bypass checks) | Bypass policies          | Merge immediately            |
+| Mode     | GitHub Behavior                         | Azure DevOps Behavior    | GitLab Behavior              |
+| -------- | --------------------------------------- | ------------------------ | ---------------------------- |
+| `manual` | Leave PR open for review                | Leave PR open for review | Leave MR open for review     |
+| `auto`   | Enable auto-merge (default)             | Enable auto-complete     | Merge when pipeline succeeds |
+| `force`  | Merge with `--admin` (bypass checks)    | Bypass policies          | Merge immediately            |
+| `direct` | Push directly to default branch (no PR) | Push directly (no PR)    | Push directly (no MR)        |
 
 ## GitHub Auto-Merge Note
 
@@ -58,13 +59,41 @@ xfg --config ./config.yaml --merge manual
 
 # Force merge all PRs (useful for urgent updates)
 xfg --config ./config.yaml --merge force
+
+# Push directly to default branch (no PR created)
+xfg --config ./config.yaml --merge direct
 ```
+
+## Direct Push Mode
+
+The `direct` mode pushes changes directly to the default branch without creating a PR/MR:
+
+```yaml
+files:
+  .prettierrc.json:
+    content:
+      semi: false
+
+prOptions:
+  merge: direct
+
+repos:
+  - git: git@github.com:org/internal-tool.git
+```
+
+Use `direct` mode when:
+
+- The repo has no branch protection
+- You have bypass permissions configured
+- PR review isn't required for the target repo
+
+**Note:** If branch protection rejects the push, you'll get a helpful error suggesting to use `merge: force` instead.
 
 ## PR Options Reference
 
 | Field           | Description                                                             | Default  |
 | --------------- | ----------------------------------------------------------------------- | -------- |
-| `merge`         | Merge mode: `manual`, `auto`, `force`                                   | `auto`   |
+| `merge`         | Merge mode: `manual`, `auto`, `force`, `direct`                         | `auto`   |
 | `mergeStrategy` | How to merge: `merge`, `squash`, `rebase`                               | `squash` |
 | `deleteBranch`  | Delete source branch after merge                                        | `true`   |
 | `bypassReason`  | Reason for bypassing policies (Azure DevOps only, required for `force`) | -        |

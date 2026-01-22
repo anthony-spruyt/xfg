@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-TypeScript CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple Git repositories by automatically creating pull requests. Output format is determined by content type: object content outputs JSON/JSON5/YAML (based on file extension), while string or string array content outputs plain text. Supports GitHub, Azure DevOps, and GitLab platforms (including self-hosted GitLab instances).
+TypeScript CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple Git repositories. By default, changes are made via pull requests, but you can also push directly to the default branch with `merge: direct`. Output format is determined by content type: object content outputs JSON/JSON5/YAML (based on file extension), while string or string array content outputs plain text. Supports GitHub, Azure DevOps, and GitLab platforms (including self-hosted GitLab instances).
 
 ## Documentation
 
@@ -115,18 +115,33 @@ Replaces environment variable placeholders in string values:
 
 ### Orchestration Flow (index.ts)
 
-The tool processes repositories sequentially with a 10-step workflow per repo:
+The tool processes repositories sequentially. The workflow depends on the merge mode:
+
+**PR modes (manual/auto/force):**
 
 1. Clean workspace (remove old clones)
 2. Clone repository
 3. Detect default branch (main/master)
-4. Create/checkout sync branch (`chore/sync-config` or custom `--branch`)
-5. Write all config files (JSON or YAML based on filename extension)
+4. Close existing PR if exists (fresh start)
+5. Create/checkout sync branch (`chore/sync-config` or custom `--branch`)
+6. Write all config files (JSON or YAML based on filename extension)
+7. Check for changes (skip if none)
+8. Commit changes
+9. Push to sync branch
+10. Create PR (platform-specific)
+11. Merge PR (if `prOptions.merge` is `auto` or `force`)
+
+**Direct mode (`merge: direct`):**
+
+1. Clean workspace (remove old clones)
+2. Clone repository
+3. Detect default branch (main/master)
+4. Stay on default branch (no sync branch created)
+5. Write all config files
 6. Check for changes (skip if none)
 7. Commit changes
-8. Push to remote
-9. Create PR (platform-specific)
-10. Merge PR (if `prOptions.merge` is `auto` or `force`)
+8. Push directly to default branch
+9. Done (no PR created)
 
 **Error Resilience**: If any repo fails, the tool continues processing remaining repos. Errors are logged and summarized at the end. Exit code 1 only if failures occurred.
 
@@ -161,7 +176,7 @@ After PR creation, the tool can automatically merge or enable auto-merge based o
 
 **Types** (config.ts):
 
-- `MergeMode`: `"manual"` | `"auto"` | `"force"`
+- `MergeMode`: `"manual"` | `"auto"` | `"force"` | `"direct"`
 - `MergeStrategy`: `"merge"` | `"squash"` | `"rebase"`
 - `PRMergeOptions`: Config interface with `merge`, `mergeStrategy`, `deleteBranch`, `bypassReason`
 
@@ -174,8 +189,11 @@ After PR creation, the tool can automatically merge or enable auto-merge based o
 | `manual` | Leave PR open (default)                    | Leave PR open                             | Leave MR open                            |
 | `auto`   | `gh pr merge --auto` (requires repo setup) | `az repos pr update --auto-complete true` | `glab mr merge --when-pipeline-succeeds` |
 | `force`  | `gh pr merge --admin` (bypass checks)      | `--bypass-policy true --status completed` | `glab mr merge -y` (merge immediately)   |
+| `direct` | Push directly to default branch (no PR)    | Push directly to default branch (no PR)   | Push directly to default branch (no MR)  |
 
 **GitHub Auto-Merge Handling**: Before enabling auto-merge, checks if `allow_auto_merge` is enabled on the repository via `gh api`. If not enabled, logs a warning with instructions and falls back to manual mode.
+
+**Direct Mode Handling**: When `merge: direct` is set, the tool skips PR creation entirely and pushes directly to the default branch. If push is rejected (likely due to branch protection), returns a helpful error suggesting to use `merge: force` instead.
 
 **GitLab Merge Handling**: Uses `glab mr merge --when-pipeline-succeeds` for auto mode (merges when CI pipeline passes). Force mode merges immediately without waiting for pipeline.
 
