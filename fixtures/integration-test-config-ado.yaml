@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+# Integration test config for Azure DevOps - tests root-level content with overlay merge
+
+# Use manual merge mode so the PR stays open for verification during tests
+prOptions:
+  merge: manual
+
+files:
+  my.config.json:
+    content:
+      prop1: base-value
+      prop2:
+        prop3: MyService
+      prop4:
+        prop5:
+          - prop6: platform
+          - prop7: engineering
+      baseOnly: inherited-from-root
+
+repos:
+  - git: https://dev.azure.com/aspruyt/fxg/_git/fxg-test
+    files:
+      my.config.json:
+        content:
+          # Override prop1, merge with base, add new property
+          prop1: main
+          addedByOverlay: true

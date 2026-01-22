@@ -34,7 +34,7 @@ function exec(command: string, options?: { cwd?: string }): string {
   }
 }
 
-describe("Integration Test", () => {
+describe("GitHub Integration Test", () => {
   before(() => {
     console.log("\n=== Setting up integration test ===\n");
 
@@ -110,7 +110,7 @@ describe("Integration Test", () => {
   });
 
   test("sync creates a PR in the test repository", async () => {
-    const configPath = join(fixturesDir, "integration-test-config.yaml");
+    const configPath = join(fixturesDir, "integration-test-config-github.yaml");
 
     // Run the sync tool
     console.log("Running xfg...");
@@ -182,7 +182,7 @@ describe("Integration Test", () => {
     // This test relies on the previous test having created a PR
     // We'll run sync again and verify the behavior
 
-    const configPath = join(fixturesDir, "integration-test-config.yaml");
+    const configPath = join(fixturesDir, "integration-test-config-github.yaml");
 
     // Get the current PR number before re-sync
     console.log("Getting current PR number...");
@@ -301,7 +301,10 @@ describe("Integration Test", () => {
 
     // 4. Run sync with createOnly config
     console.log("\nRunning xfg with createOnly config...");
-    const configPath = join(fixturesDir, "integration-test-createonly.yaml");
+    const configPath = join(
+      fixturesDir,
+      "integration-test-createonly-github.yaml",
+    );
     const output = exec(`node dist/index.js --config ${configPath}`, {
       cwd: projectRoot,
     });
@@ -451,7 +454,10 @@ describe("Integration Test", () => {
 
     // 5. Run sync with the test config
     console.log("\nRunning xfg with unchanged files config...");
-    const configPath = join(fixturesDir, "integration-test-unchanged.yaml");
+    const configPath = join(
+      fixturesDir,
+      "integration-test-unchanged-github.yaml",
+    );
     const output = exec(`node dist/index.js --config ${configPath}`, {
       cwd: projectRoot,
     });

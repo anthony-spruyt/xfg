@@ -66,13 +66,13 @@ jobs:
           scan-type: fs
           trivy-config: trivy.yaml
 
-  integration-test:
+  integration-test-github:
     needs: [build, security]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-${{ github.ref }}
+      group: integration-github-${{ github.ref }}
       cancel-in-progress: false
 
     steps:
@@ -101,13 +101,57 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
 
-      - name: Run integration tests
+      - name: Run GitHub integration tests
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: npm run test:integration
+        run: npm run test:integration:github
+
+  integration-test-ado:
+    needs: [build, security]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: integration-ado-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Install Azure CLI DevOps Extension
+        run: az extension add --name azure-devops --yes
+
+      - name: Configure git credential helper for Azure DevOps
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          # Use credential helper that reads from env var (more secure than URL-embedded PAT)
+          chmod +x .github/scripts/git-credential-ado.sh
+          git config --global credential."https://dev.azure.com".helper "$(pwd)/.github/scripts/git-credential-ado.sh"
+          git config --global credential."https://dev.azure.com".useHttpPath true
+
+      - name: Run Azure DevOps integration tests
+        env:
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+        run: npm run test:integration:ado
 
   release:
-    needs: integration-test
+    needs: [integration-test-github, integration-test-ado]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     environment: npm

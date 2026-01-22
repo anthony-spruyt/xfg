@@ -209,10 +209,11 @@ Output: 2-space indentation, trailing newline always added.
 ## Development Commands
 
 ```bash
-npm run build              # Compile TypeScript to dist/
-npm test                   # Run all unit tests
-npm run test:integration   # Build + integration test (requires gh auth)
-npm run dev                # Run with fixtures/test-repos-input.yaml
+npm run build                   # Compile TypeScript to dist/
+npm test                        # Run all unit tests
+npm run test:integration:github # Build + GitHub integration test (requires gh auth)
+npm run test:integration:ado    # Build + Azure DevOps integration test (requires az auth)
+npm run dev                     # Run with fixtures/test-repos-input.yaml
 ```
 
 ## Release Process
