@@ -62,6 +62,8 @@ xfg --config ./config.yaml
 - **Error Resilience** - Continues processing if individual repos fail
 - **Automatic Retries** - Retries transient network errors with exponential backoff
 
+**See [Use Cases](use-cases.md)** for real-world scenarios: platform engineering, CI/CD standardization, security governance, and more.
+
 ## How It Works
 
 ```mermaid

@@ -61,6 +61,34 @@ xfg --config ./config.yaml
 - **Error Resilience** - Continues processing if individual repos fail
 - **Automatic Retries** - Retries transient network errors with exponential backoff
 
+## Use Cases
+
+### Platform Engineering Teams
+
+Enforce organization-wide standards without requiring a monorepo. Push consistent tooling configs (linters, formatters, TypeScript settings) to hundreds of microservice repos from a single source of truth.
+
+### CI/CD Workflow Standardization
+
+Keep GitHub Actions workflows, Azure Pipelines, or GitLab CI configs in sync across all repos. Update a workflow once, create PRs everywhere.
+
+### Security & Compliance Governance
+
+Roll out security scanning configs (Dependabot, CodeQL, SAST tools) or compliance policies across your entire organization. Audit and update security settings from one place.
+
+### Developer Experience Consistency
+
+Sync `.editorconfig`, `.prettierrc`, `tsconfig.json`, and other DX configs so every repo feels the same. Onboard new team members faster with consistent tooling.
+
+### Open Source Maintainers
+
+Manage configuration across multiple related projects. Keep issue templates, contributing guidelines, and CI workflows consistent across your ecosystem.
+
+### Configuration Drift Prevention
+
+Detect and fix configuration drift automatically. Run xfg on a schedule to ensure repos stay in compliance with your standards.
+
+**[See detailed use cases with examples →](https://anthony-spruyt.github.io/xfg/use-cases/)**
+
 ## Documentation
 
 Visit **[anthony-spruyt.github.io/xfg](https://anthony-spruyt.github.io/xfg/)** for:
