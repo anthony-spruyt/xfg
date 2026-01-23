@@ -70,11 +70,13 @@
       "WebFetch(domain:fluxcd.io)",
       "WebFetch(domain:goauthentik.io)",
       "WebFetch(domain:integrations.goauthentik.io)",
+      "WebFetch(domain:megalinter.io)",
       "WebFetch(domain:qdrant.tech)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:rook.io)",
       "WebFetch(domain:talos.dev)",
-      "WebFetch(domain:www.talos.dev)"
+      "WebFetch(domain:www.talos.dev)",
+      "WebFetch(domain:trivy.dev)"
     ],
     "deny": [
       "Read(./**/*id_rsa*)",
