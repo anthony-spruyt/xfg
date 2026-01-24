@@ -859,8 +859,9 @@ describe("GitHub Integration Test", () => {
     assert.ok(manifestContent, ".xfg.json should exist on main");
     const manifest = JSON.parse(manifestContent);
     console.log("  Manifest content:", JSON.stringify(manifest));
+    const configId = "integration-test-delete-orphaned-github";
     assert.ok(
-      manifest.managedFiles.includes(orphanFile),
+      manifest.configs[configId]?.includes(orphanFile),
       "Manifest should track orphan-test.json",
     );
 
@@ -884,7 +885,7 @@ describe("GitHub Integration Test", () => {
       console.log("  orphan-test.json correctly deleted");
     }
 
-    // 9. Verify manifest was updated (orphan-test.json removed from managedFiles)
+    // 9. Verify manifest was updated (orphan-test.json removed from config namespace)
     console.log("\nVerifying manifest was updated...");
     const manifestContent2 = exec(
       `gh api repos/${TEST_REPO}/contents/${manifestFile} --jq '.content' | base64 -d`,
@@ -892,7 +893,7 @@ describe("GitHub Integration Test", () => {
     const manifest2 = JSON.parse(manifestContent2);
     console.log("  Updated manifest:", JSON.stringify(manifest2));
     assert.ok(
-      !manifest2.managedFiles.includes(orphanFile),
+      !manifest2.configs[configId]?.includes(orphanFile),
       "Manifest should no longer track orphan-test.json",
     );
 
