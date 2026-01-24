@@ -13,7 +13,7 @@ on:
           - major
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   release:
@@ -32,65 +32,28 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Create verified commit via GitHub API
+      - name: Create verified commit
+        uses: iarekylew00t/verified-bot-commit@v2
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          message: "chore: release v${{ steps.version.outputs.version }}"
+          files: |
+            package.json
+            package-lock.json
+          force-push: true
+
+      - name: Create and push tag
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          set -e
           REPO="${{ github.repository }}"
 
-          # Get current commit SHA of main
-          BASE_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
-          echo "Base commit: $BASE_SHA"
+          # Get the commit we just created
+          COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
+          echo "Commit: $COMMIT_SHA"
 
-          # Get the base tree
-          BASE_TREE=$(gh api "repos/$REPO/git/commits/$BASE_SHA" --jq '.tree.sha')
-
-          # Create blob for package.json
-          PKG_BLOB=$(gh api "repos/$REPO/git/blobs" \
-            -f content="$(base64 -w0 package.json)" \
-            -f encoding="base64" \
-            --jq '.sha')
-          echo "package.json blob: $PKG_BLOB"
-
-          # Create blob for package-lock.json
-          LOCK_BLOB=$(gh api "repos/$REPO/git/blobs" \
-            -f content="$(base64 -w0 package-lock.json)" \
-            -f encoding="base64" \
-            --jq '.sha')
-          echo "package-lock.json blob: $LOCK_BLOB"
-
-          # Create new tree with updated files
-          TREE_SHA=$(gh api "repos/$REPO/git/trees" \
-            -f base_tree="$BASE_TREE" \
-            -f "tree[][path]=package.json" \
-            -f "tree[][mode]=100644" \
-            -f "tree[][type]=blob" \
-            -f "tree[][sha]=$PKG_BLOB" \
-            -f "tree[][path]=package-lock.json" \
-            -f "tree[][mode]=100644" \
-            -f "tree[][type]=blob" \
-            -f "tree[][sha]=$LOCK_BLOB" \
-            --jq '.sha')
-          echo "New tree: $TREE_SHA"
-
-          # Create commit (GitHub-verified)
-          COMMIT_SHA=$(gh api "repos/$REPO/git/commits" \
-            -f message="chore: release v${VERSION}" \
-            -f tree="$TREE_SHA" \
-            -f "parents[]=$BASE_SHA" \
-            --jq '.sha')
-          echo "New commit: $COMMIT_SHA"
-
-          # Update main to point to new commit
-          gh api "repos/$REPO/git/refs/heads/main" \
-            -X PATCH \
-            -f sha="$COMMIT_SHA" \
-            -F force=true
-          echo "Updated main to $COMMIT_SHA"
-
-          # Create tag
+          # Create tag object
           TAG_SHA=$(gh api "repos/$REPO/git/tags" \
             -f tag="v${VERSION}" \
             -f message="Release v${VERSION}" \
