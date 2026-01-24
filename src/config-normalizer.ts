@@ -191,6 +191,7 @@ export function normalizeConfig(raw: RawConfig): Config {
   }
 
   return {
+    id: raw.id,
     repos: expandedRepos,
     prTemplate: raw.prTemplate,
     githubHosts: raw.githubHosts,

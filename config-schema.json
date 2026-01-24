@@ -4,8 +4,15 @@
   "title": "xfg Configuration",
   "description": "Configuration file for xfg CLI tool that syncs JSON, YAML, or text config files across multiple Git repositories",
   "type": "object",
-  "required": ["files", "repos"],
+  "required": ["id", "files", "repos"],
   "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Unique identifier for this config. Used to namespace managed files in .xfg.json manifest, allowing multiple configs to manage the same repo without conflicts."
+    },
     "files": {
       "type": "object",
       "description": "Map of target filenames to their configurations. Each file is synced to all repos by default.",

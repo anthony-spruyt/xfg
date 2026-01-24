@@ -5,6 +5,7 @@ Sync multiple configuration files to all repos in a single run.
 ## Example
 
 ```yaml
+id: my-org-config
 files:
   .eslintrc.json:
     content:

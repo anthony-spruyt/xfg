@@ -5,6 +5,7 @@ Define common settings once, customize per team.
 ## Example
 
 ```yaml
+id: my-org-service-config
 files:
   service.config.json:
     content:

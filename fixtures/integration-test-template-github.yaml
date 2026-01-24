@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
 # Integration test config - tests template feature with ${xfg:...} variables
 # Also tests PR template interpolation
+id: integration-test-template-github
 
 prTemplate: |
   ## Test PR for ${xfg:repo.fullName}

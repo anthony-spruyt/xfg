@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
 # Integration test config for Azure DevOps - tests root-level content with overlay merge
+id: integration-test-ado
 
 # Use manual merge mode so the PR stays open for verification during tests
 prOptions:

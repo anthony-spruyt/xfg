@@ -5,6 +5,7 @@ By default, xfg enables auto-merge on PRs when checks pass. You can override thi
 ## Example
 
 ```yaml
+id: my-org-config
 files:
   .prettierrc.json:
     content:
@@ -69,6 +70,7 @@ xfg --config ./config.yaml --merge direct
 The `direct` mode pushes changes directly to the default branch without creating a PR/MR:
 
 ```yaml
+id: my-org-config
 files:
   .prettierrc.json:
     content:

@@ -5,6 +5,7 @@ Use environment variables for secrets and environment-specific values.
 ## Example
 
 ```yaml
+id: my-org-config
 files:
   app.config.json:
     content:

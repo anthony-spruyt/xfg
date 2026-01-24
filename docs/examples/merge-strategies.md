@@ -5,6 +5,7 @@ Different files can use different array merge strategies.
 ## Example
 
 ```yaml
+id: my-org-config
 files:
   eslint.config.json:
     mergeStrategy: append # Extends will append

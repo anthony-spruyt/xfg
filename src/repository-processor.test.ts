@@ -60,6 +60,7 @@ describe("RepositoryProcessor", () => {
         await processor.process(mockRepoConfig, mockRepoInfo, {
           branchName: "chore/sync-config",
           workDir,
+          configId: "test-config",
           dryRun: true,
           executor: createMockExecutor(),
         });
@@ -80,6 +81,7 @@ describe("RepositoryProcessor", () => {
         await processor.process(mockRepoConfig, mockRepoInfo, {
           branchName: "chore/sync-config",
           workDir,
+          configId: "test-config",
           dryRun: false,
           executor: createMockExecutor(),
         });
@@ -218,6 +220,7 @@ describe("RepositoryProcessor", () => {
       const result = await processor.process(mockRepoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: true,
         executor: createMockExecutor(),
       });
@@ -242,6 +245,7 @@ describe("RepositoryProcessor", () => {
       const result = await processor.process(mockRepoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: true, // Use dry run to avoid actual git/PR operations
       });
 
@@ -271,6 +275,7 @@ describe("RepositoryProcessor", () => {
       const result = await processor.process(mockRepoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: true, // Use dry run to avoid actual git/PR operations
       });
 
@@ -390,6 +395,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: true,
         executor: createMockExecutor(),
       });
@@ -418,6 +424,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: true,
         executor: createMockExecutor(),
       });
@@ -448,6 +455,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: true,
         executor: createMockExecutor(),
       });
@@ -476,6 +484,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: true,
         executor: createMockExecutor(),
       });
@@ -680,6 +689,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: true,
         executor: createMockExecutor(),
       });
@@ -712,6 +722,7 @@ describe("RepositoryProcessor", () => {
       const result = await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -754,6 +765,7 @@ describe("RepositoryProcessor", () => {
       const result = await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -794,6 +806,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: true,
         executor: createMockExecutor(),
       });
@@ -828,6 +841,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -860,6 +874,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -934,6 +949,7 @@ describe("RepositoryProcessor", () => {
       const result = await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: mockExecutor,
       });
@@ -1048,6 +1064,7 @@ describe("RepositoryProcessor", () => {
       const result = await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: true,
         executor: createMockExecutor(),
       });
@@ -1087,6 +1104,7 @@ describe("RepositoryProcessor", () => {
       const result = await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: true,
         executor: createMockExecutor(),
       });
@@ -1133,7 +1151,10 @@ describe("RepositoryProcessor", () => {
       mkdirSync(localWorkDir, { recursive: true });
       writeFileSync(
         join(localWorkDir, ".xfg.json"),
-        JSON.stringify({ version: 1, managedFiles: ["config.json"] }),
+        JSON.stringify({
+          version: 2,
+          configs: { "test-config": ["config.json"] },
+        }),
       );
 
       const repoConfig: RepoConfig = {
@@ -1151,6 +1172,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -1276,6 +1298,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -1319,6 +1342,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -1432,6 +1456,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -1479,6 +1504,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -1698,7 +1724,10 @@ describe("RepositoryProcessor", () => {
       mkdirSync(localWorkDir, { recursive: true });
       writeFileSync(
         join(localWorkDir, ".xfg.json"),
-        JSON.stringify({ version: 1, managedFiles: ["orphaned.json"] }),
+        JSON.stringify({
+          version: 2,
+          configs: { "test-config": ["orphaned.json"] },
+        }),
       );
 
       // Config only has config.json (orphaned.json removed)
@@ -1716,6 +1745,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -1744,7 +1774,10 @@ describe("RepositoryProcessor", () => {
       mkdirSync(localWorkDir, { recursive: true });
       writeFileSync(
         join(localWorkDir, ".xfg.json"),
-        JSON.stringify({ version: 1, managedFiles: ["orphaned.json"] }),
+        JSON.stringify({
+          version: 2,
+          configs: { "test-config": ["orphaned.json"] },
+        }),
       );
 
       const repoConfig: RepoConfig = {
@@ -1755,6 +1788,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
         noDelete: true,
@@ -1789,7 +1823,10 @@ describe("RepositoryProcessor", () => {
       mkdirSync(localWorkDir, { recursive: true });
       writeFileSync(
         join(localWorkDir, ".xfg.json"),
-        JSON.stringify({ version: 1, managedFiles: ["orphaned.json"] }),
+        JSON.stringify({
+          version: 2,
+          configs: { "test-config": ["orphaned.json"] },
+        }),
       );
 
       const repoConfig: RepoConfig = {
@@ -1806,6 +1843,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: true,
         executor: createMockExecutor(),
       });
@@ -1843,7 +1881,10 @@ describe("RepositoryProcessor", () => {
       mkdirSync(localWorkDir, { recursive: true });
       writeFileSync(
         join(localWorkDir, ".xfg.json"),
-        JSON.stringify({ version: 1, managedFiles: ["orphaned.json"] }),
+        JSON.stringify({
+          version: 2,
+          configs: { "test-config": ["orphaned.json"] },
+        }),
       );
 
       const repoConfig: RepoConfig = {
@@ -1860,6 +1901,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -1992,6 +2034,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -2038,6 +2081,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -2084,6 +2128,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -2138,6 +2183,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });
@@ -2186,6 +2232,7 @@ describe("RepositoryProcessor", () => {
       await processor.process(repoConfig, mockRepoInfo, {
         branchName: "chore/sync-config",
         workDir: localWorkDir,
+        configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
       });

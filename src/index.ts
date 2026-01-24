@@ -217,6 +217,7 @@ async function main(): Promise<void> {
       const result = await processor.process(repoConfig, repoInfo, {
         branchName,
         workDir,
+        configId: config.id,
         dryRun: options.dryRun,
         retries: options.retries,
         prTemplate: config.prTemplate,

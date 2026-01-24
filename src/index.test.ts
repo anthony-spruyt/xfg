@@ -83,6 +83,7 @@ describe("CLI", () => {
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -111,6 +112,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -141,6 +143,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -171,6 +174,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -200,6 +204,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -229,6 +234,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -259,6 +265,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -289,6 +296,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -320,6 +328,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -352,6 +361,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -383,6 +393,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -415,6 +426,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -471,6 +483,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -493,6 +506,7 @@ files:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   test.json:
     content:
@@ -521,6 +535,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   my-config.json:
     content:
@@ -548,6 +563,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   my-config.json:
     content:
@@ -576,6 +592,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   config.json:
     content:
@@ -607,6 +624,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   config1.json:
     content:
@@ -644,6 +662,7 @@ repos:
       writeFileSync(
         testConfigPath,
         `
+id: test-config
 files:
   config.json:
     content:

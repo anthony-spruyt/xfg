@@ -33,11 +33,34 @@ function isStructuredFileExtension(fileName: string): boolean {
   );
 }
 
+// Pattern for valid config ID: alphanumeric, hyphens, underscores
+const CONFIG_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
+const CONFIG_ID_MAX_LENGTH = 64;
+
 /**
  * Validates raw config structure before normalization.
  * @throws Error if validation fails
  */
 export function validateRawConfig(config: RawConfig): void {
+  // Validate required id field
+  if (!config.id || typeof config.id !== "string") {
+    throw new Error(
+      "Config requires an 'id' field. This unique identifier is used to namespace managed files in .xfg.json",
+    );
+  }
+
+  if (!CONFIG_ID_PATTERN.test(config.id)) {
+    throw new Error(
+      `Config 'id' contains invalid characters: '${config.id}'. Use only alphanumeric characters, hyphens, and underscores.`,
+    );
+  }
+
+  if (config.id.length > CONFIG_ID_MAX_LENGTH) {
+    throw new Error(
+      `Config 'id' exceeds maximum length of ${CONFIG_ID_MAX_LENGTH} characters`,
+    );
+  }
+
   if (!config.files || typeof config.files !== "object") {
     throw new Error("Config missing required field: files (must be an object)");
   }

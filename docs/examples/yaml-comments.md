@@ -5,6 +5,7 @@ Add schema directives and comments to YAML files, or create empty files.
 ## Schema Directive
 
 ```yaml
+id: my-org-config
 files:
   trivy.yaml:
     schemaUrl: https://trivy.dev/latest/docs/references/configuration/config-file/
@@ -31,6 +32,7 @@ scan:
 ## Header Comment
 
 ```yaml
+id: my-org-config
 files:
   trivy.yaml:
     schemaUrl: https://trivy.dev/latest/docs/references/configuration/config-file/
@@ -53,6 +55,7 @@ exit-code: 1
 ## Multi-Line Header
 
 ```yaml
+id: my-org-config
 files:
   config.yaml:
     header:
@@ -78,6 +81,7 @@ version: 1
 Omit `content` to create an empty file:
 
 ```yaml
+id: my-org-config
 files:
   .prettierignore:
     createOnly: true

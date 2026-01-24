@@ -5,6 +5,7 @@ Load content from external template files instead of inline content.
 ## Example
 
 ```yaml
+id: my-org-config
 files:
   .prettierrc.json:
     content: "@templates/prettierrc.json"
@@ -43,6 +44,7 @@ config/
 Per-repo content overlays merge onto the resolved file content:
 
 ```yaml
+id: my-org-config
 files:
   .eslintrc.json:
     content: "@templates/eslintrc.json" # Base config from file

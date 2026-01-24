@@ -5,6 +5,7 @@ Some files should only be created once as defaults, allowing repos to maintain t
 ## Example
 
 ```yaml
+id: my-org-config
 files:
   .trivyignore.yaml:
     createOnly: true # Only create if doesn't exist
@@ -46,6 +47,7 @@ repos:
 You can override `createOnly` per-repo:
 
 ```yaml
+id: my-org-config
 files:
   .trivyignore.yaml:
     createOnly: true

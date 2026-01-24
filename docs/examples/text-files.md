@@ -5,6 +5,7 @@ Sync text files like `.gitignore`, `.markdownlintignore`, or `.env.example` usin
 ## String Content (Multiline Text)
 
 ```yaml
+id: my-org-config
 files:
   .markdownlintignore:
     createOnly: true
@@ -26,6 +27,7 @@ repos:
 ## Lines Array with Merge Strategy
 
 ```yaml
+id: my-org-config
 files:
   .gitignore:
     mergeStrategy: append

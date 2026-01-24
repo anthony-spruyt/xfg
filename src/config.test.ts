@@ -35,6 +35,7 @@ describe("Config", () => {
   describe("validation", () => {
     test("throws when files is missing", () => {
       const path = createTestConfig(`
+id: test-config
 repos:
   - git: git@github.com:org/repo.git
 `);
@@ -46,6 +47,7 @@ repos:
 
     test("throws when repos is missing", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -59,6 +61,7 @@ files:
 
     test("throws when repos is not an array", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -70,6 +73,7 @@ repos: not-an-array
 
     test("throws when repo.git is missing", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -88,6 +92,7 @@ repos:
 
     test("throws when file name contains path traversal", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   ../escape.json:
     content:
@@ -103,6 +108,7 @@ repos:
 
     test("throws when file name is absolute path", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   /etc/passwd:
     content:
@@ -118,6 +124,7 @@ repos:
 
     test("allows nested relative paths without traversal", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config/settings.json:
     content:
@@ -131,6 +138,7 @@ repos:
 
     test("validates git field in array syntax", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -148,6 +156,7 @@ repos:
   describe("git array expansion", () => {
     test("single git string unchanged", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -162,6 +171,7 @@ repos:
 
     test("git array expands to multiple entries", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -181,6 +191,7 @@ repos:
 
     test("preserves content across expanded entries", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -199,6 +210,7 @@ repos:
   describe("content merging", () => {
     test("uses file base content when repo has no override", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -217,6 +229,7 @@ repos:
 
     test("merges repo file content onto file base content", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -240,6 +253,7 @@ repos:
 
     test("deep merges nested objects", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -263,6 +277,7 @@ repos:
 
     test("override: true uses only repo file content", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -285,6 +300,7 @@ repos:
 
     test("override requires content field", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -303,6 +319,7 @@ repos:
 
     test("arrays are replaced by default", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -325,6 +342,7 @@ repos:
 
     test("per-file mergeStrategy: append concatenates arrays", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     mergeStrategy: append
@@ -351,6 +369,7 @@ repos:
   describe("environment variable interpolation", () => {
     test("interpolates env vars in content values", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -366,6 +385,7 @@ repos:
 
     test("throws on missing env var by default", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -381,6 +401,7 @@ repos:
 
     test("uses default value when env var missing", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -398,6 +419,7 @@ repos:
   describe("multiple files", () => {
     test("all repos receive all files by default", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   eslint.json:
     content:
@@ -418,6 +440,7 @@ repos:
 
     test("each file can have its own mergeStrategy", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   append.json:
     mergeStrategy: append
@@ -455,6 +478,7 @@ repos:
   describe("integration", () => {
     test("full config with all features", () => {
       const path = createTestConfig(`
+id: test-config
 files:
   my.config.json:
     content:
@@ -518,6 +542,7 @@ repos:
       writeFileSync(templatePath, '{"base": true, "version": "1.0"}', "utf-8");
 
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content: "@templates/base.json"
@@ -541,6 +566,7 @@ repos:
       );
 
       const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content: "@templates/base.json"
@@ -565,6 +591,7 @@ repos:
       writeFileSync(templatePath, "node_modules/\ndist/", "utf-8");
 
       const path = createTestConfig(`
+id: test-config
 files:
   .gitignore:
     content: "@templates/gitignore.txt"
@@ -584,6 +611,7 @@ repos:
       writeFileSync(templatePath, "root: true\nenv:\n  node: true", "utf-8");
 
       const path = createTestConfig(`
+id: test-config
 files:
   .eslintrc.yaml:
     content: "@templates/eslint.yaml"
@@ -612,6 +640,7 @@ describe("prOptions", () => {
 
   test("parses global prOptions", () => {
     const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -633,6 +662,7 @@ repos:
 
   test("parses per-repo prOptions", () => {
     const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -652,6 +682,7 @@ repos:
 
   test("per-repo prOptions overrides global", () => {
     const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -675,6 +706,7 @@ repos:
 
   test("per-repo prOptions partial override", () => {
     const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -703,6 +735,7 @@ repos:
 
   test("no prOptions returns undefined", () => {
     const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:
@@ -716,6 +749,7 @@ repos:
 
   test("prOptions with git array expansion", () => {
     const path = createTestConfig(`
+id: test-config
 files:
   config.json:
     content:

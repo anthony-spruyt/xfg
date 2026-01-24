@@ -6,6 +6,7 @@ import type { RawConfig } from "./config.js";
 describe("validateRawConfig", () => {
   // Helper to create a minimal valid config
   const createValidConfig = (overrides?: Partial<RawConfig>): RawConfig => ({
+    id: "test-config",
     files: {
       "config.json": { content: { key: "value" } },
     },
@@ -13,9 +14,112 @@ describe("validateRawConfig", () => {
     ...overrides,
   });
 
+  describe("id validation", () => {
+    test("throws when id is missing", () => {
+      const config = {
+        files: { "config.json": { content: {} } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      } as RawConfig;
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Config requires an 'id' field/,
+      );
+    });
+
+    test("throws when id is empty string", () => {
+      const config = createValidConfig({ id: "" });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Config requires an 'id' field/,
+      );
+    });
+
+    test("throws when id is not a string", () => {
+      const config = createValidConfig({ id: 123 as never });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Config requires an 'id' field/,
+      );
+    });
+
+    test("allows valid alphanumeric id", () => {
+      const config = createValidConfig({ id: "myConfig123" });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows valid id with hyphens", () => {
+      const config = createValidConfig({ id: "my-config-name" });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows valid id with underscores", () => {
+      const config = createValidConfig({ id: "my_config_name" });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows valid id with mixed characters", () => {
+      const config = createValidConfig({ id: "Team-A_config-2024" });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when id contains spaces", () => {
+      const config = createValidConfig({ id: "my config" });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Config 'id' contains invalid characters/,
+      );
+    });
+
+    test("throws when id contains dots", () => {
+      const config = createValidConfig({ id: "my.config" });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Config 'id' contains invalid characters/,
+      );
+    });
+
+    test("throws when id contains special characters", () => {
+      const config = createValidConfig({ id: "my@config!" });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Config 'id' contains invalid characters/,
+      );
+    });
+
+    test("throws when id exceeds 64 characters", () => {
+      const longId = "a".repeat(65);
+      const config = createValidConfig({ id: longId });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Config 'id' exceeds maximum length of 64 characters/,
+      );
+    });
+
+    test("allows id at exactly 64 characters", () => {
+      const maxId = "a".repeat(64);
+      const config = createValidConfig({ id: maxId });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows single character id", () => {
+      const config = createValidConfig({ id: "a" });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+  });
+
   describe("files validation", () => {
     test("throws when files is missing", () => {
-      const config = {} as RawConfig;
+      const config = {
+        id: "test-config",
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      } as RawConfig;
 
       assert.throws(
         () => validateRawConfig(config),
@@ -156,7 +260,10 @@ describe("validateRawConfig", () => {
 
   describe("repos validation", () => {
     test("throws when repos is missing", () => {
-      const config = { files: { "config.json": { content: {} } } } as RawConfig;
+      const config = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+      } as RawConfig;
 
       assert.throws(
         () => validateRawConfig(config),
@@ -530,6 +637,7 @@ describe("validateRawConfig", () => {
   describe("empty content validation", () => {
     test("allows undefined content for empty file", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           ".prettierignore": {},
         },
@@ -540,6 +648,7 @@ describe("validateRawConfig", () => {
 
     test("allows empty file with header", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": { header: "Schema-only file" },
         },
@@ -550,6 +659,7 @@ describe("validateRawConfig", () => {
 
     test("allows empty file with schemaUrl", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": { schemaUrl: "https://example.com/schema.json" },
         },
@@ -560,6 +670,7 @@ describe("validateRawConfig", () => {
 
     test("allows empty file with createOnly", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           ".prettierignore": { createOnly: true },
         },
@@ -572,6 +683,7 @@ describe("validateRawConfig", () => {
   describe("valid configurations", () => {
     test("accepts minimal valid config", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" } },
         },
@@ -582,6 +694,7 @@ describe("validateRawConfig", () => {
 
     test("accepts multiple files in config", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           "eslint.config.json": { content: { extends: ["base"] } },
           ".prettierrc.yaml": { content: { singleQuote: true } },
@@ -595,6 +708,7 @@ describe("validateRawConfig", () => {
 
     test("accepts full config with per-repo overrides", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           "eslint.config.json": {
             content: { extends: ["base"] },
@@ -634,6 +748,7 @@ describe("validateRawConfig", () => {
   describe("text file content validation", () => {
     test("file named 'json' without extension is text file", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           json: { content: "some text content" }, // file named "json" with no extension
         },
@@ -644,6 +759,7 @@ describe("validateRawConfig", () => {
 
     test("accepts string content for text files", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           ".gitignore": { content: "node_modules/\ndist/\n" },
         },
@@ -654,6 +770,7 @@ describe("validateRawConfig", () => {
 
     test("accepts string array content for text files", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           ".gitignore": { content: ["node_modules/", "dist/"] },
         },
@@ -664,6 +781,7 @@ describe("validateRawConfig", () => {
 
     test("accepts text content with mergeStrategy", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           ".gitignore": {
             content: ["node_modules/"],
@@ -677,6 +795,7 @@ describe("validateRawConfig", () => {
 
     test("accepts text content with createOnly", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           ".markdownlintignore": {
             content: "# Ignore claude files\n.claude/",
@@ -690,6 +809,7 @@ describe("validateRawConfig", () => {
 
     test("throws when JSON file has string content", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: "not valid json content" as never },
         },
@@ -703,6 +823,7 @@ describe("validateRawConfig", () => {
 
     test("throws when YAML file has string content", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": { content: "key: value" as never },
         },
@@ -716,6 +837,7 @@ describe("validateRawConfig", () => {
 
     test("throws when YML file has string array content", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           "config.yml": { content: ["line1", "line2"] as never },
         },
@@ -729,6 +851,7 @@ describe("validateRawConfig", () => {
 
     test("accepts object content for .json5 files", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           "config.json5": { content: { key: "value" } },
         },
@@ -739,6 +862,7 @@ describe("validateRawConfig", () => {
 
     test("throws when JSON5 file has string content", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           "config.json5": { content: "string content" as never },
         },
@@ -752,6 +876,7 @@ describe("validateRawConfig", () => {
 
     test("throws when text file has object content", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           ".gitignore": { content: { key: "value" } as never },
         },
@@ -765,6 +890,7 @@ describe("validateRawConfig", () => {
 
     test("throws when .env file has object content", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           ".env.example": { content: { KEY: "value" } as never },
         },
@@ -778,6 +904,7 @@ describe("validateRawConfig", () => {
 
     test("throws when array has non-string elements", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           ".gitignore": { content: ["valid", 123, "also valid"] as never },
         },
@@ -791,6 +918,7 @@ describe("validateRawConfig", () => {
 
     test("throws when per-repo JSON file override has string content", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" } },
         },
@@ -811,6 +939,7 @@ describe("validateRawConfig", () => {
 
     test("throws when per-repo text file override has object content", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           ".gitignore": { content: "node_modules/" },
         },
@@ -831,6 +960,7 @@ describe("validateRawConfig", () => {
 
     test("accepts per-repo text file override with string array", () => {
       const config: RawConfig = {
+        id: "test-config",
         files: {
           ".gitignore": { content: ["node_modules/"], mergeStrategy: "append" },
         },

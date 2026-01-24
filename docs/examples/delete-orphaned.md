@@ -9,6 +9,7 @@ When you set `deleteOrphaned: true` on a file, xfg tracks it in a `.xfg.json` ma
 ## Basic Usage
 
 ```yaml
+id: my-org-standards
 files:
   .prettierrc.json:
     content:
@@ -33,6 +34,7 @@ When you remove `.prettierrc.json` from this config and run xfg again, the file 
 ### Global Default
 
 ```yaml
+id: my-org-standards
 deleteOrphaned: true # Track all files by default
 
 files:
@@ -49,6 +51,7 @@ repos:
 ### Per-Repo Override
 
 ```yaml
+id: my-org-standards
 files:
   .prettierrc.json:
     content: { semi: false }
@@ -76,16 +79,28 @@ This is useful for:
 
 ## The Manifest File
 
-xfg creates a `.xfg.json` file in each target repository to track managed files:
+xfg creates a `.xfg.json` file in each target repository to track managed files. The manifest is namespaced by config ID, allowing multiple xfg configs to manage the same repo without conflicts:
 
 ```json
 {
-  "version": 1,
-  "managedFiles": [".prettierrc.json", ".eslintrc.json"]
+  "version": 2,
+  "configs": {
+    "my-org-standards": [".prettierrc.json", ".eslintrc.json"],
+    "team-a-config": ["team-a-specific.json"]
+  }
 }
 ```
 
-This file is committed alongside your synced files. Only files listed in the manifest can be deleted by xfg.
+This file is committed alongside your synced files. Only files listed under a config's namespace can be deleted by that config.
+
+## Multiple Configs
+
+The `id` field enables multiple xfg configs to manage the same repository without interfering with each other. Each config only manages files in its own namespace:
+
+- **Config A** (`id: team-a-standards`) manages `foo.json`, `bar.yaml`
+- **Config B** (`id: team-b-standards`) manages `baz.json`
+
+When Config A removes `foo.json` from its config, only `foo.json` is deleted - Config B's files are untouched.
 
 ## Dry Run
 
@@ -101,5 +116,6 @@ Output shows `[DELETED]` badges for files that would be removed.
 
 - **Opt-in by default**: Files are not tracked unless you explicitly set `deleteOrphaned: true`
 - **Manifest-based**: Only files previously synced with `deleteOrphaned: true` can be deleted
+- **Namespaced**: Each config ID has its own namespace - configs can't delete each other's files
 - **Runtime override**: Use `--no-delete` to skip deletions at any time
 - **Clear visibility**: Deleted files are shown prominently in dry-run output and PR descriptions

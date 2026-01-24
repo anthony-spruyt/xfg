@@ -66,6 +66,7 @@ export interface RawRepoConfig {
 
 // Root config structure
 export interface RawConfig {
+  id: string;
   files: Record<string, RawFileConfig>;
   repos: RawRepoConfig[];
   prOptions?: PRMergeOptions;
@@ -100,6 +101,7 @@ export interface RepoConfig {
 
 // Normalized config
 export interface Config {
+  id: string;
   repos: RepoConfig[];
   prTemplate?: string;
   githubHosts?: string[];

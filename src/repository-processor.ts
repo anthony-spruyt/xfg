@@ -48,6 +48,8 @@ function shouldBeExecutable(file: FileContent): boolean {
 export interface ProcessorOptions {
   branchName: string;
   workDir: string;
+  /** Config ID for manifest namespacing */
+  configId: string;
   dryRun?: boolean;
   /** Number of retries for network operations (default: 3) */
   retries?: number;
@@ -282,6 +284,7 @@ export class RepositoryProcessor {
       // Update manifest and get list of files to delete
       const { manifest: newManifest, filesToDelete } = updateManifest(
         existingManifest,
+        options.configId,
         filesWithDeleteOrphaned,
       );
 
@@ -308,19 +311,19 @@ export class RepositoryProcessor {
       }
 
       // Save updated manifest (tracks files with deleteOrphaned: true)
-      // Only save if there are managed files or if we had a previous manifest
-      if (newManifest.managedFiles.length > 0 || existingManifest !== null) {
+      // Only save if there are managed files for any config, or if we had a previous manifest
+      const hasAnyManagedFiles = Object.keys(newManifest.configs).length > 0;
+      if (hasAnyManagedFiles || existingManifest !== null) {
         if (!dryRun) {
           saveManifest(workDir, newManifest);
         }
         // Track manifest file as changed if it would be different
-        const existingManifestFiles = existingManifest?.managedFiles ?? [];
-        const newManifestFiles = newManifest.managedFiles;
+        const existingConfigs = existingManifest?.configs ?? {};
         const manifestChanged =
-          JSON.stringify(existingManifestFiles) !==
-          JSON.stringify(newManifestFiles);
+          JSON.stringify(existingConfigs) !==
+          JSON.stringify(newManifest.configs);
         if (manifestChanged) {
-          const manifestExisted = existingManifest !== null;
+          const manifestExisted = existsSync(join(workDir, MANIFEST_FILENAME));
           changedFiles.push({
             fileName: MANIFEST_FILENAME,
             action: manifestExisted ? "update" : "create",
