@@ -61,24 +61,41 @@ jobs:
       - name: Wait for CI to pass
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
         run: |
-          REPO="${{ github.repository }}"
           COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
           echo "Waiting for CI on commit $COMMIT_SHA..."
 
           TIMEOUT=600
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            STATUS=$(gh api "repos/$REPO/commits/$COMMIT_SHA/status" --jq '.state')
-            echo "CI status: $STATUS ($ELAPSED seconds)"
+            # Get all check runs for this commit
+            CHECK_RUNS=$(gh api "repos/$REPO/commits/$COMMIT_SHA/check-runs" --jq '.check_runs')
 
-            if [ "$STATUS" = "success" ]; then
-              echo "CI passed"
-              exit 0
-            elif [ "$STATUS" = "failure" ] || [ "$STATUS" = "error" ]; then
-              echo "CI failed"
+            # Count total, completed, successful/skipped, and failed
+            TOTAL=$(echo "$CHECK_RUNS" | jq 'length')
+            COMPLETED=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status == "completed")] | length')
+            SUCCESSFUL=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status == "completed" and (.conclusion == "success" or .conclusion == "skipped" or .conclusion == "neutral"))] | length')
+            FAILED=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out"))] | length')
+
+            echo "Check runs: $COMPLETED/$TOTAL completed, $SUCCESSFUL successful, $FAILED failed ($ELAPSED seconds)"
+
+            # If any check failed, exit immediately
+            if [ "$FAILED" -gt 0 ]; then
+              echo "CI failed - check runs with failures:"
+              echo "$CHECK_RUNS" | jq -r '.[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out")) | "  - \(.name): \(.conclusion)"'
               exit 1
             fi
+
+            # If all checks completed successfully, we're done
+            if [ "$TOTAL" -gt 0 ] && [ "$COMPLETED" -eq "$TOTAL" ]; then
+              echo "All $TOTAL check runs passed"
+              exit 0
+            fi
+
+            # Show pending checks
+            echo "Pending checks:"
+            echo "$CHECK_RUNS" | jq -r '.[] | select(.status != "completed") | "  - \(.name): \(.status)"'
 
             sleep 15
             ELAPSED=$((ELAPSED + 15))
