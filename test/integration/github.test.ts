@@ -1028,7 +1028,7 @@ describe("GitHub Integration Test", () => {
 
     // The key assertion: xfg should have succeeded even with divergent history
     assert.ok(
-      output2.includes("Created PR") || output2.includes("PR #"),
+      output2.includes("PR:") || output2.includes("Succeeded: 1"),
       "Output should indicate PR creation succeeded",
     );
 
