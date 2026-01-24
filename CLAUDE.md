@@ -268,13 +268,11 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 The workflow will:
 
 1. Bump version in package.json
-2. Create a signed release PR
+2. Create a release PR
 3. Wait for CI to pass
 4. Auto-merge the PR
-5. Create and push a signed version tag
+5. Create and push a version tag
 6. Trigger npm publish + GitHub Release (via ci.yaml)
-
-All commits and tags are signed with Gitsign (keyless OIDC signing).
 
 ## External Dependencies
 
