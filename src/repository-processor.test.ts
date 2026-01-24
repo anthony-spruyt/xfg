@@ -897,6 +897,7 @@ describe("RepositoryProcessor", () => {
         return true;
       }
       override async push(): Promise<void> {}
+      override async fetch(): Promise<void> {}
 
       private getWorkDir(): string {
         return (this as unknown as { workDir: string }).workDir;

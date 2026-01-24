@@ -815,6 +815,74 @@ describe("GitOps", () => {
     });
   });
 
+  describe("fetch", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("fetches from origin without prune by default", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      await gitOps.fetch();
+
+      assert.equal(commands.length, 1);
+      assert.ok(commands[0].includes("git fetch origin"));
+      assert.ok(!commands[0].includes("--prune"));
+    });
+
+    test("fetches with prune flag when prune option is true", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      await gitOps.fetch({ prune: true });
+
+      assert.equal(commands.length, 1);
+      assert.ok(commands[0].includes("git fetch origin --prune"));
+    });
+
+    test("does not include prune when prune option is false", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      await gitOps.fetch({ prune: false });
+
+      assert.equal(commands.length, 1);
+      assert.ok(commands[0].includes("git fetch origin"));
+      assert.ok(!commands[0].includes("--prune"));
+    });
+  });
+
   describe("getDefaultBranch", () => {
     beforeEach(() => {
       mkdirSync(workDir, { recursive: true });
