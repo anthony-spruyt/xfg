@@ -5,7 +5,6 @@ import {
   FileContent,
   ContentValue,
   convertContentToString,
-  PRMergeOptions,
 } from "./config.js";
 import { RepoInfo, getRepoDisplayName } from "./repo-detector.js";
 import { interpolateXfgContent } from "./xfg-template.js";
