@@ -73,9 +73,13 @@ runs:
         AZURE_DEVOPS_TOKEN: ${{ inputs.azure-devops-token }}
         GITLAB_TOKEN: ${{ inputs.gitlab-token }}
       run: |
-        # Configure git user
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        # Configure git user (only if not already configured)
+        if [ -z "$(git config --global user.name)" ]; then
+          git config --global user.name "github-actions[bot]"
+        fi
+        if [ -z "$(git config --global user.email)" ]; then
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        fi
 
         # GitHub - URL rewrite for authentication
         if [ -n "${GITHUB_TOKEN}" ]; then
