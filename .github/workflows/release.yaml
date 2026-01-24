@@ -14,10 +14,12 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: npm
     steps:
       - uses: actions/checkout@v6
 
@@ -28,9 +30,14 @@ jobs:
           app-id: ${{ vars.RELEASE_APP_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
-      - uses: actions/setup-node@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
           node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Bump version locally
         id: version
@@ -38,6 +45,9 @@ jobs:
           npm version ${{ inputs.version }} --no-git-tag-version
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build
+        run: npm run build
 
       - name: Create verified commit
         uses: iarekylew00t/verified-bot-commit@v2
@@ -83,14 +93,21 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           REPO="${{ github.repository }}"
-
-          # Get the verified commit SHA
           COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
           echo "Verified commit: $COMMIT_SHA"
 
-          # Create lightweight tag pointing directly to verified commit
-          # This inherits the commit's verified status
           gh api "repos/$REPO/git/refs" \
             -f ref="refs/tags/v${VERSION}" \
             -f sha="$COMMIT_SHA"
           echo "Created tag v${VERSION}"
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}

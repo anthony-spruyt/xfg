@@ -254,23 +254,13 @@ npm run dev                     # Run CLI via ts-node (pass config file as argum
 
 ## Release Process
 
-Releases are automated via GitHub Actions. To create a release:
-
-**Via GitHub UI:**
-Actions → Release → Run workflow → Select patch/minor/major → Run
-
-**Via CLI:**
+Run the Release workflow via Actions UI or CLI:
 
 ```bash
 gh workflow run release.yaml -f version=patch  # or minor/major
 ```
 
-The workflow will:
-
-1. Bump version in package.json
-2. Create a GitHub-verified commit directly on main (via GitHub API using `RELEASE_TOKEN` PAT)
-3. Create and push a version tag
-4. Trigger npm publish + GitHub Release (via ci.yaml)
+The workflow bumps version, creates a verified commit on main, waits for CI, tags, publishes to npm, and creates a GitHub Release.
 
 ## External Dependencies
 
