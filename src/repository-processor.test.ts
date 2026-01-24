@@ -1094,6 +1094,80 @@ describe("RepositoryProcessor", () => {
       // Should not be skipped because file doesn't exist
       assert.notEqual(result.skipped, true, "Should not be skipped");
     });
+
+    test("should not delete createOnly file when tracked in manifest and exists on base branch (issue #199)", async () => {
+      const mockLogger = createMockLogger();
+
+      // Extended mock that tracks deletion behavior
+      class MockGitOpsForCreateOnlyDeletion extends MockGitOpsForCreateOnly {
+        deletedFiles: string[] = [];
+        existingLocalFiles: Set<string> = new Set();
+
+        override fileExists(fileName: string): boolean {
+          return this.existingLocalFiles.has(fileName);
+        }
+
+        override deleteFile(fileName: string): void {
+          this.deletedFiles.push(fileName);
+          this.existingLocalFiles.delete(fileName);
+        }
+
+        setupExistingLocalFile(fileName: string): void {
+          this.existingLocalFiles.add(fileName);
+        }
+      }
+
+      let mockGitOps: MockGitOpsForCreateOnlyDeletion | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForCreateOnlyDeletion(opts);
+        mockGitOps.fileExistsOnBaseBranch = true; // File exists on base branch
+        mockGitOps.setupExistingLocalFile("config.json"); // File exists locally too
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `createonly-no-delete-${Date.now()}`);
+
+      // Create manifest file tracking config.json (simulating previous sync)
+      mkdirSync(localWorkDir, { recursive: true });
+      writeFileSync(
+        join(localWorkDir, ".xfg.json"),
+        JSON.stringify({ version: 1, managedFiles: ["config.json"] }),
+      );
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "config.json",
+            content: { key: "value" },
+            createOnly: true,
+            deleteOrphaned: true, // Would delete if orphaned, but shouldn't be orphaned
+          },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+        executor: createMockExecutor(),
+      });
+
+      // The file should NOT be deleted - it's still in the config, just skipped due to createOnly
+      assert.equal(
+        mockGitOps!.deletedFiles.length,
+        0,
+        `Should not delete createOnly file that exists on base branch, but deleted: ${mockGitOps!.deletedFiles.join(", ")}`,
+      );
+
+      // Verify the skip message was logged
+      const skipMessage = mockLogger.messages.find(
+        (m) => m.includes("Skipping") && m.includes("createOnly"),
+      );
+      assert.ok(skipMessage, "Should log skip message for createOnly");
+    });
   });
 
   describe("template handling", () => {
