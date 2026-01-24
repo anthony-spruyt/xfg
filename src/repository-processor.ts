@@ -402,10 +402,12 @@ export class RepositoryProcessor {
 
       // Step 8: Push
       // In direct mode, push to default branch; otherwise push to sync branch
+      // Use force-with-lease for sync branch (PR modes) to handle divergent history
+      // Never force push to default branch (direct mode) - could overwrite others' work
       const pushBranch = isDirectMode ? baseBranch : branchName;
       this.log.info(`Pushing to ${pushBranch}...`);
       try {
-        await this.gitOps.push(pushBranch);
+        await this.gitOps.push(pushBranch, { force: !isDirectMode });
       } catch (error) {
         // Handle branch protection errors in direct mode
         if (isDirectMode) {
