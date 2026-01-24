@@ -1,0 +1,99 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: chainguard-dev/actions/setup-gitsign@main
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version and get new version
+        id: version
+        run: |
+          npm version ${{ inputs.version }} --no-git-tag-version
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create release branch and PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          BRANCH="release/v${VERSION}"
+
+          git checkout -b "$BRANCH"
+          git add package.json package-lock.json
+          git commit -S -m "chore: release v${VERSION}"
+          git push -u origin "$BRANCH"
+
+          gh pr create \
+            --title "chore: release v${VERSION}" \
+            --body "Automated release PR for v${VERSION}" \
+            --base main
+
+      - name: Enable auto-merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge --squash --delete-branch --auto
+
+      - name: Wait for PR to merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Waiting for CI checks and auto-merge..."
+          TIMEOUT=600
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            STATE=$(gh pr view --json state -q '.state')
+            if [ "$STATE" = "MERGED" ]; then
+              echo "PR merged successfully"
+              exit 0
+            elif [ "$STATE" = "CLOSED" ]; then
+              echo "PR was closed without merging"
+              exit 1
+            fi
+            sleep 15
+            ELAPSED=$((ELAPSED + 15))
+            echo "Still waiting... ($ELAPSED seconds)"
+          done
+          echo "Timeout waiting for PR to merge"
+          exit 1
+
+      - name: Create and push tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+          git tag -s "v${VERSION}" -m "Release v${VERSION}"
+          git push origin "v${VERSION}"

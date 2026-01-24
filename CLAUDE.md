@@ -254,31 +254,27 @@ npm run dev                     # Run CLI via ts-node (pass config file as argum
 
 ## Release Process
 
-Branch protection prevents direct pushes to main, so releases require a PR workflow:
+Releases are automated via GitHub Actions. To create a release:
+
+**Via GitHub UI:**
+Actions → Release → Run workflow → Select patch/minor/major → Run
+
+**Via CLI:**
 
 ```bash
-# 1. Create release branch from main
-git checkout main && git pull
-git checkout -b release/vX.Y.Z
-
-# 2. Bump version (patch/minor/major)
-npm version patch --no-git-tag-version   # or minor/major
-
-# 3. Commit, push, and create PR
-git add -A && git commit -m "chore: release vX.Y.Z"
-git push -u origin release/vX.Y.Z
-gh pr create --title "chore: release vX.Y.Z" --body "Release vX.Y.Z"
-
-# 4. Wait for CI, then merge
-gh pr merge --squash --delete-branch
-
-# 5. Create and push tag (triggers npm publish + GitHub Release)
-git checkout main && git pull
-git tag -a vX.Y.Z -m "Release vX.Y.Z"
-git push origin vX.Y.Z
+gh workflow run release.yaml -f version=patch  # or minor/major
 ```
 
-The release workflow automatically builds, tests, publishes to npm with provenance, and creates a GitHub Release.
+The workflow will:
+
+1. Bump version in package.json
+2. Create a signed release PR
+3. Wait for CI to pass
+4. Auto-merge the PR
+5. Create and push a signed version tag
+6. Trigger npm publish + GitHub Release (via ci.yaml)
+
+All commits and tags are signed with Gitsign (keyless OIDC signing).
 
 ## External Dependencies
 
