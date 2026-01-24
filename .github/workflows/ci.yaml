@@ -287,6 +287,25 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Verify CI status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Checking CI status for commit: $COMMIT_SHA"
+
+          # Get combined status (includes status checks from main branch CI run)
+          STATUS=$(gh api "repos/$REPO/commits/$COMMIT_SHA/status" --jq '.state')
+
+          if [ "$STATUS" != "success" ]; then
+            echo "::error::Main CI has not passed for this commit. Status: $STATUS"
+            echo "Please ensure all CI checks pass on main before creating a release tag."
+            exit 1
+          fi
+
+          echo "CI status verified: $STATUS"
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
