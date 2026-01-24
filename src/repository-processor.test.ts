@@ -595,6 +595,7 @@ describe("RepositoryProcessor", () => {
     class MockGitOpsForDirectMode extends GitOps {
       createBranchCalled = false;
       pushBranch: string | null = null;
+      pushForce: boolean | undefined = undefined;
       shouldRejectPush = false;
 
       constructor(options: GitOpsOptions) {
@@ -642,8 +643,12 @@ describe("RepositoryProcessor", () => {
         return true;
       }
 
-      override async push(branchName: string): Promise<void> {
+      override async push(
+        branchName: string,
+        options?: { force?: boolean },
+      ): Promise<void> {
         this.pushBranch = branchName;
+        this.pushForce = options?.force;
         if (this.shouldRejectPush) {
           throw new Error("Push rejected (branch protection)");
         }
@@ -799,6 +804,70 @@ describe("RepositoryProcessor", () => {
       assert.ok(
         warningMessage,
         "Should log warning about mergeStrategy being ignored",
+      );
+    });
+
+    test("direct mode should use force: false for push (issue #183)", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForDirectMode | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForDirectMode(opts);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `direct-mode-force-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+        prOptions: { merge: "direct" },
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+        executor: createMockExecutor(),
+      });
+
+      assert.equal(
+        mockGitOps!.pushForce,
+        false,
+        "Direct mode should use force: false (never force push to default branch)",
+      );
+    });
+
+    test("PR mode should use force: true for push (issue #183)", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForDirectMode | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForDirectMode(opts);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `pr-mode-force-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+        // Default mode is 'auto' (PR mode)
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+        executor: createMockExecutor(),
+      });
+
+      assert.equal(
+        mockGitOps!.pushForce,
+        true,
+        "PR mode should use force: true (--force-with-lease for sync branch)",
       );
     });
   });

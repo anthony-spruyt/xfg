@@ -740,6 +740,79 @@ describe("GitOps", () => {
       assert.ok(commands[0].includes("git push -u origin"));
       assert.ok(commands[0].includes("feature-branch"));
     });
+
+    test("uses --force-with-lease when force option is true", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      await gitOps.push("sync-branch", { force: true });
+
+      assert.equal(commands.length, 1);
+      assert.ok(
+        commands[0].includes("--force-with-lease"),
+        "Should include --force-with-lease flag",
+      );
+      assert.ok(commands[0].includes("-u origin"));
+      assert.ok(commands[0].includes("sync-branch"));
+    });
+
+    test("does not use force flag when force option is false", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      await gitOps.push("main", { force: false });
+
+      assert.equal(commands.length, 1);
+      assert.ok(
+        !commands[0].includes("--force"),
+        "Should NOT include any force flag",
+      );
+      assert.ok(commands[0].includes("git push -u origin"));
+      assert.ok(commands[0].includes("main"));
+    });
+
+    test("does not use force flag when options is undefined", async () => {
+      const commands: string[] = [];
+      const mockExecutor: CommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      await gitOps.push("main");
+
+      assert.equal(commands.length, 1);
+      assert.ok(
+        !commands[0].includes("--force"),
+        "Should NOT include any force flag when options undefined",
+      );
+    });
   });
 
   describe("getDefaultBranch", () => {

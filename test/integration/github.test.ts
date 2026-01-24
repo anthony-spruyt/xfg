@@ -916,4 +916,286 @@ describe("GitHub Integration Test", () => {
 
     console.log("\n=== deleteOrphaned test (issue #132) passed ===\n");
   });
+
+  test("handles divergent branch when existing PR is present (issue #183)", async () => {
+    // This test verifies the fix for issue #183:
+    // When xfg tries to push to a sync branch that has diverged from the new local changes,
+    // it should use --force-with-lease to handle the divergent history gracefully.
+    //
+    // Scenario: Existing PR on sync branch, then main advances, creating divergent history.
+
+    const divergentFile = "divergent-test.json";
+    const testBranch = "chore/sync-divergent";
+
+    console.log("\n=== Setting up divergent branch test (issue #183) ===\n");
+
+    // 1. Close any existing PRs from this branch
+    console.log("Closing any existing PRs...");
+    try {
+      const existingPRs = exec(
+        `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number --jq '.[].number'`,
+      );
+      if (existingPRs) {
+        for (const prNumber of existingPRs.split("\n").filter(Boolean)) {
+          console.log(`  Closing PR #${prNumber}`);
+          exec(`gh pr close ${prNumber} --repo ${TEST_REPO} --delete-branch`);
+        }
+      }
+    } catch {
+      console.log("  No existing PRs to close");
+    }
+
+    // 2. Delete the remote branch if it exists
+    console.log(`Deleting remote branch ${testBranch} if exists...`);
+    try {
+      exec(
+        `gh api --method DELETE repos/${TEST_REPO}/git/refs/heads/${testBranch}`,
+      );
+      console.log("  Branch deleted");
+    } catch {
+      console.log("  Branch does not exist");
+    }
+
+    // 3. Delete divergent-test.json if it exists on main
+    console.log(`Deleting ${divergentFile} if exists on main...`);
+    try {
+      const sha = exec(
+        `gh api repos/${TEST_REPO}/contents/${divergentFile} --jq '.sha'`,
+      );
+      if (sha && !sha.includes("Not Found")) {
+        exec(
+          `gh api --method PUT repos/${TEST_REPO}/contents/${divergentFile} -f message="test: setup ${divergentFile} for divergent test" -f content="${Buffer.from(JSON.stringify({ version: 1 }, null, 2) + "\n").toString("base64")}" -f sha="${sha}"`,
+        );
+        console.log("  File updated on main");
+      }
+    } catch {
+      // Create the file
+      exec(
+        `gh api --method PUT repos/${TEST_REPO}/contents/${divergentFile} -f message="test: create ${divergentFile} for divergent test" -f content="${Buffer.from(JSON.stringify({ version: 1 }, null, 2) + "\n").toString("base64")}"`,
+      );
+      console.log("  File created on main");
+    }
+
+    // 4. Create initial PR with xfg (sets up sync branch)
+    console.log("\n--- Phase 1: Create initial PR with xfg ---\n");
+    const configPath = join(
+      fixturesDir,
+      "integration-test-divergent-github.yaml",
+    );
+    const output1 = exec(`node dist/index.js --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output1);
+
+    // 5. Verify PR was created
+    const prInfo1 = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number --jq '.[0].number'`,
+    );
+    assert.ok(prInfo1, "Initial PR should be created");
+    console.log(`  Initial PR created: #${prInfo1}`);
+
+    // 6. Now advance main by updating the file directly (creating divergent history)
+    console.log(
+      "\n--- Phase 2: Advance main to create divergent history ---\n",
+    );
+    const mainSha = exec(
+      `gh api repos/${TEST_REPO}/contents/${divergentFile} --jq '.sha'`,
+    );
+    exec(
+      `gh api --method PUT repos/${TEST_REPO}/contents/${divergentFile} -f message="test: advance main for divergent test" -f content="${Buffer.from(JSON.stringify({ version: 2, advancedOnMain: true }, null, 2) + "\n").toString("base64")}" -f sha="${mainSha}"`,
+    );
+    console.log("  Main branch advanced");
+
+    // 7. Run xfg again - this should close the old PR, force-push, and create new PR
+    console.log(
+      "\n--- Phase 3: Run xfg again (should handle divergent history) ---\n",
+    );
+    const output2 = exec(`node dist/index.js --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output2);
+
+    // 8. Verify the new PR was created successfully (not failed due to non-fast-forward)
+    const prInfo2 = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number,title --jq '.[0]'`,
+    );
+    assert.ok(
+      prInfo2,
+      "New PR should be created after handling divergent history",
+    );
+    const pr2 = JSON.parse(prInfo2);
+    console.log(`  New PR created: #${pr2.number} - ${pr2.title}`);
+
+    // The key assertion: xfg should have succeeded even with divergent history
+    assert.ok(
+      output2.includes("Created PR") || output2.includes("PR #"),
+      "Output should indicate PR creation succeeded",
+    );
+
+    // 9. Cleanup
+    console.log("\nCleaning up divergent test...");
+    try {
+      exec(`gh pr close ${pr2.number} --repo ${TEST_REPO} --delete-branch`);
+      console.log(`  Closed PR #${pr2.number}`);
+    } catch {
+      console.log("  Could not close PR");
+    }
+    try {
+      const sha = exec(
+        `gh api repos/${TEST_REPO}/contents/${divergentFile} --jq '.sha'`,
+      );
+      exec(
+        `gh api --method DELETE repos/${TEST_REPO}/contents/${divergentFile} -f message="test: cleanup ${divergentFile}" -f sha="${sha}"`,
+      );
+      console.log(`  Deleted ${divergentFile}`);
+    } catch {
+      console.log(`  Could not delete ${divergentFile}`);
+    }
+
+    console.log("\n=== Divergent branch test (issue #183) passed ===\n");
+  });
+
+  test("handles divergent branch when no PR exists but branch exists (issue #183)", async () => {
+    // This test verifies the fix for issue #183, specifically the case where:
+    // - closeExistingPR has nothing to close (no PR exists)
+    // - But the remote sync branch still exists from a previous run
+    // - This can happen if a previous xfg run failed after creating the branch but before PR creation
+    //
+    // Scenario: Remote sync branch exists without a PR, and local changes would diverge.
+
+    const orphanBranchFile = "orphan-branch-test.json";
+    const testBranch = "chore/sync-orphan-branch";
+
+    console.log(
+      "\n=== Setting up orphan branch test (issue #183 variant) ===\n",
+    );
+
+    // 1. Close any existing PRs and delete branch
+    console.log("Closing any existing PRs...");
+    try {
+      const existingPRs = exec(
+        `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number --jq '.[].number'`,
+      );
+      if (existingPRs) {
+        for (const prNumber of existingPRs.split("\n").filter(Boolean)) {
+          exec(`gh pr close ${prNumber} --repo ${TEST_REPO} --delete-branch`);
+        }
+      }
+    } catch {
+      console.log("  No existing PRs to close");
+    }
+
+    // 2. Delete the remote branch if it exists
+    console.log(`Deleting remote branch ${testBranch} if exists...`);
+    try {
+      exec(
+        `gh api --method DELETE repos/${TEST_REPO}/git/refs/heads/${testBranch}`,
+      );
+    } catch {
+      console.log("  Branch does not exist");
+    }
+
+    // 3. Delete test file if it exists on main
+    console.log(`Deleting ${orphanBranchFile} if exists on main...`);
+    try {
+      const sha = exec(
+        `gh api repos/${TEST_REPO}/contents/${orphanBranchFile} --jq '.sha'`,
+      );
+      if (sha && !sha.includes("Not Found")) {
+        exec(
+          `gh api --method DELETE repos/${TEST_REPO}/contents/${orphanBranchFile} -f message="test: cleanup" -f sha="${sha}"`,
+        );
+      }
+    } catch {
+      console.log("  File does not exist");
+    }
+
+    // 4. Create the remote sync branch directly (without PR) by committing a different version
+    // This simulates a scenario where a branch exists but has different content
+    console.log(
+      "\n--- Phase 1: Create orphan sync branch directly (no PR) ---\n",
+    );
+
+    // First, get the main branch SHA
+    const mainSha = exec(
+      `gh api repos/${TEST_REPO}/git/refs/heads/main --jq '.object.sha'`,
+    );
+    console.log(`  Main branch SHA: ${mainSha}`);
+
+    // Create the branch pointing to main
+    exec(
+      `gh api --method POST repos/${TEST_REPO}/git/refs -f ref="refs/heads/${testBranch}" -f sha="${mainSha}"`,
+    );
+    console.log(`  Created branch ${testBranch}`);
+
+    // Commit a file to the branch (different content than what xfg will sync)
+    const branchContent =
+      JSON.stringify({ orphanBranchVersion: 1 }, null, 2) + "\n";
+    exec(
+      `gh api --method PUT repos/${TEST_REPO}/contents/${orphanBranchFile} -f message="test: create file on orphan branch" -f content="${Buffer.from(branchContent).toString("base64")}" -f branch="${testBranch}"`,
+    );
+    console.log(`  Committed file to ${testBranch}`);
+
+    // 5. Verify no PR exists for this branch
+    const prCheck = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number --jq 'length'`,
+    );
+    assert.equal(
+      prCheck,
+      "0",
+      "Should have no PR initially (orphan branch scenario)",
+    );
+    console.log("  Verified: No PR exists for the orphan branch");
+
+    // 6. Run xfg - it should force-push and create a new PR
+    console.log(
+      "\n--- Phase 2: Run xfg (should force-push to orphan branch) ---\n",
+    );
+    const configPath = join(
+      fixturesDir,
+      "integration-test-orphan-branch-github.yaml",
+    );
+    const output = exec(`node dist/index.js --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    // 7. Verify PR was created successfully
+    const prInfo = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number,title --jq '.[0]'`,
+    );
+    assert.ok(
+      prInfo,
+      "PR should be created after force-pushing to orphan branch",
+    );
+    const pr = JSON.parse(prInfo);
+    console.log(`  PR created: #${pr.number} - ${pr.title}`);
+
+    // 8. Verify the file content matches xfg config (not the orphan branch version)
+    const fileContent = exec(
+      `gh api repos/${TEST_REPO}/contents/${orphanBranchFile}?ref=${testBranch} --jq '.content' | base64 -d`,
+    );
+    const json = JSON.parse(fileContent);
+    console.log("  File content on PR branch:", JSON.stringify(json));
+    assert.ok(
+      !json.orphanBranchVersion,
+      "Should NOT have orphanBranchVersion (old content)",
+    );
+    assert.equal(
+      json.syncedByXfg,
+      true,
+      "Should have syncedByXfg: true (xfg content)",
+    );
+
+    // 9. Cleanup
+    console.log("\nCleaning up orphan branch test...");
+    try {
+      exec(`gh pr close ${pr.number} --repo ${TEST_REPO} --delete-branch`);
+      console.log(`  Closed PR #${pr.number}`);
+    } catch {
+      console.log("  Could not close PR");
+    }
+
+    console.log("\n=== Orphan branch test (issue #183 variant) passed ===\n");
+  });
 });

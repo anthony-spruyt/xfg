@@ -273,12 +273,13 @@ export class GitOps {
     return true;
   }
 
-  async push(branchName: string): Promise<void> {
+  async push(branchName: string, options?: { force?: boolean }): Promise<void> {
     if (this.dryRun) {
       return;
     }
+    const forceFlag = options?.force ? "--force-with-lease " : "";
     await this.execWithRetry(
-      `git push -u origin ${escapeShellArg(branchName)}`,
+      `git push ${forceFlag}-u origin ${escapeShellArg(branchName)}`,
       this.workDir,
     );
   }
