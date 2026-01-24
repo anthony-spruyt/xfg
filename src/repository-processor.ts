@@ -5,7 +5,6 @@ import {
   FileContent,
   ContentValue,
   convertContentToString,
-  PRMergeOptions,
 } from "./config.js";
 import { RepoInfo, getRepoDisplayName } from "./repo-detector.js";
 import { interpolateXfgContent } from "./xfg-template.js";
@@ -273,12 +272,10 @@ export class RepositoryProcessor {
       const existingManifest = loadManifest(workDir);
 
       // Build map of files with their deleteOrphaned setting
+      // Include ALL files from config, even skipped ones (createOnly + exists),
+      // so they aren't incorrectly treated as orphaned (issue #199)
       const filesWithDeleteOrphaned = new Map<string, boolean | undefined>();
       for (const file of repoConfig.files) {
-        // Skip files that were excluded (createOnly + exists)
-        if (skippedFileNames.has(file.fileName)) {
-          continue;
-        }
         filesWithDeleteOrphaned.set(file.fileName, file.deleteOrphaned);
       }
 
