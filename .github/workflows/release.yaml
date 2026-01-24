@@ -48,6 +48,35 @@ jobs:
             package.json
             package-lock.json
 
+      - name: Wait for CI to pass
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          REPO="${{ github.repository }}"
+          COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
+          echo "Waiting for CI on commit $COMMIT_SHA..."
+
+          TIMEOUT=600
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            STATUS=$(gh api "repos/$REPO/commits/$COMMIT_SHA/status" --jq '.state')
+            echo "CI status: $STATUS ($ELAPSED seconds)"
+
+            if [ "$STATUS" = "success" ]; then
+              echo "CI passed"
+              exit 0
+            elif [ "$STATUS" = "failure" ] || [ "$STATUS" = "error" ]; then
+              echo "CI failed"
+              exit 1
+            fi
+
+            sleep 15
+            ELAPSED=$((ELAPSED + 15))
+          done
+
+          echo "Timeout waiting for CI"
+          exit 1
+
       - name: Create lightweight tag
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
