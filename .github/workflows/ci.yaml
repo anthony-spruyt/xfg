@@ -237,12 +237,17 @@ jobs:
           echo "Deleting remote branch ${BRANCH_NAME} if exists..."
           gh api --method DELETE repos/${TEST_REPO}/git/refs/heads/${BRANCH_NAME} 2>/dev/null || echo "  Branch does not exist"
 
+      - name: Configure custom git identity (to verify action preserves it)
+        run: |
+          git config --global user.name "test-user"
+          git config --global user.email "test@example.com"
+
       - uses: ./
         with:
           config: ./fixtures/integration-test-config-github.yaml
           github-token: ${{ secrets.GH_PAT }}
 
-      - name: Validate - verify PR was created
+      - name: Validate - verify PR was created with correct author
         run: |
           echo "Verifying PR was created..."
           PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number,title,url --jq '.[0]')
@@ -252,6 +257,16 @@ jobs:
           fi
           echo "PR created successfully:"
           echo "$PR_INFO" | jq .
+
+          # Verify commit author is preserved (not overwritten to github-actions[bot])
+          PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
+          COMMIT_AUTHOR=$(gh pr view $PR_NUMBER --repo ${TEST_REPO} --json commits --jq '.commits[-1].authors[0].name')
+          echo "Commit author: $COMMIT_AUTHOR"
+          if [ "$COMMIT_AUTHOR" = "github-actions[bot]" ]; then
+            echo "ERROR: Git identity was overwritten to github-actions[bot]"
+            exit 1
+          fi
+          echo "Git identity preserved correctly"
 
       - name: Cleanup - close PR
         if: always()
