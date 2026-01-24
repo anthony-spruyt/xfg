@@ -925,7 +925,7 @@ describe("GitHub Integration Test", () => {
     // Scenario: Existing PR on sync branch, then main advances, creating divergent history.
 
     const divergentFile = "divergent-test.json";
-    const testBranch = "chore/sync-divergent";
+    const testBranch = "chore/sync-divergent-test";
 
     console.log("\n=== Setting up divergent branch test (issue #183) ===\n");
 
@@ -1064,7 +1064,7 @@ describe("GitHub Integration Test", () => {
     // Scenario: Remote sync branch exists without a PR, and local changes would diverge.
 
     const orphanBranchFile = "orphan-branch-test.json";
-    const testBranch = "chore/sync-orphan-branch";
+    const testBranch = "chore/sync-orphan-branch-test";
 
     console.log(
       "\n=== Setting up orphan branch test (issue #183 variant) ===\n",

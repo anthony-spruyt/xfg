@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
 # Integration test config - tests orphan branch handling (issue #183 variant)
+# Note: branch is auto-generated as chore/sync-orphan-branch-test from filename
 files:
   orphan-branch-test.json:
     content:
@@ -7,4 +8,3 @@ files:
 
 repos:
   - git: https://github.com/anthony-spruyt/xfg-test.git
-    branch: chore/sync-orphan-branch
