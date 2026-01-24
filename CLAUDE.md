@@ -268,11 +268,9 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 The workflow will:
 
 1. Bump version in package.json
-2. Create a GitHub-verified commit directly on main (via GitHub API)
+2. Create a GitHub-verified commit directly on main (via GitHub API using `RELEASE_TOKEN` PAT)
 3. Create and push a version tag
 4. Trigger npm publish + GitHub Release (via ci.yaml)
-
-**Prerequisite**: Add `github-actions[bot]` to branch protection bypass list (Settings → Branches → main → Allow specified actors to bypass).
 
 ## External Dependencies
 
