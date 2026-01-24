@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+id: test-repos
 files:
   my.config.json:
     content:

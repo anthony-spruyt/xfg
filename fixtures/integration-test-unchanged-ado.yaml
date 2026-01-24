@@ -3,6 +3,7 @@
 # This test has two files:
 # - unchanged-test.json: content matches what's already in the repo (should not appear in PR)
 # - changed-test.json: new content (should appear in PR)
+id: integration-test-unchanged-ado
 
 prOptions:
   merge: manual

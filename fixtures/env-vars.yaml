@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
 # Fixture testing environment variable interpolation
+id: env-vars-test
 files:
   env.config.json:
     content:

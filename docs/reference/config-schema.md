@@ -37,14 +37,15 @@ Or configure in `.vscode/settings.json`:
 
 ### Root Object
 
-| Field            | Type        | Required | Description                             |
-| ---------------- | ----------- | -------- | --------------------------------------- |
-| `files`          | `object`    | Yes      | Map of filenames to file configs        |
-| `repos`          | `array`     | Yes      | List of repository configurations       |
-| `prOptions`      | `PROptions` | No       | Global PR merge options                 |
-| `prTemplate`     | `string`    | No       | Custom PR body template                 |
-| `githubHosts`    | `array`     | No       | GitHub Enterprise Server hostnames      |
-| `deleteOrphaned` | `boolean`   | No       | Global default for orphan file deletion |
+| Field            | Type        | Required | Description                                       |
+| ---------------- | ----------- | -------- | ------------------------------------------------- |
+| `id`             | `string`    | Yes      | Unique config identifier (alphanumeric, `-`, `_`) |
+| `files`          | `object`    | Yes      | Map of filenames to file configs                  |
+| `repos`          | `array`     | Yes      | List of repository configurations                 |
+| `prOptions`      | `PROptions` | No       | Global PR merge options                           |
+| `prTemplate`     | `string`    | No       | Custom PR body template                           |
+| `githubHosts`    | `array`     | No       | GitHub Enterprise Server hostnames                |
+| `deleteOrphaned` | `boolean`   | No       | Global default for orphan file deletion           |
 
 ### File Config
 

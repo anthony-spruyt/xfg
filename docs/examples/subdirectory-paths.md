@@ -5,6 +5,7 @@ Sync files to any subdirectory path. Parent directories are created automaticall
 ## Example
 
 ```yaml
+id: my-org-config
 files:
   # GitHub Actions workflow
   ".github/workflows/ci.yaml":

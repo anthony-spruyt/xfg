@@ -3,6 +3,7 @@
 # This test has two files:
 # - unchanged-test.json: content matches what's already in the repo (should not appear in MR)
 # - changed-test.json: new content (should appear in MR)
+id: integration-test-unchanged-gitlab
 
 prOptions:
   merge: manual

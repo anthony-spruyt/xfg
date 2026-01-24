@@ -7,6 +7,7 @@ Shell scripts (`.sh` files) are automatically marked as executable using `git up
 `.sh` files are automatically executable:
 
 ```yaml
+id: my-org-config
 files:
   deploy.sh:
     content: |-
@@ -22,6 +23,7 @@ repos:
 Disable for a specific `.sh` file:
 
 ```yaml
+id: my-org-config
 files:
   template.sh:
     executable: false
@@ -36,6 +38,7 @@ repos:
 Mark any file as executable:
 
 ```yaml
+id: my-org-config
 files:
   run:
     executable: true
@@ -52,6 +55,7 @@ repos:
 Override executable settings per-repo:
 
 ```yaml
+id: my-org-config
 files:
   deploy.sh:
     content: |-

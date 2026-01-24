@@ -15,6 +15,7 @@ describe("normalizeConfig", () => {
   describe("git array expansion", () => {
     test("expands single git URL to one repo entry", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: { "config.json": { content: { key: "value" } } },
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
@@ -26,6 +27,7 @@ describe("normalizeConfig", () => {
 
     test("expands git array to multiple repo entries", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: { "config.json": { content: { key: "value" } } },
         repos: [
           {
@@ -45,6 +47,7 @@ describe("normalizeConfig", () => {
 
     test("each expanded repo gets all files", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" } },
           "settings.yaml": { content: { enabled: true } },
@@ -66,6 +69,7 @@ describe("normalizeConfig", () => {
 
     test("handles multiple repos with mixed single and array git", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: { "config.json": { content: {} } },
         repos: [
           { git: "git@github.com:org/single.git" },
@@ -86,6 +90,7 @@ describe("normalizeConfig", () => {
   describe("all repos receive all files", () => {
     test("all files delivered to all repos by default", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "eslint.json": { content: { extends: ["base"] } },
           "prettier.json": { content: { semi: true } },
@@ -111,6 +116,7 @@ describe("normalizeConfig", () => {
   describe("file exclusion", () => {
     test("excludes file when set to false", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "eslint.json": { content: { extends: ["base"] } },
           "prettier.json": { content: { semi: true } },
@@ -134,6 +140,7 @@ describe("normalizeConfig", () => {
 
     test("excludes multiple files", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "eslint.json": { content: { extends: ["base"] } },
           "prettier.json": { content: { semi: true } },
@@ -159,6 +166,7 @@ describe("normalizeConfig", () => {
 
     test("different repos can exclude different files", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "eslint.json": { content: { extends: ["base"] } },
           "prettier.json": { content: { semi: true } },
@@ -192,6 +200,7 @@ describe("normalizeConfig", () => {
 
     test("can mix exclusion with overrides", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "eslint.json": { content: { extends: ["base"] } },
           "prettier.json": { content: { semi: true } },
@@ -222,6 +231,7 @@ describe("normalizeConfig", () => {
   describe("content merging", () => {
     test("uses file base content when repo has no override", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { base: "value" } },
         },
@@ -234,6 +244,7 @@ describe("normalizeConfig", () => {
 
     test("merges repo file content with file base content", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { base: "value", override: "original" } },
         },
@@ -257,6 +268,7 @@ describe("normalizeConfig", () => {
 
     test("deep merges nested objects", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { nested: { a: 1, b: 2 } } },
         },
@@ -278,6 +290,7 @@ describe("normalizeConfig", () => {
 
     test("uses override mode when override is true", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { base: "value" } },
         },
@@ -302,6 +315,7 @@ describe("normalizeConfig", () => {
 
     test("respects per-file mergeStrategy", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": {
             content: { items: ["a", "b"] },
@@ -326,6 +340,7 @@ describe("normalizeConfig", () => {
 
     test("strips merge directives from output", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { items: ["a"] } },
         },
@@ -352,6 +367,7 @@ describe("normalizeConfig", () => {
   describe("environment variable interpolation", () => {
     test("interpolates env vars in content", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { value: "${TEST_VAR}" } },
         },
@@ -366,6 +382,7 @@ describe("normalizeConfig", () => {
 
     test("interpolates env vars with defaults", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { value: "${MISSING:-default}" } },
         },
@@ -378,6 +395,7 @@ describe("normalizeConfig", () => {
 
     test("throws on missing required env var", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { value: "${MISSING_VAR}" } },
         },
@@ -394,6 +412,7 @@ describe("normalizeConfig", () => {
   describe("output structure", () => {
     test("preserves fileName in files array", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "my/config.json": { content: { key: "value" } },
         },
@@ -406,6 +425,7 @@ describe("normalizeConfig", () => {
 
     test("output repos are independent (no shared references)", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: { "config.json": { content: { key: "value" } } },
         repos: [
           {
@@ -428,6 +448,7 @@ describe("normalizeConfig", () => {
 
     test("returns empty repos array when input has empty repos", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: { "config.json": { content: {} } },
         repos: [],
       };
@@ -440,6 +461,7 @@ describe("normalizeConfig", () => {
   describe("multiple files with different strategies", () => {
     test("each file uses its own mergeStrategy", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "append.json": {
             content: { items: ["a"] },
@@ -477,6 +499,7 @@ describe("normalizeConfig", () => {
   describe("createOnly propagation", () => {
     test("passes root-level createOnly: true to FileContent", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" }, createOnly: true },
         },
@@ -489,6 +512,7 @@ describe("normalizeConfig", () => {
 
     test("passes root-level createOnly: false to FileContent", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" }, createOnly: false },
         },
@@ -501,6 +525,7 @@ describe("normalizeConfig", () => {
 
     test("createOnly is undefined when not specified", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" } },
         },
@@ -513,6 +538,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo createOnly overrides root-level", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" }, createOnly: true },
         },
@@ -532,6 +558,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo createOnly: true overrides undefined root", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" } },
         },
@@ -551,6 +578,7 @@ describe("normalizeConfig", () => {
 
     test("different repos can have different createOnly values", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" }, createOnly: true },
         },
@@ -574,6 +602,7 @@ describe("normalizeConfig", () => {
 
     test("createOnly works with override mode", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { base: "value" } },
         },
@@ -602,6 +631,7 @@ describe("normalizeConfig", () => {
   describe("empty file handling", () => {
     test("undefined content results in null FileContent", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           ".prettierignore": {},
         },
@@ -614,6 +644,7 @@ describe("normalizeConfig", () => {
 
     test("empty file with createOnly", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           ".prettierignore": { createOnly: true },
         },
@@ -627,6 +658,7 @@ describe("normalizeConfig", () => {
 
     test("repo content merges into undefined root content", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": {},
         },
@@ -646,6 +678,7 @@ describe("normalizeConfig", () => {
 
     test("override with no content creates empty file", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": { content: { base: "value" } },
         },
@@ -667,6 +700,7 @@ describe("normalizeConfig", () => {
   describe("header normalization", () => {
     test("string header normalized to array", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": { content: {}, header: "Single comment" },
         },
@@ -679,6 +713,7 @@ describe("normalizeConfig", () => {
 
     test("array header passed through", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": { content: {}, header: ["Line 1", "Line 2"] },
         },
@@ -691,6 +726,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo header overrides root header", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": { content: {}, header: "Root header" },
         },
@@ -710,6 +746,7 @@ describe("normalizeConfig", () => {
 
     test("header is undefined when not specified", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": { content: {} },
         },
@@ -724,6 +761,7 @@ describe("normalizeConfig", () => {
   describe("schemaUrl propagation", () => {
     test("root schemaUrl passed to FileContent", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": {
             content: {},
@@ -742,6 +780,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo schemaUrl overrides root", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": {
             content: {},
@@ -767,6 +806,7 @@ describe("normalizeConfig", () => {
 
     test("schemaUrl is undefined when not specified", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": { content: {} },
         },
@@ -779,6 +819,7 @@ describe("normalizeConfig", () => {
 
     test("empty file with schemaUrl", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.yaml": { schemaUrl: "https://example.com/schema.json" },
         },
@@ -797,6 +838,7 @@ describe("normalizeConfig", () => {
   describe("type safety", () => {
     test("throws when merging text base with object overlay", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           ".gitignore": { content: "node_modules" }, // text content
         },
@@ -821,6 +863,7 @@ describe("normalizeConfig", () => {
   describe("prTemplate propagation", () => {
     test("prTemplate passed through to Config", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: { "config.json": { content: { key: "value" } } },
         repos: [{ git: "git@github.com:org/repo.git" }],
         prTemplate: "## Custom Template\n\n${xfg:pr.fileChanges}",
@@ -835,6 +878,7 @@ describe("normalizeConfig", () => {
 
     test("missing prTemplate results in undefined", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: { "config.json": { content: { key: "value" } } },
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
@@ -847,6 +891,7 @@ describe("normalizeConfig", () => {
   describe("executable propagation", () => {
     test("passes root-level executable: true to FileContent", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "deploy.sh": { content: "#!/bin/bash", executable: true },
         },
@@ -859,6 +904,7 @@ describe("normalizeConfig", () => {
 
     test("passes root-level executable: false to FileContent", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "script.sh": { content: "#!/bin/bash", executable: false },
         },
@@ -871,6 +917,7 @@ describe("normalizeConfig", () => {
 
     test("executable is undefined when not specified", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" } },
         },
@@ -883,6 +930,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo executable overrides root-level", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "script.sh": { content: "#!/bin/bash", executable: true },
         },
@@ -902,6 +950,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo executable: true overrides undefined root", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           run: { content: "#!/bin/bash" },
         },
@@ -921,6 +970,7 @@ describe("normalizeConfig", () => {
 
     test("different repos can have different executable values", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "script.sh": { content: "#!/bin/bash", executable: true },
         },
@@ -944,6 +994,7 @@ describe("normalizeConfig", () => {
   describe("template propagation", () => {
     test("template: true from root is propagated", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "README.md": { content: "# ${xfg:repo.name}", template: true },
         },
@@ -956,6 +1007,7 @@ describe("normalizeConfig", () => {
 
     test("template is undefined when not specified", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" } },
         },
@@ -968,6 +1020,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo template overrides root-level", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: {}, template: true },
         },
@@ -987,6 +1040,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo template: true overrides undefined root", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: {} },
         },
@@ -1006,6 +1060,7 @@ describe("normalizeConfig", () => {
 
     test("different repos can have different template values", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "README.md": { content: "# ${xfg:repo.name}", template: true },
         },
@@ -1029,6 +1084,7 @@ describe("normalizeConfig", () => {
   describe("vars merging", () => {
     test("root-level vars are propagated", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": {
             content: {},
@@ -1048,6 +1104,7 @@ describe("normalizeConfig", () => {
 
     test("vars is undefined when not specified", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: {}, template: true },
         },
@@ -1060,6 +1117,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo vars merge with root-level vars", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": {
             content: {},
@@ -1087,6 +1145,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo vars override root-level vars for same key", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": {
             content: {},
@@ -1113,6 +1172,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo vars only (no root vars)", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: {}, template: true },
         },
@@ -1132,6 +1192,7 @@ describe("normalizeConfig", () => {
 
     test("different repos can have different vars", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": {
             content: {},
@@ -1162,6 +1223,7 @@ describe("normalizeConfig", () => {
   describe("deleteOrphaned propagation", () => {
     test("global deleteOrphaned: true propagates to all files", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" } },
           "settings.yaml": { content: { enabled: true } },
@@ -1178,6 +1240,7 @@ describe("normalizeConfig", () => {
 
     test("deleteOrphaned is undefined when not specified", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" } },
         },
@@ -1191,6 +1254,7 @@ describe("normalizeConfig", () => {
 
     test("per-file deleteOrphaned overrides global default", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" }, deleteOrphaned: true },
           "settings.yaml": { content: { enabled: true } },
@@ -1206,6 +1270,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo deleteOrphaned overrides per-file and global", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" }, deleteOrphaned: true },
         },
@@ -1226,6 +1291,7 @@ describe("normalizeConfig", () => {
 
     test("different repos can have different deleteOrphaned values", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" }, deleteOrphaned: true },
         },
@@ -1249,6 +1315,7 @@ describe("normalizeConfig", () => {
 
     test("per-repo deleteOrphaned: true overrides undefined per-file and global", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" } },
         },
@@ -1268,6 +1335,7 @@ describe("normalizeConfig", () => {
 
     test("deleteOrphaned works with file exclusion", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "config.json": { content: { key: "value" }, deleteOrphaned: true },
           "settings.yaml": { content: { enabled: true }, deleteOrphaned: true },
@@ -1291,6 +1359,7 @@ describe("normalizeConfig", () => {
 
     test("inheritance order: per-repo > per-file > global", () => {
       const raw: RawConfig = {
+        id: "test-config",
         files: {
           "file1.json": { content: {} }, // inherits global
           "file2.json": { content: {}, deleteOrphaned: false }, // per-file overrides global

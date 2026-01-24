@@ -1,5 +1,6 @@
 # Integration test config for deleteOrphaned feature - Phase 2
 # This config has the orphan-test.json removed, which should trigger deletion
+id: integration-test-delete-orphaned-github
 
 files:
   # orphan-test.json is intentionally NOT here

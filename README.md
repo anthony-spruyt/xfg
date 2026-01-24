@@ -52,6 +52,7 @@ xfg --config ./config.yaml
 
 ```yaml
 # sync-config.yaml
+id: my-org-prettier-config
 files:
   .prettierrc.json:
     content:

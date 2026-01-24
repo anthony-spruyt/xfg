@@ -5,6 +5,7 @@ xfg uses a YAML configuration file to define which files to sync and to which re
 ## Basic Structure
 
 ```yaml
+id: my-config # Unique identifier for this config (required)
 files:
   my.config.json: # Target file (.json outputs JSON, .yaml/.yml outputs YAML)
     mergeStrategy: replace # Array merge strategy for this file (optional)
@@ -21,13 +22,14 @@ repos: # List of repositories
 
 ## Root-Level Fields
 
-| Field            | Description                                                                           | Required |
-| ---------------- | ------------------------------------------------------------------------------------- | -------- |
-| `files`          | Map of target filenames to configs                                                    | Yes      |
-| `repos`          | Array of repository configurations                                                    | Yes      |
-| `prOptions`      | Global PR merge options (can be overridden per-repo)                                  | No       |
-| `prTemplate`     | Custom PR body template (inline or `@path/to/file` reference)                         | No       |
-| `deleteOrphaned` | Global default for orphan deletion. Files removed from config are deleted from repos. | No       |
+| Field            | Description                                                                                 | Required |
+| ---------------- | ------------------------------------------------------------------------------------------- | -------- |
+| `id`             | Unique identifier for this config. Used to namespace managed files in `.xfg.json` manifest. | Yes      |
+| `files`          | Map of target filenames to configs                                                          | Yes      |
+| `repos`          | Array of repository configurations                                                          | Yes      |
+| `prOptions`      | Global PR merge options (can be overridden per-repo)                                        | No       |
+| `prTemplate`     | Custom PR body template (inline or `@path/to/file` reference)                               | No       |
+| `deleteOrphaned` | Global default for orphan deletion. Files removed from config are deleted from repos.       | No       |
 
 ## Per-File Fields
 
@@ -81,6 +83,7 @@ repos:
 Files with `deleteOrphaned: true` are tracked in a `.xfg.json` manifest file in each target repository. When a tracked file is removed from your xfg config, it will be automatically deleted from the target repos on the next sync.
 
 ```yaml
+id: my-org-standards
 files:
   .prettierrc.json:
     content: { semi: false }

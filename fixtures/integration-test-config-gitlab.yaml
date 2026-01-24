@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
 # Integration test config for GitLab - tests root-level content with overlay merge
+id: integration-test-gitlab
 
 # Use manual merge mode so the MR stays open for verification during tests
 prOptions:

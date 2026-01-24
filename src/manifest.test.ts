@@ -30,14 +30,14 @@ describe("manifest", () => {
   });
 
   describe("createEmptyManifest", () => {
-    test("creates manifest with version 1", () => {
+    test("creates manifest with version 2", () => {
       const manifest = createEmptyManifest();
-      assert.equal(manifest.version, 1);
+      assert.equal(manifest.version, 2);
     });
 
-    test("creates manifest with empty managedFiles array", () => {
+    test("creates manifest with empty configs object", () => {
       const manifest = createEmptyManifest();
-      assert.deepEqual(manifest.managedFiles, []);
+      assert.deepEqual(manifest.configs, {});
     });
   });
 
@@ -47,10 +47,13 @@ describe("manifest", () => {
       assert.equal(result, null);
     });
 
-    test("loads valid manifest file", () => {
+    test("loads valid v2 manifest file", () => {
       const manifest: XfgManifest = {
-        version: 1,
-        managedFiles: ["file1.json", "file2.yaml"],
+        version: 2,
+        configs: {
+          "config-a": ["file1.json", "file2.yaml"],
+          "config-b": ["file3.json"],
+        },
       };
       writeFileSync(
         join(testDir, MANIFEST_FILENAME),
@@ -73,8 +76,20 @@ describe("manifest", () => {
       assert.equal(result, null);
     });
 
-    test("returns null for wrong version", () => {
-      const manifest = { version: 2, managedFiles: [] };
+    test("returns null for v1 manifest (migration: treat as no manifest)", () => {
+      const v1Manifest = { version: 1, managedFiles: ["file.json"] };
+      writeFileSync(
+        join(testDir, MANIFEST_FILENAME),
+        JSON.stringify(v1Manifest),
+        "utf-8",
+      );
+
+      const result = loadManifest(testDir);
+      assert.equal(result, null);
+    });
+
+    test("returns null for unknown version", () => {
+      const manifest = { version: 99, data: {} };
       writeFileSync(
         join(testDir, MANIFEST_FILENAME),
         JSON.stringify(manifest),
@@ -85,8 +100,8 @@ describe("manifest", () => {
       assert.equal(result, null);
     });
 
-    test("returns null if managedFiles is not an array", () => {
-      const manifest = { version: 1, managedFiles: "not-an-array" };
+    test("returns null if configs is not an object", () => {
+      const manifest = { version: 2, configs: "not-an-object" };
       writeFileSync(
         join(testDir, MANIFEST_FILENAME),
         JSON.stringify(manifest),
@@ -108,8 +123,10 @@ describe("manifest", () => {
   describe("saveManifest", () => {
     test("saves manifest to file", () => {
       const manifest: XfgManifest = {
-        version: 1,
-        managedFiles: ["config.json"],
+        version: 2,
+        configs: {
+          "my-config": ["config.json"],
+        },
       };
 
       saveManifest(testDir, manifest);
@@ -121,8 +138,8 @@ describe("manifest", () => {
 
     test("saves manifest with 2-space indentation", () => {
       const manifest: XfgManifest = {
-        version: 1,
-        managedFiles: ["file.json"],
+        version: 2,
+        configs: { "config-a": ["file.json"] },
       };
 
       saveManifest(testDir, manifest);
@@ -133,8 +150,8 @@ describe("manifest", () => {
 
     test("saves manifest with trailing newline", () => {
       const manifest: XfgManifest = {
-        version: 1,
-        managedFiles: [],
+        version: 2,
+        configs: {},
       };
 
       saveManifest(testDir, manifest);
@@ -146,34 +163,70 @@ describe("manifest", () => {
 
   describe("getManagedFiles", () => {
     test("returns empty array for null manifest", () => {
-      const result = getManagedFiles(null);
+      const result = getManagedFiles(null, "any-config");
       assert.deepEqual(result, []);
+    });
+
+    test("returns empty array for non-existent config", () => {
+      const manifest: XfgManifest = {
+        version: 2,
+        configs: {
+          "other-config": ["file.json"],
+        },
+      };
+
+      const result = getManagedFiles(manifest, "non-existent-config");
+      assert.deepEqual(result, []);
+    });
+
+    test("returns files for specific config", () => {
+      const manifest: XfgManifest = {
+        version: 2,
+        configs: {
+          "config-a": ["file1.json", "file2.yaml"],
+          "config-b": ["file3.json"],
+        },
+      };
+
+      const result = getManagedFiles(manifest, "config-a");
+      assert.deepEqual(result, ["file1.json", "file2.yaml"]);
     });
 
     test("returns copy of managedFiles array", () => {
       const manifest: XfgManifest = {
-        version: 1,
-        managedFiles: ["file1.json", "file2.yaml"],
+        version: 2,
+        configs: {
+          "my-config": ["file1.json", "file2.yaml"],
+        },
       };
 
-      const result = getManagedFiles(manifest);
+      const result = getManagedFiles(manifest, "my-config");
       assert.deepEqual(result, ["file1.json", "file2.yaml"]);
 
       // Verify it's a copy, not the same reference
       result.push("file3.json");
-      assert.equal(manifest.managedFiles.length, 2);
+      assert.equal(manifest.configs["my-config"].length, 2);
     });
   });
 
   describe("updateManifest", () => {
+    const configId = "test-config";
+
     test("adds files with deleteOrphaned: true to managedFiles", () => {
       const filesMap = new Map<string, boolean | undefined>();
       filesMap.set("config.json", true);
       filesMap.set("settings.yaml", true);
 
-      const { manifest, filesToDelete } = updateManifest(null, filesMap);
+      const { manifest, filesToDelete } = updateManifest(
+        null,
+        configId,
+        filesMap,
+      );
 
-      assert.deepEqual(manifest.managedFiles, ["config.json", "settings.yaml"]);
+      assert.deepEqual(manifest.configs[configId], [
+        "config.json",
+        "settings.yaml",
+      ]);
       assert.deepEqual(filesToDelete, []);
     });
 
@@ -182,9 +235,9 @@ describe("manifest", () => {
       filesMap.set("config.json", true);
       filesMap.set("settings.yaml", false);
 
-      const { manifest } = updateManifest(null, filesMap);
+      const { manifest } = updateManifest(null, configId, filesMap);
 
-      assert.deepEqual(manifest.managedFiles, ["config.json"]);
+      assert.deepEqual(manifest.configs[configId], ["config.json"]);
     });
 
     test("does not add files with deleteOrphaned: undefined", () => {
@@ -192,15 +245,17 @@ describe("manifest", () => {
       filesMap.set("config.json", true);
       filesMap.set("settings.yaml", undefined);
 
-      const { manifest } = updateManifest(null, filesMap);
+      const { manifest } = updateManifest(null, configId, filesMap);
 
-      assert.deepEqual(manifest.managedFiles, ["config.json"]);
+      assert.deepEqual(manifest.configs[configId], ["config.json"]);
     });
 
     test("marks orphaned files for deletion", () => {
       const existingManifest: XfgManifest = {
-        version: 1,
-        managedFiles: ["old-config.json", "config.json"],
+        version: 2,
+        configs: {
+          [configId]: ["old-config.json", "config.json"],
+        },
       };
 
       const filesMap = new Map<string, boolean | undefined>();
@@ -209,17 +264,20 @@ describe("manifest", () => {
 
       const { manifest, filesToDelete } = updateManifest(
         existingManifest,
+        configId,
         filesMap,
       );
 
-      assert.deepEqual(manifest.managedFiles, ["config.json"]);
+      assert.deepEqual(manifest.configs[configId], ["config.json"]);
       assert.deepEqual(filesToDelete, ["old-config.json"]);
     });
 
     test("does not delete files that are in config but without deleteOrphaned", () => {
       const existingManifest: XfgManifest = {
-        version: 1,
-        managedFiles: ["config.json"],
+        version: 2,
+        configs: {
+          [configId]: ["config.json"],
+        },
       };
 
       const filesMap = new Map<string, boolean | undefined>();
@@ -227,19 +285,22 @@ describe("manifest", () => {
 
       const { manifest, filesToDelete } = updateManifest(
         existingManifest,
+        configId,
         filesMap,
       );
 
       // File is in config (undefined deleteOrphaned), so not marked for deletion
       // But also not in managedFiles anymore since deleteOrphaned is not true
-      assert.deepEqual(manifest.managedFiles, []);
+      assert.equal(manifest.configs[configId], undefined);
       assert.deepEqual(filesToDelete, []);
     });
 
     test("removes file from tracking when deleteOrphaned set to false", () => {
       const existingManifest: XfgManifest = {
-        version: 1,
-        managedFiles: ["config.json"],
+        version: 2,
+        configs: {
+          [configId]: ["config.json"],
+        },
       };
 
       const filesMap = new Map<string, boolean | undefined>();
@@ -247,12 +308,13 @@ describe("manifest", () => {
 
       const { manifest, filesToDelete } = updateManifest(
         existingManifest,
+        configId,
         filesMap,
       );
 
       // File is explicitly set to false, so removed from tracking
       // Not deleted because it's still in the config
-      assert.deepEqual(manifest.managedFiles, []);
+      assert.equal(manifest.configs[configId], undefined);
       assert.deepEqual(filesToDelete, []);
     });
 
@@ -262,9 +324,9 @@ describe("manifest", () => {
       filesMap.set("alpha.yaml", true);
       filesMap.set("middle.json", true);
 
-      const { manifest } = updateManifest(null, filesMap);
+      const { manifest } = updateManifest(null, configId, filesMap);
 
-      assert.deepEqual(manifest.managedFiles, [
+      assert.deepEqual(manifest.configs[configId], [
         "alpha.yaml",
         "middle.json",
         "zebra.json",
@@ -273,8 +335,8 @@ describe("manifest", () => {
 
     test("handles empty existing manifest", () => {
       const existingManifest: XfgManifest = {
-        version: 1,
-        managedFiles: [],
+        version: 2,
+        configs: {},
       };
 
       const filesMap = new Map<string, boolean | undefined>();
@@ -282,37 +344,118 @@ describe("manifest", () => {
 
       const { manifest, filesToDelete } = updateManifest(
         existingManifest,
+        configId,
         filesMap,
       );
 
-      assert.deepEqual(manifest.managedFiles, ["new-file.json"]);
+      assert.deepEqual(manifest.configs[configId], ["new-file.json"]);
       assert.deepEqual(filesToDelete, []);
     });
 
     test("handles empty files map", () => {
       const existingManifest: XfgManifest = {
-        version: 1,
-        managedFiles: ["orphan.json"],
+        version: 2,
+        configs: {
+          [configId]: ["orphan.json"],
+        },
       };
 
       const filesMap = new Map<string, boolean | undefined>();
 
       const { manifest, filesToDelete } = updateManifest(
         existingManifest,
+        configId,
         filesMap,
       );
 
-      assert.deepEqual(manifest.managedFiles, []);
+      assert.equal(manifest.configs[configId], undefined);
       assert.deepEqual(filesToDelete, ["orphan.json"]);
     });
 
-    test("creates version 1 manifest", () => {
+    test("creates version 2 manifest", () => {
       const filesMap = new Map<string, boolean | undefined>();
       filesMap.set("file.json", true);
 
-      const { manifest } = updateManifest(null, filesMap);
+      const { manifest } = updateManifest(null, configId, filesMap);
 
-      assert.equal(manifest.version, 1);
+      assert.equal(manifest.version, 2);
+    });
+
+    test("preserves other configs when updating one config", () => {
+      const existingManifest: XfgManifest = {
+        version: 2,
+        configs: {
+          "config-a": ["file-a.json"],
+          "config-b": ["file-b.json"],
+        },
+      };
+
+      const filesMap = new Map<string, boolean | undefined>();
+      filesMap.set("new-file-a.json", true);
+
+      const { manifest } = updateManifest(
+        existingManifest,
+        "config-a",
+        filesMap,
+      );
+
+      // config-a should be updated
+      assert.deepEqual(manifest.configs["config-a"], ["new-file-a.json"]);
+      // config-b should be preserved
+      assert.deepEqual(manifest.configs["config-b"], ["file-b.json"]);
+    });
+
+    test("only marks orphans from same config for deletion", () => {
+      const existingManifest: XfgManifest = {
+        version: 2,
+        configs: {
+          "config-a": ["shared-file.json", "orphan-a.json"],
+          "config-b": ["shared-file.json", "file-b.json"],
+        },
+      };
+
+      const filesMap = new Map<string, boolean | undefined>();
+      filesMap.set("shared-file.json", true);
+      // orphan-a.json is not in filesMap for config-a
+
+      const { manifest, filesToDelete } = updateManifest(
+        existingManifest,
+        "config-a",
+        filesMap,
+      );
+
+      // Only orphan-a.json should be deleted (from config-a)
+      // config-b's files should not be touched
+      assert.deepEqual(manifest.configs["config-a"], ["shared-file.json"]);
+      assert.deepEqual(manifest.configs["config-b"], [
+        "shared-file.json",
+        "file-b.json",
+      ]);
+      assert.deepEqual(filesToDelete, ["orphan-a.json"]);
+    });
+
+    test("removes config entry when no files have deleteOrphaned", () => {
+      const existingManifest: XfgManifest = {
+        version: 2,
+        configs: {
+          "config-a": ["file.json"],
+          "config-b": ["other.json"],
+        },
+      };
+
+      const filesMap = new Map<string, boolean | undefined>();
+      filesMap.set("file.json", false); // Explicitly disabled
+
+      const { manifest } = updateManifest(
+        existingManifest,
+        "config-a",
+        filesMap,
+      );
+
+      // config-a should be removed from configs
+      assert.equal(manifest.configs["config-a"], undefined);
+      // config-b should be preserved
+      assert.deepEqual(manifest.configs["config-b"], ["other.json"]);
     });
   });
 });

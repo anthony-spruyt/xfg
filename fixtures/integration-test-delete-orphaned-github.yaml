@@ -1,5 +1,6 @@
 # Integration test config for deleteOrphaned feature
 # This config is used in the first phase to create the file with deleteOrphaned: true
+id: integration-test-delete-orphaned-github
 
 files:
   orphan-test.json:
