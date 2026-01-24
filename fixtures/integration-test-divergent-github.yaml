@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
 # Integration test config - tests divergent branch handling (issue #183)
+# Note: branch is auto-generated as chore/sync-divergent-test from filename
 files:
   divergent-test.json:
     content:
@@ -8,4 +9,3 @@ files:
 
 repos:
   - git: https://github.com/anthony-spruyt/xfg-test.git
-    branch: chore/sync-divergent
