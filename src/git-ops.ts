@@ -78,6 +78,15 @@ export class GitOps {
   }
 
   /**
+   * Fetch from remote with optional pruning of stale refs.
+   * Used to update local tracking refs after remote branch deletion.
+   */
+  async fetch(options?: { prune?: boolean }): Promise<void> {
+    const pruneFlag = options?.prune ? " --prune" : "";
+    await this.execWithRetry(`git fetch origin${pruneFlag}`, this.workDir);
+  }
+
+  /**
    * Create a new branch from the current HEAD.
    * Always creates fresh - existing branches should be cleaned up beforehand
    * by closing any existing PRs (which deletes the remote branch).

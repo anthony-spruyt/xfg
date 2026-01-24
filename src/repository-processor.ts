@@ -147,6 +147,9 @@ export class RepositoryProcessor {
         });
         if (closed) {
           this.log.info("Closed existing PR and deleted branch for fresh sync");
+          // Prune stale remote tracking refs so --force-with-lease works correctly
+          // The remote branch was deleted but local git still has tracking info
+          await this.gitOps.fetch({ prune: true });
         }
       }
 
