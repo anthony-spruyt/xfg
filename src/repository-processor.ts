@@ -352,17 +352,13 @@ export class RepositoryProcessor {
           // Get the actual list of changed files from git status
           const gitChangedFiles = new Set(await this.gitOps.getChangedFiles());
 
-          // Preserve skipped files (createOnly)
-          const skippedFiles = new Set(
-            changedFiles
-              .filter((f) => f.action === "skip")
-              .map((f) => f.fileName),
-          );
+          // Build set of files already tracked (skip, delete, manifest updates added earlier)
+          const alreadyTracked = new Set(changedFiles.map((f) => f.fileName));
 
-          // Only add files that actually changed according to git
+          // Add config files that actually changed according to git
           for (const file of repoConfig.files) {
-            if (skippedFiles.has(file.fileName)) {
-              continue; // Already tracked as skipped
+            if (alreadyTracked.has(file.fileName)) {
+              continue; // Already tracked (skipped, deleted, or manifest)
             }
             // Only include files that git reports as changed
             if (!gitChangedFiles.has(file.fileName)) {
@@ -373,6 +369,20 @@ export class RepositoryProcessor {
               ? "update"
               : "create";
             changedFiles.push({ fileName: file.fileName, action });
+          }
+
+          // Add any other files from git status that aren't already tracked
+          // This catches files like .xfg.json when manifestChanged was false
+          // but git still reports a change (e.g., due to formatting differences)
+          for (const gitFile of gitChangedFiles) {
+            if (changedFiles.some((f) => f.fileName === gitFile)) {
+              continue; // Already tracked
+            }
+            const filePath = join(workDir, gitFile);
+            const action: "create" | "update" = existsSync(filePath)
+              ? "update"
+              : "create";
+            changedFiles.push({ fileName: gitFile, action });
           }
         }
       }

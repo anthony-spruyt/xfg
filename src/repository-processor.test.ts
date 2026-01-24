@@ -1802,4 +1802,330 @@ describe("RepositoryProcessor", () => {
       );
     });
   });
+
+  describe("file count in changedFiles (issue #184)", () => {
+    const createMockLogger = (): ILogger & { messages: string[] } => ({
+      messages: [] as string[],
+      info(message: string) {
+        this.messages.push(message);
+      },
+      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
+        // No-op for mock
+      },
+      diffSummary(
+        _newCount: number,
+        _modifiedCount: number,
+        _unchangedCount: number,
+      ) {
+        // No-op for mock
+      },
+    });
+
+    class MockGitOpsForFileCount extends GitOps {
+      lastCommitMessage: string | null = null;
+      gitChangedFilesOverride: string[] = [];
+      fileExistsOnBranchOverride: boolean = false;
+
+      constructor(options: GitOpsOptions) {
+        super(options);
+      }
+
+      override cleanWorkspace(): void {
+        mkdirSync(this.getWorkDir(), { recursive: true });
+      }
+
+      override async clone(_gitUrl: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async getDefaultBranch(): Promise<{
+        branch: string;
+        method: string;
+      }> {
+        return { branch: "main", method: "mock" };
+      }
+
+      override async createBranch(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override writeFile(fileName: string, content: string): void {
+        const filePath = join(this.getWorkDir(), fileName);
+        mkdirSync(this.getWorkDir(), { recursive: true });
+        writeFileSync(filePath, content, "utf-8");
+      }
+
+      override wouldChange(_fileName: string, _content: string): boolean {
+        return true;
+      }
+
+      override async hasChanges(): Promise<boolean> {
+        return true;
+      }
+
+      override async getChangedFiles(): Promise<string[]> {
+        return this.gitChangedFilesOverride;
+      }
+
+      override async fileExistsOnBranch(
+        _fileName: string,
+        _branch: string,
+      ): Promise<boolean> {
+        return this.fileExistsOnBranchOverride;
+      }
+
+      override async commit(message: string): Promise<boolean> {
+        this.lastCommitMessage = message;
+        return true;
+      }
+
+      override async push(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      private getWorkDir(): string {
+        return (this as unknown as { workDir: string }).workDir;
+      }
+    }
+
+    test("should include manifest file in changedFiles when git reports it as changed", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForFileCount | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForFileCount(opts);
+        // Git reports both config.json and .xfg.json as changed
+        // This simulates when manifestChanged was false (semantic content same)
+        // but git sees a formatting change
+        mockGitOps.gitChangedFilesOverride = ["config.json", ".xfg.json"];
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `file-count-manifest-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "config.json",
+            content: { key: "value" },
+            deleteOrphaned: true,
+          },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+        executor: createMockExecutor(),
+      });
+
+      // Commit message should mention 2 files (config.json and .xfg.json)
+      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
+      // Either lists both files or says "2 config files"
+      const hasConfigJson =
+        mockGitOps!.lastCommitMessage.includes("config.json");
+      const hasXfgJson = mockGitOps!.lastCommitMessage.includes(".xfg.json");
+      const hasTwoFiles =
+        mockGitOps!.lastCommitMessage.includes("2 config files");
+      assert.ok(
+        (hasConfigJson && hasXfgJson) || hasTwoFiles,
+        `Commit message should include both files or show '2 config files', got: ${mockGitOps!.lastCommitMessage}`,
+      );
+    });
+
+    test("should include files from git status that aren't in repoConfig.files", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForFileCount | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForFileCount(opts);
+        // Git reports extra-file.json as changed, but it's not in repoConfig.files
+        // This could happen if a file is manually added to the repo
+        mockGitOps.gitChangedFilesOverride = ["config.json", "extra-file.json"];
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `file-count-extra-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "config.json",
+            content: { key: "value" },
+          },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+        executor: createMockExecutor(),
+      });
+
+      // Commit message should mention 2 files
+      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
+      const hasConfigJson =
+        mockGitOps!.lastCommitMessage.includes("config.json");
+      const hasExtraFile =
+        mockGitOps!.lastCommitMessage.includes("extra-file.json");
+      const hasTwoFiles =
+        mockGitOps!.lastCommitMessage.includes("2 config files");
+      assert.ok(
+        (hasConfigJson && hasExtraFile) || hasTwoFiles,
+        `Commit message should include both files or show '2 config files', got: ${mockGitOps!.lastCommitMessage}`,
+      );
+    });
+
+    test("should skip config files not reported by git as changed", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForFileCount | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForFileCount(opts);
+        // Git only reports config1.json as changed, not config2.json
+        mockGitOps.gitChangedFilesOverride = ["config1.json"];
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(
+        testDir,
+        `file-count-skip-unchanged-${Date.now()}`,
+      );
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          { fileName: "config1.json", content: { key: "value1" } },
+          { fileName: "config2.json", content: { key: "value2" } },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+        executor: createMockExecutor(),
+      });
+
+      // Commit message should only mention config1.json
+      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
+      assert.ok(
+        mockGitOps!.lastCommitMessage.includes("config1.json"),
+        "Should include config1.json",
+      );
+      assert.ok(
+        !mockGitOps!.lastCommitMessage.includes("config2.json"),
+        `Should not include config2.json, got: ${mockGitOps!.lastCommitMessage}`,
+      );
+    });
+
+    test("should not double-count skipped files in config loop", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForFileCount | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForFileCount(opts);
+        // Git reports both files as changed
+        mockGitOps.gitChangedFilesOverride = ["skipped.json", "actual.json"];
+        // Override to make skipped.json exist on base branch (triggers createOnly skip)
+        mockGitOps.fileExistsOnBranchOverride = true;
+        // Custom override to only skip skipped.json
+        mockGitOps.fileExistsOnBranch = async (fileName: string) => {
+          return fileName === "skipped.json";
+        };
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `file-count-no-double-${Date.now()}`);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "skipped.json",
+            content: { key: "skipped" },
+            createOnly: true, // This will be skipped (exists on base)
+          },
+          {
+            fileName: "actual.json",
+            content: { key: "actual" },
+          },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+        executor: createMockExecutor(),
+      });
+
+      // Commit message should only mention actual.json, not skipped.json
+      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
+      assert.ok(
+        mockGitOps!.lastCommitMessage.includes("actual.json"),
+        "Should include actual.json",
+      );
+      assert.ok(
+        !mockGitOps!.lastCommitMessage.includes("skipped.json"),
+        `Should not include skipped.json, got: ${mockGitOps!.lastCommitMessage}`,
+      );
+    });
+
+    test("should handle update action for existing extra files from git status", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForFileCount | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForFileCount(opts);
+        // Git reports an extra file that exists (update action)
+        mockGitOps.gitChangedFilesOverride = [
+          "config.json",
+          "existing-extra.json",
+        ];
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(
+        testDir,
+        `file-count-update-extra-${Date.now()}`,
+      );
+
+      // Pre-create the extra file so it triggers "update" action
+      mkdirSync(localWorkDir, { recursive: true });
+      writeFileSync(join(localWorkDir, "existing-extra.json"), '{"old": true}');
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [{ fileName: "config.json", content: { key: "value" } }],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        dryRun: false,
+        executor: createMockExecutor(),
+      });
+
+      // Commit message should mention 2 files
+      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
+      const hasTwoFiles =
+        mockGitOps!.lastCommitMessage.includes("2 config files") ||
+        (mockGitOps!.lastCommitMessage.includes("config.json") &&
+          mockGitOps!.lastCommitMessage.includes("existing-extra.json"));
+      assert.ok(
+        hasTwoFiles,
+        `Commit message should include both files, got: ${mockGitOps!.lastCommitMessage}`,
+      );
+    });
+  });
 });
