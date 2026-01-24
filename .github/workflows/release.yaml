@@ -13,13 +13,20 @@ on:
           - major
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
       - uses: actions/setup-node@v6
         with:
@@ -35,35 +42,26 @@ jobs:
       - name: Create verified commit
         uses: iarekylew00t/verified-bot-commit@v2
         with:
-          token: ${{ secrets.RELEASE_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           message: "chore: release v${{ steps.version.outputs.version }}"
           files: |
             package.json
             package-lock.json
-          force-push: true
 
-      - name: Create and push tag
+      - name: Create lightweight tag
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           REPO="${{ github.repository }}"
 
-          # Get the commit we just created
+          # Get the verified commit SHA
           COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
-          echo "Commit: $COMMIT_SHA"
+          echo "Verified commit: $COMMIT_SHA"
 
-          # Create tag object
-          TAG_SHA=$(gh api "repos/$REPO/git/tags" \
-            -f tag="v${VERSION}" \
-            -f message="Release v${VERSION}" \
-            -f object="$COMMIT_SHA" \
-            -f type="commit" \
-            --jq '.sha')
-          echo "Tag object: $TAG_SHA"
-
-          # Create tag ref
+          # Create lightweight tag pointing directly to verified commit
+          # This inherits the commit's verified status
           gh api "repos/$REPO/git/refs" \
             -f ref="refs/tags/v${VERSION}" \
-            -f sha="$TAG_SHA"
+            -f sha="$COMMIT_SHA"
           echo "Created tag v${VERSION}"
