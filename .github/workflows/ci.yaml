@@ -292,7 +292,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMIT_SHA: ${{ github.sha }}
           REPO: ${{ github.repository }}
-        run: |
+        run: |-
           echo "Checking CI status for commit: $COMMIT_SHA"
 
           # Get combined status (includes status checks from main branch CI run)

@@ -93,11 +93,11 @@
               "description": "Multiple comment lines"
             }
           ],
-          "description": "Comment line(s) added at the top of YAML output files. Each line gets a '# ' prefix. Ignored for JSON files."
+          "description": "YAML only. Comment line(s) added at the top of YAML files. Each line gets a '# ' prefix. Ignored for JSON and text files."
         },
         "schemaUrl": {
           "type": "string",
-          "description": "URL for yaml-language-server schema directive. Adds '# yaml-language-server: $schema=<url>' at the top of YAML files. Ignored for JSON files."
+          "description": "YAML only. URL for yaml-language-server schema directive. Adds '# yaml-language-server: $schema=<url>' at the top of YAML files. For JSON files, use $schema property in content instead."
         },
         "executable": {
           "type": "boolean",
@@ -239,11 +239,11 @@
               "description": "Multiple comment lines"
             }
           ],
-          "description": "Override the root-level header for this specific repo"
+          "description": "YAML only. Override the root-level header for this specific repo. Ignored for JSON and text files."
         },
         "schemaUrl": {
           "type": "string",
-          "description": "Override the root-level schemaUrl for this specific repo"
+          "description": "YAML only. Override the root-level schemaUrl for this specific repo. For JSON files, use $schema property in content instead."
         },
         "executable": {
           "type": "boolean",

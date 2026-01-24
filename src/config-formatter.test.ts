@@ -340,6 +340,17 @@ describe("convertContentToString JSON ignores comments", () => {
     assert.ok(!result.includes("schema"));
     assert.ok(result.includes('"key"'));
   });
+
+  test("$schema property in content is preserved for JSON files", () => {
+    const content = {
+      $schema: "https://json.schemastore.org/tsconfig",
+      compilerOptions: { strict: true },
+    };
+    const result = convertContentToString(content, "tsconfig.json");
+    const parsed = JSON.parse(result);
+    assert.equal(parsed.$schema, "https://json.schemastore.org/tsconfig");
+    assert.deepEqual(parsed.compilerOptions, { strict: true });
+  });
 });
 
 describe("convertContentToString with text content", () => {
