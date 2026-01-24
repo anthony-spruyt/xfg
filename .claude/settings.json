@@ -68,6 +68,7 @@
       "WebFetch(domain:docs.victoriametrics.com)",
       "WebFetch(domain:falco.org)",
       "WebFetch(domain:fluxcd.io)",
+      "WebFetch(domain:github.com)",
       "WebFetch(domain:goauthentik.io)",
       "WebFetch(domain:integrations.goauthentik.io)",
       "WebFetch(domain:megalinter.io)",
