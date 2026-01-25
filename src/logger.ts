@@ -119,4 +119,5 @@ export class Logger {
   }
 }
 
+/** Singleton logger instance for the application */
 export const logger = new Logger();
