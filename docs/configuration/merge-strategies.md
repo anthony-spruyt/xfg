@@ -31,17 +31,26 @@ repos:
 
 Result: `["@company/base", "plugin:react/recommended"]`
 
+## File-Level vs Inline Control
+
+- **File-level `mergeStrategy`**: Sets the default for ALL arrays in that file
+- **Inline `$arrayMerge`**: Overrides the strategy for specific arrays within content
+
+Use file-level when all arrays in a file should merge the same way. Use inline `$arrayMerge` when you need per-array control, especially in per-repo overlays.
+
 ## Inline Array Merge Directive
 
-For more granular control, use the `$arrayMerge` directive within the content:
+For granular control, use the `$arrayMerge` directive within the content. There are two syntax variants:
+
+### Syntax 1: Wrapped with `values`
+
+Wrap the array items in a `values` key alongside the `$arrayMerge` directive:
 
 ```yaml
 files:
   config.json:
     content:
-      features:
-        - core
-        - monitoring
+      features: ["core", "monitoring"]
 
 repos:
   - git: git@github.com:org/repo.git
@@ -50,11 +59,61 @@ repos:
         content:
           features:
             $arrayMerge: append
-            values:
-              - custom-feature
+            values: ["custom-feature"]
 ```
 
 Result: `["core", "monitoring", "custom-feature"]`
+
+### Syntax 2: Sibling Directive
+
+Place `$arrayMerge` as a sibling to array fields. The strategy applies to ALL child arrays in that object:
+
+```yaml
+files:
+  config.json:
+    content:
+      features: ["core", "monitoring"]
+      tags: ["production"]
+
+repos:
+  - git: git@github.com:org/repo.git
+    files:
+      config.json:
+        content:
+          $arrayMerge: append
+          features: ["custom-feature"]
+          tags: ["team-a"]
+```
+
+Result:
+
+- `features`: `["core", "monitoring", "custom-feature"]`
+- `tags`: `["production", "team-a"]`
+
+### All Strategies
+
+```yaml
+# append - add after base items
+features:
+  $arrayMerge: append
+  values: ["new-item"]
+# Base ["a", "b"] + overlay ["c"] = ["a", "b", "c"]
+
+# prepend - add before base items
+features:
+  $arrayMerge: prepend
+  values: ["new-item"]
+# Base ["a", "b"] + overlay ["c"] = ["c", "a", "b"]
+
+# replace - completely replace base (default behavior)
+features:
+  $arrayMerge: replace
+  values: ["new-item"]
+# Base ["a", "b"] + overlay ["c"] = ["c"]
+```
+
+!!! note "Directives are stripped"
+The `$arrayMerge` and `values` keys are internal directives and do not appear in the final output.
 
 ## Text File Merge Strategies
 
