@@ -1,6 +1,6 @@
 ---
 name: block-read-secrets-generic
-enabled: false
+enabled: true
 event: file
 action: block
 conditions:

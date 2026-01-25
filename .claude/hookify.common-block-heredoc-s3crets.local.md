@@ -1,6 +1,6 @@
 ---
 name: block-heredoc-secrets
-enabled: false
+enabled: true
 event: bash
 pattern: <<-?\s*["']?\w+["']?[\s\S]*\$\{?[A-Za-z_][A-Za-z0-9_]*(_PAT|TOKEN|SECRET|PASSWORD|PASSPHRASE|CREDENTIAL|PRIVATE_KEY|API_KEY|SECRET_KEY|ACCESS_KEY)\b
 action: block

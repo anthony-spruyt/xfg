@@ -1,6 +1,6 @@
 ---
 name: block-gpg-decrypt
-enabled: false
+enabled: true
 event: bash
 pattern: gpg\s+(-d|--decrypt)
 action: block

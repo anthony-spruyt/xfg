@@ -1,6 +1,6 @@
 ---
 name: block-echo-secrets
-enabled: false
+enabled: true
 event: bash
 pattern: (echo|printf)\s+.*\$\{?[A-Za-z_]*(_PAT|TOKEN|SECRET|PASSWORD|PASSPHRASE|CREDENTIAL|PRIVATE_KEY|API_KEY|SECRET_KEY|ACCESS_KEY)\b
 action: block

@@ -1,6 +1,6 @@
 ---
 name: warn-gh-pr-automerge
-enabled: false
+enabled: true
 event: bash
 pattern: gh\s+pr\s+create(\s|$)
 action: warn

@@ -1,6 +1,6 @@
 ---
 name: block-read-package-creds
-enabled: false
+enabled: true
 event: file
 action: block
 conditions:

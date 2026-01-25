@@ -1,6 +1,6 @@
 ---
 name: block-echo-subshell-secrets
-enabled: false
+enabled: true
 event: bash
 pattern: (echo|printf)\s+.*\$\((env|printenv|set)\b
 action: block
