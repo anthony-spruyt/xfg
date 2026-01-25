@@ -142,8 +142,14 @@
     "feature-dev@claude-plugins-official": true,
     "code-review@claude-plugins-official": false,
     "hookify@claude-plugins-official": false,
-    "hookify-plus@hookify-plus-fork": false,
-    "hookify-plus@hookify-plus-local": true
+    "hookify-plus@hookify-plus": true
   },
-  "extraKnownMarketplaces": {}
+  "extraKnownMarketplaces": {
+    "hookify-plus": {
+      "source": {
+        "source": "github",
+        "repo": "anthony-spruyt/hookify-plus"
+      }
+    }
+  }
 }
