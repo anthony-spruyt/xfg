@@ -1,6 +1,6 @@
 ---
 name: block-kubectl-describe-secrets
-enabled: false
+enabled: true
 event: bash
 pattern: kubectl\s+describe\s+secrets?
 action: block

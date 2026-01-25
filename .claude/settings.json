@@ -1,10 +1,10 @@
 {
-  "includeCoAuthoredBy": true,
   "env": {
     "INSIDE_CLAUDE_CODE": "1",
     "BASH_DEFAULT_TIMEOUT_MS": "420000",
     "BASH_MAX_TIMEOUT_MS": "420000"
   },
+  "includeCoAuthoredBy": true,
   "permissions": {
     "allow": [
       "Bash(gh issue comment:*)",
@@ -124,36 +124,7 @@
     ]
   },
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/common-hookify-bridge.py\""
-          }
-        ]
-      },
-      {
-        "matcher": "Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/common-hookify-bridge.py\""
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/common-hookify-bridge.py\" --post"
-          }
-        ]
-      },
       {
         "matcher": "Edit|Write|NotebookEdit",
         "hooks": [
@@ -170,6 +141,9 @@
     "security-guidance@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
     "code-review@claude-plugins-official": false,
-    "hookify@claude-plugins-official": true
-  }
+    "hookify@claude-plugins-official": false,
+    "hookify-plus@hookify-plus-fork": false,
+    "hookify-plus@hookify-plus-local": true
+  },
+  "extraKnownMarketplaces": {}
 }

@@ -1,6 +1,6 @@
 ---
 name: block-sops-read
-enabled: false
+enabled: true
 event: file
 action: block
 conditions:

@@ -1,6 +1,6 @@
 ---
 name: block-read-env-files
-enabled: false
+enabled: true
 event: file
 action: block
 conditions:

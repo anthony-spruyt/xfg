@@ -1,6 +1,6 @@
 ---
 name: block-openssl-decrypt
-enabled: false
+enabled: true
 event: bash
 pattern: openssl\s+(enc\s+-d|pkcs12)
 action: block

@@ -1,6 +1,6 @@
 ---
 name: block-base64-decode
-enabled: false
+enabled: true
 event: bash
 pattern: base64\s+(-d|--decode|-D)
 action: block

@@ -1,6 +1,6 @@
 ---
 name: block-read-cloud-creds
-enabled: false
+enabled: true
 event: file
 action: block
 conditions:

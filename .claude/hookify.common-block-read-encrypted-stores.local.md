@@ -1,6 +1,6 @@
 ---
 name: block-read-encrypted-stores
-enabled: false
+enabled: true
 event: file
 action: block
 conditions:

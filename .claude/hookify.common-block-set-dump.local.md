@@ -1,6 +1,6 @@
 ---
 name: block-set-dump
-enabled: false
+enabled: true
 event: bash
 pattern: (^|\s|&&|\|\||;|\(|`)set(\s*$|\s*\||\s*;|\s*&&|\s*\|\||\s*\)|\s*`)
 action: block

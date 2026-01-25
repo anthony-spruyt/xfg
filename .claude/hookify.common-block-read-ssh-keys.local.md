@@ -1,6 +1,6 @@
 ---
 name: block-read-ssh-keys
-enabled: false
+enabled: true
 event: file
 action: block
 conditions:
