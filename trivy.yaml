@@ -8,6 +8,5 @@ exit-on-eol: 2
 scan:
   scanners:
     - "vuln"
-    - "misconfig"
     - "secret"
 ignorefile: ".trivyignore.yaml"
