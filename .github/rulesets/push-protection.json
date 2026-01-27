@@ -1,10 +1,13 @@
 {
+  "$generated": "This file is automatically updated - do not modify directly",
   "name": "push-protection",
   "target": "branch",
   "enforcement": "active",
   "conditions": {
     "ref_name": {
-      "include": ["refs/heads/main"],
+      "include": [
+        "refs/heads/main"
+      ],
       "exclude": []
     }
   },

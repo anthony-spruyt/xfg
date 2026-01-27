@@ -1,0 +1,48 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/pre-commit-config.json
+
+fail_fast: false
+repos:
+  - repo: "https://github.com/adrienverge/yamllint"
+    rev: "v1.37.1"
+    hooks:
+      - id: "yamllint"
+        args:
+          - "--config-file"
+          - ".yamllint.yml"
+  - repo: "https://github.com/pre-commit/pre-commit-hooks"
+    rev: "v6.0.0"
+    hooks:
+      - id: "check-merge-conflict"
+      - id: "trailing-whitespace"
+        args:
+          - "--markdown-linebreak-ext=md"
+      - id: "end-of-file-fixer"
+      - id: "mixed-line-ending"
+  - repo: "https://github.com/Lucas-C/pre-commit-hooks"
+    rev: "v1.5.5"
+    hooks:
+      - id: "remove-crlf"
+      - id: "remove-tabs"
+        args:
+          - "--whitespaces-count"
+          - "2"
+  - repo: "https://github.com/sirosen/texthooks"
+    rev: "0.7.1"
+    hooks:
+      - id: "fix-smartquotes"
+      - id: "fix-ligatures"
+  - repo: "https://github.com/zricethezav/gitleaks"
+    rev: "v8.30.0"
+    hooks:
+      - id: "gitleaks"
+  - repo: "local"
+    hooks:
+      - id: "prettier"
+        name: "prettier"
+        entry: "npx prettier --write --config=.prettierrc.yaml
+          --ignore-path=.prettierignore"
+        language: "system"
+        types_or:
+          - "json"
+          - "yaml"
+          - "markdown"
