@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/oxsecurity/megalinter/main/megalinter/descriptors/schemas/megalinter-configuration.jsonschema.json
+# Base MegaLinter configuration synced from repo-operator
+# This file is automatically updated - do not modify directly
+# To add custom linters, modify .mega-linter.yml instead
+
+ENABLE_LINTERS:
+  - "ACTION_ACTIONLINT"
+  - "BASH_SHELLCHECK"
+  - "BASH_SHFMT"
+  - "JSON_JSONLINT"
+  - "MARKDOWN_MARKDOWNLINT"
+  - "REPOSITORY_GITLEAKS"
+  - "REPOSITORY_SECRETLINT"
+  - "REPOSITORY_TRIVY"
+  - "SPELL_LYCHEE"
+  - "YAML_YAMLLINT"
+EXCLUDED_DIRECTORIES:
+  - ".git"
+DEFAULT_BRANCH: "main"
+IGNORE_GITIGNORED_FILES: true
+SPELL_LYCHEE_FILTER_REGEX_EXCLUDE: "(package-lock\\.json)"
+FLAVOR_SUGGESTIONS: false

@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "configs": {
+    "repo-operator": [
+      ".devcontainer/devcontainer.json",
+      ".devcontainer/package.json",
+      ".devcontainer/post-create.sh",
+      ".devcontainer/setup-devcontainer.sh",
+      ".editorconfig",
+      ".github/actionlint.yaml",
+      ".github/apply-rulesets.sh",
+      ".github/renovate.json5",
+      ".github/rulesets/pr-rules.json",
+      ".github/rulesets/push-protection.json",
+      ".github/workflows/ci.yaml",
+      ".github/workflows/trivy-scan.yaml",
+      ".gitignore",
+      ".lycheeignore",
+      ".markdownlint.json",
+      ".markdownlintignore",
+      ".mega-linter-base.yml",
+      ".mega-linter.yml",
+      ".pre-commit-config.yaml",
+      ".prettierignore",
+      ".prettierrc.yaml",
+      ".shellcheckrc",
+      ".trivyignore.yaml",
+      ".vscode/settings.json",
+      ".yamllint.yml",
+      "LICENSE",
+      "lint-config.sh",
+      "lint.sh",
+      "trivy.yaml"
+    ]
+  }
+}

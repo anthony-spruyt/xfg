@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/yamllint.json
+# This file is automatically updated - do not modify directly
+# https://yamllint.readthedocs.io/en/latest/configuration.html
+
+extends: "default"
+rules:
+  truthy:
+    allowed-values:
+      - "true"
+      - "false"
+  comments:
+    require-starting-space: false
+    min-spaces-from-content: 1
+  comments-indentation: "disable"
+  line-length: "disable"
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+  indentation: "enable"
+  document-start: "disable"
