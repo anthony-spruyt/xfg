@@ -1,12 +1,13 @@
----
+# yaml-language-server: $schema=https://raw.githubusercontent.com/aquasecurity/trivy/main/schema/trivy-config.json
+# This file is automatically updated - do not modify directly
 # https://trivy.dev/latest/docs/references/configuration/config-file/
+
 disable-telemetry: true
 exit-code: 1
 exit-on-eol: 2
 scan:
   scanners:
-    - vuln
-    - secret
-vulnerability:
-  ignore-unfixed: true
-ignorefile: .trivyignore.yaml
+    - "vuln"
+    - "misconfig"
+    - "secret"
+ignorefile: ".trivyignore.yaml"

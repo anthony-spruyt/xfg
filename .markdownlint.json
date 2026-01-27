@@ -1,0 +1,19 @@
+{
+  "$generated": "This file is automatically updated - do not modify directly",
+  "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/prettierrc.json",
+  "MD004": false,
+  "MD007": {
+    "indent": 2
+  },
+  "MD013": {
+    "line_length": 400,
+    "code_block_line_length": 1000
+  },
+  "MD026": {
+    "punctuation": ".,;:!。，；:"
+  },
+  "MD029": false,
+  "MD033": false,
+  "MD036": false,
+  "blank_lines": false
+}
