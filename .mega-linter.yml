@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/oxsecurity/megalinter/main/megalinter/descriptors/schemas/megalinter-configuration.jsonschema.json
+# Project-specific MegaLinter configuration
+# Extends the base config from repo-operator
+# Add custom linters or overrides below
+# Add project-specific linters below:
+# ENABLE_LINTERS:
+#   - TYPESCRIPT_ES
+#   - PYTHON_PYLINT
+
+EXTENDS:
+  - ".mega-linter-base.yml"
+CONFIG_PROPERTIES_TO_APPEND:
+  - "ENABLE_LINTERS"
+ENABLE_LINTERS:
+  - "JAVASCRIPT_ESLINT"
+  - "JAVASCRIPT_PRETTIER"
+  - "TYPESCRIPT_ESLINT"
+  - "TYPESCRIPT_PRETTIER"

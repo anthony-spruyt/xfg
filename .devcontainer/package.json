@@ -1,9 +1,10 @@
 {
+  "$generated": "This file is automatically updated - do not modify directly",
+  "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/package.json",
   "name": "devcontainer-tools",
   "private": true,
   "description": "Global tools for devcontainer",
   "dependencies": {
-    "@aikidosec/safe-chain": "1.4.2",
-    "@anthropic-ai/claude-code": "2.1.19"
+    "@aikidosec/safe-chain": "1.4.2"
   }
 }

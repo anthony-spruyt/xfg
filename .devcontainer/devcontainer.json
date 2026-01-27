@@ -1,9 +1,14 @@
 {
   "name": "Ubuntu",
   "image": "mcr.microsoft.com/devcontainers/base:jammy",
-  "runArgs": ["--env-file", "${localEnv:HOME}/.secrets/.env"],
+  "runArgs": [
+    "--env-file",
+    "${localEnv:HOME}/.secrets/.env"
+  ],
   "mounts": [
     "source=${localEnv:HOME}/.ssh/agent.sock,target=/ssh-agent,type=bind",
+    "source=${localEnv:HOME}/.ssh/allowed_signers,target=/home/vscode/.ssh/allowed_signers,type=bind,readonly",
+    "source=${localEnv:HOME}/.ssh/known_hosts,target=/home/vscode/.ssh/known_hosts,type=bind,readonly",
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind",
     "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,readonly"
   ],
@@ -11,6 +16,7 @@
     "SSH_AUTH_SOCK": "/ssh-agent"
   },
   "features": {
+    "ghcr.io/devcontainers-extra/features/pre-commit": {},
     "ghcr.io/devcontainers/features/github-cli": {},
     "ghcr.io/devcontainers/features/docker-in-docker": {},
     "ghcr.io/devcontainers/features/node": {},

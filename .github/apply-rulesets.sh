@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# This file is automatically updated - do not modify directly
+
 # Apply repository rulesets from .github/rulesets/*.json
 # Requires: gh CLI authenticated with repo admin permissions
 

@@ -11,7 +11,9 @@
   ],
   "conditions": {
     "ref_name": {
-      "include": ["refs/heads/main"],
+      "include": [
+        "refs/heads/main"
+      ],
       "exclude": []
     }
   },
@@ -25,7 +27,9 @@
         "require_code_owner_review": false,
         "require_last_push_approval": false,
         "required_review_thread_resolution": true,
-        "allowed_merge_methods": ["squash"]
+        "allowed_merge_methods": [
+          "squash"
+        ]
       }
     },
     {
@@ -35,10 +39,7 @@
         "do_not_enforce_on_create": false,
         "required_status_checks": [
           {
-            "context": "build"
-          },
-          {
-            "context": "security"
+            "context": "summary / Check Results"
           }
         ]
       }
