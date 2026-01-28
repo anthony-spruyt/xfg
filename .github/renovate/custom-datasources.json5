@@ -1,0 +1,13 @@
+{
+  "$generated": "This file is automatically updated - do not modify directly",
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customDatasources": {
+    "artifacthub-headlamp": {
+      "defaultRegistryUrlTemplate": "https://artifacthub.io/api/v1/packages/headlamp/{{packageName}}",
+      "format": "json",
+      "transformTemplates": [
+        "{ \"releases\": [$map(available_versions, function($v) { { \"version\": $v.version } })] }"
+      ]
+    }
+  }
+}

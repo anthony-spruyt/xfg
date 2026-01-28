@@ -1,0 +1,46 @@
+{
+  "$generated": "This file is automatically updated - do not modify directly",
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "enabledManagers": [
+    "custom.regex",
+    "devcontainer",
+    "dockerfile",
+    "flux",
+    "github-actions",
+    "helm-values",
+    "kubernetes",
+    "npm",
+    "pip_requirements",
+    "pre-commit",
+    "terraform"
+  ],
+  "devcontainer": {
+    "managerFilePatterns": [
+      "/\\.?devcontainer\\.json$/"
+    ]
+  },
+  "flux": {
+    "managerFilePatterns": [
+      "/(^|/)cluster/.+\\.ya?ml$/"
+    ]
+  },
+  "helm-values": {
+    "managerFilePatterns": [
+      "/(^|/)cluster/.+/(values(\\.\\w+)?|values\\.ya?ml)$/",
+      "/(^|/)cluster/.+/(release|helmrelease)\\.ya?ml$/"
+    ]
+  },
+  "kubernetes": {
+    "managerFilePatterns": [
+      "/(^|/)cluster/.+\\.ya?ml$/",
+      "/(^|/)talos/.+\\.ya?ml$/"
+    ]
+  },
+  "terraform": {
+    "managerFilePatterns": [
+      "/\\.tf$/",
+      "/\\.tfvars/",
+      "/\\.terraform\\.lock\\.hcl$/"
+    ]
+  }
+}

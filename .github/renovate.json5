@@ -1,107 +1,15 @@
 {
-  $schema: "https://docs.renovatebot.com/renovate-schema.json",
-  extends: [
-    "config:recommended",
-    "docker:enableMajor",
-    ":dependencyDashboard",
-    ":disableRateLimiting",
-    ":semanticCommits",
-    ":enablePreCommit",
-  ],
-  enabled: true,
-  dependencyDashboardTitle: "Renovate Dashboard",
-  suppressNotifications: ["prIgnoreNotification"],
-  commitBodyTable: true,
-  rebaseWhen: "behind-base-branch",
-  automerge: true,
-  automergeType: "pr",
-  automergeStrategy: "squash",
-  enabledManagers: [
-    "custom.regex",
-    "dockerfile",
-    "github-actions",
-    "devcontainer",
-    "npm",
-  ],
-  devcontainer: {
-    managerFilePatterns: [
-      "/(^|/)\\.devcontainer\\.json$/",
-      "/(^|/)devcontainer\\.json$/",
-      "/assets/\\.devcontainer\\.json$/",
-    ],
-  },
-  customManagers: [
-    {
-      customType: "regex",
-      description: [
-        "Process renovate-annotated shell scripts (depName first).",
-      ],
-      managerFilePatterns: ["/\\.sh$/"],
-      matchStrings: [
-        'depName=(?<depName>\\S+) datasource=(?<datasource>\\S+)(?:\\s+versioning=(?<versioning>\\S+))?\\n(?:export\\s+)?[A-Z_]+="(?<currentValue>v?[^"]+)"',
-      ],
-      datasourceTemplate: "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
-      versioningTemplate: "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}",
-    },
-    {
-      customType: "regex",
-      description: [
-        "Process renovate-annotated shell scripts (datasource first).",
-      ],
-      managerFilePatterns: ["/\\.sh$/"],
-      matchStrings: [
-        'datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?:\\s+versioning=(?<versioning>\\S+))?\\n(?:export\\s+)?[A-Z_]+="(?<currentValue>v?[^"]+)"',
-      ],
-      datasourceTemplate: "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
-      versioningTemplate: "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}",
-    },
-  ],
-  packageRules: [
-    {
-      matchDatasources: ["docker"],
-      enabled: true,
-      commitMessageTopic: "container image {{depName}}",
-      commitMessageExtra: "to {{#if isSingleVersion}}v{{{newVersion}}}{{else}}{{{newValue}}}{{/if}}",
-    },
-    {
-      matchDatasources: ["docker"],
-      matchUpdateTypes: ["major"],
-      labels: ["renovate/image", "dep/major"],
-    },
-    {
-      matchDatasources: ["docker"],
-      matchUpdateTypes: ["minor"],
-      labels: ["renovate/image", "dep/minor"],
-    },
-    {
-      matchDatasources: ["docker"],
-      matchUpdateTypes: ["patch"],
-      labels: ["renovate/image", "dep/patch"],
-    },
-    {
-      matchManagers: ["github-actions"],
-      labels: ["renovate/github-actions"],
-      minimumReleaseAge: "2 days",
-    },
-    {
-      matchManagers: ["custom.regex"],
-      labels: ["renovate/script"],
-    },
-    {
-      matchManagers: ["devcontainer"],
-      labels: ["renovate/devcontainer"],
-    },
-    {
-      matchManagers: ["npm"],
-      labels: ["renovate/npm"],
-    },
-    {
-      matchUpdateTypes: ["minor", "patch"],
-      automerge: true,
-    },
-    {
-      matchUpdateTypes: ["major"],
-      automerge: false,
-    },
-  ],
+  "$generated": "This file is automatically updated - do not modify directly",
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "local>.github/renovate/base.json5",
+    "local>.github/renovate/managers.json5",
+    "local>.github/renovate/custom-managers/annotated.json5",
+    "local>.github/renovate/custom-managers/infrastructure.json5",
+    "local>.github/renovate/package-rules.json5",
+    "local>.github/renovate/groups.json5",
+    "local>.github/renovate/automerge.json5",
+    "local>.github/renovate/custom-datasources.json5",
+    "local>.github/renovate/disabled.json5"
+  ]
 }
