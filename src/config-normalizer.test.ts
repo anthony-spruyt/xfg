@@ -313,6 +313,54 @@ describe("normalizeConfig", () => {
       });
     });
 
+    test("uses override mode with text content", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: {
+          ".gitignore": { content: "node_modules\ndist" },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              ".gitignore": {
+                override: true,
+                content: "coverage\n.env",
+              },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      // Override with text content - uses repo content only
+      assert.equal(result.repos[0].files[0].content, "coverage\n.env");
+    });
+
+    test("uses override mode with text array content", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: {
+          ".gitignore": { content: ["node_modules", "dist"] },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              ".gitignore": {
+                override: true,
+                content: ["coverage", ".env"],
+              },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      // Override with text array content - uses repo content only
+      assert.deepEqual(result.repos[0].files[0].content, ["coverage", ".env"]);
+    });
+
     test("respects per-file mergeStrategy", () => {
       const raw: RawConfig = {
         id: "test-config",
@@ -336,6 +384,111 @@ describe("normalizeConfig", () => {
       assert.deepEqual(result.repos[0].files[0].content, {
         items: ["a", "b", "c", "d"],
       });
+    });
+
+    test("string text content always replaces (mergeStrategy ignored)", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: {
+          ".gitignore": {
+            content: "node_modules\ndist",
+            mergeStrategy: "append", // ignored for string content
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              ".gitignore": { content: "coverage\n.env" },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      // String content always replaces - mergeStrategy is ignored
+      assert.equal(result.repos[0].files[0].content, "coverage\n.env");
+    });
+
+    test("merges text array content with append strategy", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: {
+          ".gitignore": {
+            content: ["node_modules", "dist"],
+            mergeStrategy: "append",
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              ".gitignore": { content: ["coverage", ".env"] },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      // Text array content merged with append
+      assert.deepEqual(result.repos[0].files[0].content, [
+        "node_modules",
+        "dist",
+        "coverage",
+        ".env",
+      ]);
+    });
+
+    test("merges text content with prepend strategy", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: {
+          ".gitignore": {
+            content: ["node_modules", "dist"],
+            mergeStrategy: "prepend",
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              ".gitignore": { content: ["coverage", ".env"] },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      // Text array content merged with prepend - repo content before base
+      assert.deepEqual(result.repos[0].files[0].content, [
+        "coverage",
+        ".env",
+        "node_modules",
+        "dist",
+      ]);
+    });
+
+    test("merges text content with replace strategy (default)", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: {
+          ".gitignore": {
+            content: ["node_modules", "dist"],
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              ".gitignore": { content: ["coverage", ".env"] },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      // Text array content with default replace - repo content replaces base
+      assert.deepEqual(result.repos[0].files[0].content, ["coverage", ".env"]);
     });
 
     test("strips merge directives from output", () => {
@@ -684,6 +837,49 @@ describe("normalizeConfig", () => {
 
       const result = normalizeConfig(raw);
       assert.deepEqual(result.repos[0].files[0].content, { key: "value" });
+    });
+
+    test("repo text content merges into undefined root content", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: {
+          ".gitignore": {},
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              ".gitignore": { content: "node_modules\ndist" },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].files[0].content, "node_modules\ndist");
+    });
+
+    test("repo text array content merges into undefined root content", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: {
+          ".gitignore": {},
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              ".gitignore": { content: ["node_modules", "dist"] },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].files[0].content, [
+        "node_modules",
+        "dist",
+      ]);
     });
 
     test("override with no content creates empty file", () => {

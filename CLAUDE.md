@@ -255,6 +255,19 @@ npm run test:integration:gitlab # Build + GitLab integration test (requires glab
 npm run dev                     # Run CLI via ts-node (pass config file as argument)
 ```
 
+## Pre-PR Checklist
+
+**IMPORTANT: Before creating any PR, you MUST run and verify:**
+
+1. **Unit tests pass**: `npm test`
+2. **Linting passes**: `./lint.sh`
+3. **Integration tests pass** (if code changes affect CLI behavior):
+   - `npm run test:integration:github` (requires `gh auth login`)
+   - `npm run test:integration:ado` (requires `az login`)
+   - `npm run test:integration:gitlab` (requires `glab auth login`)
+
+Do not create a PR until all applicable tests pass locally.
+
 ## Release Process
 
 Run the Release workflow via Actions UI or CLI:
