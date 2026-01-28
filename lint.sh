@@ -26,6 +26,7 @@ if [[ "${1:-}" == "--ci" ]]; then
   docker run \
     -e MEGALINTER_FLAVOR="$MEGALINTER_FLAVOR" \
     -e GITHUB_TOKEN="${GITHUB_TOKEN:-}" \
+    -e GITHUB_STEP_SUMMARY="${GITHUB_STEP_SUMMARY:-}" \
     -e VALIDATE_ALL_CODEBASE="${VALIDATE_ALL_CODEBASE:-}" \
     -e DEFAULT_WORKSPACE=/tmp/lint \
     -e GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-}" \
