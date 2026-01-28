@@ -201,6 +201,38 @@ describe("GitHubPRStrategy with mock executor", () => {
       assert.equal(result.url, "https://github.com/owner/repo/pull/789");
     });
 
+    test("uses github.com as default host when host is undefined", async () => {
+      mockExecutor.responses.set(
+        "gh pr create",
+        "https://github.com/owner/repo/pull/999"
+      );
+
+      // Test defensive fallback when host is undefined at runtime
+      const repoInfoWithoutHost = {
+        type: "github" as const,
+        gitUrl: "git@github.com:owner/repo.git",
+        owner: "owner",
+        repo: "repo",
+      } as GitHubRepoInfo;
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const options: PRStrategyOptions = {
+        repoInfo: repoInfoWithoutHost,
+        title: "Test PR",
+        body: "Test body",
+        branchName: "test-branch",
+        baseBranch: "main",
+        workDir: testDir,
+        retries: 0,
+      };
+
+      const result = await strategy.create(options);
+
+      assert.equal(result.success, true);
+      // URL regex should still match using default github.com
+      assert.equal(result.url, "https://github.com/owner/repo/pull/999");
+    });
+
     test("cleans up body file after success", async () => {
       mockExecutor.responses.set(
         "gh pr create",

@@ -293,6 +293,48 @@ describe("RepositoryProcessor", () => {
       );
       assert.notEqual(result.skipped, true, "Should not have skipped=true");
     });
+
+    test("should skip when commit returns false (no staged changes after git add)", async () => {
+      const mockLogger = createMockLogger();
+
+      // Extend MockGitOps to return false from commit
+      class MockGitOpsNoStagedChanges extends MockGitOps {
+        override async getChangedFiles(): Promise<string[]> {
+          // Report that files changed (so we proceed to commit step)
+          return ["config.json"];
+        }
+
+        override async commit(_message: string): Promise<boolean> {
+          // Return false to indicate no staged changes after git add -A
+          return false;
+        }
+      }
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        const mockGitOps = new MockGitOpsNoStagedChanges(opts);
+        mockGitOps.setupFileExists(false, false); // File doesn't exist, so it will try to create
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `action-test-no-staged-${Date.now()}`);
+
+      const result = await processor.process(mockRepoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        configId: "test-config",
+        dryRun: false, // Need non-dry run to hit the commit path
+        executor: createMockExecutor(),
+      });
+
+      assert.equal(result.success, true, "Should succeed");
+      assert.equal(result.skipped, true, "Should be skipped");
+      assert.equal(
+        result.message,
+        "No changes detected after staging",
+        "Should have correct message"
+      );
+    });
   });
 
   describe("executable file handling", () => {
