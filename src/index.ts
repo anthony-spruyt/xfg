@@ -23,6 +23,7 @@ import {
 import { RepoConfig } from "./config.js";
 import { RepoInfo } from "./repo-detector.js";
 import { ProcessorOptions } from "./repository-processor.js";
+import { writeSummary, RepoResult, MergeOutcome } from "./github-summary.js";
 
 /**
  * Processor interface for dependency injection in tests.
@@ -147,6 +148,25 @@ function formatFileNames(fileNames: string[]): string {
   return `${fileNames.length} files`;
 }
 
+/**
+ * Determine merge outcome from repo config and processor result
+ */
+function getMergeOutcome(
+  repoConfig: RepoConfig,
+  result: ProcessorResult
+): MergeOutcome | undefined {
+  if (!result.success || result.skipped) return undefined;
+
+  const mergeMode = repoConfig.prOptions?.merge ?? "auto";
+
+  if (mergeMode === "direct") return "direct";
+  if (result.mergeResult?.merged) return "force";
+  if (result.mergeResult?.autoMergeEnabled) return "auto";
+  if (result.prUrl) return "manual";
+
+  return undefined;
+}
+
 async function main(): Promise<void> {
   const configPath = resolve(options.config);
 
@@ -177,6 +197,7 @@ async function main(): Promise<void> {
   console.log(`Branch: ${branchName}\n`);
 
   const processor = defaultProcessorFactory();
+  const results: RepoResult[] = [];
 
   for (let i = 0; i < config.repos.length; i++) {
     const repoConfig = config.repos[i];
@@ -203,6 +224,11 @@ async function main(): Promise<void> {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error(current, repoConfig.git, message);
+      results.push({
+        repoName: repoConfig.git,
+        status: "failed",
+        message,
+      });
       continue;
     }
 
@@ -226,6 +252,11 @@ async function main(): Promise<void> {
 
       if (result.skipped) {
         logger.skip(current, repoName, result.message);
+        results.push({
+          repoName,
+          status: "skipped",
+          message: result.message,
+        });
       } else if (result.success) {
         let message = result.prUrl ? `PR: ${result.prUrl}` : result.message;
         if (result.mergeResult) {
@@ -236,16 +267,45 @@ async function main(): Promise<void> {
           }
         }
         logger.success(current, repoName, message);
+        results.push({
+          repoName,
+          status: "succeeded",
+          message,
+          prUrl: result.prUrl,
+          mergeOutcome: getMergeOutcome(repoConfig, result),
+        });
       } else {
         logger.error(current, repoName, result.message);
+        results.push({
+          repoName,
+          status: "failed",
+          message: result.message,
+        });
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logger.error(current, repoName, message);
+      results.push({
+        repoName,
+        status: "failed",
+        message,
+      });
     }
   }
 
   logger.summary();
+
+  // Write GitHub Actions job summary if running in GitHub Actions
+  const succeeded = results.filter((r) => r.status === "succeeded").length;
+  const skipped = results.filter((r) => r.status === "skipped").length;
+  const failed = results.filter((r) => r.status === "failed").length;
+  writeSummary({
+    total: config.repos.length,
+    succeeded,
+    skipped,
+    failed,
+    results,
+  });
 
   if (logger.hasFailures()) {
     process.exit(1);
