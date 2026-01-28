@@ -1,5 +1,4 @@
 {
-  "$generated": "This file is automatically updated - do not modify directly",
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>.github/renovate/base.json5",
