@@ -7,6 +7,7 @@
   "includeCoAuthoredBy": true,
   "permissions": {
     "allow": [
+      "Bash(./lint.sh:*)",
       "Bash(gh issue comment:*)",
       "Bash(gh issue create:*)",
       "Bash(gh issue edit:*)",
@@ -46,6 +47,7 @@
       "Bash(git switch:*)",
       "Bash(pre-commit:*)",
       "Bash(mkdir:*)",
+      "Bash(mkdocs:*)",
       "Bash(renovate-config-validator:*)",
       "Bash(test:*)",
       "mcp__ide__getDiagnostics",
@@ -147,6 +149,7 @@
     "plugin-dev@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "hookify-plus@hookify-plus": true
   },
