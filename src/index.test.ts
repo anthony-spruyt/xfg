@@ -692,7 +692,12 @@ repos:
 });
 
 // Import helper functions for unit testing
-import { getMergeOutcome, toFileChanges } from "./summary-utils.js";
+import {
+  getMergeOutcome,
+  toFileChanges,
+  buildRepoResult,
+  buildErrorResult,
+} from "./summary-utils.js";
 import { ProcessorResult } from "./repository-processor.js";
 import { RepoConfig } from "./config.js";
 
@@ -824,5 +829,150 @@ describe("toFileChanges", () => {
       deleted: 0,
       unchanged: 0,
     });
+  });
+});
+
+describe("buildRepoResult", () => {
+  const repoConfig: RepoConfig = {
+    git: "git@github.com:test/repo.git",
+    files: [],
+  };
+
+  test("builds skipped result", () => {
+    const result: ProcessorResult = {
+      success: true,
+      repoName: "test/repo",
+      message: "No changes",
+      skipped: true,
+      diffStats: {
+        newCount: 0,
+        modifiedCount: 0,
+        deletedCount: 0,
+        unchangedCount: 2,
+      },
+    };
+
+    const repoResult = buildRepoResult("test/repo", repoConfig, result);
+
+    assert.equal(repoResult.status, "skipped");
+    assert.equal(repoResult.message, "No changes");
+    assert.deepEqual(repoResult.fileChanges, {
+      added: 0,
+      modified: 0,
+      deleted: 0,
+      unchanged: 2,
+    });
+  });
+
+  test("builds succeeded result with PR", () => {
+    const result: ProcessorResult = {
+      success: true,
+      repoName: "test/repo",
+      message: "PR created",
+      prUrl: "https://github.com/test/repo/pull/1",
+      diffStats: {
+        newCount: 1,
+        modifiedCount: 2,
+        deletedCount: 0,
+        unchangedCount: 0,
+      },
+    };
+
+    const repoResult = buildRepoResult("test/repo", repoConfig, result);
+
+    assert.equal(repoResult.status, "succeeded");
+    assert.ok(repoResult.message.includes("PR:"));
+    assert.equal(repoResult.prUrl, "https://github.com/test/repo/pull/1");
+    assert.equal(repoResult.mergeOutcome, "manual");
+  });
+
+  test("builds succeeded result with merged PR", () => {
+    const result: ProcessorResult = {
+      success: true,
+      repoName: "test/repo",
+      message: "PR merged",
+      prUrl: "https://github.com/test/repo/pull/1",
+      mergeResult: { merged: true, message: "Merged" },
+    };
+
+    const repoResult = buildRepoResult("test/repo", repoConfig, result);
+
+    assert.equal(repoResult.status, "succeeded");
+    assert.ok(repoResult.message.includes("(merged)"));
+    assert.equal(repoResult.mergeOutcome, "force");
+  });
+
+  test("builds succeeded result with auto-merge", () => {
+    const result: ProcessorResult = {
+      success: true,
+      repoName: "test/repo",
+      message: "Auto-merge enabled",
+      prUrl: "https://github.com/test/repo/pull/1",
+      mergeResult: { merged: false, autoMergeEnabled: true, message: "OK" },
+    };
+
+    const repoResult = buildRepoResult("test/repo", repoConfig, result);
+
+    assert.equal(repoResult.status, "succeeded");
+    assert.ok(repoResult.message.includes("(auto-merge enabled)"));
+    assert.equal(repoResult.mergeOutcome, "auto");
+  });
+
+  test("builds succeeded result for direct push", () => {
+    const directConfig: RepoConfig = {
+      git: "git@github.com:test/repo.git",
+      files: [],
+      prOptions: { merge: "direct" },
+    };
+    const result: ProcessorResult = {
+      success: true,
+      repoName: "test/repo",
+      message: "Pushed to main",
+    };
+
+    const repoResult = buildRepoResult("test/repo", directConfig, result);
+
+    assert.equal(repoResult.status, "succeeded");
+    assert.equal(repoResult.message, "Pushed to main");
+    assert.equal(repoResult.mergeOutcome, "direct");
+  });
+
+  test("builds failed result", () => {
+    const result: ProcessorResult = {
+      success: false,
+      repoName: "test/repo",
+      message: "Clone failed",
+    };
+
+    const repoResult = buildRepoResult("test/repo", repoConfig, result);
+
+    assert.equal(repoResult.status, "failed");
+    assert.equal(repoResult.message, "Clone failed");
+  });
+});
+
+describe("buildErrorResult", () => {
+  test("builds error result from Error object", () => {
+    const error = new Error("Network timeout");
+
+    const result = buildErrorResult("test/repo", error);
+
+    assert.equal(result.status, "failed");
+    assert.equal(result.repoName, "test/repo");
+    assert.equal(result.message, "Network timeout");
+  });
+
+  test("builds error result from string", () => {
+    const result = buildErrorResult("test/repo", "Something went wrong");
+
+    assert.equal(result.status, "failed");
+    assert.equal(result.message, "Something went wrong");
+  });
+
+  test("builds error result from unknown type", () => {
+    const result = buildErrorResult("test/repo", { code: 500 });
+
+    assert.equal(result.status, "failed");
+    assert.equal(result.message, "[object Object]");
   });
 });

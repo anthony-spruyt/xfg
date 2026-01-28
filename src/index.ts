@@ -24,7 +24,7 @@ import { RepoConfig } from "./config.js";
 import { RepoInfo } from "./repo-detector.js";
 import { ProcessorOptions } from "./repository-processor.js";
 import { writeSummary, RepoResult } from "./github-summary.js";
-import { getMergeOutcome, toFileChanges } from "./summary-utils.js";
+import { buildRepoResult, buildErrorResult } from "./summary-utils.js";
 
 /**
  * Processor interface for dependency injection in tests.
@@ -204,13 +204,8 @@ async function main(): Promise<void> {
         githubHosts: config.githubHosts,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      logger.error(current, repoConfig.git, message);
-      results.push({
-        repoName: repoConfig.git,
-        status: "failed",
-        message,
-      });
+      logger.error(current, repoConfig.git, String(error));
+      results.push(buildErrorResult(repoConfig.git, error));
       continue;
     }
 
@@ -232,48 +227,19 @@ async function main(): Promise<void> {
         noDelete: options.noDelete,
       });
 
+      const repoResult = buildRepoResult(repoName, repoConfig, result);
+      results.push(repoResult);
+
       if (result.skipped) {
         logger.skip(current, repoName, result.message);
-        results.push({
-          repoName,
-          status: "skipped",
-          message: result.message,
-          fileChanges: toFileChanges(result.diffStats),
-        });
       } else if (result.success) {
-        let message = result.prUrl ? `PR: ${result.prUrl}` : result.message;
-        if (result.mergeResult) {
-          if (result.mergeResult.merged) {
-            message += " (merged)";
-          } else if (result.mergeResult.autoMergeEnabled) {
-            message += " (auto-merge enabled)";
-          }
-        }
-        logger.success(current, repoName, message);
-        results.push({
-          repoName,
-          status: "succeeded",
-          message,
-          prUrl: result.prUrl,
-          mergeOutcome: getMergeOutcome(repoConfig, result),
-          fileChanges: toFileChanges(result.diffStats),
-        });
+        logger.success(current, repoName, repoResult.message);
       } else {
         logger.error(current, repoName, result.message);
-        results.push({
-          repoName,
-          status: "failed",
-          message: result.message,
-        });
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      logger.error(current, repoName, message);
-      results.push({
-        repoName,
-        status: "failed",
-        message,
-      });
+      logger.error(current, repoName, String(error));
+      results.push(buildErrorResult(repoName, error));
     }
   }
 
