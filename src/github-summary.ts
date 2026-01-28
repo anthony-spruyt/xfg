@@ -27,8 +27,8 @@ export interface SummaryData {
 }
 
 function escapeMarkdown(text: string): string {
-  // Escape pipe chars for table cells
-  return text.replace(/\|/g, "\\|");
+  // Escape backslashes first, then pipes (order matters to prevent double-escaping)
+  return text.replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
 }
 
 function formatFileChanges(changes?: FileChanges): string {

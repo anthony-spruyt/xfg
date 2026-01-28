@@ -273,6 +273,27 @@ describe("formatSummary", () => {
       assert.ok(!markdown.includes("||"));
     });
 
+    test("escapes backslashes before pipes to prevent bypass", () => {
+      const result: RepoResult = {
+        repoName: "org/repo",
+        status: "failed",
+        message: "Error with \\| backslash-pipe",
+      };
+      const data: SummaryData = {
+        total: 1,
+        succeeded: 0,
+        skipped: 0,
+        failed: 1,
+        results: [result],
+      };
+
+      const markdown = formatSummary(data);
+
+      // Backslash should be escaped first, then pipe
+      // Input: \| -> Output: \\| (escaped backslash) + \| (escaped pipe) = \\\|
+      assert.ok(markdown.includes("\\\\\\|"));
+    });
+
     test("handles all repos skipped", () => {
       const data: SummaryData = {
         total: 2,
