@@ -1,0 +1,90 @@
+{
+  "$generated": "This file is automatically updated - do not modify directly",
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": [
+        "Annotated shell variable (depName first)."
+      ],
+      "managerFilePatterns": [
+        "/\\.(sh|bash)$/"
+      ],
+      "matchStrings": [
+        "depName=(?<depName>\\S+) datasource=(?<datasource>\\S+)(?:\\s+versioning=(?<versioning>\\S+))?\\n(?:export\\s+)?[A-Z_]+=\"(?<currentValue>v?[^\"]+)\""
+      ],
+      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": [
+        "Annotated shell variable (datasource first)."
+      ],
+      "managerFilePatterns": [
+        "/\\.(sh|bash)$/"
+      ],
+      "matchStrings": [
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?:\\s+versioning=(?<versioning>\\S+))?\\n(?:export\\s+)?[A-Z_]+=\"(?<currentValue>v?[^\"]+)\""
+      ],
+      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": [
+        "Annotated YAML field (depName first)."
+      ],
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*depName=(?<depName>\\S+)\\s+datasource=(?<datasource>\\S+)(?:\\s+versioning=(?<versioning>\\S+))?\\n\\s*\\w+:\\s*\"?(?<currentValue>[^\"\\s]+)\"?"
+      ],
+      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-tags{{/if}}",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": [
+        "Annotated YAML field (datasource first)."
+      ],
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(?:\\s+versioning=(?<versioning>\\S+))?\\n\\s*\\w+:\\s*\"?(?<currentValue>[^\"\\s]+)\"?"
+      ],
+      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-tags{{/if}}",
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": [
+        "Annotated Docker image (depName first)."
+      ],
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*depName=(?<depName>\\S+)\\s+datasource=docker\\n\\s*\\w+:\\s*\"[^:]+:(?<currentValue>[^@\"]+)(?:@(?<currentDigest>sha256:[^\"]+))?\""
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": [
+        "Annotated Docker image (datasource first)."
+      ],
+      "managerFilePatterns": [
+        "/\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=docker\\s+depName=(?<depName>\\S+)\\n\\s*\\w+:\\s*\"[^:]+:(?<currentValue>[^@\"]+)(?:@(?<currentDigest>sha256:[^\"]+))?\""
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    }
+  ]
+}

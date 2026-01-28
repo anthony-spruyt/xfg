@@ -1,0 +1,20 @@
+{
+  "$generated": "This file is automatically updated - do not modify directly",
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "docker:enableMajor",
+    ":dependencyDashboard",
+    ":disableRateLimiting",
+    ":semanticCommits",
+    ":enablePreCommit",
+    ":separatePatchReleases"
+  ],
+  "enabled": true,
+  "dependencyDashboardTitle": "Renovate Dashboard",
+  "suppressNotifications": [
+    "prIgnoreNotification"
+  ],
+  "commitBodyTable": true,
+  "rebaseWhen": "behind-base-branch"
+}

@@ -1,0 +1,231 @@
+{
+  "$generated": "This file is automatically updated - do not modify directly",
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "packageRules": [
+    {
+      "description": "Rook-Ceph operator, cluster chart, and Ceph container image",
+      "groupName": "Rook Ceph",
+      "matchPackageNames": [
+        "ghcr.io/rook/rook-ceph",
+        "ghcr.io/rook/rook-ceph-cluster",
+        "quay.io/ceph/ceph"
+      ],
+      "matchDatasources": [
+        "docker",
+        "helm",
+        "oci"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+    {
+      "description": "Traefik chart and CRD",
+      "groupName": "Traefik",
+      "matchPackageNames": [
+        "traefik",
+        "traefik-crd-source"
+      ],
+      "matchDatasources": [
+        "helm",
+        "regex",
+        "github-tags"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+    {
+      "description": "Cilium CNI",
+      "groupName": "Cilium",
+      "matchPackageNames": [
+        "quay.io/cilium/cilium",
+        "quay.io/cilium/operator-generic",
+        "cilium"
+      ],
+      "matchDatasources": [
+        "helm",
+        "docker"
+      ],
+      "separateMinorPatch": true,
+      "minimumReleaseAge": "2 days"
+    },
+    {
+      "description": "Victoria Metrics components",
+      "groupName": "Victoria Metrics",
+      "matchPackageNames": [
+        "victoria-metrics",
+        "victoriametrics",
+        "ghcr.io/victoriametrics/helm-charts"
+      ],
+      "matchDatasources": [
+        "helm",
+        "docker",
+        "oci"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+    {
+      "description": "External Secrets Operator",
+      "groupName": "External Secrets",
+      "matchPackageNames": [
+        "external-secrets"
+      ],
+      "matchDatasources": [
+        "helm"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true,
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "CloudNativePG components",
+      "groupName": "CloudNativePG",
+      "matchPackageNames": [
+        "cloudnative-pg",
+        "cnpg"
+      ],
+      "matchDatasources": [
+        "helm",
+        "docker"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+    {
+      "description": "Flux components",
+      "groupName": "Flux",
+      "matchPackageNames": [
+        "fluxcd/*",
+        "ghcr.io/fluxcd/*"
+      ],
+      "matchDatasources": [
+        "docker",
+        "helm",
+        "github-releases"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true,
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "Authentik stack",
+      "groupName": "Authentik",
+      "matchPackageNames": [
+        "goauthentik/*",
+        "ghcr.io/goauthentik/*"
+      ],
+      "matchDatasources": [
+        "docker",
+        "helm"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+    {
+      "description": "Cert-Manager components",
+      "groupName": "Cert-Manager",
+      "matchPackageNames": [
+        "cert-manager",
+        "jetstack/cert-manager"
+      ],
+      "matchDatasources": [
+        "helm",
+        "docker"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true,
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "External-DNS components",
+      "groupName": "External-DNS",
+      "matchPackageNames": [
+        "external-dns",
+        "kubernetes-sigs/external-dns"
+      ],
+      "matchDatasources": [
+        "helm",
+        "docker"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+    {
+      "description": "Snapshot Controller components",
+      "groupName": "Snapshot Controller",
+      "matchPackageNames": [
+        "snapshot-controller",
+        "kubernetes-csi/external-snapshotter"
+      ],
+      "matchDatasources": [
+        "helm",
+        "docker"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      },
+      "separateMinorPatch": true
+    },
+    {
+      "description": "CI/CD Actions",
+      "groupName": "CI/CD Actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "actions/*",
+        "docker/*"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      }
+    },
+    {
+      "description": "BJW-S App Template",
+      "groupName": "App Template",
+      "matchPackageNames": [
+        "ghcr.io/bjw-s-labs/helm/app-template"
+      ],
+      "matchDatasources": [
+        "helm"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      }
+    },
+    {
+      "description": "Kubernetes and Talos",
+      "groupName": "Kubernetes/Talos",
+      "matchPackageNames": [
+        "kubernetes",
+        "siderolabs/talos"
+      ],
+      "matchDatasources": [
+        "docker",
+        "github-releases",
+        "custom.regex"
+      ],
+      "group": {
+        "commitMessageTopic": "{{{groupName}}} group"
+      }
+    }
+  ]
+}
