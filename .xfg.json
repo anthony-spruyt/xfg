@@ -7,6 +7,7 @@
       ".devcontainer/post-create.sh",
       ".devcontainer/setup-devcontainer.sh",
       ".editorconfig",
+      ".eslintrc.json",
       ".github/actionlint.yaml",
       ".github/apply-rulesets.sh",
       ".github/renovate.json5",
