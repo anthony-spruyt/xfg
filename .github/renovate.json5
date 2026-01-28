@@ -1,14 +1,14 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "local>.github/renovate/base.json5",
-    "local>.github/renovate/managers.json5",
-    "local>.github/renovate/custom-managers/annotated.json5",
-    "local>.github/renovate/custom-managers/infrastructure.json5",
-    "local>.github/renovate/package-rules.json5",
-    "local>.github/renovate/groups.json5",
-    "local>.github/renovate/automerge.json5",
-    "local>.github/renovate/custom-datasources.json5",
-    "local>.github/renovate/disabled.json5"
+    "github>anthony-spruyt/repo-operator//.github/renovate/base.json5",
+    "github>anthony-spruyt/repo-operator//.github/renovate/managers.json5",
+    "github>anthony-spruyt/repo-operator//.github/renovate/custom-managers/annotated.json5",
+    "github>anthony-spruyt/repo-operator//.github/renovate/custom-managers/infrastructure.json5",
+    "github>anthony-spruyt/repo-operator//.github/renovate/package-rules.json5",
+    "github>anthony-spruyt/repo-operator//.github/renovate/groups.json5",
+    "github>anthony-spruyt/repo-operator//.github/renovate/automerge.json5",
+    "github>anthony-spruyt/repo-operator//.github/renovate/custom-datasources.json5",
+    "github>anthony-spruyt/repo-operator//.github/renovate/disabled.json5"
   ]
 }
