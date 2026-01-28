@@ -78,6 +78,7 @@ export interface ProcessorResult {
     autoMergeEnabled?: boolean;
     message: string;
   };
+  diffStats?: DiffStats;
 }
 
 export class RepositoryProcessor {
@@ -393,6 +394,7 @@ export class RepositoryProcessor {
           repoName,
           message: "No changes detected",
           skipped: true,
+          diffStats,
         };
       }
 
@@ -408,6 +410,7 @@ export class RepositoryProcessor {
           repoName,
           message: "No changes detected after staging",
           skipped: true,
+          diffStats,
         };
       }
 
@@ -448,6 +451,7 @@ export class RepositoryProcessor {
           success: true,
           repoName,
           message: `Pushed directly to ${baseBranch}`,
+          diffStats,
         };
       }
 
@@ -507,6 +511,7 @@ export class RepositoryProcessor {
         message: prResult.message,
         prUrl: prResult.url,
         mergeResult,
+        diffStats,
       };
     } finally {
       // Always cleanup workspace on completion or failure

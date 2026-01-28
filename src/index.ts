@@ -23,7 +23,13 @@ import {
 import { RepoConfig } from "./config.js";
 import { RepoInfo } from "./repo-detector.js";
 import { ProcessorOptions } from "./repository-processor.js";
-import { writeSummary, RepoResult, MergeOutcome } from "./github-summary.js";
+import {
+  writeSummary,
+  RepoResult,
+  MergeOutcome,
+  FileChanges,
+} from "./github-summary.js";
+import { DiffStats } from "./diff-utils.js";
 
 /**
  * Processor interface for dependency injection in tests.
@@ -167,6 +173,19 @@ function getMergeOutcome(
   return undefined;
 }
 
+/**
+ * Convert DiffStats to FileChanges for summary output
+ */
+function toFileChanges(diffStats?: DiffStats): FileChanges | undefined {
+  if (!diffStats) return undefined;
+  return {
+    added: diffStats.newCount,
+    modified: diffStats.modifiedCount,
+    deleted: diffStats.deletedCount,
+    unchanged: diffStats.unchangedCount,
+  };
+}
+
 async function main(): Promise<void> {
   const configPath = resolve(options.config);
 
@@ -256,6 +275,7 @@ async function main(): Promise<void> {
           repoName,
           status: "skipped",
           message: result.message,
+          fileChanges: toFileChanges(result.diffStats),
         });
       } else if (result.success) {
         let message = result.prUrl ? `PR: ${result.prUrl}` : result.message;
@@ -273,6 +293,7 @@ async function main(): Promise<void> {
           message,
           prUrl: result.prUrl,
           mergeOutcome: getMergeOutcome(repoConfig, result),
+          fileChanges: toFileChanges(result.diffStats),
         });
       } else {
         logger.error(current, repoName, result.message);
