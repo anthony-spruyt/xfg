@@ -23,13 +23,8 @@ import {
 import { RepoConfig } from "./config.js";
 import { RepoInfo } from "./repo-detector.js";
 import { ProcessorOptions } from "./repository-processor.js";
-import {
-  writeSummary,
-  RepoResult,
-  MergeOutcome,
-  FileChanges,
-} from "./github-summary.js";
-import { DiffStats } from "./diff-utils.js";
+import { writeSummary, RepoResult } from "./github-summary.js";
+import { getMergeOutcome, toFileChanges } from "./summary-utils.js";
 
 /**
  * Processor interface for dependency injection in tests.
@@ -152,38 +147,6 @@ function formatFileNames(fileNames: string[]): string {
     return fileNames.join(", ");
   }
   return `${fileNames.length} files`;
-}
-
-/**
- * Determine merge outcome from repo config and processor result
- */
-function getMergeOutcome(
-  repoConfig: RepoConfig,
-  result: ProcessorResult
-): MergeOutcome | undefined {
-  if (!result.success || result.skipped) return undefined;
-
-  const mergeMode = repoConfig.prOptions?.merge ?? "auto";
-
-  if (mergeMode === "direct") return "direct";
-  if (result.mergeResult?.merged) return "force";
-  if (result.mergeResult?.autoMergeEnabled) return "auto";
-  if (result.prUrl) return "manual";
-
-  return undefined;
-}
-
-/**
- * Convert DiffStats to FileChanges for summary output
- */
-function toFileChanges(diffStats?: DiffStats): FileChanges | undefined {
-  if (!diffStats) return undefined;
-  return {
-    added: diffStats.newCount,
-    modified: diffStats.modifiedCount,
-    deleted: diffStats.deletedCount,
-    unchanged: diffStats.unchangedCount,
-  };
 }
 
 async function main(): Promise<void> {

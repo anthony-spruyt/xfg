@@ -690,3 +690,139 @@ repos:
     });
   });
 });
+
+// Import helper functions for unit testing
+import { getMergeOutcome, toFileChanges } from "./summary-utils.js";
+import { ProcessorResult } from "./repository-processor.js";
+import { RepoConfig } from "./config.js";
+
+describe("getMergeOutcome", () => {
+  test("returns undefined for failed result", () => {
+    const repoConfig = { git: "git@github.com:test/repo.git", files: [] };
+    const result: ProcessorResult = {
+      success: false,
+      repoName: "test/repo",
+      message: "Failed",
+    };
+
+    assert.equal(getMergeOutcome(repoConfig, result), undefined);
+  });
+
+  test("returns undefined for skipped result", () => {
+    const repoConfig = { git: "git@github.com:test/repo.git", files: [] };
+    const result: ProcessorResult = {
+      success: true,
+      repoName: "test/repo",
+      message: "No changes",
+      skipped: true,
+    };
+
+    assert.equal(getMergeOutcome(repoConfig, result), undefined);
+  });
+
+  test("returns 'direct' for direct merge mode", () => {
+    const repoConfig: RepoConfig = {
+      git: "git@github.com:test/repo.git",
+      files: [],
+      prOptions: { merge: "direct" },
+    };
+    const result: ProcessorResult = {
+      success: true,
+      repoName: "test/repo",
+      message: "Pushed",
+    };
+
+    assert.equal(getMergeOutcome(repoConfig, result), "direct");
+  });
+
+  test("returns 'force' when PR was merged", () => {
+    const repoConfig = { git: "git@github.com:test/repo.git", files: [] };
+    const result: ProcessorResult = {
+      success: true,
+      repoName: "test/repo",
+      message: "PR merged",
+      prUrl: "https://github.com/test/repo/pull/1",
+      mergeResult: { merged: true, message: "Merged" },
+    };
+
+    assert.equal(getMergeOutcome(repoConfig, result), "force");
+  });
+
+  test("returns 'auto' when auto-merge enabled", () => {
+    const repoConfig = { git: "git@github.com:test/repo.git", files: [] };
+    const result: ProcessorResult = {
+      success: true,
+      repoName: "test/repo",
+      message: "Auto-merge enabled",
+      prUrl: "https://github.com/test/repo/pull/1",
+      mergeResult: { merged: false, autoMergeEnabled: true, message: "OK" },
+    };
+
+    assert.equal(getMergeOutcome(repoConfig, result), "auto");
+  });
+
+  test("returns 'manual' when PR created without merge", () => {
+    const repoConfig = { git: "git@github.com:test/repo.git", files: [] };
+    const result: ProcessorResult = {
+      success: true,
+      repoName: "test/repo",
+      message: "PR created",
+      prUrl: "https://github.com/test/repo/pull/1",
+    };
+
+    assert.equal(getMergeOutcome(repoConfig, result), "manual");
+  });
+
+  test("returns undefined when no prUrl and not direct mode", () => {
+    const repoConfig = { git: "git@github.com:test/repo.git", files: [] };
+    const result: ProcessorResult = {
+      success: true,
+      repoName: "test/repo",
+      message: "Done",
+    };
+
+    assert.equal(getMergeOutcome(repoConfig, result), undefined);
+  });
+});
+
+describe("toFileChanges", () => {
+  test("returns undefined when diffStats is undefined", () => {
+    assert.equal(toFileChanges(undefined), undefined);
+  });
+
+  test("converts DiffStats to FileChanges", () => {
+    const diffStats = {
+      newCount: 2,
+      modifiedCount: 3,
+      deletedCount: 1,
+      unchangedCount: 5,
+    };
+
+    const result = toFileChanges(diffStats);
+
+    assert.deepEqual(result, {
+      added: 2,
+      modified: 3,
+      deleted: 1,
+      unchanged: 5,
+    });
+  });
+
+  test("handles zero counts", () => {
+    const diffStats = {
+      newCount: 0,
+      modifiedCount: 0,
+      deletedCount: 0,
+      unchangedCount: 0,
+    };
+
+    const result = toFileChanges(diffStats);
+
+    assert.deepEqual(result, {
+      added: 0,
+      modified: 0,
+      deleted: 0,
+      unchanged: 0,
+    });
+  });
+});
