@@ -74,7 +74,7 @@ describe("GitLabPRStrategy with mock executor", () => {
     test("returns MR URL when MR exists", async () => {
       mockExecutor.responses.set(
         "glab mr list",
-        '[{"iid": 123, "title": "Test MR"}]',
+        '[{"iid": 123, "title": "Test MR"}]'
       );
 
       const strategy = new GitLabPRStrategy(mockExecutor);
@@ -92,7 +92,7 @@ describe("GitLabPRStrategy with mock executor", () => {
 
       assert.equal(
         result,
-        "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
+        "https://gitlab.com/myorg/myrepo/-/merge_requests/123"
       );
       assert.equal(mockExecutor.calls.length, 1);
       assert.ok(mockExecutor.calls[0].command.includes("glab mr list"));
@@ -179,7 +179,7 @@ describe("GitLabPRStrategy with mock executor", () => {
     test("creates MR and returns URL from output", async () => {
       mockExecutor.responses.set(
         "glab mr create",
-        "Creating merge request...\nhttps://gitlab.com/myorg/myrepo/-/merge_requests/456",
+        "Creating merge request...\nhttps://gitlab.com/myorg/myrepo/-/merge_requests/456"
       );
 
       const strategy = new GitLabPRStrategy(mockExecutor);
@@ -198,7 +198,7 @@ describe("GitLabPRStrategy with mock executor", () => {
       assert.equal(result.success, true);
       assert.equal(
         result.url,
-        "https://gitlab.com/myorg/myrepo/-/merge_requests/456",
+        "https://gitlab.com/myorg/myrepo/-/merge_requests/456"
       );
       assert.equal(mockExecutor.calls.length, 1);
       assert.ok(mockExecutor.calls[0].command.includes("glab mr create"));
@@ -208,7 +208,7 @@ describe("GitLabPRStrategy with mock executor", () => {
     test("creates MR and builds URL from MR number in output", async () => {
       mockExecutor.responses.set(
         "glab mr create",
-        "Merge request !789 created",
+        "Merge request !789 created"
       );
 
       const strategy = new GitLabPRStrategy(mockExecutor);
@@ -227,14 +227,14 @@ describe("GitLabPRStrategy with mock executor", () => {
       assert.equal(result.success, true);
       assert.equal(
         result.url,
-        "https://gitlab.com/myorg/myrepo/-/merge_requests/789",
+        "https://gitlab.com/myorg/myrepo/-/merge_requests/789"
       );
     });
 
     test("cleans up description file after success", async () => {
       mockExecutor.responses.set(
         "glab mr create",
-        "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
+        "https://gitlab.com/myorg/myrepo/-/merge_requests/123"
       );
 
       const strategy = new GitLabPRStrategy(mockExecutor);
@@ -277,7 +277,7 @@ describe("GitLabPRStrategy with mock executor", () => {
     test("throws error when output contains no URL or MR number", async () => {
       mockExecutor.responses.set(
         "glab mr create",
-        "Error: failed to create merge request",
+        "Error: failed to create merge request"
       );
 
       const strategy = new GitLabPRStrategy(mockExecutor);
@@ -293,7 +293,7 @@ describe("GitLabPRStrategy with mock executor", () => {
 
       await assert.rejects(
         () => strategy.create(options),
-        /Could not parse MR URL/,
+        /Could not parse MR URL/
       );
     });
   });
@@ -302,7 +302,7 @@ describe("GitLabPRStrategy with mock executor", () => {
     test("returns existing MR if found", async () => {
       mockExecutor.responses.set(
         "glab mr list",
-        '[{"iid": 999, "title": "Existing MR"}]',
+        '[{"iid": 999, "title": "Existing MR"}]'
       );
 
       const strategy = new GitLabPRStrategy(mockExecutor);
@@ -321,7 +321,7 @@ describe("GitLabPRStrategy with mock executor", () => {
       assert.equal(result.success, true);
       assert.equal(
         result.url,
-        "https://gitlab.com/myorg/myrepo/-/merge_requests/999",
+        "https://gitlab.com/myorg/myrepo/-/merge_requests/999"
       );
       assert.ok(result.message.includes("already exists"));
       // Should only call checkExistingPR, not create
@@ -332,7 +332,7 @@ describe("GitLabPRStrategy with mock executor", () => {
       mockExecutor.responses.set("glab mr list", "[]");
       mockExecutor.responses.set(
         "glab mr create",
-        "https://gitlab.com/myorg/myrepo/-/merge_requests/888",
+        "https://gitlab.com/myorg/myrepo/-/merge_requests/888"
       );
 
       const strategy = new GitLabPRStrategy(mockExecutor);
@@ -351,7 +351,7 @@ describe("GitLabPRStrategy with mock executor", () => {
       assert.equal(result.success, true);
       assert.equal(
         result.url,
-        "https://gitlab.com/myorg/myrepo/-/merge_requests/888",
+        "https://gitlab.com/myorg/myrepo/-/merge_requests/888"
       );
       // Should call both checkExistingPR and create
       assert.equal(mockExecutor.calls.length, 2);
@@ -361,7 +361,7 @@ describe("GitLabPRStrategy with mock executor", () => {
       mockExecutor.responses.set("glab mr list", "[]");
       mockExecutor.responses.set(
         "glab mr create",
-        new Error("Failed to create"),
+        new Error("Failed to create")
       );
 
       const strategy = new GitLabPRStrategy(mockExecutor);
@@ -412,7 +412,7 @@ describe("GitLabPRStrategy with nested groups", () => {
   test("builds correct MR URL for nested groups", async () => {
     mockExecutor.responses.set(
       "glab mr list",
-      '[{"iid": 42, "title": "Test MR"}]',
+      '[{"iid": 42, "title": "Test MR"}]'
     );
 
     const strategy = new GitLabPRStrategy(mockExecutor);
@@ -430,7 +430,7 @@ describe("GitLabPRStrategy with nested groups", () => {
 
     assert.equal(
       result,
-      "https://gitlab.com/org/group/subgroup/repo/-/merge_requests/42",
+      "https://gitlab.com/org/group/subgroup/repo/-/merge_requests/42"
     );
   });
 
@@ -451,7 +451,7 @@ describe("GitLabPRStrategy with nested groups", () => {
     await strategy.checkExistingPR(options);
 
     assert.ok(
-      mockExecutor.calls[0].command.includes("org/group/subgroup/repo"),
+      mockExecutor.calls[0].command.includes("org/group/subgroup/repo")
     );
   });
 });
@@ -501,7 +501,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
   test("closes MR and deletes branch when MR exists", async () => {
     mockExecutor.responses.set(
       "glab mr list",
-      '[{"iid": 123, "title": "Test MR"}]',
+      '[{"iid": 123, "title": "Test MR"}]'
     );
     mockExecutor.responses.set("glab mr close", "");
     mockExecutor.responses.set("git push origin --delete", "");
@@ -517,7 +517,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
 
     assert.equal(result, true);
     const closeCall = mockExecutor.calls.find((c) =>
-      c.command.includes("glab mr close"),
+      c.command.includes("glab mr close")
     );
     assert.ok(closeCall);
     assert.ok(closeCall.command.includes("123"));
@@ -526,7 +526,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
   test("returns false when close command fails", async () => {
     mockExecutor.responses.set(
       "glab mr list",
-      '[{"iid": 123, "title": "Test MR"}]',
+      '[{"iid": 123, "title": "Test MR"}]'
     );
     mockExecutor.responses.set("glab mr close", new Error("Close failed"));
 
@@ -545,7 +545,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
   test("deletes branch after closing MR", async () => {
     mockExecutor.responses.set(
       "glab mr list",
-      '[{"iid": 123, "title": "Test MR"}]',
+      '[{"iid": 123, "title": "Test MR"}]'
     );
     mockExecutor.responses.set("glab mr close", "");
     mockExecutor.responses.set("git push origin --delete", "");
@@ -560,7 +560,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
     });
 
     const deleteBranchCall = mockExecutor.calls.find((c) =>
-      c.command.includes("git push origin --delete"),
+      c.command.includes("git push origin --delete")
     );
     assert.ok(deleteBranchCall, "Should call git push --delete");
     assert.ok(deleteBranchCall.command.includes("test-branch"));
@@ -569,12 +569,12 @@ describe("GitLabPRStrategy closeExistingPR", () => {
   test("returns true even when branch deletion fails", async () => {
     mockExecutor.responses.set(
       "glab mr list",
-      '[{"iid": 123, "title": "Test MR"}]',
+      '[{"iid": 123, "title": "Test MR"}]'
     );
     mockExecutor.responses.set("glab mr close", "");
     mockExecutor.responses.set(
       "git push origin --delete",
-      new Error("Branch deletion failed"),
+      new Error("Branch deletion failed")
     );
 
     const strategy = new GitLabPRStrategy(mockExecutor);
@@ -592,15 +592,6 @@ describe("GitLabPRStrategy closeExistingPR", () => {
 });
 
 describe("GitLabPRStrategy merge", () => {
-  const gitlabRepoInfo: GitLabRepoInfo = {
-    type: "gitlab",
-    gitUrl: "git@gitlab.com:myorg/myrepo.git",
-    owner: "myorg",
-    namespace: "myorg",
-    repo: "myrepo",
-    host: "gitlab.com",
-  };
-
   let mockExecutor: ReturnType<typeof createMockExecutor>;
 
   beforeEach(() => {
@@ -654,7 +645,7 @@ describe("GitLabPRStrategy merge", () => {
       assert.equal(mockExecutor.calls.length, 1);
       assert.ok(mockExecutor.calls[0].command.includes("glab mr merge"));
       assert.ok(
-        mockExecutor.calls[0].command.includes("--when-pipeline-succeeds"),
+        mockExecutor.calls[0].command.includes("--when-pipeline-succeeds")
       );
     });
 
@@ -670,7 +661,7 @@ describe("GitLabPRStrategy merge", () => {
       });
 
       const mergeCall = mockExecutor.calls.find((c) =>
-        c.command.includes("glab mr merge"),
+        c.command.includes("glab mr merge")
       );
       assert.ok(mergeCall, "Should have called glab mr merge");
       assert.ok(mergeCall.command.includes("--squash"));
@@ -688,7 +679,7 @@ describe("GitLabPRStrategy merge", () => {
       });
 
       const mergeCall = mockExecutor.calls.find((c) =>
-        c.command.includes("glab mr merge"),
+        c.command.includes("glab mr merge")
       );
       assert.ok(mergeCall);
       assert.ok(mergeCall.command.includes("--rebase"));
@@ -706,7 +697,7 @@ describe("GitLabPRStrategy merge", () => {
       });
 
       const mergeCall = mockExecutor.calls.find((c) =>
-        c.command.includes("glab mr merge"),
+        c.command.includes("glab mr merge")
       );
       assert.ok(mergeCall);
       assert.ok(mergeCall.command.includes("--remove-source-branch"));
@@ -749,7 +740,7 @@ describe("GitLabPRStrategy merge", () => {
       assert.ok(mockExecutor.calls[0].command.includes("glab mr merge"));
       // Should NOT have --when-pipeline-succeeds for force mode
       assert.ok(
-        !mockExecutor.calls[0].command.includes("--when-pipeline-succeeds"),
+        !mockExecutor.calls[0].command.includes("--when-pipeline-succeeds")
       );
     });
 
@@ -772,7 +763,7 @@ describe("GitLabPRStrategy merge", () => {
     test("returns failure when force merge fails", async () => {
       mockExecutor.responses.set(
         "glab mr merge",
-        new Error("Merge not allowed"),
+        new Error("Merge not allowed")
       );
 
       const strategy = new GitLabPRStrategy(mockExecutor);
@@ -804,7 +795,7 @@ describe("GitLabPRStrategy merge", () => {
 
       assert.equal(result.success, true);
       assert.ok(
-        mockExecutor.calls[0].command.includes("org/group/subgroup/repo"),
+        mockExecutor.calls[0].command.includes("org/group/subgroup/repo")
       );
     });
 
@@ -853,7 +844,7 @@ describe("GitLabPRStrategy URL extraction edge cases", () => {
   test("does not capture trailing punctuation in URL", async () => {
     mockExecutor.responses.set(
       "glab mr create",
-      "MR created: https://gitlab.com/owner/repo/-/merge_requests/123.",
+      "MR created: https://gitlab.com/owner/repo/-/merge_requests/123."
     );
 
     const strategy = new GitLabPRStrategy(mockExecutor);
@@ -872,14 +863,14 @@ describe("GitLabPRStrategy URL extraction edge cases", () => {
     assert.equal(
       result.url,
       "https://gitlab.com/owner/repo/-/merge_requests/123",
-      "URL should not include trailing period",
+      "URL should not include trailing period"
     );
   });
 
   test("rejects non-MR GitLab URLs (issue URL)", async () => {
     mockExecutor.responses.set(
       "glab mr create",
-      "See related: https://gitlab.com/owner/repo/-/issues/456",
+      "See related: https://gitlab.com/owner/repo/-/issues/456"
     );
 
     const strategy = new GitLabPRStrategy(mockExecutor);
@@ -895,14 +886,14 @@ describe("GitLabPRStrategy URL extraction edge cases", () => {
 
     await assert.rejects(
       () => strategy.create(options),
-      /Could not parse MR URL/,
+      /Could not parse MR URL/
     );
   });
 
   test("rejects non-MR GitLab URLs (commit URL)", async () => {
     mockExecutor.responses.set(
       "glab mr create",
-      "Based on commit https://gitlab.com/owner/repo/-/commit/abc123",
+      "Based on commit https://gitlab.com/owner/repo/-/commit/abc123"
     );
 
     const strategy = new GitLabPRStrategy(mockExecutor);
@@ -918,14 +909,14 @@ describe("GitLabPRStrategy URL extraction edge cases", () => {
 
     await assert.rejects(
       () => strategy.create(options),
-      /Could not parse MR URL/,
+      /Could not parse MR URL/
     );
   });
 
   test("extracts valid MR URL with trailing newline", async () => {
     mockExecutor.responses.set(
       "glab mr create",
-      "https://gitlab.com/owner/repo/-/merge_requests/789\n",
+      "https://gitlab.com/owner/repo/-/merge_requests/789\n"
     );
 
     const strategy = new GitLabPRStrategy(mockExecutor);
@@ -943,7 +934,7 @@ describe("GitLabPRStrategy URL extraction edge cases", () => {
 
     assert.equal(
       result.url,
-      "https://gitlab.com/owner/repo/-/merge_requests/789",
+      "https://gitlab.com/owner/repo/-/merge_requests/789"
     );
   });
 });
@@ -988,7 +979,7 @@ describe("GitLabPRStrategy type guards", () => {
 
     await assert.rejects(
       () => strategy.checkExistingPR(options),
-      /Expected GitLab repository/,
+      /Expected GitLab repository/
     );
   });
 
@@ -1006,7 +997,7 @@ describe("GitLabPRStrategy type guards", () => {
 
     await assert.rejects(
       () => strategy.create(options),
-      /Expected GitLab repository/,
+      /Expected GitLab repository/
     );
   });
 
@@ -1022,7 +1013,7 @@ describe("GitLabPRStrategy type guards", () => {
           workDir: testDir,
           retries: 0,
         }),
-      /Expected GitLab repository/,
+      /Expected GitLab repository/
     );
   });
 });
@@ -1056,7 +1047,7 @@ describe("GitLabPRStrategy self-hosted", () => {
   test("builds correct MR URL for self-hosted GitLab", async () => {
     mockExecutor.responses.set(
       "glab mr list",
-      '[{"iid": 77, "title": "Test MR"}]',
+      '[{"iid": 77, "title": "Test MR"}]'
     );
 
     const strategy = new GitLabPRStrategy(mockExecutor);
@@ -1074,7 +1065,7 @@ describe("GitLabPRStrategy self-hosted", () => {
 
     assert.equal(
       result,
-      "https://gitlab.example.com/myorg/myrepo/-/merge_requests/77",
+      "https://gitlab.example.com/myorg/myrepo/-/merge_requests/77"
     );
   });
 });

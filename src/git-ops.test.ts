@@ -67,7 +67,7 @@ describe("sanitizeBranchName", () => {
   test("handles complex filename", () => {
     assert.equal(
       sanitizeBranchName("My Complex_Config@v2.0.json"),
-      "my-complex-config-v2-0",
+      "my-complex-config-v2-0"
     );
   });
 
@@ -115,77 +115,77 @@ describe("validateBranchName", () => {
     test("rejects branch starting with dot", () => {
       assert.throws(
         () => validateBranchName(".hidden"),
-        /cannot start with "." or "-"/,
+        /cannot start with "." or "-"/
       );
     });
 
     test("rejects branch starting with dash", () => {
       assert.throws(
         () => validateBranchName("-feature"),
-        /cannot start with "." or "-"/,
+        /cannot start with "." or "-"/
       );
     });
 
     test("rejects branch with spaces", () => {
       assert.throws(
         () => validateBranchName("my branch"),
-        /invalid characters/,
+        /invalid characters/
       );
     });
 
     test("rejects branch with tilde", () => {
       assert.throws(
         () => validateBranchName("feature~1"),
-        /invalid characters/,
+        /invalid characters/
       );
     });
 
     test("rejects branch with caret", () => {
       assert.throws(
         () => validateBranchName("feature^2"),
-        /invalid characters/,
+        /invalid characters/
       );
     });
 
     test("rejects branch with colon", () => {
       assert.throws(
         () => validateBranchName("feature:test"),
-        /invalid characters/,
+        /invalid characters/
       );
     });
 
     test("rejects branch with question mark", () => {
       assert.throws(
         () => validateBranchName("feature?test"),
-        /invalid characters/,
+        /invalid characters/
       );
     });
 
     test("rejects branch with asterisk", () => {
       assert.throws(
         () => validateBranchName("feature*test"),
-        /invalid characters/,
+        /invalid characters/
       );
     });
 
     test("rejects branch with bracket", () => {
       assert.throws(
         () => validateBranchName("feature[test]"),
-        /invalid characters/,
+        /invalid characters/
       );
     });
 
     test("rejects branch with backslash", () => {
       assert.throws(
         () => validateBranchName("feature\\test"),
-        /invalid characters/,
+        /invalid characters/
       );
     });
 
     test("rejects branch with consecutive dots", () => {
       assert.throws(
         () => validateBranchName("feature..test"),
-        /invalid characters/,
+        /invalid characters/
       );
     });
 
@@ -210,21 +210,21 @@ describe("validateBranchName", () => {
     test("rejects shell injection with spaces", () => {
       assert.throws(
         () => validateBranchName("; rm -rf /"),
-        /invalid characters/,
+        /invalid characters/
       );
     });
 
     test("rejects pipe injection with spaces", () => {
       assert.throws(
         () => validateBranchName("test | cat /etc/passwd"),
-        /invalid characters/,
+        /invalid characters/
       );
     });
 
     test("rejects newline injection via tilde path", () => {
       assert.throws(
         () => validateBranchName("feature~1"),
-        /invalid characters/,
+        /invalid characters/
       );
     });
 
@@ -392,7 +392,7 @@ describe("GitOps", () => {
       const gitOps = new GitOps({ workDir });
       assert.throws(
         () => gitOps.writeFile("../escape.json", "content"),
-        /Path traversal detected/,
+        /Path traversal detected/
       );
     });
 
@@ -413,7 +413,7 @@ describe("GitOps", () => {
       const gitOps = new GitOps({ workDir });
       assert.throws(
         () => gitOps.wouldChange("../escape.json", "content"),
-        /Path traversal detected/,
+        /Path traversal detected/
       );
     });
   });
@@ -423,17 +423,17 @@ describe("GitOps", () => {
       mkdirSync(workDir, { recursive: true });
     });
 
-    test("accepts custom executor", () => {
+    test("accepts custom executor", async () => {
       const commands: string[] = [];
       const mockExecutor: CommandExecutor = {
-        exec: (command: string, _cwd: string) => {
+        exec: async (command: string, _cwd: string) => {
           commands.push(command);
           return "";
         },
       };
 
       const gitOps = new GitOps({ workDir, executor: mockExecutor });
-      gitOps.hasChanges();
+      await gitOps.hasChanges();
 
       assert.equal(commands.length, 1);
       assert.ok(commands[0].includes("git status"));
@@ -480,7 +480,7 @@ describe("GitOps", () => {
           async exec(command: string, _cwd: string): Promise<string> {
             if (command.includes("git checkout -b")) {
               throw new Error(
-                "fatal: A branch named 'feature-branch' already exists",
+                "fatal: A branch named 'feature-branch' already exists"
               );
             }
             return "";
@@ -491,7 +491,7 @@ describe("GitOps", () => {
 
       await assert.rejects(
         async () => gitOps.createBranch("feature-branch"),
-        /Failed to create branch.*already exists/,
+        /Failed to create branch.*already exists/
       );
     });
   });
@@ -544,7 +544,7 @@ describe("GitOps", () => {
       const gitOps = new GitOps({ workDir });
       await assert.rejects(
         async () => gitOps.setExecutable("../escape.sh"),
-        /Path traversal detected/,
+        /Path traversal detected/
       );
     });
 
@@ -583,7 +583,7 @@ describe("GitOps", () => {
       assert.equal(
         executableBefore,
         false,
-        "File should not be executable before setExecutable",
+        "File should not be executable before setExecutable"
       );
 
       await gitOps.setExecutable("script.sh");
@@ -594,7 +594,7 @@ describe("GitOps", () => {
       assert.equal(
         executableAfter,
         true,
-        "File should be executable after setExecutable",
+        "File should be executable after setExecutable"
       );
     });
 
@@ -621,7 +621,7 @@ describe("GitOps", () => {
       assert.equal(
         executable,
         false,
-        "File should not be executable in dry-run mode",
+        "File should not be executable in dry-run mode"
       );
     });
   });
@@ -760,7 +760,7 @@ describe("GitOps", () => {
       assert.equal(commands.length, 1);
       assert.ok(
         commands[0].includes("--force-with-lease"),
-        "Should include --force-with-lease flag",
+        "Should include --force-with-lease flag"
       );
       assert.ok(commands[0].includes("-u origin"));
       assert.ok(commands[0].includes("sync-branch"));
@@ -785,7 +785,7 @@ describe("GitOps", () => {
       assert.equal(commands.length, 1);
       assert.ok(
         !commands[0].includes("--force"),
-        "Should NOT include any force flag",
+        "Should NOT include any force flag"
       );
       assert.ok(commands[0].includes("git push -u origin"));
       assert.ok(commands[0].includes("main"));
@@ -810,7 +810,7 @@ describe("GitOps", () => {
       assert.equal(commands.length, 1);
       assert.ok(
         !commands[0].includes("--force"),
-        "Should NOT include any force flag when options undefined",
+        "Should NOT include any force flag when options undefined"
       );
     });
   });
@@ -1013,7 +1013,7 @@ describe("GitOps", () => {
       const gitOps = new GitOps({ workDir });
       assert.throws(
         () => gitOps.getFileContent("../escape.json"),
-        /Path traversal detected/,
+        /Path traversal detected/
       );
     });
   });
@@ -1119,7 +1119,7 @@ describe("GitOps", () => {
       const gitOps = new GitOps({ workDir });
       assert.throws(
         () => gitOps.fileExists("../escape.json"),
-        /Path traversal detected/,
+        /Path traversal detected/
       );
     });
   });
@@ -1160,7 +1160,7 @@ describe("GitOps", () => {
       const gitOps = new GitOps({ workDir });
       assert.throws(
         () => gitOps.deleteFile("../escape.json"),
-        /Path traversal detected/,
+        /Path traversal detected/
       );
     });
 

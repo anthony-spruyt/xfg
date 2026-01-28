@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD041 -->
+
 ## Summary
 
 Automated sync of configuration files to ${xfg:repo.fullName}.

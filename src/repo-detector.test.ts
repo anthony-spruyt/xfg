@@ -6,90 +6,91 @@ import {
   getRepoDisplayName,
   isGitLabRepo,
   isGitHubRepo,
+  type AzureDevOpsRepoInfo,
 } from "./repo-detector.js";
 
 describe("detectRepoType", () => {
   test("detects GitHub SSH URL", () => {
     assert.strictEqual(
       detectRepoType("git@github.com:owner/repo.git"),
-      "github",
+      "github"
     );
   });
 
   test("detects GitHub HTTPS URL", () => {
     assert.strictEqual(
       detectRepoType("https://github.com/owner/repo.git"),
-      "github",
+      "github"
     );
   });
 
   test("detects Azure DevOps SSH URL", () => {
     assert.strictEqual(
       detectRepoType("git@ssh.dev.azure.com:v3/org/project/repo"),
-      "azure-devops",
+      "azure-devops"
     );
   });
 
   test("detects Azure DevOps HTTPS URL", () => {
     assert.strictEqual(
       detectRepoType("https://dev.azure.com/org/project/_git/repo"),
-      "azure-devops",
+      "azure-devops"
     );
   });
 
   test("detects GitLab SaaS SSH URL", () => {
     assert.strictEqual(
       detectRepoType("git@gitlab.com:owner/repo.git"),
-      "gitlab",
+      "gitlab"
     );
   });
 
   test("detects GitLab SaaS HTTPS URL", () => {
     assert.strictEqual(
       detectRepoType("https://gitlab.com/owner/repo.git"),
-      "gitlab",
+      "gitlab"
     );
   });
 
   test("detects GitLab SaaS nested group SSH URL", () => {
     assert.strictEqual(
       detectRepoType("git@gitlab.com:org/group/subgroup/repo.git"),
-      "gitlab",
+      "gitlab"
     );
   });
 
   test("detects GitLab SaaS nested group HTTPS URL", () => {
     assert.strictEqual(
       detectRepoType("https://gitlab.com/org/group/subgroup/repo.git"),
-      "gitlab",
+      "gitlab"
     );
   });
 
   test("detects GitLab self-hosted SSH URL", () => {
     assert.strictEqual(
       detectRepoType("git@gitlab.example.com:owner/repo.git"),
-      "gitlab",
+      "gitlab"
     );
   });
 
   test("detects GitLab self-hosted HTTPS URL", () => {
     assert.strictEqual(
       detectRepoType("https://gitlab.example.com/owner/repo.git"),
-      "gitlab",
+      "gitlab"
     );
   });
 
   test("throws for ftp URLs", () => {
     assert.throws(
       () => detectRepoType("ftp://example.com/repo"),
-      /Unrecognized git URL format/,
+      /Unrecognized git URL format/
     );
   });
 
   test("throws for URLs without owner/repo structure", () => {
     assert.throws(
       () => detectRepoType("git@unknown.com:invalid"),
-      /Unrecognized git URL format/,
+      /Unrecognized git URL format/
     );
   });
 });
@@ -153,7 +154,7 @@ describe("parseGitUrl", () => {
     test("throws for invalid GitHub URLs", () => {
       assert.throws(
         () => parseGitUrl("git@github.com:invalid"),
-        /Unable to parse GitHub URL/,
+        /Unable to parse GitHub URL/
       );
     });
   });
@@ -161,7 +162,7 @@ describe("parseGitUrl", () => {
   describe("Azure DevOps URLs", () => {
     test("parses SSH format: git@ssh.dev.azure.com:v3/org/project/repo", () => {
       const result = parseGitUrl(
-        "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
+        "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo"
       );
       assert.strictEqual(result.type, "azure-devops");
       assert.strictEqual(result.organization, "myorg");
@@ -172,7 +173,7 @@ describe("parseGitUrl", () => {
 
     test("parses HTTPS format: https://dev.azure.com/org/project/_git/repo", () => {
       const result = parseGitUrl(
-        "https://dev.azure.com/myorg/myproject/_git/myrepo",
+        "https://dev.azure.com/myorg/myproject/_git/myrepo"
       );
       assert.strictEqual(result.type, "azure-devops");
       assert.strictEqual(result.organization, "myorg");
@@ -182,29 +183,30 @@ describe("parseGitUrl", () => {
 
     test("handles repo names with dots in Azure DevOps", () => {
       const result = parseGitUrl(
-        "git@ssh.dev.azure.com:v3/org/project/my.repo.name",
+        "git@ssh.dev.azure.com:v3/org/project/my.repo.name"
       );
       assert.strictEqual(result.repo, "my.repo.name");
     });
 
     test("handles repo names with dots and .git suffix in Azure DevOps", () => {
       const result = parseGitUrl(
-        "https://dev.azure.com/org/project/_git/my.repo.git",
+        "https://dev.azure.com/org/project/_git/my.repo.git"
       );
       assert.strictEqual(result.repo, "my.repo");
     });
 
     test("handles project names with hyphens", () => {
       const result = parseGitUrl(
-        "https://dev.azure.com/org/my-project/_git/repo",
+        "https://dev.azure.com/org/my-project/_git/repo"
       );
-      assert.strictEqual(result.project, "my-project");
+      assert.strictEqual(result.type, "azure-devops");
+      assert.strictEqual((result as AzureDevOpsRepoInfo).project, "my-project");
     });
 
     test("throws for invalid Azure DevOps URLs", () => {
       assert.throws(
         () => parseGitUrl("git@ssh.dev.azure.com:invalid"),
-        /Unable to parse Azure DevOps URL/,
+        /Unable to parse Azure DevOps URL/
       );
     });
   });
@@ -263,7 +265,7 @@ describe("parseGitUrl", () => {
 
     test("parses nested group HTTPS: https://gitlab.com/org/group/subgroup/repo.git", () => {
       const result = parseGitUrl(
-        "https://gitlab.com/org/group/subgroup/repo.git",
+        "https://gitlab.com/org/group/subgroup/repo.git"
       );
       assert.strictEqual(result.type, "gitlab");
       if (isGitLabRepo(result)) {
@@ -333,6 +335,7 @@ describe("getRepoDisplayName", () => {
       gitUrl: "git@github.com:owner/repo.git",
       owner: "owner",
       repo: "repo",
+      host: "github.com",
     });
     assert.strictEqual(result, "owner/repo");
   });
@@ -380,7 +383,7 @@ describe("GitHub Enterprise Server support", () => {
       const context = { githubHosts: ["github.mycompany.com"] };
       assert.strictEqual(
         detectRepoType("git@github.mycompany.com:owner/repo.git", context),
-        "github",
+        "github"
       );
     });
 
@@ -388,7 +391,7 @@ describe("GitHub Enterprise Server support", () => {
       const context = { githubHosts: ["ghe.internal.net"] };
       assert.strictEqual(
         detectRepoType("https://ghe.internal.net/owner/repo.git", context),
-        "github",
+        "github"
       );
     });
 
@@ -396,7 +399,7 @@ describe("GitHub Enterprise Server support", () => {
       // Without githubHosts context, unknown hosts are treated as GitLab
       assert.strictEqual(
         detectRepoType("git@github.mycompany.com:owner/repo.git"),
-        "gitlab",
+        "gitlab"
       );
     });
 
@@ -404,7 +407,7 @@ describe("GitHub Enterprise Server support", () => {
       const context = { githubHosts: ["github.mycompany.com"] };
       assert.strictEqual(
         detectRepoType("git@github.com:owner/repo.git", context),
-        "github",
+        "github"
       );
     });
 
@@ -414,7 +417,7 @@ describe("GitHub Enterprise Server support", () => {
       };
       assert.strictEqual(
         detectRepoType("git@ghe2.example.com:owner/repo.git", context),
-        "github",
+        "github"
       );
     });
 
@@ -422,7 +425,7 @@ describe("GitHub Enterprise Server support", () => {
       const context = { githubHosts: ["GITHUB.MYCOMPANY.COM"] };
       assert.strictEqual(
         detectRepoType("git@github.mycompany.com:owner/repo.git", context),
-        "github",
+        "github"
       );
     });
 
@@ -430,7 +433,7 @@ describe("GitHub Enterprise Server support", () => {
       const context = { githubHosts: ["github.mycompany.com"] };
       assert.strictEqual(
         detectRepoType("git@GITHUB.MYCOMPANY.COM:owner/repo.git", context),
-        "github",
+        "github"
       );
     });
   });
@@ -440,7 +443,7 @@ describe("GitHub Enterprise Server support", () => {
       const context = { githubHosts: ["github.mycompany.com"] };
       const result = parseGitUrl(
         "git@github.mycompany.com:owner/repo.git",
-        context,
+        context
       );
       assert.strictEqual(result.type, "github");
       if (isGitHubRepo(result)) {
@@ -454,7 +457,7 @@ describe("GitHub Enterprise Server support", () => {
       const context = { githubHosts: ["ghe.internal.net"] };
       const result = parseGitUrl(
         "https://ghe.internal.net/owner/repo.git",
-        context,
+        context
       );
       assert.strictEqual(result.type, "github");
       if (isGitHubRepo(result)) {
@@ -476,7 +479,7 @@ describe("GitHub Enterprise Server support", () => {
       const context = { githubHosts: ["github.mycompany.com"] };
       const result = parseGitUrl(
         "git@github.mycompany.com:owner/repo",
-        context,
+        context
       );
       assert.strictEqual(result.type, "github");
       if (isGitHubRepo(result)) {
@@ -489,7 +492,7 @@ describe("GitHub Enterprise Server support", () => {
       const context = { githubHosts: ["github.mycompany.com"] };
       const result = parseGitUrl(
         "git@github.mycompany.com:owner/my.repo.name.git",
-        context,
+        context
       );
       assert.strictEqual(result.type, "github");
       if (isGitHubRepo(result)) {

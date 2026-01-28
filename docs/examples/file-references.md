@@ -22,7 +22,7 @@ repos:
 
 ## Directory Structure
 
-```
+```text
 config/
   sync-config.yaml         # content: "@templates/prettier.json"
   templates/

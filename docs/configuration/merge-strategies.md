@@ -137,7 +137,7 @@ repos:
 
 Result:
 
-```
+```text
 node_modules/
 dist/
 coverage/

@@ -106,7 +106,7 @@ function formatFileChanges(files: FileAction[]): string {
 export function formatPRBody(
   files: FileAction[],
   repoInfo: RepoInfo,
-  customTemplate?: string,
+  customTemplate?: string
 ): string {
   const template = customTemplate ?? loadDefaultTemplate();
   const fileChanges = formatFileChanges(files);

@@ -13,7 +13,7 @@
 
 GitLab supports nested groups in the path:
 
-```
+```text
 git@gitlab.com:org/group/subgroup/repo.git
 ```
 

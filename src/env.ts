@@ -58,7 +58,7 @@ function isPlainObject(val: unknown): val is Record<string, unknown> {
  */
 function processString(
   value: string,
-  options: EnvInterpolationOptions,
+  options: EnvInterpolationOptions
 ): string {
   // Phase 1: Replace escaped $${...} with placeholders
   const escapedContent: string[] = [];
@@ -68,7 +68,7 @@ function processString(
       const index = escapedContent.length;
       escapedContent.push(content);
       return `${ESCAPE_PLACEHOLDER}${index}\x00`;
-    },
+    }
   );
 
   // Phase 2: Interpolate remaining ${...}
@@ -100,7 +100,7 @@ function processString(
 
       // Non-strict mode - leave placeholder as-is
       return match;
-    },
+    }
   );
 
   // Phase 3: Restore escaped sequences as literal ${...}
@@ -109,7 +109,7 @@ function processString(
     (_match, indexStr: string) => {
       const index = parseInt(indexStr, 10);
       return `\${${escapedContent[index]}}`;
-    },
+    }
   );
 
   return processed;
@@ -120,7 +120,7 @@ function processString(
  */
 function processValue(
   value: unknown,
-  options: EnvInterpolationOptions,
+  options: EnvInterpolationOptions
 ): unknown {
   if (typeof value === "string") {
     return processString(value, options);
@@ -157,7 +157,7 @@ function processValue(
  */
 export function interpolateEnvVars(
   json: Record<string, unknown>,
-  options: EnvInterpolationOptions = DEFAULT_OPTIONS,
+  options: EnvInterpolationOptions = DEFAULT_OPTIONS
 ): Record<string, unknown> {
   return processValue(json, options) as Record<string, unknown>;
 }
@@ -171,7 +171,7 @@ export function interpolateEnvVars(
  */
 export function interpolateEnvVarsInString(
   value: string,
-  options: EnvInterpolationOptions = DEFAULT_OPTIONS,
+  options: EnvInterpolationOptions = DEFAULT_OPTIONS
 ): string {
   return processString(value, options);
 }
@@ -181,7 +181,7 @@ export function interpolateEnvVarsInString(
  */
 export function interpolateEnvVarsInLines(
   lines: string[],
-  options: EnvInterpolationOptions = DEFAULT_OPTIONS,
+  options: EnvInterpolationOptions = DEFAULT_OPTIONS
 ): string[] {
   return lines.map((line) => processString(line, options));
 }
@@ -192,7 +192,7 @@ export function interpolateEnvVarsInLines(
  */
 export function interpolateContent(
   content: Record<string, unknown> | string | string[],
-  options: EnvInterpolationOptions = DEFAULT_OPTIONS,
+  options: EnvInterpolationOptions = DEFAULT_OPTIONS
 ): Record<string, unknown> | string | string[] {
   if (typeof content === "string") {
     return interpolateEnvVarsInString(content, options);

@@ -31,7 +31,7 @@ export function detectOutputFormat(fileName: string): OutputFormat {
  */
 function buildHeaderComment(
   header?: string[],
-  schemaUrl?: string,
+  schemaUrl?: string
 ): string | undefined {
   const lines: string[] = [];
 
@@ -56,7 +56,7 @@ function buildHeaderComment(
  */
 function buildCommentOnlyYaml(
   header?: string[],
-  schemaUrl?: string,
+  schemaUrl?: string
 ): string | undefined {
   const lines: string[] = [];
 
@@ -82,7 +82,7 @@ function buildCommentOnlyYaml(
 export function convertContentToString(
   content: Record<string, unknown> | string | string[] | null,
   fileName: string,
-  options?: ConvertOptions,
+  options?: ConvertOptions
 ): string {
   // Handle empty file case
   if (content === null) {
@@ -90,7 +90,7 @@ export function convertContentToString(
     if (format === "yaml" && options) {
       const commentOnly = buildCommentOnlyYaml(
         options.header,
-        options.schemaUrl,
+        options.schemaUrl
       );
       if (commentOnly) {
         return commentOnly;
@@ -123,7 +123,7 @@ export function convertContentToString(
     if (options) {
       const headerComment = buildHeaderComment(
         options.header,
-        options.schemaUrl,
+        options.schemaUrl
       );
       if (headerComment) {
         doc.commentBefore = headerComment;

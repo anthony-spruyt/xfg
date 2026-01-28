@@ -40,14 +40,14 @@ export class GitLabPRStrategy extends BasePRStrategy {
    * Parse MR URL to extract components.
    */
   private parseMRUrl(
-    mrUrl: string,
+    mrUrl: string
   ): { host: string; namespace: string; repo: string; mrIid: string } | null {
     // URL format: https://gitlab.com/namespace/repo/-/merge_requests/123
     // Nested: https://gitlab.com/org/group/subgroup/repo/-/merge_requests/123
     // Use specific path segment pattern to avoid ReDoS (polynomial regex)
     // Pattern: protocol://host/path-segments/-/merge_requests/id
     const match = mrUrl.match(
-      /https?:\/\/([^/]+)\/((?:[^/]+\/)*[^/]+)\/-\/merge_requests\/(\d+)/,
+      /https?:\/\/([^/]+)\/((?:[^/]+\/)*[^/]+)\/-\/merge_requests\/(\d+)/
     );
     if (!match) return null;
 
@@ -95,7 +95,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     try {
       const result = await withRetry(
         () => this.executor.exec(command, workDir),
-        { retries },
+        { retries }
       );
 
       if (!result || result.trim() === "" || result.trim() === "[]") {
@@ -164,7 +164,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logger.info(
-        `Warning: Failed to close existing MR !${mrInfo.mrIid}: ${message}`,
+        `Warning: Failed to close existing MR !${mrInfo.mrIid}: ${message}`
       );
       return false;
     }
@@ -212,7 +212,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     try {
       const result = await withRetry(
         () => this.executor.exec(command, workDir),
-        { retries },
+        { retries }
       );
 
       // Extract MR URL from output
@@ -245,7 +245,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
         }
       } catch (cleanupError) {
         logger.info(
-          `Warning: Failed to clean up temp file ${descFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`,
+          `Warning: Failed to clean up temp file ${descFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`
         );
       }
     }

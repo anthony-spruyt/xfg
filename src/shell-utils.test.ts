@@ -19,7 +19,7 @@ describe("escapeShellArg", () => {
     test("handles string with multiple spaces", () => {
       assert.strictEqual(
         escapeShellArg("one  two   three"),
-        "'one  two   three'",
+        "'one  two   three'"
       );
     });
   });
@@ -33,7 +33,7 @@ describe("escapeShellArg", () => {
     test("escapes multiple single quotes", () => {
       assert.strictEqual(
         escapeShellArg("it's a 'test'"),
-        "'it'\\''s a '\\''test'\\'''",
+        "'it'\\''s a '\\''test'\\'''"
       );
     });
 
@@ -82,14 +82,14 @@ describe("escapeShellArg", () => {
     test("handles pipes (prevents piping)", () => {
       assert.strictEqual(
         escapeShellArg("test | cat /etc/passwd"),
-        "'test | cat /etc/passwd'",
+        "'test | cat /etc/passwd'"
       );
     });
 
     test("handles ampersands (prevents background execution)", () => {
       assert.strictEqual(
         escapeShellArg("test & malicious"),
-        "'test & malicious'",
+        "'test & malicious'"
       );
     });
 
@@ -100,7 +100,7 @@ describe("escapeShellArg", () => {
     test("handles angle brackets (prevents redirection)", () => {
       assert.strictEqual(
         escapeShellArg("test > /etc/passwd"),
-        "'test > /etc/passwd'",
+        "'test > /etc/passwd'"
       );
     });
   });
@@ -109,28 +109,28 @@ describe("escapeShellArg", () => {
     test("handles git branch names", () => {
       assert.strictEqual(
         escapeShellArg("feature/my-branch"),
-        "'feature/my-branch'",
+        "'feature/my-branch'"
       );
     });
 
     test("handles commit messages", () => {
       assert.strictEqual(
         escapeShellArg("fix: resolve issue with 'quotes'"),
-        "'fix: resolve issue with '\\''quotes'\\'''",
+        "'fix: resolve issue with '\\''quotes'\\'''"
       );
     });
 
     test("handles git URLs with special chars", () => {
       assert.strictEqual(
         escapeShellArg("git@github.com:org/repo.git"),
-        "'git@github.com:org/repo.git'",
+        "'git@github.com:org/repo.git'"
       );
     });
 
     test("handles HTTPS URLs", () => {
       assert.strictEqual(
         escapeShellArg("https://github.com/org/repo.git"),
-        "'https://github.com/org/repo.git'",
+        "'https://github.com/org/repo.git'"
       );
     });
   });

@@ -23,7 +23,6 @@ const BRANCH_NAME = "chore/sync-my-config";
 // This follows the same pattern as integration-github.test.ts.
 function exec(command: string, options?: { cwd?: string }): string {
   try {
-    // eslint-disable-next-line security/detect-child-process
     return execSync(command, {
       // codeql-disable-next-line js/shell-command-injection-from-environment
       cwd: options?.cwd ?? projectRoot,
@@ -56,7 +55,7 @@ function adoApi(method: string, uri: string, body?: string): string {
 // Note: with includeContent=true, ADO returns the raw content directly
 function getFileContent(
   path: string,
-  branch?: string,
+  branch?: string
 ): { content: string; objectId: string } | null {
   try {
     const versionParam = branch
@@ -103,11 +102,11 @@ function pushFileChange(
   content: string | null,
   message: string,
   branch: string,
-  oldObjectId?: string,
+  oldObjectId?: string
 ): void {
   const defaultBranch = getDefaultBranch();
   const latestCommit = getLatestCommit(
-    branch === defaultBranch ? defaultBranch : branch,
+    branch === defaultBranch ? defaultBranch : branch
   );
 
   const changeType = content === null ? "delete" : oldObjectId ? "edit" : "add";
@@ -156,7 +155,7 @@ function deleteBranch(branchName: string): boolean {
 
     // Now delete with object_id
     exec(
-      `az repos ref delete --name refs/heads/${branchName} --repository ${TEST_REPO} --org ${ORG_URL} --project ${TEST_PROJECT} --object-id ${objectId}`,
+      `az repos ref delete --name refs/heads/${branchName} --repository ${TEST_REPO} --org ${ORG_URL} --project ${TEST_PROJECT} --object-id ${objectId}`
     );
     return true;
   } catch {
@@ -193,7 +192,7 @@ describe("Azure DevOps Integration Test", () => {
                 item: { path: "/README.md" },
                 newContent: {
                   content: Buffer.from(
-                    "# Test Repository\n\nThis repo is used for integration testing xfg.",
+                    "# Test Repository\n\nThis repo is used for integration testing xfg."
                   ).toString("base64"),
                   contentType: "base64encoded",
                 },
@@ -204,7 +203,7 @@ describe("Azure DevOps Integration Test", () => {
       };
       const uri = `${ORG_URL}/${TEST_PROJECT}/_apis/git/repositories/${TEST_REPO}/pushes?api-version=7.0`;
       exec(
-        `az rest --method post --uri "${uri}" --body '${JSON.stringify(pushBody)}'`,
+        `az rest --method post --uri "${uri}" --body '${JSON.stringify(pushBody)}'`
       );
       console.log("  Repo initialized");
     }
@@ -213,13 +212,13 @@ describe("Azure DevOps Integration Test", () => {
     console.log("Abandoning any existing PRs...");
     try {
       const existingPRs = exec(
-        `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[].pullRequestId" -o tsv`,
+        `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[].pullRequestId" -o tsv`
       );
       if (existingPRs) {
         for (const prId of existingPRs.split("\n").filter(Boolean)) {
           console.log(`  Abandoning PR #${prId}`);
           exec(
-            `az repos pr update --id ${prId} --status abandoned --org ${ORG_URL}`,
+            `az repos pr update --id ${prId} --status abandoned --org ${ORG_URL}`
           );
         }
       } else {
@@ -241,7 +240,7 @@ describe("Azure DevOps Integration Test", () => {
           null,
           `test: remove ${TARGET_FILE} for integration test`,
           defaultBranch,
-          fileInfo.objectId,
+          fileInfo.objectId
         );
         console.log("  File deleted");
       } else {
@@ -282,7 +281,7 @@ describe("Azure DevOps Integration Test", () => {
     // Verify PR was created
     console.log("\nVerifying PR was created...");
     const prList = exec(
-      `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`,
+      `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`
     );
 
     assert.ok(prList && prList !== "null", "Expected a PR to be created");
@@ -290,7 +289,7 @@ describe("Azure DevOps Integration Test", () => {
     const pr = JSON.parse(prList);
     console.log(`  PR #${pr.pullRequestId}: ${pr.title}`);
     console.log(
-      `  URL: ${ORG_URL}/${TEST_PROJECT}/_git/${TEST_REPO}/pullrequest/${pr.pullRequestId}`,
+      `  URL: ${ORG_URL}/${TEST_PROJECT}/_git/${TEST_REPO}/pullrequest/${pr.pullRequestId}`
     );
 
     assert.ok(pr.pullRequestId, "PR should have an ID");
@@ -313,25 +312,25 @@ describe("Azure DevOps Integration Test", () => {
     assert.equal(
       json.baseOnly,
       "inherited-from-root",
-      "Base-only property should be inherited",
+      "Base-only property should be inherited"
     );
     assert.deepEqual(
       json.prop2,
       { prop3: "MyService" },
-      "Base prop2 should be inherited",
+      "Base prop2 should be inherited"
     );
 
     // Verify overlay adds new properties
     assert.equal(
       json.addedByOverlay,
       true,
-      "Overlay should add new properties",
+      "Overlay should add new properties"
     );
 
     // Verify nested base properties are preserved
     assert.ok(
       json.prop4?.prop5?.length === 2,
-      "Nested arrays from base should be preserved",
+      "Nested arrays from base should be preserved"
     );
 
     console.log("  Merged content verified - base + overlay working correctly");
@@ -347,7 +346,7 @@ describe("Azure DevOps Integration Test", () => {
     // Get the current PR ID before re-sync
     console.log("Getting current PR ID...");
     const prListBefore = exec(
-      `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0].pullRequestId" -o tsv`,
+      `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0].pullRequestId" -o tsv`
     );
     const prIdBefore = prListBefore ? parseInt(prListBefore, 10) : null;
     console.log(`  Current PR: #${prIdBefore}`);
@@ -364,12 +363,12 @@ describe("Azure DevOps Integration Test", () => {
     // Verify a PR exists (should be a new one after closing the old)
     console.log("\nVerifying PR state after re-sync...");
     const prListAfter = exec(
-      `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`,
+      `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`
     );
 
     assert.ok(
       prListAfter && prListAfter !== "null",
-      "Expected a PR to exist after re-sync",
+      "Expected a PR to exist after re-sync"
     );
     const prAfter = JSON.parse(prListAfter);
     console.log(`  PR after re-sync: #${prAfter.pullRequestId}`);
@@ -379,18 +378,18 @@ describe("Azure DevOps Integration Test", () => {
     console.log("\nVerifying old PR was abandoned...");
     try {
       const oldPRStatus = exec(
-        `az repos pr show --id ${prIdBefore} --org ${ORG_URL} --query "status" -o tsv`,
+        `az repos pr show --id ${prIdBefore} --org ${ORG_URL} --query "status" -o tsv`
       );
       console.log(`  Old PR #${prIdBefore} status: ${oldPRStatus}`);
       assert.equal(
         oldPRStatus,
         "abandoned",
-        "Old PR should be abandoned after re-sync",
+        "Old PR should be abandoned after re-sync"
       );
     } catch {
       // If we can't get the old PR, it might have been deleted
       console.log(
-        `  Old PR #${prIdBefore} appears to have been deleted or abandoned`,
+        `  Old PR #${prIdBefore} appears to have been deleted or abandoned`
       );
     }
 
@@ -408,13 +407,13 @@ describe("Azure DevOps Integration Test", () => {
     console.log("Abandoning any existing createOnly test PRs...");
     try {
       const existingPRs = exec(
-        `az repos pr list --repository ${TEST_REPO} --source-branch ${createOnlyBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[].pullRequestId" -o tsv`,
+        `az repos pr list --repository ${TEST_REPO} --source-branch ${createOnlyBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[].pullRequestId" -o tsv`
       );
       if (existingPRs) {
         for (const prId of existingPRs.split("\n").filter(Boolean)) {
           console.log(`  Abandoning PR #${prId}`);
           exec(
-            `az repos pr update --id ${prId} --status abandoned --org ${ORG_URL}`,
+            `az repos pr update --id ${prId} --status abandoned --org ${ORG_URL}`
           );
         }
       }
@@ -444,7 +443,7 @@ describe("Azure DevOps Integration Test", () => {
         existingContent,
         `test: update ${createOnlyFile} for createOnly test`,
         defaultBranch,
-        fileInfo.objectId,
+        fileInfo.objectId
       );
     } else {
       // Create new file
@@ -452,7 +451,7 @@ describe("Azure DevOps Integration Test", () => {
         createOnlyFile,
         existingContent,
         `test: create ${createOnlyFile} for createOnly test`,
-        defaultBranch,
+        defaultBranch
       );
     }
     console.log("  File created on main");
@@ -461,7 +460,7 @@ describe("Azure DevOps Integration Test", () => {
     console.log("\nRunning xfg with createOnly config...");
     const configPath = join(
       fixturesDir,
-      "integration-test-createonly-ado.yaml",
+      "integration-test-createonly-ado.yaml"
     );
     const output = exec(`node dist/index.js --config ${configPath}`, {
       cwd: projectRoot,
@@ -471,7 +470,7 @@ describe("Azure DevOps Integration Test", () => {
     // 5. Verify the behavior - output should indicate skipping
     assert.ok(
       output.includes("createOnly") || output.includes("skip"),
-      "Output should mention createOnly or skip",
+      "Output should mention createOnly or skip"
     );
 
     // 6. Check if a PR was created - with createOnly the file should be skipped
@@ -479,7 +478,7 @@ describe("Azure DevOps Integration Test", () => {
     console.log("\nVerifying createOnly behavior...");
     try {
       const prList = exec(
-        `az repos pr list --repository ${TEST_REPO} --source-branch ${createOnlyBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0].pullRequestId" -o tsv`,
+        `az repos pr list --repository ${TEST_REPO} --source-branch ${createOnlyBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0].pullRequestId" -o tsv`
       );
       if (prList) {
         console.log(`  PR was created: #${prList}`);
@@ -494,12 +493,12 @@ describe("Azure DevOps Integration Test", () => {
           assert.equal(
             json.existing,
             true,
-            "File should retain original content when createOnly skips",
+            "File should retain original content when createOnly skips"
           );
         }
       } else {
         console.log(
-          "  No PR was created (all files skipped) - this is correct",
+          "  No PR was created (all files skipped) - this is correct"
         );
       }
     } catch {
@@ -516,7 +515,7 @@ describe("Azure DevOps Integration Test", () => {
           null,
           `test: cleanup ${createOnlyFile}`,
           defaultBranch,
-          cleanupFileInfo.objectId,
+          cleanupFileInfo.objectId
         );
         console.log("  File deleted");
       }
@@ -542,13 +541,13 @@ describe("Azure DevOps Integration Test", () => {
     console.log("Abandoning any existing PRs...");
     try {
       const existingPRs = exec(
-        `az repos pr list --repository ${TEST_REPO} --source-branch ${testBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[].pullRequestId" -o tsv`,
+        `az repos pr list --repository ${TEST_REPO} --source-branch ${testBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[].pullRequestId" -o tsv`
       );
       if (existingPRs) {
         for (const prId of existingPRs.split("\n").filter(Boolean)) {
           console.log(`  Abandoning PR #${prId}`);
           exec(
-            `az repos pr update --id ${prId} --status abandoned --org ${ORG_URL}`,
+            `az repos pr update --id ${prId} --status abandoned --org ${ORG_URL}`
           );
         }
       }
@@ -567,7 +566,7 @@ describe("Azure DevOps Integration Test", () => {
     // 3. Create the "unchanged" file on main branch with content that matches config
     // The config has: { "unchanged": true }
     console.log(
-      `Creating ${unchangedFile} on main branch (will NOT change)...`,
+      `Creating ${unchangedFile} on main branch (will NOT change)...`
     );
     const unchangedContent =
       JSON.stringify({ unchanged: true }, null, 2) + "\n";
@@ -581,14 +580,14 @@ describe("Azure DevOps Integration Test", () => {
         unchangedContent,
         `test: setup ${unchangedFile} for issue #90 test`,
         defaultBranch,
-        fileInfo.objectId,
+        fileInfo.objectId
       );
     } else {
       pushFileChange(
         unchangedFile,
         unchangedContent,
         `test: setup ${unchangedFile} for issue #90 test`,
-        defaultBranch,
+        defaultBranch
       );
     }
     console.log("  File created with content matching config");
@@ -603,7 +602,7 @@ describe("Azure DevOps Integration Test", () => {
           null,
           `test: cleanup ${changedFile}`,
           defaultBranch,
-          changedFileInfo.objectId,
+          changedFileInfo.objectId
         );
         console.log("  File deleted");
       }
@@ -622,7 +621,7 @@ describe("Azure DevOps Integration Test", () => {
     // 6. Get the PR and check its title
     console.log("\nVerifying PR title...");
     const prInfo = exec(
-      `az repos pr list --repository ${TEST_REPO} --source-branch ${testBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`,
+      `az repos pr list --repository ${TEST_REPO} --source-branch ${testBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`
     );
 
     assert.ok(prInfo && prInfo !== "null", "Expected a PR to be created");
@@ -634,11 +633,11 @@ describe("Azure DevOps Integration Test", () => {
     // After fix: title should be "chore: sync changed-test.json"
     assert.ok(
       pr.title.includes(changedFile),
-      `PR title should include ${changedFile}`,
+      `PR title should include ${changedFile}`
     );
     assert.ok(
       !pr.title.includes(unchangedFile),
-      `PR title should NOT include ${unchangedFile} (bug #90: unchanged files incorrectly listed)`,
+      `PR title should NOT include ${unchangedFile} (bug #90: unchanged files incorrectly listed)`
     );
 
     // 7. Cleanup
@@ -651,7 +650,7 @@ describe("Azure DevOps Integration Test", () => {
           null,
           `test: cleanup ${unchangedFile}`,
           defaultBranch,
-          cleanupFileInfo.objectId,
+          cleanupFileInfo.objectId
         );
         console.log(`  Deleted ${unchangedFile}`);
       }
@@ -691,7 +690,7 @@ describe("Azure DevOps Integration Test", () => {
           null,
           `test: cleanup ${directFile}`,
           defaultBranch,
-          fileInfo.objectId,
+          fileInfo.objectId
         );
         console.log("  File deleted");
       }
@@ -710,14 +709,14 @@ describe("Azure DevOps Integration Test", () => {
     // 3. Verify the output mentions direct push
     assert.ok(
       output.includes("Pushed directly") || output.includes("direct"),
-      "Output should mention direct push",
+      "Output should mention direct push"
     );
 
     // 4. Verify NO PR was created
     console.log("\nVerifying no PR was created...");
     try {
       const prList = exec(
-        `az repos pr list --repository ${TEST_REPO} --source-branch chore/sync-direct-test --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0].pullRequestId" -o tsv`,
+        `az repos pr list --repository ${TEST_REPO} --source-branch chore/sync-direct-test --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0].pullRequestId" -o tsv`
       );
       assert.ok(!prList, "No PR should be created in direct mode");
     } catch {
@@ -747,7 +746,7 @@ describe("Azure DevOps Integration Test", () => {
           null,
           `test: cleanup ${directFile}`,
           defaultBranch,
-          cleanupFileInfo.objectId,
+          cleanupFileInfo.objectId
         );
         console.log("  File deleted");
       }

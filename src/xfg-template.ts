@@ -58,7 +58,7 @@ const ESCAPE_PLACEHOLDER = "\x00ESCAPED_XFG_VAR\x00";
  */
 function getBuiltinVar(
   varName: string,
-  ctx: XfgTemplateContext,
+  ctx: XfgTemplateContext
 ): string | undefined {
   const { repoInfo, fileName } = ctx;
 
@@ -116,7 +116,7 @@ function isPlainObject(val: unknown): val is Record<string, unknown> {
 function processString(
   value: string,
   ctx: XfgTemplateContext,
-  options: XfgInterpolationOptions,
+  options: XfgInterpolationOptions
 ): string {
   // Phase 1: Replace escaped $${xfg:...} with placeholders
   const escapedContent: string[] = [];
@@ -126,7 +126,7 @@ function processString(
       const index = escapedContent.length;
       escapedContent.push(content);
       return `${ESCAPE_PLACEHOLDER}${index}\x00`;
-    },
+    }
   );
 
   // Phase 2: Interpolate remaining ${xfg:...}
@@ -157,7 +157,7 @@ function processString(
     (_match, indexStr: string) => {
       const index = parseInt(indexStr, 10);
       return `\${xfg:${escapedContent[index]}}`;
-    },
+    }
   );
 
   return processed;
@@ -169,7 +169,7 @@ function processString(
 function processValue(
   value: unknown,
   ctx: XfgTemplateContext,
-  options: XfgInterpolationOptions,
+  options: XfgInterpolationOptions
 ): unknown {
   if (typeof value === "string") {
     return processString(value, ctx, options);
@@ -214,7 +214,7 @@ function processValue(
 export function interpolateXfgContent(
   content: ContentValue,
   ctx: XfgTemplateContext,
-  options: XfgInterpolationOptions = DEFAULT_OPTIONS,
+  options: XfgInterpolationOptions = DEFAULT_OPTIONS
 ): ContentValue {
   if (typeof content === "string") {
     return processString(content, ctx, options);

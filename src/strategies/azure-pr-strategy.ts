@@ -42,7 +42,7 @@ export class AzurePRStrategy extends BasePRStrategy {
     try {
       const existingPRId = await withRetry(
         () => this.executor.exec(command, workDir),
-        { retries },
+        { retries }
       );
 
       return existingPRId ? this.buildPRUrl(azureRepoInfo, existingPRId) : null;
@@ -110,14 +110,14 @@ export class AzurePRStrategy extends BasePRStrategy {
       const getRefCommand = `az repos ref list --repository ${escapeShellArg(azureRepoInfo.repo)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --filter heads/${escapeShellArg(branchName)} --query "[0].objectId" -o tsv`;
       const objectId = await withRetry(
         () => this.executor.exec(getRefCommand, workDir),
-        { retries },
+        { retries }
       );
 
       if (objectId) {
         const deleteBranchCommand = `az repos ref delete --name refs/heads/${escapeShellArg(branchName)} --repository ${escapeShellArg(azureRepoInfo.repo)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --object-id ${escapeShellArg(objectId)}`;
         await withRetry(
           () => this.executor.exec(deleteBranchCommand, workDir),
-          { retries },
+          { retries }
         );
       }
     } catch (error) {
@@ -171,7 +171,7 @@ export class AzurePRStrategy extends BasePRStrategy {
         }
       } catch (cleanupError) {
         logger.info(
-          `Warning: Failed to clean up temp file ${descFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`,
+          `Warning: Failed to clean up temp file ${descFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`
         );
       }
     }
@@ -188,7 +188,7 @@ export class AzurePRStrategy extends BasePRStrategy {
   } | null {
     // URL format: https://dev.azure.com/{org}/{project}/_git/{repo}/pullrequest/{prId}
     const match = prUrl.match(
-      /dev\.azure\.com\/([^/]+)\/([^/]+)\/_git\/([^/]+)\/pullrequest\/(\d+)/,
+      /dev\.azure\.com\/([^/]+)\/([^/]+)\/_git\/([^/]+)\/pullrequest\/(\d+)/
     );
     if (!match) return null;
 

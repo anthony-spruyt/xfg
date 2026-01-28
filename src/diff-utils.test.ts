@@ -29,7 +29,7 @@ describe("formatStatusBadge", () => {
     const badge = formatStatusBadge("NEW");
     assert.ok(
       badge.includes("[NEW]"),
-      "Badge should contain [NEW] in brackets",
+      "Badge should contain [NEW] in brackets"
     );
   });
 
@@ -37,7 +37,7 @@ describe("formatStatusBadge", () => {
     const badge = formatStatusBadge("MODIFIED");
     assert.ok(
       badge.includes("[MODIFIED]"),
-      "Badge should contain [MODIFIED] in brackets",
+      "Badge should contain [MODIFIED] in brackets"
     );
   });
 
@@ -45,7 +45,7 @@ describe("formatStatusBadge", () => {
     const badge = formatStatusBadge("UNCHANGED");
     assert.ok(
       badge.includes("[UNCHANGED]"),
-      "Badge should contain [UNCHANGED] in brackets",
+      "Badge should contain [UNCHANGED] in brackets"
     );
   });
 
@@ -53,7 +53,7 @@ describe("formatStatusBadge", () => {
     const badge = formatStatusBadge("DELETED");
     assert.ok(
       badge.includes("[DELETED]"),
-      "Badge should contain [DELETED] in brackets",
+      "Badge should contain [DELETED] in brackets"
     );
   });
 });
@@ -68,7 +68,7 @@ describe("formatDiffLine", () => {
     const result = formatDiffLine("-deleted line");
     assert.ok(
       result.includes("-deleted line"),
-      "Result should contain the line",
+      "Result should contain the line"
     );
   });
 
@@ -76,7 +76,7 @@ describe("formatDiffLine", () => {
     const result = formatDiffLine("@@ -1,3 +1,4 @@");
     assert.ok(
       result.includes("@@ -1,3 +1,4 @@"),
-      "Result should contain hunk header",
+      "Result should contain hunk header"
     );
   });
 
@@ -84,7 +84,7 @@ describe("formatDiffLine", () => {
     const result = formatDiffLine(" context line");
     assert.ok(
       result.includes(" context line"),
-      "Result should contain context line",
+      "Result should contain context line"
     );
   });
 });
@@ -94,6 +94,7 @@ describe("generateDiff", () => {
     const result = generateDiff(null, "line1\nline2\n", "test.txt");
     assert.ok(result.length > 0);
     // All lines should be additions (contain +)
+    // eslint-disable-next-line no-control-regex
     const rawLines = result.map((line) => line.replace(/\x1b\[[0-9;]*m/g, ""));
     assert.ok(rawLines.some((line) => line.startsWith("+")));
   });
@@ -113,6 +114,7 @@ describe("generateDiff", () => {
     assert.ok(result.length > 0);
 
     // Strip ANSI codes for checking
+    // eslint-disable-next-line no-control-regex
     const rawLines = result.map((line) => line.replace(/\x1b\[[0-9;]*m/g, ""));
 
     // Should have hunk header

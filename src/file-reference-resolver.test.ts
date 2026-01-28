@@ -14,7 +14,6 @@ import type { RawConfig } from "./config.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const fixturesDir = join(__dirname, "..", "fixtures");
-const templatesDir = join(fixturesDir, "templates");
 
 // Create a temporary directory for test fixtures
 const testDir = join(tmpdir(), "xfg-file-ref-test-" + Date.now());
@@ -99,18 +98,18 @@ describe("File Reference Resolver", () => {
     test("throws on absolute path", () => {
       assert.throws(
         () => resolveFileReference("@/etc/passwd", testDir),
-        /uses absolute path/,
+        /uses absolute path/
       );
     });
 
     test("throws on path traversal escaping config directory", () => {
       assert.throws(
         () => resolveFileReference("@../escape.json", testDir),
-        /escapes config directory/,
+        /escapes config directory/
       );
       assert.throws(
         () => resolveFileReference("@templates/../../escape.json", testDir),
-        /escapes config directory/,
+        /escapes config directory/
       );
     });
 
@@ -142,19 +141,19 @@ describe("File Reference Resolver", () => {
       assert.strictEqual(
         oldApproachDetectsEscape,
         true,
-        "Old approach should detect escape on this platform",
+        "Old approach should detect escape on this platform"
       );
       assert.strictEqual(
         newApproachDetectsEscape,
         true,
-        "New approach must detect escape on all platforms",
+        "New approach must detect escape on all platforms"
       );
 
       // The key assertion: new approach reliably detects escapes
       // This will still pass after the fix - it validates the fix logic is correct
       assert.ok(
         newApproachDetectsEscape,
-        "relative() approach must detect path traversal escapes",
+        "relative() approach must detect path traversal escapes"
       );
     });
 
@@ -165,7 +164,7 @@ describe("File Reference Resolver", () => {
 
       const result = resolveFileReference(
         "@templates/nested/deep/file.json",
-        testDir,
+        testDir
       );
       assert.deepStrictEqual(result, { nested: true });
     });
@@ -173,7 +172,7 @@ describe("File Reference Resolver", () => {
     test("throws on file not found with clear error", () => {
       assert.throws(
         () => resolveFileReference("@templates/nonexistent.json", testDir),
-        /Failed to load file reference.*ENOENT/,
+        /Failed to load file reference.*ENOENT/
       );
     });
 
@@ -183,7 +182,7 @@ describe("File Reference Resolver", () => {
 
       assert.throws(
         () => resolveFileReference("@templates/invalid.json", testDir),
-        /Invalid JSON in "@templates\/invalid.json"/,
+        /Invalid JSON in "@templates\/invalid.json"/
       );
     });
 
@@ -193,7 +192,7 @@ describe("File Reference Resolver", () => {
 
       assert.throws(
         () => resolveFileReference("@templates/invalid.yaml", testDir),
-        /Invalid YAML in "@templates\/invalid.yaml"/,
+        /Invalid YAML in "@templates\/invalid.yaml"/
       );
     });
 
@@ -207,7 +206,7 @@ describe("File Reference Resolver", () => {
   "key": "value",
   "num": 42,
 }`,
-        "utf-8",
+        "utf-8"
       );
 
       const result = resolveFileReference("@templates/config.json5", testDir);
@@ -220,7 +219,7 @@ describe("File Reference Resolver", () => {
 
       assert.throws(
         () => resolveFileReference("@templates/invalid.json5", testDir),
-        /Invalid JSON5 in "@templates\/invalid.json5"/,
+        /Invalid JSON5 in "@templates\/invalid.json5"/
       );
     });
   });
@@ -231,6 +230,7 @@ describe("File Reference Resolver", () => {
       writeFileSync(jsonPath, '{"base": true}', "utf-8");
 
       const raw: RawConfig = {
+        id: "test",
         files: {
           "config.json": {
             content: "@templates/base.json",
@@ -250,6 +250,7 @@ describe("File Reference Resolver", () => {
       writeFileSync(jsonPath, '{"override": true}', "utf-8");
 
       const raw: RawConfig = {
+        id: "test",
         files: {
           "config.json": {
             content: { base: true },
@@ -275,6 +276,7 @@ describe("File Reference Resolver", () => {
 
     test("preserves non-reference content unchanged", () => {
       const raw: RawConfig = {
+        id: "test",
         files: {
           "config.json": {
             content: { inline: true },
@@ -295,6 +297,7 @@ describe("File Reference Resolver", () => {
 
     test("preserves file exclusions (false values)", () => {
       const raw: RawConfig = {
+        id: "test",
         files: {
           "config.json": {
             content: { key: "value" },
@@ -319,6 +322,7 @@ describe("File Reference Resolver", () => {
       writeFileSync(jsonPath, '{"key": "value"}', "utf-8");
 
       const raw: RawConfig = {
+        id: "test",
         files: {
           "config.yaml": {
             content: "@templates/base.json",
@@ -337,7 +341,7 @@ describe("File Reference Resolver", () => {
       assert.strictEqual(fileConfig.header, "Auto-generated");
       assert.strictEqual(
         fileConfig.schemaUrl,
-        "https://example.com/schema.json",
+        "https://example.com/schema.json"
       );
     });
 
@@ -346,6 +350,7 @@ describe("File Reference Resolver", () => {
       writeFileSync(jsonPath, '{"resolved": true}', "utf-8");
 
       const raw: RawConfig = {
+        id: "test",
         files: {
           "config.json": {
             content: "@templates/base.json",
@@ -358,7 +363,7 @@ describe("File Reference Resolver", () => {
       // Original should still have the file reference
       assert.strictEqual(
         raw.files["config.json"].content,
-        "@templates/base.json",
+        "@templates/base.json"
       );
     });
 
@@ -369,6 +374,7 @@ describe("File Reference Resolver", () => {
       writeFileSync(txtPath, "node_modules/", "utf-8");
 
       const raw: RawConfig = {
+        id: "test",
         files: {
           ".prettierrc.json": {
             content: "@templates/prettier.json",
@@ -400,10 +406,11 @@ describe("File Reference Resolver", () => {
       writeFileSync(
         templatePath,
         "## PR Template\n\n${xfg:pr.fileChanges}",
-        "utf-8",
+        "utf-8"
       );
 
       const raw: RawConfig = {
+        id: "test",
         files: { "config.json": { content: { key: "value" } } },
         repos: [{ git: "git@github.com:org/repo.git" }],
         prTemplate: "@templates/pr-body.md",
@@ -412,12 +419,13 @@ describe("File Reference Resolver", () => {
       const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
       assert.strictEqual(
         result.prTemplate,
-        "## PR Template\n\n${xfg:pr.fileChanges}",
+        "## PR Template\n\n${xfg:pr.fileChanges}"
       );
     });
 
     test("prTemplate string content passed through unchanged", () => {
       const raw: RawConfig = {
+        id: "test",
         files: { "config.json": { content: { key: "value" } } },
         repos: [{ git: "git@github.com:org/repo.git" }],
         prTemplate: "## Inline Template\n\n${xfg:pr.fileChanges}",
@@ -426,7 +434,7 @@ describe("File Reference Resolver", () => {
       const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
       assert.strictEqual(
         result.prTemplate,
-        "## Inline Template\n\n${xfg:pr.fileChanges}",
+        "## Inline Template\n\n${xfg:pr.fileChanges}"
       );
     });
 
@@ -435,6 +443,7 @@ describe("File Reference Resolver", () => {
       writeFileSync(jsonPath, '{"not": "a template"}', "utf-8");
 
       const raw: RawConfig = {
+        id: "test",
         files: { "config.json": { content: { key: "value" } } },
         repos: [{ git: "git@github.com:org/repo.git" }],
         prTemplate: "@templates/pr.json",
@@ -442,12 +451,13 @@ describe("File Reference Resolver", () => {
 
       assert.throws(
         () => resolveFileReferencesInConfig(raw, { configDir: testDir }),
-        /prTemplate file reference.*must resolve to a text file/,
+        /prTemplate file reference.*must resolve to a text file/
       );
     });
 
     test("prTemplate file reference security checks apply", () => {
       const raw: RawConfig = {
+        id: "test",
         files: { "config.json": { content: { key: "value" } } },
         repos: [{ git: "git@github.com:org/repo.git" }],
         prTemplate: "@../escape.md",
@@ -455,12 +465,13 @@ describe("File Reference Resolver", () => {
 
       assert.throws(
         () => resolveFileReferencesInConfig(raw, { configDir: testDir }),
-        /escapes config directory/,
+        /escapes config directory/
       );
     });
 
     test("missing prTemplate results in undefined", () => {
       const raw: RawConfig = {
+        id: "test",
         files: { "config.json": { content: { key: "value" } } },
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
@@ -474,7 +485,7 @@ describe("File Reference Resolver", () => {
     test("resolves JSON template from fixtures", () => {
       const result = resolveFileReference(
         "@templates/prettierrc.json",
-        fixturesDir,
+        fixturesDir
       );
       assert.deepStrictEqual(result, {
         semi: true,
@@ -487,7 +498,7 @@ describe("File Reference Resolver", () => {
     test("resolves YAML template from fixtures", () => {
       const result = resolveFileReference(
         "@templates/eslintrc.yaml",
-        fixturesDir,
+        fixturesDir
       );
       assert.strictEqual((result as Record<string, unknown>).root, true);
       assert.deepStrictEqual((result as Record<string, unknown>).extends, [
@@ -498,7 +509,7 @@ describe("File Reference Resolver", () => {
     test("resolves text template from fixtures", () => {
       const result = resolveFileReference(
         "@templates/gitignore.txt",
-        fixturesDir,
+        fixturesDir
       );
       assert.strictEqual(typeof result, "string");
       assert.ok((result as string).includes("node_modules/"));
@@ -507,7 +518,7 @@ describe("File Reference Resolver", () => {
     test("throws for invalid JSON template from fixtures", () => {
       assert.throws(
         () => resolveFileReference("@templates/invalid.json", fixturesDir),
-        /Invalid JSON/,
+        /Invalid JSON/
       );
     });
   });

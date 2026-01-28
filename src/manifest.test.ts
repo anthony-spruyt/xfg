@@ -58,7 +58,7 @@ describe("manifest", () => {
       writeFileSync(
         join(testDir, MANIFEST_FILENAME),
         JSON.stringify(manifest),
-        "utf-8",
+        "utf-8"
       );
 
       const result = loadManifest(testDir);
@@ -69,7 +69,7 @@ describe("manifest", () => {
       writeFileSync(
         join(testDir, MANIFEST_FILENAME),
         "not valid json",
-        "utf-8",
+        "utf-8"
       );
 
       const result = loadManifest(testDir);
@@ -81,7 +81,7 @@ describe("manifest", () => {
       writeFileSync(
         join(testDir, MANIFEST_FILENAME),
         JSON.stringify(v1Manifest),
-        "utf-8",
+        "utf-8"
       );
 
       const result = loadManifest(testDir);
@@ -93,7 +93,7 @@ describe("manifest", () => {
       writeFileSync(
         join(testDir, MANIFEST_FILENAME),
         JSON.stringify(manifest),
-        "utf-8",
+        "utf-8"
       );
 
       const result = loadManifest(testDir);
@@ -105,7 +105,7 @@ describe("manifest", () => {
       writeFileSync(
         join(testDir, MANIFEST_FILENAME),
         JSON.stringify(manifest),
-        "utf-8",
+        "utf-8"
       );
 
       const result = loadManifest(testDir);
@@ -220,7 +220,7 @@ describe("manifest", () => {
       const { manifest, filesToDelete } = updateManifest(
         null,
         configId,
-        filesMap,
+        filesMap
       );
 
       assert.deepEqual(manifest.configs[configId], [
@@ -265,7 +265,7 @@ describe("manifest", () => {
       const { manifest, filesToDelete } = updateManifest(
         existingManifest,
         configId,
-        filesMap,
+        filesMap
       );
 
       assert.deepEqual(manifest.configs[configId], ["config.json"]);
@@ -286,7 +286,7 @@ describe("manifest", () => {
       const { manifest, filesToDelete } = updateManifest(
         existingManifest,
         configId,
-        filesMap,
+        filesMap
       );
 
       // File is in config (undefined deleteOrphaned), so not marked for deletion
@@ -309,7 +309,7 @@ describe("manifest", () => {
       const { manifest, filesToDelete } = updateManifest(
         existingManifest,
         configId,
-        filesMap,
+        filesMap
       );
 
       // File is explicitly set to false, so removed from tracking
@@ -345,7 +345,7 @@ describe("manifest", () => {
       const { manifest, filesToDelete } = updateManifest(
         existingManifest,
         configId,
-        filesMap,
+        filesMap
       );
 
       assert.deepEqual(manifest.configs[configId], ["new-file.json"]);
@@ -365,7 +365,7 @@ describe("manifest", () => {
       const { manifest, filesToDelete } = updateManifest(
         existingManifest,
         configId,
-        filesMap,
+        filesMap
       );
 
       assert.equal(manifest.configs[configId], undefined);
@@ -396,7 +396,7 @@ describe("manifest", () => {
       const { manifest } = updateManifest(
         existingManifest,
         "config-a",
-        filesMap,
+        filesMap
       );
 
       // config-a should be updated
@@ -421,7 +421,7 @@ describe("manifest", () => {
       const { manifest, filesToDelete } = updateManifest(
         existingManifest,
         "config-a",
-        filesMap,
+        filesMap
       );
 
       // Only orphan-a.json should be deleted (from config-a)
@@ -449,7 +449,7 @@ describe("manifest", () => {
       const { manifest } = updateManifest(
         existingManifest,
         "config-a",
-        filesMap,
+        filesMap
       );
 
       // config-a should be removed from configs

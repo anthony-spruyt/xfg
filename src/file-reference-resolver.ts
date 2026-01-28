@@ -23,7 +23,7 @@ export function isFileReference(value: unknown): value is string {
  */
 export function resolveFileReference(
   reference: string,
-  configDir: string,
+  configDir: string
 ): ContentValue {
   const relativePath = reference.slice(1); // Remove @ prefix
 
@@ -34,7 +34,7 @@ export function resolveFileReference(
   // Security: block absolute paths
   if (isAbsolute(relativePath)) {
     throw new Error(
-      `File reference "${reference}" uses absolute path. Use relative paths only.`,
+      `File reference "${reference}" uses absolute path. Use relative paths only.`
     );
   }
 
@@ -50,7 +50,7 @@ export function resolveFileReference(
   if (pathFromConfig.startsWith("..") || isAbsolute(pathFromConfig)) {
     throw new Error(
       `File reference "${reference}" escapes config directory. ` +
-        `References must be within "${configDir}".`,
+        `References must be within "${configDir}".`
     );
   }
 
@@ -100,7 +100,7 @@ export function resolveFileReference(
  */
 function resolveContentValue(
   value: ContentValue | undefined,
-  configDir: string,
+  configDir: string
 ): ContentValue | undefined {
   if (value === undefined) {
     return undefined;
@@ -121,7 +121,7 @@ function resolveContentValue(
  */
 export function resolveFileReferencesInConfig(
   raw: RawConfig,
-  options: FileReferenceOptions,
+  options: FileReferenceOptions
 ): RawConfig {
   const { configDir } = options;
 
@@ -133,7 +133,7 @@ export function resolveFileReferencesInConfig(
     const resolved = resolveFileReference(result.prTemplate, configDir);
     if (typeof resolved !== "string") {
       throw new Error(
-        `prTemplate file reference "${result.prTemplate}" must resolve to a text file, not JSON/YAML`,
+        `prTemplate file reference "${result.prTemplate}" must resolve to a text file, not JSON/YAML`
       );
     }
     result.prTemplate = resolved;
@@ -171,7 +171,7 @@ export function resolveFileReferencesInConfig(
           ) {
             const resolved = resolveContentValue(
               fileOverride.content,
-              configDir,
+              configDir
             );
             if (resolved !== undefined) {
               repo.files[fileName] = { ...fileOverride, content: resolved };

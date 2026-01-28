@@ -19,7 +19,7 @@ import type {
  * Normalizes header to array format.
  */
 function normalizeHeader(
-  header: string | string[] | undefined,
+  header: string | string[] | undefined
 ): string[] | undefined {
   if (header === undefined) return undefined;
   if (typeof header === "string") return [header];
@@ -32,7 +32,7 @@ function normalizeHeader(
  */
 function mergePROptions(
   global: PRMergeOptions | undefined,
-  perRepo: PRMergeOptions | undefined,
+  perRepo: PRMergeOptions | undefined
 ): PRMergeOptions | undefined {
   if (!global && !perRepo) return undefined;
   if (!global) return perRepo;
@@ -91,7 +91,7 @@ export function normalizeConfig(raw: RawConfig): Config {
             mergedContent = structuredClone(repoOverride.content);
           } else {
             mergedContent = stripMergeDirectives(
-              structuredClone(repoOverride.content as Record<string, unknown>),
+              structuredClone(repoOverride.content as Record<string, unknown>)
             );
           }
         } else if (fileConfig.content === undefined) {
@@ -101,9 +101,7 @@ export function normalizeConfig(raw: RawConfig): Config {
               mergedContent = structuredClone(repoOverride.content);
             } else {
               mergedContent = stripMergeDirectives(
-                structuredClone(
-                  repoOverride.content as Record<string, unknown>,
-                ),
+                structuredClone(repoOverride.content as Record<string, unknown>)
               );
             }
           } else {
@@ -118,13 +116,13 @@ export function normalizeConfig(raw: RawConfig): Config {
             // Text content merging - validate overlay is also text
             if (!isTextContent(repoOverride.content)) {
               throw new Error(
-                `Expected text content for ${fileName}, got object`,
+                `Expected text content for ${fileName}, got object`
               );
             }
             mergedContent = mergeTextContent(
               fileConfig.content,
               repoOverride.content,
-              fileStrategy,
+              fileStrategy
             );
           } else {
             // Object content: deep merge file base + repo overlay
@@ -132,7 +130,7 @@ export function normalizeConfig(raw: RawConfig): Config {
             mergedContent = deepMerge(
               structuredClone(fileConfig.content as Record<string, unknown>),
               repoOverride.content as Record<string, unknown>,
-              ctx,
+              ctx
             );
             mergedContent = stripMergeDirectives(mergedContent);
           }
@@ -147,7 +145,7 @@ export function normalizeConfig(raw: RawConfig): Config {
         const createOnly = repoOverride?.createOnly ?? fileConfig.createOnly;
         const executable = repoOverride?.executable ?? fileConfig.executable;
         const header = normalizeHeader(
-          repoOverride?.header ?? fileConfig.header,
+          repoOverride?.header ?? fileConfig.header
         );
         const schemaUrl = repoOverride?.schemaUrl ?? fileConfig.schemaUrl;
 

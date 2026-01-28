@@ -1,1 +1,15 @@
+# NPM package page (returns 403 to bots)
+https://www.npmjs.com/package/@aspruyt/xfg
 
+# GitLab test repos (403 for unauthenticated requests)
+https://gitlab.com/anthony-spruyt1/xfg-test.git
+
+# Example/placeholder URLs in documentation and schema
+https://github.com/owner/repo.git
+https://github.com/anthony-spruyt/xfg/config-schema.json
+
+# Git URL prefixes (not valid HTTP URLs)
+git+https://github.com/anthony-spruyt/xfg.git
+
+# Token placeholder URLs in GitHub Actions
+https://x-access-token/

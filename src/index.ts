@@ -10,7 +10,7 @@ import { loadConfig, MergeMode, MergeStrategy } from "./config.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const packageJson = JSON.parse(
-  readFileSync(join(__dirname, "..", "package.json"), "utf-8"),
+  readFileSync(join(__dirname, "..", "package.json"), "utf-8")
 ) as { version: string };
 import { parseGitUrl, getRepoDisplayName } from "./repo-detector.js";
 import { sanitizeBranchName, validateBranchName } from "./git-ops.js";
@@ -31,7 +31,7 @@ export interface IRepositoryProcessor {
   process(
     repoConfig: RepoConfig,
     repoInfo: RepoInfo,
-    options: ProcessorOptions,
+    options: ProcessorOptions
   ): Promise<ProcessorResult>;
 }
 
@@ -70,11 +70,11 @@ program
     "-r, --retries <number>",
     "Number of retries for network operations (0 to disable)",
     (v) => parseInt(v, 10),
-    3,
+    3
   )
   .option(
     "-b, --branch <name>",
-    "Override the branch name (default: chore/sync-{filename} or chore/sync-config)",
+    "Override the branch name (default: chore/sync-{filename} or chore/sync-config)"
   )
   .option(
     "-m, --merge <mode>",
@@ -83,11 +83,11 @@ program
       const valid: MergeMode[] = ["manual", "auto", "force", "direct"];
       if (!valid.includes(value as MergeMode)) {
         throw new Error(
-          `Invalid merge mode: ${value}. Valid: ${valid.join(", ")}`,
+          `Invalid merge mode: ${value}. Valid: ${valid.join(", ")}`
         );
       }
       return value as MergeMode;
-    },
+    }
   )
   .option(
     "--merge-strategy <strategy>",
@@ -96,16 +96,16 @@ program
       const valid: MergeStrategy[] = ["merge", "squash", "rebase"];
       if (!valid.includes(value as MergeStrategy)) {
         throw new Error(
-          `Invalid merge strategy: ${value}. Valid: ${valid.join(", ")}`,
+          `Invalid merge strategy: ${value}. Valid: ${valid.join(", ")}`
         );
       }
       return value as MergeStrategy;
-    },
+    }
   )
   .option("--delete-branch", "Delete source branch after merge")
   .option(
     "--no-delete",
-    "Skip deletion of orphaned files even if deleteOrphaned is configured",
+    "Skip deletion of orphaned files even if deleteOrphaned is configured"
   )
   .parse();
 
@@ -208,7 +208,7 @@ async function main(): Promise<void> {
 
     const repoName = getRepoDisplayName(repoInfo);
     const workDir = resolve(
-      join(options.workDir ?? "./tmp", generateWorkspaceName(i)),
+      join(options.workDir ?? "./tmp", generateWorkspaceName(i))
     );
 
     try {

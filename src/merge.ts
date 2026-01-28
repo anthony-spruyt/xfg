@@ -10,7 +10,7 @@ export type ArrayMergeStrategy = "replace" | "append" | "prepend";
  */
 export type ArrayMergeHandler = (
   base: unknown[],
-  overlay: unknown[],
+  overlay: unknown[]
 ) => unknown[];
 
 /**
@@ -42,7 +42,7 @@ function isPlainObject(val: unknown): val is Record<string, unknown> {
 function mergeArrays(
   base: unknown[],
   overlay: unknown[],
-  strategy: ArrayMergeStrategy,
+  strategy: ArrayMergeStrategy
 ): unknown[] {
   const handler = arrayMergeStrategies.get(strategy);
   if (handler) {
@@ -102,7 +102,7 @@ export function deepMerge(
   base: Record<string, unknown>,
   overlay: Record<string, unknown>,
   ctx: MergeContext,
-  path: string = "",
+  path: string = ""
 ): Record<string, unknown> {
   const result: Record<string, unknown> = { ...base };
 
@@ -171,7 +171,7 @@ export function deepMerge(
  * Works recursively on nested objects and arrays.
  */
 export function stripMergeDirectives(
-  obj: Record<string, unknown>,
+  obj: Record<string, unknown>
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
@@ -183,7 +183,7 @@ export function stripMergeDirectives(
       result[key] = stripMergeDirectives(value);
     } else if (Array.isArray(value)) {
       result[key] = value.map((item) =>
-        isPlainObject(item) ? stripMergeDirectives(item) : item,
+        isPlainObject(item) ? stripMergeDirectives(item) : item
       );
     } else {
       result[key] = value;
@@ -197,7 +197,7 @@ export function stripMergeDirectives(
  * Create a default merge context.
  */
 export function createMergeContext(
-  defaultStrategy: ArrayMergeStrategy = "replace",
+  defaultStrategy: ArrayMergeStrategy = "replace"
 ): MergeContext {
   return {
     arrayStrategies: new Map(),
@@ -229,7 +229,7 @@ export function isTextContent(content: unknown): content is string | string[] {
 export function mergeTextContent(
   base: string | string[],
   overlay: string | string[],
-  strategy: ArrayMergeStrategy = "replace",
+  strategy: ArrayMergeStrategy = "replace"
 ): string | string[] {
   // If overlay is a string, it always replaces
   if (typeof overlay === "string") {

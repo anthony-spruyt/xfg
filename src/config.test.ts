@@ -1,15 +1,10 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { writeFileSync, mkdirSync, rmSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { fileURLToPath } from "node:url";
 import { loadConfig, convertContentToString } from "./config.js";
 import { parse } from "yaml";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const fixturesDir = join(__dirname, "..", "fixtures");
 
 // Create a temporary directory for test fixtures
 const testDir = join(tmpdir(), "xfg-test-" + Date.now());
@@ -41,7 +36,7 @@ repos:
 `);
       assert.throws(
         () => loadConfig(path),
-        /Config missing required field: files/,
+        /Config missing required field: files/
       );
     });
 
@@ -55,7 +50,7 @@ files:
 `);
       assert.throws(
         () => loadConfig(path),
-        /Config missing required field: repos/,
+        /Config missing required field: repos/
       );
     });
 
@@ -86,7 +81,7 @@ repos:
 `);
       assert.throws(
         () => loadConfig(path),
-        /Repo at index 0 missing required field: git/,
+        /Repo at index 0 missing required field: git/
       );
     });
 
@@ -102,7 +97,7 @@ repos:
 `);
       assert.throws(
         () => loadConfig(path),
-        /Invalid fileName.*must be a relative path/,
+        /Invalid fileName.*must be a relative path/
       );
     });
 
@@ -118,7 +113,7 @@ repos:
 `);
       assert.throws(
         () => loadConfig(path),
-        /Invalid fileName.*must be a relative path/,
+        /Invalid fileName.*must be a relative path/
       );
     });
 
@@ -313,7 +308,7 @@ repos:
 `);
       assert.throws(
         () => loadConfig(path),
-        /override: true for file 'config.json' but no content defined/,
+        /override: true for file 'config.json' but no content defined/
       );
     });
 
@@ -395,7 +390,7 @@ repos:
 `);
       assert.throws(
         () => loadConfig(path),
-        /Missing required environment variable: MISSING_VAR/,
+        /Missing required environment variable: MISSING_VAR/
       );
     });
 
@@ -465,13 +460,19 @@ repos:
 `);
       const config = loadConfig(path);
       const appendFile = config.repos[0].files.find(
-        (f) => f.fileName === "append.json",
+        (f) => f.fileName === "append.json"
       );
       const replaceFile = config.repos[0].files.find(
-        (f) => f.fileName === "replace.json",
+        (f) => f.fileName === "replace.json"
       );
-      assert.deepEqual(appendFile?.content.items, ["a", "b"]);
-      assert.deepEqual(replaceFile?.content.items, ["y"]);
+      assert.deepEqual(
+        (appendFile?.content as Record<string, unknown>)?.items,
+        ["a", "b"]
+      );
+      assert.deepEqual(
+        (replaceFile?.content as Record<string, unknown>)?.items,
+        ["y"]
+      );
     });
   });
 
@@ -519,7 +520,7 @@ repos:
       assert.equal(config.repos[1].git, "git@github.com:org/repo2.git");
       assert.deepEqual(
         config.repos[1].files[0].content,
-        config.repos[0].files[0].content,
+        config.repos[0].files[0].content
       );
 
       // Repo with no override - uses file base content
@@ -562,7 +563,7 @@ repos:
       writeFileSync(
         templatePath,
         '{"base": true, "features": ["core"]}',
-        "utf-8",
+        "utf-8"
       );
 
       const path = createTestConfig(`
@@ -601,7 +602,7 @@ repos:
       const config = loadConfig(path);
       assert.strictEqual(
         config.repos[0].files[0].content,
-        "node_modules/\ndist/",
+        "node_modules/\ndist/"
       );
     });
 

@@ -45,19 +45,19 @@ export function validateRawConfig(config: RawConfig): void {
   // Validate required id field
   if (!config.id || typeof config.id !== "string") {
     throw new Error(
-      "Config requires an 'id' field. This unique identifier is used to namespace managed files in .xfg.json",
+      "Config requires an 'id' field. This unique identifier is used to namespace managed files in .xfg.json"
     );
   }
 
   if (!CONFIG_ID_PATTERN.test(config.id)) {
     throw new Error(
-      `Config 'id' contains invalid characters: '${config.id}'. Use only alphanumeric characters, hyphens, and underscores.`,
+      `Config 'id' contains invalid characters: '${config.id}'. Use only alphanumeric characters, hyphens, and underscores.`
     );
   }
 
   if (config.id.length > CONFIG_ID_MAX_LENGTH) {
     throw new Error(
-      `Config 'id' exceeds maximum length of ${CONFIG_ID_MAX_LENGTH} characters`,
+      `Config 'id' exceeds maximum length of ${CONFIG_ID_MAX_LENGTH} characters`
     );
   }
 
@@ -86,7 +86,7 @@ export function validateRawConfig(config: RawConfig): void {
 
       if (!hasText && !hasObject) {
         throw new Error(
-          `File '${fileName}' content must be an object, string, or array of strings`,
+          `File '${fileName}' content must be an object, string, or array of strings`
         );
       }
 
@@ -94,12 +94,12 @@ export function validateRawConfig(config: RawConfig): void {
       const isStructured = isStructuredFileExtension(fileName);
       if (isStructured && hasText) {
         throw new Error(
-          `File '${fileName}' has JSON/YAML extension but string content. Use object content for structured files.`,
+          `File '${fileName}' has JSON/YAML extension but string content. Use object content for structured files.`
         );
       }
       if (!isStructured && hasObject) {
         throw new Error(
-          `File '${fileName}' has text extension but object content. Use string or string[] for text files, or use .json/.yaml/.yml extension.`,
+          `File '${fileName}' has text extension but object content. Use string or string[] for text files, or use .json/.yaml/.yml extension.`
         );
       }
     }
@@ -109,7 +109,7 @@ export function validateRawConfig(config: RawConfig): void {
       !VALID_STRATEGIES.includes(fileConfig.mergeStrategy)
     ) {
       throw new Error(
-        `File '${fileName}' has invalid mergeStrategy: ${fileConfig.mergeStrategy}. Must be one of: ${VALID_STRATEGIES.join(", ")}`,
+        `File '${fileName}' has invalid mergeStrategy: ${fileConfig.mergeStrategy}. Must be one of: ${VALID_STRATEGIES.join(", ")}`
       );
     }
 
@@ -134,7 +134,7 @@ export function validateRawConfig(config: RawConfig): void {
           !fileConfig.header.every((h) => typeof h === "string"))
       ) {
         throw new Error(
-          `File '${fileName}' header must be a string or array of strings`,
+          `File '${fileName}' header must be a string or array of strings`
         );
       }
     }
@@ -160,7 +160,7 @@ export function validateRawConfig(config: RawConfig): void {
         Array.isArray(fileConfig.vars)
       ) {
         throw new Error(
-          `File '${fileName}' vars must be an object with string values`,
+          `File '${fileName}' vars must be an object with string values`
         );
       }
       for (const [key, value] of Object.entries(fileConfig.vars)) {
@@ -205,12 +205,12 @@ export function validateRawConfig(config: RawConfig): void {
       }
       if (host.includes("://")) {
         throw new Error(
-          `githubHosts entries must be hostnames only, not URLs. Got: ${host}`,
+          `githubHosts entries must be hostnames only, not URLs. Got: ${host}`
         );
       }
       if (host.includes("/")) {
         throw new Error(
-          `githubHosts entries must be hostnames only, not paths. Got: ${host}`,
+          `githubHosts entries must be hostnames only, not paths. Got: ${host}`
         );
       }
     }
@@ -236,7 +236,7 @@ export function validateRawConfig(config: RawConfig): void {
         // Ensure the file is defined at root level
         if (!config.files[fileName]) {
           throw new Error(
-            `Repo at index ${i} references undefined file '${fileName}'. File must be defined in root 'files' object.`,
+            `Repo at index ${i} references undefined file '${fileName}'. File must be defined in root 'files' object.`
           );
         }
 
@@ -250,7 +250,7 @@ export function validateRawConfig(config: RawConfig): void {
         if (fileOverride.override && !fileOverride.content) {
           throw new Error(
             `Repo ${getGitDisplayName(repo.git)} has override: true for file '${fileName}' but no content defined. ` +
-              `Use content: "" for an empty text file override, or content: {} for an empty JSON/YAML override.`,
+              `Use content: "" for an empty text file override, or content: {} for an empty JSON/YAML override.`
           );
         }
 
@@ -261,7 +261,7 @@ export function validateRawConfig(config: RawConfig): void {
 
           if (!hasText && !hasObject) {
             throw new Error(
-              `Repo at index ${i}: file '${fileName}' content must be an object, string, or array of strings`,
+              `Repo at index ${i}: file '${fileName}' content must be an object, string, or array of strings`
             );
           }
 
@@ -269,12 +269,12 @@ export function validateRawConfig(config: RawConfig): void {
           const isStructured = isStructuredFileExtension(fileName);
           if (isStructured && hasText) {
             throw new Error(
-              `Repo at index ${i}: file '${fileName}' has JSON/YAML extension but string content. Use object content for structured files.`,
+              `Repo at index ${i}: file '${fileName}' has JSON/YAML extension but string content. Use object content for structured files.`
             );
           }
           if (!isStructured && hasObject) {
             throw new Error(
-              `Repo at index ${i}: file '${fileName}' has text extension but object content. Use string or string[] for text files, or use .json/.yaml/.yml extension.`,
+              `Repo at index ${i}: file '${fileName}' has text extension but object content. Use string or string[] for text files, or use .json/.yaml/.yml extension.`
             );
           }
         }
@@ -284,7 +284,7 @@ export function validateRawConfig(config: RawConfig): void {
           typeof fileOverride.createOnly !== "boolean"
         ) {
           throw new Error(
-            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' createOnly must be a boolean`,
+            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' createOnly must be a boolean`
           );
         }
 
@@ -293,7 +293,7 @@ export function validateRawConfig(config: RawConfig): void {
           typeof fileOverride.executable !== "boolean"
         ) {
           throw new Error(
-            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' executable must be a boolean`,
+            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' executable must be a boolean`
           );
         }
 
@@ -304,7 +304,7 @@ export function validateRawConfig(config: RawConfig): void {
               !fileOverride.header.every((h) => typeof h === "string"))
           ) {
             throw new Error(
-              `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' header must be a string or array of strings`,
+              `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' header must be a string or array of strings`
             );
           }
         }
@@ -314,7 +314,7 @@ export function validateRawConfig(config: RawConfig): void {
           typeof fileOverride.schemaUrl !== "string"
         ) {
           throw new Error(
-            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' schemaUrl must be a string`,
+            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' schemaUrl must be a string`
           );
         }
 
@@ -323,7 +323,7 @@ export function validateRawConfig(config: RawConfig): void {
           typeof fileOverride.template !== "boolean"
         ) {
           throw new Error(
-            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' template must be a boolean`,
+            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' template must be a boolean`
           );
         }
 
@@ -334,13 +334,13 @@ export function validateRawConfig(config: RawConfig): void {
             Array.isArray(fileOverride.vars)
           ) {
             throw new Error(
-              `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' vars must be an object with string values`,
+              `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' vars must be an object with string values`
             );
           }
           for (const [key, value] of Object.entries(fileOverride.vars)) {
             if (typeof value !== "string") {
               throw new Error(
-                `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' vars.${key} must be a string`,
+                `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' vars.${key} must be a string`
               );
             }
           }
@@ -351,7 +351,7 @@ export function validateRawConfig(config: RawConfig): void {
           typeof fileOverride.deleteOrphaned !== "boolean"
         ) {
           throw new Error(
-            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' deleteOrphaned must be a boolean`,
+            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' deleteOrphaned must be a boolean`
           );
         }
       }
@@ -370,14 +370,14 @@ function validateFileName(fileName: string): void {
   // Validate fileName doesn't allow path traversal
   if (fileName.includes("..") || isAbsolute(fileName)) {
     throw new Error(
-      `Invalid fileName '${fileName}': must be a relative path without '..' components`,
+      `Invalid fileName '${fileName}': must be a relative path without '..' components`
     );
   }
 
   // Validate fileName doesn't contain control characters that could bypass shell escaping
   if (/[\n\r\0]/.test(fileName)) {
     throw new Error(
-      `Invalid fileName '${fileName}': cannot contain newlines or null bytes`,
+      `Invalid fileName '${fileName}': cannot contain newlines or null bytes`
     );
   }
 }

@@ -332,7 +332,7 @@ describe("AzurePRStrategy cleanup error handling", () => {
 
     mockExecutor.responses.set(
       "az repos pr create",
-      new Error("PR creation failed"),
+      new Error("PR creation failed")
     );
 
     const strategy = new AzurePRStrategy(mockExecutor);
@@ -352,7 +352,7 @@ describe("AzurePRStrategy cleanup error handling", () => {
     assert.equal(
       existsSync(descFile),
       false,
-      "Temp file should be cleaned up even on error",
+      "Temp file should be cleaned up even on error"
     );
   });
 });
@@ -407,7 +407,7 @@ describe("AzurePRStrategy Azure CLI command format", () => {
     // The @ is included inside the quotes to prevent shell interpretation issues
     assert.ok(
       command.includes(`--description '@${descFile}'`),
-      `Command should escape @<path> format with single quotes. Got: ${command}`,
+      `Command should escape @<path> format with single quotes. Got: ${command}`
     );
   });
 });
@@ -424,7 +424,7 @@ describe("AzurePRStrategy URL building", () => {
 
     assert.equal(
       expectedUrl,
-      "https://dev.azure.com/my-org/my%20project/_git/my-repo/pullrequest/123",
+      "https://dev.azure.com/my-org/my%20project/_git/my-repo/pullrequest/123"
     );
   });
 
@@ -528,7 +528,7 @@ describe("AzurePRStrategy merge", () => {
     test("returns failure when command fails", async () => {
       mockExecutor.responses.set(
         "az repos pr update",
-        new Error("Update failed"),
+        new Error("Update failed")
       );
 
       const strategy = new AzurePRStrategy(mockExecutor);
@@ -619,7 +619,7 @@ describe("AzurePRStrategy merge", () => {
     test("returns failure when command fails", async () => {
       mockExecutor.responses.set(
         "az repos pr update",
-        new Error("Permission denied"),
+        new Error("Permission denied")
       );
 
       const strategy = new AzurePRStrategy(mockExecutor);
@@ -712,7 +712,7 @@ describe("AzurePRStrategy closeExistingPR", () => {
 
     assert.equal(result, true);
     const abandonCall = mockExecutor.calls.find((c) =>
-      c.command.includes("az repos pr update"),
+      c.command.includes("az repos pr update")
     );
     assert.ok(abandonCall, "Should call az repos pr update");
     assert.ok(abandonCall.command.includes("--status abandoned"));
@@ -735,13 +735,13 @@ describe("AzurePRStrategy closeExistingPR", () => {
     });
 
     const deleteBranchCall = mockExecutor.calls.find((c) =>
-      c.command.includes("az repos ref delete"),
+      c.command.includes("az repos ref delete")
     );
     assert.ok(deleteBranchCall, "Should call az repos ref delete");
     assert.ok(deleteBranchCall.command.includes("test-branch"));
     assert.ok(
       deleteBranchCall.command.includes("abc123def456"),
-      "Should include object_id",
+      "Should include object_id"
     );
   });
 
@@ -751,7 +751,7 @@ describe("AzurePRStrategy closeExistingPR", () => {
     mockExecutor.responses.set("az repos ref list", "abc123def456"); // object_id for branch
     mockExecutor.responses.set(
       "az repos ref delete",
-      new Error("Branch deletion failed"),
+      new Error("Branch deletion failed")
     );
 
     const strategy = new AzurePRStrategy(mockExecutor);
@@ -771,7 +771,7 @@ describe("AzurePRStrategy closeExistingPR", () => {
     mockExecutor.responses.set("az repos pr list", "123");
     mockExecutor.responses.set(
       "az repos pr update",
-      new Error("Abandon failed"),
+      new Error("Abandon failed")
     );
 
     const strategy = new AzurePRStrategy(mockExecutor);
@@ -864,6 +864,7 @@ describe("AzurePRStrategy type guards", () => {
     gitUrl: "git@github.com:owner/repo.git",
     owner: "owner",
     repo: "repo",
+    host: "github.com",
   };
 
   let mockExecutor: ReturnType<typeof createMockExecutor>;
@@ -894,7 +895,7 @@ describe("AzurePRStrategy type guards", () => {
           workDir: testDir,
           retries: 0,
         }),
-      /Expected Azure DevOps repository/,
+      /Expected Azure DevOps repository/
     );
   });
 });

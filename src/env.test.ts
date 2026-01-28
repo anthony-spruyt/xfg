@@ -58,7 +58,7 @@ describe("interpolateEnvVars", () => {
     const input = { key: "${MISSING_VAR:?Variable is required}" };
     assert.throws(
       () => interpolateEnvVars(input),
-      /MISSING_VAR: Variable is required/,
+      /MISSING_VAR: Variable is required/
     );
   });
 
@@ -122,7 +122,7 @@ describe("interpolateEnvVars", () => {
     const options: EnvInterpolationOptions = { strict: true };
     assert.throws(
       () => interpolateEnvVars(input, options),
-      /Missing required environment variable: MISSING_VAR/,
+      /Missing required environment variable: MISSING_VAR/
     );
   });
 
@@ -137,7 +137,7 @@ describe("interpolateEnvVars", () => {
     const input = { key: "${MISSING_VAR}" };
     assert.throws(
       () => interpolateEnvVars(input),
-      /Missing required environment variable: MISSING_VAR/,
+      /Missing required environment variable: MISSING_VAR/
     );
   });
 
@@ -222,7 +222,7 @@ describe("interpolateEnvVarsInString", () => {
   test("throws on missing required var", () => {
     assert.throws(
       () => interpolateEnvVarsInString("${MISSING_VAR}"),
-      /Missing required environment variable: MISSING_VAR/,
+      /Missing required environment variable: MISSING_VAR/
     );
   });
 
@@ -272,7 +272,7 @@ describe("interpolateEnvVarsInLines", () => {
   test("throws on missing required var in any line", () => {
     assert.throws(
       () => interpolateEnvVarsInLines(["${DIR}/", "${MISSING}"]),
-      /Missing required environment variable: MISSING/,
+      /Missing required environment variable: MISSING/
     );
   });
 });

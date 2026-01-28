@@ -15,7 +15,7 @@ import type { GitHubRepoInfo } from "./repo-detector.js";
 
 // Helper to create a mock repo info for tests
 function createMockRepoInfo(
-  overrides: Partial<GitHubRepoInfo> = {},
+  overrides: Partial<GitHubRepoInfo> = {}
 ): GitHubRepoInfo {
   return {
     type: "github",
@@ -69,7 +69,7 @@ describe("escapeShellArg", () => {
     // Expected: 'it'\''s Alice'\''s book'
     assert.strictEqual(
       escapeShellArg("it's Alice's book"),
-      "'it'\\''s Alice'\\''s book'",
+      "'it'\\''s Alice'\\''s book'"
     );
   });
 
@@ -93,7 +93,7 @@ describe("escapeShellArg", () => {
     // The entire string is safely quoted
     assert.strictEqual(
       escaped,
-      "'https://github.com/org/repo.git\"; rm -rf /'",
+      "'https://github.com/org/repo.git\"; rm -rf /'"
     );
   });
 });
@@ -142,7 +142,7 @@ describe("formatPRBody", () => {
     const result = formatPRBody(files, repoInfo);
     // Should contain markdown headers or formatting
     assert.ok(
-      result.includes("##") || result.includes("*") || result.includes("-"),
+      result.includes("##") || result.includes("*") || result.includes("-")
     );
   });
 
@@ -255,7 +255,7 @@ describe("loadPRTemplate (via formatPRBody)", () => {
     // Verify PR.md exists in the project
     assert.ok(
       existsSync(templatePath),
-      `PR.md should exist at ${templatePath}`,
+      `PR.md should exist at ${templatePath}`
     );
 
     // formatPRBody should use content from PR.md
@@ -276,7 +276,7 @@ describe("loadPRTemplate (via formatPRBody)", () => {
       result.includes("xfg") ||
         result.includes("Summary") ||
         result.includes("Changes"),
-      "Template should have expected sections",
+      "Template should have expected sections"
     );
   });
 
@@ -295,7 +295,7 @@ describe("loadPRTemplate (via formatPRBody)", () => {
     // Should have some structure (markdown headers or bullets)
     assert.ok(
       result.includes("#") || result.includes("-") || result.includes("*"),
-      "Should have markdown formatting",
+      "Should have markdown formatting"
     );
   });
 
@@ -306,7 +306,7 @@ describe("loadPRTemplate (via formatPRBody)", () => {
     // Default PR.md uses ${xfg:repo.fullName}
     assert.ok(
       result.includes("test-org/test-repo"),
-      "Should interpolate repo.fullName",
+      "Should interpolate repo.fullName"
     );
   });
 });
