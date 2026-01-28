@@ -10,3 +10,7 @@ overrides:
   - files: "*.json"
     options:
       printWidth: 1
+  - files: "*.json5"
+    options:
+      quoteProps: "preserve"
+      trailingComma: "none"

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2193 # $$ is xfg template escaping, becomes $ after processing
+# shellcheck disable=SC2193,SC2157 # $$ is xfg template escaping, becomes $ after processing
 set -euo pipefail
 
 # This file is automatically updated - do not modify directly
@@ -23,19 +23,27 @@ if [[ "${1:-}" == "--ci" ]]; then
     exit 0
   fi
 
-  docker run \
-    -e MEGALINTER_FLAVOR="$MEGALINTER_FLAVOR" \
-    -e GITHUB_TOKEN="${GITHUB_TOKEN:-}" \
-    -e GITHUB_STEP_SUMMARY="${GITHUB_STEP_SUMMARY:-}" \
-    -e VALIDATE_ALL_CODEBASE="${VALIDATE_ALL_CODEBASE:-}" \
-    -e DEFAULT_WORKSPACE=/tmp/lint \
-    -e GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-}" \
-    -e GITHUB_SHA="${GITHUB_SHA:-}" \
-    -e GITHUB_REF="${GITHUB_REF:-}" \
-    -e GITHUB_RUN_ID="${GITHUB_RUN_ID:-}" \
-    -v "$REPO_ROOT:/tmp/lint:rw" \
-    --rm \
-    "$MEGALINTER_IMAGE"
+  # Build docker run arguments
+  docker_args=(
+    -e MEGALINTER_FLAVOR="$MEGALINTER_FLAVOR"
+    -e GITHUB_TOKEN="${GITHUB_TOKEN:-}"
+    -e VALIDATE_ALL_CODEBASE="${VALIDATE_ALL_CODEBASE:-}"
+    -e DEFAULT_WORKSPACE=/tmp/lint
+    -e GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-}"
+    -e GITHUB_SHA="${GITHUB_SHA:-}"
+    -e GITHUB_REF="${GITHUB_REF:-}"
+    -e GITHUB_RUN_ID="${GITHUB_RUN_ID:-}"
+    -v "$REPO_ROOT:/tmp/lint:rw"
+    --rm
+  )
+
+  # Mount GITHUB_STEP_SUMMARY if available (for job summaries)
+  if [[ -n "${GITHUB_STEP_SUMMARY:-}" && -f "${GITHUB_STEP_SUMMARY}" ]]; then
+    docker_args+=(-e GITHUB_STEP_SUMMARY="${GITHUB_STEP_SUMMARY}")
+    docker_args+=(-v "${GITHUB_STEP_SUMMARY}:${GITHUB_STEP_SUMMARY}:rw")
+  fi
+
+  docker run "${docker_args[@]}" "$MEGALINTER_IMAGE"
 else
   # Local mode - with fixes and user permissions
   rm -rf "$REPO_ROOT/.output"
