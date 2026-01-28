@@ -19,7 +19,7 @@ repos:
 
 **Output:**
 
-```
+```text
 # Claude Code generated files
 .claude/
 ```
@@ -51,7 +51,7 @@ repos:
 
 **Result for first repo:**
 
-```
+```text
 node_modules/
 dist/
 coverage/

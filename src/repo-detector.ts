@@ -110,7 +110,7 @@ function isGitLabStyleUrl(gitUrl: string): boolean {
 
 export function detectRepoType(
   gitUrl: string,
-  context?: RepoDetectorContext,
+  context?: RepoDetectorContext
 ): RepoType {
   // Check for GitHub Enterprise hosts first (if configured)
   if (context?.githubHosts?.length) {
@@ -149,13 +149,13 @@ export function detectRepoType(
 
   // Throw for unrecognized URL formats
   throw new Error(
-    `Unrecognized git URL format: ${gitUrl}. Supported formats: GitHub (git@github.com: or https://github.com/), Azure DevOps (git@ssh.dev.azure.com: or https://dev.azure.com/), and GitLab (git@gitlab.com: or https://gitlab.com/)`,
+    `Unrecognized git URL format: ${gitUrl}. Supported formats: GitHub (git@github.com: or https://github.com/), Azure DevOps (git@ssh.dev.azure.com: or https://dev.azure.com/), and GitLab (git@gitlab.com: or https://gitlab.com/)`
   );
 }
 
 export function parseGitUrl(
   gitUrl: string,
-  context?: RepoDetectorContext,
+  context?: RepoDetectorContext
 ): RepoInfo {
   const type = detectRepoType(gitUrl, context);
 
@@ -189,7 +189,7 @@ function parseGitHubUrl(gitUrl: string, host: string): GitHubRepoInfo {
   // Handle HTTPS format: https://hostname/owner/repo.git
   // Use (.+?) with end anchor to handle repo names with dots
   const httpsMatch = gitUrl.match(
-    /^https?:\/\/[^/]+\/([^/]+)\/(.+?)(?:\.git)?$/,
+    /^https?:\/\/[^/]+\/([^/]+)\/(.+?)(?:\.git)?$/
   );
   if (httpsMatch) {
     return {
@@ -208,7 +208,7 @@ function parseAzureDevOpsUrl(gitUrl: string): AzureDevOpsRepoInfo {
   // Handle SSH format: git@ssh.dev.azure.com:v3/organization/project/repo
   // Use (.+?) with end anchor to handle repo names with dots
   const sshMatch = gitUrl.match(
-    /git@ssh\.dev\.azure\.com:v3\/([^/]+)\/([^/]+)\/(.+?)(?:\.git)?$/,
+    /git@ssh\.dev\.azure\.com:v3\/([^/]+)\/([^/]+)\/(.+?)(?:\.git)?$/
   );
   if (sshMatch) {
     return {
@@ -224,7 +224,7 @@ function parseAzureDevOpsUrl(gitUrl: string): AzureDevOpsRepoInfo {
   // Handle HTTPS format: https://dev.azure.com/organization/project/_git/repo
   // Use (.+?) with end anchor to handle repo names with dots
   const httpsMatch = gitUrl.match(
-    /https?:\/\/dev\.azure\.com\/([^/]+)\/([^/]+)\/_git\/(.+?)(?:\.git)?$/,
+    /https?:\/\/dev\.azure\.com\/([^/]+)\/([^/]+)\/_git\/(.+?)(?:\.git)?$/
   );
   if (httpsMatch) {
     return {
@@ -265,7 +265,7 @@ function parseGitLabUrl(gitUrl: string): GitLabRepoInfo {
 function parseGitLabPath(
   gitUrl: string,
   host: string,
-  fullPath: string,
+  fullPath: string
 ): GitLabRepoInfo {
   // Split path into segments: org/group/subgroup/repo -> [org, group, subgroup, repo]
   const segments = fullPath.split("/");

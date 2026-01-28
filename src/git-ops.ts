@@ -73,7 +73,7 @@ export class GitOps {
   async clone(gitUrl: string): Promise<void> {
     await this.execWithRetry(
       `git clone ${escapeShellArg(gitUrl)} .`,
-      this.workDir,
+      this.workDir
     );
   }
 
@@ -95,7 +95,7 @@ export class GitOps {
     try {
       await this.exec(
         `git checkout -b ${escapeShellArg(branchName)}`,
-        this.workDir,
+        this.workDir
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -136,7 +136,7 @@ export class GitOps {
     const relativePath = relative(this.workDir, filePath);
     await this.exec(
       `git update-index --add --chmod=+x ${escapeShellArg(relativePath)}`,
-      this.workDir,
+      this.workDir
     );
   }
 
@@ -223,7 +223,7 @@ export class GitOps {
     try {
       await this.exec(
         `git show ${escapeShellArg(branch)}:${escapeShellArg(fileName)}`,
-        this.workDir,
+        this.workDir
       );
       return true;
     } catch {
@@ -277,7 +277,7 @@ export class GitOps {
     // Use --no-verify to skip pre-commit hooks
     await this.exec(
       `git commit --no-verify -m ${escapeShellArg(message)}`,
-      this.workDir,
+      this.workDir
     );
     return true;
   }
@@ -289,7 +289,7 @@ export class GitOps {
     const forceFlag = options?.force ? "--force-with-lease " : "";
     await this.execWithRetry(
       `git push ${forceFlag}-u origin ${escapeShellArg(branchName)}`,
-      this.workDir,
+      this.workDir
     );
   }
 
@@ -298,7 +298,7 @@ export class GitOps {
       // Try to get the default branch from remote (network operation with retry)
       const remoteInfo = await this.execWithRetry(
         "git remote show origin",
-        this.workDir,
+        this.workDir
       );
       const match = remoteInfo.match(/HEAD branch: (\S+)/);
       if (match) {
@@ -353,7 +353,7 @@ export function validateBranchName(branchName: string): void {
   }
 
   // Git disallows: space, ~, ^, :, ?, *, [, \, and consecutive dots (..)
-  if (/[\s~^:?*\[\\]/.test(branchName) || branchName.includes("..")) {
+  if (/[\s~^:?*[\\]/.test(branchName) || branchName.includes("..")) {
     throw new Error("Branch name contains invalid characters");
   }
 

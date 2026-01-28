@@ -34,7 +34,7 @@ repos:
 
 Each repository gets:
 
-```
+```text
 .github/
   workflows/
     ci.yaml

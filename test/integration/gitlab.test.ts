@@ -22,7 +22,6 @@ const BRANCH_NAME = "chore/sync-my-config";
 // This follows the same pattern as integration-github.test.ts and integration-ado.test.ts.
 function exec(command: string, options?: { cwd?: string }): string {
   try {
-    // eslint-disable-next-line security/detect-child-process
     return execSync(command, {
       // codeql-disable-next-line js/shell-command-injection-from-environment
       cwd: options?.cwd ?? projectRoot,
@@ -42,7 +41,7 @@ function exec(command: string, options?: { cwd?: string }): string {
 function glabApi(
   method: string,
   endpoint: string,
-  body?: Record<string, unknown>,
+  body?: Record<string, unknown>
 ): string {
   let cmd = `glab api --method ${method}`;
   if (body) {
@@ -60,14 +59,13 @@ function glabApi(
 // Helper to get file content from GitLab repo
 function getFileContent(
   path: string,
-  branch?: string,
+  branch?: string
 ): { content: string } | null {
   try {
-    const ref = branch ? `&ref=${encodeURIComponent(branch)}` : "";
     const encodedPath = encodeURIComponent(path);
     const result = glabApi(
       "GET",
-      `projects/${encodeURIComponent(PROJECT_PATH)}/repository/files/${encodedPath}?ref=${branch || getDefaultBranch()}`,
+      `projects/${encodeURIComponent(PROJECT_PATH)}/repository/files/${encodedPath}?ref=${branch || getDefaultBranch()}`
     );
     const json = JSON.parse(result);
     // GitLab returns base64 encoded content
@@ -83,7 +81,7 @@ function getDefaultBranch(): string {
   try {
     const result = glabApi(
       "GET",
-      `projects/${encodeURIComponent(PROJECT_PATH)}`,
+      `projects/${encodeURIComponent(PROJECT_PATH)}`
     );
     const json = JSON.parse(result);
     return json.default_branch || "main";
@@ -97,7 +95,7 @@ function pushFileChange(
   path: string,
   content: string | null,
   message: string,
-  branch: string,
+  branch: string
 ): void {
   const encodedPath = encodeURIComponent(path);
   const projectId = encodeURIComponent(PROJECT_PATH);
@@ -135,7 +133,7 @@ function deleteBranch(branchName: string): boolean {
     const encodedBranch = encodeURIComponent(branchName);
     glabApi(
       "DELETE",
-      `projects/${encodeURIComponent(PROJECT_PATH)}/repository/branches/${encodedBranch}`,
+      `projects/${encodeURIComponent(PROJECT_PATH)}/repository/branches/${encodedBranch}`
     );
     return true;
   } catch {
@@ -145,12 +143,12 @@ function deleteBranch(branchName: string): boolean {
 
 // Helper to get MR by source branch
 function getMRByBranch(
-  sourceBranch: string,
+  sourceBranch: string
 ): { iid: number; title: string; web_url: string; state: string } | null {
   try {
     const result = glabApi(
       "GET",
-      `projects/${encodeURIComponent(PROJECT_PATH)}/merge_requests?source_branch=${encodeURIComponent(sourceBranch)}&state=opened`,
+      `projects/${encodeURIComponent(PROJECT_PATH)}/merge_requests?source_branch=${encodeURIComponent(sourceBranch)}&state=opened`
     );
     const mrs = JSON.parse(result);
     if (mrs && mrs.length > 0) {
@@ -170,7 +168,7 @@ function closeMR(mrIid: number): void {
       `projects/${encodeURIComponent(PROJECT_PATH)}/merge_requests/${mrIid}`,
       {
         state_event: "close",
-      },
+      }
     );
   } catch {
     // Ignore errors
@@ -179,12 +177,12 @@ function closeMR(mrIid: number): void {
 
 // Helper to get all MRs by source branch (including closed)
 function getAllMRsByBranch(
-  sourceBranch: string,
+  sourceBranch: string
 ): Array<{ iid: number; state: string }> {
   try {
     const result = glabApi(
       "GET",
-      `projects/${encodeURIComponent(PROJECT_PATH)}/merge_requests?source_branch=${encodeURIComponent(sourceBranch)}`,
+      `projects/${encodeURIComponent(PROJECT_PATH)}/merge_requests?source_branch=${encodeURIComponent(sourceBranch)}`
     );
     return JSON.parse(result);
   } catch {
@@ -201,7 +199,7 @@ describe("GitLab Integration Test", () => {
     try {
       const result = glabApi(
         "GET",
-        `projects/${encodeURIComponent(PROJECT_PATH)}/repository/commits?per_page=1`,
+        `projects/${encodeURIComponent(PROJECT_PATH)}/repository/commits?per_page=1`
       );
       const commits = JSON.parse(result);
       if (commits && commits.length > 0) {
@@ -215,7 +213,7 @@ describe("GitLab Integration Test", () => {
         "README.md",
         "# Test Repository\n\nThis repo is used for integration testing xfg.",
         "Initial commit",
-        "main",
+        "main"
       );
       console.log("  Repo initialized");
     }
@@ -248,7 +246,7 @@ describe("GitLab Integration Test", () => {
           TARGET_FILE,
           null,
           `test: remove ${TARGET_FILE} for integration test`,
-          defaultBranch,
+          defaultBranch
         );
         console.log("  File deleted");
       } else {
@@ -315,25 +313,25 @@ describe("GitLab Integration Test", () => {
     assert.equal(
       json.baseOnly,
       "inherited-from-root",
-      "Base-only property should be inherited",
+      "Base-only property should be inherited"
     );
     assert.deepEqual(
       json.prop2,
       { prop3: "MyService" },
-      "Base prop2 should be inherited",
+      "Base prop2 should be inherited"
     );
 
     // Verify overlay adds new properties
     assert.equal(
       json.addedByOverlay,
       true,
-      "Overlay should add new properties",
+      "Overlay should add new properties"
     );
 
     // Verify nested base properties are preserved
     assert.ok(
       json.prop4?.prop5?.length === 2,
-      "Nested arrays from base should be preserved",
+      "Nested arrays from base should be preserved"
     );
 
     console.log("  Merged content verified - base + overlay working correctly");
@@ -374,19 +372,19 @@ describe("GitLab Integration Test", () => {
     try {
       const oldMRResult = glabApi(
         "GET",
-        `projects/${encodeURIComponent(PROJECT_PATH)}/merge_requests/${mrIidBefore}`,
+        `projects/${encodeURIComponent(PROJECT_PATH)}/merge_requests/${mrIidBefore}`
       );
       const oldMR = JSON.parse(oldMRResult);
       console.log(`  Old MR !${mrIidBefore} state: ${oldMR.state}`);
       assert.equal(
         oldMR.state,
         "closed",
-        "Old MR should be closed after re-sync",
+        "Old MR should be closed after re-sync"
       );
     } catch {
       // If we can't get the old MR, it might have been deleted
       console.log(
-        `  Old MR !${mrIidBefore} appears to have been deleted or closed`,
+        `  Old MR !${mrIidBefore} appears to have been deleted or closed`
       );
     }
 
@@ -433,7 +431,7 @@ describe("GitLab Integration Test", () => {
       createOnlyFile,
       existingContent,
       `test: setup ${createOnlyFile} for createOnly test`,
-      defaultBranch,
+      defaultBranch
     );
     console.log("  File created on main");
 
@@ -441,7 +439,7 @@ describe("GitLab Integration Test", () => {
     console.log("\nRunning xfg with createOnly config...");
     const configPath = join(
       fixturesDir,
-      "integration-test-createonly-gitlab.yaml",
+      "integration-test-createonly-gitlab.yaml"
     );
     const output = exec(`node dist/index.js --config ${configPath}`, {
       cwd: projectRoot,
@@ -451,7 +449,7 @@ describe("GitLab Integration Test", () => {
     // 5. Verify the behavior - output should indicate skipping
     assert.ok(
       output.includes("createOnly") || output.includes("skip"),
-      "Output should mention createOnly or skip",
+      "Output should mention createOnly or skip"
     );
 
     // 6. Check if a MR was created - with createOnly the file should be skipped
@@ -472,12 +470,12 @@ describe("GitLab Integration Test", () => {
           assert.equal(
             json.existing,
             true,
-            "File should retain original content when createOnly skips",
+            "File should retain original content when createOnly skips"
           );
         }
       } else {
         console.log(
-          "  No MR was created (all files skipped) - this is correct",
+          "  No MR was created (all files skipped) - this is correct"
         );
       }
     } catch {
@@ -491,7 +489,7 @@ describe("GitLab Integration Test", () => {
         createOnlyFile,
         null,
         `test: cleanup ${createOnlyFile}`,
-        defaultBranch,
+        defaultBranch
       );
       console.log("  File deleted");
     } catch {
@@ -538,7 +536,7 @@ describe("GitLab Integration Test", () => {
     // 3. Create the "unchanged" file on main branch with content that matches config
     // The config has: { "unchanged": true }
     console.log(
-      `Creating ${unchangedFile} on main branch (will NOT change)...`,
+      `Creating ${unchangedFile} on main branch (will NOT change)...`
     );
     const unchangedContent =
       JSON.stringify({ unchanged: true }, null, 2) + "\n";
@@ -548,7 +546,7 @@ describe("GitLab Integration Test", () => {
       unchangedFile,
       unchangedContent,
       `test: setup ${unchangedFile} for issue #90 test`,
-      defaultBranch,
+      defaultBranch
     );
     console.log("  File created with content matching config");
 
@@ -559,7 +557,7 @@ describe("GitLab Integration Test", () => {
         changedFile,
         null,
         `test: cleanup ${changedFile}`,
-        defaultBranch,
+        defaultBranch
       );
       console.log("  File deleted");
     } catch {
@@ -570,7 +568,7 @@ describe("GitLab Integration Test", () => {
     console.log("\nRunning xfg with unchanged files config...");
     const configPath = join(
       fixturesDir,
-      "integration-test-unchanged-gitlab.yaml",
+      "integration-test-unchanged-gitlab.yaml"
     );
     const output = exec(`node dist/index.js --config ${configPath}`, {
       cwd: projectRoot,
@@ -589,11 +587,11 @@ describe("GitLab Integration Test", () => {
     // After fix: title should be "chore: sync changed-test.json"
     assert.ok(
       mr.title.includes(changedFile),
-      `MR title should include ${changedFile}`,
+      `MR title should include ${changedFile}`
     );
     assert.ok(
       !mr.title.includes(unchangedFile),
-      `MR title should NOT include ${unchangedFile} (bug #90: unchanged files incorrectly listed)`,
+      `MR title should NOT include ${unchangedFile} (bug #90: unchanged files incorrectly listed)`
     );
 
     // 7. Cleanup
@@ -603,7 +601,7 @@ describe("GitLab Integration Test", () => {
         unchangedFile,
         null,
         `test: cleanup ${unchangedFile}`,
-        defaultBranch,
+        defaultBranch
       );
       console.log(`  Deleted ${unchangedFile}`);
     } catch {
@@ -639,7 +637,7 @@ describe("GitLab Integration Test", () => {
         directFile,
         null,
         `test: cleanup ${directFile}`,
-        defaultBranch,
+        defaultBranch
       );
       console.log("  File deleted");
     } catch {
@@ -657,7 +655,7 @@ describe("GitLab Integration Test", () => {
     // 3. Verify the output mentions direct push
     assert.ok(
       output.includes("Pushed directly") || output.includes("direct"),
-      "Output should mention direct push",
+      "Output should mention direct push"
     );
 
     // 4. Verify NO MR was created
@@ -686,7 +684,7 @@ describe("GitLab Integration Test", () => {
         directFile,
         null,
         `test: cleanup ${directFile}`,
-        defaultBranch,
+        defaultBranch
       );
       console.log("  File deleted");
     } catch {

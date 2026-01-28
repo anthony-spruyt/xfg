@@ -66,21 +66,21 @@ describe("isPermanentError", () => {
 
   test("returns true for GH_TOKEN environment variable error", () => {
     const error = new Error(
-      "gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable",
+      "gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable"
     );
     assert.equal(isPermanentError(error), true);
   });
 
   test("returns true for GITHUB_TOKEN environment variable error", () => {
     const error = new Error(
-      "error: GITHUB_TOKEN environment variable is required",
+      "error: GITHUB_TOKEN environment variable is required"
     );
     assert.equal(isPermanentError(error), true);
   });
 
   test("returns true for AZURE_DEVOPS_EXT_PAT environment variable error", () => {
     const error = new Error(
-      "az: To use Azure CLI, set the AZURE_DEVOPS_EXT_PAT environment variable",
+      "az: To use Azure CLI, set the AZURE_DEVOPS_EXT_PAT environment variable"
     );
     assert.equal(isPermanentError(error), true);
   });
@@ -169,7 +169,7 @@ describe("withRetry", () => {
         }
         return "success";
       },
-      { retries: 3 },
+      { retries: 3 }
     );
     assert.equal(result, "success");
     assert.equal(attempts, 3);
@@ -183,7 +183,7 @@ describe("withRetry", () => {
           attempts++;
           throw new Error("Permission denied");
         },
-        { retries: 3 },
+        { retries: 3 }
       );
     }, /Permission denied/);
     // Key assertion: only 1 attempt, no retries for permanent errors
@@ -198,7 +198,7 @@ describe("withRetry", () => {
           attempts++;
           throw new Error("Connection timed out");
         },
-        { retries: 2 },
+        { retries: 2 }
       );
     }, /Connection timed out/);
     // 1 initial attempt + 2 retries = 3 total
@@ -217,7 +217,7 @@ describe("withRetry", () => {
           onRetry: (_error, attempt) => {
             retryAttempts.push(attempt);
           },
-        },
+        }
       );
     });
     // onRetry is called on attempts 1 and 2 (before the final failure)
@@ -244,7 +244,7 @@ describe("withRetry", () => {
           attempts++;
           throw new Error("Connection timed out");
         },
-        { retries: 0 },
+        { retries: 0 }
       );
     });
     assert.equal(attempts, 1);
@@ -279,7 +279,7 @@ describe("promisify", () => {
         assert.equal(error.message, "custom");
         assert.equal(error.code, "CUSTOM_CODE");
         return true;
-      },
+      }
     );
   });
 });
@@ -296,7 +296,7 @@ describe("integration: withRetry + promisify", () => {
           }
           return "success";
         }),
-      { retries: 3 },
+      { retries: 3 }
     );
     assert.equal(result, "success");
     assert.equal(attempts, 2);
@@ -311,7 +311,7 @@ describe("integration: withRetry + promisify", () => {
             attempts++;
             throw new Error("Permission denied");
           }),
-        { retries: 3 },
+        { retries: 3 }
       );
     }, /Permission denied/);
     // Key assertion: only 1 attempt, no retries for permanent errors

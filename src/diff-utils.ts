@@ -52,7 +52,7 @@ export function generateDiff(
   oldContent: string | null,
   newContent: string,
   fileName: string,
-  contextLines: number = 3,
+  contextLines: number = 3
 ): string[] {
   const oldLines = oldContent ? oldContent.split("\n") : [];
   const newLines = newContent.split("\n");
@@ -77,8 +77,8 @@ export function generateDiff(
   for (const hunk of hunks) {
     result.push(
       formatDiffLine(
-        `@@ -${hunk.oldStart},${hunk.oldCount} +${hunk.newStart},${hunk.newCount} @@`,
-      ),
+        `@@ -${hunk.oldStart},${hunk.oldCount} +${hunk.newStart},${hunk.newCount} @@`
+      )
     );
     for (const line of hunk.lines) {
       result.push(formatDiffLine(line));
@@ -95,7 +95,7 @@ export function generateDiff(
 function computeDiffHunks(
   oldLines: string[],
   newLines: string[],
-  contextLines: number,
+  contextLines: number
 ): DiffHunk[] {
   // Compute edit script using LCS
   const editScript = computeEditScript(oldLines, newLines);
@@ -164,7 +164,7 @@ function groupIntoHunks(
   ops: EditOp[],
   oldLines: string[],
   newLines: string[],
-  contextLines: number,
+  contextLines: number
 ): DiffHunk[] {
   // Find ranges of changes
   const changeRanges: { start: number; end: number }[] = [];

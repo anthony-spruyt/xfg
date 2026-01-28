@@ -111,7 +111,7 @@ export function saveManifest(workDir: string, manifest: XfgManifest): void {
  */
 export function getManagedFiles(
   manifest: XfgManifest | null,
-  configId: string,
+  configId: string
 ): string[] {
   if (!manifest) {
     return [];
@@ -135,7 +135,7 @@ export function getManagedFiles(
 export function updateManifest(
   manifest: XfgManifest | null,
   configId: string,
-  filesWithDeleteOrphaned: Map<string, boolean | undefined>,
+  filesWithDeleteOrphaned: Map<string, boolean | undefined>
 ): { manifest: XfgManifest; filesToDelete: string[] } {
   // Get existing managed files for this config only
   const existingManaged = new Set(getManagedFiles(manifest, configId));

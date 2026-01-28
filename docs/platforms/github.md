@@ -43,7 +43,7 @@ repos:
   - git: https://ghe.internal.net/org/project.git
 ```
 
-### Authentication
+### GHE Authentication
 
 Authenticate with each GHE instance using the `--hostname` flag:
 

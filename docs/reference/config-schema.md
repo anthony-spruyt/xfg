@@ -2,7 +2,7 @@
 
 The full JSON Schema for xfg configuration files is available at:
 
-```
+```text
 https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
 ```
 

@@ -1,6 +1,25 @@
 # Dependencies
 node_modules/
 
+# Prevent accidental secret commits
+.env
+.env.*
+*.env
+.secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Claude
+.claude/settings.local.json
+
+# SSH agent
+agent.sock
+
+# MegaLinter
+.output
+
 # Build output
 dist/
 site/
@@ -21,13 +40,3 @@ Thumbs.db
 
 # IDE
 .idea/
-
-# Environment
-.env
-.env.local
-
-# Python
-__pycache__/
-*.py[cod]
-
-.claude/settings.local.json

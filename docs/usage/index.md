@@ -44,7 +44,7 @@ xfg --config ./config.yaml --dry-run
 
 ## Console Output
 
-```
+```text
 [1/3] Processing example-org/repo1...
   ✓ Cloned repository
   ✓ Created branch chore/sync-config

@@ -404,7 +404,7 @@ describe("normalizeConfig", () => {
 
       assert.throws(
         () => normalizeConfig(raw),
-        /Missing required environment variable: MISSING_VAR/,
+        /Missing required environment variable: MISSING_VAR/
       );
     });
   });
@@ -440,10 +440,14 @@ describe("normalizeConfig", () => {
       const result = normalizeConfig(raw);
 
       // Modify one repo's content
-      result.repos[0].files[0].content.key = "modified";
+      (result.repos[0].files[0].content as Record<string, unknown>).key =
+        "modified";
 
       // Other repo should be unaffected
-      assert.equal(result.repos[1].files[0].content.key, "value");
+      assert.equal(
+        (result.repos[1].files[0].content as Record<string, unknown>).key,
+        "value"
+      );
     });
 
     test("returns empty repos array when input has empty repos", () => {
@@ -485,14 +489,20 @@ describe("normalizeConfig", () => {
 
       const result = normalizeConfig(raw);
       const appendFile = result.repos[0].files.find(
-        (f) => f.fileName === "append.json",
+        (f) => f.fileName === "append.json"
       );
       const replaceFile = result.repos[0].files.find(
-        (f) => f.fileName === "replace.json",
+        (f) => f.fileName === "replace.json"
       );
 
-      assert.deepEqual(appendFile?.content.items, ["a", "b"]);
-      assert.deepEqual(replaceFile?.content.items, ["y"]);
+      assert.deepEqual(
+        (appendFile?.content as Record<string, unknown>)?.items,
+        ["a", "b"]
+      );
+      assert.deepEqual(
+        (replaceFile?.content as Record<string, unknown>)?.items,
+        ["y"]
+      );
     });
   });
 
@@ -774,7 +784,7 @@ describe("normalizeConfig", () => {
       const result = normalizeConfig(raw);
       assert.equal(
         result.repos[0].files[0].schemaUrl,
-        "https://example.com/schema.json",
+        "https://example.com/schema.json"
       );
     });
 
@@ -800,7 +810,7 @@ describe("normalizeConfig", () => {
       const result = normalizeConfig(raw);
       assert.equal(
         result.repos[0].files[0].schemaUrl,
-        "https://repo.com/schema.json",
+        "https://repo.com/schema.json"
       );
     });
 
@@ -830,7 +840,7 @@ describe("normalizeConfig", () => {
       assert.equal(result.repos[0].files[0].content, null);
       assert.equal(
         result.repos[0].files[0].schemaUrl,
-        "https://example.com/schema.json",
+        "https://example.com/schema.json"
       );
     });
   });
@@ -846,7 +856,6 @@ describe("normalizeConfig", () => {
           {
             git: "git@github.com:org/repo.git",
             files: {
-              // @ts-expect-error - intentionally testing runtime type mismatch
               ".gitignore": { content: { invalid: "object" } }, // object content - type mismatch
             },
           },
@@ -855,7 +864,7 @@ describe("normalizeConfig", () => {
 
       assert.throws(
         () => normalizeConfig(raw),
-        /Expected text content for .gitignore, got object/,
+        /Expected text content for .gitignore, got object/
       );
     });
   });
@@ -872,7 +881,7 @@ describe("normalizeConfig", () => {
       const result = normalizeConfig(raw);
       assert.equal(
         result.prTemplate,
-        "## Custom Template\n\n${xfg:pr.fileChanges}",
+        "## Custom Template\n\n${xfg:pr.fileChanges}"
       );
     });
 

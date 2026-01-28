@@ -19,11 +19,11 @@ describe("validateRawConfig", () => {
       const config = {
         files: { "config.json": { content: {} } },
         repos: [{ git: "git@github.com:org/repo.git" }],
-      } as RawConfig;
+      } as unknown as RawConfig;
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config requires an 'id' field/,
+        /Config requires an 'id' field/
       );
     });
 
@@ -32,7 +32,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config requires an 'id' field/,
+        /Config requires an 'id' field/
       );
     });
 
@@ -41,7 +41,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config requires an 'id' field/,
+        /Config requires an 'id' field/
       );
     });
 
@@ -70,7 +70,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config 'id' contains invalid characters/,
+        /Config 'id' contains invalid characters/
       );
     });
 
@@ -79,7 +79,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config 'id' contains invalid characters/,
+        /Config 'id' contains invalid characters/
       );
     });
 
@@ -88,7 +88,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config 'id' contains invalid characters/,
+        /Config 'id' contains invalid characters/
       );
     });
 
@@ -98,7 +98,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config 'id' exceeds maximum length of 64 characters/,
+        /Config 'id' exceeds maximum length of 64 characters/
       );
     });
 
@@ -123,7 +123,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config missing required field: files/,
+        /Config missing required field: files/
       );
     });
 
@@ -132,7 +132,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config files object cannot be empty/,
+        /Config files object cannot be empty/
       );
     });
 
@@ -143,7 +143,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Invalid fileName.*must be a relative path/,
+        /Invalid fileName.*must be a relative path/
       );
     });
 
@@ -154,7 +154,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Invalid fileName.*must be a relative path/,
+        /Invalid fileName.*must be a relative path/
       );
     });
 
@@ -165,7 +165,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Invalid fileName.*must be a relative path/,
+        /Invalid fileName.*must be a relative path/
       );
     });
 
@@ -176,7 +176,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /cannot contain newlines or null bytes/,
+        /cannot contain newlines or null bytes/
       );
     });
 
@@ -187,7 +187,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /cannot contain newlines or null bytes/,
+        /cannot contain newlines or null bytes/
       );
     });
 
@@ -198,7 +198,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /cannot contain newlines or null bytes/,
+        /cannot contain newlines or null bytes/
       );
     });
 
@@ -253,7 +253,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /has invalid mergeStrategy: invalid/,
+        /has invalid mergeStrategy: invalid/
       );
     });
   });
@@ -263,21 +263,21 @@ describe("validateRawConfig", () => {
       const config = {
         id: "test-config",
         files: { "config.json": { content: {} } },
-      } as RawConfig;
+      } as unknown as RawConfig;
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config missing required field: repos/,
+        /Config missing required field: repos/
       );
     });
 
     test("throws when repos is not an array", () => {
       const config = createValidConfig();
-      (config as Record<string, unknown>).repos = "not-an-array";
+      (config as unknown as Record<string, unknown>).repos = "not-an-array";
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config missing required field: repos \(must be an array\)/,
+        /Config missing required field: repos \(must be an array\)/
       );
     });
 
@@ -288,7 +288,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Repo at index 0 missing required field: git/,
+        /Repo at index 0 missing required field: git/
       );
     });
 
@@ -299,7 +299,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Repo at index 0 has empty git array/,
+        /Repo at index 0 has empty git array/
       );
     });
 
@@ -340,7 +340,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Repo at index 0 references undefined file 'nonexistent.json'/,
+        /Repo at index 0 references undefined file 'nonexistent.json'/
       );
     });
 
@@ -373,7 +373,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /has override: true for file 'config.json' but no content defined/,
+        /has override: true for file 'config.json' but no content defined/
       );
     });
 
@@ -419,7 +419,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Repo at index 0 references undefined file 'nonexistent.json'/,
+        /Repo at index 0 references undefined file 'nonexistent.json'/
       );
     });
   });
@@ -454,7 +454,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /createOnly must be a boolean/,
+        /createOnly must be a boolean/
       );
     });
 
@@ -493,7 +493,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /createOnly must be a boolean/,
+        /createOnly must be a boolean/
       );
     });
 
@@ -537,7 +537,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /header must be a string or array of strings/,
+        /header must be a string or array of strings/
       );
     });
 
@@ -549,7 +549,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /header must be a string or array of strings/,
+        /header must be a string or array of strings/
       );
     });
 
@@ -576,7 +576,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /header must be a string or array of strings/,
+        /header must be a string or array of strings/
       );
     });
   });
@@ -600,7 +600,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /schemaUrl must be a string/,
+        /schemaUrl must be a string/
       );
     });
 
@@ -629,7 +629,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /schemaUrl must be a string/,
+        /schemaUrl must be a string/
       );
     });
   });
@@ -817,7 +817,7 @@ describe("validateRawConfig", () => {
       };
       assert.throws(
         () => validateRawConfig(config),
-        /has JSON\/YAML extension but string content/,
+        /has JSON\/YAML extension but string content/
       );
     });
 
@@ -831,7 +831,7 @@ describe("validateRawConfig", () => {
       };
       assert.throws(
         () => validateRawConfig(config),
-        /has JSON\/YAML extension but string content/,
+        /has JSON\/YAML extension but string content/
       );
     });
 
@@ -845,7 +845,7 @@ describe("validateRawConfig", () => {
       };
       assert.throws(
         () => validateRawConfig(config),
-        /has JSON\/YAML extension but string content/,
+        /has JSON\/YAML extension but string content/
       );
     });
 
@@ -870,7 +870,7 @@ describe("validateRawConfig", () => {
       };
       assert.throws(
         () => validateRawConfig(config),
-        /has JSON\/YAML extension but string content/,
+        /has JSON\/YAML extension but string content/
       );
     });
 
@@ -884,7 +884,7 @@ describe("validateRawConfig", () => {
       };
       assert.throws(
         () => validateRawConfig(config),
-        /has text extension but object content/,
+        /has text extension but object content/
       );
     });
 
@@ -898,7 +898,7 @@ describe("validateRawConfig", () => {
       };
       assert.throws(
         () => validateRawConfig(config),
-        /has text extension but object content/,
+        /has text extension but object content/
       );
     });
 
@@ -912,7 +912,7 @@ describe("validateRawConfig", () => {
       };
       assert.throws(
         () => validateRawConfig(config),
-        /content must be an object, string, or array of strings/,
+        /content must be an object, string, or array of strings/
       );
     });
 
@@ -933,7 +933,7 @@ describe("validateRawConfig", () => {
       };
       assert.throws(
         () => validateRawConfig(config),
-        /has JSON\/YAML extension but string content/,
+        /has JSON\/YAML extension but string content/
       );
     });
 
@@ -954,7 +954,7 @@ describe("validateRawConfig", () => {
       };
       assert.throws(
         () => validateRawConfig(config),
-        /has text extension but object content/,
+        /has text extension but object content/
       );
     });
 
@@ -1003,7 +1003,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /githubHosts must be an array of strings/,
+        /githubHosts must be an array of strings/
       );
     });
 
@@ -1013,7 +1013,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /githubHosts must be an array of strings/,
+        /githubHosts must be an array of strings/
       );
     });
 
@@ -1023,7 +1023,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /githubHosts entries must be non-empty hostnames/,
+        /githubHosts entries must be non-empty hostnames/
       );
     });
 
@@ -1033,7 +1033,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /githubHosts entries must be hostnames only, not URLs/,
+        /githubHosts entries must be hostnames only, not URLs/
       );
     });
 
@@ -1043,7 +1043,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /githubHosts entries must be hostnames only/,
+        /githubHosts entries must be hostnames only/
       );
     });
   });
@@ -1078,7 +1078,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /executable must be a boolean/,
+        /executable must be a boolean/
       );
     });
 
@@ -1120,7 +1120,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /executable must be a boolean/,
+        /executable must be a boolean/
       );
     });
   });
@@ -1157,7 +1157,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /template must be a boolean/,
+        /template must be a boolean/
       );
     });
 
@@ -1196,7 +1196,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /template must be a boolean/,
+        /template must be a boolean/
       );
     });
   });
@@ -1239,7 +1239,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /vars must be an object with string values/,
+        /vars must be an object with string values/
       );
     });
 
@@ -1251,7 +1251,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /vars must be an object with string values/,
+        /vars must be an object with string values/
       );
     });
 
@@ -1266,7 +1266,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /vars\.count must be a string/,
+        /vars\.count must be a string/
       );
     });
 
@@ -1295,7 +1295,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /vars must be an object with string values/,
+        /vars must be an object with string values/
       );
     });
 
@@ -1312,7 +1312,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /vars\.flag must be a string/,
+        /vars\.flag must be a string/
       );
     });
   });
@@ -1343,7 +1343,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /Global deleteOrphaned must be a boolean/,
+        /Global deleteOrphaned must be a boolean/
       );
     });
 
@@ -1385,7 +1385,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /deleteOrphaned must be a boolean/,
+        /deleteOrphaned must be a boolean/
       );
     });
 
@@ -1424,7 +1424,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /deleteOrphaned must be a boolean/,
+        /deleteOrphaned must be a boolean/
       );
     });
   });

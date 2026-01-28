@@ -43,7 +43,7 @@ describe("ShellCommandExecutor", () => {
   test("throws error for non-existent command", async () => {
     await assert.rejects(
       async () => executor.exec("nonexistent_command_xyz", testDir),
-      /not found|command not found/i,
+      /not found|command not found/i
     );
   });
 
@@ -54,7 +54,7 @@ describe("ShellCommandExecutor", () => {
   test("throws error for invalid working directory", async () => {
     await assert.rejects(
       async () => executor.exec("echo test", "/nonexistent/directory/path/xyz"),
-      Error,
+      Error
     );
   });
 

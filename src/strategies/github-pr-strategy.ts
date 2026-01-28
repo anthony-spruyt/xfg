@@ -65,7 +65,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     try {
       const existingPR = await withRetry(
         () => this.executor.exec(command, workDir),
-        { retries },
+        { retries }
       );
 
       return existingPR || null;
@@ -123,7 +123,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       logger.info(
-        `Warning: Failed to close existing PR #${prNumber}: ${message}`,
+        `Warning: Failed to close existing PR #${prNumber}: ${message}`
       );
       return false;
     }
@@ -153,7 +153,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     try {
       const result = await withRetry(
         () => this.executor.exec(command, workDir),
-        { retries },
+        { retries }
       );
 
       // Extract URL from output - use strict regex for valid PR URLs only
@@ -178,7 +178,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
         }
       } catch (cleanupError) {
         logger.info(
-          `Warning: Failed to clean up temp file ${bodyFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`,
+          `Warning: Failed to clean up temp file ${bodyFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`
         );
       }
     }
@@ -190,7 +190,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
   async checkAutoMergeEnabled(
     repoInfo: GitHubRepoInfo,
     workDir: string,
-    retries: number = 3,
+    retries: number = 3
   ): Promise<boolean> {
     const hostnameFlag = getHostnameFlag(repoInfo);
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
@@ -199,13 +199,13 @@ export class GitHubPRStrategy extends BasePRStrategy {
     try {
       const result = await withRetry(
         () => this.executor.exec(command, workDir),
-        { retries },
+        { retries }
       );
       return result.trim() === "true";
     } catch (error) {
       // If we can't check, assume auto-merge is not enabled
       logger.info(
-        `Warning: Could not check auto-merge status: ${error instanceof Error ? error.message : String(error)}`,
+        `Warning: Could not check auto-merge status: ${error instanceof Error ? error.message : String(error)}`
       );
       return false;
     }
@@ -256,15 +256,15 @@ export class GitHubPRStrategy extends BasePRStrategy {
         const autoMergeEnabled = await this.checkAutoMergeEnabled(
           repoInfo,
           workDir,
-          retries,
+          retries
         );
 
         if (!autoMergeEnabled) {
           logger.info(
-            `Warning: Auto-merge not enabled for '${repoInfo.owner}/${repoInfo.repo}'. PR left open for manual review.`,
+            `Warning: Auto-merge not enabled for '${repoInfo.owner}/${repoInfo.repo}'. PR left open for manual review.`
           );
           logger.info(
-            `To enable: gh repo edit ${getRepoFlag(repoInfo)} --enable-auto-merge (requires admin)`,
+            `To enable: gh repo edit ${getRepoFlag(repoInfo)} --enable-auto-merge (requires admin)`
           );
           return {
             success: true,

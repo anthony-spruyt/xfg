@@ -98,7 +98,7 @@ export class RepositoryProcessor {
   async process(
     repoConfig: RepoConfig,
     repoInfo: RepoInfo,
-    options: ProcessorOptions,
+    options: ProcessorOptions
   ): Promise<ProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
     const { branchName, workDir, dryRun, retries, prTemplate } = options;
@@ -113,7 +113,7 @@ export class RepositoryProcessor {
     // Warn if mergeStrategy is set with direct mode (irrelevant)
     if (isDirectMode && repoConfig.prOptions?.mergeStrategy) {
       this.log.info(
-        `Warning: mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode (no PR created)`,
+        `Warning: mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode (no PR created)`
       );
     }
 
@@ -130,7 +130,7 @@ export class RepositoryProcessor {
       const { branch: baseBranch, method: detectionMethod } =
         await this.gitOps.getDefaultBranch();
       this.log.info(
-        `Default branch: ${baseBranch} (detected via ${detectionMethod})`,
+        `Default branch: ${baseBranch} (detected via ${detectionMethod})`
       );
 
       // Step 3.5: Close existing PR if exists (fresh start approach)
@@ -187,11 +187,11 @@ export class RepositoryProcessor {
         if (file.createOnly) {
           const existsOnBase = await this.gitOps.fileExistsOnBranch(
             file.fileName,
-            baseBranch,
+            baseBranch
           );
           if (existsOnBase) {
             this.log.info(
-              `Skipping ${file.fileName} (createOnly: exists on ${baseBranch})`,
+              `Skipping ${file.fileName} (createOnly: exists on ${baseBranch})`
             );
             changedFiles.push({ fileName: file.fileName, action: "skip" });
             continue;
@@ -210,7 +210,7 @@ export class RepositoryProcessor {
               fileName: file.fileName,
               vars: file.vars,
             },
-            { strict: true },
+            { strict: true }
           );
         }
 
@@ -220,7 +220,7 @@ export class RepositoryProcessor {
           {
             header: file.header,
             schemaUrl: file.schemaUrl,
-          },
+          }
         );
 
         // Determine action type (create vs update)
@@ -245,7 +245,7 @@ export class RepositoryProcessor {
           const diffLines = generateDiff(
             existingContent,
             fileContent,
-            file.fileName,
+            file.fileName
           );
           this.log.fileDiff(file.fileName, status, diffLines);
         } else {
@@ -256,7 +256,7 @@ export class RepositoryProcessor {
 
       // Step 5b: Set executable permission for files that need it
       const skippedFileNames = new Set(
-        changedFiles.filter((f) => f.action === "skip").map((f) => f.fileName),
+        changedFiles.filter((f) => f.action === "skip").map((f) => f.fileName)
       );
       for (const file of repoConfig.files) {
         // Skip files that were excluded (createOnly + exists)
@@ -285,7 +285,7 @@ export class RepositoryProcessor {
       const { manifest: newManifest, filesToDelete } = updateManifest(
         existingManifest,
         options.configId,
-        filesWithDeleteOrphaned,
+        filesWithDeleteOrphaned
       );
 
       // Delete orphaned files (unless --no-delete flag is set)
@@ -306,7 +306,7 @@ export class RepositoryProcessor {
         }
       } else if (filesToDelete.length > 0 && options.noDelete) {
         this.log.info(
-          `Skipping deletion of ${filesToDelete.length} orphaned file(s) (--no-delete flag)`,
+          `Skipping deletion of ${filesToDelete.length} orphaned file(s) (--no-delete flag)`
         );
       }
 
@@ -337,7 +337,7 @@ export class RepositoryProcessor {
           diffStats.newCount,
           diffStats.modifiedCount,
           diffStats.unchangedCount,
-          diffStats.deletedCount,
+          diffStats.deletedCount
         );
       }
 

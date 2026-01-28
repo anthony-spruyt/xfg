@@ -3,7 +3,6 @@ import { strict as assert } from "node:assert";
 import {
   detectOutputFormat,
   convertContentToString,
-  type OutputFormat,
 } from "./config-formatter.js";
 
 describe("detectOutputFormat", () => {
@@ -168,7 +167,7 @@ describe("convertContentToString", () => {
 
     const yamlResult = convertContentToString(content, "config.yaml");
     assert.ok(
-      yamlResult.includes("empty: null") || yamlResult.includes("empty:"),
+      yamlResult.includes("empty: null") || yamlResult.includes("empty:")
     );
   });
 });
@@ -190,8 +189,8 @@ describe("convertContentToString with empty files", () => {
     });
     assert.ok(
       result.includes(
-        "# yaml-language-server: $schema=https://example.com/schema.json",
-      ),
+        "# yaml-language-server: $schema=https://example.com/schema.json"
+      )
     );
   });
 
@@ -218,8 +217,8 @@ describe("convertContentToString with YAML header comments", () => {
     });
     assert.ok(
       result.includes(
-        "# yaml-language-server: $schema=https://example.com/schema.json",
-      ),
+        "# yaml-language-server: $schema=https://example.com/schema.json"
+      )
     );
     assert.ok(result.includes('key: "value"'));
   });
@@ -252,7 +251,7 @@ describe("convertContentToString with YAML header comments", () => {
     const headerIndex = result.indexOf("Custom comment");
     assert.ok(
       schemaIndex < headerIndex,
-      "Schema URL should appear before header",
+      "Schema URL should appear before header"
     );
   });
 
@@ -264,8 +263,8 @@ describe("convertContentToString with YAML header comments", () => {
     });
     assert.ok(
       result.includes(
-        "# yaml-language-server: $schema=https://example.com/schema.json",
-      ),
+        "# yaml-language-server: $schema=https://example.com/schema.json"
+      )
     );
     assert.ok(result.includes("# Custom comment"));
     assert.ok(result.includes('key: "value"'));
@@ -363,7 +362,7 @@ describe("convertContentToString with text content", () => {
     test("preserves existing trailing newline", () => {
       const result = convertContentToString(
         "line1\nline2\n",
-        ".markdownlintignore",
+        ".markdownlintignore"
       );
       assert.equal(result, "line1\nline2\n");
     });
@@ -399,7 +398,7 @@ describe("convertContentToString with text content", () => {
     test("joins lines with newlines", () => {
       const result = convertContentToString(
         ["line1", "line2", "line3"],
-        ".gitignore",
+        ".gitignore"
       );
       assert.equal(result, "line1\nline2\nline3\n");
     });
@@ -445,7 +444,7 @@ describe("convertContentToString with text content", () => {
     test("handles .env.example", () => {
       const result = convertContentToString(
         "API_KEY=your-key-here",
-        ".env.example",
+        ".env.example"
       );
       assert.equal(result, "API_KEY=your-key-here\n");
     });
@@ -453,7 +452,7 @@ describe("convertContentToString with text content", () => {
     test("handles .prettierignore", () => {
       const result = convertContentToString(
         ["dist/", "coverage/"],
-        ".prettierignore",
+        ".prettierignore"
       );
       assert.equal(result, "dist/\ncoverage/\n");
     });
@@ -476,11 +475,11 @@ describe("convertContentToString YAML string quoting", () => {
     const result = convertContentToString(content, "config.yaml");
     assert.ok(
       result.includes('time: "06:00"'),
-      `Expected time to be quoted, got: ${result}`,
+      `Expected time to be quoted, got: ${result}`
     );
     assert.ok(
       result.includes('timezone: "Australia/Melbourne"'),
-      `Expected timezone to be quoted, got: ${result}`,
+      `Expected timezone to be quoted, got: ${result}`
     );
   });
 
@@ -499,7 +498,7 @@ describe("convertContentToString YAML string quoting", () => {
     assert.ok(result.includes("enabled: true"), "Boolean true stays unquoted");
     assert.ok(
       result.includes("disabled: false"),
-      "Boolean false stays unquoted",
+      "Boolean false stays unquoted"
     );
   });
 
@@ -508,7 +507,7 @@ describe("convertContentToString YAML string quoting", () => {
     const result = convertContentToString(content, "config.yaml");
     assert.ok(
       result.includes("empty: null") || result.includes("empty:"),
-      "Actual null stays unquoted",
+      "Actual null stays unquoted"
     );
   });
 
@@ -533,7 +532,7 @@ describe("convertContentToString YAML string quoting", () => {
     const result = convertContentToString(content, "dependabot.yaml");
     assert.ok(
       result.includes('interval: "daily"'),
-      "interval should be quoted",
+      "interval should be quoted"
     );
     assert.ok(result.includes('time: "06:00"'), "time should be quoted");
   });

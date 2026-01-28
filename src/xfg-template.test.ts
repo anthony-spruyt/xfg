@@ -1,12 +1,10 @@
-import { test, describe, beforeEach, afterEach } from "node:test";
+import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   interpolateXfgContent,
   type XfgTemplateContext,
-  type XfgInterpolationOptions,
 } from "./xfg-template.js";
 import type {
-  RepoInfo,
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
   GitLabRepoInfo,
@@ -20,7 +18,7 @@ function createGitHubContext(
     host: string;
     fileName: string;
     vars: Record<string, string>;
-  }> = {},
+  }> = {}
 ): XfgTemplateContext {
   const repoInfo: GitHubRepoInfo = {
     type: "github",
@@ -44,7 +42,7 @@ function createAzureDevOpsContext(
     repo: string;
     fileName: string;
     vars: Record<string, string>;
-  }> = {},
+  }> = {}
 ): XfgTemplateContext {
   const org = overrides.organization ?? "my-org";
   const proj = overrides.project ?? "my-project";
@@ -73,7 +71,7 @@ function createGitLabContext(
     host: string;
     fileName: string;
     vars: Record<string, string>;
-  }> = {},
+  }> = {}
 ): XfgTemplateContext {
   const ns = overrides.namespace ?? "my-org";
   const repo = overrides.repo ?? "my-repo";
@@ -126,7 +124,7 @@ describe("interpolateXfgContent - built-in variables", () => {
       const ctx = createGitHubContext();
       const result = interpolateXfgContent(
         "Platform: ${xfg:repo.platform}",
-        ctx,
+        ctx
       );
       assert.equal(result, "Platform: github");
     });
@@ -165,7 +163,7 @@ describe("interpolateXfgContent - built-in variables", () => {
       const ctx = createAzureDevOpsContext();
       const result = interpolateXfgContent(
         "Platform: ${xfg:repo.platform}",
-        ctx,
+        ctx
       );
       assert.equal(result, "Platform: azure-devops");
     });
@@ -206,7 +204,7 @@ describe("interpolateXfgContent - built-in variables", () => {
       const ctx = createGitLabContext();
       const result = interpolateXfgContent(
         "Platform: ${xfg:repo.platform}",
-        ctx,
+        ctx
       );
       assert.equal(result, "Platform: gitlab");
     });
@@ -277,7 +275,7 @@ describe("interpolateXfgContent - escape mechanism", () => {
     const ctx = createGitHubContext({ repo: "my-repo" });
     const result = interpolateXfgContent(
       "${xfg:repo.name} and $${xfg:not.interpolated}",
-      ctx,
+      ctx
     );
     assert.equal(result, "my-repo and ${xfg:not.interpolated}");
   });
@@ -300,7 +298,7 @@ describe("interpolateXfgContent - strict mode", () => {
     const ctx = createGitHubContext();
     assert.throws(
       () => interpolateXfgContent("${xfg:unknown.var}", ctx, { strict: true }),
-      /Unknown xfg template variable: unknown.var/,
+      /Unknown xfg template variable: unknown.var/
     );
   });
 
@@ -316,7 +314,7 @@ describe("interpolateXfgContent - strict mode", () => {
     const ctx = createGitHubContext();
     assert.throws(
       () => interpolateXfgContent("${xfg:missing}", ctx),
-      /Unknown xfg template variable: missing/,
+      /Unknown xfg template variable: missing/
     );
   });
 });
@@ -333,7 +331,7 @@ describe("interpolateXfgContent - content types", () => {
       const ctx = createGitHubContext({ owner: "org", repo: "repo" });
       const result = interpolateXfgContent(
         "${xfg:repo.owner}/${xfg:repo.name}",
-        ctx,
+        ctx
       );
       assert.equal(result, "org/repo");
     });
@@ -342,7 +340,7 @@ describe("interpolateXfgContent - content types", () => {
       const ctx = createGitHubContext({ repo: "my-repo" });
       const result = interpolateXfgContent(
         "line1\n${xfg:repo.name}\nline3",
-        ctx,
+        ctx
       );
       assert.equal(result, "line1\nmy-repo\nline3");
     });
@@ -353,7 +351,7 @@ describe("interpolateXfgContent - content types", () => {
       const ctx = createGitHubContext({ repo: "my-repo" });
       const result = interpolateXfgContent(
         ["${xfg:repo.name}", "static", "${xfg:repo.platform}"],
-        ctx,
+        ctx
       );
       assert.deepEqual(result, ["my-repo", "static", "github"]);
     });
@@ -382,7 +380,7 @@ describe("interpolateXfgContent - content types", () => {
             },
           },
         },
-        ctx,
+        ctx
       );
       assert.deepEqual(result, {
         outer: { inner: { name: "my-repo" } },
@@ -395,7 +393,7 @@ describe("interpolateXfgContent - content types", () => {
         {
           items: ["${xfg:repo.name}", "static"],
         },
-        ctx,
+        ctx
       );
       assert.deepEqual(result, {
         items: ["my-repo", "static"],
@@ -410,7 +408,7 @@ describe("interpolateXfgContent - content types", () => {
           boolean: true,
           nullValue: null,
         } as Record<string, unknown>,
-        ctx,
+        ctx
       );
       assert.deepEqual(result, {
         number: 42,
@@ -425,7 +423,7 @@ describe("interpolateXfgContent - content types", () => {
         {
           repos: [{ name: "${xfg:repo.name}" }, { name: "static" }],
         },
-        ctx,
+        ctx
       );
       assert.deepEqual(result, {
         repos: [{ name: "my-repo" }, { name: "static" }],
@@ -456,7 +454,7 @@ Managed by xfg.`;
 Repository: acme-corp/backend-service
 Platform: github
 
-Managed by xfg.`,
+Managed by xfg.`
     );
   });
 
@@ -467,10 +465,10 @@ Managed by xfg.`,
       host: "github.com",
     });
     const template = {
-      name: "@\${xfg:repo.owner}/\${xfg:repo.name}",
+      name: "@${xfg:repo.owner}/${xfg:repo.name}",
       repository: {
         type: "git",
-        url: "\${xfg:repo.url}",
+        url: "${xfg:repo.url}",
       },
     };
 
@@ -512,9 +510,9 @@ Managed by xfg.`,
     // xfg template only processes ${xfg:...} patterns
     // Other patterns like ${HOME} or $${xfg:...} are left as-is
     const template = [
-      "# \${xfg:repo.name} gitignore",
+      "# ${xfg:repo.name} gitignore",
       "node_modules/",
-      "\${HOME}/.cache", // env var - left unchanged by xfg
+      "${HOME}/.cache", // env var - left unchanged by xfg
       "*.log",
     ];
 
@@ -522,7 +520,7 @@ Managed by xfg.`,
     assert.deepEqual(result, [
       "# my-repo gitignore",
       "node_modules/",
-      "\${HOME}/.cache", // unchanged
+      "${HOME}/.cache", // unchanged
       "*.log",
     ]);
   });

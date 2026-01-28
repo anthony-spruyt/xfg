@@ -23,6 +23,7 @@ describe("getPRStrategy", () => {
       gitUrl: "git@github.com:owner/repo.git",
       owner: "owner",
       repo: "repo",
+      host: "github.com",
     };
 
     const strategy = getPRStrategy(repoInfo);
@@ -95,7 +96,7 @@ describe("GitHubPRStrategy type guards", () => {
 
     await assert.rejects(
       () => strategy.checkExistingPR(options),
-      /Expected GitHub repository/,
+      /Expected GitHub repository/
     );
   });
 
@@ -121,7 +122,7 @@ describe("GitHubPRStrategy type guards", () => {
 
     await assert.rejects(
       () => strategy.create(options),
-      /Expected GitHub repository/,
+      /Expected GitHub repository/
     );
   });
 });
@@ -134,6 +135,7 @@ describe("AzurePRStrategy type guards", () => {
       gitUrl: "git@github.com:owner/repo.git",
       owner: "owner",
       repo: "repo",
+      host: "github.com",
     };
 
     const options: PRStrategyOptions = {
@@ -147,7 +149,7 @@ describe("AzurePRStrategy type guards", () => {
 
     await assert.rejects(
       () => strategy.checkExistingPR(options),
-      /Expected Azure DevOps repository/,
+      /Expected Azure DevOps repository/
     );
   });
 
@@ -158,6 +160,7 @@ describe("AzurePRStrategy type guards", () => {
       gitUrl: "git@github.com:owner/repo.git",
       owner: "owner",
       repo: "repo",
+      host: "github.com",
     };
 
     const options: PRStrategyOptions = {
@@ -171,7 +174,7 @@ describe("AzurePRStrategy type guards", () => {
 
     await assert.rejects(
       () => strategy.create(options),
-      /Expected Azure DevOps repository/,
+      /Expected Azure DevOps repository/
     );
   });
 });
@@ -206,6 +209,16 @@ class MockPRStrategy implements PRStrategy {
     return this.createResult;
   }
 
+  async closeExistingPR(_options: PRStrategyOptions): Promise<boolean> {
+    return true;
+  }
+
+  async merge(
+    _options: import("./pr-strategy.js").MergeOptions
+  ): Promise<import("./pr-strategy.js").MergeResult> {
+    return { success: true, merged: false, message: "Mock merge" };
+  }
+
   async execute(options: PRStrategyOptions): Promise<PRResult> {
     const executor = new PRWorkflowExecutor(this);
     return executor.execute(options);
@@ -218,6 +231,7 @@ describe("PRWorkflowExecutor", () => {
     gitUrl: "git@github.com:owner/repo.git",
     owner: "owner",
     repo: "repo",
+    host: "github.com",
   };
 
   const defaultOptions: PRStrategyOptions = {

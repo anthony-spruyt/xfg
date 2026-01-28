@@ -10,7 +10,7 @@ import {
 } from "./merge.js";
 
 function createContext(
-  defaultStrategy: ArrayMergeStrategy = "replace",
+  defaultStrategy: ArrayMergeStrategy = "replace"
 ): MergeContext {
   return {
     arrayStrategies: new Map(),
@@ -77,10 +77,6 @@ describe("deepMerge", () => {
 
   test("appends arrays when $arrayMerge: append with array syntax", () => {
     const base = { items: ["a", "b"] };
-    const overlay = { items: ["c", "d"], $arrayMerge: "append" } as Record<
-      string,
-      unknown
-    >;
     // When $arrayMerge is a sibling, it applies to all arrays in that object level
     const ctx = createContext();
     ctx.arrayStrategies.set("items", "append");
@@ -145,7 +141,7 @@ describe("deepMerge", () => {
     const result = deepMerge(
       base,
       overlay as Record<string, unknown>,
-      createContext(),
+      createContext()
     );
     assert.deepEqual(result, { key: { nested: "object" } });
   });
@@ -163,7 +159,7 @@ describe("deepMerge", () => {
     const result = deepMerge(
       base,
       overlay as Record<string, unknown>,
-      createContext(),
+      createContext()
     );
     assert.deepEqual(result, { key: null });
   });
@@ -342,7 +338,7 @@ describe("mergeTextContent", () => {
       const result = mergeTextContent(
         ["base1", "base2"],
         ["overlay"],
-        "append",
+        "append"
       );
       assert.deepEqual(result, ["base1", "base2", "overlay"]);
     });
@@ -351,7 +347,7 @@ describe("mergeTextContent", () => {
       const result = mergeTextContent(
         ["base"],
         ["overlay1", "overlay2"],
-        "append",
+        "append"
       );
       assert.deepEqual(result, ["base", "overlay1", "overlay2"]);
     });
@@ -372,7 +368,7 @@ describe("mergeTextContent", () => {
       const result = mergeTextContent(
         ["base1", "base2"],
         ["overlay"],
-        "prepend",
+        "prepend"
       );
       assert.deepEqual(result, ["overlay", "base1", "base2"]);
     });
@@ -381,7 +377,7 @@ describe("mergeTextContent", () => {
       const result = mergeTextContent(
         ["base"],
         ["overlay1", "overlay2"],
-        "prepend",
+        "prepend"
       );
       assert.deepEqual(result, ["overlay1", "overlay2", "base"]);
     });

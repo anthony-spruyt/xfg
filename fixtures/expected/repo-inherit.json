@@ -5,6 +5,11 @@
     "level": "info",
     "format": "json"
   },
-  "features": ["health-check", "metrics"],
-  "tags": ["base"]
+  "features": [
+    "health-check",
+    "metrics"
+  ],
+  "tags": [
+    "base"
+  ]
 }

@@ -3,6 +3,9 @@ set -euo pipefail
 
 # Implement custom devcontainer setup here. This is run after the devcontainer has been created.
 
+# Remove Yarn repo with expired GPG key (pre-installed in base image)
+sudo rm -f /etc/apt/sources.list.d/yarn.list
+
 # Install GitLab CLI (glab) via WakeMeOps repository
 echo "Installing GitLab CLI..."
 curl -sSL "https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository" | sudo bash

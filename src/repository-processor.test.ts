@@ -40,6 +40,7 @@ describe("RepositoryProcessor", () => {
     gitUrl: "git@github.com:test/repo.git",
     owner: "test",
     repo: "repo",
+    host: "github.com",
   };
 
   beforeEach(() => {
@@ -108,7 +109,7 @@ describe("RepositoryProcessor", () => {
       diffSummary(
         _newCount: number,
         _modifiedCount: number,
-        _unchangedCount: number,
+        _unchangedCount: number
       ) {
         // No-op for mock
       },
@@ -116,10 +117,14 @@ describe("RepositoryProcessor", () => {
 
     // Mock GitOps that simulates different scenarios
     class MockGitOps extends GitOps {
-      fileExists = false;
+      mockFileExists = false;
       contentMatches = false;
       createPRCalled = false;
       lastAction: "create" | "update" | null = null;
+
+      override fileExists(_fileName: string): boolean {
+        return this.mockFileExists;
+      }
 
       constructor(options: GitOpsOptions) {
         super(options);
@@ -152,7 +157,7 @@ describe("RepositoryProcessor", () => {
 
       override wouldChange(_fileName: string, _content: string): boolean {
         // If file exists with same content, no change
-        if (this.fileExists && this.contentMatches) {
+        if (this.mockFileExists && this.contentMatches) {
           return false;
         }
         return true;
@@ -160,7 +165,7 @@ describe("RepositoryProcessor", () => {
 
       override async hasChanges(): Promise<boolean> {
         // Same logic for actual git check
-        if (this.fileExists && this.contentMatches) {
+        if (this.mockFileExists && this.contentMatches) {
           return false;
         }
         return true;
@@ -168,7 +173,7 @@ describe("RepositoryProcessor", () => {
 
       override async fileExistsOnBranch(
         _fileName: string,
-        _branch: string,
+        _branch: string
       ): Promise<boolean> {
         // For tests, assume file doesn't exist on base branch unless specified
         return false;
@@ -189,7 +194,7 @@ describe("RepositoryProcessor", () => {
 
       // Setup methods for test scenarios
       setupFileExists(exists: boolean, contentMatches: boolean): void {
-        this.fileExists = exists;
+        this.mockFileExists = exists;
         this.contentMatches = contentMatches;
         if (exists) {
           // Create the file in workspace
@@ -254,7 +259,7 @@ describe("RepositoryProcessor", () => {
       assert.equal(
         result.skipped,
         undefined,
-        "Should not be explicitly skipped",
+        "Should not be explicitly skipped"
       );
       assert.notEqual(result.skipped, true, "Should not have skipped=true");
     });
@@ -284,7 +289,7 @@ describe("RepositoryProcessor", () => {
       assert.equal(
         result.skipped,
         undefined,
-        "Should not be explicitly skipped",
+        "Should not be explicitly skipped"
       );
       assert.notEqual(result.skipped, true, "Should not have skipped=true");
     });
@@ -303,7 +308,7 @@ describe("RepositoryProcessor", () => {
       diffSummary(
         _newCount: number,
         _modifiedCount: number,
-        _unchangedCount: number,
+        _unchangedCount: number
       ) {
         // No-op for mock
       },
@@ -311,12 +316,16 @@ describe("RepositoryProcessor", () => {
 
     // Mock GitOps that tracks setExecutable calls
     class MockGitOpsWithExecutable extends GitOps {
-      fileExists = false;
+      mockFileExists = false;
       contentMatches = false;
       setExecutableCalls: string[] = [];
 
       constructor(options: GitOpsOptions) {
         super(options);
+      }
+
+      override fileExists(_fileName: string): boolean {
+        return this.mockFileExists;
       }
 
       override cleanWorkspace(): void {
@@ -352,8 +361,9 @@ describe("RepositoryProcessor", () => {
         return true;
       }
 
-      override async commit(_message: string): Promise<void> {
-        // No-op for mock
+      override async commit(_message: string): Promise<boolean> {
+        // Return true to indicate commit was made
+        return true;
       }
 
       override async push(_branchName: string): Promise<void> {
@@ -369,7 +379,7 @@ describe("RepositoryProcessor", () => {
       }
 
       setupFileExists(exists: boolean, contentMatches: boolean): void {
-        this.fileExists = exists;
+        this.mockFileExists = exists;
         this.contentMatches = contentMatches;
       }
     }
@@ -515,15 +525,16 @@ describe("RepositoryProcessor", () => {
 
       assert.strictEqual(repoConfig.prOptions, undefined);
 
-      // The processor applies defaults like this:
-      // const mergeMode = repoConfig.prOptions?.merge ?? "auto";
-      const mergeMode = repoConfig.prOptions?.merge ?? "auto";
+      // The processor applies defaults like this - demonstrate the pattern works
+      // Use type assertion to avoid TypeScript narrowing after the undefined check
+      const config = repoConfig as RepoConfig;
+      const mergeMode = config.prOptions?.merge ?? "auto";
       assert.equal(mergeMode, "auto", "Default merge mode should be 'auto'");
 
-      const strategy = repoConfig.prOptions?.mergeStrategy ?? "squash";
+      const strategy = config.prOptions?.mergeStrategy ?? "squash";
       assert.equal(strategy, "squash", "Default strategy should be 'squash'");
 
-      const deleteBranch = repoConfig.prOptions?.deleteBranch ?? true;
+      const deleteBranch = config.prOptions?.deleteBranch ?? true;
       assert.equal(deleteBranch, true, "Default deleteBranch should be true");
     });
 
@@ -560,7 +571,7 @@ describe("RepositoryProcessor", () => {
       assert.equal(
         deleteBranch,
         false,
-        "Explicit deleteBranch should override",
+        "Explicit deleteBranch should override"
       );
     });
 
@@ -594,7 +605,7 @@ describe("RepositoryProcessor", () => {
       diffSummary(
         _newCount: number,
         _modifiedCount: number,
-        _unchangedCount: number,
+        _unchangedCount: number
       ) {
         // No-op for mock
       },
@@ -654,7 +665,7 @@ describe("RepositoryProcessor", () => {
 
       override async push(
         branchName: string,
-        options?: { force?: boolean },
+        options?: { force?: boolean }
       ): Promise<void> {
         this.pushBranch = branchName;
         this.pushForce = options?.force;
@@ -697,7 +708,7 @@ describe("RepositoryProcessor", () => {
       assert.equal(
         mockGitOps!.createBranchCalled,
         false,
-        "Should not create a sync branch in direct mode",
+        "Should not create a sync branch in direct mode"
       );
     });
 
@@ -730,12 +741,12 @@ describe("RepositoryProcessor", () => {
       assert.equal(
         mockGitOps!.pushBranch,
         "main",
-        "Should push to default branch (main)",
+        "Should push to default branch (main)"
       );
       assert.equal(result.success, true, "Should succeed");
       assert.ok(
         result.message.includes("Pushed directly to main"),
-        "Message should indicate direct push",
+        "Message should indicate direct push"
       );
       assert.equal(result.prUrl, undefined, "Should not have a PR URL");
     });
@@ -753,7 +764,7 @@ describe("RepositoryProcessor", () => {
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(
         testDir,
-        `direct-mode-protection-${Date.now()}`,
+        `direct-mode-protection-${Date.now()}`
       );
 
       const repoConfig: RepoConfig = {
@@ -773,15 +784,15 @@ describe("RepositoryProcessor", () => {
       assert.equal(result.success, false, "Should fail");
       assert.ok(
         result.message.includes("rejected"),
-        "Message should mention rejection",
+        "Message should mention rejection"
       );
       assert.ok(
         result.message.includes("branch protection"),
-        "Message should mention branch protection",
+        "Message should mention branch protection"
       );
       assert.ok(
         result.message.includes("merge: force"),
-        "Message should suggest using force mode",
+        "Message should suggest using force mode"
       );
     });
 
@@ -812,11 +823,11 @@ describe("RepositoryProcessor", () => {
       });
 
       const warningMessage = mockLogger.messages.find(
-        (m) => m.includes("mergeStrategy") && m.includes("ignored"),
+        (m) => m.includes("mergeStrategy") && m.includes("ignored")
       );
       assert.ok(
         warningMessage,
-        "Should log warning about mergeStrategy being ignored",
+        "Should log warning about mergeStrategy being ignored"
       );
     });
 
@@ -849,7 +860,7 @@ describe("RepositoryProcessor", () => {
       assert.equal(
         mockGitOps!.pushForce,
         false,
-        "Direct mode should use force: false (never force push to default branch)",
+        "Direct mode should use force: false (never force push to default branch)"
       );
     });
 
@@ -882,7 +893,7 @@ describe("RepositoryProcessor", () => {
       assert.equal(
         mockGitOps!.pushForce,
         true,
-        "PR mode should use force: true (--force-with-lease for sync branch)",
+        "PR mode should use force: true (--force-with-lease for sync branch)"
       );
     });
   });
@@ -971,7 +982,7 @@ describe("RepositoryProcessor", () => {
       diffSummary(
         _newCount: number,
         _modifiedCount: number,
-        _unchangedCount: number,
+        _unchangedCount: number
       ) {
         // No-op for mock
       },
@@ -1019,7 +1030,7 @@ describe("RepositoryProcessor", () => {
 
       override async fileExistsOnBranch(
         _fileName: string,
-        _branch: string,
+        _branch: string
       ): Promise<boolean> {
         return this.fileExistsOnBaseBranch;
       }
@@ -1072,7 +1083,7 @@ describe("RepositoryProcessor", () => {
       // Should be skipped because file exists and createOnly is true
       assert.equal(result.skipped, true, "Should be skipped");
       const skipMessage = mockLogger.messages.find(
-        (m) => m.includes("Skipping") && m.includes("createOnly"),
+        (m) => m.includes("Skipping") && m.includes("createOnly")
       );
       assert.ok(skipMessage, "Should log skip message for createOnly");
     });
@@ -1154,7 +1165,7 @@ describe("RepositoryProcessor", () => {
         JSON.stringify({
           version: 2,
           configs: { "test-config": ["config.json"] },
-        }),
+        })
       );
 
       const repoConfig: RepoConfig = {
@@ -1181,12 +1192,12 @@ describe("RepositoryProcessor", () => {
       assert.equal(
         mockGitOps!.deletedFiles.length,
         0,
-        `Should not delete createOnly file that exists on base branch, but deleted: ${mockGitOps!.deletedFiles.join(", ")}`,
+        `Should not delete createOnly file that exists on base branch, but deleted: ${mockGitOps!.deletedFiles.join(", ")}`
       );
 
       // Verify the skip message was logged
       const skipMessage = mockLogger.messages.find(
-        (m) => m.includes("Skipping") && m.includes("createOnly"),
+        (m) => m.includes("Skipping") && m.includes("createOnly")
       );
       assert.ok(skipMessage, "Should log skip message for createOnly");
     });
@@ -1204,7 +1215,7 @@ describe("RepositoryProcessor", () => {
       diffSummary(
         _newCount: number,
         _modifiedCount: number,
-        _unchangedCount: number,
+        _unchangedCount: number
       ) {
         // No-op for mock
       },
@@ -1307,11 +1318,11 @@ describe("RepositoryProcessor", () => {
       assert.ok(writtenContent, "Should have written README.md");
       assert.ok(
         writtenContent.includes("# repo"),
-        "Should interpolate repo.name",
+        "Should interpolate repo.name"
       );
       assert.ok(
         writtenContent.includes("Owner: test"),
-        "Should interpolate repo.owner",
+        "Should interpolate repo.owner"
       );
     });
 
@@ -1351,7 +1362,7 @@ describe("RepositoryProcessor", () => {
       assert.ok(writtenContent, "Should have written config.txt");
       assert.ok(
         writtenContent.includes("Team: Platform"),
-        "Should interpolate custom var",
+        "Should interpolate custom var"
       );
     });
   });
@@ -1368,7 +1379,7 @@ describe("RepositoryProcessor", () => {
       diffSummary(
         _newCount: number,
         _modifiedCount: number,
-        _unchangedCount: number,
+        _unchangedCount: number
       ) {
         // No-op for mock
       },
@@ -1464,11 +1475,11 @@ describe("RepositoryProcessor", () => {
       assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
       assert.ok(
         mockGitOps!.lastCommitMessage.includes("config1.json"),
-        "Should include first file name",
+        "Should include first file name"
       );
       assert.ok(
         mockGitOps!.lastCommitMessage.includes("config2.json"),
-        "Should include second file name",
+        "Should include second file name"
       );
     });
 
@@ -1512,7 +1523,7 @@ describe("RepositoryProcessor", () => {
       assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
       assert.ok(
         mockGitOps!.lastCommitMessage.includes("4 config files"),
-        `Should show file count, got: ${mockGitOps!.lastCommitMessage}`,
+        `Should show file count, got: ${mockGitOps!.lastCommitMessage}`
       );
     });
   });
@@ -1529,7 +1540,7 @@ describe("RepositoryProcessor", () => {
       diffSummary(
         _newCount: number,
         _modifiedCount: number,
-        _unchangedCount: number,
+        _unchangedCount: number
       ) {
         // No-op for mock
       },
@@ -1587,6 +1598,7 @@ describe("RepositoryProcessor", () => {
         await processor.process(mockRepoConfig, mockRepoInfo, {
           branchName: "chore/sync-config",
           workDir: localWorkDir,
+          configId: "test-config",
           dryRun: false,
           executor: createMockExecutor(),
         });
@@ -1596,14 +1608,14 @@ describe("RepositoryProcessor", () => {
         assert.ok(error instanceof Error);
         assert.ok(
           error.message.includes("Clone failed"),
-          "Error should be from clone, not cleanup",
+          "Error should be from clone, not cleanup"
         );
       }
 
       // Cleanup should have been attempted twice (initial + finally)
       assert.ok(
         mockGitOps!.cleanupCallCount >= 2,
-        "Should attempt cleanup in finally block",
+        "Should attempt cleanup in finally block"
       );
     });
   });
@@ -1625,7 +1637,7 @@ describe("RepositoryProcessor", () => {
         _newCount: number,
         _modifiedCount: number,
         _unchangedCount: number,
-        _deletedCount?: number,
+        _deletedCount?: number
       ) {
         // No-op for mock
       },
@@ -1727,7 +1739,7 @@ describe("RepositoryProcessor", () => {
         JSON.stringify({
           version: 2,
           configs: { "test-config": ["orphaned.json"] },
-        }),
+        })
       );
 
       // Config only has config.json (orphaned.json removed)
@@ -1753,7 +1765,7 @@ describe("RepositoryProcessor", () => {
       // Should have deleted orphaned.json
       assert.ok(
         mockGitOps!.deletedFiles.includes("orphaned.json"),
-        "Should delete orphaned file",
+        "Should delete orphaned file"
       );
     });
 
@@ -1777,7 +1789,7 @@ describe("RepositoryProcessor", () => {
         JSON.stringify({
           version: 2,
           configs: { "test-config": ["orphaned.json"] },
-        }),
+        })
       );
 
       const repoConfig: RepoConfig = {
@@ -1798,11 +1810,11 @@ describe("RepositoryProcessor", () => {
       assert.equal(
         mockGitOps!.deletedFiles.length,
         0,
-        "Should not delete files with noDelete flag",
+        "Should not delete files with noDelete flag"
       );
       assert.ok(
         mockLogger.messages.some((m) => m.includes("--no-delete")),
-        "Should log that deletion was skipped",
+        "Should log that deletion was skipped"
       );
     });
 
@@ -1826,7 +1838,7 @@ describe("RepositoryProcessor", () => {
         JSON.stringify({
           version: 2,
           configs: { "test-config": ["orphaned.json"] },
-        }),
+        })
       );
 
       const repoConfig: RepoConfig = {
@@ -1852,15 +1864,15 @@ describe("RepositoryProcessor", () => {
       assert.equal(
         mockGitOps!.deletedFiles.length,
         0,
-        "Should not delete files in dry-run",
+        "Should not delete files in dry-run"
       );
 
       // Should show DELETED status in log
       assert.ok(
         mockLogger.diffStatuses.some(
-          (s) => s.fileName === "orphaned.json" && s.status === "DELETED",
+          (s) => s.fileName === "orphaned.json" && s.status === "DELETED"
         ),
-        "Should log DELETED status for orphaned file",
+        "Should log DELETED status for orphaned file"
       );
     });
 
@@ -1884,7 +1896,7 @@ describe("RepositoryProcessor", () => {
         JSON.stringify({
           version: 2,
           configs: { "test-config": ["orphaned.json"] },
-        }),
+        })
       );
 
       const repoConfig: RepoConfig = {
@@ -1909,12 +1921,12 @@ describe("RepositoryProcessor", () => {
       // orphaned.json should have been deleted
       assert.ok(
         mockGitOps!.deletedFiles.includes("orphaned.json"),
-        "Should delete orphaned file",
+        "Should delete orphaned file"
       );
       // Commit message should include the deleted file
       assert.ok(
         mockGitOps!.lastCommitMessage?.includes("orphaned.json"),
-        `Commit message should include deleted file, got: ${mockGitOps!.lastCommitMessage}`,
+        `Commit message should include deleted file, got: ${mockGitOps!.lastCommitMessage}`
       );
     });
   });
@@ -1931,7 +1943,7 @@ describe("RepositoryProcessor", () => {
       diffSummary(
         _newCount: number,
         _modifiedCount: number,
-        _unchangedCount: number,
+        _unchangedCount: number
       ) {
         // No-op for mock
       },
@@ -1985,7 +1997,7 @@ describe("RepositoryProcessor", () => {
 
       override async fileExistsOnBranch(
         _fileName: string,
-        _branch: string,
+        _branch: string
       ): Promise<boolean> {
         return this.fileExistsOnBranchOverride;
       }
@@ -2049,7 +2061,7 @@ describe("RepositoryProcessor", () => {
         mockGitOps!.lastCommitMessage.includes("2 config files");
       assert.ok(
         (hasConfigJson && hasXfgJson) || hasTwoFiles,
-        `Commit message should include both files or show '2 config files', got: ${mockGitOps!.lastCommitMessage}`,
+        `Commit message should include both files or show '2 config files', got: ${mockGitOps!.lastCommitMessage}`
       );
     });
 
@@ -2096,7 +2108,7 @@ describe("RepositoryProcessor", () => {
         mockGitOps!.lastCommitMessage.includes("2 config files");
       assert.ok(
         (hasConfigJson && hasExtraFile) || hasTwoFiles,
-        `Commit message should include both files or show '2 config files', got: ${mockGitOps!.lastCommitMessage}`,
+        `Commit message should include both files or show '2 config files', got: ${mockGitOps!.lastCommitMessage}`
       );
     });
 
@@ -2114,7 +2126,7 @@ describe("RepositoryProcessor", () => {
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(
         testDir,
-        `file-count-skip-unchanged-${Date.now()}`,
+        `file-count-skip-unchanged-${Date.now()}`
       );
 
       const repoConfig: RepoConfig = {
@@ -2137,11 +2149,11 @@ describe("RepositoryProcessor", () => {
       assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
       assert.ok(
         mockGitOps!.lastCommitMessage.includes("config1.json"),
-        "Should include config1.json",
+        "Should include config1.json"
       );
       assert.ok(
         !mockGitOps!.lastCommitMessage.includes("config2.json"),
-        `Should not include config2.json, got: ${mockGitOps!.lastCommitMessage}`,
+        `Should not include config2.json, got: ${mockGitOps!.lastCommitMessage}`
       );
     });
 
@@ -2192,11 +2204,11 @@ describe("RepositoryProcessor", () => {
       assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
       assert.ok(
         mockGitOps!.lastCommitMessage.includes("actual.json"),
-        "Should include actual.json",
+        "Should include actual.json"
       );
       assert.ok(
         !mockGitOps!.lastCommitMessage.includes("skipped.json"),
-        `Should not include skipped.json, got: ${mockGitOps!.lastCommitMessage}`,
+        `Should not include skipped.json, got: ${mockGitOps!.lastCommitMessage}`
       );
     });
 
@@ -2217,7 +2229,7 @@ describe("RepositoryProcessor", () => {
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(
         testDir,
-        `file-count-update-extra-${Date.now()}`,
+        `file-count-update-extra-${Date.now()}`
       );
 
       // Pre-create the extra file so it triggers "update" action
@@ -2245,7 +2257,7 @@ describe("RepositoryProcessor", () => {
           mockGitOps!.lastCommitMessage.includes("existing-extra.json"));
       assert.ok(
         hasTwoFiles,
-        `Commit message should include both files, got: ${mockGitOps!.lastCommitMessage}`,
+        `Commit message should include both files, got: ${mockGitOps!.lastCommitMessage}`
       );
     });
   });

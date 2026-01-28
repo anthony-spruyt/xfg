@@ -30,7 +30,7 @@ export { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
  */
 export function getPRStrategy(
   repoInfo: RepoInfo,
-  executor?: CommandExecutor,
+  executor?: CommandExecutor
 ): PRStrategy {
   if (isGitHubRepo(repoInfo)) {
     return new GitHubPRStrategy(executor);

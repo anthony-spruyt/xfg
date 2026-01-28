@@ -10,7 +10,7 @@ const testConfigPath = join(testDir, "test-config.yaml");
 // Helper to run CLI and capture output
 function runCLI(
   args: string[],
-  options?: { timeout?: number },
+  options?: { timeout?: number }
 ): { stdout: string; stderr: string; success: boolean } {
   try {
     const stdout = execFileSync(
@@ -20,7 +20,7 @@ function runCLI(
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
         timeout: options?.timeout ?? 10000,
-      },
+      }
     );
     return { stdout, stderr: "", success: true };
   } catch (error) {
@@ -66,8 +66,7 @@ describe("CLI", () => {
       const result = runCLI([]);
       assert.equal(result.success, false);
       assert.ok(
-        result.stderr.includes("required") ||
-          result.stderr.includes("--config"),
+        result.stderr.includes("required") || result.stderr.includes("--config")
       );
     });
 
@@ -90,7 +89,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/invalid-repo-for-test.git
-`,
+`
       );
 
       // Should fail on clone (invalid repo) but should show dry run message
@@ -104,7 +103,7 @@ repos:
       const output = result.stdout + result.stderr;
       assert.ok(
         output.includes("DRY RUN mode") || output.includes("Processing"),
-        "Should show dry run mode or start processing",
+        "Should show dry run mode or start processing"
       );
     });
 
@@ -119,7 +118,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/invalid-repo-for-test.git
-`,
+`
       );
 
       // Should parse --retries without error
@@ -135,7 +134,7 @@ repos:
       // If it gets past argument parsing, the flag worked
       const output = result.stdout + result.stderr;
       assert.ok(
-        output.includes("Loading config") || output.includes("Processing"),
+        output.includes("Loading config") || output.includes("Processing")
       );
     });
 
@@ -150,7 +149,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/invalid-repo-for-test.git
-`,
+`
       );
 
       // Should parse --retries 0 without error
@@ -166,7 +165,7 @@ repos:
       // If it gets past argument parsing, the flag worked
       const output = result.stdout + result.stderr;
       assert.ok(
-        output.includes("Loading config") || output.includes("Processing"),
+        output.includes("Loading config") || output.includes("Processing")
       );
     });
 
@@ -181,7 +180,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/invalid-repo-for-test.git
-`,
+`
       );
 
       const result = runCLI([
@@ -196,7 +195,7 @@ repos:
       const output = result.stdout + result.stderr;
       assert.ok(
         output.includes("feature/custom-branch"),
-        "Should display custom branch name",
+        "Should display custom branch name"
       );
     });
 
@@ -211,7 +210,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/invalid-repo-for-test.git
-`,
+`
       );
 
       const result = runCLI([
@@ -226,7 +225,7 @@ repos:
       const output = result.stdout + result.stderr;
       assert.ok(
         output.includes("chore/my-sync"),
-        "Should display custom branch name with -b shorthand",
+        "Should display custom branch name with -b shorthand"
       );
     });
 
@@ -241,7 +240,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       const result = runCLI([
@@ -257,7 +256,7 @@ repos:
       const output = result.stdout + result.stderr;
       assert.ok(
         output.includes('cannot start with "." or "-"'),
-        "Should show validation error for branch starting with dot",
+        "Should show validation error for branch starting with dot"
       );
     });
 
@@ -272,7 +271,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       const result = runCLI([
@@ -288,7 +287,7 @@ repos:
       const output = result.stdout + result.stderr;
       assert.ok(
         output.includes("invalid characters"),
-        "Should show validation error for branch with spaces",
+        "Should show validation error for branch with spaces"
       );
     });
 
@@ -303,7 +302,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       const result = runCLI([
@@ -320,7 +319,7 @@ repos:
       assert.ok(
         output.includes("Invalid merge mode") ||
           output.includes("manual, auto, force, direct"),
-        "Should show validation error for invalid merge mode",
+        "Should show validation error for invalid merge mode"
       );
     });
 
@@ -335,7 +334,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       // Test each valid merge mode
@@ -352,7 +351,7 @@ repos:
         const output = result.stdout + result.stderr;
         assert.ok(
           !output.includes("Invalid merge mode"),
-          `Should accept --merge ${mode}`,
+          `Should accept --merge ${mode}`
         );
       }
     });
@@ -368,7 +367,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       const result = runCLI([
@@ -385,7 +384,7 @@ repos:
       assert.ok(
         output.includes("Invalid merge strategy") ||
           output.includes("merge, squash, rebase"),
-        "Should show validation error for invalid merge strategy",
+        "Should show validation error for invalid merge strategy"
       );
     });
 
@@ -400,7 +399,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       // Test each valid merge strategy
@@ -417,7 +416,7 @@ repos:
         const output = result.stdout + result.stderr;
         assert.ok(
           !output.includes("Invalid merge strategy"),
-          `Should accept --merge-strategy ${strategy}`,
+          `Should accept --merge-strategy ${strategy}`
         );
       }
     });
@@ -433,7 +432,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       const result = runCLI([
@@ -448,7 +447,7 @@ repos:
       // Should not error on parsing - if it gets to loading config, flag was accepted
       assert.ok(
         output.includes("Loading config") || output.includes("Processing"),
-        "Should accept --delete-branch flag",
+        "Should accept --delete-branch flag"
       );
     });
   });
@@ -467,7 +466,7 @@ repos:
         `
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       const result = runCLI(["-c", testConfigPath, "--dry-run"]);
@@ -475,7 +474,7 @@ repos:
       const output = result.stdout + result.stderr;
       assert.ok(
         output.includes("files") || output.includes("required"),
-        "Should mention missing files",
+        "Should mention missing files"
       );
     });
 
@@ -488,7 +487,7 @@ files:
   test.json:
     content:
       key: value
-`,
+`
       );
 
       const result = runCLI(["-c", testConfigPath, "--dry-run"]);
@@ -496,7 +495,7 @@ files:
       const output = result.stdout + result.stderr;
       assert.ok(
         output.includes("repos") || output.includes("required"),
-        "Should mention missing repos",
+        "Should mention missing repos"
       );
     });
   });
@@ -514,7 +513,7 @@ files:
 repos:
   - git: git@github.com:test/repo1.git
   - git: git@github.com:test/repo2.git
-`,
+`
       );
 
       const result = runCLI([
@@ -527,7 +526,7 @@ repos:
       const output = result.stdout + result.stderr;
       assert.ok(
         output.includes("2 repositories") || output.includes("Found 2"),
-        "Should display repository count",
+        "Should display repository count"
       );
     });
 
@@ -542,7 +541,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       const result = runCLI([
@@ -555,7 +554,7 @@ repos:
       const output = result.stdout + result.stderr;
       assert.ok(
         output.includes("my-config.json"),
-        "Should display target file name",
+        "Should display target file name"
       );
     });
 
@@ -570,7 +569,7 @@ files:
       key: value
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       const result = runCLI([
@@ -584,7 +583,7 @@ repos:
       // Branch name should be displayed (either chore/sync-config or the default)
       assert.ok(
         output.includes("Branch:") || output.includes("chore/"),
-        "Should display branch name",
+        "Should display branch name"
       );
     });
 
@@ -602,7 +601,7 @@ files:
       setting: true
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       const result = runCLI([
@@ -616,7 +615,7 @@ repos:
       // Should show file names joined with comma
       assert.ok(
         output.includes("config.json") && output.includes("settings.yaml"),
-        "Should display multiple file names",
+        "Should display multiple file names"
       );
     });
 
@@ -640,7 +639,7 @@ files:
       key: value4
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       const result = runCLI([
@@ -654,7 +653,7 @@ repos:
       // Should show "4 files" instead of listing all
       assert.ok(
         output.includes("4 files"),
-        "Should display file count for >3 files",
+        "Should display file count for >3 files"
       );
     });
 
@@ -672,7 +671,7 @@ files:
       setting: true
 repos:
   - git: git@github.com:test/repo.git
-`,
+`
       );
 
       const result = runCLI([
@@ -686,7 +685,7 @@ repos:
       // With multiple files and no --branch, should use chore/sync-config
       assert.ok(
         output.includes("chore/sync-config"),
-        "Should use default branch name for multiple files",
+        "Should use default branch name for multiple files"
       );
     });
   });

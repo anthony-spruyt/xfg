@@ -8,7 +8,7 @@ export interface ILogger {
     newCount: number,
     modifiedCount: number,
     unchangedCount: number,
-    deletedCount?: number,
+    deletedCount?: number
   ): void;
 }
 
@@ -34,7 +34,7 @@ export class Logger {
   progress(current: number, repoName: string, message: string): void {
     console.log(
       chalk.blue(`[${current}/${this.stats.total}]`) +
-        ` ${repoName}: ${message}`,
+        ` ${repoName}: ${message}`
     );
   }
 
@@ -46,7 +46,7 @@ export class Logger {
     this.stats.succeeded++;
     console.log(
       chalk.green(`[${current}/${this.stats.total}] ✓`) +
-        ` ${repoName}: ${message}`,
+        ` ${repoName}: ${message}`
     );
   }
 
@@ -54,15 +54,14 @@ export class Logger {
     this.stats.skipped++;
     console.log(
       chalk.yellow(`[${current}/${this.stats.total}] ⊘`) +
-        ` ${repoName}: Skipped - ${reason}`,
+        ` ${repoName}: Skipped - ${reason}`
     );
   }
 
   error(current: number, repoName: string, error: string): void {
     this.stats.failed++;
     console.log(
-      chalk.red(`[${current}/${this.stats.total}] ✗`) +
-        ` ${repoName}: ${error}`,
+      chalk.red(`[${current}/${this.stats.total}] ✗`) + ` ${repoName}: ${error}`
     );
   }
 
@@ -89,7 +88,7 @@ export class Logger {
     newCount: number,
     modifiedCount: number,
     unchangedCount: number,
-    deletedCount?: number,
+    deletedCount?: number
   ): void {
     const parts: string[] = [];
     if (newCount > 0) parts.push(chalk.green(`${newCount} new`));

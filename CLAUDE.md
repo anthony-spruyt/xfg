@@ -4,11 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-TypeScript CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple Git repositories. By default, changes are made via pull requests, but you can also push directly to the default branch with `merge: direct`. Output format is determined by content type: object content outputs JSON/JSON5/YAML (based on file extension), while string or string array content outputs plain text. Supports GitHub, Azure DevOps, and GitLab platforms (including self-hosted GitLab instances).
+TypeScript CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple Git repositories.
+By default, changes are made via pull requests, but you can also push directly to the default branch with `merge: direct`.
+Output format is determined by content type: object content outputs JSON/JSON5/YAML (based on file extension), while string or string array content outputs plain text.
+Supports GitHub, Azure DevOps, and GitLab platforms (including self-hosted GitLab instances).
 
 ## Documentation
 
-Full documentation is available at https://anthony-spruyt.github.io/xfg/
+Full documentation is available at <https://anthony-spruyt.github.io/xfg/>
 
 The docs site is built with MkDocs Material and auto-deploys via GitHub Actions when changes are made to `docs/` or `mkdocs.yml`.
 
@@ -29,7 +32,7 @@ Examples that appear in both places:
 
 The config loading process normalizes raw YAML input into a standardized format:
 
-```
+```text
 Raw YAML → Parse → Resolve file refs → Validate → Expand git arrays → Deep merge per file → Env interpolate → Config
 ```
 

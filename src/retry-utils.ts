@@ -79,7 +79,7 @@ export interface RetryOptions {
  */
 export function isPermanentError(
   error: Error,
-  patterns: RegExp[] = DEFAULT_PERMANENT_ERROR_PATTERNS,
+  patterns: RegExp[] = DEFAULT_PERMANENT_ERROR_PATTERNS
 ): boolean {
   const message = error.message;
   const stderr =
@@ -104,7 +104,7 @@ export function isPermanentError(
  */
 export function isTransientError(
   error: Error,
-  patterns: RegExp[] = DEFAULT_TRANSIENT_ERROR_PATTERNS,
+  patterns: RegExp[] = DEFAULT_TRANSIENT_ERROR_PATTERNS
 ): boolean {
   const message = error.message;
   const stderr =
@@ -131,7 +131,7 @@ export function isTransientError(
  */
 export async function withRetry<T>(
   fn: () => Promise<T>,
-  options?: RetryOptions,
+  options?: RetryOptions
 ): Promise<T> {
   const retries = options?.retries ?? 3;
   const permanentPatterns = options?.permanentErrorPatterns;
@@ -158,12 +158,12 @@ export async function withRetry<T>(
         if (context.retriesLeft > 0) {
           const msg = context.error.message || "Unknown error";
           logger.info(
-            `Attempt ${context.attemptNumber}/${retries + 1} failed: ${msg}. Retrying...`,
+            `Attempt ${context.attemptNumber}/${retries + 1} failed: ${msg}. Retrying...`
           );
           options?.onRetry?.(context.error, context.attemptNumber);
         }
       },
-    },
+    }
   );
 }
 
