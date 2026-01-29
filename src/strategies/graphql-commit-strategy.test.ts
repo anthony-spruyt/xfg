@@ -288,7 +288,7 @@ describe("GraphQLCommitStrategy", () => {
         "Should include --hostname flag"
       );
       assert.ok(
-        graphqlCall.command.includes("github.enterprise.com"),
+        graphqlCall.command.includes("--hostname 'github.enterprise.com'"),
         "Should include GHE hostname"
       );
     });
@@ -378,6 +378,63 @@ describe("GraphQLCommitStrategy", () => {
         () => strategy.commit(options),
         /GitHub.*only|not.*supported|requires.*github/i,
         "Should throw error for non-GitHub repos"
+      );
+    });
+
+    test("throws error when GraphQL response contains errors", async () => {
+      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      mockExecutor.responses.set(
+        "gh api graphql",
+        JSON.stringify({
+          errors: [
+            { message: "Validation failed" },
+            { message: "Branch not found" },
+          ],
+        })
+      );
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Test",
+        fileChanges: [{ path: "test.txt", content: "content" }],
+        workDir: testDir,
+      };
+
+      await assert.rejects(
+        () => strategy.commit(options),
+        /GraphQL error.*Validation failed.*Branch not found/,
+        "Should throw error with all GraphQL error messages"
+      );
+    });
+
+    test("throws error when GraphQL response missing commit OID", async () => {
+      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      mockExecutor.responses.set(
+        "gh api graphql",
+        JSON.stringify({
+          data: {
+            createCommitOnBranch: {
+              commit: null, // Missing OID
+            },
+          },
+        })
+      );
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Test",
+        fileChanges: [{ path: "test.txt", content: "content" }],
+        workDir: testDir,
+      };
+
+      await assert.rejects(
+        () => strategy.commit(options),
+        /missing commit OID/i,
+        "Should throw error when OID is missing"
       );
     });
   });

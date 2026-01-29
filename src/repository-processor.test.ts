@@ -2566,6 +2566,76 @@ describe("RepositoryProcessor", () => {
         }
       }
     });
+
+    test("direct mode with CommitStrategy should return helpful error on branch protection", async () => {
+      // Save original env value
+      const originalToken = process.env.GH_INSTALLATION_TOKEN;
+
+      try {
+        // Set GH_INSTALLATION_TOKEN to trigger GraphQL strategy
+        process.env.GH_INSTALLATION_TOKEN = "test-installation-token";
+
+        const mockLogger = createMockLogger();
+        let mockGitOps: MockGitOpsForCommitStrategy | null = null;
+
+        const mockFactory: GitOpsFactory = (opts) => {
+          mockGitOps = new MockGitOpsForCommitStrategy(opts);
+          mockGitOps.gitChangedFilesOverride = ["config.json"];
+          return mockGitOps;
+        };
+
+        // Mock executor that fails on GraphQL commit with branch protection error
+        const mockExecutor: CommandExecutor = {
+          async exec(command: string): Promise<string> {
+            if (command.includes("gh api graphql")) {
+              throw new Error("Push rejected: protected branch");
+            }
+            if (command.includes("git rev-parse HEAD")) {
+              return "deadbeef1234567890";
+            }
+            return "";
+          },
+        };
+
+        const processor = new RepositoryProcessor(mockFactory, mockLogger);
+        const localWorkDir = join(
+          testDir,
+          `commit-strategy-protection-${Date.now()}`
+        );
+
+        const repoConfig: RepoConfig = {
+          git: "git@github.com:test/repo.git",
+          files: [{ fileName: "config.json", content: { key: "value" } }],
+          prOptions: { merge: "direct" },
+        };
+
+        const result = await processor.process(repoConfig, mockRepoInfo, {
+          branchName: "chore/sync-config",
+          workDir: localWorkDir,
+          configId: "test-config",
+          dryRun: false,
+          executor: mockExecutor,
+        });
+
+        assert.equal(result.success, false, "Should fail");
+        assert.ok(
+          result.message.includes("rejected") ||
+            result.message.includes("protected"),
+          "Message should mention rejection or protection"
+        );
+        assert.ok(
+          result.message.includes("merge: force"),
+          "Message should suggest using force mode"
+        );
+      } finally {
+        // Restore original env value
+        if (originalToken === undefined) {
+          delete process.env.GH_INSTALLATION_TOKEN;
+        } else {
+          process.env.GH_INSTALLATION_TOKEN = originalToken;
+        }
+      }
+    });
   });
 
   describe("diffStats in non-dry-run mode (issue #252)", () => {
