@@ -14,10 +14,15 @@ const testDir = join(process.cwd(), "test-cli-tmp");
 const testConfigPath = join(testDir, "test-config.yaml");
 
 // Helper to run CLI and capture output
+// By default, unsets GITHUB_STEP_SUMMARY to prevent tests from writing to CI job summary
 function runCLI(
   args: string[],
-  options?: { timeout?: number; env?: Record<string, string> }
+  options?: { timeout?: number; env?: Record<string, string | undefined> }
 ): { stdout: string; stderr: string; success: boolean } {
+  // Create env with GITHUB_STEP_SUMMARY unset by default
+  const { GITHUB_STEP_SUMMARY: _, ...envWithoutSummary } = process.env;
+  const testEnv = { ...envWithoutSummary, ...options?.env };
+
   try {
     const stdout = execFileSync(
       "node",
@@ -26,7 +31,7 @@ function runCLI(
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
         timeout: options?.timeout ?? 10000,
-        env: { ...process.env, ...options?.env },
+        env: testEnv,
       }
     );
     return { stdout, stderr: "", success: true };
