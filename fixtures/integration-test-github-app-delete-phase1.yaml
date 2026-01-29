@@ -19,4 +19,4 @@ files:
       phase: 1
 
 repos:
-  - git: git@github.com:anthony-spruyt/xfg-test.git
+  - git: https://github.com/anthony-spruyt/xfg-test.git

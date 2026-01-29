@@ -203,12 +203,12 @@ jobs:
         run: npm run test:integration:gitlab
 
   integration-test-github-app:
-    needs: [build, security]
+    needs: [build, security, integration-test-github]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-github-app
+      group: integration-github
       cancel-in-progress: false
 
     steps:
