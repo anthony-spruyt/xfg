@@ -9,9 +9,23 @@
 
 ## Authentication
 
+### Personal Access Token (PAT)
+
+The default authentication method:
+
 ```bash
 gh auth login
 ```
+
+Your token needs the `repo` scope to create PRs in target repositories.
+
+### GitHub App (Recommended for Enterprise)
+
+For organizations that prefer GitHub Apps over PATs, see [GitHub App Authentication](./github-app.md) for:
+
+- Verified commits (signed by GitHub)
+- Fine-grained permissions
+- Better audit trails
 
 ## GitHub Enterprise Server
 

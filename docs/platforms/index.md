@@ -13,5 +13,6 @@ xfg supports GitHub, Azure DevOps, and GitLab (including self-hosted instances).
 ## Platform-Specific Details
 
 - [GitHub](github.md) - SSH and HTTPS URL formats
+- [GitHub App Authentication](github-app.md) - Verified commits for enterprise
 - [Azure DevOps](azure-devops.md) - SSH and HTTPS URL formats
 - [GitLab](gitlab.md) - SSH, HTTPS, nested groups, and self-hosted instances

@@ -69,6 +69,32 @@ Push directly to the default branch without creating PRs:
     merge: direct
 ```
 
+### GitHub App Authentication (Verified Commits)
+
+For verified commits and better enterprise compliance, use a GitHub App instead of a PAT:
+
+```yaml
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - uses: anthony-spruyt/xfg@v1
+        with:
+          config: ./sync-config.yml
+        env:
+          GH_INSTALLATION_TOKEN: ${{ steps.app-token.outputs.token }}
+```
+
+See [GitHub App Authentication](../platforms/github-app.md) for full setup instructions.
+
 ### Token Requirements by Platform
 
 **GitHub:**
