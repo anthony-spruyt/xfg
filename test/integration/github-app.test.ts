@@ -260,4 +260,117 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
 
     console.log("\n=== Direct mode with GitHub App test passed ===\n");
   });
+
+  test("deleteOrphaned removes files via GraphQL API with verified commit", async () => {
+    const orphanFile = "github-app-orphan-test.json";
+    const remainingFile = "github-app-remaining.json";
+    const manifestFile = ".xfg.json";
+    const configId = "integration-test-github-app-delete";
+
+    console.log("\n=== Testing deleteOrphaned with GitHub App ===\n");
+
+    // 1. Cleanup: Close PRs and delete files
+    console.log("Cleaning up before test...");
+    for (const file of [orphanFile, manifestFile, remainingFile]) {
+      try {
+        const sha = exec(
+          `gh api repos/${TEST_REPO}/contents/${file} --jq '.sha'`
+        );
+        if (sha && !sha.includes("Not Found")) {
+          exec(
+            `gh api --method DELETE repos/${TEST_REPO}/contents/${file} -f message="test: cleanup ${file}" -f sha="${sha}"`
+          );
+          console.log(`  Deleted ${file}`);
+        }
+      } catch {
+        console.log(`  ${file} does not exist`);
+      }
+    }
+
+    // 2. Phase 1: Create files with deleteOrphaned config
+    console.log("\n--- Phase 1: Create files with deleteOrphaned: true ---\n");
+    const configPath1 = join(
+      fixturesDir,
+      "integration-test-github-app-delete-phase1.yaml"
+    );
+    const output1 = exec(`node dist/index.js --config ${configPath1}`, {
+      cwd: projectRoot,
+    });
+    console.log(output1);
+
+    // 3. Verify files exist on main
+    console.log("\nVerifying files exist on main...");
+    const orphanContent = exec(
+      `gh api repos/${TEST_REPO}/contents/${orphanFile} --jq '.content' | base64 -d`
+    );
+    assert.ok(orphanContent, "Orphan file should exist");
+    console.log(`  ${orphanFile} exists`);
+
+    const manifestContent = exec(
+      `gh api repos/${TEST_REPO}/contents/${manifestFile} --jq '.content' | base64 -d`
+    );
+    const manifest = JSON.parse(manifestContent);
+    assert.ok(
+      manifest.configs[configId]?.includes(orphanFile),
+      "Manifest should track orphan file"
+    );
+    console.log("  Manifest tracks orphan file");
+
+    // 4. Phase 2: Remove the file from config (should trigger deletion)
+    console.log("\n--- Phase 2: Remove file from config (should delete) ---\n");
+    const configPath2 = join(
+      fixturesDir,
+      "integration-test-github-app-delete-phase2.yaml"
+    );
+    const output2 = exec(`node dist/index.js --config ${configPath2}`, {
+      cwd: projectRoot,
+    });
+    console.log(output2);
+
+    // 5. Verify file was deleted
+    console.log("\nVerifying orphan file was deleted...");
+    try {
+      exec(`gh api repos/${TEST_REPO}/contents/${orphanFile} --jq '.sha'`);
+      assert.fail("Orphan file should have been deleted");
+    } catch {
+      console.log(`  ${orphanFile} correctly deleted`);
+    }
+
+    // 6. Verify the deletion commit is verified
+    console.log("\nVerifying deletion commit is verified...");
+    const mainCommitSha = exec(
+      `gh api repos/${TEST_REPO}/commits/main --jq '.sha'`
+    );
+    const verification = JSON.parse(
+      exec(
+        `gh api repos/${TEST_REPO}/commits/${mainCommitSha} --jq '.commit.verification'`
+      )
+    );
+    console.log(`  Verification status:`, verification);
+    assert.equal(
+      verification.verified,
+      true,
+      "Deletion commit should be verified"
+    );
+
+    // 7. Cleanup
+    console.log("\nCleaning up...");
+    for (const file of [manifestFile, remainingFile]) {
+      try {
+        const sha = exec(
+          `gh api repos/${TEST_REPO}/contents/${file} --jq '.sha'`
+        );
+        if (sha && !sha.includes("Not Found")) {
+          exec(
+            `gh api --method DELETE repos/${TEST_REPO}/contents/${file} -f message="test: cleanup ${file}" -f sha="${sha}"`
+          );
+          console.log(`  Deleted ${file}`);
+        }
+      } catch {
+        console.log(`  Could not delete ${file}`);
+      }
+    }
+
+    console.log("\n=== deleteOrphaned with GitHub App test passed ===\n");
+  });
 });

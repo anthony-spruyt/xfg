@@ -1,0 +1,19 @@
+# Phase 2: Remove one file from config (should trigger deletion)
+# Uses GitHub App for verified commits
+
+id: integration-test-github-app-delete
+
+prOptions:
+  merge: direct
+  deleteOrphaned: true
+
+files:
+  # github-app-orphan-test.json removed - should be deleted
+
+  github-app-remaining.json:
+    content:
+      willRemain: true
+      phase: 2
+
+repos:
+  - git: git@github.com:anthony-spruyt/xfg-test.git

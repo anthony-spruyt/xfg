@@ -1,0 +1,22 @@
+# Phase 1: Create files with deleteOrphaned enabled
+# Uses GitHub App for verified commits
+
+id: integration-test-github-app-delete
+
+prOptions:
+  merge: direct
+  deleteOrphaned: true
+
+files:
+  github-app-orphan-test.json:
+    content:
+      willBeDeleted: true
+      phase: 1
+
+  github-app-remaining.json:
+    content:
+      willRemain: true
+      phase: 1
+
+repos:
+  - git: git@github.com:anthony-spruyt/xfg-test.git
