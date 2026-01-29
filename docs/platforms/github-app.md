@@ -49,8 +49,9 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - uses: your-org/xfg-action@v2
-        env:
-          GH_INSTALLATION_TOKEN: ${{ steps.app-token.outputs.token }}
+        with:
+          config: sync-config.yaml
+          github-app-token: ${{ steps.app-token.outputs.token }}
 ```
 
 ## How It Works

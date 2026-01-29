@@ -45,6 +45,9 @@ inputs:
   gitlab-token:
     description: "GitLab token for authentication"
     required: false
+  github-app-token:
+    description: "GitHub App installation token for verified commits (overrides github-token for GitHub repos)"
+    required: false
 
 runs:
   using: "composite"
@@ -70,6 +73,7 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
+        GITHUB_APP_TOKEN: ${{ inputs.github-app-token }}
         AZURE_DEVOPS_TOKEN: ${{ inputs.azure-devops-token }}
         GITLAB_TOKEN: ${{ inputs.gitlab-token }}
       run: |
@@ -82,7 +86,10 @@ runs:
         fi
 
         # GitHub - URL rewrite for authentication
-        if [ -n "${GITHUB_TOKEN}" ]; then
+        # GitHub App token takes precedence over PAT
+        if [ -n "${GITHUB_APP_TOKEN}" ]; then
+          git config --global url."https://x-access-token:${GITHUB_APP_TOKEN}@github.com/".insteadOf "https://github.com/"
+        elif [ -n "${GITHUB_TOKEN}" ]; then
           git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
         fi
 
@@ -106,6 +113,7 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
+        GH_INSTALLATION_TOKEN: ${{ inputs.github-app-token }}
         AZURE_DEVOPS_EXT_PAT: ${{ inputs.azure-devops-token }}
         GITLAB_TOKEN: ${{ inputs.gitlab-token }}
       run: |

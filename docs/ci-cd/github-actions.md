@@ -15,19 +15,20 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 
 ### Action Inputs
 
-| Input                | Required | Default               | Description                                                |
-| -------------------- | -------- | --------------------- | ---------------------------------------------------------- |
-| `config`             | Yes      | -                     | Path to YAML config file                                   |
-| `dry-run`            | No       | `false`               | Preview mode - show what would change without creating PRs |
-| `work-dir`           | No       | `./tmp`               | Directory for cloning repositories                         |
-| `retries`            | No       | `3`                   | Number of network retries                                  |
-| `branch`             | No       | -                     | Override sync branch name                                  |
-| `merge`              | No       | -                     | PR merge mode (`manual`/`auto`/`force`/`direct`)           |
-| `merge-strategy`     | No       | -                     | Merge strategy (`merge`/`squash`/`rebase`)                 |
-| `delete-branch`      | No       | `false`               | Delete branch after merge                                  |
-| `github-token`       | No       | `${{ github.token }}` | GitHub token for authentication                            |
-| `azure-devops-token` | No       | -                     | Azure DevOps Personal Access Token                         |
-| `gitlab-token`       | No       | -                     | GitLab token for authentication                            |
+| Input                | Required | Default               | Description                                                                   |
+| -------------------- | -------- | --------------------- | ----------------------------------------------------------------------------- |
+| `config`             | Yes      | -                     | Path to YAML config file                                                      |
+| `dry-run`            | No       | `false`               | Preview mode - show what would change without creating PRs                    |
+| `work-dir`           | No       | `./tmp`               | Directory for cloning repositories                                            |
+| `retries`            | No       | `3`                   | Number of network retries                                                     |
+| `branch`             | No       | -                     | Override sync branch name                                                     |
+| `merge`              | No       | -                     | PR merge mode (`manual`/`auto`/`force`/`direct`)                              |
+| `merge-strategy`     | No       | -                     | Merge strategy (`merge`/`squash`/`rebase`)                                    |
+| `delete-branch`      | No       | `false`               | Delete branch after merge                                                     |
+| `github-token`       | No       | `${{ github.token }}` | GitHub token for authentication                                               |
+| `github-app-token`   | No       | -                     | GitHub App installation token for verified commits (overrides `github-token`) |
+| `azure-devops-token` | No       | -                     | Azure DevOps Personal Access Token                                            |
+| `gitlab-token`       | No       | -                     | GitLab token for authentication                                               |
 
 ### Multi-Platform Example
 
@@ -89,8 +90,7 @@ jobs:
       - uses: anthony-spruyt/xfg@v1
         with:
           config: ./sync-config.yml
-        env:
-          GH_INSTALLATION_TOKEN: ${{ steps.app-token.outputs.token }}
+          github-app-token: ${{ steps.app-token.outputs.token }}
 ```
 
 See [GitHub App Authentication](../platforms/github-app.md) for full setup instructions.

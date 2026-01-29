@@ -22,7 +22,7 @@ Add optional GitHub App support for GitHub repositories, enabling enterprise use
 
 ## Authentication Flow
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │ GitHub Actions Workflow                                 │
 ├─────────────────────────────────────────────────────────┤
