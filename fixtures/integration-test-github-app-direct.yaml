@@ -1,0 +1,17 @@
+# Integration test config for GitHub App verified commits with direct mode
+# Uses GH_INSTALLATION_TOKEN for GraphQL commit API
+# Pushes directly to main without creating a PR
+
+prOptions:
+  branch: chore/sync-github-app-direct
+  merge: direct
+
+files:
+  github-app-direct-test.json:
+    content:
+      directMode: true
+      createdWith: "GitHub App"
+      verifiedCommit: true
+
+repos:
+  - git: git@github.com:anthony-spruyt/xfg-test.git

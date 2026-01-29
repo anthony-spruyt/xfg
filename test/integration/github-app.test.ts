@@ -1,0 +1,263 @@
+import { test, describe, before } from "node:test";
+import { strict as assert } from "node:assert";
+import { execSync } from "node:child_process";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { rmSync, existsSync } from "node:fs";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const projectRoot = join(__dirname, "../..");
+const fixturesDir = join(projectRoot, "fixtures");
+
+const TEST_REPO = "anthony-spruyt/xfg-test";
+const TARGET_FILE = "github-app-test.json";
+const BRANCH_NAME = "chore/sync-github-app-test";
+
+// Skip all tests if GH_INSTALLATION_TOKEN is not set
+const SKIP_TESTS = !process.env.GH_INSTALLATION_TOKEN;
+
+if (SKIP_TESTS) {
+  console.log(
+    "\n⚠️  Skipping GitHub App integration tests: GH_INSTALLATION_TOKEN not set\n"
+  );
+}
+
+// This exec helper is only used in integration tests with hardcoded commands.
+// The commands are controlled and not derived from external/user input.
+// This matches the pattern used in github.test.ts lines 19-35.
+function exec(command: string, options?: { cwd?: string }): string {
+  try {
+    return execSync(command, {
+      // codeql-disable-next-line js/shell-command-injection-from-environment
+      cwd: options?.cwd ?? projectRoot,
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trim();
+  } catch (error) {
+    const err = error as { stderr?: string; stdout?: string };
+    console.error("Command failed:", command);
+    console.error("stderr:", err.stderr);
+    console.error("stdout:", err.stdout);
+    throw error;
+  }
+}
+
+describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
+  before(() => {
+    console.log("\n=== Setting up GitHub App integration test ===\n");
+
+    // 1. Close any existing PRs from the sync branch
+    console.log("Closing any existing PRs...");
+    try {
+      const existingPRs = exec(
+        `gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number --jq '.[].number'`
+      );
+      if (existingPRs) {
+        for (const prNumber of existingPRs.split("\n").filter(Boolean)) {
+          console.log(`  Closing PR #${prNumber}`);
+          exec(`gh pr close ${prNumber} --repo ${TEST_REPO} --delete-branch`);
+        }
+      } else {
+        console.log("  No existing PRs found");
+      }
+    } catch {
+      console.log("  No existing PRs to close");
+    }
+
+    // 2. Delete the target file if it exists in the default branch
+    console.log(`Checking if ${TARGET_FILE} exists in repo...`);
+    try {
+      const fileExists = exec(
+        `gh api repos/${TEST_REPO}/contents/${TARGET_FILE} --jq '.sha' 2>/dev/null || echo ""`
+      );
+      if (fileExists) {
+        console.log(`  Deleting ${TARGET_FILE} from repo...`);
+        exec(
+          `gh api --method DELETE repos/${TEST_REPO}/contents/${TARGET_FILE} -f message="test: remove ${TARGET_FILE} for integration test" -f sha="${fileExists}"`
+        );
+        console.log("  File deleted");
+      } else {
+        console.log("  File does not exist");
+      }
+    } catch {
+      console.log("  File does not exist or already deleted");
+    }
+
+    // 3. Delete the remote branch if it exists
+    console.log(`Deleting remote branch ${BRANCH_NAME} if exists...`);
+    try {
+      exec(
+        `gh api --method DELETE repos/${TEST_REPO}/git/refs/heads/${BRANCH_NAME}`
+      );
+      console.log("  Branch deleted");
+    } catch {
+      console.log("  Branch does not exist");
+    }
+
+    // 4. Clean up local tmp directory
+    const tmpDir = join(projectRoot, "tmp");
+    if (existsSync(tmpDir)) {
+      console.log("Cleaning up tmp directory...");
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+
+    console.log("\n=== Setup complete ===\n");
+  });
+
+  test("creates verified commit via GraphQL API when GH_INSTALLATION_TOKEN is set", async () => {
+    const configPath = join(fixturesDir, "integration-test-github-app.yaml");
+
+    // Run the sync tool with GH_INSTALLATION_TOKEN
+    console.log("Running xfg with GitHub App token...");
+    const output = exec(`node dist/index.js --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    // Verify PR was created
+    console.log("\nVerifying PR was created...");
+    const prList = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number,title,url --jq '.[0]'`
+    );
+
+    assert.ok(prList, "Expected a PR to be created");
+
+    const pr = JSON.parse(prList);
+    console.log(`  PR #${pr.number}: ${pr.title}`);
+    console.log(`  URL: ${pr.url}`);
+
+    assert.ok(pr.number, "PR should have a number");
+
+    // Get the commit SHA from the PR branch
+    console.log("\nGetting commit info from PR branch...");
+    const commitSha = exec(
+      `gh api repos/${TEST_REPO}/commits/${BRANCH_NAME} --jq '.sha'`
+    );
+    console.log(`  Commit SHA: ${commitSha}`);
+
+    // Verify the commit is verified (signed by GitHub App)
+    console.log("\nVerifying commit is verified...");
+    const commitVerification = exec(
+      `gh api repos/${TEST_REPO}/commits/${commitSha} --jq '.commit.verification'`
+    );
+    const verification = JSON.parse(commitVerification);
+    console.log(`  Verification status:`, verification);
+
+    assert.equal(
+      verification.verified,
+      true,
+      "Commit should be verified (signed by GitHub)"
+    );
+
+    // Check the verification reason
+    console.log(`  Verification reason: ${verification.reason}`);
+
+    // Verify the file exists in the PR branch
+    console.log("\nVerifying file exists in PR branch...");
+    const fileContent = exec(
+      `gh api repos/${TEST_REPO}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
+    );
+
+    assert.ok(fileContent, "File should exist in PR branch");
+
+    const json = JSON.parse(fileContent);
+    console.log("  File content:", JSON.stringify(json, null, 2));
+
+    assert.equal(
+      json.githubAppTest,
+      true,
+      "File should have githubAppTest: true"
+    );
+
+    console.log("\n=== GitHub App integration test passed ===\n");
+  });
+
+  test("direct mode with GitHub App creates verified commit on main", async () => {
+    const directFile = "github-app-direct-test.json";
+
+    console.log("\n=== Testing direct mode with GitHub App ===\n");
+
+    // 1. Delete the direct test file if it exists
+    console.log(`Deleting ${directFile} if exists...`);
+    try {
+      const sha = exec(
+        `gh api repos/${TEST_REPO}/contents/${directFile} --jq '.sha'`
+      );
+      if (sha && !sha.includes("Not Found")) {
+        exec(
+          `gh api --method DELETE repos/${TEST_REPO}/contents/${directFile} -f message="test: cleanup ${directFile}" -f sha="${sha}"`
+        );
+        console.log("  File deleted");
+      }
+    } catch {
+      console.log("  File does not exist");
+    }
+
+    // 2. Run sync with direct mode config
+    console.log("\nRunning xfg with direct mode + GitHub App...");
+    const configPath = join(
+      fixturesDir,
+      "integration-test-github-app-direct.yaml"
+    );
+    const output = exec(`node dist/index.js --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    // 3. Verify NO PR was created (direct mode)
+    console.log("\nVerifying no PR was created...");
+    try {
+      const prList = exec(
+        `gh pr list --repo ${TEST_REPO} --head chore/sync-github-app-direct --json number --jq '.[0].number'`
+      );
+      assert.ok(!prList, "No PR should be created in direct mode");
+    } catch {
+      console.log("  No PR found - correct for direct mode");
+    }
+
+    // 4. Verify the file exists on main
+    console.log("\nVerifying file exists on main branch...");
+    const fileContent = exec(
+      `gh api repos/${TEST_REPO}/contents/${directFile} --jq '.content' | base64 -d`
+    );
+
+    assert.ok(fileContent, "File should exist on main branch");
+    const json = JSON.parse(fileContent);
+    console.log("  File content:", JSON.stringify(json, null, 2));
+    assert.equal(json.directMode, true, "File should have directMode: true");
+
+    // 5. Get the most recent commit on main and verify it's verified
+    console.log("\nVerifying commit on main is verified...");
+    const mainCommitSha = exec(
+      `gh api repos/${TEST_REPO}/commits/main --jq '.sha'`
+    );
+    const mainCommitVerification = exec(
+      `gh api repos/${TEST_REPO}/commits/${mainCommitSha} --jq '.commit.verification'`
+    );
+    const verification = JSON.parse(mainCommitVerification);
+    console.log(`  Verification status:`, verification);
+
+    assert.equal(
+      verification.verified,
+      true,
+      "Direct mode commit should be verified"
+    );
+
+    // 6. Cleanup
+    console.log("\nCleaning up...");
+    try {
+      const sha = exec(
+        `gh api repos/${TEST_REPO}/contents/${directFile} --jq '.sha'`
+      );
+      exec(
+        `gh api --method DELETE repos/${TEST_REPO}/contents/${directFile} -f message="test: cleanup ${directFile}" -f sha="${sha}"`
+      );
+      console.log("  File deleted");
+    } catch {
+      console.log("  Could not delete file");
+    }
+
+    console.log("\n=== Direct mode with GitHub App test passed ===\n");
+  });
+});

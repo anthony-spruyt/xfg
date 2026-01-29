@@ -1,0 +1,17 @@
+# Integration test config for GitHub App verified commits
+# Uses GH_INSTALLATION_TOKEN for GraphQL commit API
+
+prOptions:
+  branch: chore/sync-github-app-test
+  title: "chore: sync github-app-test.json"
+  merge: manual
+
+files:
+  github-app-test.json:
+    content:
+      githubAppTest: true
+      createdWith: "GitHub App"
+      verifiedCommit: true
+
+repos:
+  - git: git@github.com:anthony-spruyt/xfg-test.git
