@@ -21,6 +21,51 @@ function createMockExecutor(): CommandExecutor {
   };
 }
 
+// Mock executor that tracks commit messages for tests verifying commit behavior
+function createTrackingMockExecutor(): CommandExecutor & {
+  lastCommitMessage: string | null;
+  pushBranch: string | null;
+  pushForce: boolean | undefined;
+} {
+  const tracker = {
+    lastCommitMessage: null as string | null,
+    pushBranch: null as string | null,
+    pushForce: undefined as boolean | undefined,
+    async exec(command: string): Promise<string> {
+      // Track commit message from git commit command
+      if (command.includes("git commit")) {
+        const match = command.match(/-m ['"](.+)['"]/);
+        if (match) {
+          tracker.lastCommitMessage = match[1];
+        } else {
+          // Handle shell escaping - look for -m followed by escaped content
+          const msgMatch = command.match(/-m \$'([^']+)'/);
+          if (msgMatch) {
+            tracker.lastCommitMessage = msgMatch[1].replace(/\\'/g, "'");
+          }
+        }
+      }
+      // Track push branch and force flag
+      if (command.includes("git push")) {
+        tracker.pushForce = command.includes("--force-with-lease");
+        // Branch name may be shell-escaped with single quotes
+        const branchMatch = command.match(
+          /git push.*origin\s+'?([^'\s]+)'?(?:\s|$)/
+        );
+        if (branchMatch) {
+          tracker.pushBranch = branchMatch[1];
+        }
+      }
+      // Return HEAD SHA for commit strategy
+      if (command.includes("git rev-parse HEAD")) {
+        return "abc123def456";
+      }
+      return "";
+    },
+  };
+  return tracker;
+}
+
 describe("RepositoryProcessor", () => {
   let workDir: string;
   let processor: RepositoryProcessor;
@@ -297,14 +342,14 @@ describe("RepositoryProcessor", () => {
     test("should skip when commit returns false (no staged changes after git add)", async () => {
       const mockLogger = createMockLogger();
 
-      // Extend MockGitOps to return false from commit
+      // Extend MockGitOps to return false from hasStagedChanges
       class MockGitOpsNoStagedChanges extends MockGitOps {
         override async getChangedFiles(): Promise<string[]> {
           // Report that files changed (so we proceed to commit step)
           return ["config.json"];
         }
 
-        override async commit(_message: string): Promise<boolean> {
+        override async hasStagedChanges(): Promise<boolean> {
           // Return false to indicate no staged changes after git add -A
           return false;
         }
@@ -756,15 +801,14 @@ describe("RepositoryProcessor", () => {
 
     test("direct mode should push to default branch", async () => {
       const mockLogger = createMockLogger();
-      let mockGitOps: MockGitOpsForDirectMode | null = null;
 
       const mockFactory: GitOpsFactory = (opts) => {
-        mockGitOps = new MockGitOpsForDirectMode(opts);
-        return mockGitOps;
+        return new MockGitOpsForDirectMode(opts);
       };
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `direct-mode-push-${Date.now()}`);
+      const trackingExecutor = createTrackingMockExecutor();
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -777,11 +821,11 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: createMockExecutor(),
+        executor: trackingExecutor,
       });
 
       assert.equal(
-        mockGitOps!.pushBranch,
+        trackingExecutor.pushBranch,
         "main",
         "Should push to default branch (main)"
       );
@@ -795,12 +839,9 @@ describe("RepositoryProcessor", () => {
 
     test("direct mode should return helpful error on branch protection", async () => {
       const mockLogger = createMockLogger();
-      let mockGitOps: MockGitOpsForDirectMode | null = null;
 
       const mockFactory: GitOpsFactory = (opts) => {
-        mockGitOps = new MockGitOpsForDirectMode(opts);
-        mockGitOps.shouldRejectPush = true;
-        return mockGitOps;
+        return new MockGitOpsForDirectMode(opts);
       };
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
@@ -808,6 +849,19 @@ describe("RepositoryProcessor", () => {
         testDir,
         `direct-mode-protection-${Date.now()}`
       );
+
+      // Create executor that rejects push commands
+      const rejectingExecutor: CommandExecutor = {
+        async exec(command: string): Promise<string> {
+          if (command.includes("git push")) {
+            throw new Error("Push rejected (branch protection)");
+          }
+          if (command.includes("git rev-parse HEAD")) {
+            return "abc123";
+          }
+          return "";
+        },
+      };
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -820,7 +874,7 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: createMockExecutor(),
+        executor: rejectingExecutor,
       });
 
       assert.equal(result.success, false, "Should fail");
@@ -875,15 +929,14 @@ describe("RepositoryProcessor", () => {
 
     test("direct mode should use force: false for push (issue #183)", async () => {
       const mockLogger = createMockLogger();
-      let mockGitOps: MockGitOpsForDirectMode | null = null;
 
       const mockFactory: GitOpsFactory = (opts) => {
-        mockGitOps = new MockGitOpsForDirectMode(opts);
-        return mockGitOps;
+        return new MockGitOpsForDirectMode(opts);
       };
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `direct-mode-force-${Date.now()}`);
+      const trackingExecutor = createTrackingMockExecutor();
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -896,11 +949,11 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: createMockExecutor(),
+        executor: trackingExecutor,
       });
 
       assert.equal(
-        mockGitOps!.pushForce,
+        trackingExecutor.pushForce,
         false,
         "Direct mode should use force: false (never force push to default branch)"
       );
@@ -908,15 +961,14 @@ describe("RepositoryProcessor", () => {
 
     test("PR mode should use force: true for push (issue #183)", async () => {
       const mockLogger = createMockLogger();
-      let mockGitOps: MockGitOpsForDirectMode | null = null;
 
       const mockFactory: GitOpsFactory = (opts) => {
-        mockGitOps = new MockGitOpsForDirectMode(opts);
-        return mockGitOps;
+        return new MockGitOpsForDirectMode(opts);
       };
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `pr-mode-force-${Date.now()}`);
+      const trackingExecutor = createTrackingMockExecutor();
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -929,11 +981,11 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: createMockExecutor(),
+        executor: trackingExecutor,
       });
 
       assert.equal(
-        mockGitOps!.pushForce,
+        trackingExecutor.pushForce,
         true,
         "PR mode should use force: true (--force-with-lease for sync branch)"
       );
@@ -1487,15 +1539,14 @@ describe("RepositoryProcessor", () => {
 
     test("should format commit message for 2-3 files with file names", async () => {
       const mockLogger = createMockLogger();
-      let mockGitOps: MockGitOpsForCommit | null = null;
 
       const mockFactory: GitOpsFactory = (opts) => {
-        mockGitOps = new MockGitOpsForCommit(opts);
-        return mockGitOps;
+        return new MockGitOpsForCommit(opts);
       };
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `commit-msg-23-${Date.now()}`);
+      const trackingExecutor = createTrackingMockExecutor();
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -1511,16 +1562,19 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: createMockExecutor(),
+        executor: trackingExecutor,
       });
 
-      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
       assert.ok(
-        mockGitOps!.lastCommitMessage.includes("config1.json"),
+        trackingExecutor.lastCommitMessage,
+        "Should have commit message"
+      );
+      assert.ok(
+        trackingExecutor.lastCommitMessage.includes("config1.json"),
         "Should include first file name"
       );
       assert.ok(
-        mockGitOps!.lastCommitMessage.includes("config2.json"),
+        trackingExecutor.lastCommitMessage.includes("config2.json"),
         "Should include second file name"
       );
     });
@@ -1543,6 +1597,7 @@ describe("RepositoryProcessor", () => {
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `commit-msg-many-${Date.now()}`);
+      const trackingExecutor = createTrackingMockExecutor();
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -1559,13 +1614,16 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: createMockExecutor(),
+        executor: trackingExecutor,
       });
 
-      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
       assert.ok(
-        mockGitOps!.lastCommitMessage.includes("4 config files"),
-        `Should show file count, got: ${mockGitOps!.lastCommitMessage}`
+        trackingExecutor.lastCommitMessage,
+        "Should have commit message"
+      );
+      assert.ok(
+        trackingExecutor.lastCommitMessage.includes("4 config files"),
+        `Should show file count, got: ${trackingExecutor.lastCommitMessage}`
       );
     });
   });
@@ -1930,6 +1988,7 @@ describe("RepositoryProcessor", () => {
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `track-delete-${Date.now()}`);
+      const trackingExecutor = createTrackingMockExecutor();
 
       // Create manifest file
       mkdirSync(localWorkDir, { recursive: true });
@@ -1957,7 +2016,7 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: createMockExecutor(),
+        executor: trackingExecutor,
       });
 
       // orphaned.json should have been deleted
@@ -1967,8 +2026,8 @@ describe("RepositoryProcessor", () => {
       );
       // Commit message should include the deleted file
       assert.ok(
-        mockGitOps!.lastCommitMessage?.includes("orphaned.json"),
-        `Commit message should include deleted file, got: ${mockGitOps!.lastCommitMessage}`
+        trackingExecutor.lastCommitMessage?.includes("orphaned.json"),
+        `Commit message should include deleted file, got: ${trackingExecutor.lastCommitMessage}`
       );
     });
   });
@@ -2073,6 +2132,7 @@ describe("RepositoryProcessor", () => {
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `file-count-manifest-${Date.now()}`);
+      const trackingExecutor = createTrackingMockExecutor();
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -2090,20 +2150,24 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: createMockExecutor(),
+        executor: trackingExecutor,
       });
 
       // Commit message should mention 2 files (config.json and .xfg.json)
-      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
+      assert.ok(
+        trackingExecutor.lastCommitMessage,
+        "Should have commit message"
+      );
       // Either lists both files or says "2 config files"
       const hasConfigJson =
-        mockGitOps!.lastCommitMessage.includes("config.json");
-      const hasXfgJson = mockGitOps!.lastCommitMessage.includes(".xfg.json");
+        trackingExecutor.lastCommitMessage.includes("config.json");
+      const hasXfgJson =
+        trackingExecutor.lastCommitMessage.includes(".xfg.json");
       const hasTwoFiles =
-        mockGitOps!.lastCommitMessage.includes("2 config files");
+        trackingExecutor.lastCommitMessage.includes("2 config files");
       assert.ok(
         (hasConfigJson && hasXfgJson) || hasTwoFiles,
-        `Commit message should include both files or show '2 config files', got: ${mockGitOps!.lastCommitMessage}`
+        `Commit message should include both files or show '2 config files', got: ${trackingExecutor.lastCommitMessage}`
       );
     });
 
@@ -2121,6 +2185,7 @@ describe("RepositoryProcessor", () => {
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `file-count-extra-${Date.now()}`);
+      const trackingExecutor = createTrackingMockExecutor();
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -2137,20 +2202,23 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: createMockExecutor(),
+        executor: trackingExecutor,
       });
 
       // Commit message should mention 2 files
-      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
+      assert.ok(
+        trackingExecutor.lastCommitMessage,
+        "Should have commit message"
+      );
       const hasConfigJson =
-        mockGitOps!.lastCommitMessage.includes("config.json");
+        trackingExecutor.lastCommitMessage.includes("config.json");
       const hasExtraFile =
-        mockGitOps!.lastCommitMessage.includes("extra-file.json");
+        trackingExecutor.lastCommitMessage.includes("extra-file.json");
       const hasTwoFiles =
-        mockGitOps!.lastCommitMessage.includes("2 config files");
+        trackingExecutor.lastCommitMessage.includes("2 config files");
       assert.ok(
         (hasConfigJson && hasExtraFile) || hasTwoFiles,
-        `Commit message should include both files or show '2 config files', got: ${mockGitOps!.lastCommitMessage}`
+        `Commit message should include both files or show '2 config files', got: ${trackingExecutor.lastCommitMessage}`
       );
     });
 
@@ -2170,6 +2238,7 @@ describe("RepositoryProcessor", () => {
         testDir,
         `file-count-skip-unchanged-${Date.now()}`
       );
+      const trackingExecutor = createTrackingMockExecutor();
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -2184,18 +2253,21 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: createMockExecutor(),
+        executor: trackingExecutor,
       });
 
       // Commit message should only mention config1.json
-      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
       assert.ok(
-        mockGitOps!.lastCommitMessage.includes("config1.json"),
+        trackingExecutor.lastCommitMessage,
+        "Should have commit message"
+      );
+      assert.ok(
+        trackingExecutor.lastCommitMessage.includes("config1.json"),
         "Should include config1.json"
       );
       assert.ok(
-        !mockGitOps!.lastCommitMessage.includes("config2.json"),
-        `Should not include config2.json, got: ${mockGitOps!.lastCommitMessage}`
+        !trackingExecutor.lastCommitMessage.includes("config2.json"),
+        `Should not include config2.json, got: ${trackingExecutor.lastCommitMessage}`
       );
     });
 
@@ -2218,6 +2290,7 @@ describe("RepositoryProcessor", () => {
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `file-count-no-double-${Date.now()}`);
+      const trackingExecutor = createTrackingMockExecutor();
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -2239,18 +2312,21 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: createMockExecutor(),
+        executor: trackingExecutor,
       });
 
       // Commit message should only mention actual.json, not skipped.json
-      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
       assert.ok(
-        mockGitOps!.lastCommitMessage.includes("actual.json"),
+        trackingExecutor.lastCommitMessage,
+        "Should have commit message"
+      );
+      assert.ok(
+        trackingExecutor.lastCommitMessage.includes("actual.json"),
         "Should include actual.json"
       );
       assert.ok(
-        !mockGitOps!.lastCommitMessage.includes("skipped.json"),
-        `Should not include skipped.json, got: ${mockGitOps!.lastCommitMessage}`
+        !trackingExecutor.lastCommitMessage.includes("skipped.json"),
+        `Should not include skipped.json, got: ${trackingExecutor.lastCommitMessage}`
       );
     });
 
@@ -2273,6 +2349,7 @@ describe("RepositoryProcessor", () => {
         testDir,
         `file-count-update-extra-${Date.now()}`
       );
+      const trackingExecutor = createTrackingMockExecutor();
 
       // Pre-create the extra file so it triggers "update" action
       mkdirSync(localWorkDir, { recursive: true });
@@ -2288,19 +2365,206 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: createMockExecutor(),
+        executor: trackingExecutor,
       });
 
       // Commit message should mention 2 files
-      assert.ok(mockGitOps!.lastCommitMessage, "Should have commit message");
+      assert.ok(
+        trackingExecutor.lastCommitMessage,
+        "Should have commit message"
+      );
       const hasTwoFiles =
-        mockGitOps!.lastCommitMessage.includes("2 config files") ||
-        (mockGitOps!.lastCommitMessage.includes("config.json") &&
-          mockGitOps!.lastCommitMessage.includes("existing-extra.json"));
+        trackingExecutor.lastCommitMessage.includes("2 config files") ||
+        (trackingExecutor.lastCommitMessage.includes("config.json") &&
+          trackingExecutor.lastCommitMessage.includes("existing-extra.json"));
       assert.ok(
         hasTwoFiles,
-        `Commit message should include both files, got: ${mockGitOps!.lastCommitMessage}`
+        `Commit message should include both files, got: ${trackingExecutor.lastCommitMessage}`
       );
+    });
+  });
+
+  describe("CommitStrategy integration", () => {
+    const createMockLogger = (): ILogger & { messages: string[] } => ({
+      messages: [] as string[],
+      info(message: string) {
+        this.messages.push(message);
+      },
+      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
+        // No-op for mock
+      },
+      diffSummary(
+        _newCount: number,
+        _modifiedCount: number,
+        _unchangedCount: number
+      ) {
+        // No-op for mock
+      },
+    });
+
+    class MockGitOpsForCommitStrategy extends GitOps {
+      gitChangedFilesOverride: string[] = [];
+
+      constructor(options: GitOpsOptions) {
+        super(options);
+      }
+
+      override cleanWorkspace(): void {
+        mkdirSync(this.getWorkDir(), { recursive: true });
+      }
+
+      override async clone(_gitUrl: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async getDefaultBranch(): Promise<{
+        branch: string;
+        method: string;
+      }> {
+        return { branch: "main", method: "mock" };
+      }
+
+      override async createBranch(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override writeFile(fileName: string, content: string): void {
+        const filePath = join(this.getWorkDir(), fileName);
+        mkdirSync(this.getWorkDir(), { recursive: true });
+        writeFileSync(filePath, content, "utf-8");
+      }
+
+      override async hasChanges(): Promise<boolean> {
+        return this.gitChangedFilesOverride.length > 0;
+      }
+
+      override async getChangedFiles(): Promise<string[]> {
+        return this.gitChangedFilesOverride;
+      }
+
+      override async fileExistsOnBranch(
+        _fileName: string,
+        _branch: string
+      ): Promise<boolean> {
+        return false;
+      }
+
+      // Note: commit and push are not called when using CommitStrategy
+      override async commit(_message: string): Promise<boolean> {
+        return true;
+      }
+
+      override async push(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async fetch(): Promise<void> {
+        // No-op for mock
+      }
+
+      private getWorkDir(): string {
+        return (this as unknown as { workDir: string }).workDir;
+      }
+    }
+
+    test("should use GraphQL commit strategy when GH_INSTALLATION_TOKEN is set", async () => {
+      // Save original env value
+      const originalToken = process.env.GH_INSTALLATION_TOKEN;
+
+      try {
+        // Set GH_INSTALLATION_TOKEN to trigger GraphQL strategy
+        process.env.GH_INSTALLATION_TOKEN = "test-installation-token";
+
+        const mockLogger = createMockLogger();
+        let mockGitOps: MockGitOpsForCommitStrategy | null = null;
+
+        const mockFactory: GitOpsFactory = (opts) => {
+          mockGitOps = new MockGitOpsForCommitStrategy(opts);
+          mockGitOps.gitChangedFilesOverride = ["config.json"];
+          return mockGitOps;
+        };
+
+        // Track executor calls to verify GraphQL vs git commit
+        const executorCalls: string[] = [];
+        const mockExecutor: CommandExecutor = {
+          async exec(command: string): Promise<string> {
+            executorCalls.push(command);
+
+            // Return mock responses for GraphQL call
+            if (command.includes("gh api graphql")) {
+              return JSON.stringify({
+                data: {
+                  createCommitOnBranch: {
+                    commit: { oid: "abc123def456" },
+                  },
+                },
+              });
+            }
+            // Return mock PR URL
+            if (command.includes("gh pr create")) {
+              return "https://github.com/test/repo/pull/123";
+            }
+            // Return mock HEAD sha for GraphQL strategy
+            if (command.includes("git rev-parse HEAD")) {
+              return "deadbeef1234567890";
+            }
+            return "";
+          },
+        };
+
+        const processor = new RepositoryProcessor(mockFactory, mockLogger);
+        const localWorkDir = join(
+          testDir,
+          `commit-strategy-graphql-${Date.now()}`
+        );
+
+        const repoConfig: RepoConfig = {
+          git: "git@github.com:test/repo.git",
+          files: [{ fileName: "config.json", content: { key: "value" } }],
+        };
+
+        const result = await processor.process(repoConfig, mockRepoInfo, {
+          branchName: "chore/sync-config",
+          workDir: localWorkDir,
+          configId: "test-config",
+          dryRun: false,
+          executor: mockExecutor,
+        });
+
+        assert.equal(result.success, true, "Should succeed");
+
+        // Verify GraphQL was called
+        const graphqlCall = executorCalls.find((c) =>
+          c.includes("gh api graphql")
+        );
+        assert.ok(graphqlCall, "Should call gh api graphql");
+        assert.ok(
+          graphqlCall.includes("createCommitOnBranch"),
+          "GraphQL call should use createCommitOnBranch mutation"
+        );
+
+        // Verify git commit was NOT called (we use GraphQL instead)
+        const gitCommitCall = executorCalls.find((c) =>
+          c.includes("git commit")
+        );
+        assert.ok(
+          !gitCommitCall,
+          `Should NOT call git commit when using GraphQL strategy, but found: ${gitCommitCall}`
+        );
+
+        // Verify log message mentions verified commit
+        const verifiedLog = mockLogger.messages.find((m) =>
+          m.includes("verified")
+        );
+        assert.ok(verifiedLog, "Should log that commit is verified");
+      } finally {
+        // Restore original env value
+        if (originalToken === undefined) {
+          delete process.env.GH_INSTALLATION_TOKEN;
+        } else {
+          process.env.GH_INSTALLATION_TOKEN = originalToken;
+        }
+      }
     });
   });
 

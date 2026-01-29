@@ -12,6 +12,8 @@ export interface CommitOptions {
   fileChanges: FileChange[];
   workDir: string;
   retries?: number;
+  /** Use force push (--force-with-lease). Default: true for PR branches, false for direct push to main. */
+  force?: boolean;
 }
 
 export interface CommitResult {

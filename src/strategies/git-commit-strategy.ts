@@ -21,12 +21,12 @@ export class GitCommitStrategy implements CommitStrategy {
 
   /**
    * Create a commit with the given file changes and push to remote.
-   * Runs: git add -A, git commit, git push --force-with-lease
+   * Runs: git add -A, git commit, git push (with optional --force-with-lease)
    *
    * @returns Commit result with SHA and verified: false (no signature)
    */
   async commit(options: CommitOptions): Promise<CommitResult> {
-    const { branchName, message, workDir, retries = 3 } = options;
+    const { branchName, message, workDir, retries = 3, force = true } = options;
 
     // Stage all changes
     await this.executor.exec("git add -A", workDir);
@@ -37,15 +37,14 @@ export class GitCommitStrategy implements CommitStrategy {
       workDir
     );
 
+    // Build push command - use --force-with-lease for PR branches, regular push for direct mode
+    const forceFlag = force ? "--force-with-lease " : "";
+    const pushCommand = `git push ${forceFlag}-u origin ${escapeShellArg(branchName)}`;
+
     // Push with retry for transient network failures
-    await withRetry(
-      () =>
-        this.executor.exec(
-          `git push --force-with-lease -u origin ${escapeShellArg(branchName)}`,
-          workDir
-        ),
-      { retries }
-    );
+    await withRetry(() => this.executor.exec(pushCommand, workDir), {
+      retries,
+    });
 
     // Get the commit SHA
     const sha = await this.executor.exec("git rev-parse HEAD", workDir);

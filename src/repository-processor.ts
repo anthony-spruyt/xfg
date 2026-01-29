@@ -11,8 +11,8 @@ import { interpolateXfgContent } from "./xfg-template.js";
 import { GitOps, GitOpsOptions } from "./git-ops.js";
 import { createPR, mergePR, PRResult, FileAction } from "./pr-creator.js";
 import { logger, ILogger } from "./logger.js";
-import { getPRStrategy } from "./strategies/index.js";
-import type { PRMergeConfig } from "./strategies/index.js";
+import { getPRStrategy, getCommitStrategy } from "./strategies/index.js";
+import type { PRMergeConfig, FileChange } from "./strategies/index.js";
 import { CommandExecutor, defaultExecutor } from "./command-executor.js";
 import {
   getFileStatus,
@@ -85,6 +85,8 @@ export class RepositoryProcessor {
   private gitOps: GitOps | null = null;
   private readonly gitOpsFactory: GitOpsFactory;
   private readonly log: ILogger;
+  private retries: number = 3;
+  private executor: CommandExecutor = defaultExecutor;
 
   /**
    * Creates a new RepositoryProcessor.
@@ -102,10 +104,15 @@ export class RepositoryProcessor {
     options: ProcessorOptions
   ): Promise<ProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
-    const { branchName, workDir, dryRun, retries, prTemplate } = options;
-    const executor = options.executor ?? defaultExecutor;
+    const { branchName, workDir, dryRun, prTemplate } = options;
+    this.retries = options.retries ?? 3;
+    this.executor = options.executor ?? defaultExecutor;
 
-    this.gitOps = this.gitOpsFactory({ workDir, dryRun, retries });
+    this.gitOps = this.gitOpsFactory({
+      workDir,
+      dryRun,
+      retries: this.retries,
+    });
 
     // Determine merge mode early - affects workflow steps
     const mergeMode = repoConfig.prOptions?.merge ?? "auto";
@@ -139,13 +146,13 @@ export class RepositoryProcessor {
       // Skip for direct mode - no PR involved
       if (!dryRun && !isDirectMode) {
         this.log.info("Checking for existing PR...");
-        const strategy = getPRStrategy(repoInfo, executor);
+        const strategy = getPRStrategy(repoInfo, this.executor);
         const closed = await strategy.closeExistingPR({
           repoInfo,
           branchName,
           baseBranch,
           workDir,
-          retries,
+          retries: this.retries,
         });
         if (closed) {
           this.log.info("Closed existing PR and deleted branch for fresh sync");
@@ -181,6 +188,8 @@ export class RepositoryProcessor {
       // Track pre-write actions for non-dry-run mode (issue #252)
       // We need to know if a file was created vs updated BEFORE writing it
       const preWriteActions = new Map<string, "create" | "update">();
+      // Track file changes for commit strategy (path -> content, null for deletion)
+      const fileChangesForCommit = new Map<string, string | null>();
 
       for (const file of repoConfig.files) {
         const filePath = join(workDir, file.fileName);
@@ -256,6 +265,8 @@ export class RepositoryProcessor {
           // Write the file and store pre-write action for stats calculation
           preWriteActions.set(file.fileName, action);
           this.gitOps.writeFile(file.fileName, fileContent);
+          // Track content for commit strategy
+          fileChangesForCommit.set(file.fileName, fileContent);
         }
       }
 
@@ -305,6 +316,8 @@ export class RepositoryProcessor {
             } else {
               this.log.info(`Deleting orphaned file: ${fileName}`);
               this.gitOps!.deleteFile(fileName);
+              // Track deletion for commit strategy
+              fileChangesForCommit.set(fileName, null);
             }
             changedFiles.push({ fileName, action: "delete" });
           }
@@ -321,6 +334,9 @@ export class RepositoryProcessor {
       if (hasAnyManagedFiles || existingManifest !== null) {
         if (!dryRun) {
           saveManifest(workDir, newManifest);
+          // Track manifest content for commit strategy
+          const manifestContent = JSON.stringify(newManifest, null, 2) + "\n";
+          fileChangesForCommit.set(MANIFEST_FILENAME, manifestContent);
         }
         // Track manifest file as changed if it would be different
         const existingConfigs = existingManifest?.configs ?? {};
@@ -417,50 +433,74 @@ export class RepositoryProcessor {
         };
       }
 
-      // Step 7: Commit
-      this.log.info("Staging changes...");
+      // Step 7: Commit and Push using commit strategy
       const commitMessage = this.formatCommitMessage(changedFiles);
-      const committed = await this.gitOps.commit(commitMessage);
-
-      if (!committed) {
-        this.log.info("No staged changes after git add -A, skipping commit");
-        return {
-          success: true,
-          repoName,
-          message: "No changes detected after staging",
-          skipped: true,
-          diffStats,
-        };
-      }
-
-      this.log.info(`Committed: ${commitMessage}`);
-
-      // Step 8: Push
-      // In direct mode, push to default branch; otherwise push to sync branch
-      // Use force-with-lease for sync branch (PR modes) to handle divergent history
-      // Never force push to default branch (direct mode) - could overwrite others' work
       const pushBranch = isDirectMode ? baseBranch : branchName;
-      this.log.info(`Pushing to ${pushBranch}...`);
-      try {
-        await this.gitOps.push(pushBranch, { force: !isDirectMode });
-      } catch (error) {
-        // Handle branch protection errors in direct mode
-        if (isDirectMode) {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          if (
-            errorMessage.includes("rejected") ||
-            errorMessage.includes("protected") ||
-            errorMessage.includes("denied")
-          ) {
-            return {
-              success: false,
-              repoName,
-              message: `Push to '${baseBranch}' was rejected (likely branch protection). To use 'direct' mode, the target branch must allow direct pushes. Use 'merge: force' to create a PR and merge with admin privileges.`,
-            };
-          }
+
+      if (dryRun) {
+        // In dry-run mode, just log what would happen
+        this.log.info("Staging changes...");
+        this.log.info(`Would commit: ${commitMessage}`);
+        this.log.info(`Would push to ${pushBranch}...`);
+      } else {
+        // Build file changes for commit strategy
+        const fileChanges: FileChange[] = [];
+        for (const [path, content] of fileChangesForCommit.entries()) {
+          fileChanges.push({ path, content });
         }
-        throw error;
+
+        // Check if there are actually staged changes (edge case handling)
+        // This handles scenarios where git status shows changes but git add doesn't stage anything
+        // (e.g., due to .gitattributes normalization)
+        this.log.info("Staging changes...");
+        await this.executor.exec("git add -A", workDir);
+        if (!(await this.gitOps.hasStagedChanges())) {
+          this.log.info("No staged changes after git add -A, skipping commit");
+          return {
+            success: true,
+            repoName,
+            message: "No changes detected after staging",
+            skipped: true,
+            diffStats,
+          };
+        }
+
+        // Use commit strategy (GitCommitStrategy or GraphQLCommitStrategy)
+        const commitStrategy = getCommitStrategy(repoInfo, this.executor);
+        this.log.info("Committing and pushing changes...");
+        try {
+          const commitResult = await commitStrategy.commit({
+            repoInfo,
+            branchName: pushBranch,
+            message: commitMessage,
+            fileChanges,
+            workDir,
+            retries: this.retries,
+            // Use force push (--force-with-lease) for PR branches, not for direct mode
+            force: !isDirectMode,
+          });
+          this.log.info(
+            `Committed: ${commitResult.sha} (verified: ${commitResult.verified})`
+          );
+        } catch (error) {
+          // Handle branch protection errors in direct mode
+          if (isDirectMode) {
+            const errorMessage =
+              error instanceof Error ? error.message : String(error);
+            if (
+              errorMessage.includes("rejected") ||
+              errorMessage.includes("protected") ||
+              errorMessage.includes("denied")
+            ) {
+              return {
+                success: false,
+                repoName,
+                message: `Push to '${baseBranch}' was rejected (likely branch protection). To use 'direct' mode, the target branch must allow direct pushes. Use 'merge: force' to create a PR and merge with admin privileges.`,
+              };
+            }
+          }
+          throw error;
+        }
       }
 
       // Direct mode: no PR creation, return success
@@ -483,9 +523,9 @@ export class RepositoryProcessor {
         files: changedFiles,
         workDir,
         dryRun,
-        retries,
+        retries: this.retries,
         prTemplate,
-        executor,
+        executor: this.executor,
       });
 
       // Step 10: Handle merge options if configured
@@ -507,8 +547,8 @@ export class RepositoryProcessor {
           mergeConfig,
           workDir,
           dryRun,
-          retries,
-          executor,
+          retries: this.retries,
+          executor: this.executor,
         });
 
         mergeResult = {
