@@ -430,8 +430,8 @@ describe("GraphQLCommitStrategy", () => {
       );
       assert.ok(pushCall, "Should have pushed the branch to create it");
       assert.ok(
-        pushCall.command.includes("origin HEAD:'feature-branch'"),
-        "Should push to the correct branch (with escaped branch name)"
+        pushCall.command.includes("origin HEAD:feature-branch"),
+        "Should push to the correct branch"
       );
     });
 
