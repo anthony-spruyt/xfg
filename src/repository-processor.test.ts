@@ -2636,6 +2636,188 @@ describe("RepositoryProcessor", () => {
         }
       }
     });
+
+    test("direct mode handles 'protected' keyword in error message", async () => {
+      const originalToken = process.env.GH_INSTALLATION_TOKEN;
+
+      try {
+        process.env.GH_INSTALLATION_TOKEN = "test-installation-token";
+
+        const mockLogger = createMockLogger();
+        let mockGitOps: MockGitOpsForCommitStrategy | null = null;
+
+        const mockFactory: GitOpsFactory = (opts) => {
+          mockGitOps = new MockGitOpsForCommitStrategy(opts);
+          mockGitOps.gitChangedFilesOverride = ["config.json"];
+          return mockGitOps;
+        };
+
+        const mockExecutor: CommandExecutor = {
+          async exec(command: string): Promise<string> {
+            if (command.includes("gh api graphql")) {
+              throw new Error("Cannot push to protected branch");
+            }
+            if (command.includes("git rev-parse HEAD")) {
+              return "deadbeef1234567890";
+            }
+            return "";
+          },
+        };
+
+        const processor = new RepositoryProcessor(mockFactory, mockLogger);
+        const localWorkDir = join(
+          testDir,
+          `commit-strategy-protected-${Date.now()}`
+        );
+
+        const repoConfig: RepoConfig = {
+          git: "git@github.com:test/repo.git",
+          files: [{ fileName: "config.json", content: { key: "value" } }],
+          prOptions: { merge: "direct" },
+        };
+
+        const result = await processor.process(repoConfig, mockRepoInfo, {
+          branchName: "chore/sync-config",
+          workDir: localWorkDir,
+          configId: "test-config",
+          dryRun: false,
+          executor: mockExecutor,
+        });
+
+        assert.equal(result.success, false, "Should fail");
+        assert.ok(
+          result.message.includes("branch protection"),
+          "Message should mention branch protection"
+        );
+      } finally {
+        if (originalToken === undefined) {
+          delete process.env.GH_INSTALLATION_TOKEN;
+        } else {
+          process.env.GH_INSTALLATION_TOKEN = originalToken;
+        }
+      }
+    });
+
+    test("direct mode handles 'denied' keyword in error message", async () => {
+      const originalToken = process.env.GH_INSTALLATION_TOKEN;
+
+      try {
+        process.env.GH_INSTALLATION_TOKEN = "test-installation-token";
+
+        const mockLogger = createMockLogger();
+        let mockGitOps: MockGitOpsForCommitStrategy | null = null;
+
+        const mockFactory: GitOpsFactory = (opts) => {
+          mockGitOps = new MockGitOpsForCommitStrategy(opts);
+          mockGitOps.gitChangedFilesOverride = ["config.json"];
+          return mockGitOps;
+        };
+
+        const mockExecutor: CommandExecutor = {
+          async exec(command: string): Promise<string> {
+            if (command.includes("gh api graphql")) {
+              throw new Error("Permission denied for this operation");
+            }
+            if (command.includes("git rev-parse HEAD")) {
+              return "deadbeef1234567890";
+            }
+            return "";
+          },
+        };
+
+        const processor = new RepositoryProcessor(mockFactory, mockLogger);
+        const localWorkDir = join(
+          testDir,
+          `commit-strategy-denied-${Date.now()}`
+        );
+
+        const repoConfig: RepoConfig = {
+          git: "git@github.com:test/repo.git",
+          files: [{ fileName: "config.json", content: { key: "value" } }],
+          prOptions: { merge: "direct" },
+        };
+
+        const result = await processor.process(repoConfig, mockRepoInfo, {
+          branchName: "chore/sync-config",
+          workDir: localWorkDir,
+          configId: "test-config",
+          dryRun: false,
+          executor: mockExecutor,
+        });
+
+        assert.equal(result.success, false, "Should fail");
+        assert.ok(
+          result.message.includes("branch protection"),
+          "Message should mention branch protection"
+        );
+      } finally {
+        if (originalToken === undefined) {
+          delete process.env.GH_INSTALLATION_TOKEN;
+        } else {
+          process.env.GH_INSTALLATION_TOKEN = originalToken;
+        }
+      }
+    });
+
+    test("direct mode re-throws unrecognized errors", async () => {
+      const originalToken = process.env.GH_INSTALLATION_TOKEN;
+
+      try {
+        process.env.GH_INSTALLATION_TOKEN = "test-installation-token";
+
+        const mockLogger = createMockLogger();
+        let mockGitOps: MockGitOpsForCommitStrategy | null = null;
+
+        const mockFactory: GitOpsFactory = (opts) => {
+          mockGitOps = new MockGitOpsForCommitStrategy(opts);
+          mockGitOps.gitChangedFilesOverride = ["config.json"];
+          return mockGitOps;
+        };
+
+        const mockExecutor: CommandExecutor = {
+          async exec(command: string): Promise<string> {
+            if (command.includes("gh api graphql")) {
+              throw new Error("Network timeout");
+            }
+            if (command.includes("git rev-parse HEAD")) {
+              return "deadbeef1234567890";
+            }
+            return "";
+          },
+        };
+
+        const processor = new RepositoryProcessor(mockFactory, mockLogger);
+        const localWorkDir = join(
+          testDir,
+          `commit-strategy-network-${Date.now()}`
+        );
+
+        const repoConfig: RepoConfig = {
+          git: "git@github.com:test/repo.git",
+          files: [{ fileName: "config.json", content: { key: "value" } }],
+          prOptions: { merge: "direct" },
+        };
+
+        await assert.rejects(
+          () =>
+            processor.process(repoConfig, mockRepoInfo, {
+              branchName: "chore/sync-config",
+              workDir: localWorkDir,
+              configId: "test-config",
+              dryRun: false,
+              executor: mockExecutor,
+            }),
+          /Network timeout/,
+          "Should re-throw unrecognized errors"
+        );
+      } finally {
+        if (originalToken === undefined) {
+          delete process.env.GH_INSTALLATION_TOKEN;
+        } else {
+          process.env.GH_INSTALLATION_TOKEN = originalToken;
+        }
+      }
+    });
   });
 
   describe("diffStats in non-dry-run mode (issue #252)", () => {
