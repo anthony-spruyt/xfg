@@ -23,6 +23,20 @@ export { GitHubPRStrategy } from "./github-pr-strategy.js";
 export { AzurePRStrategy } from "./azure-pr-strategy.js";
 export { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
 
+// Commit strategy exports
+export type {
+  CommitStrategy,
+  CommitOptions,
+  CommitResult,
+  FileChange,
+} from "./commit-strategy.js";
+export { GitCommitStrategy } from "./git-commit-strategy.js";
+export {
+  GraphQLCommitStrategy,
+  MAX_PAYLOAD_SIZE,
+} from "./graphql-commit-strategy.js";
+export { getCommitStrategy } from "./commit-strategy-selector.js";
+
 /**
  * Factory function to get the appropriate PR strategy for a repository.
  * @param repoInfo - Repository information
