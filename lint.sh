@@ -26,6 +26,7 @@ if [[ "${1:-}" == "--ci" ]]; then
   # Build docker run arguments
   docker_args=(
     -e MEGALINTER_FLAVOR="$MEGALINTER_FLAVOR"
+    -e SARIF_REPORTER=true
     -e GITHUB_TOKEN="${GITHUB_TOKEN:-}"
     -e VALIDATE_ALL_CODEBASE="${VALIDATE_ALL_CODEBASE:-}"
     -e DEFAULT_WORKSPACE=/tmp/lint
