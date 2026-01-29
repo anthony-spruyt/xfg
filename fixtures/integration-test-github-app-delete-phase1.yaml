@@ -3,9 +3,10 @@
 
 id: integration-test-github-app-delete
 
+deleteOrphaned: true
+
 prOptions:
   merge: direct
-  deleteOrphaned: true
 
 files:
   github-app-orphan-test.json:
