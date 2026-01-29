@@ -70,12 +70,27 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       );
     }
 
+    // Ensure the branch exists on remote before making GraphQL commit
+    // createCommitOnBranch requires the branch to already exist
+    await this.ensureBranchExistsOnRemote(branchName, workDir);
+
     // Retry loop for expectedHeadOid mismatch
     let lastError: Error | null = null;
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        // Get current HEAD SHA for optimistic locking
-        const headSha = await this.executor.exec("git rev-parse HEAD", workDir);
+        // Fetch from remote to ensure we have the latest HEAD
+        // This is critical for expectedHeadOid to match
+        const escapedBranch = escapeShellArg(branchName);
+        await this.executor.exec(
+          `git fetch origin ${escapedBranch}:refs/remotes/origin/${escapedBranch}`,
+          workDir
+        );
+
+        // Get the remote HEAD SHA for this branch (not local HEAD)
+        const headSha = await this.executor.exec(
+          `git rev-parse origin/${escapedBranch}`,
+          workDir
+        );
 
         // Build and execute the GraphQL mutation
         const result = await this.executeGraphQLMutation(
@@ -94,7 +109,7 @@ export class GraphQLCommitStrategy implements CommitStrategy {
 
         // Check if this is an expectedHeadOid mismatch error (retryable)
         if (this.isHeadOidMismatchError(lastError) && attempt < retries) {
-          // Retry - the next iteration will get the fresh HEAD SHA
+          // Retry - the next iteration will fetch and get fresh HEAD SHA
           continue;
         }
 
@@ -132,16 +147,9 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       path: fc.path,
     }));
 
-    // Build the mutation
-    const mutation = `
-      mutation CreateCommit($input: CreateCommitOnBranchInput!) {
-        createCommitOnBranch(input: $input) {
-          commit {
-            oid
-          }
-        }
-      }
-    `;
+    // Build the mutation (minified to avoid shell escaping issues with newlines)
+    const mutation =
+      "mutation CreateCommit($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }";
 
     // Build the input variables
     // Note: GitHub API doesn't accept empty arrays, so only include fields when non-empty
@@ -171,6 +179,7 @@ export class GraphQLCommitStrategy implements CommitStrategy {
     };
 
     // Build the gh api graphql command
+    // Use --hostname for GitHub Enterprise
     const hostnameArg =
       repoInfo.host !== "github.com"
         ? `--hostname ${escapeShellArg(repoInfo.host)}`
@@ -202,6 +211,33 @@ export class GraphQLCommitStrategy implements CommitStrategy {
   }
 
   /**
+   * Ensure the branch exists on the remote.
+   * createCommitOnBranch requires the branch to already exist.
+   * If the branch doesn't exist, push it to create it.
+   */
+  private async ensureBranchExistsOnRemote(
+    branchName: string,
+    workDir: string
+  ): Promise<void> {
+    const escapedBranch = escapeShellArg(branchName);
+    try {
+      // Check if the branch exists on remote
+      await this.executor.exec(
+        `git ls-remote --exit-code --heads origin ${escapedBranch}`,
+        workDir
+      );
+      // Branch exists, nothing to do
+    } catch {
+      // Branch doesn't exist on remote, push it
+      // This pushes the current local branch to create it on remote
+      await this.executor.exec(
+        `git push -u origin HEAD:${escapedBranch}`,
+        workDir
+      );
+    }
+  }
+
+  /**
    * Check if an error is due to expectedHeadOid mismatch (optimistic locking failure).
    * This happens when the branch was updated between getting HEAD and making the commit.
    */
@@ -210,7 +246,9 @@ export class GraphQLCommitStrategy implements CommitStrategy {
     return (
       message.includes("expected branch to point to") ||
       message.includes("expectedheadoid") ||
-      message.includes("head oid")
+      message.includes("head oid") ||
+      // GitHub may return this generic error for OID mismatches
+      message.includes("was provided invalid value")
     );
   }
 }

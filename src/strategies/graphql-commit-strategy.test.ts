@@ -98,8 +98,15 @@ describe("GraphQLCommitStrategy", () => {
 
   describe("commit", () => {
     test("calls GraphQL API with createCommitOnBranch mutation", async () => {
-      // Mock git rev-parse to return HEAD SHA
-      mockExecutor.responses.set("git rev-parse HEAD", "abc123def456789");
+      // Mock git ls-remote to indicate branch exists
+      mockExecutor.responses.set(
+        "git ls-remote",
+        "abc123\trefs/heads/test-branch"
+      );
+      // Mock git fetch
+      mockExecutor.responses.set("git fetch", "");
+      // Mock git rev-parse origin/branch to return remote HEAD SHA
+      mockExecutor.responses.set("git rev-parse origin", "abc123def456789");
 
       // Mock successful GraphQL response
       const graphqlResponse = JSON.stringify({
@@ -153,7 +160,9 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("does not include empty deletions array in payload", async () => {
-      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
       const graphqlResponse = JSON.stringify({
         data: {
           createCommitOnBranch: {
@@ -193,7 +202,9 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("includes deletions when files need to be deleted", async () => {
-      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
       const graphqlResponse = JSON.stringify({
         data: {
           createCommitOnBranch: {
@@ -231,7 +242,9 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("base64 encodes file contents", async () => {
-      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
       const graphqlResponse = JSON.stringify({
         data: {
           createCommitOnBranch: {
@@ -266,7 +279,9 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("handles file deletions", async () => {
-      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
       const graphqlResponse = JSON.stringify({
         data: {
           createCommitOnBranch: {
@@ -311,7 +326,9 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("throws error when payload exceeds size limit (50MB)", async () => {
-      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
 
       const strategy = new GraphQLCommitStrategy(mockExecutor);
 
@@ -336,7 +353,9 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("supports GitHub Enterprise with custom host", async () => {
-      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
       const graphqlResponse = JSON.stringify({
         data: {
           createCommitOnBranch: {
@@ -371,13 +390,62 @@ describe("GraphQLCommitStrategy", () => {
       );
     });
 
-    test("retries on expectedHeadOid mismatch", async () => {
-      let callCount = 0;
+    test("pushes branch to remote if it does not exist", async () => {
+      // Mock git ls-remote to fail (branch doesn't exist)
+      mockExecutor.responses.set(
+        "git ls-remote",
+        new Error("fatal: could not read from remote")
+      );
+      // Mock git push to create branch
+      mockExecutor.responses.set("git push", "");
+      // Mock git fetch
+      mockExecutor.responses.set("git fetch", "");
+      // Mock git rev-parse origin/branch
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
 
-      // Mock git rev-parse to return different SHAs
-      mockExecutor.responses.set("git rev-parse HEAD", () => {
-        callCount++;
-        if (callCount <= 2) {
+      const graphqlResponse = JSON.stringify({
+        data: {
+          createCommitOnBranch: {
+            commit: { oid: "sha123" },
+          },
+        },
+      });
+      mockExecutor.responses.set("gh api graphql", graphqlResponse);
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "feature-branch",
+        message: "Add feature",
+        fileChanges: [{ path: "feature.txt", content: "feature" }],
+        workDir: testDir,
+      };
+
+      const result = await strategy.commit(options);
+      assert.equal(result.sha, "sha123");
+
+      // Verify push was called to create the branch
+      const pushCall = mockExecutor.calls.find((c) =>
+        c.command.includes("git push")
+      );
+      assert.ok(pushCall, "Should have pushed the branch to create it");
+      assert.ok(
+        pushCall.command.includes("origin HEAD:'feature-branch'"),
+        "Should push to the correct branch (with escaped branch name)"
+      );
+    });
+
+    test("retries on expectedHeadOid mismatch", async () => {
+      let revParseCallCount = 0;
+
+      // Mock git ls-remote to indicate branch exists
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      // Mock git fetch
+      mockExecutor.responses.set("git fetch", "");
+      // Mock git rev-parse origin/branch to return different SHAs on each call
+      mockExecutor.responses.set("git rev-parse origin", () => {
+        revParseCallCount++;
+        if (revParseCallCount <= 1) {
           return "oldsha123";
         }
         return "newsha456";
@@ -418,7 +486,9 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("throws descriptive error for permission denied", async () => {
-      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
       mockExecutor.responses.set(
         "gh api graphql",
         new Error(
@@ -460,7 +530,9 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("throws error when GraphQL response contains errors", async () => {
-      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
       mockExecutor.responses.set(
         "gh api graphql",
         JSON.stringify({
@@ -488,7 +560,9 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("throws error when GraphQL response missing commit OID", async () => {
-      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
       mockExecutor.responses.set(
         "gh api graphql",
         JSON.stringify({
