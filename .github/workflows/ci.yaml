@@ -202,6 +202,54 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: npm run test:integration:gitlab
 
+  integration-test-github-app:
+    needs: [build, security]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: integration-github-app
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.TEST_APP_ID }}
+          private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+
+      - name: Configure git
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+      - name: Run GitHub App integration tests
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_INSTALLATION_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: npm run test:integration:github-app
+
   integration-test-action:
     needs: [build, security, integration-test-github]
     if: github.event_name == 'push'
