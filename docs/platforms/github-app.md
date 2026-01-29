@@ -63,12 +63,14 @@ When `GH_INSTALLATION_TOKEN` is set, xfg uses GitHub's GraphQL API (`createCommi
 
 ## Environment Variables
 
-| Variable                | Auth Type  | Commit Method                            |
-| ----------------------- | ---------- | ---------------------------------------- |
-| `GH_TOKEN`              | PAT        | `git commit` + `git push` (not verified) |
-| `GH_INSTALLATION_TOKEN` | GitHub App | GraphQL API (verified commits)           |
+| Variable                | Auth Type  | Commit Method                                         |
+| ----------------------- | ---------- | ----------------------------------------------------- |
+| `GH_TOKEN`              | PAT        | `git commit` + `git push` (requires GPG for verified) |
+| `GH_INSTALLATION_TOKEN` | GitHub App | GraphQL API (verified automatically)                  |
 
 If both are set, `GH_INSTALLATION_TOKEN` takes precedence for GitHub repositories.
+
+> **Note:** You can also get verified commits with PATs by [configuring GPG signing](https://docs.github.com/en/authentication/managing-commit-signature-verification). GitHub App authentication is an alternative that doesn't require GPG key management.
 
 ## Limitations
 
