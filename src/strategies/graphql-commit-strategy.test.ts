@@ -5,6 +5,8 @@ import { join } from "node:path";
 import {
   GraphQLCommitStrategy,
   MAX_PAYLOAD_SIZE,
+  SAFE_BRANCH_NAME_PATTERN,
+  validateBranchName,
 } from "./graphql-commit-strategy.js";
 import { GitHubRepoInfo, AzureDevOpsRepoInfo } from "../repo-detector.js";
 import { CommitOptions } from "./commit-strategy.js";
@@ -47,6 +49,69 @@ function createMockExecutor(): CommandExecutor & {
     },
   };
 }
+
+describe("SAFE_BRANCH_NAME_PATTERN", () => {
+  test("accepts valid branch names", () => {
+    const validNames = [
+      "main",
+      "master",
+      "feature/add-login",
+      "fix/bug-123",
+      "chore/sync-config",
+      "release/v1.0.0",
+      "hotfix/critical-fix",
+      "user/john/feature",
+      "feature_underscore",
+      "feature-hyphen",
+      "feature.dot",
+      "Feature123",
+      "v1.2.3",
+    ];
+    for (const name of validNames) {
+      assert.ok(SAFE_BRANCH_NAME_PATTERN.test(name), `Should accept: ${name}`);
+    }
+  });
+
+  test("rejects branch names with shell-dangerous characters", () => {
+    const dangerousNames = [
+      "branch name", // space
+      "branch;rm -rf", // semicolon
+      "branch`whoami`", // backtick
+      "branch$(cmd)", // command substitution
+      "branch|pipe", // pipe
+      "branch&background", // ampersand
+      "branch>redirect", // redirect
+      "branch<input", // input redirect
+      "'quoted'", // single quotes
+      '"doublequoted"', // double quotes
+      "-start-with-hyphen", // starts with hyphen
+      ".start-with-dot", // starts with dot
+    ];
+    for (const name of dangerousNames) {
+      assert.ok(!SAFE_BRANCH_NAME_PATTERN.test(name), `Should reject: ${name}`);
+    }
+  });
+});
+
+describe("validateBranchName", () => {
+  test("does not throw for valid branch names", () => {
+    assert.doesNotThrow(() => validateBranchName("main"));
+    assert.doesNotThrow(() => validateBranchName("feature/login"));
+    assert.doesNotThrow(() => validateBranchName("fix-bug-123"));
+  });
+
+  test("throws for invalid branch names", () => {
+    assert.throws(
+      () => validateBranchName("branch name"),
+      /Invalid branch name/
+    );
+    assert.throws(
+      () => validateBranchName("branch;rm -rf"),
+      /Invalid branch name/
+    );
+    assert.throws(() => validateBranchName("-invalid"), /Invalid branch name/);
+  });
+});
 
 describe("GraphQLCommitStrategy", () => {
   const githubRepoInfo: GitHubRepoInfo = {
@@ -527,6 +592,32 @@ describe("GraphQLCommitStrategy", () => {
         /GitHub.*only|not.*supported|requires.*github/i,
         "Should throw error for non-GitHub repos"
       );
+    });
+
+    test("throws error for invalid branch names (shell injection prevention)", async () => {
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const invalidBranchNames = [
+        "branch name", // space
+        "branch;rm", // semicolon
+        "$(whoami)", // command substitution
+        "-invalid", // starts with hyphen
+      ];
+
+      for (const branchName of invalidBranchNames) {
+        const options: CommitOptions = {
+          repoInfo: githubRepoInfo,
+          branchName,
+          message: "Test",
+          fileChanges: [{ path: "test.txt", content: "content" }],
+          workDir: testDir,
+        };
+
+        await assert.rejects(
+          () => strategy.commit(options),
+          /Invalid branch name/,
+          `Should reject branch name: ${branchName}`
+        );
+      }
     });
 
     test("throws error when GraphQL response contains errors", async () => {

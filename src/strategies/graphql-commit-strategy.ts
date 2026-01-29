@@ -14,6 +14,33 @@ import { escapeShellArg } from "../shell-utils.js";
 export const MAX_PAYLOAD_SIZE = 50 * 1024 * 1024;
 
 /**
+ * Pattern for valid git branch names that are also safe for shell commands.
+ * Git branch names have strict rules:
+ * - Cannot contain: space, ~, ^, :, ?, *, [, \, .., @{
+ * - Cannot start with: - or .
+ * - Cannot end with: / or .lock
+ * - Cannot contain consecutive slashes
+ *
+ * This pattern allows only alphanumeric chars, hyphens, underscores, dots, and slashes
+ * which covers all practical branch names and is shell-safe.
+ */
+export const SAFE_BRANCH_NAME_PATTERN = /^[a-zA-Z0-9][-a-zA-Z0-9_./]*$/;
+
+/**
+ * Validates that a branch name is safe for use in shell commands.
+ * Throws an error if the branch name contains potentially dangerous characters.
+ */
+export function validateBranchName(branchName: string): void {
+  if (!SAFE_BRANCH_NAME_PATTERN.test(branchName)) {
+    throw new Error(
+      `Invalid branch name for GraphQL commit strategy: "${branchName}". ` +
+        `Branch names must start with alphanumeric and contain only ` +
+        `alphanumeric characters, hyphens, underscores, dots, and forward slashes.`
+    );
+  }
+}
+
+/**
  * GraphQL-based commit strategy using GitHub's createCommitOnBranch mutation.
  * Used with GitHub App authentication. Commits via this strategy ARE verified
  * by GitHub (signed by the GitHub App).
@@ -51,6 +78,9 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       );
     }
 
+    // Validate branch name is safe for shell commands
+    validateBranchName(branchName);
+
     const githubInfo = repoInfo as GitHubRepoInfo;
 
     // Separate additions from deletions
@@ -80,8 +110,7 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       try {
         // Fetch from remote to ensure we have the latest HEAD
         // This is critical for expectedHeadOid to match
-        // Note: Git branch names cannot contain shell-dangerous characters
-        // (spaces, quotes, etc.) due to git's own validation, so no escaping needed
+        // Branch name was validated above, safe for shell use
         await this.executor.exec(
           `git fetch origin ${branchName}:refs/remotes/origin/${branchName}`,
           workDir
@@ -220,8 +249,7 @@ export class GraphQLCommitStrategy implements CommitStrategy {
     branchName: string,
     workDir: string
   ): Promise<void> {
-    // Note: Git branch names cannot contain shell-dangerous characters
-    // (spaces, quotes, etc.) due to git's own validation, so no escaping needed
+    // Branch name was validated in commit(), safe for shell use
     try {
       // Check if the branch exists on remote
       await this.executor.exec(
