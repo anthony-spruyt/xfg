@@ -178,6 +178,9 @@ export class RepositoryProcessor {
       // Edge cases (repos with unusual git attributes on config files) are essentially nonexistent.
       const changedFiles: FileAction[] = [];
       const diffStats: DiffStats = createDiffStats();
+      // Track pre-write actions for non-dry-run mode (issue #252)
+      // We need to know if a file was created vs updated BEFORE writing it
+      const preWriteActions = new Map<string, "create" | "update">();
 
       for (const file of repoConfig.files) {
         const filePath = join(workDir, file.fileName);
@@ -250,7 +253,8 @@ export class RepositoryProcessor {
           );
           this.log.fileDiff(file.fileName, status, diffLines);
         } else {
-          // Write the file
+          // Write the file and store pre-write action for stats calculation
+          preWriteActions.set(file.fileName, action);
           this.gitOps.writeFile(file.fileName, fileContent);
         }
       }
@@ -365,10 +369,9 @@ export class RepositoryProcessor {
             if (!gitChangedFiles.has(file.fileName)) {
               continue; // File didn't actually change
             }
-            const filePath = join(workDir, file.fileName);
-            const action: "create" | "update" = existsSync(filePath)
-              ? "update"
-              : "create";
+            // Use pre-write action (issue #252) - we stored whether file existed
+            // BEFORE writing, which is the correct basis for create vs update
+            const action = preWriteActions.get(file.fileName) ?? "update";
             changedFiles.push({ fileName: file.fileName, action });
           }
 
@@ -384,6 +387,22 @@ export class RepositoryProcessor {
               ? "update"
               : "create";
             changedFiles.push({ fileName: gitFile, action });
+          }
+
+          // Calculate diff stats from changedFiles (issue #252)
+          for (const file of changedFiles) {
+            switch (file.action) {
+              case "create":
+                incrementDiffStats(diffStats, "NEW");
+                break;
+              case "update":
+                incrementDiffStats(diffStats, "MODIFIED");
+                break;
+              case "delete":
+                incrementDiffStats(diffStats, "DELETED");
+                break;
+              // "skip" files are not counted in stats
+            }
           }
         }
       }

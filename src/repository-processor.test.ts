@@ -2303,4 +2303,219 @@ describe("RepositoryProcessor", () => {
       );
     });
   });
+
+  describe("diffStats in non-dry-run mode (issue #252)", () => {
+    const createMockLogger = (): ILogger & { messages: string[] } => ({
+      messages: [] as string[],
+      info(message: string) {
+        this.messages.push(message);
+      },
+      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
+        // No-op for mock
+      },
+      diffSummary(
+        _newCount: number,
+        _modifiedCount: number,
+        _unchangedCount: number
+      ) {
+        // No-op for mock
+      },
+    });
+
+    class MockGitOpsForDiffStats extends GitOps {
+      gitChangedFilesOverride: string[] = [];
+      fileExistsMap: Map<string, boolean> = new Map();
+
+      constructor(options: GitOpsOptions) {
+        super(options);
+      }
+
+      override cleanWorkspace(): void {
+        mkdirSync(this.getWorkDir(), { recursive: true });
+      }
+
+      override async clone(_gitUrl: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async getDefaultBranch(): Promise<{
+        branch: string;
+        method: string;
+      }> {
+        return { branch: "main", method: "mock" };
+      }
+
+      override async createBranch(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override writeFile(fileName: string, content: string): void {
+        const filePath = join(this.getWorkDir(), fileName);
+        mkdirSync(this.getWorkDir(), { recursive: true });
+        writeFileSync(filePath, content, "utf-8");
+      }
+
+      override async hasChanges(): Promise<boolean> {
+        return this.gitChangedFilesOverride.length > 0;
+      }
+
+      override async getChangedFiles(): Promise<string[]> {
+        return this.gitChangedFilesOverride;
+      }
+
+      override async fileExistsOnBranch(
+        _fileName: string,
+        _branch: string
+      ): Promise<boolean> {
+        return false;
+      }
+
+      override async commit(_message: string): Promise<boolean> {
+        return true;
+      }
+
+      override async push(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async fetch(): Promise<void> {
+        // No-op for mock
+      }
+
+      override fileExists(fileName: string): boolean {
+        return this.fileExistsMap.get(fileName) ?? false;
+      }
+
+      override deleteFile(_fileName: string): void {
+        // No-op for mock
+      }
+
+      private getWorkDir(): string {
+        return (this as unknown as { workDir: string }).workDir;
+      }
+
+      setupFileExists(fileName: string, exists: boolean): void {
+        this.fileExistsMap.set(fileName, exists);
+      }
+    }
+
+    // Mock executor that returns a PR URL (safe test mock - no actual shell execution)
+    function createPRMockExecutor(): CommandExecutor {
+      return {
+        async exec(): Promise<string> {
+          return "https://github.com/test/repo/pull/123";
+        },
+      };
+    }
+
+    test("should populate diffStats with correct counts in non-dry-run mode", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForDiffStats | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForDiffStats(opts);
+        // Git reports 2 files changed: one new, one update
+        mockGitOps.gitChangedFilesOverride = ["new-file.json", "existing.json"];
+        // existing.json exists (update), new-file.json doesn't (create)
+        mockGitOps.setupFileExists("existing.json", true);
+        mockGitOps.setupFileExists("new-file.json", false);
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `diffstats-nondr-${Date.now()}`);
+
+      // Pre-create existing.json so existsSync returns true for it
+      mkdirSync(localWorkDir, { recursive: true });
+      writeFileSync(join(localWorkDir, "existing.json"), '{"old": true}');
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          { fileName: "new-file.json", content: { key: "new" } },
+          { fileName: "existing.json", content: { key: "updated" } },
+        ],
+      };
+
+      const result = await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        configId: "test-config",
+        dryRun: false,
+        executor: createPRMockExecutor(),
+      });
+
+      assert.equal(result.success, true, "Should succeed");
+      assert.ok(result.diffStats, "Should have diffStats");
+      assert.equal(
+        result.diffStats!.newCount,
+        1,
+        "Should have 1 new file (new-file.json)"
+      );
+      assert.equal(
+        result.diffStats!.modifiedCount,
+        1,
+        "Should have 1 modified file (existing.json)"
+      );
+      assert.equal(result.diffStats!.deletedCount, 0, "Should have 0 deleted");
+    });
+
+    test("should count deleted files in diffStats", async () => {
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForDiffStats | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForDiffStats(opts);
+        // Git reports config.json changed, orphaned.json will be deleted
+        mockGitOps.gitChangedFilesOverride = ["config.json"];
+        mockGitOps.setupFileExists("orphaned.json", true); // Orphan exists
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(testDir, `diffstats-delete-${Date.now()}`);
+
+      // Create manifest tracking orphaned.json
+      mkdirSync(localWorkDir, { recursive: true });
+      writeFileSync(
+        join(localWorkDir, ".xfg.json"),
+        JSON.stringify({
+          version: 2,
+          configs: { "test-config": ["orphaned.json"] },
+        })
+      );
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "config.json",
+            content: { key: "value" },
+            deleteOrphaned: true,
+          },
+        ],
+      };
+
+      const result = await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        configId: "test-config",
+        dryRun: false,
+        executor: createPRMockExecutor(),
+      });
+
+      assert.equal(result.success, true, "Should succeed");
+      assert.ok(result.diffStats, "Should have diffStats");
+      assert.equal(
+        result.diffStats!.newCount,
+        1,
+        "Should have 1 new file (config.json)"
+      );
+      assert.equal(
+        result.diffStats!.deletedCount,
+        1,
+        "Should have 1 deleted file (orphaned.json)"
+      );
+    });
+  });
 });
