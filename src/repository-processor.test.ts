@@ -973,10 +973,10 @@ describe("RepositoryProcessor", () => {
     }
 
     test("should pass executor to createPR when not in direct mode", async () => {
-      const mockLogger = {
-        messages: [],
+      const mockLogger: ILogger & { messages: string[] } = {
+        messages: [] as string[],
         info(message: string) {
-          (this as any).messages.push(message);
+          this.messages.push(message);
         },
         fileDiff() {},
         diffSummary() {},
@@ -990,7 +990,7 @@ describe("RepositoryProcessor", () => {
         },
       };
 
-      const processor = new RepositoryProcessor(mockFactory, mockLogger as any);
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `pr-executor-${Date.now()}`);
 
       const repoConfig: RepoConfig = {

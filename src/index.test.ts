@@ -20,6 +20,7 @@ function runCLI(
   options?: { timeout?: number; env?: Record<string, string | undefined> }
 ): { stdout: string; stderr: string; success: boolean } {
   // Create env with GITHUB_STEP_SUMMARY unset by default
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { GITHUB_STEP_SUMMARY: _, ...envWithoutSummary } = process.env;
   const testEnv = { ...envWithoutSummary, ...options?.env };
 
