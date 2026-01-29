@@ -152,6 +152,84 @@ describe("GraphQLCommitStrategy", () => {
       );
     });
 
+    test("does not include empty deletions array in payload", async () => {
+      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      const graphqlResponse = JSON.stringify({
+        data: {
+          createCommitOnBranch: {
+            commit: { oid: "sha123" },
+          },
+        },
+      });
+      mockExecutor.responses.set("gh api graphql", graphqlResponse);
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Add file",
+        fileChanges: [{ path: "test.txt", content: "content" }], // Only additions, no deletions
+        workDir: testDir,
+      };
+
+      await strategy.commit(options);
+
+      const graphqlCall = mockExecutor.calls.find((c) =>
+        c.command.includes("gh api graphql")
+      );
+      assert.ok(graphqlCall, "Should have called gh api graphql");
+
+      // Verify deletions key is not in the payload
+      assert.ok(
+        !graphqlCall.command.includes('"deletions"'),
+        "Should not include deletions key when there are no deletions"
+      );
+
+      // Verify additions are included
+      assert.ok(
+        graphqlCall.command.includes('"additions"'),
+        "Should include additions key"
+      );
+    });
+
+    test("includes deletions when files need to be deleted", async () => {
+      mockExecutor.responses.set("git rev-parse HEAD", "abc123");
+      const graphqlResponse = JSON.stringify({
+        data: {
+          createCommitOnBranch: {
+            commit: { oid: "sha123" },
+          },
+        },
+      });
+      mockExecutor.responses.set("gh api graphql", graphqlResponse);
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Delete file",
+        fileChanges: [{ path: "to-delete.txt", content: null }], // Deletion
+        workDir: testDir,
+      };
+
+      await strategy.commit(options);
+
+      const graphqlCall = mockExecutor.calls.find((c) =>
+        c.command.includes("gh api graphql")
+      );
+      assert.ok(graphqlCall, "Should have called gh api graphql");
+
+      // Verify deletions is included
+      assert.ok(
+        graphqlCall.command.includes('"deletions"'),
+        "Should include deletions key when there are deletions"
+      );
+      assert.ok(
+        graphqlCall.command.includes("to-delete.txt"),
+        "Should include the file path in deletions"
+      );
+    });
+
     test("base64 encodes file contents", async () => {
       mockExecutor.responses.set("git rev-parse HEAD", "abc123");
       const graphqlResponse = JSON.stringify({

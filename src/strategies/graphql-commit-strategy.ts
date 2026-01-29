@@ -144,6 +144,18 @@ export class GraphQLCommitStrategy implements CommitStrategy {
     `;
 
     // Build the input variables
+    // Note: GitHub API doesn't accept empty arrays, so only include fields when non-empty
+    const fileChanges: {
+      additions?: Array<{ path: string; contents: string }>;
+      deletions?: Array<{ path: string }>;
+    } = {};
+    if (fileAdditions.length > 0) {
+      fileChanges.additions = fileAdditions;
+    }
+    if (fileDeletions.length > 0) {
+      fileChanges.deletions = fileDeletions;
+    }
+
     const variables = {
       input: {
         branch: {
@@ -154,10 +166,7 @@ export class GraphQLCommitStrategy implements CommitStrategy {
         message: {
           headline: message,
         },
-        fileChanges: {
-          additions: fileAdditions,
-          deletions: fileDeletions,
-        },
+        fileChanges,
       },
     };
 

@@ -250,7 +250,7 @@ jobs:
         run: npm run test:integration:github-app
 
   integration-test-action:
-    needs: [build, security, integration-test-github]
+    needs: [build, security, integration-test-github-app]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
