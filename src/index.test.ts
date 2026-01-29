@@ -1,7 +1,13 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { execFileSync } from "node:child_process";
-import { writeFileSync, rmSync, mkdirSync, existsSync } from "node:fs";
+import {
+  writeFileSync,
+  rmSync,
+  mkdirSync,
+  existsSync,
+  readFileSync,
+} from "node:fs";
 import { join } from "node:path";
 
 const testDir = join(process.cwd(), "test-cli-tmp");
@@ -10,7 +16,7 @@ const testConfigPath = join(testDir, "test-config.yaml");
 // Helper to run CLI and capture output
 function runCLI(
   args: string[],
-  options?: { timeout?: number }
+  options?: { timeout?: number; env?: Record<string, string> }
 ): { stdout: string; stderr: string; success: boolean } {
   try {
     const stdout = execFileSync(
@@ -20,6 +26,7 @@ function runCLI(
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
         timeout: options?.timeout ?? 10000,
+        env: { ...process.env, ...options?.env },
       }
     );
     return { stdout, stderr: "", success: true };
@@ -686,6 +693,70 @@ repos:
       assert.ok(
         output.includes("chore/sync-config"),
         "Should use default branch name for multiple files"
+      );
+    });
+  });
+
+  describe("GitHub Actions job summary", () => {
+    test("writes summary to GITHUB_STEP_SUMMARY when set", () => {
+      const summaryPath = join(testDir, "step-summary.md");
+      writeFileSync(
+        testConfigPath,
+        `
+id: test-config
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test/invalid-repo-for-test.git
+`
+      );
+
+      // Run CLI with GITHUB_STEP_SUMMARY set
+      runCLI(["-c", testConfigPath, "--dry-run", "-w", `${testDir}/work`], {
+        env: { GITHUB_STEP_SUMMARY: summaryPath },
+      });
+
+      // Verify summary file was created
+      assert.ok(existsSync(summaryPath), "Summary file should be created");
+
+      const summary = readFileSync(summaryPath, "utf-8");
+
+      // Verify summary content
+      assert.ok(
+        summary.includes("## Config Sync Summary"),
+        "Should have summary header"
+      );
+      assert.ok(
+        summary.includes("| Status | Count |"),
+        "Should have stats table"
+      );
+      assert.ok(summary.includes("Total"), "Should show total count");
+    });
+
+    test("does not write summary when GITHUB_STEP_SUMMARY not set", () => {
+      const summaryPath = join(testDir, "step-summary.md");
+      writeFileSync(
+        testConfigPath,
+        `
+id: test-config
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test/invalid-repo-for-test.git
+`
+      );
+
+      // Run CLI without GITHUB_STEP_SUMMARY
+      runCLI(["-c", testConfigPath, "--dry-run", "-w", `${testDir}/work`]);
+
+      // Verify summary file was NOT created
+      assert.ok(
+        !existsSync(summaryPath),
+        "Summary file should not be created when env var not set"
       );
     });
   });
