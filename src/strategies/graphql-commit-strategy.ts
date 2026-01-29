@@ -208,14 +208,21 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       },
     };
 
+    // Build the GraphQL request body
+    const requestBody = JSON.stringify({
+      query: mutation,
+      variables,
+    });
+
     // Build the gh api graphql command
+    // Use --input - to pass the JSON body via stdin (more reliable for complex nested JSON)
     // Use --hostname for GitHub Enterprise
     const hostnameArg =
       repoInfo.host !== "github.com"
         ? `--hostname ${escapeShellArg(repoInfo.host)}`
         : "";
 
-    const command = `gh api graphql ${hostnameArg} -f query=${escapeShellArg(mutation)} -f variables=${escapeShellArg(JSON.stringify(variables))}`;
+    const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
 
     const response = await this.executor.exec(command, workDir);
 
