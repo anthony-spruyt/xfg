@@ -275,7 +275,7 @@ jobs:
       - name: "[PAT] Run xfg action"
         uses: ./
         with:
-          config: ./fixtures/integration-test-config-github.yaml
+          config: ./fixtures/integration-test-action-github.yaml
           github-token: ${{ secrets.GH_PAT }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
@@ -335,7 +335,7 @@ jobs:
       - name: "[App] Run xfg action with GitHub App token"
         uses: ./
         with:
-          config: ./fixtures/integration-test-config-github.yaml
+          config: ./fixtures/integration-test-action-github.yaml
           branch: ${{ env.APP_BRANCH }}
           github-token: ${{ steps.app-token.outputs.token }}
           github-app-token: ${{ steps.app-token.outputs.token }}
