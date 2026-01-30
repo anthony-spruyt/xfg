@@ -60,3 +60,5 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 - Escape `${xfg:var}` as `$${xfg:var}` similarly
 - `.sh` files auto-marked executable unless `executable: false`
 - PR branch default: `chore/sync-config` (reuses existing branch/PR if found)
+- **Always create fresh branch from main** before starting work - old branches may already be merged
+- CI integration tests only run on `main` branch, not on PR branches
