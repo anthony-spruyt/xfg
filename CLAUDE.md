@@ -57,6 +57,8 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 
 ## Gotchas
 
+- **Always create fresh branch from main** before starting work - old branches may already be merged
+- **Do not commit plans to `docs/`** - that's GitHub Pages; use scratchpad for temporary plans
 - Output format determined by file extension: `.json`/`.json5`/`.yaml`/`.yml` → object content; others → string/string[]
 - Escape `${VAR}` as `$${VAR}` to output literal (for devcontainer.json, shell scripts)
 - Escape `${xfg:var}` as `$${xfg:var}` similarly
