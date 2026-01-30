@@ -32,6 +32,8 @@ npm run dev      # Run CLI via ts-node
    - `npm run test:integration:ado`
    - `npm run test:integration:gitlab`
 
+**Note:** CI integration tests only run on `main` branch, not on PR branches.
+
 ## Release
 
 ```bash
