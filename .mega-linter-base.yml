@@ -16,6 +16,9 @@ ENABLE_LINTERS:
   - "YAML_YAMLLINT"
 EXCLUDED_DIRECTORIES:
   - ".git"
+  - ".claude"
+  - "docs/plans"
+FILTER_REGEX_EXCLUDE: "(CLAUDE\\.md$)"
 DEFAULT_BRANCH: "main"
 IGNORE_GITIGNORED_FILES: true
 SPELL_LYCHEE_FILTER_REGEX_EXCLUDE: "(package-lock\\.json)"
