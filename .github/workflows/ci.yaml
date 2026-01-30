@@ -258,16 +258,7 @@ jobs:
       - name: "[PAT] Setup - clean up from previous runs"
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          echo "Closing any existing PRs from branch ${PAT_BRANCH}..."
-          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${PAT_BRANCH} --json number --jq '.[].number' || true)
-          for pr in $PR_NUMBERS; do
-            echo "  Closing PR #${pr}"
-            gh pr close $pr --repo ${TEST_REPO} --delete-branch || true
-          done
-
-          echo "Deleting remote branch ${PAT_BRANCH} if exists..."
-          gh api --method DELETE repos/${TEST_REPO}/git/refs/heads/${PAT_BRANCH} 2>/dev/null || echo "  Branch does not exist"
+        run: .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${PAT_BRANCH}"
 
       - name: "[PAT] Configure custom git identity (to verify action preserves it)"
         run: |
@@ -354,13 +345,7 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          echo "Cleaning up PAT test - closing PRs..."
-          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${PAT_BRANCH} --json number --jq '.[].number' || true)
-          for pr in $PR_NUMBERS; do
-            echo "  Closing PR #${pr}"
-            gh pr close $pr --repo ${TEST_REPO} --delete-branch || true
-          done
+        run: .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${PAT_BRANCH}"
 
       # ========== GitHub App Test ==========
       - name: "[App] Generate GitHub App token"
@@ -374,16 +359,7 @@ jobs:
       - name: "[App] Setup - clean up from previous runs"
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          echo "Closing any existing PRs from branch ${APP_BRANCH}..."
-          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${APP_BRANCH} --json number --jq '.[].number' || true)
-          for pr in $PR_NUMBERS; do
-            echo "  Closing PR #${pr}"
-            gh pr close "$pr" --repo ${TEST_REPO} --delete-branch || true
-          done
-
-          echo "Deleting remote branch ${APP_BRANCH} if exists..."
-          gh api --method DELETE "repos/${TEST_REPO}/git/refs/heads/${APP_BRANCH}" 2>/dev/null || echo "  Branch does not exist"
+        run: .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
 
       - name: "[App] Run xfg action with GitHub App token"
         uses: ./
@@ -471,10 +447,4 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          echo "Cleaning up App test - closing PRs..."
-          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${APP_BRANCH} --json number --jq '.[].number' || true)
-          for pr in $PR_NUMBERS; do
-            echo "  Closing PR #${pr}"
-            gh pr close "$pr" --repo ${TEST_REPO} --delete-branch || true
-          done
+        run: .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
