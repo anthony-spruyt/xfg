@@ -247,10 +247,17 @@ jobs:
           node-version: "24"
           cache: "npm"
 
-      - name: Build local package for testing
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Create local package for testing
         run: |
-          npm ci
-          npm run build
           npm pack
           echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
 
@@ -272,7 +279,8 @@ jobs:
           github-token: ${{ secrets.GH_PAT }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
-      - name: "[PAT] Validate - verify PR was created with correct author"
+      - name: "[PAT] Validate - verify PR created and git identity preserved"
+        id: pat-validate
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
@@ -287,6 +295,7 @@ jobs:
 
           # Verify commit author is preserved (not overwritten to github-actions[bot])
           PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
+          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo ${TEST_REPO} --json commits --jq '.commits[-1].oid')
           COMMIT_AUTHOR=$(gh pr view $PR_NUMBER --repo ${TEST_REPO} --json commits --jq '.commits[-1].authors[0].name')
           echo "Commit author: $COMMIT_AUTHOR"
           if [ "$COMMIT_AUTHOR" = "github-actions[bot]" ]; then
@@ -295,51 +304,13 @@ jobs:
           fi
           echo "Git identity preserved correctly"
 
-          # Validate file count in commit message matches actual files changed (issue #268)
-          echo ""
-          echo "Verifying file count in commit message..."
-          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo ${TEST_REPO} --json commits --jq '.commits[-1].oid')
-          COMMIT_MESSAGE=$(gh api "repos/${TEST_REPO}/commits/${COMMIT_SHA}" --jq '.commit.message')
-          echo "Commit message: $COMMIT_MESSAGE"
+          # Export commit SHA for next step
+          echo "commit_sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
 
-          # Get actual files changed
-          ACTUAL_FILES=$(gh api "repos/${TEST_REPO}/commits/${COMMIT_SHA}" --jq '.files[].filename' | sort)
-          ACTUAL_COUNT=$(echo "$ACTUAL_FILES" | wc -l | tr -d ' ')
-          echo "Actual files changed ($ACTUAL_COUNT):"
-          echo "$ACTUAL_FILES"
-
-          # Extract file names from commit message and verify count
-          if echo "$COMMIT_MESSAGE" | grep -q "config files"; then
-            MSG_COUNT=$(echo "$COMMIT_MESSAGE" | grep -oE '[0-9]+ config files' | grep -oE '[0-9]+')
-            echo "Commit message claims $MSG_COUNT files"
-            if [ "$MSG_COUNT" != "$ACTUAL_COUNT" ]; then
-              echo "ERROR: Commit message says $MSG_COUNT files but $ACTUAL_COUNT actually changed"
-              exit 1
-            fi
-          else
-            FILE_LIST=$(echo "$COMMIT_MESSAGE" | head -1 | sed 's/^[^:]*: [^ ]* //')
-            echo "Files listed in message: $FILE_LIST"
-            if echo "$FILE_LIST" | grep -q ","; then
-              MSG_COUNT=$(($(echo "$FILE_LIST" | tr -cd ',' | wc -c) + 1))
-            else
-              MSG_COUNT=1
-            fi
-            echo "Commit message lists $MSG_COUNT file(s)"
-
-            # Check for duplicates
-            SORTED_FILES=$(echo "$FILE_LIST" | tr ',' '\n' | sed 's/^ *//' | sort)
-            UNIQUE_FILES=$(echo "$SORTED_FILES" | uniq)
-            if [ "$SORTED_FILES" != "$UNIQUE_FILES" ]; then
-              echo "ERROR: Duplicate file names in commit message!"
-              exit 1
-            fi
-
-            if [ "$MSG_COUNT" != "$ACTUAL_COUNT" ]; then
-              echo "ERROR: Commit message lists $MSG_COUNT files but $ACTUAL_COUNT actually changed"
-              exit 1
-            fi
-          fi
-          echo "File count verification passed"
+      - name: "[PAT] Validate - verify file count in commit message (#268)"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.pat-validate.outputs.commit_sha }}"
 
       - name: "[PAT] Cleanup - close PR"
         if: always()
@@ -370,7 +341,8 @@ jobs:
           github-app-token: ${{ steps.app-token.outputs.token }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
-      - name: "[App] Validate - verify commit author is GitHub App (not github-actions[bot])"
+      - name: "[App] Validate - verify commit author is GitHub App (#268)"
+        id: app-validate
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
@@ -397,51 +369,13 @@ jobs:
           fi
           echo "Commit author is correct (GitHub App)"
 
-          # Validate file count in commit message matches actual files changed (issue #268)
-          echo ""
-          echo "Verifying file count in commit message..."
-          COMMIT_MESSAGE=$(gh api "repos/${TEST_REPO}/commits/${COMMIT_SHA}" --jq '.commit.message')
-          echo "Commit message: $COMMIT_MESSAGE"
+          # Export commit SHA for next step
+          echo "commit_sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
 
-          # Get actual files changed
-          ACTUAL_FILES=$(gh api "repos/${TEST_REPO}/commits/${COMMIT_SHA}" --jq '.files[].filename' | sort)
-          ACTUAL_COUNT=$(echo "$ACTUAL_FILES" | wc -l | tr -d ' ')
-          echo "Actual files changed ($ACTUAL_COUNT):"
-          echo "$ACTUAL_FILES"
-
-          # Extract file names from commit message and verify count
-          if echo "$COMMIT_MESSAGE" | grep -q "config files"; then
-            MSG_COUNT=$(echo "$COMMIT_MESSAGE" | grep -oE '[0-9]+ config files' | grep -oE '[0-9]+')
-            echo "Commit message claims $MSG_COUNT files"
-            if [ "$MSG_COUNT" != "$ACTUAL_COUNT" ]; then
-              echo "ERROR: Commit message says $MSG_COUNT files but $ACTUAL_COUNT actually changed"
-              exit 1
-            fi
-          else
-            FILE_LIST=$(echo "$COMMIT_MESSAGE" | head -1 | sed 's/^[^:]*: [^ ]* //')
-            echo "Files listed in message: $FILE_LIST"
-            if echo "$FILE_LIST" | grep -q ","; then
-              MSG_COUNT=$(($(echo "$FILE_LIST" | tr -cd ',' | wc -c) + 1))
-            else
-              MSG_COUNT=1
-            fi
-            echo "Commit message lists $MSG_COUNT file(s)"
-
-            # Check for duplicates
-            SORTED_FILES=$(echo "$FILE_LIST" | tr ',' '\n' | sed 's/^ *//' | sort)
-            UNIQUE_FILES=$(echo "$SORTED_FILES" | uniq)
-            if [ "$SORTED_FILES" != "$UNIQUE_FILES" ]; then
-              echo "ERROR: Duplicate file names in commit message!"
-              echo "Files: $FILE_LIST"
-              exit 1
-            fi
-
-            if [ "$MSG_COUNT" != "$ACTUAL_COUNT" ]; then
-              echo "ERROR: Commit message lists $MSG_COUNT files but $ACTUAL_COUNT actually changed"
-              exit 1
-            fi
-          fi
-          echo "File count verification passed"
+      - name: "[App] Validate - verify file count in commit message (#268)"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.app-validate.outputs.commit_sha }}"
 
       - name: "[App] Cleanup - close PR"
         if: always()
