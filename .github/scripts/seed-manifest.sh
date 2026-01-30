@@ -9,7 +9,8 @@ REPO="${1:?Usage: seed-manifest.sh <repo>}"
 
 # Create .xfg.json manifest so xfg will UPDATE it (not create)
 # Bug #268 only manifests when updating an existing manifest
-MANIFEST='{"version":2,"configs":{"integration-test-action-github":{"managedFiles":["action-test.json"]}}}'
+# Structure: configs[configId] = string[] (array of filenames directly)
+MANIFEST='{"version":2,"configs":{"integration-test-action-github":["action-test.json"]}}'
 
 # Check if manifest exists, create or update it
 SHA=$(gh api "repos/${REPO}/contents/.xfg.json" --jq '.sha' 2>/dev/null || true)
