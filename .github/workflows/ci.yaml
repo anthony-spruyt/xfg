@@ -4,15 +4,27 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - "main"
   push:
-    branches: [main]
+    branches:
+      - "main"
+  # workflow_dispatch:  # Uncomment to enable manual runs
 
 permissions:
   contents: write
+  pull-requests: "write"
+  statuses: "write"
+  security-events: "write"
 
 jobs:
+  lint:
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@main"
+    secrets: "inherit"
+
   build:
+    needs:
+      - "lint"
     runs-on: ubuntu-latest
 
     concurrency:
@@ -52,30 +64,11 @@ jobs:
           path: dist/
           retention-days: 1
 
-  security:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          scan-type: fs
-          trivy-config: trivy.yaml
-
   # Combined GitHub integration tests (PAT + GitHub App)
   integration-test-github:
-    needs: [build, security]
+    needs:
+      - "lint"
+      - "build"
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
@@ -135,7 +128,9 @@ jobs:
         run: npm run test:integration:github-app
 
   integration-test-ado:
-    needs: [build, security]
+    needs:
+      - "lint"
+      - "build"
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
@@ -179,7 +174,9 @@ jobs:
         run: npm run test:integration:ado
 
   integration-test-gitlab:
-    needs: [build, security]
+    needs:
+      - "lint"
+      - "build"
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
@@ -225,7 +222,10 @@ jobs:
 
   # Combined action tests (PAT + GitHub App)
   integration-test-action:
-    needs: [build, security, integration-test-github]
+    needs:
+      - "lint"
+      - "build"
+      - "integration-test-github"
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
@@ -397,3 +397,15 @@ jobs:
         run: |
           .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
           .github/scripts/delete-manifest.sh "${TEST_REPO}"
+
+  # Summary job for branch protection - add jobs to 'needs' array
+  summary:
+    needs:
+      - "lint"
+      - "build"
+      - "integration-test-github"
+      - "integration-test-ado"
+      - "integration-test-gitlab"
+      - "integration-test-action"
+    if: "always()"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@main"
