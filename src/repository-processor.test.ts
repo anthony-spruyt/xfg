@@ -2382,6 +2382,110 @@ describe("RepositoryProcessor", () => {
         `Commit message should include both files, got: ${trackingExecutor.lastCommitMessage}`
       );
     });
+
+    test("should not count manifest file twice with different names (issue #268)", async () => {
+      // This test reproduces the bug where the manifest file .xfg.json
+      // was being counted twice - once correctly and once without the leading dot.
+      // The commit message showed ".xfg.json, .xfg-test, xfg.json" (3 files)
+      // when only 2 files actually changed (.xfg-test and .xfg.json).
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForFileCount | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForFileCount(opts);
+        // Git reports the new test file and the manifest as changed
+        mockGitOps.gitChangedFilesOverride = [".xfg-test", ".xfg.json"];
+        // Simulate manifest already exists (will be updated, not created)
+        mockGitOps.fileExistsOnBranchOverride = false;
+        mockGitOps.fileExistsOnBranch = async (fileName: string) => {
+          // .xfg.json exists (manifest), .xfg-test is new
+          return fileName === ".xfg.json";
+        };
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(
+        testDir,
+        `file-count-manifest-dupe-${Date.now()}`
+      );
+      const trackingExecutor = createTrackingMockExecutor();
+
+      // Create the manifest file to simulate it exists
+      mkdirSync(localWorkDir, { recursive: true });
+      writeFileSync(
+        join(localWorkDir, ".xfg.json"),
+        JSON.stringify({ version: 2, configs: {} }, null, 2),
+        "utf-8"
+      );
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: ".xfg-test",
+            content: "test content",
+            deleteOrphaned: true,
+          },
+        ],
+      };
+
+      const result = await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        configId: "test-config",
+        dryRun: false,
+        executor: trackingExecutor,
+      });
+
+      // Verify we have a commit message
+      assert.ok(
+        trackingExecutor.lastCommitMessage,
+        "Should have commit message"
+      );
+
+      // The commit message should mention exactly 2 files, not 3
+      const commitMsg = trackingExecutor.lastCommitMessage;
+
+      // Check for the phantom "xfg.json" (without leading dot) - this is the bug
+      const hasPhantomXfgJson =
+        commitMsg.includes("xfg.json") && !commitMsg.includes(".xfg.json");
+      const hasCorrectManifest = commitMsg.includes(".xfg.json");
+      const hasTestFile = commitMsg.includes(".xfg-test");
+
+      // Count file names in the commit message
+      const fileNameMatches = commitMsg.match(
+        /\.xfg\.json|\.xfg-test|xfg\.json/g
+      );
+      const fileCount = fileNameMatches ? fileNameMatches.length : 0;
+
+      assert.ok(
+        !hasPhantomXfgJson,
+        `Commit message should not contain phantom 'xfg.json' (without dot). Got: ${commitMsg}`
+      );
+      assert.ok(
+        hasCorrectManifest && hasTestFile,
+        `Commit message should include .xfg.json and .xfg-test. Got: ${commitMsg}`
+      );
+      assert.equal(
+        fileCount,
+        2,
+        `Commit message should mention exactly 2 files, but found ${fileCount}. Got: ${commitMsg}`
+      );
+
+      // Also verify diffStats are correct: 1 new file + 1 modified (manifest)
+      assert.ok(result.diffStats, "Result should have diffStats");
+      assert.equal(
+        result.diffStats!.newCount,
+        1,
+        `Should have 1 new file (.xfg-test), but got ${result.diffStats!.newCount}`
+      );
+      assert.equal(
+        result.diffStats!.modifiedCount,
+        1,
+        `Should have 1 modified file (.xfg.json), but got ${result.diffStats!.modifiedCount}`
+      );
+    });
   });
 
   describe("CommitStrategy integration", () => {

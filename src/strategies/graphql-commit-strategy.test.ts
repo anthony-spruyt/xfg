@@ -680,5 +680,70 @@ describe("GraphQLCommitStrategy", () => {
         "Should throw error when OID is missing"
       );
     });
+
+    test("should pass GH_INSTALLATION_TOKEN explicitly in gh api command (issue #268)", async () => {
+      // This test verifies that the GraphQL commit strategy uses the GitHub App
+      // installation token explicitly, not relying on GH_TOKEN which may be set
+      // to a different token (like the regular workflow token).
+      const originalToken = process.env.GH_INSTALLATION_TOKEN;
+
+      try {
+        // Set the GitHub App installation token
+        process.env.GH_INSTALLATION_TOKEN = "ghs_test_installation_token_12345";
+
+        // Mock git ls-remote to indicate branch exists
+        mockExecutor.responses.set(
+          "git ls-remote",
+          "abc123\trefs/heads/test-branch"
+        );
+        // Mock git fetch
+        mockExecutor.responses.set("git fetch", "");
+        // Mock git rev-parse
+        mockExecutor.responses.set("git rev-parse origin", "abc123def456789");
+
+        // Mock successful GraphQL response
+        mockExecutor.responses.set(
+          "gh api graphql",
+          JSON.stringify({
+            data: {
+              createCommitOnBranch: { commit: { oid: "newsha123" } },
+            },
+          })
+        );
+
+        const strategy = new GraphQLCommitStrategy(mockExecutor);
+        const options: CommitOptions = {
+          repoInfo: githubRepoInfo,
+          branchName: "test-branch",
+          message: "Test commit",
+          fileChanges: [{ path: "file.txt", content: "content" }],
+          workDir: testDir,
+        };
+
+        await strategy.commit(options);
+
+        // Find the gh api graphql command
+        const graphqlCall = mockExecutor.calls.find((c) =>
+          c.command.includes("gh api graphql")
+        );
+        assert.ok(graphqlCall, "Should have called gh api graphql");
+
+        // The command should include explicit authorization with the installation token
+        // This ensures the GitHub App is used as the commit author, not github-actions[bot]
+        assert.ok(
+          graphqlCall.command.includes("ghs_test_installation_token_12345") ||
+            graphqlCall.command.includes("Authorization"),
+          "GraphQL command should include explicit token auth. " +
+            `Got: ${graphqlCall.command.substring(0, 200)}...`
+        );
+      } finally {
+        // Restore original token
+        if (originalToken === undefined) {
+          delete process.env.GH_INSTALLATION_TOKEN;
+        } else {
+          process.env.GH_INSTALLATION_TOKEN = originalToken;
+        }
+      }
+    });
   });
 });
