@@ -276,6 +276,7 @@ jobs:
         uses: ./
         with:
           config: ./fixtures/integration-test-action-github.yaml
+          branch: ${{ env.PAT_BRANCH }}
           github-token: ${{ secrets.GH_PAT }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
