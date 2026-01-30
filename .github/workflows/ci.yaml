@@ -73,6 +73,7 @@ jobs:
           scan-type: fs
           trivy-config: trivy.yaml
 
+  # Combined GitHub integration tests (PAT + GitHub App)
   integration-test-github:
     needs: [build, security]
     if: github.event_name == 'push'
@@ -100,7 +101,7 @@ jobs:
           name: dist
           path: dist/
 
-      - name: Configure git
+      - name: Configure git for PAT tests
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
@@ -108,10 +109,30 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
 
-      - name: Run GitHub integration tests
+      - name: Run GitHub integration tests (PAT)
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.TEST_APP_ID }}
+          private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+          owner: anthony-spruyt
+
+      - name: Reconfigure git for GitHub App tests
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+      - name: Run GitHub App integration tests
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_INSTALLATION_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: npm run test:integration:github-app
 
   integration-test-ado:
     needs: [build, security]
@@ -202,7 +223,8 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: npm run test:integration:gitlab
 
-  integration-test-github-app:
+  # Combined action tests (PAT + GitHub App)
+  integration-test-action:
     needs: [build, security, integration-test-github]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -211,57 +233,10 @@ jobs:
       group: integration-github
       cancel-in-progress: false
 
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: dist
-          path: dist/
-
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ vars.TEST_APP_ID }}
-          private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
-          owner: anthony-spruyt
-
-      - name: Configure git credentials
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
-
-      - name: Run GitHub App integration tests
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          GH_INSTALLATION_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: npm run test:integration:github-app
-
-  integration-test-action:
-    needs: [build, security, integration-test-github-app]
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github
-      cancel-in-progress: false
-
     env:
-      GH_TOKEN: ${{ secrets.GH_PAT }}
       TEST_REPO: anthony-spruyt/xfg-test
-      BRANCH_NAME: chore/sync-my-config
+      PAT_BRANCH: chore/sync-my-config
+      APP_BRANCH: chore/sync-app-test
 
     steps:
       - uses: actions/checkout@v6
@@ -279,33 +254,39 @@ jobs:
           npm pack
           echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
 
-      - name: Setup - clean up from previous runs
+      # ========== PAT Test ==========
+      - name: "[PAT] Setup - clean up from previous runs"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          echo "Closing any existing PRs from branch ${BRANCH_NAME}..."
-          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number --jq '.[].number' || true)
+          echo "Closing any existing PRs from branch ${PAT_BRANCH}..."
+          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${PAT_BRANCH} --json number --jq '.[].number' || true)
           for pr in $PR_NUMBERS; do
             echo "  Closing PR #${pr}"
             gh pr close $pr --repo ${TEST_REPO} --delete-branch || true
           done
 
-          echo "Deleting remote branch ${BRANCH_NAME} if exists..."
-          gh api --method DELETE repos/${TEST_REPO}/git/refs/heads/${BRANCH_NAME} 2>/dev/null || echo "  Branch does not exist"
+          echo "Deleting remote branch ${PAT_BRANCH} if exists..."
+          gh api --method DELETE repos/${TEST_REPO}/git/refs/heads/${PAT_BRANCH} 2>/dev/null || echo "  Branch does not exist"
 
-      - name: Configure custom git identity (to verify action preserves it)
+      - name: "[PAT] Configure custom git identity (to verify action preserves it)"
         run: |
           git config --global user.name "test-user"
           git config --global user.email "test@example.com"
 
-      - uses: ./
+      - name: "[PAT] Run xfg action"
+        uses: ./
         with:
           config: ./fixtures/integration-test-config-github.yaml
           github-token: ${{ secrets.GH_PAT }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
-      - name: Validate - verify PR was created with correct author
+      - name: "[PAT] Validate - verify PR was created with correct author"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           echo "Verifying PR was created..."
-          PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number,title,url --jq '.[0]')
+          PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${PAT_BRANCH} --json number,title,url --jq '.[0]')
           if [ -z "$PR_INFO" ]; then
             echo "ERROR: No PR was created"
             exit 1
@@ -369,47 +350,20 @@ jobs:
           fi
           echo "File count verification passed"
 
-      - name: Cleanup - close PR
+      - name: "[PAT] Cleanup - close PR"
         if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          echo "Cleaning up - closing PRs..."
-          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number --jq '.[].number' || true)
+          echo "Cleaning up PAT test - closing PRs..."
+          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${PAT_BRANCH} --json number --jq '.[].number' || true)
           for pr in $PR_NUMBERS; do
             echo "  Closing PR #${pr}"
             gh pr close $pr --repo ${TEST_REPO} --delete-branch || true
           done
 
-  # Test the action with GitHub App authentication (verified commits)
-  integration-test-action-github-app:
-    needs: [build, security, integration-test-action]
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github
-      cancel-in-progress: false
-
-    env:
-      TEST_REPO: anthony-spruyt/xfg-test
-      BRANCH_NAME: chore/sync-app-test
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-          cache: "npm"
-
-      - name: Build local package for testing
-        run: |
-          npm ci
-          npm run build
-          npm pack
-          echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
-
-      - name: Generate GitHub App token
+      # ========== GitHub App Test ==========
+      - name: "[App] Generate GitHub App token"
         id: app-token
         uses: actions/create-github-app-token@v2
         with:
@@ -417,35 +371,35 @@ jobs:
           private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
           owner: anthony-spruyt
 
-      - name: Setup - clean up from previous runs
+      - name: "[App] Setup - clean up from previous runs"
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          echo "Closing any existing PRs from branch ${BRANCH_NAME}..."
-          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number --jq '.[].number' || true)
+          echo "Closing any existing PRs from branch ${APP_BRANCH}..."
+          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${APP_BRANCH} --json number --jq '.[].number' || true)
           for pr in $PR_NUMBERS; do
             echo "  Closing PR #${pr}"
             gh pr close "$pr" --repo ${TEST_REPO} --delete-branch || true
           done
 
-          echo "Deleting remote branch ${BRANCH_NAME} if exists..."
-          gh api --method DELETE "repos/${TEST_REPO}/git/refs/heads/${BRANCH_NAME}" 2>/dev/null || echo "  Branch does not exist"
+          echo "Deleting remote branch ${APP_BRANCH} if exists..."
+          gh api --method DELETE "repos/${TEST_REPO}/git/refs/heads/${APP_BRANCH}" 2>/dev/null || echo "  Branch does not exist"
 
-      - name: Run xfg action with GitHub App token
+      - name: "[App] Run xfg action with GitHub App token"
         uses: ./
         with:
           config: ./fixtures/integration-test-config-github.yaml
-          branch: ${{ env.BRANCH_NAME }}
+          branch: ${{ env.APP_BRANCH }}
           github-token: ${{ steps.app-token.outputs.token }}
           github-app-token: ${{ steps.app-token.outputs.token }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
-      - name: Validate - verify commit author is GitHub App (not github-actions[bot])
+      - name: "[App] Validate - verify commit author is GitHub App (not github-actions[bot])"
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           echo "Verifying PR was created..."
-          PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number,title,url --jq '.[0]')
+          PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${APP_BRANCH} --json number,title,url --jq '.[0]')
           if [ -z "$PR_INFO" ]; then
             echo "ERROR: No PR was created"
             exit 1
@@ -459,7 +413,7 @@ jobs:
           COMMIT_AUTHOR=$(gh api "repos/${TEST_REPO}/commits/${COMMIT_SHA}" --jq '.commit.author.name')
           echo "Commit author: $COMMIT_AUTHOR"
 
-          # This test will FAIL until we fix the auth bug (issue #268)
+          # Verify commit author is GitHub App, not github-actions[bot] (issue #268)
           if [ "$COMMIT_AUTHOR" = "github-actions[bot]" ]; then
             echo "ERROR: Commit author is github-actions[bot] but should be the GitHub App"
             echo "This indicates the GitHub App token is not being used for GraphQL commits"
@@ -479,10 +433,8 @@ jobs:
           echo "Actual files changed ($ACTUAL_COUNT):"
           echo "$ACTUAL_FILES"
 
-          # Extract file names from commit message (format: "chore: sync file1, file2, file3" or "chore: sync N config files")
-          # Check for duplicate file names in commit message
+          # Extract file names from commit message and verify count
           if echo "$COMMIT_MESSAGE" | grep -q "config files"; then
-            # Message says "N config files" - extract N and compare
             MSG_COUNT=$(echo "$COMMIT_MESSAGE" | grep -oE '[0-9]+ config files' | grep -oE '[0-9]+')
             echo "Commit message claims $MSG_COUNT files"
             if [ "$MSG_COUNT" != "$ACTUAL_COUNT" ]; then
@@ -490,12 +442,8 @@ jobs:
               exit 1
             fi
           else
-            # Message lists individual files - check for duplicates and count
-            # Extract everything after "chore: sync " or similar prefix
             FILE_LIST=$(echo "$COMMIT_MESSAGE" | head -1 | sed 's/^[^:]*: [^ ]* //')
             echo "Files listed in message: $FILE_LIST"
-
-            # Count commas + 1 to get file count (or 1 if no commas)
             if echo "$FILE_LIST" | grep -q ","; then
               MSG_COUNT=$(($(echo "$FILE_LIST" | tr -cd ',' | wc -c) + 1))
             else
@@ -503,7 +451,7 @@ jobs:
             fi
             echo "Commit message lists $MSG_COUNT file(s)"
 
-            # Check for obvious duplicates (same filename appears twice)
+            # Check for duplicates
             SORTED_FILES=$(echo "$FILE_LIST" | tr ',' '\n' | sed 's/^ *//' | sort)
             UNIQUE_FILES=$(echo "$SORTED_FILES" | uniq)
             if [ "$SORTED_FILES" != "$UNIQUE_FILES" ]; then
@@ -519,13 +467,13 @@ jobs:
           fi
           echo "File count verification passed"
 
-      - name: Cleanup - close PR
+      - name: "[App] Cleanup - close PR"
         if: always()
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          echo "Cleaning up - closing PRs..."
-          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number --jq '.[].number' || true)
+          echo "Cleaning up App test - closing PRs..."
+          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${APP_BRANCH} --json number --jq '.[].number' || true)
           for pr in $PR_NUMBERS; do
             echo "  Closing PR #${pr}"
             gh pr close "$pr" --repo ${TEST_REPO} --delete-branch || true
