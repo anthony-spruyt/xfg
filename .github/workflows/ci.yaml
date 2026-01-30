@@ -267,6 +267,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${PAT_BRANCH}"
 
+      - name: "[PAT] Seed manifest to trigger update path (bug #268)"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/seed-manifest.sh "${TEST_REPO}"
+
       - name: "[PAT] Configure custom git identity (to verify action preserves it)"
         run: |
           git config --global user.name "test-user"
@@ -313,11 +318,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.pat-validate.outputs.commit_sha }}"
 
-      - name: "[PAT] Cleanup - close PR"
+      - name: "[PAT] Cleanup - close PR and delete seeded manifest"
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${PAT_BRANCH}"
+        run: |
+          .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${PAT_BRANCH}"
+          .github/scripts/delete-manifest.sh "${TEST_REPO}"
 
       # ========== GitHub App Test ==========
       - name: "[App] Generate GitHub App token"
@@ -332,6 +339,11 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
+
+      - name: "[App] Seed manifest to trigger update path (bug #268)"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: .github/scripts/seed-manifest.sh "${TEST_REPO}"
 
       - name: "[App] Run xfg action with GitHub App token"
         uses: ./
@@ -378,8 +390,10 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.app-validate.outputs.commit_sha }}"
 
-      - name: "[App] Cleanup - close PR"
+      - name: "[App] Cleanup - close PR and delete seeded manifest"
         if: always()
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
+        run: |
+          .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
+          .github/scripts/delete-manifest.sh "${TEST_REPO}"
