@@ -266,6 +266,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Build local package for testing
+        run: |
+          npm ci
+          npm run build
+          npm pack
+          echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
+
       - name: Setup - clean up from previous runs
         run: |
           echo "Closing any existing PRs from branch ${BRANCH_NAME}..."
@@ -287,6 +300,7 @@ jobs:
         with:
           config: ./fixtures/integration-test-config-github.yaml
           github-token: ${{ secrets.GH_PAT }}
+          xfg-package: "./${{ env.XFG_PACKAGE }}"
 
       - name: Validate - verify PR was created with correct author
         run: |
@@ -317,4 +331,104 @@ jobs:
           for pr in $PR_NUMBERS; do
             echo "  Closing PR #${pr}"
             gh pr close $pr --repo ${TEST_REPO} --delete-branch || true
+          done
+
+  # Test the action with GitHub App authentication (verified commits)
+  integration-test-action-github-app:
+    needs: [build, security, integration-test-action]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: integration-github
+      cancel-in-progress: false
+
+    env:
+      TEST_REPO: anthony-spruyt/xfg-test
+      BRANCH_NAME: chore/sync-app-test
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Build local package for testing
+        run: |
+          npm ci
+          npm run build
+          npm pack
+          echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.TEST_APP_ID }}
+          private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+          owner: anthony-spruyt
+
+      - name: Setup - clean up from previous runs
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          echo "Closing any existing PRs from branch ${BRANCH_NAME}..."
+          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number --jq '.[].number' || true)
+          for pr in $PR_NUMBERS; do
+            echo "  Closing PR #${pr}"
+            gh pr close "$pr" --repo ${TEST_REPO} --delete-branch || true
+          done
+
+          echo "Deleting remote branch ${BRANCH_NAME} if exists..."
+          gh api --method DELETE "repos/${TEST_REPO}/git/refs/heads/${BRANCH_NAME}" 2>/dev/null || echo "  Branch does not exist"
+
+      - name: Run xfg action with GitHub App token
+        uses: ./
+        with:
+          config: ./fixtures/integration-test-config-github.yaml
+          branch: ${{ env.BRANCH_NAME }}
+          github-token: ${{ steps.app-token.outputs.token }}
+          github-app-token: ${{ steps.app-token.outputs.token }}
+          xfg-package: "./${{ env.XFG_PACKAGE }}"
+
+      - name: Validate - verify commit author is GitHub App (not github-actions[bot])
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          echo "Verifying PR was created..."
+          PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number,title,url --jq '.[0]')
+          if [ -z "$PR_INFO" ]; then
+            echo "ERROR: No PR was created"
+            exit 1
+          fi
+          echo "PR created successfully:"
+          echo "$PR_INFO" | jq .
+
+          # Get commit author - should be GitHub App, NOT github-actions[bot]
+          PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
+          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo ${TEST_REPO} --json commits --jq '.commits[-1].oid')
+          COMMIT_AUTHOR=$(gh api "repos/${TEST_REPO}/commits/${COMMIT_SHA}" --jq '.commit.author.name')
+          echo "Commit author: $COMMIT_AUTHOR"
+
+          # This test will FAIL until we fix the auth bug (issue #268)
+          if [ "$COMMIT_AUTHOR" = "github-actions[bot]" ]; then
+            echo "ERROR: Commit author is github-actions[bot] but should be the GitHub App"
+            echo "This indicates the GitHub App token is not being used for GraphQL commits"
+            exit 1
+          fi
+          echo "Commit author is correct (GitHub App)"
+
+      - name: Cleanup - close PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          echo "Cleaning up - closing PRs..."
+          PR_NUMBERS=$(gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number --jq '.[].number' || true)
+          for pr in $PR_NUMBERS; do
+            echo "  Closing PR #${pr}"
+            gh pr close "$pr" --repo ${TEST_REPO} --delete-branch || true
           done

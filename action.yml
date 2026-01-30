@@ -48,6 +48,10 @@ inputs:
   github-app-token:
     description: "GitHub App installation token for verified commits (overrides github-token for GitHub repos)"
     required: false
+  xfg-package:
+    description: "xfg package to install (npm package name, local .tgz path, or 'skip' to use pre-installed). Used for CI testing."
+    required: false
+    default: "@aspruyt/xfg"
 
 runs:
   using: "composite"
@@ -107,7 +111,13 @@ runs:
 
     - name: Install xfg
       shell: bash
-      run: npm install -g @aspruyt/xfg
+      run: |
+        if [ "${{ inputs.xfg-package }}" = "skip" ]; then
+          echo "Skipping xfg installation (using pre-installed)"
+        else
+          echo "Installing xfg from: ${{ inputs.xfg-package }}"
+          npm install -g "${{ inputs.xfg-package }}"
+        fi
 
     - name: Run xfg
       shell: bash
