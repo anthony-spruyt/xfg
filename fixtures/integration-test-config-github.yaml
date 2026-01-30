@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
-# Integration test config - tests root-level content with overlay merge
+# Integration test config - tests multiple files with deleteOrphaned to catch bug #268
 id: integration-test-github
+deleteOrphaned: true
 files:
   my.config.json:
     content:
@@ -12,6 +13,10 @@ files:
           - prop6: platform
           - prop7: engineering
       baseOnly: inherited-from-root
+  second-config.yaml:
+    content:
+      setting1: value1
+      setting2: value2
 
 repos:
   - git: https://github.com/anthony-spruyt/xfg-test.git
