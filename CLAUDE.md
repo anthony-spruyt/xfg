@@ -16,21 +16,21 @@ Full docs: <https://anthony-spruyt.github.io/xfg/>
 ## Development
 
 ```bash
-npm run build    # Compile TypeScript
-npm test         # Run unit tests
-npm run dev      # Run CLI via ts-node
+pnpm build    # Compile TypeScript
+pnpm test     # Run unit tests
+pnpm dev      # Run CLI via ts-node
 ```
 
 ## Pre-PR Checklist
 
 **MUST pass before any PR:**
 
-1. `npm test` - Unit tests
+1. `pnpm test` - Unit tests
 2. `./lint.sh` - Linting
 3. Integration tests (if CLI behavior changed):
-   - `npm run test:integration:github`
-   - `npm run test:integration:ado`
-   - `npm run test:integration:gitlab`
+   - `pnpm test:integration:github`
+   - `pnpm test:integration:ado`
+   - `pnpm test:integration:gitlab`
 
 **Note:** CI integration tests only run on `main` branch, not on PR branches.
 

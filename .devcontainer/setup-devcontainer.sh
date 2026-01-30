@@ -21,10 +21,14 @@ curl -sL -o /tmp/gcm.deb https://github.com/git-ecosystem/git-credential-manager
 sudo dpkg -i /tmp/gcm.deb
 rm /tmp/gcm.deb
 
+# Install pnpm via corepack (ships with Node)
+echo "Installing pnpm..."
+corepack enable pnpm
+
 # Install and build the project
 echo "Installing project dependencies..."
 cd "/workspaces/xfg"
-npm install
+pnpm install
 
 echo "Building project..."
-npm run build
+pnpm build

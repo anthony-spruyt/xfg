@@ -34,20 +34,24 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "24"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: npm run build
+        run: pnpm build
 
       - name: Run unit tests with coverage
-        run: npm run test:coverage
+        run: pnpm test:coverage
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
@@ -79,14 +83,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "24"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Download build artifact
         uses: actions/download-artifact@v7
@@ -105,7 +113,7 @@ jobs:
       - name: Run GitHub integration tests (PAT)
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: npm run test:integration:github
+        run: pnpm test:integration:github
 
       - name: Generate GitHub App token
         id: app-token
@@ -125,7 +133,7 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           GH_INSTALLATION_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: npm run test:integration:github-app
+        run: pnpm test:integration:github-app
 
   integration-test-ado:
     needs:
@@ -141,14 +149,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "24"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Download build artifact
         uses: actions/download-artifact@v7
@@ -171,7 +183,7 @@ jobs:
       - name: Run Azure DevOps integration tests
         env:
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
-        run: npm run test:integration:ado
+        run: pnpm test:integration:ado
 
   integration-test-gitlab:
     needs:
@@ -187,14 +199,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "24"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Download build artifact
         uses: actions/download-artifact@v7
@@ -218,7 +234,7 @@ jobs:
       - name: Run GitLab integration tests
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-        run: npm run test:integration:gitlab
+        run: pnpm test:integration:gitlab
 
   # Combined action tests (PAT + GitHub App)
   integration-test-action:
@@ -241,14 +257,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "24"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Download build artifact
         uses: actions/download-artifact@v7
@@ -258,7 +278,7 @@ jobs:
 
       - name: Create local package for testing
         run: |
-          npm pack
+          pnpm pack
           echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
 
       # ========== PAT Test ==========

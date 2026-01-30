@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 
 # Prevent accidental secret commits
 .env
@@ -33,6 +34,7 @@ tmp/
 # Logs
 *.log
 npm-debug.log*
+pnpm-debug.log*
 
 # OS files
 .DS_Store
