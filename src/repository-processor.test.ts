@@ -2052,8 +2052,9 @@ describe("RepositoryProcessor", () => {
 
     class MockGitOpsForFileCount extends GitOps {
       lastCommitMessage: string | null = null;
-      gitChangedFilesOverride: string[] = [];
       fileExistsOnBranchOverride: boolean = false;
+      // Map of fileName -> wouldChange result (defaults to true if not specified)
+      wouldChangeOverride: Map<string, boolean> = new Map();
 
       constructor(options: GitOpsOptions) {
         super(options);
@@ -2084,16 +2085,13 @@ describe("RepositoryProcessor", () => {
         writeFileSync(filePath, content, "utf-8");
       }
 
-      override wouldChange(_fileName: string, _content: string): boolean {
-        return true;
+      override wouldChange(fileName: string, _content: string): boolean {
+        // Return override if set, otherwise default to true
+        return this.wouldChangeOverride.get(fileName) ?? true;
       }
 
       override async hasChanges(): Promise<boolean> {
         return true;
-      }
-
-      override async getChangedFiles(): Promise<string[]> {
-        return this.gitChangedFilesOverride;
       }
 
       override async fileExistsOnBranch(
@@ -2117,16 +2115,13 @@ describe("RepositoryProcessor", () => {
       }
     }
 
-    test("should include manifest file in changedFiles when git reports it as changed", async () => {
+    test("should include manifest file in changedFiles when content changes", async () => {
       const mockLogger = createMockLogger();
       let mockGitOps: MockGitOpsForFileCount | null = null;
 
       const mockFactory: GitOpsFactory = (opts) => {
         mockGitOps = new MockGitOpsForFileCount(opts);
-        // Git reports both config.json and .xfg.json as changed
-        // This simulates when manifestChanged was false (semantic content same)
-        // but git sees a formatting change
-        mockGitOps.gitChangedFilesOverride = ["config.json", ".xfg.json"];
+        // wouldChange defaults to true, so both config.json and .xfg.json will be tracked
         return mockGitOps;
       };
 
@@ -2171,65 +2166,15 @@ describe("RepositoryProcessor", () => {
       );
     });
 
-    test("should include files from git status that aren't in repoConfig.files", async () => {
+    test("should skip config files when wouldChange returns false", async () => {
       const mockLogger = createMockLogger();
       let mockGitOps: MockGitOpsForFileCount | null = null;
 
       const mockFactory: GitOpsFactory = (opts) => {
         mockGitOps = new MockGitOpsForFileCount(opts);
-        // Git reports extra-file.json as changed, but it's not in repoConfig.files
-        // This could happen if a file is manually added to the repo
-        mockGitOps.gitChangedFilesOverride = ["config.json", "extra-file.json"];
-        return mockGitOps;
-      };
-
-      const processor = new RepositoryProcessor(mockFactory, mockLogger);
-      const localWorkDir = join(testDir, `file-count-extra-${Date.now()}`);
-      const trackingExecutor = createTrackingMockExecutor();
-
-      const repoConfig: RepoConfig = {
-        git: "git@github.com:test/repo.git",
-        files: [
-          {
-            fileName: "config.json",
-            content: { key: "value" },
-          },
-        ],
-      };
-
-      await processor.process(repoConfig, mockRepoInfo, {
-        branchName: "chore/sync-config",
-        workDir: localWorkDir,
-        configId: "test-config",
-        dryRun: false,
-        executor: trackingExecutor,
-      });
-
-      // Commit message should mention 2 files
-      assert.ok(
-        trackingExecutor.lastCommitMessage,
-        "Should have commit message"
-      );
-      const hasConfigJson =
-        trackingExecutor.lastCommitMessage.includes("config.json");
-      const hasExtraFile =
-        trackingExecutor.lastCommitMessage.includes("extra-file.json");
-      const hasTwoFiles =
-        trackingExecutor.lastCommitMessage.includes("2 config files");
-      assert.ok(
-        (hasConfigJson && hasExtraFile) || hasTwoFiles,
-        `Commit message should include both files or show '2 config files', got: ${trackingExecutor.lastCommitMessage}`
-      );
-    });
-
-    test("should skip config files not reported by git as changed", async () => {
-      const mockLogger = createMockLogger();
-      let mockGitOps: MockGitOpsForFileCount | null = null;
-
-      const mockFactory: GitOpsFactory = (opts) => {
-        mockGitOps = new MockGitOpsForFileCount(opts);
-        // Git only reports config1.json as changed, not config2.json
-        mockGitOps.gitChangedFilesOverride = ["config1.json"];
+        // config1.json would change, config2.json would not
+        mockGitOps.wouldChangeOverride.set("config1.json", true);
+        mockGitOps.wouldChangeOverride.set("config2.json", false);
         return mockGitOps;
       };
 
@@ -2277,8 +2222,6 @@ describe("RepositoryProcessor", () => {
 
       const mockFactory: GitOpsFactory = (opts) => {
         mockGitOps = new MockGitOpsForFileCount(opts);
-        // Git reports both files as changed
-        mockGitOps.gitChangedFilesOverride = ["skipped.json", "actual.json"];
         // Override to make skipped.json exist on base branch (triggers createOnly skip)
         mockGitOps.fileExistsOnBranchOverride = true;
         // Custom override to only skip skipped.json
@@ -2330,59 +2273,6 @@ describe("RepositoryProcessor", () => {
       );
     });
 
-    test("should handle update action for existing extra files from git status", async () => {
-      const mockLogger = createMockLogger();
-      let mockGitOps: MockGitOpsForFileCount | null = null;
-
-      const mockFactory: GitOpsFactory = (opts) => {
-        mockGitOps = new MockGitOpsForFileCount(opts);
-        // Git reports an extra file that exists (update action)
-        mockGitOps.gitChangedFilesOverride = [
-          "config.json",
-          "existing-extra.json",
-        ];
-        return mockGitOps;
-      };
-
-      const processor = new RepositoryProcessor(mockFactory, mockLogger);
-      const localWorkDir = join(
-        testDir,
-        `file-count-update-extra-${Date.now()}`
-      );
-      const trackingExecutor = createTrackingMockExecutor();
-
-      // Pre-create the extra file so it triggers "update" action
-      mkdirSync(localWorkDir, { recursive: true });
-      writeFileSync(join(localWorkDir, "existing-extra.json"), '{"old": true}');
-
-      const repoConfig: RepoConfig = {
-        git: "git@github.com:test/repo.git",
-        files: [{ fileName: "config.json", content: { key: "value" } }],
-      };
-
-      await processor.process(repoConfig, mockRepoInfo, {
-        branchName: "chore/sync-config",
-        workDir: localWorkDir,
-        configId: "test-config",
-        dryRun: false,
-        executor: trackingExecutor,
-      });
-
-      // Commit message should mention 2 files
-      assert.ok(
-        trackingExecutor.lastCommitMessage,
-        "Should have commit message"
-      );
-      const hasTwoFiles =
-        trackingExecutor.lastCommitMessage.includes("2 config files") ||
-        (trackingExecutor.lastCommitMessage.includes("config.json") &&
-          trackingExecutor.lastCommitMessage.includes("existing-extra.json"));
-      assert.ok(
-        hasTwoFiles,
-        `Commit message should include both files, got: ${trackingExecutor.lastCommitMessage}`
-      );
-    });
-
     test("should not count manifest file twice with different names (issue #268)", async () => {
       // This test reproduces the bug where the manifest file .xfg.json
       // was being counted twice - once correctly and once without the leading dot.
@@ -2393,8 +2283,6 @@ describe("RepositoryProcessor", () => {
 
       const mockFactory: GitOpsFactory = (opts) => {
         mockGitOps = new MockGitOpsForFileCount(opts);
-        // Git reports the new test file and the manifest as changed
-        mockGitOps.gitChangedFilesOverride = [".xfg-test", ".xfg.json"];
         // Simulate manifest already exists (will be updated, not created)
         mockGitOps.fileExistsOnBranchOverride = false;
         mockGitOps.fileExistsOnBranch = async (fileName: string) => {
@@ -2486,6 +2374,113 @@ describe("RepositoryProcessor", () => {
         `Should have 1 modified file (.xfg.json), but got ${result.diffStats!.modifiedCount}`
       );
     });
+
+    test("should count exactly 3 files when updating existing manifest with new file (issue #268 update path)", async () => {
+      // This test reproduces the CI failure where:
+      // - Seeded manifest had ["action-test.json"]
+      // - Config has action-test.json AND action-test-2.yaml (both deleteOrphaned: true)
+      // - Git reports 3 files changed: .xfg.json, action-test.json, action-test-2.yaml
+      // - Bug: commit message said "4 config files" instead of 3
+      const mockLogger = createMockLogger();
+      let mockGitOps: MockGitOpsForFileCount | null = null;
+
+      const mockFactory: GitOpsFactory = (opts) => {
+        mockGitOps = new MockGitOpsForFileCount(opts);
+        // Both config files exist on base branch (they're being updated)
+        mockGitOps.fileExistsOnBranchOverride = false;
+        mockGitOps.fileExistsOnBranch = async (fileName: string) => {
+          return fileName === "action-test.json"; // Only action-test.json exists
+        };
+        return mockGitOps;
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+      const localWorkDir = join(
+        testDir,
+        `file-count-manifest-update-${Date.now()}`
+      );
+      const trackingExecutor = createTrackingMockExecutor();
+
+      // Seed the manifest with only action-test.json (simulating the update path)
+      mkdirSync(localWorkDir, { recursive: true });
+      writeFileSync(
+        join(localWorkDir, ".xfg.json"),
+        JSON.stringify(
+          {
+            version: 2,
+            configs: { "test-config": ["action-test.json"] },
+          },
+          null,
+          2
+        ),
+        "utf-8"
+      );
+      // Create action-test.json so it's an update, not create
+      writeFileSync(
+        join(localWorkDir, "action-test.json"),
+        '{"old": "content"}',
+        "utf-8"
+      );
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [
+          {
+            fileName: "action-test.json",
+            content: { syncedByAction: true },
+            deleteOrphaned: true,
+          },
+          {
+            fileName: "action-test-2.yaml",
+            content: { setting1: "value1" },
+            deleteOrphaned: true,
+          },
+        ],
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        configId: "test-config",
+        dryRun: false,
+        executor: trackingExecutor,
+      });
+
+      // Verify commit message
+      assert.ok(
+        trackingExecutor.lastCommitMessage,
+        "Should have commit message"
+      );
+
+      const commitMsg = trackingExecutor.lastCommitMessage;
+
+      // The commit message should mention exactly 3 files, not 4
+      // With 3 files it would be: "chore: sync .xfg.json, action-test.json, action-test-2.yaml"
+      // With 4+ files it would be: "chore: sync 4 config files"
+      const hasThreeFilesListedOrLess =
+        !commitMsg.includes("config files") ||
+        commitMsg.includes("3 config files");
+
+      // Count unique file names to verify no duplicates
+      const fileMatches = commitMsg.match(
+        /\.xfg\.json|action-test\.json|action-test-2\.yaml/g
+      );
+      const uniqueFiles = new Set(fileMatches || []);
+
+      assert.ok(
+        hasThreeFilesListedOrLess,
+        `Commit message should list 3 files or fewer (not "4 config files"). Got: ${commitMsg}`
+      );
+      assert.equal(
+        uniqueFiles.size,
+        3,
+        `Should have exactly 3 unique files in commit message. Got: ${commitMsg}`
+      );
+      assert.ok(
+        !commitMsg.includes("4 config files"),
+        `Commit message should NOT say "4 config files". Got: ${commitMsg}`
+      );
+    });
   });
 
   describe("CommitStrategy integration", () => {
@@ -2507,8 +2502,6 @@ describe("RepositoryProcessor", () => {
     });
 
     class MockGitOpsForCommitStrategy extends GitOps {
-      gitChangedFilesOverride: string[] = [];
-
       constructor(options: GitOpsOptions) {
         super(options);
       }
@@ -2536,14 +2529,6 @@ describe("RepositoryProcessor", () => {
         const filePath = join(this.getWorkDir(), fileName);
         mkdirSync(this.getWorkDir(), { recursive: true });
         writeFileSync(filePath, content, "utf-8");
-      }
-
-      override async hasChanges(): Promise<boolean> {
-        return this.gitChangedFilesOverride.length > 0;
-      }
-
-      override async getChangedFiles(): Promise<string[]> {
-        return this.gitChangedFilesOverride;
       }
 
       override async fileExistsOnBranch(
@@ -2584,7 +2569,7 @@ describe("RepositoryProcessor", () => {
 
         const mockFactory: GitOpsFactory = (opts) => {
           mockGitOps = new MockGitOpsForCommitStrategy(opts);
-          mockGitOps.gitChangedFilesOverride = ["config.json"];
+          // wouldChange will return true since we write new content
           return mockGitOps;
         };
 
@@ -2684,7 +2669,7 @@ describe("RepositoryProcessor", () => {
 
         const mockFactory: GitOpsFactory = (opts) => {
           mockGitOps = new MockGitOpsForCommitStrategy(opts);
-          mockGitOps.gitChangedFilesOverride = ["config.json"];
+          // wouldChange will return true since we write new content
           return mockGitOps;
         };
 
@@ -2752,7 +2737,7 @@ describe("RepositoryProcessor", () => {
 
         const mockFactory: GitOpsFactory = (opts) => {
           mockGitOps = new MockGitOpsForCommitStrategy(opts);
-          mockGitOps.gitChangedFilesOverride = ["config.json"];
+          // wouldChange will return true since we write new content
           return mockGitOps;
         };
 
@@ -2813,7 +2798,7 @@ describe("RepositoryProcessor", () => {
 
         const mockFactory: GitOpsFactory = (opts) => {
           mockGitOps = new MockGitOpsForCommitStrategy(opts);
-          mockGitOps.gitChangedFilesOverride = ["config.json"];
+          // wouldChange will return true since we write new content
           return mockGitOps;
         };
 
@@ -2874,7 +2859,7 @@ describe("RepositoryProcessor", () => {
 
         const mockFactory: GitOpsFactory = (opts) => {
           mockGitOps = new MockGitOpsForCommitStrategy(opts);
-          mockGitOps.gitChangedFilesOverride = ["config.json"];
+          // wouldChange will return true since we write new content
           return mockGitOps;
         };
 
@@ -2943,7 +2928,6 @@ describe("RepositoryProcessor", () => {
     });
 
     class MockGitOpsForDiffStats extends GitOps {
-      gitChangedFilesOverride: string[] = [];
       fileExistsMap: Map<string, boolean> = new Map();
 
       constructor(options: GitOpsOptions) {
@@ -2973,14 +2957,6 @@ describe("RepositoryProcessor", () => {
         const filePath = join(this.getWorkDir(), fileName);
         mkdirSync(this.getWorkDir(), { recursive: true });
         writeFileSync(filePath, content, "utf-8");
-      }
-
-      override async hasChanges(): Promise<boolean> {
-        return this.gitChangedFilesOverride.length > 0;
-      }
-
-      override async getChangedFiles(): Promise<string[]> {
-        return this.gitChangedFilesOverride;
       }
 
       override async fileExistsOnBranch(
@@ -3034,9 +3010,8 @@ describe("RepositoryProcessor", () => {
 
       const mockFactory: GitOpsFactory = (opts) => {
         mockGitOps = new MockGitOpsForDiffStats(opts);
-        // Git reports 2 files changed: one new, one update
-        mockGitOps.gitChangedFilesOverride = ["new-file.json", "existing.json"];
         // existing.json exists (update), new-file.json doesn't (create)
+        // wouldChange will return true since content changes
         mockGitOps.setupFileExists("existing.json", true);
         mockGitOps.setupFileExists("new-file.json", false);
         return mockGitOps;
@@ -3087,7 +3062,7 @@ describe("RepositoryProcessor", () => {
       const mockFactory: GitOpsFactory = (opts) => {
         mockGitOps = new MockGitOpsForDiffStats(opts);
         // Git reports config.json changed, orphaned.json will be deleted
-        mockGitOps.gitChangedFilesOverride = ["config.json"];
+        // wouldChange will return true since we write new content
         mockGitOps.setupFileExists("orphaned.json", true); // Orphan exists
         return mockGitOps;
       };

@@ -177,19 +177,16 @@ export class RepositoryProcessor {
       // - Dry-run: Uses wouldChange() for read-only content comparison (no side effects)
       // - Normal: Uses git status after writing (source of truth for what git will commit)
       //
-      // This is intentional. git status is more accurate because it respects .gitattributes
-      // (line ending normalization, filters) and detects executable bit changes. However,
-      // it requires actually writing files, which defeats dry-run's purpose.
-      //
-      // For config files (JSON/YAML), these approaches produce identical results in practice.
-      // Edge cases (repos with unusual git attributes on config files) are essentially nonexistent.
-      const changedFiles: FileAction[] = [];
+      // Track all file changes with content and action - single source of truth
+      // Used for both commit message generation and actual commit
+      const fileChangesForCommit = new Map<
+        string,
+        {
+          content: string | null;
+          action: "create" | "update" | "delete" | "skip";
+        }
+      >();
       const diffStats: DiffStats = createDiffStats();
-      // Track pre-write actions for non-dry-run mode (issue #252)
-      // We need to know if a file was created vs updated BEFORE writing it
-      const preWriteActions = new Map<string, "create" | "update">();
-      // Track file changes for commit strategy (path -> content, null for deletion)
-      const fileChangesForCommit = new Map<string, string | null>();
 
       for (const file of repoConfig.files) {
         const filePath = join(workDir, file.fileName);
@@ -206,7 +203,10 @@ export class RepositoryProcessor {
             this.log.info(
               `Skipping ${file.fileName} (createOnly: exists on ${baseBranch})`
             );
-            changedFiles.push({ fileName: file.fileName, action: "skip" });
+            fileChangesForCommit.set(file.fileName, {
+              content: null,
+              action: "skip",
+            });
             continue;
           }
         }
@@ -236,25 +236,28 @@ export class RepositoryProcessor {
           }
         );
 
-        // Determine action type (create vs update)
+        // Determine action type (create vs update) BEFORE writing
         const action: "create" | "update" = fileExistsLocal
           ? "update"
           : "create";
 
-        if (dryRun) {
-          // In dry-run, check if file would change and show diff
-          const existingContent = this.gitOps.getFileContent(file.fileName);
-          const changed = this.gitOps.wouldChange(file.fileName, fileContent);
-          const status = getFileStatus(existingContent !== null, changed);
+        // Check if file would change (needed for both modes)
+        const existingContent = this.gitOps.getFileContent(file.fileName);
+        const changed = this.gitOps.wouldChange(file.fileName, fileContent);
 
-          // Track stats
+        if (changed) {
+          // Track in single source of truth
+          fileChangesForCommit.set(file.fileName, {
+            content: fileContent,
+            action,
+          });
+        }
+
+        if (dryRun) {
+          // In dry-run, show diff but don't write
+          const status = getFileStatus(existingContent !== null, changed);
           incrementDiffStats(diffStats, status);
 
-          if (changed) {
-            changedFiles.push({ fileName: file.fileName, action });
-          }
-
-          // Generate and display diff
           const diffLines = generateDiff(
             existingContent,
             fileContent,
@@ -262,21 +265,16 @@ export class RepositoryProcessor {
           );
           this.log.fileDiff(file.fileName, status, diffLines);
         } else {
-          // Write the file and store pre-write action for stats calculation
-          preWriteActions.set(file.fileName, action);
+          // Write the file
           this.gitOps.writeFile(file.fileName, fileContent);
-          // Track content for commit strategy
-          fileChangesForCommit.set(file.fileName, fileContent);
         }
       }
 
       // Step 5b: Set executable permission for files that need it
-      const skippedFileNames = new Set(
-        changedFiles.filter((f) => f.action === "skip").map((f) => f.fileName)
-      );
       for (const file of repoConfig.files) {
         // Skip files that were excluded (createOnly + exists)
-        if (skippedFileNames.has(file.fileName)) {
+        const tracked = fileChangesForCommit.get(file.fileName);
+        if (tracked?.action === "skip") {
           continue;
         }
 
@@ -309,6 +307,12 @@ export class RepositoryProcessor {
         for (const fileName of filesToDelete) {
           // Only delete if file actually exists in the working directory
           if (this.gitOps!.fileExists(fileName)) {
+            // Track deletion in single source of truth
+            fileChangesForCommit.set(fileName, {
+              content: null,
+              action: "delete",
+            });
+
             if (dryRun) {
               // In dry-run, show what would be deleted
               this.log.fileDiff(fileName, "DELETED", []);
@@ -316,10 +320,7 @@ export class RepositoryProcessor {
             } else {
               this.log.info(`Deleting orphaned file: ${fileName}`);
               this.gitOps!.deleteFile(fileName);
-              // Track deletion for commit strategy
-              fileChangesForCommit.set(fileName, null);
             }
-            changedFiles.push({ fileName, action: "delete" });
           }
         }
       } else if (filesToDelete.length > 0 && options.noDelete) {
@@ -332,12 +333,6 @@ export class RepositoryProcessor {
       // Only save if there are managed files for any config, or if we had a previous manifest
       const hasAnyManagedFiles = Object.keys(newManifest.configs).length > 0;
       if (hasAnyManagedFiles || existingManifest !== null) {
-        if (!dryRun) {
-          saveManifest(workDir, newManifest);
-          // Track manifest content for commit strategy
-          const manifestContent = JSON.stringify(newManifest, null, 2) + "\n";
-          fileChangesForCommit.set(MANIFEST_FILENAME, manifestContent);
-        }
         // Track manifest file as changed if it would be different
         const existingConfigs = existingManifest?.configs ?? {};
         const manifestChanged =
@@ -345,10 +340,15 @@ export class RepositoryProcessor {
           JSON.stringify(newManifest.configs);
         if (manifestChanged) {
           const manifestExisted = existsSync(join(workDir, MANIFEST_FILENAME));
-          changedFiles.push({
-            fileName: MANIFEST_FILENAME,
+          const manifestContent = JSON.stringify(newManifest, null, 2) + "\n";
+          fileChangesForCommit.set(MANIFEST_FILENAME, {
+            content: manifestContent,
             action: manifestExisted ? "update" : "create",
           });
+        }
+
+        if (!dryRun) {
+          saveManifest(workDir, newManifest);
         }
       }
 
@@ -362,66 +362,25 @@ export class RepositoryProcessor {
         );
       }
 
-      // Step 6: Check for changes (exclude skipped files)
-      let hasChanges: boolean;
-      if (dryRun) {
-        hasChanges = changedFiles.filter((f) => f.action !== "skip").length > 0;
-      } else {
-        hasChanges = await this.gitOps.hasChanges();
-        // If there are changes, determine which files changed
-        if (hasChanges) {
-          // Get the actual list of changed files from git status
-          const gitChangedFiles = new Set(await this.gitOps.getChangedFiles());
+      // Step 6: Derive changedFiles from single source of truth
+      // This ensures dry-run and non-dry-run modes use identical logic
+      const changedFiles: FileAction[] = Array.from(
+        fileChangesForCommit.entries()
+      ).map(([fileName, info]) => ({ fileName, action: info.action }));
 
-          // Build set of files already tracked (skip, delete, manifest updates added earlier)
-          const alreadyTracked = new Set(changedFiles.map((f) => f.fileName));
-
-          // Add config files that actually changed according to git
-          for (const file of repoConfig.files) {
-            if (alreadyTracked.has(file.fileName)) {
-              continue; // Already tracked (skipped, deleted, or manifest)
-            }
-            // Only include files that git reports as changed
-            if (!gitChangedFiles.has(file.fileName)) {
-              continue; // File didn't actually change
-            }
-            // Use pre-write action (issue #252) - we stored whether file existed
-            // BEFORE writing, which is the correct basis for create vs update
-            const action = preWriteActions.get(file.fileName) ?? "update";
-            changedFiles.push({ fileName: file.fileName, action });
-          }
-
-          // Add any other files from git status that aren't already tracked
-          // This catches files like .xfg.json when manifestChanged was false
-          // but git still reports a change (e.g., due to formatting differences)
-          for (const gitFile of gitChangedFiles) {
-            if (changedFiles.some((f) => f.fileName === gitFile)) {
-              continue; // Already tracked
-            }
-            const filePath = join(workDir, gitFile);
-            const action: "create" | "update" = existsSync(filePath)
-              ? "update"
-              : "create";
-            changedFiles.push({ fileName: gitFile, action });
-          }
-
-          // Calculate diff stats from changedFiles (issue #252)
-          for (const file of changedFiles) {
-            switch (file.action) {
-              case "create":
-                incrementDiffStats(diffStats, "NEW");
-                break;
-              case "update":
-                incrementDiffStats(diffStats, "MODIFIED");
-                break;
-              case "delete":
-                incrementDiffStats(diffStats, "DELETED");
-                break;
-              // "skip" files are not counted in stats
-            }
-          }
+      // Calculate diff stats for non-dry-run mode (dry-run already calculated above)
+      if (!dryRun) {
+        for (const [, info] of fileChangesForCommit) {
+          if (info.action === "create") incrementDiffStats(diffStats, "NEW");
+          else if (info.action === "update")
+            incrementDiffStats(diffStats, "MODIFIED");
+          else if (info.action === "delete")
+            incrementDiffStats(diffStats, "DELETED");
         }
       }
+
+      const hasChanges =
+        changedFiles.filter((f) => f.action !== "skip").length > 0;
 
       if (!hasChanges) {
         return {
@@ -443,11 +402,12 @@ export class RepositoryProcessor {
         this.log.info(`Would commit: ${commitMessage}`);
         this.log.info(`Would push to ${pushBranch}...`);
       } else {
-        // Build file changes for commit strategy
-        const fileChanges: FileChange[] = [];
-        for (const [path, content] of fileChangesForCommit.entries()) {
-          fileChanges.push({ path, content });
-        }
+        // Build file changes for commit strategy (filter out skipped files)
+        const fileChanges: FileChange[] = Array.from(
+          fileChangesForCommit.entries()
+        )
+          .filter(([, info]) => info.action !== "skip")
+          .map(([path, info]) => ({ path, content: info.content }));
 
         // Check if there are actually staged changes (edge case handling)
         // This handles scenarios where git status shows changes but git add doesn't stage anything
