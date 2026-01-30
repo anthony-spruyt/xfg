@@ -222,7 +222,15 @@ export class GraphQLCommitStrategy implements CommitStrategy {
         ? `--hostname ${escapeShellArg(repoInfo.host)}`
         : "";
 
-    const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
+    // Use GH_INSTALLATION_TOKEN explicitly for authentication (issue #268)
+    // This ensures the GitHub App is used as the commit author, not github-actions[bot]
+    // The token is passed via Authorization header rather than relying on GH_TOKEN env var
+    const installationToken = process.env.GH_INSTALLATION_TOKEN;
+    const authArg = installationToken
+      ? `-H "Authorization: token ${installationToken}"`
+      : "";
+
+    const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${authArg} ${hostnameArg} --input -`;
 
     const response = await this.executor.exec(command, workDir);
 
