@@ -25,6 +25,15 @@ import { RepoInfo } from "./repo-detector.js";
 import { ProcessorOptions } from "./repository-processor.js";
 import { writeSummary, RepoResult } from "./github-summary.js";
 import { buildRepoResult, buildErrorResult } from "./summary-utils.js";
+import { RulesetProcessor } from "./ruleset-processor.js";
+import {
+  loadManifest,
+  saveManifest,
+  getManagedRulesets,
+  updateManifestRulesets,
+  XfgManifest,
+} from "./manifest.js";
+import { isGitHubRepo } from "./repo-detector.js";
 
 /**
  * Processor interface for dependency injection in tests.
@@ -262,7 +271,7 @@ async function runProtect(options: ProtectOptions): Promise<void> {
 
   const config = loadConfig(configPath);
 
-  // Check if any repos have rulesets configured
+  // Check if any repos have rulesets configured or have managed rulesets to clean up
   const reposWithRulesets = config.repos.filter(
     (r) => r.settings?.rulesets && Object.keys(r.settings.rulesets).length > 0
   );
@@ -274,11 +283,115 @@ async function runProtect(options: ProtectOptions): Promise<void> {
     return;
   }
 
-  console.log(`Found ${reposWithRulesets.length} repositories with rulesets`);
+  console.log(`Found ${reposWithRulesets.length} repositories with rulesets\n`);
 
-  // TODO: Implement ruleset processing in Task 7 (Create ruleset processor)
-  console.log("\nRuleset management is not yet implemented.");
-  console.log("This will be available in a future version.");
+  const processor = new RulesetProcessor();
+  const results: RepoResult[] = [];
+  let successCount = 0;
+  let failCount = 0;
+  let skipCount = 0;
+
+  for (let i = 0; i < config.repos.length; i++) {
+    const repoConfig = config.repos[i];
+
+    // Skip repos without rulesets
+    if (
+      !repoConfig.settings?.rulesets ||
+      Object.keys(repoConfig.settings.rulesets).length === 0
+    ) {
+      continue;
+    }
+
+    let repoInfo;
+    try {
+      repoInfo = parseGitUrl(repoConfig.git, {
+        githubHosts: config.githubHosts,
+      });
+    } catch (error) {
+      logger.error(i + 1, repoConfig.git, String(error));
+      results.push(buildErrorResult(repoConfig.git, error));
+      failCount++;
+      continue;
+    }
+
+    const repoName = getRepoDisplayName(repoInfo);
+
+    // Skip non-GitHub repos
+    if (!isGitHubRepo(repoInfo)) {
+      logger.skip(
+        i + 1,
+        repoName,
+        "GitHub Rulesets only supported for GitHub repos"
+      );
+      skipCount++;
+      continue;
+    }
+
+    // Load manifest from work directory to get managed rulesets
+    const workDir = resolve(
+      join(options.workDir ?? "./tmp", generateWorkspaceName(i))
+    );
+
+    // Note: For protect command, we don't clone repos - we work with the API directly
+    // We need to track managed rulesets in a central location or per-config file
+    // For now, use an empty manifest - proper manifest handling would require cloning
+    const managedRulesets = getManagedRulesets(null, config.id);
+
+    try {
+      logger.progress(i + 1, repoName, "Processing rulesets...");
+
+      const result = await processor.process(repoConfig, repoInfo, {
+        configId: config.id,
+        dryRun: options.dryRun,
+        managedRulesets,
+        noDelete: options.noDelete,
+      });
+
+      if (result.skipped) {
+        logger.skip(i + 1, repoName, result.message);
+        skipCount++;
+      } else if (result.success) {
+        logger.success(i + 1, repoName, result.message);
+        successCount++;
+      } else {
+        logger.error(i + 1, repoName, result.message);
+        failCount++;
+      }
+
+      results.push({
+        repo: repoName,
+        status: result.skipped
+          ? "skipped"
+          : result.success
+            ? "succeeded"
+            : "failed",
+        message: result.message,
+      });
+    } catch (error) {
+      logger.error(i + 1, repoName, String(error));
+      results.push(buildErrorResult(repoName, error));
+      failCount++;
+    }
+  }
+
+  // Summary
+  console.log("\n" + "=".repeat(50));
+  console.log(
+    `Completed: ${successCount} succeeded, ${skipCount} skipped, ${failCount} failed`
+  );
+
+  // Write GitHub Actions job summary if available
+  writeSummary({
+    total: reposWithRulesets.length,
+    succeeded: successCount,
+    skipped: skipCount,
+    failed: failCount,
+    results,
+  });
+
+  if (failCount > 0) {
+    process.exit(1);
+  }
 }
 
 // =============================================================================
