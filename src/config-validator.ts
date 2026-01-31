@@ -507,10 +507,10 @@ function validateRule(rule: unknown, context: string): void {
           typeof count !== "number" ||
           !Number.isInteger(count) ||
           count < 0 ||
-          count > 6
+          count > 10
         ) {
           throw new Error(
-            `${context}: requiredApprovingReviewCount must be an integer between 0 and 6`
+            `${context}: requiredApprovingReviewCount must be an integer between 0 and 10`
           );
         }
       }

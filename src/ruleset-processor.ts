@@ -89,7 +89,11 @@ export class RulesetProcessor {
 
     try {
       // Fetch current rulesets
-      const currentRulesets = await this.strategy.list(githubRepo, { token });
+      const strategyOptions = { token, host: githubRepo.host };
+      const currentRulesets = await this.strategy.list(
+        githubRepo,
+        strategyOptions
+      );
 
       // Convert desired rulesets to Map
       const desiredMap = new Map<string, Ruleset>(
@@ -138,7 +142,7 @@ export class RulesetProcessor {
                 githubRepo,
                 change.name,
                 change.desired,
-                { token }
+                strategyOptions
               );
               appliedCount++;
             }
@@ -151,7 +155,7 @@ export class RulesetProcessor {
                 change.rulesetId,
                 change.name,
                 change.desired,
-                { token }
+                strategyOptions
               );
               appliedCount++;
             }
@@ -160,9 +164,11 @@ export class RulesetProcessor {
           case "delete":
             // Check if deletion is allowed
             if (!noDelete && deleteOrphaned && change.rulesetId !== undefined) {
-              await this.strategy.delete(githubRepo, change.rulesetId, {
-                token,
-              });
+              await this.strategy.delete(
+                githubRepo,
+                change.rulesetId,
+                strategyOptions
+              );
               appliedCount++;
             }
             break;

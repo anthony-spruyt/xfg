@@ -1770,7 +1770,7 @@ describe("validateRawConfig", () => {
                 {
                   type: "pull_request",
                   parameters: {
-                    requiredApprovingReviewCount: 10,
+                    requiredApprovingReviewCount: 11, // Max is 10
                   },
                 },
               ],
@@ -1780,7 +1780,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /requiredApprovingReviewCount must be an integer between 0 and 6/
+        /requiredApprovingReviewCount must be an integer between 0 and 10/
       );
     });
 
