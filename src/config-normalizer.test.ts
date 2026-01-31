@@ -1593,4 +1593,322 @@ describe("normalizeConfig", () => {
       assert.equal(file3?.deleteOrphaned, false); // per-repo overrides per-file true
     });
   });
+
+  describe("settings merging", () => {
+    test("root settings are propagated to repos", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "branch",
+              enforcement: "active",
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].settings?.rulesets?.["pr-rules"], {
+        target: "branch",
+        enforcement: "active",
+      });
+    });
+
+    test("per-repo settings override root settings", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  enforcement: "disabled",
+                },
+              },
+            },
+          },
+        ],
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "branch",
+              enforcement: "active",
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw);
+      // enforcement should be overridden, target inherited
+      assert.equal(
+        result.repos[0].settings?.rulesets?.["pr-rules"]?.enforcement,
+        "disabled"
+      );
+      assert.equal(
+        result.repos[0].settings?.rulesets?.["pr-rules"]?.target,
+        "branch"
+      );
+    });
+
+    test("deep merges ruleset rules array", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  rules: [{ type: "required_signatures" }],
+                },
+              },
+            },
+          },
+        ],
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "branch",
+              rules: [
+                {
+                  type: "pull_request",
+                  parameters: { requiredApprovingReviewCount: 1 },
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw);
+      // Per-repo rules array should replace root rules array (not merge)
+      assert.equal(
+        result.repos[0].settings?.rulesets?.["pr-rules"]?.rules?.length,
+        1
+      );
+      assert.equal(
+        result.repos[0].settings?.rulesets?.["pr-rules"]?.rules?.[0]?.type,
+        "required_signatures"
+      );
+    });
+
+    test("deep merges pull_request rule parameters", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  rules: [
+                    {
+                      type: "pull_request",
+                      parameters: { requiredApprovingReviewCount: 3 },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        ],
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              rules: [
+                {
+                  type: "pull_request",
+                  parameters: {
+                    requiredApprovingReviewCount: 1,
+                    dismissStaleReviewsOnPush: true,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw);
+      // Per-repo rules replace root rules entirely
+      const prRule =
+        result.repos[0].settings?.rulesets?.["pr-rules"]?.rules?.[0];
+      assert.equal(prRule?.type, "pull_request");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      assert.equal(
+        (prRule as any)?.parameters?.requiredApprovingReviewCount,
+        3
+      );
+    });
+
+    test("different repos can have different settings", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          { git: "git@github.com:org/repo1.git" },
+          {
+            git: "git@github.com:org/repo2.git",
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  enforcement: "disabled",
+                },
+              },
+            },
+          },
+        ],
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "branch",
+              enforcement: "active",
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw);
+      // repo1 inherits root settings
+      assert.equal(
+        result.repos[0].settings?.rulesets?.["pr-rules"]?.enforcement,
+        "active"
+      );
+      // repo2 overrides enforcement
+      assert.equal(
+        result.repos[1].settings?.rulesets?.["pr-rules"]?.enforcement,
+        "disabled"
+      );
+    });
+
+    test("per-repo can add new rulesets not in root", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "release-rules": {
+                  target: "tag",
+                  enforcement: "active",
+                },
+              },
+            },
+          },
+        ],
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "branch",
+              enforcement: "active",
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw);
+      // Both rulesets should exist
+      assert.ok(result.repos[0].settings?.rulesets?.["pr-rules"]);
+      assert.ok(result.repos[0].settings?.rulesets?.["release-rules"]);
+    });
+
+    test("settings.deleteOrphaned: per-repo overrides root", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              deleteOrphaned: false,
+            },
+          },
+        ],
+        settings: {
+          deleteOrphaned: true,
+        },
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].settings?.deleteOrphaned, false);
+    });
+
+    test("settings is undefined when no settings defined", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].settings, undefined);
+    });
+
+    test("git array expansion preserves settings for each repo", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: [
+              "git@github.com:org/repo1.git",
+              "git@github.com:org/repo2.git",
+            ],
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  target: "branch",
+                },
+              },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos.length, 2);
+      assert.deepEqual(result.repos[0].settings, result.repos[1].settings);
+    });
+
+    test("merged settings do not share references", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          { git: "git@github.com:org/repo1.git" },
+          { git: "git@github.com:org/repo2.git" },
+        ],
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "branch",
+              bypassActors: [{ actorId: 123, actorType: "Team" }],
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw);
+      // Modify repo1's settings
+      result.repos[0].settings!.rulesets!["pr-rules"]!.bypassActors!.push({
+        actorId: 456,
+        actorType: "User",
+      });
+
+      // repo2 should be unaffected
+      assert.equal(
+        result.repos[1].settings?.rulesets?.["pr-rules"]?.bypassActors?.length,
+        1
+      );
+    });
+  });
 });

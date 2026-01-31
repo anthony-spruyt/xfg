@@ -13,6 +13,9 @@ import type {
   FileContent,
   ContentValue,
   PRMergeOptions,
+  RepoSettings,
+  RawRepoSettings,
+  Ruleset,
 } from "./config.js";
 
 /**
@@ -48,6 +51,65 @@ function mergePROptions(
   if (mergeStrategy !== undefined) result.mergeStrategy = mergeStrategy;
   if (deleteBranch !== undefined) result.deleteBranch = deleteBranch;
   if (bypassReason !== undefined) result.bypassReason = bypassReason;
+
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+/**
+ * Deep merges two rulesets: per-repo values override root values.
+ */
+function mergeRuleset(
+  root: Ruleset | undefined,
+  perRepo: Ruleset | undefined
+): Ruleset {
+  if (!root) return structuredClone(perRepo ?? {});
+  if (!perRepo) return structuredClone(root);
+
+  // Deep merge using the existing merge utility with replace strategy
+  const ctx = createMergeContext("replace");
+  const merged = deepMerge(
+    structuredClone(root) as Record<string, unknown>,
+    perRepo as Record<string, unknown>,
+    ctx
+  );
+  return merged as unknown as Ruleset;
+}
+
+/**
+ * Merges settings: per-repo settings deep merge with root settings.
+ * Returns undefined if no settings are defined.
+ */
+export function mergeSettings(
+  root: RawRepoSettings | undefined,
+  perRepo: RawRepoSettings | undefined
+): RepoSettings | undefined {
+  if (!root && !perRepo) return undefined;
+
+  const result: RepoSettings = {};
+
+  // Merge rulesets by name - each ruleset is deep merged
+  const rootRulesets = root?.rulesets ?? {};
+  const repoRulesets = perRepo?.rulesets ?? {};
+  const allRulesetNames = new Set([
+    ...Object.keys(rootRulesets),
+    ...Object.keys(repoRulesets),
+  ]);
+
+  if (allRulesetNames.size > 0) {
+    result.rulesets = {};
+    for (const name of allRulesetNames) {
+      result.rulesets[name] = mergeRuleset(
+        rootRulesets[name],
+        repoRulesets[name]
+      );
+    }
+  }
+
+  // deleteOrphaned: per-repo overrides root
+  const deleteOrphaned = perRepo?.deleteOrphaned ?? root?.deleteOrphaned;
+  if (deleteOrphaned !== undefined) {
+    result.deleteOrphaned = deleteOrphaned;
+  }
 
   return Object.keys(result).length > 0 ? result : undefined;
 }
@@ -180,10 +242,14 @@ export function normalizeConfig(raw: RawConfig): Config {
       // Merge PR options: per-repo overrides global
       const prOptions = mergePROptions(raw.prOptions, rawRepo.prOptions);
 
+      // Merge settings: per-repo deep merges with root settings
+      const settings = mergeSettings(raw.settings, rawRepo.settings);
+
       expandedRepos.push({
         git: gitUrl,
         files,
         prOptions,
+        settings,
       });
     }
   }
@@ -194,5 +260,6 @@ export function normalizeConfig(raw: RawConfig): Config {
     prTemplate: raw.prTemplate,
     githubHosts: raw.githubHosts,
     deleteOrphaned: raw.deleteOrphaned,
+    settings: raw.settings,
   };
 }
