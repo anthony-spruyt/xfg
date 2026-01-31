@@ -2,7 +2,7 @@ import type { RepoConfig, Ruleset } from "./config.js";
 import type { RepoInfo, GitHubRepoInfo } from "./repo-detector.js";
 import { isGitHubRepo, getRepoDisplayName } from "./repo-detector.js";
 import { GitHubRulesetStrategy } from "./strategies/github-ruleset-strategy.js";
-import { diffRulesets, RulesetChange, formatDiff } from "./ruleset-diff.js";
+import { diffRulesets } from "./ruleset-diff.js";
 
 // =============================================================================
 // Types

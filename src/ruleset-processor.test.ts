@@ -1,11 +1,7 @@
-import { test, describe, beforeEach, mock } from "node:test";
+import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
-import {
-  RulesetProcessor,
-  RulesetProcessorOptions,
-  RulesetProcessorResult,
-} from "./ruleset-processor.js";
-import type { RepoConfig, Ruleset, RepoSettings } from "./config.js";
+import { RulesetProcessor } from "./ruleset-processor.js";
+import type { RepoConfig, Ruleset } from "./config.js";
 import type { GitHubRepoInfo, AzureRepoInfo } from "./repo-detector.js";
 import type {
   GitHubRuleset,

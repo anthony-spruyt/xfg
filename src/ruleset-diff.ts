@@ -27,13 +27,6 @@ function camelToSnake(str: string): string {
 }
 
 /**
- * Converts snake_case to camelCase for comparison.
- */
-function snakeToCamel(str: string): string {
-  return str.replace(/_([a-z])/g, (_, char) => char.toUpperCase());
-}
-
-/**
  * Normalizes a value recursively, converting keys to a consistent format (snake_case).
  * This allows comparing GitHub API responses (snake_case) with config (camelCase).
  */

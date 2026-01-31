@@ -26,13 +26,7 @@ import { ProcessorOptions } from "./repository-processor.js";
 import { writeSummary, RepoResult } from "./github-summary.js";
 import { buildRepoResult, buildErrorResult } from "./summary-utils.js";
 import { RulesetProcessor } from "./ruleset-processor.js";
-import {
-  loadManifest,
-  saveManifest,
-  getManagedRulesets,
-  updateManifestRulesets,
-  XfgManifest,
-} from "./manifest.js";
+import { getManagedRulesets } from "./manifest.js";
 import { isGitHubRepo } from "./repo-detector.js";
 
 /**
@@ -77,7 +71,7 @@ interface SyncOptions extends SharedOptions {
   deleteBranch?: boolean;
 }
 
-interface ProtectOptions extends SharedOptions {}
+type ProtectOptions = SharedOptions;
 
 /**
  * Adds shared options to a command.
@@ -327,14 +321,9 @@ async function runProtect(options: ProtectOptions): Promise<void> {
       continue;
     }
 
-    // Load manifest from work directory to get managed rulesets
-    const workDir = resolve(
-      join(options.workDir ?? "./tmp", generateWorkspaceName(i))
-    );
-
-    // Note: For protect command, we don't clone repos - we work with the API directly
-    // We need to track managed rulesets in a central location or per-config file
-    // For now, use an empty manifest - proper manifest handling would require cloning
+    // Note: For protect command, we don't clone repos - we work with the API directly.
+    // Manifest handling for tracking managed rulesets would require cloning.
+    // For now, use an empty list - orphan deletion requires the sync command first.
     const managedRulesets = getManagedRulesets(null, config.id);
 
     try {
