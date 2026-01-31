@@ -9,7 +9,9 @@ import {
   loadManifest,
   saveManifest,
   getManagedFiles,
+  getManagedRulesets,
   updateManifest,
+  updateManifestRulesets,
 } from "./manifest.js";
 
 describe("manifest", () => {
@@ -30,9 +32,9 @@ describe("manifest", () => {
   });
 
   describe("createEmptyManifest", () => {
-    test("creates manifest with version 2", () => {
+    test("creates manifest with version 3", () => {
       const manifest = createEmptyManifest();
-      assert.equal(manifest.version, 2);
+      assert.equal(manifest.version, 3);
     });
 
     test("creates manifest with empty configs object", () => {
@@ -47,12 +49,12 @@ describe("manifest", () => {
       assert.equal(result, null);
     });
 
-    test("loads valid v2 manifest file", () => {
+    test("loads valid v3 manifest file", () => {
       const manifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {
-          "config-a": ["file1.json", "file2.yaml"],
-          "config-b": ["file3.json"],
+          "config-a": { files: ["file1.json", "file2.yaml"] },
+          "config-b": { files: ["file3.json"], rulesets: ["pr-rules"] },
         },
       };
       writeFileSync(
@@ -63,6 +65,28 @@ describe("manifest", () => {
 
       const result = loadManifest(testDir);
       assert.deepEqual(result, manifest);
+    });
+
+    test("migrates v2 manifest to v3", () => {
+      const v2Manifest = {
+        version: 2,
+        configs: {
+          "config-a": ["file1.json", "file2.yaml"],
+          "config-b": ["file3.json"],
+        },
+      };
+      writeFileSync(
+        join(testDir, MANIFEST_FILENAME),
+        JSON.stringify(v2Manifest),
+        "utf-8"
+      );
+
+      const result = loadManifest(testDir);
+      assert.equal(result?.version, 3);
+      assert.deepEqual(result?.configs["config-a"], {
+        files: ["file1.json", "file2.yaml"],
+      });
+      assert.deepEqual(result?.configs["config-b"], { files: ["file3.json"] });
     });
 
     test("returns null for invalid JSON", () => {
@@ -101,7 +125,7 @@ describe("manifest", () => {
     });
 
     test("returns null if configs is not an object", () => {
-      const manifest = { version: 2, configs: "not-an-object" };
+      const manifest = { version: 3, configs: "not-an-object" };
       writeFileSync(
         join(testDir, MANIFEST_FILENAME),
         JSON.stringify(manifest),
@@ -123,9 +147,9 @@ describe("manifest", () => {
   describe("saveManifest", () => {
     test("saves manifest to file", () => {
       const manifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {
-          "my-config": ["config.json"],
+          "my-config": { files: ["config.json"] },
         },
       };
 
@@ -138,8 +162,8 @@ describe("manifest", () => {
 
     test("saves manifest with 2-space indentation", () => {
       const manifest: XfgManifest = {
-        version: 2,
-        configs: { "config-a": ["file.json"] },
+        version: 3,
+        configs: { "config-a": { files: ["file.json"] } },
       };
 
       saveManifest(testDir, manifest);
@@ -150,7 +174,7 @@ describe("manifest", () => {
 
     test("saves manifest with trailing newline", () => {
       const manifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {},
       };
 
@@ -169,9 +193,9 @@ describe("manifest", () => {
 
     test("returns empty array for non-existent config", () => {
       const manifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {
-          "other-config": ["file.json"],
+          "other-config": { files: ["file.json"] },
         },
       };
 
@@ -181,10 +205,10 @@ describe("manifest", () => {
 
     test("returns files for specific config", () => {
       const manifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {
-          "config-a": ["file1.json", "file2.yaml"],
-          "config-b": ["file3.json"],
+          "config-a": { files: ["file1.json", "file2.yaml"] },
+          "config-b": { files: ["file3.json"] },
         },
       };
 
@@ -194,9 +218,9 @@ describe("manifest", () => {
 
     test("returns copy of managedFiles array", () => {
       const manifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {
-          "my-config": ["file1.json", "file2.yaml"],
+          "my-config": { files: ["file1.json", "file2.yaml"] },
         },
       };
 
@@ -205,7 +229,79 @@ describe("manifest", () => {
 
       // Verify it's a copy, not the same reference
       result.push("file3.json");
-      assert.equal(manifest.configs["my-config"].length, 2);
+      assert.equal(manifest.configs["my-config"].files!.length, 2);
+    });
+
+    test("returns empty array when config has no files", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          "my-config": { rulesets: ["pr-rules"] },
+        },
+      };
+
+      const result = getManagedFiles(manifest, "my-config");
+      assert.deepEqual(result, []);
+    });
+  });
+
+  describe("getManagedRulesets", () => {
+    test("returns empty array for null manifest", () => {
+      const result = getManagedRulesets(null, "any-config");
+      assert.deepEqual(result, []);
+    });
+
+    test("returns empty array for non-existent config", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          "other-config": { rulesets: ["pr-rules"] },
+        },
+      };
+
+      const result = getManagedRulesets(manifest, "non-existent-config");
+      assert.deepEqual(result, []);
+    });
+
+    test("returns rulesets for specific config", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          "config-a": { rulesets: ["pr-rules", "release-rules"] },
+          "config-b": { rulesets: ["tag-rules"] },
+        },
+      };
+
+      const result = getManagedRulesets(manifest, "config-a");
+      assert.deepEqual(result, ["pr-rules", "release-rules"]);
+    });
+
+    test("returns copy of rulesets array", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          "my-config": { rulesets: ["pr-rules", "release-rules"] },
+        },
+      };
+
+      const result = getManagedRulesets(manifest, "my-config");
+      assert.deepEqual(result, ["pr-rules", "release-rules"]);
+
+      // Verify it's a copy, not the same reference
+      result.push("new-rules");
+      assert.equal(manifest.configs["my-config"].rulesets!.length, 2);
+    });
+
+    test("returns empty array when config has no rulesets", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          "my-config": { files: ["config.json"] },
+        },
+      };
+
+      const result = getManagedRulesets(manifest, "my-config");
+      assert.deepEqual(result, []);
     });
   });
 
@@ -223,7 +319,7 @@ describe("manifest", () => {
         filesMap
       );
 
-      assert.deepEqual(manifest.configs[configId], [
+      assert.deepEqual(manifest.configs[configId]?.files, [
         "config.json",
         "settings.yaml",
       ]);
@@ -237,7 +333,7 @@ describe("manifest", () => {
 
       const { manifest } = updateManifest(null, configId, filesMap);
 
-      assert.deepEqual(manifest.configs[configId], ["config.json"]);
+      assert.deepEqual(manifest.configs[configId]?.files, ["config.json"]);
     });
 
     test("does not add files with deleteOrphaned: undefined", () => {
@@ -247,14 +343,14 @@ describe("manifest", () => {
 
       const { manifest } = updateManifest(null, configId, filesMap);
 
-      assert.deepEqual(manifest.configs[configId], ["config.json"]);
+      assert.deepEqual(manifest.configs[configId]?.files, ["config.json"]);
     });
 
     test("marks orphaned files for deletion", () => {
       const existingManifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {
-          [configId]: ["old-config.json", "config.json"],
+          [configId]: { files: ["old-config.json", "config.json"] },
         },
       };
 
@@ -268,15 +364,15 @@ describe("manifest", () => {
         filesMap
       );
 
-      assert.deepEqual(manifest.configs[configId], ["config.json"]);
+      assert.deepEqual(manifest.configs[configId]?.files, ["config.json"]);
       assert.deepEqual(filesToDelete, ["old-config.json"]);
     });
 
     test("does not delete files that are in config but without deleteOrphaned", () => {
       const existingManifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {
-          [configId]: ["config.json"],
+          [configId]: { files: ["config.json"] },
         },
       };
 
@@ -297,9 +393,9 @@ describe("manifest", () => {
 
     test("removes file from tracking when deleteOrphaned set to false", () => {
       const existingManifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {
-          [configId]: ["config.json"],
+          [configId]: { files: ["config.json"] },
         },
       };
 
@@ -326,7 +422,7 @@ describe("manifest", () => {
 
       const { manifest } = updateManifest(null, configId, filesMap);
 
-      assert.deepEqual(manifest.configs[configId], [
+      assert.deepEqual(manifest.configs[configId]?.files, [
         "alpha.yaml",
         "middle.json",
         "zebra.json",
@@ -335,7 +431,7 @@ describe("manifest", () => {
 
     test("handles empty existing manifest", () => {
       const existingManifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {},
       };
 
@@ -348,15 +444,15 @@ describe("manifest", () => {
         filesMap
       );
 
-      assert.deepEqual(manifest.configs[configId], ["new-file.json"]);
+      assert.deepEqual(manifest.configs[configId]?.files, ["new-file.json"]);
       assert.deepEqual(filesToDelete, []);
     });
 
     test("handles empty files map", () => {
       const existingManifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {
-          [configId]: ["orphan.json"],
+          [configId]: { files: ["orphan.json"] },
         },
       };
 
@@ -372,21 +468,21 @@ describe("manifest", () => {
       assert.deepEqual(filesToDelete, ["orphan.json"]);
     });
 
-    test("creates version 2 manifest", () => {
+    test("creates version 3 manifest", () => {
       const filesMap = new Map<string, boolean | undefined>();
       filesMap.set("file.json", true);
 
       const { manifest } = updateManifest(null, configId, filesMap);
 
-      assert.equal(manifest.version, 2);
+      assert.equal(manifest.version, 3);
     });
 
     test("preserves other configs when updating one config", () => {
       const existingManifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {
-          "config-a": ["file-a.json"],
-          "config-b": ["file-b.json"],
+          "config-a": { files: ["file-a.json"] },
+          "config-b": { files: ["file-b.json"] },
         },
       };
 
@@ -400,17 +496,19 @@ describe("manifest", () => {
       );
 
       // config-a should be updated
-      assert.deepEqual(manifest.configs["config-a"], ["new-file-a.json"]);
+      assert.deepEqual(manifest.configs["config-a"]?.files, [
+        "new-file-a.json",
+      ]);
       // config-b should be preserved
-      assert.deepEqual(manifest.configs["config-b"], ["file-b.json"]);
+      assert.deepEqual(manifest.configs["config-b"]?.files, ["file-b.json"]);
     });
 
     test("only marks orphans from same config for deletion", () => {
       const existingManifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {
-          "config-a": ["shared-file.json", "orphan-a.json"],
-          "config-b": ["shared-file.json", "file-b.json"],
+          "config-a": { files: ["shared-file.json", "orphan-a.json"] },
+          "config-b": { files: ["shared-file.json", "file-b.json"] },
         },
       };
 
@@ -426,8 +524,10 @@ describe("manifest", () => {
 
       // Only orphan-a.json should be deleted (from config-a)
       // config-b's files should not be touched
-      assert.deepEqual(manifest.configs["config-a"], ["shared-file.json"]);
-      assert.deepEqual(manifest.configs["config-b"], [
+      assert.deepEqual(manifest.configs["config-a"]?.files, [
+        "shared-file.json",
+      ]);
+      assert.deepEqual(manifest.configs["config-b"]?.files, [
         "shared-file.json",
         "file-b.json",
       ]);
@@ -436,10 +536,10 @@ describe("manifest", () => {
 
     test("removes config entry when no files have deleteOrphaned", () => {
       const existingManifest: XfgManifest = {
-        version: 2,
+        version: 3,
         configs: {
-          "config-a": ["file.json"],
-          "config-b": ["other.json"],
+          "config-a": { files: ["file.json"] },
+          "config-b": { files: ["other.json"] },
         },
       };
 
@@ -455,7 +555,183 @@ describe("manifest", () => {
       // config-a should be removed from configs
       assert.equal(manifest.configs["config-a"], undefined);
       // config-b should be preserved
-      assert.deepEqual(manifest.configs["config-b"], ["other.json"]);
+      assert.deepEqual(manifest.configs["config-b"]?.files, ["other.json"]);
+    });
+
+    test("preserves rulesets when updating files", () => {
+      const existingManifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: { files: ["old-file.json"], rulesets: ["pr-rules"] },
+        },
+      };
+
+      const filesMap = new Map<string, boolean | undefined>();
+      filesMap.set("new-file.json", true);
+
+      const { manifest } = updateManifest(existingManifest, configId, filesMap);
+
+      assert.deepEqual(manifest.configs[configId]?.files, ["new-file.json"]);
+      assert.deepEqual(manifest.configs[configId]?.rulesets, ["pr-rules"]);
+    });
+
+    test("preserves config entry if only rulesets exist after removing files", () => {
+      const existingManifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: { files: ["file.json"], rulesets: ["pr-rules"] },
+        },
+      };
+
+      const filesMap = new Map<string, boolean | undefined>();
+      filesMap.set("file.json", false); // Explicitly disable files tracking
+
+      const { manifest } = updateManifest(existingManifest, configId, filesMap);
+
+      // Config should still exist because of rulesets
+      assert.ok(manifest.configs[configId]);
+      assert.equal(manifest.configs[configId]?.files, undefined);
+      assert.deepEqual(manifest.configs[configId]?.rulesets, ["pr-rules"]);
+    });
+  });
+
+  describe("updateManifestRulesets", () => {
+    const configId = "test-config";
+
+    test("adds rulesets with deleteOrphaned: true", () => {
+      const rulesetsMap = new Map<string, boolean | undefined>();
+      rulesetsMap.set("pr-rules", true);
+      rulesetsMap.set("release-rules", true);
+
+      const { manifest, rulesetsToDelete } = updateManifestRulesets(
+        null,
+        configId,
+        rulesetsMap
+      );
+
+      assert.deepEqual(manifest.configs[configId]?.rulesets, [
+        "pr-rules",
+        "release-rules",
+      ]);
+      assert.deepEqual(rulesetsToDelete, []);
+    });
+
+    test("does not add rulesets with deleteOrphaned: false", () => {
+      const rulesetsMap = new Map<string, boolean | undefined>();
+      rulesetsMap.set("pr-rules", true);
+      rulesetsMap.set("release-rules", false);
+
+      const { manifest } = updateManifestRulesets(null, configId, rulesetsMap);
+
+      assert.deepEqual(manifest.configs[configId]?.rulesets, ["pr-rules"]);
+    });
+
+    test("marks orphaned rulesets for deletion", () => {
+      const existingManifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: { rulesets: ["old-rules", "pr-rules"] },
+        },
+      };
+
+      const rulesetsMap = new Map<string, boolean | undefined>();
+      rulesetsMap.set("pr-rules", true);
+
+      const { manifest, rulesetsToDelete } = updateManifestRulesets(
+        existingManifest,
+        configId,
+        rulesetsMap
+      );
+
+      assert.deepEqual(manifest.configs[configId]?.rulesets, ["pr-rules"]);
+      assert.deepEqual(rulesetsToDelete, ["old-rules"]);
+    });
+
+    test("preserves files when updating rulesets", () => {
+      const existingManifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: { files: ["config.json"], rulesets: ["old-rules"] },
+        },
+      };
+
+      const rulesetsMap = new Map<string, boolean | undefined>();
+      rulesetsMap.set("new-rules", true);
+
+      const { manifest } = updateManifestRulesets(
+        existingManifest,
+        configId,
+        rulesetsMap
+      );
+
+      assert.deepEqual(manifest.configs[configId]?.files, ["config.json"]);
+      assert.deepEqual(manifest.configs[configId]?.rulesets, ["new-rules"]);
+    });
+
+    test("preserves config entry if only files exist after removing rulesets", () => {
+      const existingManifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: { files: ["config.json"], rulesets: ["pr-rules"] },
+        },
+      };
+
+      const rulesetsMap = new Map<string, boolean | undefined>();
+      rulesetsMap.set("pr-rules", false);
+
+      const { manifest } = updateManifestRulesets(
+        existingManifest,
+        configId,
+        rulesetsMap
+      );
+
+      assert.ok(manifest.configs[configId]);
+      assert.deepEqual(manifest.configs[configId]?.files, ["config.json"]);
+      assert.equal(manifest.configs[configId]?.rulesets, undefined);
+    });
+
+    test("removes config entry when no files or rulesets remain", () => {
+      const existingManifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: { rulesets: ["pr-rules"] },
+        },
+      };
+
+      const rulesetsMap = new Map<string, boolean | undefined>();
+      rulesetsMap.set("pr-rules", false);
+
+      const { manifest } = updateManifestRulesets(
+        existingManifest,
+        configId,
+        rulesetsMap
+      );
+
+      assert.equal(manifest.configs[configId], undefined);
+    });
+
+    test("creates version 3 manifest", () => {
+      const rulesetsMap = new Map<string, boolean | undefined>();
+      rulesetsMap.set("pr-rules", true);
+
+      const { manifest } = updateManifestRulesets(null, configId, rulesetsMap);
+
+      assert.equal(manifest.version, 3);
+    });
+
+    test("sorts rulesets alphabetically", () => {
+      const rulesetsMap = new Map<string, boolean | undefined>();
+      rulesetsMap.set("zebra-rules", true);
+      rulesetsMap.set("alpha-rules", true);
+      rulesetsMap.set("middle-rules", true);
+
+      const { manifest } = updateManifestRulesets(null, configId, rulesetsMap);
+
+      assert.deepEqual(manifest.configs[configId]?.rulesets, [
+        "alpha-rules",
+        "middle-rules",
+        "zebra-rules",
+      ]);
     });
   });
 });
