@@ -12,7 +12,9 @@
     "tmp/": true
   },
   "search.exclude": {
-    "**/node_modules": true
+    "**/node_modules": true,
+    "coverage": true,
+    ".output": true
   },
   "search.useIgnoreFiles": false,
   "search.useGlobalIgnoreFiles": false,
