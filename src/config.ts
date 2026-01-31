@@ -24,32 +24,108 @@ export interface PRMergeOptions {
 }
 
 // =============================================================================
-// Branch Protection Types
+// Branch Protection Types (aligned with GitHub REST API)
 // =============================================================================
 
-export interface RequiredStatusChecks {
-  strict?: boolean;
-  checks?: string[];
+/**
+ * A single status check requirement.
+ * @see https://docs.github.com/en/rest/branches/branch-protection
+ */
+export interface StatusCheck {
+  /** The name of the required check */
+  context: string;
+  /** The ID of the GitHub App that must provide this check. Omit to auto-select. */
+  appId?: number;
 }
 
-export interface BranchProtectionRule {
-  // Required reviews
-  requiredReviews?: number;
-  dismissStaleReviews?: boolean;
-  requireCodeOwners?: boolean;
-  requireLastPushApproval?: boolean;
+/**
+ * Required status checks configuration.
+ */
+export interface RequiredStatusChecks {
+  /** Require branches to be up to date before merging */
+  strict?: boolean;
+  /** List of status checks (preferred over contexts) */
+  checks?: StatusCheck[];
+  /** @deprecated Use checks instead. List of status check context names. */
+  contexts?: string[];
+}
 
-  // Status checks
+/**
+ * Actor restrictions - specifies users, teams, and apps.
+ * Used for dismissal_restrictions, restrictions, and bypass_pull_request_allowances.
+ */
+export interface ActorRestrictions {
+  /** List of user logins */
+  users?: string[];
+  /** List of team slugs */
+  teams?: string[];
+  /** List of app slugs */
+  apps?: string[];
+}
+
+/**
+ * Branch protection rule configuration.
+ * All fields are optional - only specify what you want to enforce.
+ * @see https://docs.github.com/en/rest/branches/branch-protection
+ */
+export interface BranchProtectionRule {
+  // ==========================================================================
+  // Required Pull Request Reviews
+  // ==========================================================================
+
+  /** Number of required approving reviews (0-6). 0 means no reviews required. */
+  requiredReviews?: number;
+  /** Automatically dismiss approving reviews when new commits are pushed */
+  dismissStaleReviews?: boolean;
+  /** Require review from code owners */
+  requireCodeOwners?: boolean;
+  /** Require approval from someone other than the last pusher */
+  requireLastPushApproval?: boolean;
+  /** Users/teams/apps who can dismiss reviews (org repos only) */
+  dismissalRestrictions?: ActorRestrictions;
+  /** Users/teams/apps who can bypass PR requirements */
+  bypassPullRequestAllowances?: ActorRestrictions;
+
+  // ==========================================================================
+  // Required Status Checks
+  // ==========================================================================
+
+  /** Status checks that must pass before merging */
   requiredStatusChecks?: RequiredStatusChecks;
 
-  // Restrictions
-  enforceAdmins?: boolean;
-  requiredLinearHistory?: boolean;
-  allowForcePushes?: boolean;
-  allowDeletions?: boolean;
-  requiredConversationResolution?: boolean;
+  // ==========================================================================
+  // Push Restrictions
+  // ==========================================================================
 
-  // Signatures
+  /** Enforce all restrictions for administrators */
+  enforceAdmins?: boolean;
+  /** Users/teams/apps who can push to the branch (org repos only) */
+  restrictions?: ActorRestrictions;
+
+  // ==========================================================================
+  // Branch Settings
+  // ==========================================================================
+
+  /** Enforce linear commit history (no merge commits) */
+  requiredLinearHistory?: boolean;
+  /** Allow force pushes */
+  allowForcePushes?: boolean;
+  /** Allow branch deletion */
+  allowDeletions?: boolean;
+  /** Block new branch creation that matches this pattern */
+  blockCreations?: boolean;
+  /** Require conversation resolution before merging */
+  requiredConversationResolution?: boolean;
+  /** Lock the branch (make it read-only) */
+  lockBranch?: boolean;
+  /** Allow fork syncing (for forks to pull upstream changes) */
+  allowForkSyncing?: boolean;
+
+  // ==========================================================================
+  // Commit Signatures
+  // ==========================================================================
+
+  /** Require signed commits */
   requiredSignatures?: boolean;
 }
 

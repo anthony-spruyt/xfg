@@ -13,6 +13,9 @@ import {
   type RawRepoConfig,
   type RepoConfig,
   type Config,
+  type StatusCheck,
+  type ActorRestrictions,
+  type RequiredStatusChecks,
 } from "./config.js";
 import { parse } from "yaml";
 
@@ -840,6 +843,73 @@ describe("settings types", () => {
     };
     assert.equal(rule.requiredReviews, 2);
     assert.equal(rule.dismissStaleReviews, true);
+  });
+
+  test("BranchProtectionRule supports all GitHub API fields", () => {
+    const rule: BranchProtectionRule = {
+      // PR reviews
+      requiredReviews: 2,
+      dismissStaleReviews: true,
+      requireCodeOwners: true,
+      requireLastPushApproval: true,
+      dismissalRestrictions: { users: ["admin"], teams: ["leads"] },
+      bypassPullRequestAllowances: { users: ["bot"], apps: ["ci-app"] },
+      // Status checks
+      requiredStatusChecks: {
+        strict: true,
+        checks: [{ context: "ci/build", appId: 123 }],
+      },
+      // Push restrictions
+      enforceAdmins: true,
+      restrictions: { users: ["deployer"], teams: ["release"] },
+      // Branch settings
+      requiredLinearHistory: true,
+      allowForcePushes: false,
+      allowDeletions: false,
+      blockCreations: true,
+      requiredConversationResolution: true,
+      lockBranch: false,
+      allowForkSyncing: true,
+      // Signatures
+      requiredSignatures: true,
+    };
+    assert.equal(rule.requiredReviews, 2);
+    assert.equal(rule.dismissalRestrictions?.users?.[0], "admin");
+    assert.equal(rule.requiredStatusChecks?.checks?.[0].context, "ci/build");
+    assert.equal(rule.restrictions?.teams?.[0], "release");
+    assert.equal(rule.blockCreations, true);
+    assert.equal(rule.lockBranch, false);
+    assert.equal(rule.allowForkSyncing, true);
+  });
+
+  test("StatusCheck interface supports context and appId", () => {
+    const check: StatusCheck = { context: "ci/test", appId: 456 };
+    assert.equal(check.context, "ci/test");
+    assert.equal(check.appId, 456);
+  });
+
+  test("ActorRestrictions supports users, teams, and apps", () => {
+    const restrictions: ActorRestrictions = {
+      users: ["user1", "user2"],
+      teams: ["team1"],
+      apps: ["app1"],
+    };
+    assert.deepEqual(restrictions.users, ["user1", "user2"]);
+    assert.deepEqual(restrictions.teams, ["team1"]);
+    assert.deepEqual(restrictions.apps, ["app1"]);
+  });
+
+  test("RequiredStatusChecks supports both checks and deprecated contexts", () => {
+    const checksStyle: RequiredStatusChecks = {
+      strict: true,
+      checks: [{ context: "ci/build" }, { context: "ci/test", appId: 123 }],
+    };
+    const contextsStyle: RequiredStatusChecks = {
+      strict: false,
+      contexts: ["ci/build", "ci/test"],
+    };
+    assert.equal(checksStyle.checks?.length, 2);
+    assert.equal(contextsStyle.contexts?.length, 2);
   });
 
   test("RepoSettings includes branchProtection map", () => {
