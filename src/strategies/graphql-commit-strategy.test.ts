@@ -495,7 +495,7 @@ describe("GraphQLCommitStrategy", () => {
       );
       assert.ok(pushCall, "Should have pushed the branch to create it");
       assert.ok(
-        pushCall.command.includes("origin HEAD:feature-branch"),
+        pushCall.command.includes("origin HEAD:'feature-branch'"),
         "Should push to the correct branch"
       );
     });
@@ -803,19 +803,15 @@ describe("GraphQLCommitStrategy", () => {
       );
       assert.ok(graphqlCall, "Should have called gh api graphql");
 
-      // The command should include explicit authorization with the provided token
+      // The command should include GH_TOKEN env var prefix with the provided token
       assert.ok(
-        graphqlCall.command.includes("ghs_test_token_from_parameter"),
-        "GraphQL command should use the token from options parameter. " +
+        graphqlCall.command.includes("GH_TOKEN=ghs_test_token_from_parameter"),
+        "GraphQL command should set GH_TOKEN env var with the token from options. " +
           `Got: ${graphqlCall.command.substring(0, 200)}...`
-      );
-      assert.ok(
-        graphqlCall.command.includes("Authorization"),
-        "GraphQL command should include Authorization header"
       );
     });
 
-    test("does not include Authorization header when no token is provided", async () => {
+    test("does not include GH_TOKEN prefix when no token is provided", async () => {
       // When no token is provided, rely on gh CLI's default authentication
       mockExecutor.responses.set(
         "git ls-remote",
@@ -849,10 +845,10 @@ describe("GraphQLCommitStrategy", () => {
       );
       assert.ok(graphqlCall, "Should have called gh api graphql");
 
-      // The command should NOT include explicit Authorization header
+      // The command should NOT include GH_TOKEN prefix
       assert.ok(
-        !graphqlCall.command.includes("Authorization"),
-        "GraphQL command should not include Authorization header when no token. " +
+        !graphqlCall.command.startsWith("GH_TOKEN="),
+        "GraphQL command should not include GH_TOKEN prefix when no token. " +
           `Got: ${graphqlCall.command.substring(0, 200)}...`
       );
     });

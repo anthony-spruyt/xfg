@@ -112,15 +112,15 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       try {
         // Fetch from remote to ensure we have the latest HEAD
         // This is critical for expectedHeadOid to match
-        // Branch name was validated above, safe for shell use
+        const safeBranch = escapeShellArg(branchName);
         await this.executor.exec(
-          `git fetch origin ${branchName}:refs/remotes/origin/${branchName}`,
+          `git fetch origin ${safeBranch}:refs/remotes/origin/${safeBranch}`,
           workDir
         );
 
         // Get the remote HEAD SHA for this branch (not local HEAD)
         const headSha = await this.executor.exec(
-          `git rev-parse origin/${branchName}`,
+          `git rev-parse origin/${safeBranch}`,
           workDir
         );
 
@@ -228,10 +228,10 @@ export class GraphQLCommitStrategy implements CommitStrategy {
 
     // Use token parameter for authentication when provided
     // This ensures the GitHub App is used as the commit author, not github-actions[bot]
-    // The token is passed via Authorization header rather than relying on GH_TOKEN env var
-    const authArg = token ? `-H "Authorization: token ${token}"` : "";
+    // GH_TOKEN env var is used by gh CLI for authentication
+    const tokenPrefix = token ? `GH_TOKEN=${token} ` : "";
 
-    const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${authArg} ${hostnameArg} --input -`;
+    const command = `${tokenPrefix}echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
 
     const response = await this.executor.exec(command, workDir);
 
@@ -274,7 +274,7 @@ export class GraphQLCommitStrategy implements CommitStrategy {
     try {
       // Check if the branch exists on remote
       await this.executor.exec(
-        `git ls-remote --exit-code --heads origin ${branchName}`,
+        `git ls-remote --exit-code --heads origin ${escapeShellArg(branchName)}`,
         workDir
       );
 
@@ -295,7 +295,7 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       // Branch doesn't exist on remote, push it
       // This pushes the current local branch to create it on remote
       await this.executor.exec(
-        `git push -u origin HEAD:${branchName}`,
+        `git push -u origin HEAD:${escapeShellArg(branchName)}`,
         workDir
       );
     }
