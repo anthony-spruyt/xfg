@@ -228,10 +228,10 @@ export class GraphQLCommitStrategy implements CommitStrategy {
 
     // Use token parameter for authentication when provided
     // This ensures the GitHub App is used as the commit author, not github-actions[bot]
-    // GH_TOKEN env var is used by gh CLI for authentication
+    // GH_TOKEN env var must be set for the gh command (after the pipe), not echo
     const tokenPrefix = token ? `GH_TOKEN=${token} ` : "";
 
-    const command = `${tokenPrefix}echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
+    const command = `echo ${escapeShellArg(requestBody)} | ${tokenPrefix}gh api graphql ${hostnameArg} --input -`;
 
     const response = await this.executor.exec(command, workDir);
 
