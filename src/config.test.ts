@@ -3,7 +3,12 @@ import { strict as assert } from "node:assert";
 import { writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { loadConfig, convertContentToString } from "./config.js";
+import {
+  loadConfig,
+  convertContentToString,
+  type BranchProtectionRule,
+  type RepoSettings,
+} from "./config.js";
 import { parse } from "yaml";
 
 // Create a temporary directory for test fixtures
@@ -819,5 +824,25 @@ describe("convertContentToString", () => {
     // Both should produce valid YAML (not starting with {)
     assert.ok(!resultYaml.startsWith("{"));
     assert.ok(!resultYml.startsWith("{"));
+  });
+});
+
+describe("settings types", () => {
+  test("BranchProtectionRule has all expected optional fields", () => {
+    const rule: BranchProtectionRule = {
+      requiredReviews: 2,
+      dismissStaleReviews: true,
+    };
+    assert.equal(rule.requiredReviews, 2);
+    assert.equal(rule.dismissStaleReviews, true);
+  });
+
+  test("RepoSettings includes branchProtection map", () => {
+    const settings: RepoSettings = {
+      branchProtection: {
+        main: { requiredReviews: 1 },
+      },
+    };
+    assert.equal(settings.branchProtection?.main?.requiredReviews, 1);
   });
 });

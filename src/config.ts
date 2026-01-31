@@ -24,6 +24,41 @@ export interface PRMergeOptions {
 }
 
 // =============================================================================
+// Branch Protection Types
+// =============================================================================
+
+export interface RequiredStatusChecks {
+  strict?: boolean;
+  checks?: string[];
+}
+
+export interface BranchProtectionRule {
+  // Required reviews
+  requiredReviews?: number;
+  dismissStaleReviews?: boolean;
+  requireCodeOwners?: boolean;
+  requireLastPushApproval?: boolean;
+
+  // Status checks
+  requiredStatusChecks?: RequiredStatusChecks;
+
+  // Restrictions
+  enforceAdmins?: boolean;
+  requiredLinearHistory?: boolean;
+  allowForcePushes?: boolean;
+  allowDeletions?: boolean;
+  requiredConversationResolution?: boolean;
+
+  // Signatures
+  requiredSignatures?: boolean;
+}
+
+export interface RepoSettings {
+  branchProtection?: Record<string, BranchProtectionRule>;
+  deleteOrphaned?: boolean;
+}
+
+// =============================================================================
 // Raw Config Types (as parsed from YAML)
 // =============================================================================
 
