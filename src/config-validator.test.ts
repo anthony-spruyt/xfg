@@ -1428,4 +1428,580 @@ describe("validateRawConfig", () => {
       );
     });
   });
+
+  describe("settings.rulesets validation", () => {
+    test("allows valid root-level settings with rulesets", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "branch",
+              enforcement: "active",
+              conditions: {
+                refName: {
+                  include: ["refs/heads/main"],
+                },
+              },
+              rules: [
+                {
+                  type: "pull_request",
+                  parameters: {
+                    requiredApprovingReviewCount: 1,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows valid per-repo settings with rulesets", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  target: "branch",
+                  enforcement: "active",
+                },
+              },
+            },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when settings is not an object", () => {
+      const config = createValidConfig({
+        settings: "invalid" as never,
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /settings must be an object/
+      );
+    });
+
+    test("throws when rulesets is not an object", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: "invalid" as never,
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /rulesets must be an object/
+      );
+    });
+
+    test("throws when ruleset target is invalid", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "invalid" as never,
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /target must be one of: branch, tag/
+      );
+    });
+
+    test("throws when ruleset enforcement is invalid", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              enforcement: "invalid" as never,
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /enforcement must be one of: active, disabled, evaluate/
+      );
+    });
+
+    test("throws when bypassActors is not an array", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              bypassActors: "invalid" as never,
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /bypassActors must be an array/
+      );
+    });
+
+    test("throws when bypassActor actorId is not a number", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              bypassActors: [{ actorId: "123" as never, actorType: "Team" }],
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /actorId must be a number/
+      );
+    });
+
+    test("throws when bypassActor actorType is invalid", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              bypassActors: [{ actorId: 123, actorType: "Invalid" as never }],
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /actorType must be one of: Team, User, Integration/
+      );
+    });
+
+    test("throws when bypassActor bypassMode is invalid", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              bypassActors: [
+                {
+                  actorId: 123,
+                  actorType: "Team",
+                  bypassMode: "invalid" as never,
+                },
+              ],
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /bypassMode must be one of: always, pull_request/
+      );
+    });
+
+    test("allows valid bypassActors", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              bypassActors: [
+                { actorId: 123, actorType: "Team", bypassMode: "always" },
+                {
+                  actorId: 456,
+                  actorType: "Integration",
+                  bypassMode: "pull_request",
+                },
+                { actorId: 789, actorType: "User" },
+              ],
+            },
+          },
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when conditions is not an object", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              conditions: "invalid" as never,
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /conditions must be an object/
+      );
+    });
+
+    test("throws when conditions.refName.include is not an array of strings", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              conditions: {
+                refName: {
+                  include: [123] as never,
+                },
+              },
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /include must be an array of strings/
+      );
+    });
+
+    test("throws when conditions.refName.exclude is not an array of strings", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              conditions: {
+                refName: {
+                  exclude: "not-array" as never,
+                },
+              },
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /exclude must be an array of strings/
+      );
+    });
+
+    test("throws when rules is not an array", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              rules: "invalid" as never,
+            },
+          },
+        },
+      });
+      assert.throws(() => validateRawConfig(config), /rules must be an array/);
+    });
+
+    test("throws when rule type is missing", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              rules: [{ parameters: {} }] as never,
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /rule must have a 'type' string field/
+      );
+    });
+
+    test("throws when rule type is invalid", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              rules: [{ type: "invalid_type" }] as never,
+            },
+          },
+        },
+      });
+      assert.throws(() => validateRawConfig(config), /invalid rule type/);
+    });
+
+    test("allows all valid rule types", () => {
+      const validRuleTypes = [
+        "pull_request",
+        "required_status_checks",
+        "required_signatures",
+        "required_linear_history",
+        "non_fast_forward",
+        "creation",
+        "update",
+        "deletion",
+        "required_deployments",
+        "code_scanning",
+        "code_quality",
+        "workflows",
+        "commit_author_email_pattern",
+        "commit_message_pattern",
+        "committer_email_pattern",
+        "branch_name_pattern",
+        "tag_name_pattern",
+        "file_path_restriction",
+        "file_extension_restriction",
+        "max_file_path_length",
+        "max_file_size",
+      ];
+
+      for (const ruleType of validRuleTypes) {
+        const config = createValidConfig({
+          settings: {
+            rulesets: {
+              "test-rules": {
+                rules: [{ type: ruleType }] as never,
+              },
+            },
+          },
+        });
+        assert.doesNotThrow(
+          () => validateRawConfig(config),
+          `Rule type ${ruleType} should be valid`
+        );
+      }
+    });
+
+    test("throws when pull_request requiredApprovingReviewCount is invalid", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              rules: [
+                {
+                  type: "pull_request",
+                  parameters: {
+                    requiredApprovingReviewCount: 10,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /requiredApprovingReviewCount must be an integer between 0 and 6/
+      );
+    });
+
+    test("throws when pull_request allowedMergeMethods contains invalid value", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              rules: [
+                {
+                  type: "pull_request",
+                  parameters: {
+                    allowedMergeMethods: ["invalid"] as never,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /allowedMergeMethods values must be one of: merge, squash, rebase/
+      );
+    });
+
+    test("allows valid pull_request parameters", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              rules: [
+                {
+                  type: "pull_request",
+                  parameters: {
+                    requiredApprovingReviewCount: 2,
+                    dismissStaleReviewsOnPush: true,
+                    requireCodeOwnerReview: true,
+                    requireLastPushApproval: true,
+                    requiredReviewThreadResolution: true,
+                    allowedMergeMethods: ["squash", "rebase"],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when pattern rule has invalid operator", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              rules: [
+                {
+                  type: "commit_message_pattern",
+                  parameters: {
+                    operator: "invalid" as never,
+                    pattern: ".*",
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /pattern rule operator must be one of/
+      );
+    });
+
+    test("allows valid pattern rule", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              rules: [
+                {
+                  type: "commit_message_pattern",
+                  parameters: {
+                    operator: "regex",
+                    pattern: "^(feat|fix|docs):",
+                    negate: false,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when code_scanning has invalid alertsThreshold", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              rules: [
+                {
+                  type: "code_scanning",
+                  parameters: {
+                    codeScanningTools: [
+                      {
+                        tool: "CodeQL",
+                        alertsThreshold: "invalid" as never,
+                        securityAlertsThreshold: "high_or_higher",
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /alertsThreshold must be one of/
+      );
+    });
+
+    test("throws when code_scanning has invalid securityAlertsThreshold", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              rules: [
+                {
+                  type: "code_scanning",
+                  parameters: {
+                    codeScanningTools: [
+                      {
+                        tool: "CodeQL",
+                        alertsThreshold: "errors",
+                        securityAlertsThreshold: "invalid" as never,
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /securityAlertsThreshold must be one of/
+      );
+    });
+
+    test("allows valid code_scanning rule", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              rules: [
+                {
+                  type: "code_scanning",
+                  parameters: {
+                    codeScanningTools: [
+                      {
+                        tool: "CodeQL",
+                        alertsThreshold: "errors",
+                        securityAlertsThreshold: "high_or_higher",
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when settings.deleteOrphaned is not a boolean", () => {
+      const config = createValidConfig({
+        settings: {
+          deleteOrphaned: "yes" as never,
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /deleteOrphaned must be a boolean/
+      );
+    });
+
+    test("allows settings.deleteOrphaned as boolean", () => {
+      const config = createValidConfig({
+        settings: {
+          deleteOrphaned: true,
+        },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("validates per-repo settings", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  target: "invalid" as never,
+                },
+              },
+            },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /target must be one of: branch, tag/
+      );
+    });
+  });
 });
