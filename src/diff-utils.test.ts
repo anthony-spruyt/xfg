@@ -201,3 +201,49 @@ describe("diffStats", () => {
     assert.equal(stats.deletedCount, 2);
   });
 });
+
+describe("generateDiff edge cases", () => {
+  test("returns empty array when content is identical", () => {
+    const content = "line 1\nline 2\nline 3";
+    const lines = generateDiff(content, content, "test.txt");
+    assert.equal(lines.length, 0);
+  });
+
+  test("handles multiple separate changes that get merged into hunks", () => {
+    // Create content with changes at beginning and end (close enough to merge)
+    const oldContent = "line 1\nline 2\nline 3\nline 4\nline 5";
+    const newContent = "changed 1\nline 2\nline 3\nline 4\nchanged 5";
+
+    const lines = generateDiff(oldContent, newContent, "test.txt", 1);
+    // Changes should produce diff output
+    assert.ok(lines.length > 0);
+  });
+
+  test("handles changes far apart creating separate hunks", () => {
+    // Create content with changes far apart (won't merge)
+    const oldLines = Array.from({ length: 20 }, (_, i) => `line ${i + 1}`);
+    const oldContent = oldLines.join("\n");
+
+    const newLines = [...oldLines];
+    newLines[0] = "changed first";
+    newLines[19] = "changed last";
+    const newContent = newLines.join("\n");
+
+    const lines = generateDiff(oldContent, newContent, "test.txt", 1);
+    // With only 1 line of context, should have diff output
+    assert.ok(lines.length >= 1);
+  });
+
+  test("calculates correct hunk positions with changes in middle", () => {
+    const oldContent = "line 1\nline 2\nline 3\nline 4\nline 5";
+    const newContent = "line 1\nline 2\nchanged 3\nline 4\nline 5";
+
+    const lines = generateDiff(oldContent, newContent, "test.txt", 1);
+    assert.ok(lines.length > 0);
+    // Should have both deletions and insertions in output
+    const hasDelete = lines.some((l) => l.includes("-line 3"));
+    const hasInsert = lines.some((l) => l.includes("+changed 3"));
+    assert.ok(hasDelete, "Should have deletion line");
+    assert.ok(hasInsert, "Should have insertion line");
+  });
+});

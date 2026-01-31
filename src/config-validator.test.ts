@@ -2003,5 +2003,59 @@ describe("validateRawConfig", () => {
         /target must be one of: branch, tag/
       );
     });
+
+    test("throws when bypassActors contains primitive instead of object", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              bypassActors: ["not-an-object" as never],
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /bypassActors\[0\] must be an object/
+      );
+    });
+
+    test("throws when conditions.refName is not an object", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              conditions: {
+                refName: "not-an-object" as never,
+              },
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /conditions\.refName must be an object/
+      );
+    });
+
+    test("throws when conditions.refName.exclude contains non-strings", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              conditions: {
+                refName: {
+                  exclude: [123 as never],
+                },
+              },
+            },
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /conditions\.refName\.exclude must be an array of strings/
+      );
+    });
   });
 });

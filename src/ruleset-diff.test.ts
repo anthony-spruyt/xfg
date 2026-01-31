@@ -552,3 +552,123 @@ describe("formatDiff", () => {
     assert.ok(output.includes("1 unchanged"));
   });
 });
+
+describe("diffRulesets edge cases", () => {
+  test("detects change when comparing null vs undefined in parameters", () => {
+    const current: GitHubRuleset[] = [
+      {
+        id: 1,
+        name: "test",
+        target: "branch",
+        enforcement: "active",
+        rules: [
+          {
+            type: "pull_request",
+            parameters: {
+              required_approving_review_count: null as unknown as number,
+            },
+          },
+        ],
+      },
+    ];
+    const desired = new Map<string, Ruleset>([
+      [
+        "test",
+        {
+          target: "branch",
+          enforcement: "active",
+          rules: [
+            {
+              type: "pull_request",
+              parameters: {
+                requiredApprovingReviewCount: 1,
+              },
+            },
+          ],
+        },
+      ],
+    ]);
+
+    const changes = diffRulesets(current, desired, []);
+    assert.equal(changes[0].action, "update");
+  });
+
+  test("detects change when parameter types differ", () => {
+    const current: GitHubRuleset[] = [
+      {
+        id: 1,
+        name: "test",
+        target: "branch",
+        enforcement: "active",
+        rules: [
+          {
+            type: "pull_request",
+            parameters: {
+              required_approving_review_count: "2" as unknown as number,
+            },
+          },
+        ],
+      },
+    ];
+    const desired = new Map<string, Ruleset>([
+      [
+        "test",
+        {
+          target: "branch",
+          enforcement: "active",
+          rules: [
+            {
+              type: "pull_request",
+              parameters: {
+                requiredApprovingReviewCount: 2,
+              },
+            },
+          ],
+        },
+      ],
+    ]);
+
+    const changes = diffRulesets(current, desired, []);
+    assert.equal(changes[0].action, "update");
+  });
+
+  test("detects change when object has extra keys", () => {
+    const current: GitHubRuleset[] = [
+      {
+        id: 1,
+        name: "test",
+        target: "branch",
+        enforcement: "active",
+        rules: [
+          {
+            type: "pull_request",
+            parameters: {
+              required_approving_review_count: 2,
+              dismiss_stale_reviews_on_push: true,
+            },
+          },
+        ],
+      },
+    ];
+    const desired = new Map<string, Ruleset>([
+      [
+        "test",
+        {
+          target: "branch",
+          enforcement: "active",
+          rules: [
+            {
+              type: "pull_request",
+              parameters: {
+                requiredApprovingReviewCount: 2,
+              },
+            },
+          ],
+        },
+      ],
+    ]);
+
+    const changes = diffRulesets(current, desired, []);
+    assert.equal(changes[0].action, "update");
+  });
+});
