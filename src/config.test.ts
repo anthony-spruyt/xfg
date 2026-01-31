@@ -8,6 +8,9 @@ import {
   convertContentToString,
   type BranchProtectionRule,
   type RepoSettings,
+  type RawRepoSettings,
+  type RawConfig,
+  type RawRepoConfig,
 } from "./config.js";
 import { parse } from "yaml";
 
@@ -844,5 +847,42 @@ describe("settings types", () => {
       },
     };
     assert.equal(settings.branchProtection?.main?.requiredReviews, 1);
+  });
+});
+
+describe("raw settings types", () => {
+  test("RawRepoSettings can hold branchProtection", () => {
+    const settings: RawRepoSettings = {
+      branchProtection: {
+        main: { requiredReviews: 2 },
+      },
+    };
+    assert.ok(settings.branchProtection);
+  });
+
+  test("RawConfig can include settings at root", () => {
+    const config: RawConfig = {
+      id: "test",
+      files: {},
+      repos: [],
+      settings: {
+        branchProtection: {
+          main: { requiredReviews: 1 },
+        },
+      },
+    };
+    assert.ok(config.settings?.branchProtection);
+  });
+
+  test("RawRepoConfig can include settings", () => {
+    const repo: RawRepoConfig = {
+      git: "org/repo",
+      settings: {
+        branchProtection: {
+          main: { requiredReviews: 3 },
+        },
+      },
+    };
+    assert.ok(repo.settings?.branchProtection);
   });
 });

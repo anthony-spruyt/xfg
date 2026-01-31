@@ -91,12 +91,19 @@ export interface RawRepoFileOverride {
   deleteOrphaned?: boolean;
 }
 
+// Raw settings (before normalization)
+export interface RawRepoSettings {
+  branchProtection?: Record<string, BranchProtectionRule>;
+  deleteOrphaned?: boolean;
+}
+
 // Repo configuration
 // files can map to false to exclude, or an object to override
 export interface RawRepoConfig {
   git: string | string[];
   files?: Record<string, RawRepoFileOverride | false>;
   prOptions?: PRMergeOptions;
+  settings?: RawRepoSettings;
 }
 
 // Root config structure
@@ -108,6 +115,7 @@ export interface RawConfig {
   prTemplate?: string;
   githubHosts?: string[];
   deleteOrphaned?: boolean;
+  settings?: RawRepoSettings;
 }
 
 // =============================================================================
