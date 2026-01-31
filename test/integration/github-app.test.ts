@@ -14,12 +14,13 @@ const TEST_REPO = "anthony-spruyt/xfg-test";
 const TARGET_FILE = "github-app-test.json";
 const BRANCH_NAME = "chore/sync-github-app-test";
 
-// Skip all tests if GH_INSTALLATION_TOKEN is not set
-const SKIP_TESTS = !process.env.GH_INSTALLATION_TOKEN;
+// Skip all tests if GitHub App credentials are not set
+const SKIP_TESTS =
+  !process.env.XFG_GITHUB_APP_ID || !process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
 if (SKIP_TESTS) {
   console.log(
-    "\n⚠️  Skipping GitHub App integration tests: GH_INSTALLATION_TOKEN not set\n"
+    "\n⚠️  Skipping GitHub App integration tests: XFG_GITHUB_APP_ID and XFG_GITHUB_APP_PRIVATE_KEY not set\n"
   );
 }
 
@@ -105,11 +106,11 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
     console.log("\n=== Setup complete ===\n");
   });
 
-  test("creates verified commit via GraphQL API when GH_INSTALLATION_TOKEN is set", async () => {
+  test("creates verified commit via GraphQL API with GitHub App credentials", async () => {
     const configPath = join(fixturesDir, "integration-test-github-app.yaml");
 
-    // Run the sync tool with GH_INSTALLATION_TOKEN
-    console.log("Running xfg with GitHub App token...");
+    // Run the sync tool with GitHub App credentials
+    console.log("Running xfg with GitHub App credentials...");
     const output = exec(`node dist/index.js --config ${configPath}`, {
       cwd: projectRoot,
     });

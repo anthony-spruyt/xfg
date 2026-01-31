@@ -15,20 +15,21 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 
 ### Action Inputs
 
-| Input                | Required | Default               | Description                                                                   |
-| -------------------- | -------- | --------------------- | ----------------------------------------------------------------------------- |
-| `config`             | Yes      | -                     | Path to YAML config file                                                      |
-| `dry-run`            | No       | `false`               | Preview mode - show what would change without creating PRs                    |
-| `work-dir`           | No       | `./tmp`               | Directory for cloning repositories                                            |
-| `retries`            | No       | `3`                   | Number of network retries                                                     |
-| `branch`             | No       | -                     | Override sync branch name                                                     |
-| `merge`              | No       | -                     | PR merge mode (`manual`/`auto`/`force`/`direct`)                              |
-| `merge-strategy`     | No       | -                     | Merge strategy (`merge`/`squash`/`rebase`)                                    |
-| `delete-branch`      | No       | `false`               | Delete branch after merge                                                     |
-| `github-token`       | No       | `${{ github.token }}` | GitHub token for authentication                                               |
-| `github-app-token`   | No       | -                     | GitHub App installation token for verified commits (overrides `github-token`) |
-| `azure-devops-token` | No       | -                     | Azure DevOps Personal Access Token                                            |
-| `gitlab-token`       | No       | -                     | GitLab token for authentication                                               |
+| Input                    | Required | Default               | Description                                                |
+| ------------------------ | -------- | --------------------- | ---------------------------------------------------------- |
+| `config`                 | Yes      | -                     | Path to YAML config file                                   |
+| `dry-run`                | No       | `false`               | Preview mode - show what would change without creating PRs |
+| `work-dir`               | No       | `./tmp`               | Directory for cloning repositories                         |
+| `retries`                | No       | `3`                   | Number of network retries                                  |
+| `branch`                 | No       | -                     | Override sync branch name                                  |
+| `merge`                  | No       | -                     | PR merge mode (`manual`/`auto`/`force`/`direct`)           |
+| `merge-strategy`         | No       | -                     | Merge strategy (`merge`/`squash`/`rebase`)                 |
+| `delete-branch`          | No       | `false`               | Delete branch after merge                                  |
+| `github-token`           | No       | `${{ github.token }}` | GitHub token for authentication                            |
+| `github-app-id`          | No       | -                     | GitHub App ID for installation token generation            |
+| `github-app-private-key` | No       | -                     | GitHub App private key (PEM) for JWT signing               |
+| `azure-devops-token`     | No       | -                     | Azure DevOps Personal Access Token                         |
+| `gitlab-token`           | No       | -                     | GitLab token for authentication                            |
 
 ### Multi-Platform Example
 
@@ -72,7 +73,7 @@ Push directly to the default branch without creating PRs:
 
 ### GitHub App Authentication (Verified Commits)
 
-For verified commits and better enterprise compliance, use a GitHub App instead of a PAT:
+For verified commits, use a GitHub App:
 
 ```yaml
 jobs:
@@ -81,17 +82,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/create-github-app-token@v2
-        id: app-token
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-      - uses: anthony-spruyt/xfg@v1
+      - uses: anthony-spruyt/xfg@v2
         with:
           config: ./sync-config.yml
-          github-app-token: ${{ steps.app-token.outputs.token }}
+          github-app-id: ${{ vars.APP_ID }}
+          github-app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
 ```
+
+This approach automatically:
+
+- Discovers all installations of your GitHub App
+- Generates short-lived installation tokens per-installation
+- Caches tokens to minimize API calls
+- Skips repositories without app access
 
 See [GitHub App Authentication](../platforms/github-app.md) for full setup instructions.
 

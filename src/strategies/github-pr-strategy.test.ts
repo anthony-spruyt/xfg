@@ -1082,3 +1082,180 @@ describe("GitHubPRStrategy merge", () => {
     });
   });
 });
+
+describe("GitHubPRStrategy with token parameter", () => {
+  const githubRepoInfo: GitHubRepoInfo = {
+    type: "github",
+    gitUrl: "git@github.com:owner/repo.git",
+    owner: "owner",
+    repo: "repo",
+    host: "github.com",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  test("checkExistingPR uses GH_TOKEN env prefix when token is provided", async () => {
+    mockExecutor.responses.set(
+      "gh pr list",
+      "https://github.com/owner/repo/pull/123"
+    );
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: githubRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+      token: "ghs_test_token_12345",
+    };
+
+    await strategy.checkExistingPR(options);
+
+    assert.ok(mockExecutor.calls[0].command.startsWith("GH_TOKEN="));
+    assert.ok(
+      mockExecutor.calls[0].command.includes("ghs_test_token_12345"),
+      "Command should include the token"
+    );
+  });
+
+  test("create uses GH_TOKEN env prefix when token is provided", async () => {
+    mockExecutor.responses.set(
+      "gh pr create",
+      "https://github.com/owner/repo/pull/456"
+    );
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: githubRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+      token: "ghs_test_token_12345",
+    };
+
+    await strategy.create(options);
+
+    const createCall = mockExecutor.calls.find((c) =>
+      c.command.includes("gh pr create")
+    );
+    assert.ok(createCall, "Should have called gh pr create");
+    assert.ok(
+      createCall.command.startsWith("GH_TOKEN="),
+      "Command should start with GH_TOKEN="
+    );
+    assert.ok(
+      createCall.command.includes("ghs_test_token_12345"),
+      "Command should include the token"
+    );
+  });
+
+  test("closeExistingPR uses GH_TOKEN env prefix when token is provided", async () => {
+    mockExecutor.responses.set(
+      "gh pr list",
+      "https://github.com/owner/repo/pull/123"
+    );
+    mockExecutor.responses.set("gh pr close", "");
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    await strategy.closeExistingPR({
+      repoInfo: githubRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+      token: "ghs_test_token_12345",
+    });
+
+    // Both list and close should use the token
+    const listCall = mockExecutor.calls.find((c) =>
+      c.command.includes("gh pr list")
+    );
+    const closeCall = mockExecutor.calls.find((c) =>
+      c.command.includes("gh pr close")
+    );
+
+    assert.ok(listCall?.command.startsWith("GH_TOKEN="));
+    assert.ok(closeCall?.command.startsWith("GH_TOKEN="));
+  });
+
+  test("merge uses GH_TOKEN env prefix when token is provided", async () => {
+    mockExecutor.responses.set("gh api repos", "true");
+    mockExecutor.responses.set("gh pr merge", "");
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    await strategy.merge({
+      prUrl: "https://github.com/owner/repo/pull/123",
+      config: { mode: "auto" },
+      workDir: testDir,
+      retries: 0,
+      token: "ghs_test_token_12345",
+    });
+
+    // Both api and merge should use the token
+    const apiCall = mockExecutor.calls.find((c) =>
+      c.command.includes("gh api")
+    );
+    const mergeCall = mockExecutor.calls.find((c) =>
+      c.command.includes("gh pr merge")
+    );
+
+    assert.ok(
+      apiCall?.command.startsWith("GH_TOKEN="),
+      "gh api call should use token"
+    );
+    assert.ok(
+      mergeCall?.command.startsWith("GH_TOKEN="),
+      "gh pr merge call should use token"
+    );
+  });
+
+  test("commands without token do not have GH_TOKEN prefix", async () => {
+    mockExecutor.responses.set(
+      "gh pr list",
+      "https://github.com/owner/repo/pull/123"
+    );
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const options: PRStrategyOptions = {
+      repoInfo: githubRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+      // No token provided
+    };
+
+    await strategy.checkExistingPR(options);
+
+    assert.ok(
+      !mockExecutor.calls[0].command.startsWith("GH_TOKEN="),
+      "Command should not have GH_TOKEN prefix when no token is provided"
+    );
+    assert.ok(
+      mockExecutor.calls[0].command.startsWith("gh pr list"),
+      "Command should start with gh pr list"
+    );
+  });
+});

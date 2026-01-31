@@ -31,6 +31,8 @@ export interface PROptions {
   prTemplate?: string;
   /** Optional command executor for shell commands (for testing) */
   executor?: CommandExecutor;
+  /** GitHub App installation token for authentication */
+  token?: string;
 }
 
 export interface PRResult {
@@ -156,6 +158,7 @@ export async function createPR(options: PROptions): Promise<PRResult> {
     retries,
     prTemplate,
     executor,
+    token,
   } = options;
 
   const title = formatPRTitle(files);
@@ -178,6 +181,7 @@ export async function createPR(options: PROptions): Promise<PRResult> {
     baseBranch,
     workDir,
     retries,
+    token,
   });
 }
 
@@ -190,11 +194,21 @@ export interface MergePROptions {
   retries?: number;
   /** Optional command executor for shell commands (for testing) */
   executor?: CommandExecutor;
+  /** GitHub App installation token for authentication */
+  token?: string;
 }
 
 export async function mergePR(options: MergePROptions): Promise<MergeResult> {
-  const { repoInfo, prUrl, mergeConfig, workDir, dryRun, retries, executor } =
-    options;
+  const {
+    repoInfo,
+    prUrl,
+    mergeConfig,
+    workDir,
+    dryRun,
+    retries,
+    executor,
+    token,
+  } = options;
 
   if (dryRun) {
     const modeText =
@@ -217,5 +231,6 @@ export async function mergePR(options: MergePROptions): Promise<MergeResult> {
     config: mergeConfig,
     workDir,
     retries,
+    token,
   });
 }

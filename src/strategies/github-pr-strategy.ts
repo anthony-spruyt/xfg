@@ -51,16 +51,24 @@ function buildPRUrlRegex(host: string): RegExp {
   return new RegExp(`https://${escapedHost}/[\\w-]+/[\\w.-]+/pull/\\d+`);
 }
 
+/**
+ * Build the GH_TOKEN environment prefix for commands if a token is provided.
+ */
+function buildTokenPrefix(token?: string): string {
+  return token ? `GH_TOKEN=${token} ` : "";
+}
+
 export class GitHubPRStrategy extends BasePRStrategy {
   async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {
-    const { repoInfo, branchName, workDir, retries = 3 } = options;
+    const { repoInfo, branchName, workDir, retries = 3, token } = options;
 
     if (!isGitHubRepo(repoInfo)) {
       throw new Error("Expected GitHub repository");
     }
 
     const repoFlag = getRepoFlag(repoInfo);
-    const command = `gh pr list --repo ${escapeShellArg(repoFlag)} --head ${escapeShellArg(branchName)} --json url --jq '.[0].url'`;
+    const tokenPrefix = buildTokenPrefix(token);
+    const command = `${tokenPrefix}gh pr list --repo ${escapeShellArg(repoFlag)} --head ${escapeShellArg(branchName)} --json url --jq '.[0].url'`;
 
     try {
       const existingPR = await withRetry(
@@ -86,13 +94,20 @@ export class GitHubPRStrategy extends BasePRStrategy {
   }
 
   async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
-    const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
+    const {
+      repoInfo,
+      branchName,
+      baseBranch,
+      workDir,
+      retries = 3,
+      token,
+    } = options;
 
     if (!isGitHubRepo(repoInfo)) {
       throw new Error("Expected GitHub repository");
     }
 
-    // First check if there's an existing PR
+    // First check if there's an existing PR (pass token through)
     const existingUrl = await this.checkExistingPR({
       repoInfo,
       branchName,
@@ -101,6 +116,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       retries,
       title: "", // Not used for check
       body: "", // Not used for check
+      token,
     });
 
     if (!existingUrl) {
@@ -114,8 +130,10 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
 
     // Close the PR and delete the branch
+    // Token is passed via GH_TOKEN env prefix for gh CLI authentication
     const repoFlag = getRepoFlag(repoInfo);
-    const command = `gh pr close ${escapeShellArg(prNumber)} --repo ${escapeShellArg(repoFlag)} --delete-branch`;
+    const tokenPrefix = buildTokenPrefix(token);
+    const command = `${tokenPrefix}gh pr close ${escapeShellArg(prNumber)} --repo ${escapeShellArg(repoFlag)} --delete-branch`;
 
     try {
       await withRetry(() => this.executor.exec(command, workDir), { retries });
@@ -138,6 +156,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       baseBranch,
       workDir,
       retries = 3,
+      token,
     } = options;
 
     if (!isGitHubRepo(repoInfo)) {
@@ -148,7 +167,9 @@ export class GitHubPRStrategy extends BasePRStrategy {
     const bodyFile = join(workDir, this.bodyFilePath);
     writeFileSync(bodyFile, body, "utf-8");
 
-    const command = `gh pr create --title ${escapeShellArg(title)} --body-file ${escapeShellArg(bodyFile)} --base ${escapeShellArg(baseBranch)} --head ${escapeShellArg(branchName)}`;
+    // Token is passed via GH_TOKEN env prefix for gh CLI authentication
+    const tokenPrefix = buildTokenPrefix(token);
+    const command = `${tokenPrefix}gh pr create --title ${escapeShellArg(title)} --body-file ${escapeShellArg(bodyFile)} --base ${escapeShellArg(baseBranch)} --head ${escapeShellArg(branchName)}`;
 
     try {
       const result = await withRetry(
@@ -190,11 +211,14 @@ export class GitHubPRStrategy extends BasePRStrategy {
   async checkAutoMergeEnabled(
     repoInfo: GitHubRepoInfo,
     workDir: string,
-    retries: number = 3
+    retries: number = 3,
+    token?: string
   ): Promise<boolean> {
     const hostnameFlag = getHostnameFlag(repoInfo);
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
-    const command = `gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --jq '.allow_auto_merge // false'`;
+    // Token is passed via GH_TOKEN env prefix for gh CLI authentication
+    const tokenPrefix = buildTokenPrefix(token);
+    const command = `${tokenPrefix}gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --jq '.allow_auto_merge // false'`;
 
     try {
       const result = await withRetry(
@@ -227,7 +251,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
   }
 
   async merge(options: MergeOptions): Promise<MergeResult> {
-    const { prUrl, config, workDir, retries = 3 } = options;
+    const { prUrl, config, workDir, retries = 3, token } = options;
 
     // Manual mode: do nothing
     if (config.mode === "manual") {
@@ -240,6 +264,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     const strategyFlag = this.getMergeStrategyFlag(config.strategy);
     const deleteBranchFlag = config.deleteBranch ? "--delete-branch" : "";
+    // Token is passed via GH_TOKEN env prefix for gh CLI authentication
+    const tokenPrefix = buildTokenPrefix(token);
 
     if (config.mode === "auto") {
       // Check if auto-merge is enabled on the repo
@@ -256,7 +282,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
         const autoMergeEnabled = await this.checkAutoMergeEnabled(
           repoInfo,
           workDir,
-          retries
+          retries,
+          token
         );
 
         if (!autoMergeEnabled) {
@@ -277,7 +304,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
       // Enable auto-merge
       const command =
-        `gh pr merge ${escapeShellArg(prUrl)} --auto ${strategyFlag} ${deleteBranchFlag}`.trim();
+        `${tokenPrefix}gh pr merge ${escapeShellArg(prUrl)} --auto ${strategyFlag} ${deleteBranchFlag}`.trim();
 
       try {
         await withRetry(() => this.executor.exec(command, workDir), {
@@ -303,7 +330,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     if (config.mode === "force") {
       // Force merge using admin privileges
       const command =
-        `gh pr merge ${escapeShellArg(prUrl)} --admin ${strategyFlag} ${deleteBranchFlag}`.trim();
+        `${tokenPrefix}gh pr merge ${escapeShellArg(prUrl)} --admin ${strategyFlag} ${deleteBranchFlag}`.trim();
 
       try {
         await withRetry(() => this.executor.exec(command, workDir), {

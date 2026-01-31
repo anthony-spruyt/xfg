@@ -1,0 +1,14 @@
+# Gitleaks configuration
+# https://github.com/gitleaks/gitleaks
+
+[extend]
+# Extend the default gitleaks config
+# https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
+useDefault = true
+
+# Global allowlist for test files containing non-sensitive test data
+[allowlist]
+description = "Allowlist for test RSA keys"
+paths = [
+  '''fixtures/test-fixtures\.ts$''',
+]

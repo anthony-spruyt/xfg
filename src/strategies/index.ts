@@ -35,7 +35,10 @@ export {
   GraphQLCommitStrategy,
   MAX_PAYLOAD_SIZE,
 } from "./graphql-commit-strategy.js";
-export { getCommitStrategy } from "./commit-strategy-selector.js";
+export {
+  getCommitStrategy,
+  hasGitHubAppCredentials,
+} from "./commit-strategy-selector.js";
 
 /**
  * Factory function to get the appropriate PR strategy for a repository.

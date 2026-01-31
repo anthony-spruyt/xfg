@@ -6,12 +6,21 @@ import {
   ContentValue,
   convertContentToString,
 } from "./config.js";
-import { RepoInfo, getRepoDisplayName } from "./repo-detector.js";
+import {
+  RepoInfo,
+  getRepoDisplayName,
+  isGitHubRepo,
+  GitHubRepoInfo,
+} from "./repo-detector.js";
 import { interpolateXfgContent } from "./xfg-template.js";
 import { GitOps, GitOpsOptions } from "./git-ops.js";
 import { createPR, mergePR, PRResult, FileAction } from "./pr-creator.js";
 import { logger, ILogger } from "./logger.js";
-import { getPRStrategy, getCommitStrategy } from "./strategies/index.js";
+import {
+  getPRStrategy,
+  getCommitStrategy,
+  hasGitHubAppCredentials,
+} from "./strategies/index.js";
 import type { PRMergeConfig, FileChange } from "./strategies/index.js";
 import { CommandExecutor, defaultExecutor } from "./command-executor.js";
 import {
@@ -27,6 +36,7 @@ import {
   updateManifest,
   MANIFEST_FILENAME,
 } from "./manifest.js";
+import { GitHubAppTokenManager } from "./github-app-token-manager.js";
 
 /**
  * Determines if a file should be marked as executable.
@@ -87,6 +97,7 @@ export class RepositoryProcessor {
   private readonly log: ILogger;
   private retries: number = 3;
   private executor: CommandExecutor = defaultExecutor;
+  private readonly tokenManager: GitHubAppTokenManager | null;
 
   /**
    * Creates a new RepositoryProcessor.
@@ -96,6 +107,16 @@ export class RepositoryProcessor {
   constructor(gitOpsFactory?: GitOpsFactory, log?: ILogger) {
     this.gitOpsFactory = gitOpsFactory ?? ((opts) => new GitOps(opts));
     this.log = log ?? logger;
+
+    // Initialize GitHub App token manager if credentials are configured
+    if (hasGitHubAppCredentials()) {
+      this.tokenManager = new GitHubAppTokenManager(
+        process.env.XFG_GITHUB_APP_ID!,
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY!
+      );
+    } else {
+      this.tokenManager = null;
+    }
   }
 
   async process(
@@ -107,6 +128,31 @@ export class RepositoryProcessor {
     const { branchName, workDir, dryRun, prTemplate } = options;
     this.retries = options.retries ?? 3;
     this.executor = options.executor ?? defaultExecutor;
+
+    // For GitHub repos with token manager, get installation token
+    let token: string | undefined;
+    if (this.tokenManager && isGitHubRepo(repoInfo)) {
+      try {
+        const tokenResult = await this.tokenManager.getTokenForRepo(
+          repoInfo as GitHubRepoInfo
+        );
+        if (tokenResult === null) {
+          // No installation found for this owner - skip the repo
+          return {
+            success: true,
+            repoName,
+            message: `No GitHub App installation found for ${repoInfo.owner}`,
+            skipped: true,
+          };
+        }
+        token = tokenResult;
+      } catch (error) {
+        // Token retrieval failed - continue without token and let auth fail naturally
+        this.log.info(
+          `Warning: Failed to get GitHub App token: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+    }
 
     this.gitOps = this.gitOpsFactory({
       workDir,
@@ -153,6 +199,7 @@ export class RepositoryProcessor {
           baseBranch,
           workDir,
           retries: this.retries,
+          token,
         });
         if (closed) {
           this.log.info("Closed existing PR and deleted branch for fresh sync");
@@ -438,6 +485,7 @@ export class RepositoryProcessor {
             retries: this.retries,
             // Use force push (--force-with-lease) for PR branches, not for direct mode
             force: !isDirectMode,
+            token,
           });
           this.log.info(
             `Committed: ${commitResult.sha} (verified: ${commitResult.verified})`
@@ -486,6 +534,7 @@ export class RepositoryProcessor {
         retries: this.retries,
         prTemplate,
         executor: this.executor,
+        token,
       });
 
       // Step 10: Handle merge options if configured
@@ -509,6 +558,7 @@ export class RepositoryProcessor {
           dryRun,
           retries: this.retries,
           executor: this.executor,
+          token,
         });
 
         mergeResult = {

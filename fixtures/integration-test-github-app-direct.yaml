@@ -1,5 +1,5 @@
 # Integration test config for GitHub App verified commits with direct mode
-# Uses GH_INSTALLATION_TOKEN for GraphQL commit API
+# Uses XFG_GITHUB_APP_ID and XFG_GITHUB_APP_PRIVATE_KEY for GitHub App authentication
 # Pushes directly to main without creating a PR
 
 id: integration-test-github-app-direct

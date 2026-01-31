@@ -14,6 +14,8 @@ export interface CommitOptions {
   retries?: number;
   /** Use force push (--force-with-lease). Default: true for PR branches, false for direct push to main. */
   force?: boolean;
+  /** GitHub App installation token for authentication (used by GraphQLCommitStrategy) */
+  token?: string;
 }
 
 export interface CommitResult {

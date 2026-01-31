@@ -45,8 +45,11 @@ inputs:
   gitlab-token:
     description: "GitLab token for authentication"
     required: false
-  github-app-token:
-    description: "GitHub App installation token for verified commits (overrides github-token for GitHub repos)"
+  github-app-id:
+    description: "GitHub App ID (generates installation tokens automatically)"
+    required: false
+  github-app-private-key:
+    description: "GitHub App private key (PEM format) for JWT signing"
     required: false
   xfg-package:
     description: "xfg package to install (npm package name, local .tgz path, or 'skip' to use pre-installed). Used for CI testing."
@@ -77,7 +80,6 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-        GITHUB_APP_TOKEN: ${{ inputs.github-app-token }}
         AZURE_DEVOPS_TOKEN: ${{ inputs.azure-devops-token }}
         GITLAB_TOKEN: ${{ inputs.gitlab-token }}
       run: |
@@ -89,11 +91,9 @@ runs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
         fi
 
-        # GitHub - URL rewrite for authentication
-        # GitHub App token takes precedence over PAT
-        if [ -n "${GITHUB_APP_TOKEN}" ]; then
-          git config --global url."https://x-access-token:${GITHUB_APP_TOKEN}@github.com/".insteadOf "https://github.com/"
-        elif [ -n "${GITHUB_TOKEN}" ]; then
+        # GitHub - URL rewrite for authentication (PAT only)
+        # Note: GitHub App auth is handled dynamically per-repo by xfg
+        if [ -n "${GITHUB_TOKEN}" ]; then
           git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
         fi
 
@@ -123,7 +123,8 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
-        GH_INSTALLATION_TOKEN: ${{ inputs.github-app-token }}
+        XFG_GITHUB_APP_ID: ${{ inputs.github-app-id }}
+        XFG_GITHUB_APP_PRIVATE_KEY: ${{ inputs.github-app-private-key }}
         AZURE_DEVOPS_EXT_PAT: ${{ inputs.azure-devops-token }}
         GITLAB_TOKEN: ${{ inputs.gitlab-token }}
       run: |

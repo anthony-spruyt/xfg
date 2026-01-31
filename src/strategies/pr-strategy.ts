@@ -26,6 +26,8 @@ export interface PRStrategyOptions {
   workDir: string;
   /** Number of retries for API operations (default: 3) */
   retries?: number;
+  /** GitHub App installation token for authentication */
+  token?: string;
 }
 
 export interface MergeOptions {
@@ -33,6 +35,8 @@ export interface MergeOptions {
   config: PRMergeConfig;
   workDir: string;
   retries?: number;
+  /** GitHub App installation token for authentication */
+  token?: string;
 }
 
 /**
@@ -44,6 +48,8 @@ export interface CloseExistingPROptions {
   baseBranch: string;
   workDir: string;
   retries?: number;
+  /** GitHub App installation token for authentication */
+  token?: string;
 }
 
 /**

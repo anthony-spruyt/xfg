@@ -1,6 +1,9 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert";
-import { getCommitStrategy } from "./commit-strategy-selector.js";
+import {
+  getCommitStrategy,
+  hasGitHubAppCredentials,
+} from "./commit-strategy-selector.js";
 import { GitCommitStrategy } from "./git-commit-strategy.js";
 import { GraphQLCommitStrategy } from "./graphql-commit-strategy.js";
 import {
@@ -9,19 +12,70 @@ import {
   GitLabRepoInfo,
 } from "../repo-detector.js";
 
+describe("hasGitHubAppCredentials", () => {
+  let originalAppId: string | undefined;
+  let originalPrivateKey: string | undefined;
+
+  beforeEach(() => {
+    originalAppId = process.env.XFG_GITHUB_APP_ID;
+    originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+    delete process.env.XFG_GITHUB_APP_ID;
+    delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+  });
+
+  afterEach(() => {
+    if (originalAppId !== undefined) {
+      process.env.XFG_GITHUB_APP_ID = originalAppId;
+    } else {
+      delete process.env.XFG_GITHUB_APP_ID;
+    }
+    if (originalPrivateKey !== undefined) {
+      process.env.XFG_GITHUB_APP_PRIVATE_KEY = originalPrivateKey;
+    } else {
+      delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+    }
+  });
+
+  test("returns true when both XFG_GITHUB_APP_ID and XFG_GITHUB_APP_PRIVATE_KEY are set", () => {
+    process.env.XFG_GITHUB_APP_ID = "12345";
+    process.env.XFG_GITHUB_APP_PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY-----";
+
+    assert.equal(hasGitHubAppCredentials(), true);
+  });
+
+  test("returns false when only XFG_GITHUB_APP_ID is set", () => {
+    process.env.XFG_GITHUB_APP_ID = "12345";
+
+    assert.equal(hasGitHubAppCredentials(), false);
+  });
+
+  test("returns false when only XFG_GITHUB_APP_PRIVATE_KEY is set", () => {
+    process.env.XFG_GITHUB_APP_PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY-----";
+
+    assert.equal(hasGitHubAppCredentials(), false);
+  });
+
+  test("returns false when neither env var is set", () => {
+    assert.equal(hasGitHubAppCredentials(), false);
+  });
+});
+
 describe("getCommitStrategy", () => {
   // Save original env vars
   let originalGhToken: string | undefined;
-  let originalGhInstallationToken: string | undefined;
+  let originalAppId: string | undefined;
+  let originalPrivateKey: string | undefined;
 
   beforeEach(() => {
     // Save original values
     originalGhToken = process.env.GH_TOKEN;
-    originalGhInstallationToken = process.env.GH_INSTALLATION_TOKEN;
+    originalAppId = process.env.XFG_GITHUB_APP_ID;
+    originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
     // Clear environment variables
     delete process.env.GH_TOKEN;
-    delete process.env.GH_INSTALLATION_TOKEN;
+    delete process.env.XFG_GITHUB_APP_ID;
+    delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
   });
 
   afterEach(() => {
@@ -32,10 +86,16 @@ describe("getCommitStrategy", () => {
       delete process.env.GH_TOKEN;
     }
 
-    if (originalGhInstallationToken !== undefined) {
-      process.env.GH_INSTALLATION_TOKEN = originalGhInstallationToken;
+    if (originalAppId !== undefined) {
+      process.env.XFG_GITHUB_APP_ID = originalAppId;
     } else {
-      delete process.env.GH_INSTALLATION_TOKEN;
+      delete process.env.XFG_GITHUB_APP_ID;
+    }
+
+    if (originalPrivateKey !== undefined) {
+      process.env.XFG_GITHUB_APP_PRIVATE_KEY = originalPrivateKey;
+    } else {
+      delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
     }
   });
 
@@ -76,48 +136,52 @@ describe("getCommitStrategy", () => {
     );
   });
 
-  test("returns GraphQLCommitStrategy for GitHub with GH_INSTALLATION_TOKEN", () => {
-    process.env.GH_INSTALLATION_TOKEN = "ghs_installation_token";
+  test("returns GraphQLCommitStrategy for GitHub with GitHub App credentials", () => {
+    process.env.XFG_GITHUB_APP_ID = "12345";
+    process.env.XFG_GITHUB_APP_PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY-----";
 
     const strategy = getCommitStrategy(githubRepoInfo);
 
     assert.ok(
       strategy instanceof GraphQLCommitStrategy,
-      "Should return GraphQLCommitStrategy when GH_INSTALLATION_TOKEN is set"
+      "Should return GraphQLCommitStrategy when GitHub App credentials are set"
     );
   });
 
-  test("GH_INSTALLATION_TOKEN takes precedence over GH_TOKEN", () => {
+  test("GitHub App credentials take precedence over GH_TOKEN", () => {
     process.env.GH_TOKEN = "ghp_test_token";
-    process.env.GH_INSTALLATION_TOKEN = "ghs_installation_token";
+    process.env.XFG_GITHUB_APP_ID = "12345";
+    process.env.XFG_GITHUB_APP_PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY-----";
 
     const strategy = getCommitStrategy(githubRepoInfo);
 
     assert.ok(
       strategy instanceof GraphQLCommitStrategy,
-      "Should return GraphQLCommitStrategy when both tokens are set"
+      "Should return GraphQLCommitStrategy when both GitHub App and GH_TOKEN are set"
     );
   });
 
-  test("returns GitCommitStrategy for Azure DevOps (ignores GH_INSTALLATION_TOKEN)", () => {
-    process.env.GH_INSTALLATION_TOKEN = "ghs_installation_token";
+  test("returns GitCommitStrategy for Azure DevOps (ignores GitHub App credentials)", () => {
+    process.env.XFG_GITHUB_APP_ID = "12345";
+    process.env.XFG_GITHUB_APP_PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY-----";
 
     const strategy = getCommitStrategy(azureRepoInfo);
 
     assert.ok(
       strategy instanceof GitCommitStrategy,
-      "Should return GitCommitStrategy for Azure DevOps regardless of GH_INSTALLATION_TOKEN"
+      "Should return GitCommitStrategy for Azure DevOps regardless of GitHub App credentials"
     );
   });
 
-  test("returns GitCommitStrategy for GitLab (ignores GH_INSTALLATION_TOKEN)", () => {
-    process.env.GH_INSTALLATION_TOKEN = "ghs_installation_token";
+  test("returns GitCommitStrategy for GitLab (ignores GitHub App credentials)", () => {
+    process.env.XFG_GITHUB_APP_ID = "12345";
+    process.env.XFG_GITHUB_APP_PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY-----";
 
     const strategy = getCommitStrategy(gitlabRepoInfo);
 
     assert.ok(
       strategy instanceof GitCommitStrategy,
-      "Should return GitCommitStrategy for GitLab regardless of GH_INSTALLATION_TOKEN"
+      "Should return GitCommitStrategy for GitLab regardless of GitHub App credentials"
     );
   });
 

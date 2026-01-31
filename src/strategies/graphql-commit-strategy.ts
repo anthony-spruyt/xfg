@@ -69,6 +69,7 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       fileChanges,
       workDir,
       retries = 3,
+      token,
     } = options;
 
     // Validate this is a GitHub repo
@@ -130,7 +131,8 @@ export class GraphQLCommitStrategy implements CommitStrategy {
           headSha.trim(),
           additions,
           deletions,
-          workDir
+          workDir,
+          token
         );
 
         return result;
@@ -162,7 +164,8 @@ export class GraphQLCommitStrategy implements CommitStrategy {
     expectedHeadOid: string,
     additions: Array<{ path: string; content: string | null }>,
     deletions: Array<{ path: string; content: string | null }>,
-    workDir: string
+    workDir: string,
+    token?: string
   ): Promise<CommitResult> {
     const repositoryNameWithOwner = `${repoInfo.owner}/${repoInfo.repo}`;
 
@@ -222,13 +225,10 @@ export class GraphQLCommitStrategy implements CommitStrategy {
         ? `--hostname ${escapeShellArg(repoInfo.host)}`
         : "";
 
-    // Use GH_INSTALLATION_TOKEN explicitly for authentication (issue #268)
+    // Use token parameter for authentication when provided
     // This ensures the GitHub App is used as the commit author, not github-actions[bot]
     // The token is passed via Authorization header rather than relying on GH_TOKEN env var
-    const installationToken = process.env.GH_INSTALLATION_TOKEN;
-    const authArg = installationToken
-      ? `-H "Authorization: token ${installationToken}"`
-      : "";
+    const authArg = token ? `-H "Authorization: token ${token}"` : "";
 
     const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${authArg} ${hostnameArg} --input -`;
 
