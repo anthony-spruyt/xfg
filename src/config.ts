@@ -140,6 +140,7 @@ export interface RepoConfig {
   git: string;
   files: FileContent[];
   prOptions?: PRMergeOptions;
+  settings?: RepoSettings;
 }
 
 // Normalized config
@@ -149,6 +150,7 @@ export interface Config {
   prTemplate?: string;
   githubHosts?: string[];
   deleteOrphaned?: boolean;
+  settings?: RepoSettings;
 }
 
 // =============================================================================

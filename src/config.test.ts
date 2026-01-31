@@ -11,6 +11,8 @@ import {
   type RawRepoSettings,
   type RawConfig,
   type RawRepoConfig,
+  type RepoConfig,
+  type Config,
 } from "./config.js";
 import { parse } from "yaml";
 
@@ -884,5 +886,33 @@ describe("raw settings types", () => {
       },
     };
     assert.ok(repo.settings?.branchProtection);
+  });
+});
+
+describe("normalized config types", () => {
+  test("RepoConfig can include resolved settings", () => {
+    const repo: RepoConfig = {
+      git: "org/repo",
+      files: [],
+      settings: {
+        branchProtection: {
+          main: { requiredReviews: 2 },
+        },
+      },
+    };
+    assert.ok(repo.settings?.branchProtection);
+  });
+
+  test("Config can include root settings", () => {
+    const config: Config = {
+      id: "test",
+      repos: [],
+      settings: {
+        branchProtection: {
+          main: { requiredReviews: 1 },
+        },
+      },
+    };
+    assert.ok(config.settings?.branchProtection);
   });
 });
