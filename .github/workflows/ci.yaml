@@ -107,23 +107,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github
 
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ vars.TEST_APP_ID }}
-          private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
-          owner: anthony-spruyt
-
-      - name: Reconfigure git for GitHub App tests
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
-
       - name: Run GitHub App integration tests
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           XFG_GITHUB_APP_ID: ${{ vars.TEST_APP_ID }}
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
         run: npm run test:integration:github-app
@@ -328,22 +313,15 @@ jobs:
           .github/scripts/delete-manifest.sh "${TEST_REPO}"
 
       # ========== GitHub App Test ==========
-      - name: "[App] Generate GitHub App token"
-        id: app-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ vars.TEST_APP_ID }}
-          private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
-          owner: anthony-spruyt
-
+      # Helper scripts use PAT. The xfg action handles GitHub App auth internally.
       - name: "[App] Setup - clean up from previous runs"
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
 
       - name: "[App] Seed manifest to trigger update path (bug #268)"
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: .github/scripts/seed-manifest.sh "${TEST_REPO}"
 
       - name: "[App] Run xfg action with GitHub App credentials"
@@ -358,7 +336,7 @@ jobs:
       - name: "[App] Validate - verify commit author is GitHub App (#268)"
         id: app-validate
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           echo "Verifying PR was created..."
           PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${APP_BRANCH} --json number,title,url --jq '.[0]')
@@ -388,13 +366,13 @@ jobs:
 
       - name: "[App] Validate - verify file count in commit message (#268)"
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.app-validate.outputs.commit_sha }}"
 
       - name: "[App] Cleanup - close PR and delete seeded manifest"
         if: always()
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
           .github/scripts/delete-manifest.sh "${TEST_REPO}"

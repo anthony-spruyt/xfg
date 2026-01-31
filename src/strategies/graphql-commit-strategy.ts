@@ -101,9 +101,10 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       );
     }
 
-    // Ensure the branch exists on remote before making GraphQL commit
+    // Ensure the branch exists on remote and is up-to-date with local HEAD
     // createCommitOnBranch requires the branch to already exist
-    await this.ensureBranchExistsOnRemote(branchName, workDir);
+    // For PR branches (force=true), we force-update to ensure fresh start from main
+    await this.ensureBranchExistsOnRemote(branchName, workDir, options.force);
 
     // Retry loop for expectedHeadOid mismatch
     let lastError: Error | null = null;
@@ -256,13 +257,18 @@ export class GraphQLCommitStrategy implements CommitStrategy {
   }
 
   /**
-   * Ensure the branch exists on the remote.
+   * Ensure the branch exists on the remote and matches local HEAD.
    * createCommitOnBranch requires the branch to already exist.
-   * If the branch doesn't exist, push it to create it.
+   *
+   * For PR branches (force=true): delete existing remote branch and recreate
+   * from local HEAD to ensure a fresh start from main.
+   *
+   * For direct mode (force=false): just ensure branch exists.
    */
   private async ensureBranchExistsOnRemote(
     branchName: string,
-    workDir: string
+    workDir: string,
+    force?: boolean
   ): Promise<void> {
     // Branch name was validated in commit(), safe for shell use
     try {
@@ -271,7 +277,20 @@ export class GraphQLCommitStrategy implements CommitStrategy {
         `git ls-remote --exit-code --heads origin ${branchName}`,
         workDir
       );
-      // Branch exists, nothing to do
+
+      // Branch exists - for PR branches, delete and recreate to ensure fresh from main
+      if (force) {
+        await this.executor.exec(
+          `git push origin --delete ${escapeShellArg(branchName)}`,
+          workDir
+        );
+        // Now push fresh branch from local HEAD
+        await this.executor.exec(
+          `git push -u origin HEAD:${escapeShellArg(branchName)}`,
+          workDir
+        );
+      }
+      // For direct mode (force=false), leave existing branch as-is
     } catch {
       // Branch doesn't exist on remote, push it
       // This pushes the current local branch to create it on remote

@@ -500,6 +500,93 @@ describe("GraphQLCommitStrategy", () => {
       );
     });
 
+    test("deletes and recreates branch when force=true and branch exists", async () => {
+      // Mock git ls-remote to indicate branch exists
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      // Mock git push --delete
+      mockExecutor.responses.set("git push origin --delete", "");
+      // Mock git push to recreate branch
+      mockExecutor.responses.set("git push -u", "");
+      // Mock git fetch
+      mockExecutor.responses.set("git fetch", "");
+      // Mock git rev-parse origin/branch
+      mockExecutor.responses.set("git rev-parse origin", "newsha123");
+
+      const graphqlResponse = JSON.stringify({
+        data: {
+          createCommitOnBranch: {
+            commit: { oid: "sha123" },
+          },
+        },
+      });
+      mockExecutor.responses.set("gh api graphql", graphqlResponse);
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "feature-branch",
+        message: "Add feature",
+        fileChanges: [{ path: "feature.txt", content: "feature" }],
+        workDir: testDir,
+        force: true, // PR branch mode
+      };
+
+      const result = await strategy.commit(options);
+      assert.equal(result.sha, "sha123");
+
+      // Verify delete was called
+      const deleteCall = mockExecutor.calls.find((c) =>
+        c.command.includes("git push origin --delete")
+      );
+      assert.ok(deleteCall, "Should have deleted the existing branch");
+
+      // Verify push was called to recreate the branch
+      const pushCall = mockExecutor.calls.find((c) =>
+        c.command.includes("git push -u origin HEAD:'feature-branch'")
+      );
+      assert.ok(pushCall, "Should have pushed to recreate the branch");
+    });
+
+    test("does not delete branch when force=false and branch exists", async () => {
+      // Mock git ls-remote to indicate branch exists
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      // Mock git fetch
+      mockExecutor.responses.set("git fetch", "");
+      // Mock git rev-parse origin/branch
+      mockExecutor.responses.set("git rev-parse origin", "existingsha");
+
+      const graphqlResponse = JSON.stringify({
+        data: {
+          createCommitOnBranch: {
+            commit: { oid: "sha123" },
+          },
+        },
+      });
+      mockExecutor.responses.set("gh api graphql", graphqlResponse);
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Direct commit",
+        fileChanges: [{ path: "file.txt", content: "content" }],
+        workDir: testDir,
+        force: false, // Direct mode
+      };
+
+      const result = await strategy.commit(options);
+      assert.equal(result.sha, "sha123");
+
+      // Verify delete was NOT called
+      const deleteCall = mockExecutor.calls.find((c) =>
+        c.command.includes("git push origin --delete")
+      );
+      assert.ok(
+        !deleteCall,
+        "Should NOT have deleted the branch in direct mode"
+      );
+    });
+
     test("retries on expectedHeadOid mismatch", async () => {
       let revParseCallCount = 0;
 
