@@ -1,0 +1,37 @@
+// Test fixtures for unit tests
+// This file contains mock data used across multiple test files
+
+/**
+ * Test RSA private key (2048-bit) - generated with openssl genrsa 2048
+ * This is a throwaway key for testing only, not used in production.
+ */
+export const TEST_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC2KwiLV0oP7HqK
+IFOMfq+wDwqQ6lWBj7RwTKtZSxTazbeKiq7tiTw73qJd5Nd2H9cKFoxlsSlwZIGZ
+i7lbHN/Yk+hBZnDONy+MSVhebsFNQomvlf+fGrmTpszZ2slzGtt6PwZoMedEsbC7
+CcCUs+eeAVKuas85/wL+NL2i9NCiemTP7z+rvTBVWnDZp0Zvw1Psn9Uk0gN5CC9y
+JU8ZwdW+vBpa5kiQClsLcGObtVAe16zCNigQbE8i918NpjadfypC6K+dOKsiJ3Pq
+wt6zMOPsyZwCOPT6b2disWIQ13u/k6szzITO7D6q33reE4B4VjD0jJzLKSupA05Y
+v/+IM6rjAgMBAAECggEAINPMbF/Ehu4UfwOoSq8htdZgDxFLa1ecKoiGcEbpcSyV
+ILAxKbkLU7ahB86PTUgblkPN9R1h3FEgUa0uL88aP4sX1YFCXsbvGJa3B/1pdCTD
+bxLWx7MnMgZi7/dPSiDS4EqvOuOTS3vB31K4k5N/76dJYQj6YvcjcO/MJKt9VWnu
+c7HEau56lL1FtpseUn8YvFyoD0fJEEtTTyoXwaSnf9Yc58o8fSgZuxDzleYxQFc6
+JHTMcB+YNBeeqmuSN10icTBjTiynNvjW/Ne4F1XlhSCfVhVhYetG3PdX7prhss5e
+fxeLkXkjzVuHG/0o8jAczW6q7W3ULQroDqf8TDTrkQKBgQC9XN82JuosjnqY7PPj
+2c48c8/2p077ZjvJNKjPlTyJglrwEYGKkKKZ4L/ysPX2+f9RD0oO9/yfGXvI176a
+d7dq/z9lRQAiQ3wycqGsIhfG+f7nhJ2+ZcS+7yWEjlfC9ExRiiouSyBbPj/a68PQ
+l7ktxG3Q5K+G2N3euvl6rQ5T3QKBgQD2RgOXqJI2YwkP+5idukzEreOsHYgNk9om
+oW2bqNd4cgQG03LIVDDv4EfQ4d1pCv8P4ZfX9YlNX0hIm5AF3ZFuDpRA4aaqLFAr
++Rb9Q1Kq3T4Do1nvXeW7N80is9Es/LMkIhyJN0NMaiq8F9lmRynuj8/i1PzLo3gW
+JR91diZtvwKBgBbWfJUrXFLDXEXVThTMz/K6hPpac0weqFc74qAmf4aWEiGh+t2b
+VAD6+itq7D89J22/Sk9D2VPW3vb6DiLTDWv6HMs55yo6uV/cM2NvOS7mN7f0ZpHv
+9CqS7RNvl2YL0KiE4VFz/hMDDvB4PsWJhuveJOBstD6vKRMTucLx3CiBAoGAQdzR
+oyKjD8aGqu6Xjz8+vq7en646L59mDUTI4oNSNNURPJ4aKXdSqyRpMHTnWOtm8WFc
+0ZXKBZZA56Iq71alSTC+92chwosdWdVBD7SMjEOlDSYHrFuJT/uJcglzHLvsUPKK
+fSv5ZJtUGH+sVY0cqr9tUnWxsehi+lEtS6Wwe1MCgYEAq3QAqPjioy5IPcDkutyF
+eWmx51NfJ1Er/pQb+EKXUzATSwcBjMgaHMYuebjJytBhDr5ClncEFIKOgRHpMUF3
+FjHEMfmuYQEHGa7e2Tuo1ox4FdqKCSJ1F7lgsKsHqBVvYByh07blegIym4q8AVXE
+lHSxz4gPIusCQdTECjW4mmA=
+-----END PRIVATE KEY-----`;
+
+export const TEST_APP_ID = "12345";

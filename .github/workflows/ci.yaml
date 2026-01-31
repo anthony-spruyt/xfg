@@ -124,7 +124,8 @@ jobs:
       - name: Run GitHub App integration tests
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          GH_INSTALLATION_TOKEN: ${{ steps.app-token.outputs.token }}
+          XFG_GITHUB_APP_ID: ${{ vars.TEST_APP_ID }}
+          XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
         run: npm run test:integration:github-app
 
   integration-test-ado:
@@ -345,13 +346,13 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: .github/scripts/seed-manifest.sh "${TEST_REPO}"
 
-      - name: "[App] Run xfg action with GitHub App token"
+      - name: "[App] Run xfg action with GitHub App credentials"
         uses: ./
         with:
           config: ./fixtures/integration-test-action-github.yaml
           branch: ${{ env.APP_BRANCH }}
-          github-token: ${{ steps.app-token.outputs.token }}
-          github-app-token: ${{ steps.app-token.outputs.token }}
+          github-app-id: ${{ vars.TEST_APP_ID }}
+          github-app-private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
       - name: "[App] Validate - verify commit author is GitHub App (#268)"

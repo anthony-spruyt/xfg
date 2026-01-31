@@ -2556,13 +2556,15 @@ describe("RepositoryProcessor", () => {
       }
     }
 
-    test("should use GraphQL commit strategy when GH_INSTALLATION_TOKEN is set", async () => {
-      // Save original env value
-      const originalToken = process.env.GH_INSTALLATION_TOKEN;
+    test("should use GraphQL commit strategy when GitHub App credentials are set", async () => {
+      // Save original env values
+      const originalAppId = process.env.XFG_GITHUB_APP_ID;
+      const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
       try {
-        // Set GH_INSTALLATION_TOKEN to trigger GraphQL strategy
-        process.env.GH_INSTALLATION_TOKEN = "test-installation-token";
+        // Set GitHub App credentials to trigger GraphQL strategy
+        process.env.XFG_GITHUB_APP_ID = "12345";
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const mockLogger = createMockLogger();
         let mockGitOps: MockGitOpsForCommitStrategy | null = null;
@@ -2647,22 +2649,29 @@ describe("RepositoryProcessor", () => {
         );
         assert.ok(verifiedLog, "Should log that commit is verified");
       } finally {
-        // Restore original env value
-        if (originalToken === undefined) {
-          delete process.env.GH_INSTALLATION_TOKEN;
+        // Restore original env values
+        if (originalAppId === undefined) {
+          delete process.env.XFG_GITHUB_APP_ID;
         } else {
-          process.env.GH_INSTALLATION_TOKEN = originalToken;
+          process.env.XFG_GITHUB_APP_ID = originalAppId;
+        }
+        if (originalPrivateKey === undefined) {
+          delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+        } else {
+          process.env.XFG_GITHUB_APP_PRIVATE_KEY = originalPrivateKey;
         }
       }
     });
 
     test("direct mode with CommitStrategy should return helpful error on branch protection", async () => {
-      // Save original env value
-      const originalToken = process.env.GH_INSTALLATION_TOKEN;
+      // Save original env values
+      const originalAppId = process.env.XFG_GITHUB_APP_ID;
+      const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
       try {
-        // Set GH_INSTALLATION_TOKEN to trigger GraphQL strategy
-        process.env.GH_INSTALLATION_TOKEN = "test-installation-token";
+        // Set GitHub App credentials to trigger GraphQL strategy
+        process.env.XFG_GITHUB_APP_ID = "12345";
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const mockLogger = createMockLogger();
         let mockGitOps: MockGitOpsForCommitStrategy | null = null;
@@ -2717,30 +2726,36 @@ describe("RepositoryProcessor", () => {
           "Message should suggest using force mode"
         );
       } finally {
-        // Restore original env value
-        if (originalToken === undefined) {
-          delete process.env.GH_INSTALLATION_TOKEN;
+        // Restore original env values
+        if (originalAppId === undefined) {
+          delete process.env.XFG_GITHUB_APP_ID;
         } else {
-          process.env.GH_INSTALLATION_TOKEN = originalToken;
+          process.env.XFG_GITHUB_APP_ID = originalAppId;
+        }
+        if (originalPrivateKey === undefined) {
+          delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+        } else {
+          process.env.XFG_GITHUB_APP_PRIVATE_KEY = originalPrivateKey;
         }
       }
     });
 
     test("direct mode handles 'protected' keyword in error message", async () => {
-      const originalToken = process.env.GH_INSTALLATION_TOKEN;
+      const originalAppId = process.env.XFG_GITHUB_APP_ID;
+      const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
       try {
-        process.env.GH_INSTALLATION_TOKEN = "test-installation-token";
+        process.env.XFG_GITHUB_APP_ID = "12345";
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const mockLogger = createMockLogger();
-        let mockGitOps: MockGitOpsForCommitStrategy | null = null;
 
         const mockFactory: GitOpsFactory = (opts) => {
-          mockGitOps = new MockGitOpsForCommitStrategy(opts);
-          // wouldChange will return true since we write new content
-          return mockGitOps;
+          const gitOps = new MockGitOpsForCommitStrategy(opts);
+          return gitOps;
         };
 
+        // Test uses mock executor to simulate protected branch error
         const mockExecutor: CommandExecutor = {
           async exec(command: string): Promise<string> {
             if (command.includes("gh api graphql")) {
@@ -2779,29 +2794,35 @@ describe("RepositoryProcessor", () => {
           "Message should mention branch protection"
         );
       } finally {
-        if (originalToken === undefined) {
-          delete process.env.GH_INSTALLATION_TOKEN;
+        if (originalAppId === undefined) {
+          delete process.env.XFG_GITHUB_APP_ID;
         } else {
-          process.env.GH_INSTALLATION_TOKEN = originalToken;
+          process.env.XFG_GITHUB_APP_ID = originalAppId;
+        }
+        if (originalPrivateKey === undefined) {
+          delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+        } else {
+          process.env.XFG_GITHUB_APP_PRIVATE_KEY = originalPrivateKey;
         }
       }
     });
 
     test("direct mode handles 'denied' keyword in error message", async () => {
-      const originalToken = process.env.GH_INSTALLATION_TOKEN;
+      const originalAppId = process.env.XFG_GITHUB_APP_ID;
+      const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
       try {
-        process.env.GH_INSTALLATION_TOKEN = "test-installation-token";
+        process.env.XFG_GITHUB_APP_ID = "12345";
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const mockLogger = createMockLogger();
-        let mockGitOps: MockGitOpsForCommitStrategy | null = null;
 
         const mockFactory: GitOpsFactory = (opts) => {
-          mockGitOps = new MockGitOpsForCommitStrategy(opts);
-          // wouldChange will return true since we write new content
-          return mockGitOps;
+          const gitOps = new MockGitOpsForCommitStrategy(opts);
+          return gitOps;
         };
 
+        // Test uses mock executor to simulate permission denied error
         const mockExecutor: CommandExecutor = {
           async exec(command: string): Promise<string> {
             if (command.includes("gh api graphql")) {
@@ -2840,29 +2861,35 @@ describe("RepositoryProcessor", () => {
           "Message should mention branch protection"
         );
       } finally {
-        if (originalToken === undefined) {
-          delete process.env.GH_INSTALLATION_TOKEN;
+        if (originalAppId === undefined) {
+          delete process.env.XFG_GITHUB_APP_ID;
         } else {
-          process.env.GH_INSTALLATION_TOKEN = originalToken;
+          process.env.XFG_GITHUB_APP_ID = originalAppId;
+        }
+        if (originalPrivateKey === undefined) {
+          delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+        } else {
+          process.env.XFG_GITHUB_APP_PRIVATE_KEY = originalPrivateKey;
         }
       }
     });
 
     test("direct mode re-throws unrecognized errors", async () => {
-      const originalToken = process.env.GH_INSTALLATION_TOKEN;
+      const originalAppId = process.env.XFG_GITHUB_APP_ID;
+      const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
       try {
-        process.env.GH_INSTALLATION_TOKEN = "test-installation-token";
+        process.env.XFG_GITHUB_APP_ID = "12345";
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const mockLogger = createMockLogger();
-        let mockGitOps: MockGitOpsForCommitStrategy | null = null;
 
         const mockFactory: GitOpsFactory = (opts) => {
-          mockGitOps = new MockGitOpsForCommitStrategy(opts);
-          // wouldChange will return true since we write new content
-          return mockGitOps;
+          const gitOps = new MockGitOpsForCommitStrategy(opts);
+          return gitOps;
         };
 
+        // Test uses mock executor to simulate network error
         const mockExecutor: CommandExecutor = {
           async exec(command: string): Promise<string> {
             if (command.includes("gh api graphql")) {
@@ -2900,10 +2927,15 @@ describe("RepositoryProcessor", () => {
           "Should re-throw unrecognized errors"
         );
       } finally {
-        if (originalToken === undefined) {
-          delete process.env.GH_INSTALLATION_TOKEN;
+        if (originalAppId === undefined) {
+          delete process.env.XFG_GITHUB_APP_ID;
         } else {
-          process.env.GH_INSTALLATION_TOKEN = originalToken;
+          process.env.XFG_GITHUB_APP_ID = originalAppId;
+        }
+        if (originalPrivateKey === undefined) {
+          delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+        } else {
+          process.env.XFG_GITHUB_APP_PRIVATE_KEY = originalPrivateKey;
         }
       }
     });
@@ -3111,6 +3143,317 @@ describe("RepositoryProcessor", () => {
         1,
         "Should have 1 deleted file (orphaned.json)"
       );
+    });
+  });
+
+  describe("GitHub App token manager integration", () => {
+    let originalAppId: string | undefined;
+    let originalPrivateKey: string | undefined;
+
+    beforeEach(() => {
+      originalAppId = process.env.XFG_GITHUB_APP_ID;
+      originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+      // Clear env vars before each test
+      delete process.env.XFG_GITHUB_APP_ID;
+      delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+    });
+
+    afterEach(() => {
+      if (originalAppId !== undefined) {
+        process.env.XFG_GITHUB_APP_ID = originalAppId;
+      } else {
+        delete process.env.XFG_GITHUB_APP_ID;
+      }
+      if (originalPrivateKey !== undefined) {
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY = originalPrivateKey;
+      } else {
+        delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+      }
+    });
+
+    test("does not use token manager when GitHub App credentials are not set", async () => {
+      // Verify env vars are cleared
+      assert.equal(
+        process.env.XFG_GITHUB_APP_ID,
+        undefined,
+        "XFG_GITHUB_APP_ID should not be set"
+      );
+      assert.equal(
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY,
+        undefined,
+        "XFG_GITHUB_APP_PRIVATE_KEY should not be set"
+      );
+
+      const mockLogger = {
+        messages: [] as string[],
+        info(message: string) {
+          this.messages.push(message);
+        },
+        fileDiff() {},
+        diffSummary() {},
+      };
+
+      // Create a minimal mock GitOps that simulates a working repository
+      const mockGitOpsFactory: GitOpsFactory = (opts) => {
+        const gitOps = new GitOps(opts);
+        // Override methods for testing using Object.assign to avoid 'any' type
+        return Object.assign(gitOps, {
+          cleanWorkspace: () => {
+            mkdirSync(opts.workDir, { recursive: true });
+          },
+          clone: async () => {},
+          getDefaultBranch: async () => ({
+            branch: "main",
+            method: "remote" as const,
+          }),
+          createBranch: async () => {},
+          fileExistsOnBranch: async () => false,
+          writeFile: () => {},
+          getFileContent: () => null,
+          wouldChange: () => true,
+          hasStagedChanges: async () => false,
+          setExecutable: async () => {},
+          fileExists: () => false,
+        });
+      };
+
+      const processor = new RepositoryProcessor(mockGitOpsFactory, mockLogger);
+      const result = await processor.process(
+        {
+          git: "git@github.com:owner/repo.git",
+          files: [{ fileName: "test.json", content: { key: "value" } }],
+        },
+        {
+          type: "github",
+          gitUrl: "git@github.com:owner/repo.git",
+          owner: "owner",
+          repo: "repo",
+          host: "github.com",
+        },
+        {
+          branchName: "chore/sync-config",
+          workDir: join(testDir, "no-github-app"),
+          configId: "test-config",
+          dryRun: false,
+          executor: createMockExecutor(),
+        }
+      );
+
+      // Should succeed/skip without any GitHub App related message
+      // Since hasStagedChanges returns false, it should skip
+      assert.equal(
+        result.skipped,
+        true,
+        "Should be skipped (no staged changes)"
+      );
+      assert.ok(
+        !result.message.includes("GitHub App"),
+        `Message should not mention GitHub App, got: ${result.message}`
+      );
+    });
+
+    test("hasGitHubAppCredentials returns true when both env vars are set", async () => {
+      // Import the function directly for testing
+      const { hasGitHubAppCredentials } =
+        await import("./strategies/commit-strategy-selector.js");
+
+      // Initially should be false (env vars cleared in beforeEach)
+      assert.equal(
+        hasGitHubAppCredentials(),
+        false,
+        "Should return false when env vars not set"
+      );
+
+      // Set both env vars
+      process.env.XFG_GITHUB_APP_ID = "12345";
+      process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-key";
+
+      assert.equal(
+        hasGitHubAppCredentials(),
+        true,
+        "Should return true when both env vars are set"
+      );
+    });
+
+    test("skips repo when no GitHub App installation found for owner", async () => {
+      const { TEST_PRIVATE_KEY, TEST_APP_ID } =
+        await import("../fixtures/test-fixtures.js");
+
+      // Set GitHub App credentials
+      process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
+      process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
+
+      const mockLogger = {
+        messages: [] as string[],
+        info(message: string) {
+          this.messages.push(message);
+        },
+        fileDiff() {},
+        diffSummary() {},
+      };
+
+      // Mock fetch to return empty installations array
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async (url: string | URL | Request) => {
+        const urlString = url.toString();
+        if (urlString.includes("/app/installations")) {
+          // Return empty installations - owner "no-install-owner" has no app installed
+          return new Response(JSON.stringify([]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        throw new Error(`Unexpected fetch: ${urlString}`);
+      };
+
+      try {
+        const mockGitOpsFactory: GitOpsFactory = (opts) => {
+          const gitOps = new GitOps(opts);
+          return Object.assign(gitOps, {
+            cleanWorkspace: () => {
+              mkdirSync(opts.workDir, { recursive: true });
+            },
+            clone: async () => {},
+            getDefaultBranch: async () => ({
+              branch: "main",
+              method: "remote" as const,
+            }),
+            createBranch: async () => {},
+            fileExistsOnBranch: async () => false,
+            writeFile: () => {},
+            getFileContent: () => null,
+            wouldChange: () => true,
+            hasStagedChanges: async () => true,
+            setExecutable: async () => {},
+            fileExists: () => false,
+          });
+        };
+
+        const processor = new RepositoryProcessor(
+          mockGitOpsFactory,
+          mockLogger
+        );
+        const result = await processor.process(
+          {
+            git: "git@github.com:no-install-owner/repo.git",
+            files: [{ fileName: "test.json", content: { key: "value" } }],
+          },
+          {
+            type: "github",
+            gitUrl: "git@github.com:no-install-owner/repo.git",
+            owner: "no-install-owner",
+            repo: "repo",
+            host: "github.com",
+          },
+          {
+            branchName: "chore/sync-config",
+            workDir: join(testDir, "no-installation"),
+            configId: "test-config",
+            dryRun: false,
+            executor: createMockExecutor(),
+          }
+        );
+
+        assert.equal(result.success, true, "Should be success (graceful skip)");
+        assert.equal(result.skipped, true, "Should be skipped");
+        assert.ok(
+          result.message.includes("No GitHub App installation found"),
+          `Expected 'No GitHub App installation found' in message, got: ${result.message}`
+        );
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
+
+    test("logs warning and continues when GitHub App token retrieval fails", async () => {
+      const { TEST_PRIVATE_KEY, TEST_APP_ID } =
+        await import("../fixtures/test-fixtures.js");
+
+      // Set GitHub App credentials
+      process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
+      process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
+
+      const mockLogger = {
+        messages: [] as string[],
+        info(message: string) {
+          this.messages.push(message);
+        },
+        fileDiff() {},
+        diffSummary() {},
+      };
+
+      // Mock fetch to fail on installations discovery
+      const originalFetch = globalThis.fetch;
+      globalThis.fetch = async () => {
+        throw new Error("Network error: connection refused");
+      };
+
+      try {
+        const mockGitOpsFactory: GitOpsFactory = (opts) => {
+          const gitOps = new GitOps(opts);
+          return Object.assign(gitOps, {
+            cleanWorkspace: () => {
+              mkdirSync(opts.workDir, { recursive: true });
+            },
+            clone: async () => {},
+            getDefaultBranch: async () => ({
+              branch: "main",
+              method: "remote" as const,
+            }),
+            createBranch: async () => {},
+            fileExistsOnBranch: async () => false,
+            writeFile: () => {},
+            getFileContent: () => null,
+            wouldChange: () => true,
+            hasStagedChanges: async () => false,
+            setExecutable: async () => {},
+            fileExists: () => false,
+          });
+        };
+
+        const processor = new RepositoryProcessor(
+          mockGitOpsFactory,
+          mockLogger
+        );
+        const result = await processor.process(
+          {
+            git: "git@github.com:failing-owner/repo.git",
+            files: [{ fileName: "test.json", content: { key: "value" } }],
+          },
+          {
+            type: "github",
+            gitUrl: "git@github.com:failing-owner/repo.git",
+            owner: "failing-owner",
+            repo: "repo",
+            host: "github.com",
+          },
+          {
+            branchName: "chore/sync-config",
+            workDir: join(testDir, "token-failure"),
+            configId: "test-config",
+            dryRun: false,
+            executor: createMockExecutor(),
+          }
+        );
+
+        // Should continue processing (skipped due to no staged changes)
+        assert.equal(
+          result.skipped,
+          true,
+          "Should be skipped (no staged changes)"
+        );
+
+        // Should have logged warning about token failure
+        const warningMessage = mockLogger.messages.find((m) =>
+          m.includes("Failed to get GitHub App token")
+        );
+        assert.ok(
+          warningMessage,
+          `Expected warning about token failure, got messages: ${mockLogger.messages.join(", ")}`
+        );
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
     });
   });
 });

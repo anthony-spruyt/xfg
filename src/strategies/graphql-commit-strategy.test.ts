@@ -681,69 +681,93 @@ describe("GraphQLCommitStrategy", () => {
       );
     });
 
-    test("should pass GH_INSTALLATION_TOKEN explicitly in gh api command (issue #268)", async () => {
-      // This test verifies that the GraphQL commit strategy uses the GitHub App
-      // installation token explicitly, not relying on GH_TOKEN which may be set
-      // to a different token (like the regular workflow token).
-      const originalToken = process.env.GH_INSTALLATION_TOKEN;
+    test("uses token parameter for authorization when provided", async () => {
+      // This test verifies that when a token is passed via the options parameter,
+      // it is used in the Authorization header for the GraphQL API call.
+      mockExecutor.responses.set(
+        "git ls-remote",
+        "abc123\trefs/heads/test-branch"
+      );
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123def456789");
+      mockExecutor.responses.set(
+        "gh api graphql",
+        JSON.stringify({
+          data: {
+            createCommitOnBranch: { commit: { oid: "newsha123" } },
+          },
+        })
+      );
 
-      try {
-        // Set the GitHub App installation token
-        process.env.GH_INSTALLATION_TOKEN = "ghs_test_installation_token_12345";
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "test-branch",
+        message: "Test commit",
+        fileChanges: [{ path: "file.txt", content: "content" }],
+        workDir: testDir,
+        token: "ghs_test_token_from_parameter",
+      };
 
-        // Mock git ls-remote to indicate branch exists
-        mockExecutor.responses.set(
-          "git ls-remote",
-          "abc123\trefs/heads/test-branch"
-        );
-        // Mock git fetch
-        mockExecutor.responses.set("git fetch", "");
-        // Mock git rev-parse
-        mockExecutor.responses.set("git rev-parse origin", "abc123def456789");
+      await strategy.commit(options);
 
-        // Mock successful GraphQL response
-        mockExecutor.responses.set(
-          "gh api graphql",
-          JSON.stringify({
-            data: {
-              createCommitOnBranch: { commit: { oid: "newsha123" } },
-            },
-          })
-        );
+      const graphqlCall = mockExecutor.calls.find((c) =>
+        c.command.includes("gh api graphql")
+      );
+      assert.ok(graphqlCall, "Should have called gh api graphql");
 
-        const strategy = new GraphQLCommitStrategy(mockExecutor);
-        const options: CommitOptions = {
-          repoInfo: githubRepoInfo,
-          branchName: "test-branch",
-          message: "Test commit",
-          fileChanges: [{ path: "file.txt", content: "content" }],
-          workDir: testDir,
-        };
+      // The command should include explicit authorization with the provided token
+      assert.ok(
+        graphqlCall.command.includes("ghs_test_token_from_parameter"),
+        "GraphQL command should use the token from options parameter. " +
+          `Got: ${graphqlCall.command.substring(0, 200)}...`
+      );
+      assert.ok(
+        graphqlCall.command.includes("Authorization"),
+        "GraphQL command should include Authorization header"
+      );
+    });
 
-        await strategy.commit(options);
+    test("does not include Authorization header when no token is provided", async () => {
+      // When no token is provided, rely on gh CLI's default authentication
+      mockExecutor.responses.set(
+        "git ls-remote",
+        "abc123\trefs/heads/test-branch"
+      );
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123def456789");
+      mockExecutor.responses.set(
+        "gh api graphql",
+        JSON.stringify({
+          data: {
+            createCommitOnBranch: { commit: { oid: "newsha123" } },
+          },
+        })
+      );
 
-        // Find the gh api graphql command
-        const graphqlCall = mockExecutor.calls.find((c) =>
-          c.command.includes("gh api graphql")
-        );
-        assert.ok(graphqlCall, "Should have called gh api graphql");
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "test-branch",
+        message: "Test commit",
+        fileChanges: [{ path: "file.txt", content: "content" }],
+        workDir: testDir,
+        // No token provided
+      };
 
-        // The command should include explicit authorization with the installation token
-        // This ensures the GitHub App is used as the commit author, not github-actions[bot]
-        assert.ok(
-          graphqlCall.command.includes("ghs_test_installation_token_12345") ||
-            graphqlCall.command.includes("Authorization"),
-          "GraphQL command should include explicit token auth. " +
-            `Got: ${graphqlCall.command.substring(0, 200)}...`
-        );
-      } finally {
-        // Restore original token
-        if (originalToken === undefined) {
-          delete process.env.GH_INSTALLATION_TOKEN;
-        } else {
-          process.env.GH_INSTALLATION_TOKEN = originalToken;
-        }
-      }
+      await strategy.commit(options);
+
+      const graphqlCall = mockExecutor.calls.find((c) =>
+        c.command.includes("gh api graphql")
+      );
+      assert.ok(graphqlCall, "Should have called gh api graphql");
+
+      // The command should NOT include explicit Authorization header
+      assert.ok(
+        !graphqlCall.command.includes("Authorization"),
+        "GraphQL command should not include Authorization header when no token. " +
+          `Got: ${graphqlCall.command.substring(0, 200)}...`
+      );
     });
   });
 });
