@@ -24,113 +24,318 @@ export interface PRMergeOptions {
 }
 
 // =============================================================================
-// Branch Protection Types (aligned with GitHub REST API)
+// GitHub Rulesets Types (aligned with GitHub REST API)
+// @see https://docs.github.com/en/rest/repos/rules
+// =============================================================================
+
+/** Ruleset target type */
+export type RulesetTarget = "branch" | "tag";
+
+/** Ruleset enforcement level */
+export type RulesetEnforcement = "active" | "disabled" | "evaluate";
+
+/** Bypass actor type */
+export type BypassActorType = "Team" | "User" | "Integration";
+
+/** Bypass mode - always bypass or only for PRs */
+export type BypassMode = "always" | "pull_request";
+
+/** Pattern operator for pattern-based rules */
+export type PatternOperator =
+  | "starts_with"
+  | "ends_with"
+  | "contains"
+  | "regex";
+
+/** Allowed merge methods */
+export type MergeMethod = "merge" | "squash" | "rebase";
+
+/** Code scanning alerts threshold */
+export type AlertsThreshold = "none" | "errors" | "errors_and_warnings" | "all";
+
+/** Security alerts threshold */
+export type SecurityAlertsThreshold =
+  | "none"
+  | "critical"
+  | "high_or_higher"
+  | "medium_or_higher"
+  | "all";
+
+// =============================================================================
+// Bypass Actors
+// =============================================================================
+
+export interface BypassActor {
+  actorId: number;
+  actorType: BypassActorType;
+  bypassMode?: BypassMode;
+}
+
+// =============================================================================
+// Conditions
+// =============================================================================
+
+export interface RefNameCondition {
+  include?: string[];
+  exclude?: string[];
+}
+
+export interface RulesetConditions {
+  refName?: RefNameCondition;
+}
+
+// =============================================================================
+// Rule Parameters
+// =============================================================================
+
+/** Status check in required_status_checks rule */
+export interface StatusCheckConfig {
+  context: string;
+  integrationId?: number;
+}
+
+/** Reviewer configuration for pull_request rule (beta) */
+export interface RequiredReviewer {
+  filePatterns: string[];
+  minimumApprovals: number;
+  reviewer: {
+    id: number;
+    type: "Team";
+  };
+}
+
+/** Code scanning tool configuration */
+export interface CodeScanningTool {
+  tool: string;
+  alertsThreshold: AlertsThreshold;
+  securityAlertsThreshold: SecurityAlertsThreshold;
+}
+
+/** Workflow configuration */
+export interface WorkflowConfig {
+  path: string;
+  repositoryId: number;
+  ref?: string;
+  sha?: string;
+}
+
+// =============================================================================
+// Rule Types (discriminated union)
+// =============================================================================
+
+export interface PullRequestRuleParameters {
+  requiredApprovingReviewCount?: number;
+  dismissStaleReviewsOnPush?: boolean;
+  requireCodeOwnerReview?: boolean;
+  requireLastPushApproval?: boolean;
+  requiredReviewThreadResolution?: boolean;
+  allowedMergeMethods?: MergeMethod[];
+  requiredReviewers?: RequiredReviewer[];
+}
+
+export interface RequiredStatusChecksParameters {
+  strictRequiredStatusChecksPolicy?: boolean;
+  doNotEnforceOnCreate?: boolean;
+  requiredStatusChecks?: StatusCheckConfig[];
+}
+
+export interface UpdateRuleParameters {
+  updateAllowsFetchAndMerge?: boolean;
+}
+
+export interface RequiredDeploymentsParameters {
+  requiredDeploymentEnvironments?: string[];
+}
+
+export interface CodeScanningParameters {
+  codeScanningTools?: CodeScanningTool[];
+}
+
+export interface CodeQualityParameters {
+  severity?: "errors" | "errors_and_warnings" | "all";
+}
+
+export interface WorkflowsParameters {
+  doNotEnforceOnCreate?: boolean;
+  workflows?: WorkflowConfig[];
+}
+
+export interface PatternRuleParameters {
+  name?: string;
+  negate?: boolean;
+  operator: PatternOperator;
+  pattern: string;
+}
+
+export interface FilePathRestrictionParameters {
+  restrictedFilePaths?: string[];
+}
+
+export interface FileExtensionRestrictionParameters {
+  restrictedFileExtensions?: string[];
+}
+
+export interface MaxFilePathLengthParameters {
+  maxFilePathLength?: number;
+}
+
+export interface MaxFileSizeParameters {
+  maxFileSize?: number;
+}
+
+// Rule type definitions
+export interface PullRequestRule {
+  type: "pull_request";
+  parameters?: PullRequestRuleParameters;
+}
+
+export interface RequiredStatusChecksRule {
+  type: "required_status_checks";
+  parameters?: RequiredStatusChecksParameters;
+}
+
+export interface RequiredSignaturesRule {
+  type: "required_signatures";
+}
+
+export interface RequiredLinearHistoryRule {
+  type: "required_linear_history";
+}
+
+export interface NonFastForwardRule {
+  type: "non_fast_forward";
+}
+
+export interface CreationRule {
+  type: "creation";
+}
+
+export interface UpdateRule {
+  type: "update";
+  parameters?: UpdateRuleParameters;
+}
+
+export interface DeletionRule {
+  type: "deletion";
+}
+
+export interface RequiredDeploymentsRule {
+  type: "required_deployments";
+  parameters?: RequiredDeploymentsParameters;
+}
+
+export interface CodeScanningRule {
+  type: "code_scanning";
+  parameters?: CodeScanningParameters;
+}
+
+export interface CodeQualityRule {
+  type: "code_quality";
+  parameters?: CodeQualityParameters;
+}
+
+export interface WorkflowsRule {
+  type: "workflows";
+  parameters?: WorkflowsParameters;
+}
+
+export interface CommitAuthorEmailPatternRule {
+  type: "commit_author_email_pattern";
+  parameters: PatternRuleParameters;
+}
+
+export interface CommitMessagePatternRule {
+  type: "commit_message_pattern";
+  parameters: PatternRuleParameters;
+}
+
+export interface CommitterEmailPatternRule {
+  type: "committer_email_pattern";
+  parameters: PatternRuleParameters;
+}
+
+export interface BranchNamePatternRule {
+  type: "branch_name_pattern";
+  parameters: PatternRuleParameters;
+}
+
+export interface TagNamePatternRule {
+  type: "tag_name_pattern";
+  parameters: PatternRuleParameters;
+}
+
+export interface FilePathRestrictionRule {
+  type: "file_path_restriction";
+  parameters?: FilePathRestrictionParameters;
+}
+
+export interface FileExtensionRestrictionRule {
+  type: "file_extension_restriction";
+  parameters?: FileExtensionRestrictionParameters;
+}
+
+export interface MaxFilePathLengthRule {
+  type: "max_file_path_length";
+  parameters?: MaxFilePathLengthParameters;
+}
+
+export interface MaxFileSizeRule {
+  type: "max_file_size";
+  parameters?: MaxFileSizeParameters;
+}
+
+/** Union of all rule types */
+export type RulesetRule =
+  | PullRequestRule
+  | RequiredStatusChecksRule
+  | RequiredSignaturesRule
+  | RequiredLinearHistoryRule
+  | NonFastForwardRule
+  | CreationRule
+  | UpdateRule
+  | DeletionRule
+  | RequiredDeploymentsRule
+  | CodeScanningRule
+  | CodeQualityRule
+  | WorkflowsRule
+  | CommitAuthorEmailPatternRule
+  | CommitMessagePatternRule
+  | CommitterEmailPatternRule
+  | BranchNamePatternRule
+  | TagNamePatternRule
+  | FilePathRestrictionRule
+  | FileExtensionRestrictionRule
+  | MaxFilePathLengthRule
+  | MaxFileSizeRule;
+
+// =============================================================================
+// Ruleset Configuration
 // =============================================================================
 
 /**
- * A single status check requirement.
- * @see https://docs.github.com/en/rest/branches/branch-protection
+ * GitHub Ruleset configuration.
+ * @see https://docs.github.com/en/rest/repos/rules
  */
-export interface StatusCheck {
-  /** The name of the required check */
-  context: string;
-  /** The ID of the GitHub App that must provide this check. Omit to auto-select. */
-  appId?: number;
+export interface Ruleset {
+  /** Target type: branch or tag */
+  target?: RulesetTarget;
+  /** Enforcement level */
+  enforcement?: RulesetEnforcement;
+  /** Actors who can bypass this ruleset */
+  bypassActors?: BypassActor[];
+  /** Conditions for when this ruleset applies */
+  conditions?: RulesetConditions;
+  /** Rules to enforce */
+  rules?: RulesetRule[];
 }
 
-/**
- * Required status checks configuration.
- */
-export interface RequiredStatusChecks {
-  /** Require branches to be up to date before merging */
-  strict?: boolean;
-  /** List of status checks (preferred over contexts) */
-  checks?: StatusCheck[];
-  /** @deprecated Use checks instead. List of status check context names. */
-  contexts?: string[];
-}
-
-/**
- * Actor restrictions - specifies users, teams, and apps.
- * Used for dismissal_restrictions, restrictions, and bypass_pull_request_allowances.
- */
-export interface ActorRestrictions {
-  /** List of user logins */
-  users?: string[];
-  /** List of team slugs */
-  teams?: string[];
-  /** List of app slugs */
-  apps?: string[];
-}
-
-/**
- * Branch protection rule configuration.
- * All fields are optional - only specify what you want to enforce.
- * @see https://docs.github.com/en/rest/branches/branch-protection
- */
-export interface BranchProtectionRule {
-  // ==========================================================================
-  // Required Pull Request Reviews
-  // ==========================================================================
-
-  /** Number of required approving reviews (0-6). 0 means no reviews required. */
-  requiredReviews?: number;
-  /** Automatically dismiss approving reviews when new commits are pushed */
-  dismissStaleReviews?: boolean;
-  /** Require review from code owners */
-  requireCodeOwners?: boolean;
-  /** Require approval from someone other than the last pusher */
-  requireLastPushApproval?: boolean;
-  /** Users/teams/apps who can dismiss reviews (org repos only) */
-  dismissalRestrictions?: ActorRestrictions;
-  /** Users/teams/apps who can bypass PR requirements */
-  bypassPullRequestAllowances?: ActorRestrictions;
-
-  // ==========================================================================
-  // Required Status Checks
-  // ==========================================================================
-
-  /** Status checks that must pass before merging */
-  requiredStatusChecks?: RequiredStatusChecks;
-
-  // ==========================================================================
-  // Push Restrictions
-  // ==========================================================================
-
-  /** Enforce all restrictions for administrators */
-  enforceAdmins?: boolean;
-  /** Users/teams/apps who can push to the branch (org repos only) */
-  restrictions?: ActorRestrictions;
-
-  // ==========================================================================
-  // Branch Settings
-  // ==========================================================================
-
-  /** Enforce linear commit history (no merge commits) */
-  requiredLinearHistory?: boolean;
-  /** Allow force pushes */
-  allowForcePushes?: boolean;
-  /** Allow branch deletion */
-  allowDeletions?: boolean;
-  /** Block new branch creation that matches this pattern */
-  blockCreations?: boolean;
-  /** Require conversation resolution before merging */
-  requiredConversationResolution?: boolean;
-  /** Lock the branch (make it read-only) */
-  lockBranch?: boolean;
-  /** Allow fork syncing (for forks to pull upstream changes) */
-  allowForkSyncing?: boolean;
-
-  // ==========================================================================
-  // Commit Signatures
-  // ==========================================================================
-
-  /** Require signed commits */
-  requiredSignatures?: boolean;
-}
+// =============================================================================
+// Settings
+// =============================================================================
 
 export interface RepoSettings {
-  branchProtection?: Record<string, BranchProtectionRule>;
+  /** GitHub rulesets keyed by name */
+  rulesets?: Record<string, Ruleset>;
   deleteOrphaned?: boolean;
 }
 
@@ -169,7 +374,7 @@ export interface RawRepoFileOverride {
 
 // Raw settings (before normalization)
 export interface RawRepoSettings {
-  branchProtection?: Record<string, BranchProtectionRule>;
+  rulesets?: Record<string, Ruleset>;
   deleteOrphaned?: boolean;
 }
 

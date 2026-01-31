@@ -6,16 +6,17 @@ import { tmpdir } from "node:os";
 import {
   loadConfig,
   convertContentToString,
-  type BranchProtectionRule,
   type RepoSettings,
   type RawRepoSettings,
   type RawConfig,
   type RawRepoConfig,
   type RepoConfig,
   type Config,
-  type StatusCheck,
-  type ActorRestrictions,
-  type RequiredStatusChecks,
+  type Ruleset,
+  type RulesetRule,
+  type BypassActor,
+  type StatusCheckConfig,
+  type CodeScanningTool,
 } from "./config.js";
 import { parse } from "yaml";
 
@@ -836,100 +837,147 @@ describe("convertContentToString", () => {
 });
 
 describe("settings types", () => {
-  test("BranchProtectionRule has all expected optional fields", () => {
-    const rule: BranchProtectionRule = {
-      requiredReviews: 2,
-      dismissStaleReviews: true,
+  test("Ruleset has all expected fields", () => {
+    const ruleset: Ruleset = {
+      target: "branch",
+      enforcement: "active",
+      bypassActors: [
+        { actorId: 123, actorType: "Integration", bypassMode: "always" },
+      ],
+      conditions: { refName: { include: ["refs/heads/main"] } },
+      rules: [{ type: "required_signatures" }],
     };
-    assert.equal(rule.requiredReviews, 2);
-    assert.equal(rule.dismissStaleReviews, true);
+    assert.equal(ruleset.target, "branch");
+    assert.equal(ruleset.enforcement, "active");
+    assert.equal(ruleset.bypassActors?.[0].actorId, 123);
   });
 
-  test("BranchProtectionRule supports all GitHub API fields", () => {
-    const rule: BranchProtectionRule = {
-      // PR reviews
-      requiredReviews: 2,
-      dismissStaleReviews: true,
-      requireCodeOwners: true,
-      requireLastPushApproval: true,
-      dismissalRestrictions: { users: ["admin"], teams: ["leads"] },
-      bypassPullRequestAllowances: { users: ["bot"], apps: ["ci-app"] },
-      // Status checks
-      requiredStatusChecks: {
-        strict: true,
-        checks: [{ context: "ci/build", appId: 123 }],
+  test("Ruleset supports all GitHub Rulesets API fields", () => {
+    const ruleset: Ruleset = {
+      target: "branch",
+      enforcement: "active",
+      bypassActors: [
+        { actorId: 2719952, actorType: "Integration", bypassMode: "always" },
+        { actorId: 123, actorType: "Team", bypassMode: "pull_request" },
+      ],
+      conditions: {
+        refName: {
+          include: ["refs/heads/main", "refs/heads/release/*"],
+          exclude: ["refs/heads/dev*"],
+        },
       },
-      // Push restrictions
-      enforceAdmins: true,
-      restrictions: { users: ["deployer"], teams: ["release"] },
-      // Branch settings
-      requiredLinearHistory: true,
-      allowForcePushes: false,
-      allowDeletions: false,
-      blockCreations: true,
-      requiredConversationResolution: true,
-      lockBranch: false,
-      allowForkSyncing: true,
-      // Signatures
-      requiredSignatures: true,
+      rules: [
+        {
+          type: "pull_request",
+          parameters: {
+            requiredApprovingReviewCount: 2,
+            dismissStaleReviewsOnPush: true,
+            requireCodeOwnerReview: true,
+            requireLastPushApproval: false,
+            requiredReviewThreadResolution: true,
+            allowedMergeMethods: ["squash"],
+          },
+        },
+        {
+          type: "required_status_checks",
+          parameters: {
+            strictRequiredStatusChecksPolicy: true,
+            doNotEnforceOnCreate: false,
+            requiredStatusChecks: [{ context: "ci/build" }],
+          },
+        },
+        { type: "required_signatures" },
+        { type: "required_linear_history" },
+        { type: "non_fast_forward" },
+        {
+          type: "code_scanning",
+          parameters: {
+            codeScanningTools: [
+              {
+                tool: "CodeQL",
+                alertsThreshold: "errors",
+                securityAlertsThreshold: "high_or_higher",
+              },
+            ],
+          },
+        },
+      ],
     };
-    assert.equal(rule.requiredReviews, 2);
-    assert.equal(rule.dismissalRestrictions?.users?.[0], "admin");
-    assert.equal(rule.requiredStatusChecks?.checks?.[0].context, "ci/build");
-    assert.equal(rule.restrictions?.teams?.[0], "release");
-    assert.equal(rule.blockCreations, true);
-    assert.equal(rule.lockBranch, false);
-    assert.equal(rule.allowForkSyncing, true);
+    assert.equal(ruleset.bypassActors?.length, 2);
+    assert.equal(ruleset.conditions?.refName?.include?.length, 2);
+    assert.equal(ruleset.rules?.length, 6);
   });
 
-  test("StatusCheck interface supports context and appId", () => {
-    const check: StatusCheck = { context: "ci/test", appId: 456 };
+  test("BypassActor supports all actor types", () => {
+    const actors: BypassActor[] = [
+      { actorId: 1, actorType: "Integration", bypassMode: "always" },
+      { actorId: 2, actorType: "Team", bypassMode: "pull_request" },
+      { actorId: 3, actorType: "User" },
+    ];
+    assert.equal(actors[0].actorType, "Integration");
+    assert.equal(actors[1].actorType, "Team");
+    assert.equal(actors[2].actorType, "User");
+  });
+
+  test("StatusCheckConfig supports context and integrationId", () => {
+    const check: StatusCheckConfig = { context: "ci/test", integrationId: 456 };
     assert.equal(check.context, "ci/test");
-    assert.equal(check.appId, 456);
+    assert.equal(check.integrationId, 456);
   });
 
-  test("ActorRestrictions supports users, teams, and apps", () => {
-    const restrictions: ActorRestrictions = {
-      users: ["user1", "user2"],
-      teams: ["team1"],
-      apps: ["app1"],
+  test("CodeScanningTool supports all threshold options", () => {
+    const tool: CodeScanningTool = {
+      tool: "CodeQL",
+      alertsThreshold: "errors",
+      securityAlertsThreshold: "high_or_higher",
     };
-    assert.deepEqual(restrictions.users, ["user1", "user2"]);
-    assert.deepEqual(restrictions.teams, ["team1"]);
-    assert.deepEqual(restrictions.apps, ["app1"]);
+    assert.equal(tool.tool, "CodeQL");
+    assert.equal(tool.alertsThreshold, "errors");
+    assert.equal(tool.securityAlertsThreshold, "high_or_higher");
   });
 
-  test("RequiredStatusChecks supports both checks and deprecated contexts", () => {
-    const checksStyle: RequiredStatusChecks = {
-      strict: true,
-      checks: [{ context: "ci/build" }, { context: "ci/test", appId: 123 }],
-    };
-    const contextsStyle: RequiredStatusChecks = {
-      strict: false,
-      contexts: ["ci/build", "ci/test"],
-    };
-    assert.equal(checksStyle.checks?.length, 2);
-    assert.equal(contextsStyle.contexts?.length, 2);
+  test("RulesetRule discriminated union works correctly", () => {
+    const rules: RulesetRule[] = [
+      { type: "pull_request", parameters: { requiredApprovingReviewCount: 1 } },
+      { type: "required_signatures" },
+      {
+        type: "commit_message_pattern",
+        parameters: { operator: "regex", pattern: "^feat:" },
+      },
+    ];
+    assert.equal(rules[0].type, "pull_request");
+    assert.equal(rules[1].type, "required_signatures");
+    assert.equal(rules[2].type, "commit_message_pattern");
   });
 
-  test("RepoSettings includes branchProtection map", () => {
+  test("RepoSettings includes rulesets map", () => {
     const settings: RepoSettings = {
-      branchProtection: {
-        main: { requiredReviews: 1 },
+      rulesets: {
+        "pr-rules": {
+          target: "branch",
+          enforcement: "active",
+          rules: [
+            {
+              type: "pull_request",
+              parameters: { requiredApprovingReviewCount: 1 },
+            },
+          ],
+        },
       },
     };
-    assert.equal(settings.branchProtection?.main?.requiredReviews, 1);
+    assert.ok(settings.rulesets?.["pr-rules"]);
+    assert.equal(settings.rulesets?.["pr-rules"]?.enforcement, "active");
   });
 });
 
 describe("raw settings types", () => {
-  test("RawRepoSettings can hold branchProtection", () => {
+  test("RawRepoSettings can hold rulesets", () => {
     const settings: RawRepoSettings = {
-      branchProtection: {
-        main: { requiredReviews: 2 },
+      rulesets: {
+        "pr-rules": { target: "branch", enforcement: "active" },
       },
     };
-    assert.ok(settings.branchProtection);
+    assert.ok(settings.rulesets);
   });
 
   test("RawConfig can include settings at root", () => {
@@ -938,24 +986,24 @@ describe("raw settings types", () => {
       files: {},
       repos: [],
       settings: {
-        branchProtection: {
-          main: { requiredReviews: 1 },
+        rulesets: {
+          "pr-rules": { target: "branch", enforcement: "active" },
         },
       },
     };
-    assert.ok(config.settings?.branchProtection);
+    assert.ok(config.settings?.rulesets);
   });
 
   test("RawRepoConfig can include settings", () => {
     const repo: RawRepoConfig = {
       git: "org/repo",
       settings: {
-        branchProtection: {
-          main: { requiredReviews: 3 },
+        rulesets: {
+          "pr-rules": { target: "branch", enforcement: "active" },
         },
       },
     };
-    assert.ok(repo.settings?.branchProtection);
+    assert.ok(repo.settings?.rulesets);
   });
 });
 
@@ -965,12 +1013,12 @@ describe("normalized config types", () => {
       git: "org/repo",
       files: [],
       settings: {
-        branchProtection: {
-          main: { requiredReviews: 2 },
+        rulesets: {
+          "pr-rules": { target: "branch", enforcement: "active" },
         },
       },
     };
-    assert.ok(repo.settings?.branchProtection);
+    assert.ok(repo.settings?.rulesets);
   });
 
   test("Config can include root settings", () => {
@@ -978,11 +1026,11 @@ describe("normalized config types", () => {
       id: "test",
       repos: [],
       settings: {
-        branchProtection: {
-          main: { requiredReviews: 1 },
+        rulesets: {
+          "pr-rules": { target: "branch", enforcement: "active" },
         },
       },
     };
-    assert.ok(config.settings?.branchProtection);
+    assert.ok(config.settings?.rulesets);
   });
 });
