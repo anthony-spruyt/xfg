@@ -53,6 +53,10 @@
       "type": "boolean",
       "default": false,
       "description": "Global default for orphan deletion. When true, files removed from the xfg config will be deleted from target repos (tracked via .xfg.json manifest). Can be overridden per-file or per-repo. Default: false"
+    },
+    "settings": {
+      "$ref": "#/definitions/repoSettings",
+      "description": "Global repository settings including GitHub Rulesets. Can be overridden per-repo. Settings are merged: per-repo rulesets override root rulesets with same name."
     }
   },
   "definitions": {
@@ -182,6 +186,10 @@
         "prOptions": {
           "$ref": "#/definitions/prOptions",
           "description": "Per-repo PR merge options. Overrides global prOptions."
+        },
+        "settings": {
+          "$ref": "#/definitions/repoSettings",
+          "description": "Per-repo settings including GitHub Rulesets. Merged with global settings: per-repo rulesets override root rulesets with same name."
         }
       }
     },
@@ -293,6 +301,604 @@
         "deleteOrphaned": {
           "type": "boolean",
           "description": "Override the file-level or global deleteOrphaned setting for this specific repo. Set to true to enable orphan tracking, or false to disable it for this repo."
+        }
+      }
+    },
+    "repoSettings": {
+      "type": "object",
+      "description": "Repository settings including GitHub Rulesets",
+      "properties": {
+        "rulesets": {
+          "type": "object",
+          "description": "Map of ruleset names to configurations. Each ruleset defines protection rules for branches or tags.",
+          "additionalProperties": {
+            "$ref": "#/definitions/ruleset"
+          }
+        },
+        "deleteOrphaned": {
+          "type": "boolean",
+          "default": false,
+          "description": "Track rulesets for orphan deletion. When true, if a ruleset is removed from the config, it will be deleted from the repo. Default: false"
+        }
+      }
+    },
+    "ruleset": {
+      "type": "object",
+      "description": "GitHub Ruleset configuration",
+      "properties": {
+        "target": {
+          "type": "string",
+          "enum": [
+            "branch",
+            "tag"
+          ],
+          "default": "branch",
+          "description": "Target type: 'branch' for branch protection, 'tag' for tag protection. Default: branch"
+        },
+        "enforcement": {
+          "type": "string",
+          "enum": [
+            "active",
+            "disabled",
+            "evaluate"
+          ],
+          "default": "active",
+          "description": "Enforcement level: 'active' enforces rules, 'disabled' turns off rules, 'evaluate' evaluates rules without blocking (dry run). Default: active"
+        },
+        "bypassActors": {
+          "type": "array",
+          "description": "Actors who can bypass this ruleset",
+          "items": {
+            "$ref": "#/definitions/bypassActor"
+          }
+        },
+        "conditions": {
+          "$ref": "#/definitions/rulesetConditions",
+          "description": "Conditions for when this ruleset applies (which branches/tags to protect)"
+        },
+        "rules": {
+          "type": "array",
+          "description": "Rules to enforce on matching refs",
+          "items": {
+            "$ref": "#/definitions/rulesetRule"
+          }
+        }
+      }
+    },
+    "bypassActor": {
+      "type": "object",
+      "description": "Actor who can bypass ruleset restrictions",
+      "required": [
+        "actorId",
+        "actorType"
+      ],
+      "properties": {
+        "actorId": {
+          "type": "integer",
+          "description": "The ID of the actor (team ID, user ID, or integration ID)"
+        },
+        "actorType": {
+          "type": "string",
+          "enum": [
+            "Team",
+            "User",
+            "Integration"
+          ],
+          "description": "Type of actor: Team, User, or Integration (GitHub App)"
+        },
+        "bypassMode": {
+          "type": "string",
+          "enum": [
+            "always",
+            "pull_request"
+          ],
+          "description": "When the actor can bypass: 'always' for all operations, 'pull_request' for PR operations only"
+        }
+      }
+    },
+    "rulesetConditions": {
+      "type": "object",
+      "description": "Conditions for when the ruleset applies",
+      "properties": {
+        "refName": {
+          "type": "object",
+          "description": "Ref name patterns to include/exclude",
+          "properties": {
+            "include": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Patterns to include (e.g., 'refs/heads/main', 'refs/heads/release/*')"
+            },
+            "exclude": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Patterns to exclude from protection"
+            }
+          }
+        }
+      }
+    },
+    "rulesetRule": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/pullRequestRule"
+        },
+        {
+          "$ref": "#/definitions/requiredStatusChecksRule"
+        },
+        {
+          "$ref": "#/definitions/simpleRule"
+        },
+        {
+          "$ref": "#/definitions/updateRule"
+        },
+        {
+          "$ref": "#/definitions/requiredDeploymentsRule"
+        },
+        {
+          "$ref": "#/definitions/codeScanningRule"
+        },
+        {
+          "$ref": "#/definitions/codeQualityRule"
+        },
+        {
+          "$ref": "#/definitions/workflowsRule"
+        },
+        {
+          "$ref": "#/definitions/patternRule"
+        },
+        {
+          "$ref": "#/definitions/filePathRestrictionRule"
+        },
+        {
+          "$ref": "#/definitions/fileExtensionRestrictionRule"
+        },
+        {
+          "$ref": "#/definitions/maxFilePathLengthRule"
+        },
+        {
+          "$ref": "#/definitions/maxFileSizeRule"
+        }
+      ]
+    },
+    "pullRequestRule": {
+      "type": "object",
+      "description": "Require pull request before merging",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "pull_request"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "requiredApprovingReviewCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10,
+              "description": "Number of required approving reviews"
+            },
+            "dismissStaleReviewsOnPush": {
+              "type": "boolean",
+              "description": "Dismiss approving reviews when new commits are pushed"
+            },
+            "requireCodeOwnerReview": {
+              "type": "boolean",
+              "description": "Require review from code owners"
+            },
+            "requireLastPushApproval": {
+              "type": "boolean",
+              "description": "Require approval from someone other than the last pusher"
+            },
+            "requiredReviewThreadResolution": {
+              "type": "boolean",
+              "description": "Require all review threads to be resolved"
+            },
+            "allowedMergeMethods": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "merge",
+                  "squash",
+                  "rebase"
+                ]
+              },
+              "description": "Allowed merge methods for PRs"
+            }
+          }
+        }
+      }
+    },
+    "requiredStatusChecksRule": {
+      "type": "object",
+      "description": "Require status checks to pass",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "required_status_checks"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "strictRequiredStatusChecksPolicy": {
+              "type": "boolean",
+              "description": "Require branches to be up to date before merging"
+            },
+            "doNotEnforceOnCreate": {
+              "type": "boolean",
+              "description": "Allow bypassing when creating refs (for initial setup)"
+            },
+            "requiredStatusChecks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "context"
+                ],
+                "properties": {
+                  "context": {
+                    "type": "string",
+                    "description": "Name of the status check"
+                  },
+                  "integrationId": {
+                    "type": "integer",
+                    "description": "GitHub App integration ID (optional, for disambiguation)"
+                  }
+                }
+              },
+              "description": "List of required status checks"
+            }
+          }
+        }
+      }
+    },
+    "simpleRule": {
+      "type": "object",
+      "description": "Simple rule with no parameters",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "required_signatures",
+            "required_linear_history",
+            "non_fast_forward",
+            "creation",
+            "deletion"
+          ],
+          "description": "Rule type: required_signatures (require signed commits), required_linear_history (no merge commits), non_fast_forward (prevent force push), creation (restrict ref creation), deletion (restrict ref deletion)"
+        }
+      }
+    },
+    "updateRule": {
+      "type": "object",
+      "description": "Restrict updates to refs",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "update"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "updateAllowsFetchAndMerge": {
+              "type": "boolean",
+              "description": "Allow fetch and merge updates (for forks)"
+            }
+          }
+        }
+      }
+    },
+    "requiredDeploymentsRule": {
+      "type": "object",
+      "description": "Require deployments to succeed",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "required_deployments"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "requiredDeploymentEnvironments": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Environments that must have successful deployments"
+            }
+          }
+        }
+      }
+    },
+    "codeScanningRule": {
+      "type": "object",
+      "description": "Require code scanning results",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "code_scanning"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "codeScanningTools": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "tool",
+                  "alertsThreshold",
+                  "securityAlertsThreshold"
+                ],
+                "properties": {
+                  "tool": {
+                    "type": "string",
+                    "description": "Name of the code scanning tool (e.g., 'CodeQL')"
+                  },
+                  "alertsThreshold": {
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "errors",
+                      "errors_and_warnings",
+                      "all"
+                    ],
+                    "description": "Alert threshold for general code quality"
+                  },
+                  "securityAlertsThreshold": {
+                    "type": "string",
+                    "enum": [
+                      "none",
+                      "critical",
+                      "high_or_higher",
+                      "medium_or_higher",
+                      "all"
+                    ],
+                    "description": "Alert threshold for security issues"
+                  }
+                }
+              },
+              "description": "Code scanning tool configurations"
+            }
+          }
+        }
+      }
+    },
+    "codeQualityRule": {
+      "type": "object",
+      "description": "Require code quality checks",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "code_quality"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "severity": {
+              "type": "string",
+              "enum": [
+                "errors",
+                "errors_and_warnings",
+                "all"
+              ],
+              "description": "Minimum severity level to enforce"
+            }
+          }
+        }
+      }
+    },
+    "workflowsRule": {
+      "type": "object",
+      "description": "Require specific workflows to pass",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "workflows"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "doNotEnforceOnCreate": {
+              "type": "boolean",
+              "description": "Allow bypassing when creating refs"
+            },
+            "workflows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "path",
+                  "repositoryId"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Path to workflow file (e.g., '.github/workflows/ci.yml')"
+                  },
+                  "repositoryId": {
+                    "type": "integer",
+                    "description": "Repository ID where the workflow is defined"
+                  },
+                  "ref": {
+                    "type": "string",
+                    "description": "Git ref to use for the workflow (branch/tag)"
+                  },
+                  "sha": {
+                    "type": "string",
+                    "description": "Specific commit SHA for the workflow"
+                  }
+                }
+              },
+              "description": "Required workflows"
+            }
+          }
+        }
+      }
+    },
+    "patternRule": {
+      "type": "object",
+      "description": "Pattern-based rules for commit messages, author emails, etc.",
+      "required": [
+        "type",
+        "parameters"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "commit_author_email_pattern",
+            "commit_message_pattern",
+            "committer_email_pattern",
+            "branch_name_pattern",
+            "tag_name_pattern"
+          ],
+          "description": "Pattern rule type"
+        },
+        "parameters": {
+          "type": "object",
+          "required": [
+            "operator",
+            "pattern"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name for this pattern rule (for display)"
+            },
+            "negate": {
+              "type": "boolean",
+              "description": "Negate the pattern (require NOT matching)"
+            },
+            "operator": {
+              "type": "string",
+              "enum": [
+                "starts_with",
+                "ends_with",
+                "contains",
+                "regex"
+              ],
+              "description": "Pattern matching operator"
+            },
+            "pattern": {
+              "type": "string",
+              "description": "Pattern to match against"
+            }
+          }
+        }
+      }
+    },
+    "filePathRestrictionRule": {
+      "type": "object",
+      "description": "Restrict changes to specific file paths",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "file_path_restriction"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "restrictedFilePaths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "File paths that are restricted from changes"
+            }
+          }
+        }
+      }
+    },
+    "fileExtensionRestrictionRule": {
+      "type": "object",
+      "description": "Restrict changes to files with specific extensions",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "file_extension_restriction"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "restrictedFileExtensions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "File extensions that are restricted"
+            }
+          }
+        }
+      }
+    },
+    "maxFilePathLengthRule": {
+      "type": "object",
+      "description": "Restrict maximum file path length",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "max_file_path_length"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "maxFilePathLength": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum allowed file path length"
+            }
+          }
+        }
+      }
+    },
+    "maxFileSizeRule": {
+      "type": "object",
+      "description": "Restrict maximum file size",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "max_file_size"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "maxFileSize": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum allowed file size in bytes"
+            }
+          }
         }
       }
     }
