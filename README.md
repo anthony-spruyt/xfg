@@ -8,7 +8,7 @@
 [![docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://anthony-spruyt.github.io/xfg/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple GitHub, Azure DevOps, and GitLab repositories. By default, changes are made via pull requests, but you can also push directly to the default branch.
+A CLI tool for repository-as-code. Sync files and manage settings across GitHub, Azure DevOps, and GitLab.
 
 **[Full Documentation](https://anthony-spruyt.github.io/xfg/)**
 
@@ -45,31 +45,46 @@ npm install -g @aspruyt/xfg
 # Authenticate (GitHub)
 gh auth login
 
-# Run
-xfg --config ./config.yaml
+# Sync files across repos
+xfg sync --config ./config.yaml
+
+# Apply repository settings
+xfg settings --config ./config.yaml
 ```
 
 ### Example Config
 
 ```yaml
 # sync-config.yaml
-id: my-org-prettier-config
+id: my-org-config
 files:
   .prettierrc.json:
     content:
       semi: false
       singleQuote: true
       tabWidth: 2
-      trailingComma: es5
+
+settings:
+  rulesets:
+    main-protection:
+      target: branch
+      enforcement: active
+      conditions:
+        refName:
+          include: ["refs/heads/main"]
+          exclude: []
+      rules:
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 1
 
 repos:
   - git:
       - git@github.com:your-org/frontend-app.git
       - git@github.com:your-org/backend-api.git
-      - git@github.com:your-org/shared-lib.git
 ```
 
-**Result:** PRs are created in all three repos with identical `.prettierrc.json` files.
+**Result:** PRs are created with `.prettierrc.json` files, and repos get branch protection rules.
 
 ## Documentation
 
