@@ -390,7 +390,7 @@ export interface RawRepoConfig {
 // Root config structure
 export interface RawConfig {
   id: string;
-  files: Record<string, RawFileConfig>;
+  files?: Record<string, RawFileConfig>;
   repos: RawRepoConfig[];
   prOptions?: PRMergeOptions;
   prTemplate?: string;
