@@ -55,9 +55,24 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 | `manifest.ts`             | Tracks managed files for orphan deletion (`deleteOrphaned`)              |
 | `github-summary.ts`       | Writes job summary to `GITHUB_STEP_SUMMARY` in CI                        |
 
+## GitHub Rulesets API
+
+- `conditions.ref_name` requires both `include` and `exclude` arrays (even if empty)
+- `pull_request` rules require ALL parameters - provide defaults for missing ones
+- Test locally with: `node dist/index.js protect --config <config.yaml>`
+
+## Linting Gotchas
+
+- Use `String.fromCharCode(0x1b)` for ANSI escape in regex - `\x1b` and `\u001b` literals fail `no-control-regex`
+- CodeQL alerts are separate from ESLint - `eslint-disable` comments don't suppress CodeQL
+- Use underscore prefix (`_varName`) for intentionally unused destructured variables
+
 ## Gotchas
 
 - **Always create fresh branch from main** before starting work - old branches may already be merged
+- **After PR merged, checkout main and pull** before any new work - don't reuse old branches
+- **Enable automerge after PR creation:** `gh pr merge <num> --auto --squash --delete-branch`
+- **Wait for CI before claiming done** - verify checks pass, don't just run local lint
 - **Do not commit plans to `docs/`** - that's GitHub Pages; use scratchpad for temporary plans
 - Output format determined by file extension: `.json`/`.json5`/`.yaml`/`.yml` → object content; others → string/string[]
 - Escape `${VAR}` as `$${VAR}` to output literal (for devcontainer.json, shell scripts)
