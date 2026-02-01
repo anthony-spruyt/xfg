@@ -1,9 +1,9 @@
 # GitHub Rulesets
 
-xfg can manage GitHub Rulesets declaratively using the `protect` command. Define rulesets in your config file, and xfg will create, update, or delete them to match your desired state.
+xfg can manage GitHub Rulesets declaratively using the `settings` command. Define rulesets in your config file, and xfg will create, update, or delete them to match your desired state.
 
 !!! note "GitHub-Only Feature"
-    Rulesets are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg protect`.
+    Rulesets are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg settings`.
 
 ## Quick Start
 
@@ -38,7 +38,7 @@ repos:
 xfg sync -c config.yaml
 
 # Apply rulesets
-xfg protect -c config.yaml
+xfg settings -c config.yaml
 ```
 
 ## Why Rulesets?
@@ -262,12 +262,12 @@ settings:
       # ...
 ```
 
-If you later remove `main-protection` from the config and run `xfg protect`, it will be deleted from the repository.
+If you later remove `main-protection` from the config and run `xfg settings`, it will be deleted from the repository.
 
 Use `--no-delete` to skip orphan deletion:
 
 ```bash
-xfg protect -c config.yaml --no-delete
+xfg settings -c config.yaml --no-delete
 ```
 
 ## Dry Run
@@ -275,7 +275,7 @@ xfg protect -c config.yaml --no-delete
 Preview changes without applying them:
 
 ```bash
-xfg protect -c config.yaml --dry-run
+xfg settings -c config.yaml --dry-run
 ```
 
 Output shows planned changes:
@@ -295,16 +295,16 @@ Found 2 repositories with rulesets
 
 ## Combining with File Sync
 
-The `sync` and `protect` commands are independent. Run them together or separately:
+The `sync` and `settings` commands are independent. Run them together or separately:
 
 ```bash
 # Sync files and apply rulesets
-xfg sync -c config.yaml && xfg protect -c config.yaml
+xfg sync -c config.yaml && xfg settings -c config.yaml
 
 # Or run separately
 xfg sync -c config.yaml
-xfg protect -c config.yaml --dry-run  # Preview first
-xfg protect -c config.yaml            # Apply
+xfg settings -c config.yaml --dry-run  # Preview first
+xfg settings -c config.yaml            # Apply
 ```
 
 ## Complete Example

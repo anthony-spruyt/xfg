@@ -4,11 +4,11 @@ xfg uses subcommands to separate file sync from ruleset management.
 
 ## Commands
 
-| Command       | Description                                    |
-| ------------- | ---------------------------------------------- |
-| `xfg sync`    | Sync configuration files across repositories   |
-| `xfg protect` | Manage GitHub Rulesets for repositories        |
-| `xfg`         | Alias for `xfg sync` (backwards compatibility) |
+| Command        | Description                                    |
+| -------------- | ---------------------------------------------- |
+| `xfg sync`     | Sync configuration files across repositories   |
+| `xfg settings` | Manage GitHub Rulesets for repositories        |
+| `xfg`          | Alias for `xfg sync` (backwards compatibility) |
 
 ## Basic Usage
 
@@ -18,14 +18,14 @@ xfg sync --config ./config.yaml
 xfg --config ./config.yaml
 
 # Apply rulesets
-xfg protect --config ./config.yaml
+xfg settings --config ./config.yaml
 
 # Dry run
 xfg sync --config ./config.yaml --dry-run
-xfg protect --config ./config.yaml --dry-run
+xfg settings --config ./config.yaml --dry-run
 
 # Combined workflow
-xfg sync -c config.yaml && xfg protect -c config.yaml
+xfg sync -c config.yaml && xfg settings -c config.yaml
 ```
 
 ## Dry-Run Mode
@@ -38,14 +38,14 @@ The `--dry-run` flag lets you preview changes without actually making them.
 - Commits and pushes are skipped
 - PRs are not created
 
-**For protect:**
+**For settings:**
 
 - Rulesets are compared but not created/updated/deleted
 - Shows planned changes (create, update, delete, unchanged)
 
 ```bash
 xfg sync --config ./config.yaml --dry-run
-xfg protect --config ./config.yaml --dry-run
+xfg settings --config ./config.yaml --dry-run
 ```
 
 ## Sync CLI Options
@@ -62,7 +62,7 @@ xfg protect --config ./config.yaml --dry-run
 | `--delete-branch`  |       | Delete source branch after merge                                               | No       |
 | `--no-delete`      |       | Skip deletion of orphaned files                                                | No       |
 
-## Protect CLI Options
+## Settings CLI Options
 
 | Option        | Alias | Description                                    | Required |
 | ------------- | ----- | ---------------------------------------------- | -------- |
@@ -72,7 +72,7 @@ xfg protect --config ./config.yaml --dry-run
 | `--no-delete` |       | Skip deletion of orphaned rulesets             | No       |
 
 !!! note
-The protect command only works with GitHub repositories. Azure DevOps and GitLab repos are skipped.
+The settings command only works with GitHub repositories. Azure DevOps and GitLab repos are skipped.
 
 ## Console Output
 

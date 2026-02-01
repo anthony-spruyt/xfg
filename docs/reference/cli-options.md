@@ -1,14 +1,14 @@
 # CLI Options Reference
 
-xfg uses subcommands to separate file sync (`sync`) from ruleset management (`protect`).
+xfg uses subcommands to separate file sync (`sync`) from ruleset management (`settings`).
 
 ## Subcommands
 
-| Command       | Description                                    |
-| ------------- | ---------------------------------------------- |
-| `xfg sync`    | Sync configuration files across repositories   |
-| `xfg protect` | Manage GitHub Rulesets for repositories        |
-| `xfg`         | Alias for `xfg sync` (backwards compatibility) |
+| Command        | Description                                    |
+| -------------- | ---------------------------------------------- |
+| `xfg sync`     | Sync configuration files across repositories   |
+| `xfg settings` | Manage GitHub Rulesets for repositories        |
+| `xfg`          | Alias for `xfg sync` (backwards compatibility) |
 
 ## Sync Command
 
@@ -55,41 +55,41 @@ xfg sync --config ./config.yaml --merge direct   # Push directly
 xfg sync --config ./config.yaml --no-delete
 ```
 
-## Protect Command
+## Settings Command
 
 Manage GitHub Rulesets for repositories. Creates, updates, or deletes rulesets to match your config.
 
 ```bash
-xfg protect --config <path> [options]
+xfg settings --config <path> [options]
 ```
 
 !!! note "GitHub-Only"
-The protect command only works with GitHub repositories. Azure DevOps and GitLab repos are skipped.
+The settings command only works with GitHub repositories. Azure DevOps and GitLab repos are skipped.
 
-### Protect Options
+### Settings Options
 
-| Option        | Alias | Description                                            | Default      |
-| ------------- | ----- | ------------------------------------------------------ | ------------ |
-| `--config`    | `-c`  | Path to YAML config file                               | **Required** |
-| `--dry-run`   | `-d`  | Show what would be done without making changes         | `false`      |
-| `--work-dir`  | `-w`  | Temporary directory (not used for protect, but shared) | `./tmp`      |
-| `--retries`   | `-r`  | Number of retries for network operations               | `3`          |
-| `--no-delete` |       | Skip deletion of orphaned rulesets                     | `false`      |
+| Option        | Alias | Description                                             | Default      |
+| ------------- | ----- | ------------------------------------------------------- | ------------ |
+| `--config`    | `-c`  | Path to YAML config file                                | **Required** |
+| `--dry-run`   | `-d`  | Show what would be done without making changes          | `false`      |
+| `--work-dir`  | `-w`  | Temporary directory (not used for settings, but shared) | `./tmp`      |
+| `--retries`   | `-r`  | Number of retries for network operations                | `3`          |
+| `--no-delete` |       | Skip deletion of orphaned rulesets                      | `false`      |
 
-### Protect Examples
+### Settings Examples
 
 ```bash
 # Apply rulesets
-xfg protect --config ./config.yaml
+xfg settings --config ./config.yaml
 
 # Preview changes
-xfg protect --config ./config.yaml --dry-run
+xfg settings --config ./config.yaml --dry-run
 
 # Apply without deleting orphans
-xfg protect --config ./config.yaml --no-delete
+xfg settings --config ./config.yaml --no-delete
 ```
 
-### Protect Output
+### Settings Output
 
 ```text
 Loading config from: ./config.yaml
@@ -114,11 +114,11 @@ Run both commands together:
 
 ```bash
 # Sync files and apply rulesets
-xfg sync -c config.yaml && xfg protect -c config.yaml
+xfg sync -c config.yaml && xfg settings -c config.yaml
 
 # Preview both
 xfg sync -c config.yaml --dry-run
-xfg protect -c config.yaml --dry-run
+xfg settings -c config.yaml --dry-run
 ```
 
 ## Priority Order

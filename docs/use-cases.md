@@ -120,7 +120,7 @@ Use [file references](configuration/file-references.md) to load complex template
 
 **Problem:** You need consistent branch protection rules across all repositories. Managing rulesets manually through the GitHub UI doesn't scale, and there's no audit trail for changes.
 
-**Solution:** Define GitHub Rulesets declaratively and apply them with `xfg protect`:
+**Solution:** Define GitHub Rulesets declaratively and apply them with `xfg settings`:
 
 ```yaml
 settings:
@@ -169,7 +169,7 @@ repos:
       - git@github.com:your-org/service-critical.git
 ```
 
-Run `xfg protect --config ./config.yaml` to apply rules to all repos. Stricter requirements for specific repos? Override per-repo:
+Run `xfg settings --config ./config.yaml` to apply rules to all repos. Stricter requirements for specific repos? Override per-repo:
 
 ```yaml
 repos:

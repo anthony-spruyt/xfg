@@ -136,7 +136,7 @@ This is useful for repos without branch protection or when PR review isn't requi
 
 ## GitHub Rulesets
 
-The `xfg protect` command manages GitHub Rulesets declaratively. See [GitHub Rulesets](../configuration/rulesets.md) for full documentation.
+The `xfg settings` command manages GitHub Rulesets declaratively. See [GitHub Rulesets](../configuration/rulesets.md) for full documentation.
 
 ```yaml
 settings:
@@ -154,7 +154,7 @@ settings:
 ```
 
 ```bash
-xfg protect --config ./config.yaml
+xfg settings --config ./config.yaml
 ```
 
 ### Required Permissions for Rulesets

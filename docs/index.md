@@ -5,7 +5,7 @@ A CLI tool for managing repositories as code. Sync configuration files and manag
 **Two commands, one config:**
 
 - **`xfg sync`** - Sync JSON, YAML, or text files across repos via PRs
-- **`xfg protect`** - Manage GitHub Rulesets declaratively
+- **`xfg settings`** - Manage GitHub Rulesets declaratively
 
 ## Quick Start
 
@@ -49,7 +49,7 @@ EOF
 xfg sync --config ./config.yaml
 
 # Apply rulesets
-xfg protect --config ./config.yaml
+xfg settings --config ./config.yaml
 ```
 
 **Result:** PRs are created with `.prettierrc.json` files, and all repos get identical branch protection rules.
@@ -71,7 +71,7 @@ xfg protect --config ./config.yaml
 - **Empty Files** - Create files with no content (e.g., `.prettierignore`)
 - **YAML Comments** - Add header comments and schema directives to YAML files
 
-### GitHub Rulesets (`xfg protect`)
+### GitHub Rulesets (`xfg settings`)
 
 - **Declarative Rulesets** - Define GitHub Rulesets in YAML, apply with a single command
 - **Full API Coverage** - All rule types: pull_request, status_checks, signatures, code_scanning, and more
