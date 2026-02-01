@@ -34,6 +34,7 @@ import {
   loadManifest,
   saveManifest,
   updateManifest,
+  updateManifestRulesets,
   MANIFEST_FILENAME,
 } from "./manifest.js";
 import { GitHubAppTokenManager } from "./github-app-token-manager.js";
@@ -606,18 +607,279 @@ export class RepositoryProcessor {
     manifestUpdate: { rulesets: string[] }
   ): Promise<ProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
+    const { branchName, workDir, dryRun } = options;
+    this.retries = options.retries ?? 3;
+    this.executor = options.executor ?? defaultExecutor;
 
-    // TODO: Implement
-    void repoConfig;
-    void options;
-    void manifestUpdate;
+    // For GitHub repos with token manager, get installation token
+    let token: string | undefined;
+    if (this.tokenManager && isGitHubRepo(repoInfo)) {
+      try {
+        const tokenResult = await this.tokenManager.getTokenForRepo(
+          repoInfo as GitHubRepoInfo
+        );
+        if (tokenResult === null) {
+          return {
+            success: true,
+            repoName,
+            message: `No GitHub App installation found for ${repoInfo.owner}`,
+            skipped: true,
+          };
+        }
+        token = tokenResult;
+      } catch (error) {
+        this.log.info(
+          `Warning: Failed to get GitHub App token: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+    }
 
-    return {
-      success: true,
-      repoName,
-      message: "Manifest update not yet implemented",
-      skipped: true,
-    };
+    this.gitOps = this.gitOpsFactory({
+      workDir,
+      dryRun,
+      retries: this.retries,
+    });
+
+    // Determine merge mode
+    const mergeMode = repoConfig.prOptions?.merge ?? "auto";
+    const isDirectMode = mergeMode === "direct";
+
+    try {
+      // Step 1: Clean workspace
+      this.log.info("Cleaning workspace...");
+      this.gitOps.cleanWorkspace();
+
+      // Step 2: Clone repo
+      this.log.info("Cloning repository...");
+      await this.gitOps.clone(repoInfo.gitUrl);
+
+      // Step 3: Get default branch for PR base
+      const { branch: baseBranch, method: detectionMethod } =
+        await this.gitOps.getDefaultBranch();
+      this.log.info(
+        `Default branch: ${baseBranch} (detected via ${detectionMethod})`
+      );
+
+      // Step 4: Load existing manifest
+      const existingManifest = loadManifest(workDir);
+
+      // Step 5: Build rulesetsWithDeleteOrphaned map
+      // All rulesets from manifestUpdate are considered to have deleteOrphaned: true
+      const rulesetsWithDeleteOrphaned = new Map<string, boolean | undefined>();
+      for (const rulesetName of manifestUpdate.rulesets) {
+        rulesetsWithDeleteOrphaned.set(rulesetName, true);
+      }
+
+      // Step 6: Update manifest with rulesets
+      const { manifest: newManifest } = updateManifestRulesets(
+        existingManifest,
+        options.configId,
+        rulesetsWithDeleteOrphaned
+      );
+
+      // Step 7: Check if manifest changed
+      const existingConfigs = existingManifest?.configs ?? {};
+      const manifestChanged =
+        JSON.stringify(existingConfigs) !== JSON.stringify(newManifest.configs);
+
+      if (!manifestChanged) {
+        return {
+          success: true,
+          repoName,
+          message: "No manifest changes detected",
+          skipped: true,
+        };
+      }
+
+      // Step 8: Close existing PR if exists (for non-direct mode)
+      if (!dryRun && !isDirectMode) {
+        this.log.info("Checking for existing PR...");
+        const strategy = getPRStrategy(repoInfo, this.executor);
+        const closed = await strategy.closeExistingPR({
+          repoInfo,
+          branchName,
+          baseBranch,
+          workDir,
+          retries: this.retries,
+          token,
+        });
+        if (closed) {
+          this.log.info("Closed existing PR and deleted branch for fresh sync");
+          await this.gitOps.fetch({ prune: true });
+        }
+      }
+
+      // Step 9: Create branch (for non-direct mode)
+      if (!isDirectMode) {
+        this.log.info(`Creating branch: ${branchName}`);
+        await this.gitOps.createBranch(branchName);
+      } else {
+        this.log.info(`Direct mode: staying on ${baseBranch}`);
+      }
+
+      // Step 10: Save updated manifest
+      const manifestContent = JSON.stringify(newManifest, null, 2) + "\n";
+      const manifestExisted = existsSync(join(workDir, MANIFEST_FILENAME));
+
+      if (dryRun) {
+        this.log.info(`Would update ${MANIFEST_FILENAME} with rulesets`);
+      } else {
+        saveManifest(workDir, newManifest);
+      }
+
+      // Step 11: Commit and Push
+      const commitMessage = "chore: update manifest with ruleset tracking";
+      const pushBranch = isDirectMode ? baseBranch : branchName;
+
+      if (dryRun) {
+        this.log.info(`Would commit: ${commitMessage}`);
+        this.log.info(`Would push to ${pushBranch}...`);
+        return {
+          success: true,
+          repoName,
+          message: `Would update manifest (dry-run)`,
+        };
+      }
+
+      // Build file changes for commit strategy
+      const fileChanges: FileChange[] = [
+        { path: MANIFEST_FILENAME, content: manifestContent },
+      ];
+
+      // Stage changes
+      this.log.info("Staging changes...");
+      await this.executor.exec("git add -A", workDir);
+      if (!(await this.gitOps.hasStagedChanges())) {
+        this.log.info("No staged changes after git add -A, skipping commit");
+        return {
+          success: true,
+          repoName,
+          message: "No changes detected after staging",
+          skipped: true,
+        };
+      }
+
+      // Use commit strategy
+      const commitStrategy = getCommitStrategy(repoInfo, this.executor);
+      this.log.info("Committing and pushing changes...");
+      try {
+        const commitResult = await commitStrategy.commit({
+          repoInfo,
+          branchName: pushBranch,
+          message: commitMessage,
+          fileChanges,
+          workDir,
+          retries: this.retries,
+          force: !isDirectMode,
+          token,
+        });
+        this.log.info(
+          `Committed: ${commitResult.sha} (verified: ${commitResult.verified})`
+        );
+      } catch (error) {
+        if (isDirectMode) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          if (
+            errorMessage.includes("rejected") ||
+            errorMessage.includes("protected") ||
+            errorMessage.includes("denied")
+          ) {
+            return {
+              success: false,
+              repoName,
+              message: `Push to '${baseBranch}' was rejected (likely branch protection). Use 'merge: force' to create a PR and merge with admin privileges.`,
+            };
+          }
+        }
+        throw error;
+      }
+
+      // Direct mode: no PR creation
+      if (isDirectMode) {
+        this.log.info(`Changes pushed directly to ${baseBranch}`);
+        return {
+          success: true,
+          repoName,
+          message: `Manifest updated directly on ${baseBranch}`,
+        };
+      }
+
+      // Step 12: Create PR
+      this.log.info("Creating pull request...");
+      const changedFiles: FileAction[] = [
+        {
+          fileName: MANIFEST_FILENAME,
+          action: manifestExisted ? "update" : "create",
+        },
+      ];
+
+      const prResult: PRResult = await createPR({
+        repoInfo,
+        branchName,
+        baseBranch,
+        files: changedFiles,
+        workDir,
+        dryRun,
+        retries: this.retries,
+        executor: this.executor,
+        token,
+      });
+
+      // Step 13: Handle merge options
+      let mergeResult: ProcessorResult["mergeResult"] | undefined;
+
+      if (prResult.success && prResult.url && mergeMode !== "manual") {
+        this.log.info(`Handling merge (mode: ${mergeMode})...`);
+
+        const mergeConfig: PRMergeConfig = {
+          mode: mergeMode,
+          strategy: repoConfig.prOptions?.mergeStrategy ?? "squash",
+          deleteBranch: repoConfig.prOptions?.deleteBranch ?? true,
+          bypassReason: repoConfig.prOptions?.bypassReason,
+        };
+
+        const result = await mergePR({
+          repoInfo,
+          prUrl: prResult.url,
+          mergeConfig,
+          workDir,
+          dryRun,
+          retries: this.retries,
+          executor: this.executor,
+          token,
+        });
+
+        mergeResult = {
+          merged: result.merged ?? false,
+          autoMergeEnabled: result.autoMergeEnabled,
+          message: result.message,
+        };
+
+        if (!result.success) {
+          this.log.info(`Warning: Merge operation failed - ${result.message}`);
+        } else {
+          this.log.info(result.message);
+        }
+      }
+
+      return {
+        success: prResult.success,
+        repoName,
+        message: prResult.message,
+        prUrl: prResult.url,
+        mergeResult,
+      };
+    } finally {
+      // Always cleanup workspace on completion or failure
+      if (this.gitOps) {
+        try {
+          this.gitOps.cleanWorkspace();
+        } catch {
+          // Ignore cleanup errors - best effort
+        }
+      }
+    }
   }
 
   /**

@@ -3544,6 +3544,7 @@ describe("RepositoryProcessor", () => {
         workDir: join(testDir, `manifest-update-${Date.now()}`),
         configId: "test-config",
         dryRun: false,
+        executor: createMockExecutor(),
       };
 
       const manifestUpdate = { rulesets: ["pr-rules", "release-rules"] };
