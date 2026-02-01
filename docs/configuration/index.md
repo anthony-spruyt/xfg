@@ -25,13 +25,21 @@ repos: # List of repositories
 | Field            | Description                                                                                 | Required |
 | ---------------- | ------------------------------------------------------------------------------------------- | -------- |
 | `id`             | Unique identifier for this config. Used to namespace managed files in `.xfg.json` manifest. | Yes      |
-| `files`          | Map of target filenames to configs                                                          | Yes      |
+| `files`          | Map of target filenames to configs                                                          | *        |
 | `repos`          | Array of repository configurations                                                          | Yes      |
-| `settings`       | Global settings like `rulesets` (GitHub Rulesets). See [GitHub Rulesets](rulesets.md).      | No       |
+| `settings`       | Global settings like `rulesets` (GitHub Rulesets). See [GitHub Rulesets](rulesets.md).      | *        |
 | `prOptions`      | Global PR merge options (can be overridden per-repo)                                        | No       |
 | `prTemplate`     | Custom PR body template (inline or `@path/to/file` reference)                               | No       |
 | `deleteOrphaned` | Global default for orphan deletion. Files/rulesets removed from config are deleted.         | No       |
 | `githubHosts`    | Array of GitHub Enterprise hostnames (e.g., `github.mycompany.com`)                         | No       |
+
+!!! note "files/settings requirement"
+    At least one of `files` or `settings` must be present:
+
+    - **`xfg sync`** requires `files` with at least one file
+    - **`xfg settings`** requires `settings` with actionable config (e.g., rulesets)
+
+    A config can have both for use with both commands.
 
 ## Per-File Fields
 

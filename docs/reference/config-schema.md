@@ -40,12 +40,16 @@ Or configure in `.vscode/settings.json`:
 | Field            | Type        | Required | Description                                       |
 | ---------------- | ----------- | -------- | ------------------------------------------------- |
 | `id`             | `string`    | Yes      | Unique config identifier (alphanumeric, `-`, `_`) |
-| `files`          | `object`    | Yes      | Map of filenames to file configs                  |
+| `files`          | `object`    | *        | Map of filenames to file configs                  |
 | `repos`          | `array`     | Yes      | List of repository configurations                 |
+| `settings`       | `object`    | *        | Repository settings (rulesets, etc.)              |
 | `prOptions`      | `PROptions` | No       | Global PR merge options                           |
 | `prTemplate`     | `string`    | No       | Custom PR body template                           |
 | `githubHosts`    | `array`     | No       | GitHub Enterprise Server hostnames                |
 | `deleteOrphaned` | `boolean`   | No       | Global default for orphan file deletion           |
+
+!!! note "files/settings requirement"
+    At least one of `files` or `settings` must be present. The `sync` command requires `files`, while the `settings` command requires `settings`.
 
 ### File Config
 
@@ -96,7 +100,27 @@ Or configure in `.vscode/settings.json`:
 
 The schema validates:
 
-- Required fields (`files`, `repos`, `git`)
+- Required fields (`id`, `repos`, at least one of `files` or `settings`)
+- Command-specific requirements (see below)
 - Enum values (`mergeStrategy`, `merge`, etc.)
 - Content types (object for JSON/YAML, string/array for text files)
 - File path security (no path traversal in file references)
+
+### Command-Specific Requirements
+
+| Command        | Required Fields                                    |
+| -------------- | -------------------------------------------------- |
+| `xfg sync`     | `files` with at least one file defined             |
+| `xfg settings` | `settings` with actionable config (e.g., rulesets) |
+
+If you run the wrong command for your config, you'll see a helpful error:
+
+```text
+# Running sync with a settings-only config:
+The 'sync' command requires a 'files' section with at least one file defined.
+To manage repository settings instead, use 'xfg settings'.
+
+# Running settings with a files-only config:
+The 'settings' command requires a 'settings' section at root level or in at least one repo.
+To sync files instead, use 'xfg sync'.
+```

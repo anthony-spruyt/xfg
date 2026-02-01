@@ -20,6 +20,9 @@ xfg sync --config <path> [options]
 xfg --config <path> [options]
 ```
 
+!!! warning "Config Requirement"
+    The sync command requires a `files` section with at least one file defined. If your config only has `settings`, use `xfg settings` instead.
+
 ### Sync Options
 
 | Option             | Alias | Description                                        | Default                                        |
@@ -63,8 +66,11 @@ Manage GitHub Rulesets for repositories. Creates, updates, or deletes rulesets t
 xfg settings --config <path> [options]
 ```
 
+!!! warning "Config Requirement"
+    The settings command requires a `settings` section with actionable configuration (e.g., rulesets). If your config only has `files`, use `xfg sync` instead.
+
 !!! note "GitHub-Only"
-The settings command only works with GitHub repositories. Azure DevOps and GitLab repos are skipped.
+    The settings command only works with GitHub repositories. Azure DevOps and GitLab repos are skipped.
 
 ### Settings Options
 
