@@ -1186,8 +1186,8 @@ describe("settings command CLI", () => {
     });
   });
 
-  describe("no rulesets configured (early exit)", () => {
-    test("shows message when no repos have rulesets", () => {
+  describe("config validation", () => {
+    test("fails when no settings configured", () => {
       writeFileSync(
         settingsTestConfigPath,
         `
@@ -1204,13 +1204,14 @@ repos:
       const result = runCLI(["settings", "-c", settingsTestConfigPath]);
       const output = result.stdout + result.stderr;
       assert.ok(
-        output.includes("No rulesets configured"),
-        "Should show no rulesets message"
+        output.includes("'settings' command requires") ||
+          output.includes("No actionable settings"),
+        `Should show settings requirement error, got: ${output}`
       );
-      assert.ok(result.success, "Should succeed even with no rulesets");
+      assert.equal(result.success, false, "Should fail when no settings");
     });
 
-    test("shows message when rulesets object is empty", () => {
+    test("fails when rulesets object is empty", () => {
       writeFileSync(
         settingsTestConfigPath,
         `
@@ -1229,9 +1230,11 @@ repos:
       const result = runCLI(["settings", "-c", settingsTestConfigPath]);
       const output = result.stdout + result.stderr;
       assert.ok(
-        output.includes("No rulesets configured"),
-        "Should show no rulesets message for empty rulesets"
+        output.includes("No actionable settings") ||
+          output.includes("'settings' command requires"),
+        `Should show actionable settings error, got: ${output}`
       );
+      assert.equal(result.success, false, "Should fail with empty rulesets");
     });
   });
 });

@@ -120,7 +120,7 @@ describe("validateRawConfig", () => {
   });
 
   describe("files validation", () => {
-    test("throws when files is missing", () => {
+    test("throws when files is missing and no settings", () => {
       const config = {
         id: "test-config",
         repos: [{ git: "git@github.com:org/repo.git" }],
@@ -128,16 +128,20 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config missing required field: files/
+        /Config requires at least one of: 'files' or 'settings'/
       );
     });
 
-    test("throws when files is empty", () => {
-      const config = createValidConfig({ files: {} });
+    test("throws when files is empty and no settings", () => {
+      const config = {
+        id: "test-config",
+        files: {},
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      } as RawConfig;
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config files object cannot be empty/
+        /Config requires at least one of: 'files' or 'settings'/
       );
     });
 

@@ -42,7 +42,7 @@ describe("Config", () => {
   });
 
   describe("validation", () => {
-    test("throws when files is missing", () => {
+    test("throws when files is missing and no settings", () => {
       const path = createTestConfig(`
 id: test-config
 repos:
@@ -50,7 +50,7 @@ repos:
 `);
       assert.throws(
         () => loadConfig(path),
-        /Config missing required field: files/
+        /Config requires at least one of: 'files' or 'settings'/
       );
     });
 
