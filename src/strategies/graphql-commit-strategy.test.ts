@@ -811,6 +811,226 @@ describe("GraphQLCommitStrategy", () => {
       );
     });
 
+    test("uses token for git push commands when force=true (GitHub App auth)", async () => {
+      // This test verifies that when force=true and token is provided,
+      // the git push commands use the token for authentication via -c url.insteadOf
+      // This is critical for GitHub App authentication where the global git config
+      // has a PAT token but we need to use the GitHub App installation token.
+
+      // Mock git ls-remote to indicate branch exists
+      // Use partial pattern since command may include -c flag
+      mockExecutor.responses.set("ls-remote", "abc123\trefs/heads/test-branch");
+      // Mock git push --delete and git push -u
+      mockExecutor.responses.set("push", "");
+      // Mock git fetch
+      mockExecutor.responses.set("fetch origin", "");
+      // Mock git rev-parse origin/branch
+      mockExecutor.responses.set("rev-parse origin", "newsha123");
+
+      mockExecutor.responses.set(
+        "gh api graphql",
+        JSON.stringify({
+          data: {
+            createCommitOnBranch: { commit: { oid: "commitsha123" } },
+          },
+        })
+      );
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "feature-branch",
+        message: "Test commit",
+        fileChanges: [{ path: "file.txt", content: "content" }],
+        workDir: testDir,
+        force: true, // PR branch mode - triggers delete and recreate
+        token: "ghs_app_installation_token_123",
+      };
+
+      await strategy.commit(options);
+
+      // Find the git push commands (delete and push)
+      const pushCalls = mockExecutor.calls.filter(
+        (c) => c.command.includes("git") && c.command.includes("push")
+      );
+
+      assert.ok(
+        pushCalls.length >= 2,
+        `Should have at least 2 push calls (delete + create). Got: ${pushCalls.length}`
+      );
+
+      // All git push commands should include the token auth override
+      for (const call of pushCalls) {
+        assert.ok(
+          call.command.includes("-c") &&
+            call.command.includes("url.") &&
+            call.command.includes("insteadOf") &&
+            call.command.includes("ghs_app_installation_token_123"),
+          `Git push command should include token auth override via -c url.insteadOf. Got: ${call.command}`
+        );
+      }
+    });
+
+    test("uses token for git push when branch does not exist (GitHub App auth)", async () => {
+      // When branch doesn't exist, git push is called to create it
+      // The token should be used for authentication
+
+      // Mock git ls-remote to fail (branch doesn't exist)
+      // Use partial pattern since command may include -c flag
+      mockExecutor.responses.set(
+        "ls-remote",
+        new Error("fatal: could not read from remote")
+      );
+      // Mock git push to create branch
+      mockExecutor.responses.set("push", "");
+      // Mock git fetch
+      mockExecutor.responses.set("fetch origin", "");
+      // Mock git rev-parse origin/branch
+      mockExecutor.responses.set("rev-parse origin", "abc123");
+
+      mockExecutor.responses.set(
+        "gh api graphql",
+        JSON.stringify({
+          data: {
+            createCommitOnBranch: { commit: { oid: "sha123" } },
+          },
+        })
+      );
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "new-branch",
+        message: "Test commit",
+        fileChanges: [{ path: "file.txt", content: "content" }],
+        workDir: testDir,
+        token: "ghs_app_token_for_new_branch",
+      };
+
+      await strategy.commit(options);
+
+      // Find the git push command that creates the branch
+      const pushCall = mockExecutor.calls.find(
+        (c) => c.command.includes("git") && c.command.includes("push")
+      );
+
+      assert.ok(pushCall, "Should have called git push to create branch");
+      assert.ok(
+        pushCall.command.includes("-c") &&
+          pushCall.command.includes("url.") &&
+          pushCall.command.includes("insteadOf") &&
+          pushCall.command.includes("ghs_app_token_for_new_branch"),
+        `Git push command should include token auth override. Got: ${pushCall.command}`
+      );
+    });
+
+    test("uses token for git fetch and ls-remote commands (GitHub App auth)", async () => {
+      // All remote git operations should use the token for authentication
+
+      // Mock git ls-remote to indicate branch exists
+      mockExecutor.responses.set("ls-remote", "abc123\trefs/heads/main");
+      // Mock git fetch
+      mockExecutor.responses.set("fetch origin", "");
+      // Mock git rev-parse
+      mockExecutor.responses.set("rev-parse origin", "abc123");
+
+      mockExecutor.responses.set(
+        "gh api graphql",
+        JSON.stringify({
+          data: {
+            createCommitOnBranch: { commit: { oid: "sha123" } },
+          },
+        })
+      );
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Test commit",
+        fileChanges: [{ path: "file.txt", content: "content" }],
+        workDir: testDir,
+        token: "ghs_app_token_123",
+      };
+
+      await strategy.commit(options);
+
+      // Find the git ls-remote command
+      const lsRemoteCall = mockExecutor.calls.find((c) =>
+        c.command.includes("ls-remote")
+      );
+      assert.ok(lsRemoteCall, "Should have called git ls-remote");
+      assert.ok(
+        lsRemoteCall.command.includes("-c") &&
+          lsRemoteCall.command.includes("ghs_app_token_123"),
+        `ls-remote should use token auth. Got: ${lsRemoteCall.command}`
+      );
+
+      // Find the git fetch command
+      const fetchCall = mockExecutor.calls.find((c) =>
+        c.command.includes("fetch origin")
+      );
+      assert.ok(fetchCall, "Should have called git fetch");
+      assert.ok(
+        fetchCall.command.includes("-c") &&
+          fetchCall.command.includes("ghs_app_token_123"),
+        `fetch should use token auth. Got: ${fetchCall.command}`
+      );
+    });
+
+    test("uses correct host in git push token auth for GitHub Enterprise", async () => {
+      // For GHE, the URL override should use the custom host, not github.com
+
+      // Mock git ls-remote to fail (branch doesn't exist)
+      // Use partial pattern since command may include -c flag
+      mockExecutor.responses.set(
+        "ls-remote",
+        new Error("fatal: could not read from remote")
+      );
+      // Mock git push
+      mockExecutor.responses.set("push", "");
+      // Mock git fetch
+      mockExecutor.responses.set("fetch origin", "");
+      // Mock git rev-parse
+      mockExecutor.responses.set("rev-parse origin", "abc123");
+
+      mockExecutor.responses.set(
+        "gh api graphql",
+        JSON.stringify({
+          data: {
+            createCommitOnBranch: { commit: { oid: "sha123" } },
+          },
+        })
+      );
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: gheRepoInfo, // GitHub Enterprise with custom host
+        branchName: "feature",
+        message: "GHE commit",
+        fileChanges: [{ path: "file.txt", content: "content" }],
+        workDir: testDir,
+        token: "ghs_ghe_token",
+      };
+
+      await strategy.commit(options);
+
+      const pushCall = mockExecutor.calls.find(
+        (c) => c.command.includes("git") && c.command.includes("push")
+      );
+
+      assert.ok(pushCall, "Should have called git push");
+      // The URL override should reference the GHE host, not github.com
+      assert.ok(
+        pushCall.command.includes("github.enterprise.com"),
+        `Git push should use GHE host in URL override. Got: ${pushCall.command}`
+      );
+      assert.ok(
+        !pushCall.command.includes("@github.com/"),
+        `Git push should NOT use github.com when GHE host is specified. Got: ${pushCall.command}`
+      );
+    });
+
     test("does not include GH_TOKEN prefix when no token is provided", async () => {
       // When no token is provided, rely on gh CLI's default authentication
       mockExecutor.responses.set(

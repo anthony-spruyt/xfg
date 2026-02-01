@@ -104,7 +104,13 @@ export class GraphQLCommitStrategy implements CommitStrategy {
     // Ensure the branch exists on remote and is up-to-date with local HEAD
     // createCommitOnBranch requires the branch to already exist
     // For PR branches (force=true), we force-update to ensure fresh start from main
-    await this.ensureBranchExistsOnRemote(branchName, workDir, options.force);
+    await this.ensureBranchExistsOnRemote(
+      branchName,
+      workDir,
+      options.force,
+      token,
+      githubInfo.host
+    );
 
     // Retry loop for expectedHeadOid mismatch
     let lastError: Error | null = null;
@@ -114,7 +120,11 @@ export class GraphQLCommitStrategy implements CommitStrategy {
         // This is critical for expectedHeadOid to match
         const safeBranch = escapeShellArg(branchName);
         await this.executor.exec(
-          `git fetch origin ${safeBranch}:refs/remotes/origin/${safeBranch}`,
+          this.buildAuthenticatedGitCommand(
+            `fetch origin ${safeBranch}:refs/remotes/origin/${safeBranch}`,
+            token,
+            githubInfo.host
+          ),
           workDir
         );
 
@@ -257,6 +267,29 @@ export class GraphQLCommitStrategy implements CommitStrategy {
   }
 
   /**
+   * Build a git command with optional token authentication override.
+   * When a token is provided, uses -c url.insteadOf to override the global
+   * git config and authenticate with the provided token instead.
+   *
+   * This is critical for GitHub App authentication where the global git config
+   * may have a PAT token embedded, but we need to use the GitHub App installation token.
+   *
+   * Applies to all remote operations: push, fetch, ls-remote, etc.
+   */
+  private buildAuthenticatedGitCommand(
+    gitArgs: string,
+    token?: string,
+    host: string = "github.com"
+  ): string {
+    if (!token) {
+      return `git ${gitArgs}`;
+    }
+    // Override URL rewrite to use the provided token
+    const urlOverride = `url."https://x-access-token:${token}@${host}/".insteadOf="https://${host}/"`;
+    return `git -c ${escapeShellArg(urlOverride)} ${gitArgs}`;
+  }
+
+  /**
    * Ensure the branch exists on the remote and matches local HEAD.
    * createCommitOnBranch requires the branch to already exist.
    *
@@ -268,25 +301,39 @@ export class GraphQLCommitStrategy implements CommitStrategy {
   private async ensureBranchExistsOnRemote(
     branchName: string,
     workDir: string,
-    force?: boolean
+    force?: boolean,
+    token?: string,
+    host?: string
   ): Promise<void> {
     // Branch name was validated in commit(), safe for shell use
     try {
       // Check if the branch exists on remote
       await this.executor.exec(
-        `git ls-remote --exit-code --heads origin ${escapeShellArg(branchName)}`,
+        this.buildAuthenticatedGitCommand(
+          `ls-remote --exit-code --heads origin ${escapeShellArg(branchName)}`,
+          token,
+          host
+        ),
         workDir
       );
 
       // Branch exists - for PR branches, delete and recreate to ensure fresh from main
       if (force) {
         await this.executor.exec(
-          `git push origin --delete ${escapeShellArg(branchName)}`,
+          this.buildAuthenticatedGitCommand(
+            `push origin --delete ${escapeShellArg(branchName)}`,
+            token,
+            host
+          ),
           workDir
         );
         // Now push fresh branch from local HEAD
         await this.executor.exec(
-          `git push -u origin HEAD:${escapeShellArg(branchName)}`,
+          this.buildAuthenticatedGitCommand(
+            `push -u origin HEAD:${escapeShellArg(branchName)}`,
+            token,
+            host
+          ),
           workDir
         );
       }
@@ -295,7 +342,11 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       // Branch doesn't exist on remote, push it
       // This pushes the current local branch to create it on remote
       await this.executor.exec(
-        `git push -u origin HEAD:${escapeShellArg(branchName)}`,
+        this.buildAuthenticatedGitCommand(
+          `push -u origin HEAD:${escapeShellArg(branchName)}`,
+          token,
+          host
+        ),
         workDir
       );
     }
