@@ -2117,5 +2117,34 @@ describe("validateRawConfig", () => {
       };
       assert.doesNotThrow(() => validateRawConfig(config));
     });
+
+    test("validates files structure when files is present", () => {
+      const config: RawConfig = {
+        id: "bad-files",
+        files: {
+          "../escape.json": { content: {} }, // Invalid path
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Invalid fileName.*must be a relative path/
+      );
+    });
+
+    test("skips files validation when files is absent", () => {
+      const config: RawConfig = {
+        id: "settings-only",
+        settings: {
+          rulesets: {
+            "main-protection": { target: "branch" },
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      // Should not throw about files
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
   });
 });
