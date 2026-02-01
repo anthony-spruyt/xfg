@@ -207,7 +207,7 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: npm run test:integration:gitlab
 
-  integration-test-github-protect:
+  integration-test-github-settings:
     needs:
       - "lint"
       - "build"
@@ -215,7 +215,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-github-protect
+      group: integration-github-settings
       cancel-in-progress: false
 
     steps:
@@ -244,10 +244,10 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
 
-      - name: Run GitHub protect integration tests
+      - name: Run GitHub settings integration tests
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: npm run test:integration:github-protect
+        run: npm run test:integration:github-settings
 
   # Combined action tests (PAT + GitHub App)
   integration-test-action:
@@ -420,16 +420,16 @@ jobs:
           .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
           .github/scripts/delete-manifest.sh "${TEST_REPO}"
 
-      # ========== Protect Test ==========
-      - name: "[Protect] Run xfg action with protect command"
+      # ========== Settings Test ==========
+      - name: "[Settings] Run xfg action with settings command"
         uses: ./
         with:
-          command: protect
-          config: ./fixtures/integration-test-config-github-protect.yaml
+          command: settings
+          config: ./fixtures/integration-test-config-github-settings.yaml
           github-token: ${{ secrets.GH_PAT }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
-      - name: "[Protect] Validate - verify ruleset was created"
+      - name: "[Settings] Validate - verify ruleset was created"
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
@@ -440,7 +440,7 @@ jobs:
           fi
           echo "Ruleset created successfully"
 
-      - name: "[Protect] Cleanup - delete test ruleset"
+      - name: "[Settings] Cleanup - delete test ruleset"
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
@@ -459,7 +459,7 @@ jobs:
       - "integration-test-github"
       - "integration-test-ado"
       - "integration-test-gitlab"
-      - "integration-test-github-protect"
+      - "integration-test-github-settings"
       - "integration-test-action"
     if: "always()"
     uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@main"
