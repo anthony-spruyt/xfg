@@ -47,9 +47,9 @@ function deleteRulesetIfExists(): void {
   }
 }
 
-describe("GitHub Protect Integration Test", () => {
+describe("GitHub Settings Integration Test", () => {
   before(() => {
-    console.log("\n=== Setting up protect integration test ===\n");
+    console.log("\n=== Setting up settings integration test ===\n");
 
     // Delete test ruleset if it exists from previous runs
     console.log("Cleaning up any existing test rulesets...");
@@ -68,10 +68,10 @@ describe("GitHub Protect Integration Test", () => {
     console.log("\n=== Cleanup complete ===\n");
   });
 
-  test("protect creates a ruleset in the test repository", async () => {
+  test("settings creates a ruleset in the test repository", async () => {
     const configPath = join(
       fixturesDir,
-      "integration-test-config-github-protect.yaml"
+      "integration-test-config-github-settings.yaml"
     );
 
     // Verify no ruleset exists before
@@ -81,9 +81,9 @@ describe("GitHub Protect Integration Test", () => {
     );
     assert.equal(rulesetsBefore, "0", "Expected no ruleset to exist before");
 
-    // Run the protect command
-    console.log("\nRunning xfg protect...");
-    const output = exec(`node dist/cli.js protect --config ${configPath}`, {
+    // Run the settings command
+    console.log("\nRunning xfg settings...");
+    const output = exec(`node dist/cli.js settings --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -105,14 +105,14 @@ describe("GitHub Protect Integration Test", () => {
     assert.equal(ruleset.enforcement, "active", "Ruleset should be active");
     assert.equal(ruleset.target, "branch", "Ruleset target should be branch");
 
-    console.log("\n=== Protect integration test passed ===\n");
+    console.log("\n=== Settings integration test passed ===\n");
   });
 
-  test("protect updates an existing ruleset", async () => {
+  test("settings updates an existing ruleset", async () => {
     // Create a modified config with different settings
     const configPath = join(
       fixturesDir,
-      "integration-test-config-github-protect.yaml"
+      "integration-test-config-github-settings.yaml"
     );
 
     // First verify the ruleset exists from previous test
@@ -126,9 +126,9 @@ describe("GitHub Protect Integration Test", () => {
     const rulesetIdBefore = rulesetBeforeParsed.id;
     console.log(`  Ruleset ID before: ${rulesetIdBefore}`);
 
-    // Run protect again - should update existing ruleset
-    console.log("\nRunning xfg protect again (update)...");
-    const output = exec(`node dist/cli.js protect --config ${configPath}`, {
+    // Run settings again - should update existing ruleset
+    console.log("\nRunning xfg settings again (update)...");
+    const output = exec(`node dist/cli.js settings --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -149,10 +149,10 @@ describe("GitHub Protect Integration Test", () => {
     console.log("\n=== Update integration test passed ===\n");
   });
 
-  test("protect dry-run shows changes without applying", async () => {
+  test("settings dry-run shows changes without applying", async () => {
     const configPath = join(
       fixturesDir,
-      "integration-test-config-github-protect.yaml"
+      "integration-test-config-github-settings.yaml"
     );
 
     // Delete the ruleset first
@@ -165,10 +165,10 @@ describe("GitHub Protect Integration Test", () => {
     );
     assert.equal(rulesetsBefore, "0", "Expected no ruleset before dry-run");
 
-    // Run protect with dry-run
-    console.log("\nRunning xfg protect --dry-run...");
+    // Run settings with dry-run
+    console.log("\nRunning xfg settings --dry-run...");
     const output = exec(
-      `node dist/cli.js protect --config ${configPath} --dry-run`,
+      `node dist/cli.js settings --config ${configPath} --dry-run`,
       {
         cwd: projectRoot,
       }

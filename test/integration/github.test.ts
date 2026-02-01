@@ -41,13 +41,13 @@ describe("GitHub Integration Test", () => {
     // (e.g., leftover from protect integration tests)
     console.log("Cleaning up any existing rulesets...");
     try {
-      const rulesets = exec(
-        `gh api repos/${TEST_REPO}/rulesets --jq '.[].id'`
-      );
+      const rulesets = exec(`gh api repos/${TEST_REPO}/rulesets --jq '.[].id'`);
       if (rulesets) {
         for (const rulesetId of rulesets.split("\n").filter(Boolean)) {
           console.log(`  Deleting ruleset ID: ${rulesetId}`);
-          exec(`gh api --method DELETE repos/${TEST_REPO}/rulesets/${rulesetId}`);
+          exec(
+            `gh api --method DELETE repos/${TEST_REPO}/rulesets/${rulesetId}`
+          );
         }
       } else {
         console.log("  No rulesets to delete");
