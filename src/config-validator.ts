@@ -729,3 +729,28 @@ export function validateSettings(settings: unknown, context: string): void {
     throw new Error(`${context}: settings.deleteOrphaned must be a boolean`);
   }
 }
+
+// =============================================================================
+// Command-Specific Validators
+// =============================================================================
+
+/**
+ * Validates that config is suitable for the sync command.
+ * @throws Error if files section is missing or empty
+ */
+export function validateForSync(config: RawConfig): void {
+  if (!config.files) {
+    throw new Error(
+      "The 'sync' command requires a 'files' section with at least one file defined. " +
+        "To manage repository settings instead, use 'xfg settings'."
+    );
+  }
+
+  const fileNames = Object.keys(config.files);
+  if (fileNames.length === 0) {
+    throw new Error(
+      "The 'sync' command requires a 'files' section with at least one file defined. " +
+        "To manage repository settings instead, use 'xfg settings'."
+    );
+  }
+}

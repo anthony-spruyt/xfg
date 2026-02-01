@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import { validateRawConfig } from "./config-validator.js";
+import { validateRawConfig, validateForSync } from "./config-validator.js";
 import type { RawConfig } from "./config.js";
 
 describe("validateRawConfig", () => {
@@ -2146,5 +2146,54 @@ describe("validateRawConfig", () => {
       // Should not throw about files
       assert.doesNotThrow(() => validateRawConfig(config));
     });
+  });
+});
+
+describe("validateForSync", () => {
+  test("throws when files is missing", () => {
+    const config: RawConfig = {
+      id: "settings-only",
+      settings: {
+        rulesets: {
+          "main-protection": { target: "branch" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+
+    assert.throws(
+      () => validateForSync(config),
+      /The 'sync' command requires a 'files' section/
+    );
+  });
+
+  test("throws when files is empty", () => {
+    const config: RawConfig = {
+      id: "empty-files",
+      files: {},
+      settings: {
+        rulesets: {
+          "main-protection": { target: "branch" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+
+    assert.throws(
+      () => validateForSync(config),
+      /The 'sync' command requires a 'files' section with at least one file/
+    );
+  });
+
+  test("passes when files has entries", () => {
+    const config: RawConfig = {
+      id: "has-files",
+      files: {
+        "config.json": { content: {} },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+
+    assert.doesNotThrow(() => validateForSync(config));
   });
 });
