@@ -5,7 +5,6 @@ import { resolve, join, dirname } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
-  loadConfig,
   loadRawConfig,
   normalizeConfig,
   MergeMode,

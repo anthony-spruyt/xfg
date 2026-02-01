@@ -120,7 +120,7 @@ export function mergeSettings(
  */
 export function normalizeConfig(raw: RawConfig): Config {
   const expandedRepos: RepoConfig[] = [];
-  const fileNames = Object.keys(raw.files);
+  const fileNames = raw.files ? Object.keys(raw.files) : [];
 
   for (const rawRepo of raw.repos) {
     // Step 1: Expand git arrays
@@ -138,7 +138,7 @@ export function normalizeConfig(raw: RawConfig): Config {
           continue;
         }
 
-        const fileConfig = raw.files[fileName];
+        const fileConfig = raw.files![fileName];
         const fileStrategy = fileConfig.mergeStrategy ?? "replace";
 
         // Step 3: Compute merged content for this file

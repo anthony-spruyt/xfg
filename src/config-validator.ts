@@ -81,7 +81,7 @@ export function validateRawConfig(config: RawConfig): void {
   for (const fileName of fileNames) {
     validateFileName(fileName);
 
-    const fileConfig = config.files[fileName];
+    const fileConfig = config.files![fileName];
     if (!fileConfig || typeof fileConfig !== "object") {
       throw new Error(`File '${fileName}' must have a configuration object`);
     }
@@ -246,7 +246,7 @@ export function validateRawConfig(config: RawConfig): void {
 
       for (const fileName of Object.keys(repo.files)) {
         // Ensure the file is defined at root level
-        if (!config.files[fileName]) {
+        if (!config.files || !config.files[fileName]) {
           throw new Error(
             `Repo at index ${i} references undefined file '${fileName}'. File must be defined in root 'files' object.`
           );
