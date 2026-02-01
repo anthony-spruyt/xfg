@@ -607,7 +607,7 @@ export class RepositoryProcessor {
 
   /**
    * Updates only the manifest file with ruleset tracking.
-   * Used by protect command to persist state for deleteOrphaned.
+   * Used by settings command to persist state for deleteOrphaned.
    * Reuses existing clone/commit/PR workflow.
    */
   async updateManifestOnly(
