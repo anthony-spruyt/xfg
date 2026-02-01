@@ -1,6 +1,6 @@
 # xfg
 
-A CLI tool for managing repositories as code. Sync configuration files and manage GitHub Rulesets across multiple GitHub, Azure DevOps, and GitLab repositories.
+A CLI tool for repository-as-code. Sync files and manage settings across GitHub, Azure DevOps, and GitLab.
 
 **Two commands, one config:**
 
