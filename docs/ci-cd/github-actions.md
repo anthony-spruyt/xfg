@@ -17,6 +17,7 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 
 | Input                    | Required | Default               | Description                                                |
 | ------------------------ | -------- | --------------------- | ---------------------------------------------------------- |
+| `command`                | No       | `sync`                | Command to run (`sync` or `protect`)                       |
 | `config`                 | Yes      | -                     | Path to YAML config file                                   |
 | `dry-run`                | No       | `false`               | Preview mode - show what would change without creating PRs |
 | `work-dir`               | No       | `./tmp`               | Directory for cloning repositories                         |
@@ -70,6 +71,20 @@ Push directly to the default branch without creating PRs:
     github-token: ${{ secrets.GH_PAT }}
     merge: direct
 ```
+
+### Protect Command Example
+
+Apply branch protection rulesets to repositories:
+
+```yaml
+- uses: anthony-spruyt/xfg@v1
+  with:
+    command: protect
+    config: ./protect-config.yml
+    github-token: ${{ secrets.GH_PAT }}
+```
+
+See [Rulesets](../configuration/rulesets.md) for configuration details.
 
 ### GitHub App Authentication (Verified Commits)
 

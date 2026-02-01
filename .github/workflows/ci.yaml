@@ -420,6 +420,37 @@ jobs:
           .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
           .github/scripts/delete-manifest.sh "${TEST_REPO}"
 
+      # ========== Protect Test ==========
+      - name: "[Protect] Run xfg action with protect command"
+        uses: ./
+        with:
+          command: protect
+          config: ./fixtures/integration-test-config-github-protect.yaml
+          github-token: ${{ secrets.GH_PAT }}
+          xfg-package: "./${{ env.XFG_PACKAGE }}"
+
+      - name: "[Protect] Validate - verify ruleset was created"
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          RULESET=$(gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset")')
+          if [ -z "$RULESET" ]; then
+            echo "ERROR: Ruleset was not created"
+            exit 1
+          fi
+          echo "Ruleset created successfully"
+
+      - name: "[Protect] Cleanup - delete test ruleset"
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          RULESET_ID=$(gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset") | .id')
+          if [ -n "$RULESET_ID" ]; then
+            gh api --method DELETE repos/${TEST_REPO}/rulesets/${RULESET_ID}
+            echo "Cleaned up test ruleset"
+          fi
+
   # Summary job for branch protection - add jobs to 'needs' array
   summary:
     needs:
