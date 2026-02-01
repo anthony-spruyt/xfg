@@ -47,19 +47,20 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 
 ## Key Modules
 
-| Module                    | Purpose                                                                  |
-| ------------------------- | ------------------------------------------------------------------------ |
-| `config-normalizer.ts`    | Parses config, expands git arrays, merges content, interpolates env vars |
-| `repository-processor.ts` | Orchestrates per-repo: clone, write files, commit, PR/push               |
-| `xfg-template.ts`         | `${xfg:repo.name}` templating for repo-specific content                  |
-| `manifest.ts`             | Tracks managed files for orphan deletion (`deleteOrphaned`)              |
-| `github-summary.ts`       | Writes job summary to `GITHUB_STEP_SUMMARY` in CI                        |
+| Module                    | Purpose                                                                   |
+| ------------------------- | ------------------------------------------------------------------------- |
+| `config-normalizer.ts`    | Parses config, expands git arrays, merges content, interpolates env vars  |
+| `repository-processor.ts` | Orchestrates per-repo: clone, write files, commit, PR/push                |
+| `xfg-template.ts`         | `${xfg:repo.name}` templating for repo-specific content                   |
+| `manifest.ts`             | Tracks managed files for orphan deletion (`deleteOrphaned`)               |
+| `github-summary.ts`       | Writes job summary to `GITHUB_STEP_SUMMARY` in CI                         |
+| `config-validator.ts`     | Validates raw config; `validateForSync`/`validateForSettings` per-command |
 
 ## GitHub Rulesets API
 
 - `conditions.ref_name` requires both `include` and `exclude` arrays (even if empty)
 - `pull_request` rules require ALL parameters - provide defaults for missing ones
-- Test locally with: `node dist/index.js protect --config <config.yaml>`
+- Test locally with: `node dist/index.js settings --config <config.yaml>`
 
 ## Linting Gotchas
 
@@ -73,6 +74,7 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 - **After PR merged, checkout main and pull** before any new work - don't reuse old branches
 - **Enable automerge after PR creation:** `gh pr merge <num> --auto --squash --delete-branch`
 - **Wait for CI before claiming done** - verify checks pass, don't just run local lint
+- **Check CI on main after PR merge** - integration tests only run on main; verify they pass before releasing
 - **Do not commit plans to `docs/`** - that's GitHub Pages; use scratchpad for temporary plans
 - Output format determined by file extension: `.json`/`.json5`/`.yaml`/`.yml` → object content; others → string/string[]
 - Escape `${VAR}` as `$${VAR}` to output literal (for devcontainer.json, shell scripts)
