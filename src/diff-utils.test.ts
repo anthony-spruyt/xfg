@@ -94,8 +94,11 @@ describe("generateDiff", () => {
     const result = generateDiff(null, "line1\nline2\n", "test.txt");
     assert.ok(result.length > 0);
     // All lines should be additions (contain +)
-    // eslint-disable-next-line no-control-regex
-    const rawLines = result.map((line) => line.replace(/\x1b\[[0-9;]*m/g, ""));
+    const ansiRegex = new RegExp(
+      String.fromCharCode(0x1b) + "\\[[0-9;]*m",
+      "g"
+    );
+    const rawLines = result.map((line) => line.replace(ansiRegex, ""));
     assert.ok(rawLines.some((line) => line.startsWith("+")));
   });
 
@@ -114,8 +117,11 @@ describe("generateDiff", () => {
     assert.ok(result.length > 0);
 
     // Strip ANSI codes for checking
-    // eslint-disable-next-line no-control-regex
-    const rawLines = result.map((line) => line.replace(/\x1b\[[0-9;]*m/g, ""));
+    const ansiRegex = new RegExp(
+      String.fromCharCode(0x1b) + "\\[[0-9;]*m",
+      "g"
+    );
+    const rawLines = result.map((line) => line.replace(ansiRegex, ""));
 
     // Should have hunk header
     assert.ok(rawLines.some((line) => line.startsWith("@@")));

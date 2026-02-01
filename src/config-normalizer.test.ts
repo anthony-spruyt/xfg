@@ -1,7 +1,7 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { normalizeConfig } from "./config-normalizer.js";
-import type { RawConfig } from "./config.js";
+import type { RawConfig, PullRequestRuleParameters } from "./config.js";
 
 describe("normalizeConfig", () => {
   beforeEach(() => {
@@ -1741,11 +1741,10 @@ describe("normalizeConfig", () => {
       const prRule =
         result.repos[0].settings?.rulesets?.["pr-rules"]?.rules?.[0];
       assert.equal(prRule?.type, "pull_request");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      assert.equal(
-        (prRule as any)?.parameters?.requiredApprovingReviewCount,
-        3
-      );
+      const params = prRule?.parameters as
+        | PullRequestRuleParameters
+        | undefined;
+      assert.equal(params?.requiredApprovingReviewCount, 3);
     });
 
     test("different repos can have different settings", () => {
