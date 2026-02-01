@@ -68,13 +68,10 @@ export function configToGitHub(
   if (ruleset.conditions) {
     payload.conditions = {};
     if (ruleset.conditions.refName) {
+      // GitHub API requires both include and exclude, even if empty
       payload.conditions.ref_name = {
-        ...(ruleset.conditions.refName.include && {
-          include: ruleset.conditions.refName.include,
-        }),
-        ...(ruleset.conditions.refName.exclude && {
-          exclude: ruleset.conditions.refName.exclude,
-        }),
+        include: ruleset.conditions.refName.include ?? [],
+        exclude: ruleset.conditions.refName.exclude ?? [],
       };
     }
   }
@@ -87,16 +84,40 @@ export function configToGitHub(
 }
 
 /**
+ * Default parameters for pull_request rules.
+ * GitHub API requires all parameters to be present.
+ */
+const PULL_REQUEST_DEFAULTS: Record<string, unknown> = {
+  required_approving_review_count: 0,
+  dismiss_stale_reviews_on_push: false,
+  require_code_owner_review: false,
+  require_last_push_approval: false,
+  required_review_thread_resolution: false,
+  allowed_merge_methods: ["merge", "squash", "rebase"],
+};
+
+/**
  * Converts a single rule from config format to GitHub API format.
  * Handles parameter name conversions (camelCase → snake_case).
+ * Fills in required defaults for rule types that need them.
  */
 function convertRule(rule: RulesetRule): GitHubRule {
   const result: GitHubRule = { type: rule.type };
 
   if ("parameters" in rule && rule.parameters) {
-    result.parameters = convertParameters(
+    const converted = convertParameters(
       rule.parameters as Record<string, unknown>
     );
+
+    // Fill in defaults for pull_request rules (API requires all params)
+    if (rule.type === "pull_request") {
+      result.parameters = { ...PULL_REQUEST_DEFAULTS, ...converted };
+    } else {
+      result.parameters = converted;
+    }
+  } else if (rule.type === "pull_request") {
+    // If no parameters provided, use defaults
+    result.parameters = { ...PULL_REQUEST_DEFAULTS };
   }
 
   return result;
