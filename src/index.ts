@@ -97,7 +97,7 @@ interface SyncOptions extends SharedOptions {
   deleteBranch?: boolean;
 }
 
-type ProtectOptions = SharedOptions;
+type SettingsOptions = SharedOptions;
 
 /**
  * Adds shared options to a command.
@@ -276,11 +276,11 @@ export async function runSync(
 }
 
 // =============================================================================
-// Protect Command
+// Settings Command
 // =============================================================================
 
-export async function runProtect(
-  options: ProtectOptions,
+export async function runSettings(
+  options: SettingsOptions,
   processorFactory: RulesetProcessorFactory = defaultRulesetProcessorFactory
 ): Promise<void> {
   const configPath = resolve(options.config);
@@ -354,7 +354,7 @@ export async function runProtect(
       continue;
     }
 
-    // Note: For protect command, we don't clone repos - we work with the API directly.
+    // Note: For settings command, we don't clone repos - we work with the API directly.
     // Manifest handling for tracking managed rulesets would require cloning.
     // For now, use an empty list - orphan deletion requires the sync command first.
     const managedRulesets = getManagedRulesets(null, config.id);
@@ -377,7 +377,10 @@ export async function runProtect(
         successCount++;
 
         // Update manifest with ruleset tracking if there are rulesets to track
-        if (result.manifestUpdate && result.manifestUpdate.rulesets.length > 0) {
+        if (
+          result.manifestUpdate &&
+          result.manifestUpdate.rulesets.length > 0
+        ) {
           const workDir = resolve(
             join(options.workDir ?? "./tmp", generateWorkspaceName(i))
           );
@@ -496,18 +499,18 @@ const syncCommand = new Command("sync")
 addSharedOptions(syncCommand);
 program.addCommand(syncCommand);
 
-// Protect command (ruleset management)
-const protectCommand = new Command("protect")
+// Settings command (ruleset management)
+const settingsCommand = new Command("settings")
   .description("Manage GitHub Rulesets for repositories")
   .action((opts) => {
-    runProtect(opts as ProtectOptions).catch((error) => {
+    runSettings(opts as SettingsOptions).catch((error) => {
       console.error("Fatal error:", error);
       process.exit(1);
     });
   });
 
-addSharedOptions(protectCommand);
-program.addCommand(protectCommand);
+addSharedOptions(settingsCommand);
+program.addCommand(settingsCommand);
 
 // Export program for CLI entry point
 export { program };
