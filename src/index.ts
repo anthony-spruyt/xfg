@@ -498,6 +498,7 @@ export function createProgram(options: ProgramOptions = {}): Command {
 
   // Sync command (file synchronization)
   const syncCommand = new Command("sync")
+    .configureOutput({ writeOut, writeErr })
     .description(
       "Sync configuration files across repositories (default command)"
     )
@@ -544,6 +545,7 @@ export function createProgram(options: ProgramOptions = {}): Command {
 
   // Settings command (ruleset management)
   const settingsCommand = new Command("settings")
+    .configureOutput({ writeOut, writeErr })
     .description("Manage GitHub Rulesets for repositories")
     .action((opts) => {
       onSettings(opts as SettingsOptions).catch((error) => {

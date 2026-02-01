@@ -47,10 +47,15 @@ function parseCLI(
   });
 
   // Enable exitOverride to throw instead of process.exit for validation errors
-  program.exitOverride((err) => {
+  // Must set on main program AND all subcommands for Commander to work correctly
+  const exitOverrideHandler = (err: Error & { exitCode?: number }) => {
     exitCode = err.exitCode;
     throw err;
-  });
+  };
+  program.exitOverride(exitOverrideHandler);
+  for (const cmd of program.commands) {
+    cmd.exitOverride(exitOverrideHandler);
+  }
 
   try {
     // Mirror cli.ts backwards compatibility: prepend 'sync' if no subcommand
@@ -163,7 +168,7 @@ describe("CLI", () => {
     });
 
     test("requires --config option", () => {
-      const result = runCLI([]);
+      const result = parseCLI([]);
       assert.equal(result.success, false);
       assert.ok(
         result.stderr.includes("required") || result.stderr.includes("--config")
@@ -448,18 +453,26 @@ repos:
 
       // Test each valid merge mode
       for (const mode of ["manual", "auto", "force", "direct"]) {
-        const result = runCLI([
-          "-c",
-          testConfigPath,
-          "--dry-run",
-          "--merge",
+        let capturedOpts: SyncOptions | undefined;
+        parseCLI(
+          [
+            "-c",
+            testConfigPath,
+            "--dry-run",
+            "--merge",
+            mode,
+            "-w",
+            `${testDir}/work`,
+          ],
+          {
+            onSync: (opts) => {
+              capturedOpts = opts;
+            },
+          }
+        );
+        assert.equal(
+          capturedOpts?.merge,
           mode,
-          "-w",
-          `${testDir}/work`,
-        ]);
-        const output = result.stdout + result.stderr;
-        assert.ok(
-          !output.includes("Invalid merge mode"),
           `Should accept --merge ${mode}`
         );
       }
@@ -479,7 +492,7 @@ repos:
 `
       );
 
-      const result = runCLI([
+      const result = parseCLI([
         "-c",
         testConfigPath,
         "--dry-run",
@@ -511,20 +524,27 @@ repos:
 `
       );
 
-      // Test each valid merge strategy
       for (const strategy of ["merge", "squash", "rebase"]) {
-        const result = runCLI([
-          "-c",
-          testConfigPath,
-          "--dry-run",
-          "--merge-strategy",
+        let capturedOpts: SyncOptions | undefined;
+        parseCLI(
+          [
+            "-c",
+            testConfigPath,
+            "--dry-run",
+            "--merge-strategy",
+            strategy,
+            "-w",
+            `${testDir}/work`,
+          ],
+          {
+            onSync: (opts) => {
+              capturedOpts = opts;
+            },
+          }
+        );
+        assert.equal(
+          capturedOpts?.mergeStrategy,
           strategy,
-          "-w",
-          `${testDir}/work`,
-        ]);
-        const output = result.stdout + result.stderr;
-        assert.ok(
-          !output.includes("Invalid merge strategy"),
           `Should accept --merge-strategy ${strategy}`
         );
       }
@@ -544,18 +564,25 @@ repos:
 `
       );
 
-      const result = runCLI([
-        "-c",
-        testConfigPath,
-        "--dry-run",
-        "--delete-branch",
-        "-w",
-        `${testDir}/work`,
-      ]);
-      const output = result.stdout + result.stderr;
-      // Should not error on parsing - if it gets to loading config, flag was accepted
-      assert.ok(
-        output.includes("Loading config") || output.includes("Processing"),
+      let capturedOpts: SyncOptions | undefined;
+      parseCLI(
+        [
+          "-c",
+          testConfigPath,
+          "--dry-run",
+          "--delete-branch",
+          "-w",
+          `${testDir}/work`,
+        ],
+        {
+          onSync: (opts) => {
+            capturedOpts = opts;
+          },
+        }
+      );
+      assert.equal(
+        capturedOpts?.deleteBranch,
+        true,
         "Should accept --delete-branch flag"
       );
     });
@@ -1181,7 +1208,7 @@ describe("settings command CLI", () => {
     });
 
     test("requires --config option", () => {
-      const result = runCLI(["settings"]);
+      const result = parseCLI(["settings"]);
       assert.equal(result.success, false);
       assert.ok(
         result.stderr.includes("required") || result.stderr.includes("--config")
