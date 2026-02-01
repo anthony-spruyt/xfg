@@ -94,7 +94,10 @@ function convertRule(rule: RulesetRule): GitHubRule {
   const result: GitHubRule = { type: rule.type };
 
   if ("parameters" in rule && rule.parameters) {
-    result.parameters = convertParameters(rule.type, rule.parameters);
+    result.parameters = convertParameters(
+      rule.type,
+      rule.parameters as Record<string, unknown>
+    );
   }
 
   return result;
@@ -313,6 +316,6 @@ export class GitHubRulesetStrategy {
       command = `GH_TOKEN=${escapeShellArg(options.token)} ${command}`;
     }
 
-    return await this.executor.run(command);
+    return await this.executor.exec(command, process.cwd());
   }
 }

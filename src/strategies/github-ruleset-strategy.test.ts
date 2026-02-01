@@ -7,14 +7,15 @@ import {
 } from "./github-ruleset-strategy.js";
 import type { Ruleset } from "../config.js";
 import type { GitHubRepoInfo, AzureRepoInfo } from "../repo-detector.js";
+import type { CommandExecutor } from "../command-executor.js";
 
 // Mock executor that records commands and returns configured responses
-class MockExecutor {
+class MockExecutor implements CommandExecutor {
   commands: string[] = [];
   responses: Map<string, string> = new Map();
   defaultResponse = "{}";
 
-  run(command: string): string {
+  async exec(command: string, _cwd: string): Promise<string> {
     this.commands.push(command);
 
     // Find matching response by endpoint pattern
