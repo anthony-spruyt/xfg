@@ -1055,37 +1055,37 @@ describe("buildErrorResult", () => {
 });
 
 // =============================================================================
-// Protect Command Tests (CLI argument parsing only)
+// Settings Command Tests (CLI argument parsing only)
 // =============================================================================
 
-const protectTestDir = join(process.cwd(), "test-protect-cli-tmp");
-const protectTestConfigPath = join(protectTestDir, "protect-config.yaml");
+const settingsTestDir = join(process.cwd(), "test-settings-cli-tmp");
+const settingsTestConfigPath = join(settingsTestDir, "settings-config.yaml");
 
-describe("protect command CLI", () => {
+describe("settings command CLI", () => {
   beforeEach(() => {
-    if (existsSync(protectTestDir)) {
-      rmSync(protectTestDir, { recursive: true, force: true });
+    if (existsSync(settingsTestDir)) {
+      rmSync(settingsTestDir, { recursive: true, force: true });
     }
-    mkdirSync(protectTestDir, { recursive: true });
+    mkdirSync(settingsTestDir, { recursive: true });
   });
 
   afterEach(() => {
-    if (existsSync(protectTestDir)) {
-      rmSync(protectTestDir, { recursive: true, force: true });
+    if (existsSync(settingsTestDir)) {
+      rmSync(settingsTestDir, { recursive: true, force: true });
     }
   });
 
   describe("argument parsing", () => {
-    test("shows help with protect --help", () => {
-      const result = runCLI(["protect", "--help"]);
-      assert.ok(result.stdout.includes("protect"));
+    test("shows help with settings --help", () => {
+      const result = runCLI(["settings", "--help"]);
+      assert.ok(result.stdout.includes("settings"));
       assert.ok(result.stdout.includes("-c, --config"));
       assert.ok(result.stdout.includes("-d, --dry-run"));
       assert.ok(result.stdout.includes("--no-delete"));
     });
 
     test("requires --config option", () => {
-      const result = runCLI(["protect"]);
+      const result = runCLI(["settings"]);
       assert.equal(result.success, false);
       assert.ok(
         result.stderr.includes("required") || result.stderr.includes("--config")
@@ -1093,7 +1093,7 @@ describe("protect command CLI", () => {
     });
 
     test("fails with non-existent config file", () => {
-      const result = runCLI(["protect", "-c", "/nonexistent/config.yaml"]);
+      const result = runCLI(["settings", "-c", "/nonexistent/config.yaml"]);
       assert.equal(result.success, false);
       const output = result.stdout + result.stderr;
       assert.ok(output.includes("Config file not found"));
@@ -1103,9 +1103,9 @@ describe("protect command CLI", () => {
   describe("no rulesets configured (early exit)", () => {
     test("shows message when no repos have rulesets", () => {
       writeFileSync(
-        protectTestConfigPath,
+        settingsTestConfigPath,
         `
-id: test-protect
+id: test-settings
 files:
   test.json:
     content:
@@ -1115,7 +1115,7 @@ repos:
 `
       );
 
-      const result = runCLI(["protect", "-c", protectTestConfigPath]);
+      const result = runCLI(["settings", "-c", settingsTestConfigPath]);
       const output = result.stdout + result.stderr;
       assert.ok(
         output.includes("No rulesets configured"),
@@ -1126,9 +1126,9 @@ repos:
 
     test("shows message when rulesets object is empty", () => {
       writeFileSync(
-        protectTestConfigPath,
+        settingsTestConfigPath,
         `
-id: test-protect
+id: test-settings
 files:
   test.json:
     content:
@@ -1140,7 +1140,7 @@ repos:
 `
       );
 
-      const result = runCLI(["protect", "-c", protectTestConfigPath]);
+      const result = runCLI(["settings", "-c", settingsTestConfigPath]);
       const output = result.stdout + result.stderr;
       assert.ok(
         output.includes("No rulesets configured"),
@@ -1151,11 +1151,11 @@ repos:
 });
 
 // =============================================================================
-// Protect Command Unit Tests (with mocked processor)
+// Settings Command Unit Tests (with mocked processor)
 // =============================================================================
 
 import {
-  runProtect,
+  runSettings,
   IRulesetProcessor,
   RulesetProcessorFactory,
 } from "./index.js";
@@ -1196,10 +1196,10 @@ class MockRulesetProcessor implements IRulesetProcessor {
   }
 }
 
-const unitTestDir = join(process.cwd(), "test-protect-unit-tmp");
-const unitTestConfigPath = join(unitTestDir, "protect-config.yaml");
+const unitTestDir = join(process.cwd(), "test-settings-unit-tmp");
+const unitTestConfigPath = join(unitTestDir, "settings-config.yaml");
 
-describe("runProtect with mock processor", () => {
+describe("runSettings with mock processor", () => {
   let mockProcessor: MockRulesetProcessor;
   let mockFactory: RulesetProcessorFactory;
 
@@ -1223,7 +1223,7 @@ describe("runProtect with mock processor", () => {
     writeFileSync(
       unitTestConfigPath,
       `
-id: test-protect
+id: test-settings
 files:
   test.json:
     content:
@@ -1239,7 +1239,7 @@ repos:
 `
     );
 
-    await runProtect({ config: unitTestConfigPath }, mockFactory);
+    await runSettings({ config: unitTestConfigPath }, mockFactory);
 
     assert.equal(mockProcessor.calls.length, 1);
     assert.equal(
@@ -1252,7 +1252,7 @@ repos:
     writeFileSync(
       unitTestConfigPath,
       `
-id: test-protect
+id: test-settings
 files:
   test.json:
     content:
@@ -1268,7 +1268,7 @@ repos:
 `
     );
 
-    await runProtect({ config: unitTestConfigPath }, mockFactory);
+    await runSettings({ config: unitTestConfigPath }, mockFactory);
 
     // Processor should not be called for non-GitHub repos
     assert.equal(mockProcessor.calls.length, 0);
@@ -1278,7 +1278,7 @@ repos:
     writeFileSync(
       unitTestConfigPath,
       `
-id: test-protect
+id: test-settings
 files:
   test.json:
     content:
@@ -1294,7 +1294,10 @@ repos:
 `
     );
 
-    await runProtect({ config: unitTestConfigPath, dryRun: true }, mockFactory);
+    await runSettings(
+      { config: unitTestConfigPath, dryRun: true },
+      mockFactory
+    );
 
     assert.equal(mockProcessor.calls.length, 1);
     const options = mockProcessor.calls[0].options as { dryRun?: boolean };
@@ -1305,7 +1308,7 @@ repos:
     writeFileSync(
       unitTestConfigPath,
       `
-id: test-protect
+id: test-settings
 files:
   test.json:
     content:
@@ -1321,7 +1324,7 @@ repos:
 `
     );
 
-    await runProtect(
+    await runSettings(
       { config: unitTestConfigPath, noDelete: true },
       mockFactory
     );
@@ -1339,7 +1342,7 @@ repos:
     writeFileSync(
       unitTestConfigPath,
       `
-id: test-protect
+id: test-settings
 files:
   test.json:
     content:
@@ -1362,7 +1365,7 @@ repos:
 `
     );
 
-    await runProtect({ config: unitTestConfigPath }, mockFactory);
+    await runSettings({ config: unitTestConfigPath }, mockFactory);
 
     assert.equal(mockProcessor.calls.length, 2);
     assert.equal(
@@ -1379,7 +1382,7 @@ repos:
     writeFileSync(
       unitTestConfigPath,
       `
-id: test-protect
+id: test-settings
 files:
   test.json:
     content:
@@ -1396,7 +1399,7 @@ repos:
 `
     );
 
-    await runProtect({ config: unitTestConfigPath }, mockFactory);
+    await runSettings({ config: unitTestConfigPath }, mockFactory);
 
     // Only the repo with rulesets should be processed
     assert.equal(mockProcessor.calls.length, 1);
