@@ -310,7 +310,7 @@
       "properties": {
         "rulesets": {
           "type": "object",
-          "description": "Map of ruleset names to configurations. Each ruleset defines protection rules for branches or tags.",
+          "description": "Map of ruleset names to configurations. Each ruleset defines rules to enforce on branches or tags.",
           "additionalProperties": {
             "$ref": "#/definitions/ruleset"
           }
@@ -333,7 +333,7 @@
             "tag"
           ],
           "default": "branch",
-          "description": "Target type: 'branch' for branch protection, 'tag' for tag protection. Default: branch"
+          "description": "Target type: 'branch' for branch rules, 'tag' for tag rules. Default: branch"
         },
         "enforcement": {
           "type": "string",
@@ -354,7 +354,7 @@
         },
         "conditions": {
           "$ref": "#/definitions/rulesetConditions",
-          "description": "Conditions for when this ruleset applies (which branches/tags to protect)"
+          "description": "Conditions for when this ruleset applies (which branches/tags to target)"
         },
         "rules": {
           "type": "array",
@@ -416,7 +416,7 @@
               "items": {
                 "type": "string"
               },
-              "description": "Patterns to exclude from protection"
+              "description": "Patterns to exclude from this ruleset"
             }
           }
         }
