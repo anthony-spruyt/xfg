@@ -310,8 +310,9 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
       `gh api repos/${TEST_REPO}/contents/${manifestFile} --jq '.content' | base64 -d`
     );
     const manifest = JSON.parse(manifestContent);
+    // v3 manifest format uses { files: [...], rulesets: [...] }
     assert.ok(
-      manifest.configs[configId]?.includes(orphanFile),
+      manifest.configs[configId]?.files?.includes(orphanFile),
       "Manifest should track orphan file"
     );
     console.log("  Manifest tracks orphan file");
