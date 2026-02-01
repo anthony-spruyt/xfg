@@ -1021,13 +1021,17 @@ describe("GraphQLCommitStrategy", () => {
 
       assert.ok(pushCall, "Should have called git push");
       // The URL override should reference the GHE host, not github.com
+      // Use the exact host from gheRepoInfo to verify correct host is used
+      const gheHost = gheRepoInfo.host;
       assert.ok(
-        pushCall.command.includes("github.enterprise.com"),
-        `Git push should use GHE host in URL override. Got: ${pushCall.command}`
+        pushCall.command.includes(`@${gheHost}/`) &&
+          pushCall.command.includes("x-access-token"),
+        `Git push should use GHE host (${gheHost}) in URL override. Got: ${pushCall.command}`
       );
+      // Verify it's NOT using github.com (the default)
       assert.ok(
         !pushCall.command.includes("@github.com/"),
-        `Git push should NOT use github.com when GHE host is specified. Got: ${pushCall.command}`
+        `Git push should NOT use default github.com. Got: ${pushCall.command}`
       );
     });
 
