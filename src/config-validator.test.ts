@@ -2285,3 +2285,32 @@ describe("validateForSettings", () => {
     );
   });
 });
+
+describe("hasActionableSettings", () => {
+  test("returns false for undefined", () => {
+    assert.equal(hasActionableSettings(undefined), false);
+  });
+
+  test("returns false for empty object", () => {
+    assert.equal(hasActionableSettings({}), false);
+  });
+
+  test("returns false for empty rulesets", () => {
+    assert.equal(hasActionableSettings({ rulesets: {} }), false);
+  });
+
+  test("returns true when rulesets has entries", () => {
+    assert.equal(
+      hasActionableSettings({
+        rulesets: {
+          "main-protection": { target: "branch" },
+        },
+      }),
+      true
+    );
+  });
+
+  test("returns false for deleteOrphaned only", () => {
+    assert.equal(hasActionableSettings({ deleteOrphaned: true }), false);
+  });
+});
