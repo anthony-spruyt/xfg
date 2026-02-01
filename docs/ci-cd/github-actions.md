@@ -7,7 +7,7 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 ```yaml
 - uses: actions/checkout@v4
 
-- uses: anthony-spruyt/xfg@v1
+- uses: anthony-spruyt/xfg@v3
   with:
     config: ./sync-config.yml
     github-token: ${{ secrets.GH_PAT }} # PAT with repo scope for cross-repo access
@@ -37,7 +37,7 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 Sync configs across GitHub, Azure DevOps, and GitLab repositories:
 
 ```yaml
-- uses: anthony-spruyt/xfg@v1
+- uses: anthony-spruyt/xfg@v3
   with:
     config: ./sync-config.yml
     github-token: ${{ secrets.GH_PAT }}
@@ -53,7 +53,7 @@ Sync configs across GitHub, Azure DevOps, and GitLab repositories:
 Automatically merge PRs when CI passes:
 
 ```yaml
-- uses: anthony-spruyt/xfg@v1
+- uses: anthony-spruyt/xfg@v3
   with:
     config: ./sync-config.yml
     github-token: ${{ secrets.GH_PAT }}
@@ -65,7 +65,7 @@ Automatically merge PRs when CI passes:
 Push directly to the default branch without creating PRs:
 
 ```yaml
-- uses: anthony-spruyt/xfg@v1
+- uses: anthony-spruyt/xfg@v3
   with:
     config: ./sync-config.yml
     github-token: ${{ secrets.GH_PAT }}
@@ -77,7 +77,7 @@ Push directly to the default branch without creating PRs:
 Apply branch protection rulesets to repositories:
 
 ```yaml
-- uses: anthony-spruyt/xfg@v1
+- uses: anthony-spruyt/xfg@v3
   with:
     command: settings
     config: ./settings-config.yml
@@ -97,7 +97,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: anthony-spruyt/xfg@v2
+      - uses: anthony-spruyt/xfg@v3
         with:
           config: ./sync-config.yml
           github-app-id: ${{ vars.APP_ID }}
