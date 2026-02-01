@@ -133,30 +133,33 @@ runs:
         GITLAB_TOKEN: ${{ inputs.gitlab-token }}
       run: |
         # Build command with required arguments
-        CMD="xfg"
+        CMD="xfg ${{ inputs.command }}"
         CMD="$CMD --config ${{ inputs.config }}"
         CMD="$CMD --work-dir ${{ inputs.work-dir }}"
         CMD="$CMD --retries ${{ inputs.retries }}"
 
-        # Add optional flags
+        # Add optional flags (shared)
         if [ "${{ inputs.dry-run }}" = "true" ]; then
           CMD="$CMD --dry-run"
         fi
 
-        if [ -n "${{ inputs.branch }}" ]; then
-          CMD="$CMD --branch ${{ inputs.branch }}"
-        fi
+        # Add sync-only flags
+        if [ "${{ inputs.command }}" = "sync" ]; then
+          if [ -n "${{ inputs.branch }}" ]; then
+            CMD="$CMD --branch ${{ inputs.branch }}"
+          fi
 
-        if [ -n "${{ inputs.merge }}" ]; then
-          CMD="$CMD --merge ${{ inputs.merge }}"
-        fi
+          if [ -n "${{ inputs.merge }}" ]; then
+            CMD="$CMD --merge ${{ inputs.merge }}"
+          fi
 
-        if [ -n "${{ inputs.merge-strategy }}" ]; then
-          CMD="$CMD --merge-strategy ${{ inputs.merge-strategy }}"
-        fi
+          if [ -n "${{ inputs.merge-strategy }}" ]; then
+            CMD="$CMD --merge-strategy ${{ inputs.merge-strategy }}"
+          fi
 
-        if [ "${{ inputs.delete-branch }}" = "true" ]; then
-          CMD="$CMD --delete-branch"
+          if [ "${{ inputs.delete-branch }}" = "true" ]; then
+            CMD="$CMD --delete-branch"
+          fi
         fi
 
         # Execute
