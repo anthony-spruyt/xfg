@@ -1,5 +1,5 @@
-name: "xfg - Config File Sync"
-description: "Sync JSON, JSON5, YAML, or text configuration files across multiple Git repositories via pull requests or direct push"
+name: "xfg - Repo as Code"
+description: "Sync files and manage repositories as code"
 author: "Anthony Spruyt"
 
 branding:
@@ -7,6 +7,10 @@ branding:
   color: "blue"
 
 inputs:
+  command:
+    description: "Command to run (sync or protect)"
+    required: false
+    default: "sync"
   config:
     description: "Path to YAML config file"
     required: true
