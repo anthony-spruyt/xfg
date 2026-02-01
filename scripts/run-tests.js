@@ -19,7 +19,8 @@ if (testFiles.length === 0) {
 }
 
 // Run tests with spec reporter
-run({ files: testFiles })
+// Enable file-level parallelism for faster execution
+run({ files: testFiles, concurrency: true })
   .on("test:fail", () => {
     process.exitCode = 1;
   })
