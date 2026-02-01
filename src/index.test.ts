@@ -9,11 +9,97 @@ import {
   readFileSync,
 } from "node:fs";
 import { join } from "node:path";
+import { createProgram, SyncOptions, SettingsOptions } from "./index.js";
 
 const testDir = join(process.cwd(), "test-cli-tmp");
 const testConfigPath = join(testDir, "test-config.yaml");
 
-// Helper to run CLI and capture output
+/**
+ * Fast CLI test helper that parses arguments in-process.
+ * Much faster than spawning child processes (~1ms vs ~2500ms).
+ * Options are captured synchronously even though actions are async.
+ */
+function parseCLI(
+  args: string[],
+  options?: {
+    onSync?: (opts: SyncOptions) => void;
+    onSettings?: (opts: SettingsOptions) => void;
+  }
+): { stdout: string; stderr: string; success: boolean; exitCode?: number } {
+  const stdout: string[] = [];
+  const stderr: string[] = [];
+  let exitCode: number | undefined;
+
+  const program = createProgram({
+    // Wrap handlers to capture options synchronously then return a resolved promise
+    onSync: async (opts) => {
+      options?.onSync?.(opts);
+    },
+    onSettings: async (opts) => {
+      options?.onSettings?.(opts);
+    },
+    writeOut: (str) => stdout.push(str),
+    writeErr: (str) => stderr.push(str),
+    exit: ((code: number) => {
+      exitCode = code;
+      throw new Error(`EXIT:${code}`);
+    }) as (code: number) => never,
+  });
+
+  // Enable exitOverride to throw instead of process.exit for validation errors
+  program.exitOverride((err) => {
+    exitCode = err.exitCode;
+    throw err;
+  });
+
+  try {
+    // Mirror cli.ts backwards compatibility: prepend 'sync' if no subcommand
+    const subcommands = ["sync", "settings", "help"];
+    const versionFlags = ["-V", "--version"];
+    const firstArg = args[0];
+    const isSubcommand = firstArg && subcommands.includes(firstArg);
+    const isVersionFlag = firstArg && versionFlags.includes(firstArg);
+    const parseArgs =
+      isSubcommand || isVersionFlag
+        ? ["node", "xfg", ...args]
+        : ["node", "xfg", "sync", ...args];
+
+    program.parse(parseArgs);
+    return { stdout: stdout.join(""), stderr: stderr.join(""), success: true };
+  } catch (error) {
+    const err = error as Error & { exitCode?: number; code?: string };
+    // Handle Commander's exitOverride errors
+    if (
+      err.code === "commander.helpDisplayed" ||
+      err.code === "commander.version"
+    ) {
+      return {
+        stdout: stdout.join(""),
+        stderr: stderr.join(""),
+        success: true,
+        exitCode: 0,
+      };
+    }
+    // Handle validation errors (from option parsers, Commander errors, or EXIT)
+    if (
+      err.message?.startsWith("EXIT:") ||
+      err.exitCode !== undefined ||
+      err.code?.startsWith("commander.") ||
+      err.message?.includes("Invalid merge") ||
+      err.message?.includes("Invalid")
+    ) {
+      return {
+        stdout: stdout.join(""),
+        stderr: stderr.join("") + (err.message || ""),
+        success: false,
+        exitCode: exitCode ?? err.exitCode ?? 1,
+      };
+    }
+    throw error;
+  }
+}
+
+// Helper to run CLI via child process (for tests that need real execution)
 // Unsets GITHUB_STEP_SUMMARY by default so tests don't write to CI summary
 function runCLI(
   args: string[],
@@ -65,6 +151,7 @@ describe("CLI", () => {
   });
 
   describe("argument parsing", () => {
+    // Help tests need runCLI because Commander's help output bypasses configureOutput
     test("shows help with --help", () => {
       const result = runCLI(["--help"]);
       assert.ok(result.stdout.includes("xfg"));
@@ -91,7 +178,6 @@ describe("CLI", () => {
     });
 
     test("accepts --dry-run flag", () => {
-      // Create a minimal valid config
       writeFileSync(
         testConfigPath,
         `
@@ -105,19 +191,14 @@ repos:
 `
       );
 
-      // Should fail on clone (invalid repo) but should show dry run message
-      const result = runCLI([
-        "-c",
-        testConfigPath,
-        "--dry-run",
-        "-w",
-        `${testDir}/work`,
-      ]);
-      const output = result.stdout + result.stderr;
-      assert.ok(
-        output.includes("DRY RUN mode") || output.includes("Processing"),
-        "Should show dry run mode or start processing"
-      );
+      let capturedOpts: SyncOptions | undefined;
+      parseCLI(["-c", testConfigPath, "--dry-run", "-w", `${testDir}/work`], {
+        onSync: (opts) => {
+          capturedOpts = opts;
+        },
+      });
+      assert.equal(capturedOpts?.dryRun, true);
+      assert.equal(capturedOpts?.workDir, `${testDir}/work`);
     });
 
     test("accepts --retries option with number", () => {
@@ -134,21 +215,24 @@ repos:
 `
       );
 
-      // Should parse --retries without error
-      const result = runCLI([
-        "-c",
-        testConfigPath,
-        "--dry-run",
-        "--retries",
-        "5",
-        "-w",
-        `${testDir}/work`,
-      ]);
-      // If it gets past argument parsing, the flag worked
-      const output = result.stdout + result.stderr;
-      assert.ok(
-        output.includes("Loading config") || output.includes("Processing")
+      let capturedOpts: SyncOptions | undefined;
+      parseCLI(
+        [
+          "-c",
+          testConfigPath,
+          "--dry-run",
+          "--retries",
+          "5",
+          "-w",
+          `${testDir}/work`,
+        ],
+        {
+          onSync: (opts) => {
+            capturedOpts = opts;
+          },
+        }
       );
+      assert.equal(capturedOpts?.retries, 5);
     });
 
     test("--retries 0 disables retry", () => {
@@ -165,21 +249,24 @@ repos:
 `
       );
 
-      // Should parse --retries 0 without error
-      const result = runCLI([
-        "-c",
-        testConfigPath,
-        "--dry-run",
-        "--retries",
-        "0",
-        "-w",
-        `${testDir}/work`,
-      ]);
-      // If it gets past argument parsing, the flag worked
-      const output = result.stdout + result.stderr;
-      assert.ok(
-        output.includes("Loading config") || output.includes("Processing")
+      let capturedOpts: SyncOptions | undefined;
+      parseCLI(
+        [
+          "-c",
+          testConfigPath,
+          "--dry-run",
+          "--retries",
+          "0",
+          "-w",
+          `${testDir}/work`,
+        ],
+        {
+          onSync: (opts) => {
+            capturedOpts = opts;
+          },
+        }
       );
+      assert.equal(capturedOpts?.retries, 0);
     });
 
     test("accepts --branch option with valid branch name", () => {
@@ -196,20 +283,24 @@ repos:
 `
       );
 
-      const result = runCLI([
-        "-c",
-        testConfigPath,
-        "--dry-run",
-        "--branch",
-        "feature/custom-branch",
-        "-w",
-        `${testDir}/work`,
-      ]);
-      const output = result.stdout + result.stderr;
-      assert.ok(
-        output.includes("feature/custom-branch"),
-        "Should display custom branch name"
+      let capturedOpts: SyncOptions | undefined;
+      parseCLI(
+        [
+          "-c",
+          testConfigPath,
+          "--dry-run",
+          "--branch",
+          "feature/custom-branch",
+          "-w",
+          `${testDir}/work`,
+        ],
+        {
+          onSync: (opts) => {
+            capturedOpts = opts;
+          },
+        }
       );
+      assert.equal(capturedOpts?.branch, "feature/custom-branch");
     });
 
     test("accepts -b shorthand for --branch", () => {
@@ -226,22 +317,27 @@ repos:
 `
       );
 
-      const result = runCLI([
-        "-c",
-        testConfigPath,
-        "--dry-run",
-        "-b",
-        "chore/my-sync",
-        "-w",
-        `${testDir}/work`,
-      ]);
-      const output = result.stdout + result.stderr;
-      assert.ok(
-        output.includes("chore/my-sync"),
-        "Should display custom branch name with -b shorthand"
+      let capturedOpts: SyncOptions | undefined;
+      parseCLI(
+        [
+          "-c",
+          testConfigPath,
+          "--dry-run",
+          "-b",
+          "chore/my-sync",
+          "-w",
+          `${testDir}/work`,
+        ],
+        {
+          onSync: (opts) => {
+            capturedOpts = opts;
+          },
+        }
       );
+      assert.equal(capturedOpts?.branch, "chore/my-sync");
     });
 
+    // Branch validation tests need runCLI because validation happens inside runSync
     test("rejects invalid branch name starting with dot", () => {
       writeFileSync(
         testConfigPath,
@@ -318,7 +414,7 @@ repos:
 `
       );
 
-      const result = runCLI([
+      const result = parseCLI([
         "-c",
         testConfigPath,
         "--dry-run",
@@ -1504,7 +1600,7 @@ repos:
 // Sync Command Unit Tests (with mocked processor)
 // =============================================================================
 
-import { runSync, IRepositoryProcessor, ProcessorFactory } from "./index.js";
+import { runSync } from "./index.js";
 
 class MockRepositoryProcessor implements IRepositoryProcessor {
   calls: { repoConfig: RepoConfig; repoInfo: unknown; options: unknown }[] = [];

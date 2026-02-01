@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { program, Command } from "commander";
+import { Command } from "commander";
 import { resolve, join, dirname } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -96,14 +96,14 @@ interface SharedOptions {
   noDelete?: boolean;
 }
 
-interface SyncOptions extends SharedOptions {
+export interface SyncOptions extends SharedOptions {
   branch?: string;
   merge?: MergeMode;
   mergeStrategy?: MergeStrategy;
   deleteBranch?: boolean;
 }
 
-type SettingsOptions = SharedOptions;
+export type SettingsOptions = SharedOptions;
 
 /**
  * Adds shared options to a command.
@@ -452,72 +452,114 @@ export async function runSettings(
 }
 
 // =============================================================================
-// CLI Program
+// CLI Program Factory
 // =============================================================================
 
-program
-  .name("xfg")
-  .description(
-    "Sync configuration files and manage GitHub Rulesets across repositories"
-  )
-  .version(packageJson.version);
+/**
+ * Options for creating a CLI program instance.
+ * Used for dependency injection in tests.
+ */
+export interface ProgramOptions {
+  /** Handler for sync command. Defaults to runSync. */
+  onSync?: (opts: SyncOptions) => Promise<void>;
+  /** Handler for settings command. Defaults to runSettings. */
+  onSettings?: (opts: SettingsOptions) => Promise<void>;
+  /** Output writer for stdout. Defaults to process.stdout.write. */
+  writeOut?: (str: string) => void;
+  /** Output writer for stderr. Defaults to process.stderr.write. */
+  writeErr?: (str: string) => void;
+  /** Exit handler. Defaults to process.exit. */
+  exit?: (code: number) => never;
+}
 
-// Sync command (file synchronization)
-const syncCommand = new Command("sync")
-  .description("Sync configuration files across repositories (default command)")
-  .option(
-    "-b, --branch <name>",
-    "Override the branch name (default: chore/sync-{filename} or chore/sync-config)"
-  )
-  .option(
-    "-m, --merge <mode>",
-    "PR merge mode: manual, auto (default, merge when checks pass), force (bypass requirements), direct (push to default branch, no PR)",
-    (value: string): MergeMode => {
-      const valid: MergeMode[] = ["manual", "auto", "force", "direct"];
-      if (!valid.includes(value as MergeMode)) {
-        throw new Error(
-          `Invalid merge mode: ${value}. Valid: ${valid.join(", ")}`
-        );
-      }
-      return value as MergeMode;
-    }
-  )
-  .option(
-    "--merge-strategy <strategy>",
-    "Merge strategy: merge, squash (default), rebase",
-    (value: string): MergeStrategy => {
-      const valid: MergeStrategy[] = ["merge", "squash", "rebase"];
-      if (!valid.includes(value as MergeStrategy)) {
-        throw new Error(
-          `Invalid merge strategy: ${value}. Valid: ${valid.join(", ")}`
-        );
-      }
-      return value as MergeStrategy;
-    }
-  )
-  .option("--delete-branch", "Delete source branch after merge")
-  .action((opts) => {
-    runSync(opts as SyncOptions).catch((error) => {
-      console.error("Fatal error:", error);
-      process.exit(1);
+/**
+ * Creates a configured CLI program instance.
+ * Supports dependency injection for testing.
+ */
+export function createProgram(options: ProgramOptions = {}): Command {
+  const {
+    onSync = runSync,
+    onSettings = runSettings,
+    writeOut = (str: string) => process.stdout.write(str),
+    writeErr = (str: string) => process.stderr.write(str),
+    exit = (code: number) => process.exit(code),
+  } = options;
+
+  const prog = new Command()
+    .name("xfg")
+    .description(
+      "Sync configuration files and manage GitHub Rulesets across repositories"
+    )
+    .version(packageJson.version)
+    .configureOutput({
+      writeOut,
+      writeErr,
     });
-  });
 
-addSharedOptions(syncCommand);
-program.addCommand(syncCommand);
-
-// Settings command (ruleset management)
-const settingsCommand = new Command("settings")
-  .description("Manage GitHub Rulesets for repositories")
-  .action((opts) => {
-    runSettings(opts as SettingsOptions).catch((error) => {
-      console.error("Fatal error:", error);
-      process.exit(1);
+  // Sync command (file synchronization)
+  const syncCommand = new Command("sync")
+    .description(
+      "Sync configuration files across repositories (default command)"
+    )
+    .option(
+      "-b, --branch <name>",
+      "Override the branch name (default: chore/sync-{filename} or chore/sync-config)"
+    )
+    .option(
+      "-m, --merge <mode>",
+      "PR merge mode: manual, auto (default, merge when checks pass), force (bypass requirements), direct (push to default branch, no PR)",
+      (value: string): MergeMode => {
+        const valid: MergeMode[] = ["manual", "auto", "force", "direct"];
+        if (!valid.includes(value as MergeMode)) {
+          throw new Error(
+            `Invalid merge mode: ${value}. Valid: ${valid.join(", ")}`
+          );
+        }
+        return value as MergeMode;
+      }
+    )
+    .option(
+      "--merge-strategy <strategy>",
+      "Merge strategy: merge, squash (default), rebase",
+      (value: string): MergeStrategy => {
+        const valid: MergeStrategy[] = ["merge", "squash", "rebase"];
+        if (!valid.includes(value as MergeStrategy)) {
+          throw new Error(
+            `Invalid merge strategy: ${value}. Valid: ${valid.join(", ")}`
+          );
+        }
+        return value as MergeStrategy;
+      }
+    )
+    .option("--delete-branch", "Delete source branch after merge")
+    .action((opts) => {
+      onSync(opts as SyncOptions).catch((error) => {
+        writeErr(`Fatal error: ${error}\n`);
+        exit(1);
+      });
     });
-  });
 
-addSharedOptions(settingsCommand);
-program.addCommand(settingsCommand);
+  addSharedOptions(syncCommand);
+  prog.addCommand(syncCommand);
+
+  // Settings command (ruleset management)
+  const settingsCommand = new Command("settings")
+    .description("Manage GitHub Rulesets for repositories")
+    .action((opts) => {
+      onSettings(opts as SettingsOptions).catch((error) => {
+        writeErr(`Fatal error: ${error}\n`);
+        exit(1);
+      });
+    });
+
+  addSharedOptions(settingsCommand);
+  prog.addCommand(settingsCommand);
+
+  return prog;
+}
+
+// Default program instance for CLI entry point
+const program = createProgram();
 
 // Export program for CLI entry point
 export { program };
