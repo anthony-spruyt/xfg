@@ -3456,4 +3456,106 @@ describe("RepositoryProcessor", () => {
       }
     });
   });
+
+  describe("updateManifestOnly", () => {
+    // Mock logger that captures log messages
+    const createMockLogger = (): ILogger & { messages: string[] } => ({
+      messages: [] as string[],
+      info(message: string) {
+        this.messages.push(message);
+      },
+      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
+        // No-op for mock
+      },
+      diffSummary(
+        _newCount: number,
+        _modifiedCount: number,
+        _unchangedCount: number
+      ) {
+        // No-op for mock
+      },
+    });
+
+    // Mock GitOps for updateManifestOnly tests
+    class MockGitOps extends GitOps {
+      constructor(options: GitOpsOptions) {
+        super(options);
+      }
+
+      override cleanWorkspace(): void {
+        mkdirSync((this as unknown as { workDir: string }).workDir, {
+          recursive: true,
+        });
+      }
+
+      override async clone(_gitUrl: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async getDefaultBranch(): Promise<{
+        branch: string;
+        method: string;
+      }> {
+        return { branch: "main", method: "mock" };
+      }
+
+      override async createBranch(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
+      override async fetch(_options?: { prune?: boolean }): Promise<void> {
+        // No-op for mock
+      }
+
+      override async hasStagedChanges(): Promise<boolean> {
+        return true;
+      }
+
+      override getFileContent(_fileName: string): string | null {
+        return null;
+      }
+
+      override wouldChange(_fileName: string, _content: string): boolean {
+        return true;
+      }
+    }
+
+    test("updates manifest with rulesets and commits", async () => {
+      const mockLogger = createMockLogger();
+      const mockFactory: GitOpsFactory = (opts) => new MockGitOps(opts);
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+
+      const repoInfo: GitHubRepoInfo = {
+        type: "github",
+        owner: "test-owner",
+        repo: "test-repo",
+        host: "github.com",
+        gitUrl: "git@github.com:test-owner/test-repo.git",
+      };
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-owner/test-repo.git",
+        files: [],
+        prOptions: { merge: "direct" },
+      };
+
+      const options = {
+        branchName: "chore/sync-config",
+        workDir: join(testDir, `manifest-update-${Date.now()}`),
+        configId: "test-config",
+        dryRun: false,
+      };
+
+      const manifestUpdate = { rulesets: ["pr-rules", "release-rules"] };
+
+      const result = await processor.updateManifestOnly(
+        repoInfo,
+        repoConfig,
+        options,
+        manifestUpdate
+      );
+
+      assert.equal(result.success, true);
+    });
+  });
 });
