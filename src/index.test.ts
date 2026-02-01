@@ -488,6 +488,67 @@ repos:
         `Expected files requirement error, got: ${output}`
       );
     });
+
+    test("settings command fails with files-only config", () => {
+      writeFileSync(
+        testConfigPath,
+        `
+id: files-only
+files:
+  config.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test/repo.git
+`
+      );
+
+      const result = runCLI(["settings", "-c", testConfigPath, "--dry-run"]);
+      assert.equal(result.success, false);
+      const output = result.stdout + result.stderr;
+      assert.ok(
+        output.includes("'settings' command requires") ||
+          output.includes("No actionable settings"),
+        `Expected settings requirement error, got: ${output}`
+      );
+    });
+
+    test("settings command succeeds with settings-only config", () => {
+      writeFileSync(
+        testConfigPath,
+        `
+id: settings-only
+settings:
+  rulesets:
+    main-protection:
+      target: branch
+      enforcement: active
+      conditions:
+        refName:
+          include: ["refs/heads/main"]
+          exclude: []
+repos:
+  - git: git@github.com:test/invalid-repo.git
+`
+      );
+
+      // Will fail on API call but should get past validation
+      const result = runCLI([
+        "settings",
+        "-c",
+        testConfigPath,
+        "--dry-run",
+        "-w",
+        `${testDir}/work`,
+      ]);
+      const output = result.stdout + result.stderr;
+      // Should show it's processing, not validation error
+      assert.ok(
+        output.includes("Loading config") ||
+          output.includes("repositories with rulesets"),
+        `Expected processing output, got: ${output}`
+      );
+    });
   });
 
   describe("config validation", () => {

@@ -11,7 +11,7 @@ import {
   MergeMode,
   MergeStrategy,
 } from "./config.js";
-import { validateForSync } from "./config-validator.js";
+import { validateForSync, validateForSettings } from "./config-validator.js";
 
 // Get version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -319,7 +319,17 @@ export async function runSettings(
     console.log("Running in DRY RUN mode - no changes will be made\n");
   }
 
-  const config = loadConfig(configPath);
+  const rawConfig = loadRawConfig(configPath);
+
+  // Validate config is suitable for settings command
+  try {
+    validateForSettings(rawConfig);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+
+  const config = normalizeConfig(rawConfig);
 
   // Check if any repos have rulesets configured or have managed rulesets to clean up
   const reposWithRulesets = config.repos.filter(
