@@ -3558,5 +3558,135 @@ describe("RepositoryProcessor", () => {
 
       assert.equal(result.success, true);
     });
+
+    test("dry-run mode does not commit changes", async () => {
+      const mockLogger = createMockLogger();
+      const mockFactory: GitOpsFactory = (opts) => new MockGitOps(opts);
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+
+      const repoInfo: GitHubRepoInfo = {
+        type: "github",
+        owner: "test-owner",
+        repo: "test-repo",
+        host: "github.com",
+        gitUrl: "git@github.com:test-owner/test-repo.git",
+      };
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-owner/test-repo.git",
+        files: [],
+        prOptions: { merge: "direct" },
+      };
+
+      const options = {
+        branchName: "chore/sync-config",
+        workDir: join(testDir, `manifest-dryrun-${Date.now()}`),
+        configId: "test-config",
+        dryRun: true,
+        executor: createMockExecutor(),
+      };
+
+      const manifestUpdate = { rulesets: ["pr-rules", "release-rules"] };
+
+      const result = await processor.updateManifestOnly(
+        repoInfo,
+        repoConfig,
+        options,
+        manifestUpdate
+      );
+
+      assert.equal(result.success, true);
+      assert.equal(result.message, "Would update manifest (dry-run)");
+    });
+
+    test("skips when no manifest changes detected", async () => {
+      const mockLogger = createMockLogger();
+
+      // Create mock that simulates existing manifest with same rulesets
+      class MockGitOpsWithManifest extends MockGitOps {
+        override getFileContent(fileName: string): string | null {
+          if (fileName === ".xfg.json") {
+            return JSON.stringify({
+              version: 3,
+              configs: {
+                "test-config": {
+                  rulesets: ["pr-rules", "release-rules"],
+                },
+              },
+            });
+          }
+          return null;
+        }
+
+        override wouldChange(fileName: string, content: string): boolean {
+          if (fileName === ".xfg.json") {
+            // Check if content matches existing
+            const existing = this.getFileContent(fileName);
+            return existing !== content;
+          }
+          return true;
+        }
+      }
+
+      const workDir = join(testDir, `manifest-no-change-${Date.now()}`);
+
+      // Create the manifest file in the workspace
+      mkdirSync(workDir, { recursive: true });
+      writeFileSync(
+        join(workDir, ".xfg.json"),
+        JSON.stringify(
+          {
+            version: 3,
+            configs: {
+              "test-config": {
+                rulesets: ["pr-rules", "release-rules"],
+              },
+            },
+          },
+          null,
+          2
+        ) + "\n"
+      );
+
+      const mockFactory: GitOpsFactory = (opts) =>
+        new MockGitOpsWithManifest(opts);
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+
+      const repoInfo: GitHubRepoInfo = {
+        type: "github",
+        owner: "test-owner",
+        repo: "test-repo",
+        host: "github.com",
+        gitUrl: "git@github.com:test-owner/test-repo.git",
+      };
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-owner/test-repo.git",
+        files: [],
+        prOptions: { merge: "direct" },
+      };
+
+      const options = {
+        branchName: "chore/sync-config",
+        workDir,
+        configId: "test-config",
+        dryRun: false,
+        executor: createMockExecutor(),
+      };
+
+      // Same rulesets as existing manifest
+      const manifestUpdate = { rulesets: ["pr-rules", "release-rules"] };
+
+      const result = await processor.updateManifestOnly(
+        repoInfo,
+        repoConfig,
+        options,
+        manifestUpdate
+      );
+
+      assert.equal(result.success, true);
+      assert.equal(result.skipped, true);
+      assert.equal(result.message, "No manifest changes detected");
+    });
   });
 });
