@@ -302,20 +302,22 @@ export class GitHubRulesetStrategy {
     // Add endpoint
     args.push(escapeShellArg(endpoint));
 
-    // Build command
-    let command = args.join(" ");
-
-    // Add payload via heredoc for POST/PUT
-    if (payload && (method === "POST" || method === "PUT")) {
-      const payloadJson = JSON.stringify(payload);
-      command += ` --input - <<'EOF'\n${payloadJson}\nEOF`;
-    }
+    // Build base command
+    const baseCommand = args.join(" ");
 
     // Add GH_TOKEN environment variable prefix if token provided
-    if (options?.token) {
-      command = `GH_TOKEN=${escapeShellArg(options.token)} ${command}`;
+    const tokenPrefix = options?.token ? `GH_TOKEN=${options.token} ` : "";
+
+    // For POST/PUT with payload, use echo pipe pattern (same as graphql-commit-strategy)
+    // This is safer than heredoc as escapeShellArg properly escapes the content
+    if (payload && (method === "POST" || method === "PUT")) {
+      const payloadJson = JSON.stringify(payload);
+      const command = `echo ${escapeShellArg(payloadJson)} | ${tokenPrefix}${baseCommand} --input -`;
+      return await this.executor.exec(command, process.cwd());
     }
 
+    // For GET/DELETE, run command directly
+    const command = `${tokenPrefix}${baseCommand}`;
     return await this.executor.exec(command, process.cwd());
   }
 }

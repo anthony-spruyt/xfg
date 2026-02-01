@@ -204,7 +204,7 @@ describe("GitHubRulesetStrategy", () => {
 
       const command = mockExecutor.commands[0];
       assert.ok(command.includes("--input -"), "Should use stdin for payload");
-      assert.ok(command.includes("EOF"), "Should use heredoc");
+      assert.ok(command.includes("echo"), "Should use echo pipe pattern");
     });
 
     test("throws error for non-GitHub repos", async () => {
