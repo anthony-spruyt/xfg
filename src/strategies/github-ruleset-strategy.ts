@@ -95,7 +95,6 @@ function convertRule(rule: RulesetRule): GitHubRule {
 
   if ("parameters" in rule && rule.parameters) {
     result.parameters = convertParameters(
-      rule.type,
       rule.parameters as Record<string, unknown>
     );
   }
@@ -107,14 +106,13 @@ function convertRule(rule: RulesetRule): GitHubRule {
  * Converts rule parameters from camelCase to snake_case.
  */
 function convertParameters(
-  ruleType: string,
   params: Record<string, unknown>
 ): Record<string, unknown> {
   const converted: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(params)) {
     const snakeKey = camelToSnake(key);
-    converted[snakeKey] = convertValue(ruleType, key, value);
+    converted[snakeKey] = convertValue(value);
   }
 
   return converted;
@@ -123,7 +121,7 @@ function convertParameters(
 /**
  * Converts nested values within parameters.
  */
-function convertValue(ruleType: string, key: string, value: unknown): unknown {
+function convertValue(value: unknown): unknown {
   if (Array.isArray(value)) {
     // Handle arrays of objects (e.g., requiredStatusChecks, codeScanningTools)
     return value.map((item) => {
@@ -306,7 +304,10 @@ export class GitHubRulesetStrategy {
     const baseCommand = args.join(" ");
 
     // Add GH_TOKEN environment variable prefix if token provided
-    const tokenPrefix = options?.token ? `GH_TOKEN=${options.token} ` : "";
+    // Token is escaped to prevent command injection
+    const tokenPrefix = options?.token
+      ? `GH_TOKEN=${escapeShellArg(options.token)} `
+      : "";
 
     // For POST/PUT with payload, use echo pipe pattern (same as graphql-commit-strategy)
     // This is safer than heredoc as escapeShellArg properly escapes the content
