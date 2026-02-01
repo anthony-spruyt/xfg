@@ -21,9 +21,12 @@ function runCLI(
   options?: { timeout?: number; env?: Record<string, string | undefined> }
 ): { stdout: string; stderr: string; success: boolean } {
   // Create env with test-related vars unset by default
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { GITHUB_STEP_SUMMARY, NODE_TEST_CONTEXT, ...envWithoutTestVars } =
-    process.env;
+  // Destructure to exclude these vars (prefixed with _ to indicate intentionally unused)
+  const {
+    GITHUB_STEP_SUMMARY: _stepSummary,
+    NODE_TEST_CONTEXT: _testContext,
+    ...envWithoutTestVars
+  } = process.env;
   const testEnv = { ...envWithoutTestVars, ...options?.env };
 
   try {
