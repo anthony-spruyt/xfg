@@ -246,7 +246,7 @@ Same pattern as existing `graphql-commit-strategy.ts`.
 
 Show diff of ruleset changes:
 
-```
+```text
 org/my-repo:
   pr-rules:
     rules[0] (pull_request):
@@ -281,7 +281,7 @@ Continue on failure (consistent with file sync):
 
 ### Flow for `xfg protect`
 
-```
+```text
 1. Load config
 2. For each repo:
    a. Resolve settings (deep merge root + repo-level rulesets)

@@ -14,15 +14,21 @@ const testDir = join(process.cwd(), "test-cli-tmp");
 const testConfigPath = join(testDir, "test-config.yaml");
 
 // Helper to run CLI and capture output
-// By default, unsets GITHUB_STEP_SUMMARY to prevent tests from writing to CI job summary
+// By default, unsets GITHUB_STEP_SUMMARY and NODE_TEST_CONTEXT to ensure child process
+// runs as normal CLI invocation, not in test mode
 function runCLI(
   args: string[],
   options?: { timeout?: number; env?: Record<string, string | undefined> }
 ): { stdout: string; stderr: string; success: boolean } {
-  // Create env with GITHUB_STEP_SUMMARY unset by default
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { GITHUB_STEP_SUMMARY: _, ...envWithoutSummary } = process.env;
-  const testEnv = { ...envWithoutSummary, ...options?.env };
+  // Create env with test-related vars unset by default
+  const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    GITHUB_STEP_SUMMARY: _summary,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    NODE_TEST_CONTEXT: _testContext,
+    ...envWithoutTestVars
+  } = process.env;
+  const testEnv = { ...envWithoutTestVars, ...options?.env };
 
   try {
     const stdout = execFileSync(
@@ -1051,5 +1057,545 @@ describe("buildErrorResult", () => {
 
     assert.equal(result.status, "failed");
     assert.equal(result.message, "[object Object]");
+  });
+});
+
+// =============================================================================
+// Protect Command Tests (CLI argument parsing only)
+// =============================================================================
+
+const protectTestDir = join(process.cwd(), "test-protect-cli-tmp");
+const protectTestConfigPath = join(protectTestDir, "protect-config.yaml");
+
+describe("protect command CLI", () => {
+  beforeEach(() => {
+    if (existsSync(protectTestDir)) {
+      rmSync(protectTestDir, { recursive: true, force: true });
+    }
+    mkdirSync(protectTestDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(protectTestDir)) {
+      rmSync(protectTestDir, { recursive: true, force: true });
+    }
+  });
+
+  describe("argument parsing", () => {
+    test("shows help with protect --help", () => {
+      const result = runCLI(["protect", "--help"]);
+      assert.ok(result.stdout.includes("protect"));
+      assert.ok(result.stdout.includes("-c, --config"));
+      assert.ok(result.stdout.includes("-d, --dry-run"));
+      assert.ok(result.stdout.includes("--no-delete"));
+    });
+
+    test("requires --config option", () => {
+      const result = runCLI(["protect"]);
+      assert.equal(result.success, false);
+      assert.ok(
+        result.stderr.includes("required") || result.stderr.includes("--config")
+      );
+    });
+
+    test("fails with non-existent config file", () => {
+      const result = runCLI(["protect", "-c", "/nonexistent/config.yaml"]);
+      assert.equal(result.success, false);
+      const output = result.stdout + result.stderr;
+      assert.ok(output.includes("Config file not found"));
+    });
+  });
+
+  describe("no rulesets configured (early exit)", () => {
+    test("shows message when no repos have rulesets", () => {
+      writeFileSync(
+        protectTestConfigPath,
+        `
+id: test-protect
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test/repo.git
+`
+      );
+
+      const result = runCLI(["protect", "-c", protectTestConfigPath]);
+      const output = result.stdout + result.stderr;
+      assert.ok(
+        output.includes("No rulesets configured"),
+        "Should show no rulesets message"
+      );
+      assert.ok(result.success, "Should succeed even with no rulesets");
+    });
+
+    test("shows message when rulesets object is empty", () => {
+      writeFileSync(
+        protectTestConfigPath,
+        `
+id: test-protect
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test/repo.git
+    settings:
+      rulesets: {}
+`
+      );
+
+      const result = runCLI(["protect", "-c", protectTestConfigPath]);
+      const output = result.stdout + result.stderr;
+      assert.ok(
+        output.includes("No rulesets configured"),
+        "Should show no rulesets message for empty rulesets"
+      );
+    });
+  });
+});
+
+// =============================================================================
+// Protect Command Unit Tests (with mocked processor)
+// =============================================================================
+
+import {
+  runProtect,
+  IRulesetProcessor,
+  RulesetProcessorFactory,
+} from "./index.js";
+import type { RulesetProcessorResult } from "./ruleset-processor.js";
+
+class MockRulesetProcessor implements IRulesetProcessor {
+  calls: { repoConfig: RepoConfig; repoInfo: unknown; options: unknown }[] = [];
+  results: Map<string, RulesetProcessorResult> = new Map();
+
+  async process(
+    repoConfig: RepoConfig,
+    repoInfo: unknown,
+    options: unknown
+  ): Promise<RulesetProcessorResult> {
+    this.calls.push({ repoConfig, repoInfo, options });
+
+    const result = this.results.get(repoConfig.git);
+    if (result) {
+      return result;
+    }
+
+    // Default success response
+    return {
+      success: true,
+      repoName: repoConfig.git,
+      message: "Mock success",
+      changes: { create: 1, update: 0, delete: 0, unchanged: 0 },
+    };
+  }
+
+  setResult(gitUrl: string, result: RulesetProcessorResult): void {
+    this.results.set(gitUrl, result);
+  }
+
+  reset(): void {
+    this.calls = [];
+    this.results.clear();
+  }
+}
+
+const unitTestDir = join(process.cwd(), "test-protect-unit-tmp");
+const unitTestConfigPath = join(unitTestDir, "protect-config.yaml");
+
+describe("runProtect with mock processor", () => {
+  let mockProcessor: MockRulesetProcessor;
+  let mockFactory: RulesetProcessorFactory;
+
+  beforeEach(() => {
+    mockProcessor = new MockRulesetProcessor();
+    mockFactory = () => mockProcessor;
+
+    if (existsSync(unitTestDir)) {
+      rmSync(unitTestDir, { recursive: true, force: true });
+    }
+    mkdirSync(unitTestDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(unitTestDir)) {
+      rmSync(unitTestDir, { recursive: true, force: true });
+    }
+  });
+
+  test("processes GitHub repos with rulesets", async () => {
+    writeFileSync(
+      unitTestConfigPath,
+      `
+id: test-protect
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test-org/test-repo.git
+    settings:
+      rulesets:
+        main-protection:
+          target: branch
+          enforcement: active
+          rules: []
+`
+    );
+
+    await runProtect({ config: unitTestConfigPath }, mockFactory);
+
+    assert.equal(mockProcessor.calls.length, 1);
+    assert.equal(
+      mockProcessor.calls[0].repoConfig.git,
+      "git@github.com:test-org/test-repo.git"
+    );
+  });
+
+  test("skips non-GitHub repos without calling processor", async () => {
+    writeFileSync(
+      unitTestConfigPath,
+      `
+id: test-protect
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@ssh.dev.azure.com:v3/org/project/repo
+    settings:
+      rulesets:
+        main-protection:
+          target: branch
+          enforcement: active
+          rules: []
+`
+    );
+
+    await runProtect({ config: unitTestConfigPath }, mockFactory);
+
+    // Processor should not be called for non-GitHub repos
+    assert.equal(mockProcessor.calls.length, 0);
+  });
+
+  test("passes dry run option to processor", async () => {
+    writeFileSync(
+      unitTestConfigPath,
+      `
+id: test-protect
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test-org/test-repo.git
+    settings:
+      rulesets:
+        main-protection:
+          target: branch
+          enforcement: active
+          rules: []
+`
+    );
+
+    await runProtect({ config: unitTestConfigPath, dryRun: true }, mockFactory);
+
+    assert.equal(mockProcessor.calls.length, 1);
+    const options = mockProcessor.calls[0].options as { dryRun?: boolean };
+    assert.equal(options.dryRun, true);
+  });
+
+  test("passes noDelete option to processor", async () => {
+    writeFileSync(
+      unitTestConfigPath,
+      `
+id: test-protect
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test-org/test-repo.git
+    settings:
+      rulesets:
+        main-protection:
+          target: branch
+          enforcement: active
+          rules: []
+`
+    );
+
+    await runProtect(
+      { config: unitTestConfigPath, noDelete: true },
+      mockFactory
+    );
+
+    assert.equal(mockProcessor.calls.length, 1);
+    const options = mockProcessor.calls[0].options as { noDelete?: boolean };
+    assert.equal(options.noDelete, true);
+  });
+
+  // Note: Failure cases (processor.success=false, processor throws) are not tested here
+  // because they trigger process.exit(1) which terminates the test runner.
+  // Failure handling is covered in ruleset-processor.test.ts with proper mocking.
+
+  test("processes multiple repos", async () => {
+    writeFileSync(
+      unitTestConfigPath,
+      `
+id: test-protect
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test-org/repo1.git
+    settings:
+      rulesets:
+        main-protection:
+          target: branch
+          enforcement: active
+          rules: []
+  - git: git@github.com:test-org/repo2.git
+    settings:
+      rulesets:
+        dev-protection:
+          target: branch
+          enforcement: evaluate
+          rules: []
+`
+    );
+
+    await runProtect({ config: unitTestConfigPath }, mockFactory);
+
+    assert.equal(mockProcessor.calls.length, 2);
+    assert.equal(
+      mockProcessor.calls[0].repoConfig.git,
+      "git@github.com:test-org/repo1.git"
+    );
+    assert.equal(
+      mockProcessor.calls[1].repoConfig.git,
+      "git@github.com:test-org/repo2.git"
+    );
+  });
+
+  test("skips repos without rulesets in mixed config", async () => {
+    writeFileSync(
+      unitTestConfigPath,
+      `
+id: test-protect
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test-org/repo-with-rulesets.git
+    settings:
+      rulesets:
+        main-protection:
+          target: branch
+          enforcement: active
+          rules: []
+  - git: git@github.com:test-org/repo-without-rulesets.git
+`
+    );
+
+    await runProtect({ config: unitTestConfigPath }, mockFactory);
+
+    // Only the repo with rulesets should be processed
+    assert.equal(mockProcessor.calls.length, 1);
+    assert.equal(
+      mockProcessor.calls[0].repoConfig.git,
+      "git@github.com:test-org/repo-with-rulesets.git"
+    );
+  });
+});
+
+// =============================================================================
+// Sync Command Unit Tests (with mocked processor)
+// =============================================================================
+
+import { runSync, IRepositoryProcessor, ProcessorFactory } from "./index.js";
+
+class MockRepositoryProcessor implements IRepositoryProcessor {
+  calls: { repoConfig: RepoConfig; repoInfo: unknown; options: unknown }[] = [];
+  results: Map<string, ProcessorResult> = new Map();
+
+  async process(
+    repoConfig: RepoConfig,
+    repoInfo: unknown,
+    options: unknown
+  ): Promise<ProcessorResult> {
+    this.calls.push({ repoConfig, repoInfo, options });
+
+    const result = this.results.get(repoConfig.git);
+    if (result) {
+      return result;
+    }
+
+    // Default success response
+    return {
+      success: true,
+      repoName: repoConfig.git,
+      message: "Mock success",
+    };
+  }
+
+  setResult(gitUrl: string, result: ProcessorResult): void {
+    this.results.set(gitUrl, result);
+  }
+
+  reset(): void {
+    this.calls = [];
+    this.results.clear();
+  }
+}
+
+const syncUnitTestDir = join(process.cwd(), "test-sync-unit-tmp");
+const syncUnitTestConfigPath = join(syncUnitTestDir, "sync-config.yaml");
+
+describe("runSync with mock processor", () => {
+  let mockProcessor: MockRepositoryProcessor;
+  let mockFactory: ProcessorFactory;
+
+  beforeEach(() => {
+    mockProcessor = new MockRepositoryProcessor();
+    mockFactory = () => mockProcessor;
+
+    if (existsSync(syncUnitTestDir)) {
+      rmSync(syncUnitTestDir, { recursive: true, force: true });
+    }
+    mkdirSync(syncUnitTestDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(syncUnitTestDir)) {
+      rmSync(syncUnitTestDir, { recursive: true, force: true });
+    }
+  });
+
+  test("processes repos with files", async () => {
+    writeFileSync(
+      syncUnitTestConfigPath,
+      `
+id: test-sync
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test-org/test-repo.git
+`
+    );
+
+    await runSync({ config: syncUnitTestConfigPath }, mockFactory);
+
+    assert.equal(mockProcessor.calls.length, 1);
+    assert.equal(
+      mockProcessor.calls[0].repoConfig.git,
+      "git@github.com:test-org/test-repo.git"
+    );
+  });
+
+  test("passes dry run option to processor", async () => {
+    writeFileSync(
+      syncUnitTestConfigPath,
+      `
+id: test-sync
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test-org/test-repo.git
+`
+    );
+
+    await runSync(
+      { config: syncUnitTestConfigPath, dryRun: true },
+      mockFactory
+    );
+
+    assert.equal(mockProcessor.calls.length, 1);
+    const options = mockProcessor.calls[0].options as { dryRun?: boolean };
+    assert.equal(options.dryRun, true);
+  });
+
+  test("passes branch name to processor", async () => {
+    writeFileSync(
+      syncUnitTestConfigPath,
+      `
+id: test-sync
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test-org/test-repo.git
+`
+    );
+
+    await runSync(
+      { config: syncUnitTestConfigPath, branch: "feature/custom-branch" },
+      mockFactory
+    );
+
+    assert.equal(mockProcessor.calls.length, 1);
+    const options = mockProcessor.calls[0].options as { branchName?: string };
+    assert.equal(options.branchName, "feature/custom-branch");
+  });
+
+  test("processes multiple repos", async () => {
+    writeFileSync(
+      syncUnitTestConfigPath,
+      `
+id: test-sync
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test-org/repo1.git
+  - git: git@github.com:test-org/repo2.git
+`
+    );
+
+    await runSync({ config: syncUnitTestConfigPath }, mockFactory);
+
+    assert.equal(mockProcessor.calls.length, 2);
+    assert.equal(
+      mockProcessor.calls[0].repoConfig.git,
+      "git@github.com:test-org/repo1.git"
+    );
+    assert.equal(
+      mockProcessor.calls[1].repoConfig.git,
+      "git@github.com:test-org/repo2.git"
+    );
+  });
+
+  test("passes noDelete option to processor", async () => {
+    writeFileSync(
+      syncUnitTestConfigPath,
+      `
+id: test-sync
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test-org/test-repo.git
+`
+    );
+
+    await runSync(
+      { config: syncUnitTestConfigPath, noDelete: true },
+      mockFactory
+    );
+
+    assert.equal(mockProcessor.calls.length, 1);
+    const options = mockProcessor.calls[0].options as { noDelete?: boolean };
+    assert.equal(options.noDelete, true);
   });
 });

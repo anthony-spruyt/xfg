@@ -1,8 +1,11 @@
 # xfg
 
-A CLI tool that syncs JSON, JSON5, YAML, or text configuration files across multiple GitHub, Azure DevOps, and GitLab repositories. By default, changes are made via pull requests (or merge requests for GitLab), but you can also push directly to the default branch.
+A CLI tool for managing repositories as code. Sync configuration files and manage GitHub Rulesets across multiple GitHub, Azure DevOps, and GitLab repositories.
 
-Output format is detected from the target filename extension. JSON and YAML files support deep merging and content inheritance, while plain text files support line-based merging.
+**Two commands, one config:**
+
+- **`xfg sync`** - Sync JSON, YAML, or text files across repos via PRs
+- **`xfg protect`** - Manage GitHub Rulesets declaratively
 
 ## Quick Start
 
@@ -21,23 +24,39 @@ files:
       semi: false
       singleQuote: true
       tabWidth: 2
-      trailingComma: es5
+
+settings:
+  rulesets:
+    main-protection:
+      target: branch
+      enforcement: active
+      conditions:
+        refName:
+          include: [refs/heads/main]
+      rules:
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 1
 
 repos:
-  # Multiple repos can share the same config
   - git:
       - git@github.com:your-org/frontend-app.git
       - git@github.com:your-org/backend-api.git
       - git@github.com:your-org/shared-lib.git
 EOF
 
-# Run
-xfg --config ./config.yaml
+# Sync files
+xfg sync --config ./config.yaml
+
+# Apply rulesets
+xfg protect --config ./config.yaml
 ```
 
-**Result:** PRs are created in all three repos with identical `.prettierrc.json` files.
+**Result:** PRs are created with `.prettierrc.json` files, and all repos get identical branch protection rules.
 
 ## Features
+
+### File Sync (`xfg sync`)
 
 - **Multi-File Sync** - Sync multiple config files in a single run
 - **Multi-Format Output** - JSON, YAML, or plain text based on filename extension
@@ -51,10 +70,22 @@ xfg --config ./config.yaml
 - **Override Mode** - Skip merging entirely for specific repos
 - **Empty Files** - Create files with no content (e.g., `.prettierignore`)
 - **YAML Comments** - Add header comments and schema directives to YAML files
+
+### GitHub Rulesets (`xfg protect`)
+
+- **Declarative Rulesets** - Define GitHub Rulesets in YAML, apply with a single command
+- **Full API Coverage** - All rule types: pull_request, status_checks, signatures, code_scanning, and more
+- **Bypass Actors** - Configure which teams, users, or apps can bypass rules
+- **Pattern Conditions** - Apply rules to branches/tags matching glob patterns
+- **Evaluate Mode** - Test rules without enforcement
+- **Orphan Deletion** - Automatically remove rulesets not in config
+
+### Platform & Operations
+
 - **Multi-Platform** - Works with GitHub, Azure DevOps, and GitLab (including self-hosted)
 - **Auto-Merge PRs** - Automatically merge PRs when checks pass, or force merge with admin privileges
 - **Direct Push Mode** - Push directly to default branch without creating PRs
-- **Dry-Run Mode** - Preview changes without creating PRs
+- **Dry-Run Mode** - Preview changes without making them
 - **Error Resilience** - Continues processing if individual repos fail
 - **Automatic Retries** - Retries transient network errors with exponential backoff
 

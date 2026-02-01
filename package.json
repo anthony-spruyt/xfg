@@ -32,6 +32,7 @@
     "test:integration:ado": "npm run build && node --import tsx --test test/integration/ado.test.ts",
     "test:integration:gitlab": "npm run build && node --import tsx --test test/integration/gitlab.test.ts",
     "test:integration:github-app": "npm run build && node --import tsx --test test/integration/github-app.test.ts",
+    "test:integration:github-protect": "npm run build && node --import tsx --test test/integration/github-protect.test.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

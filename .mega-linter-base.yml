@@ -18,6 +18,7 @@ EXCLUDED_DIRECTORIES:
   - ".git"
   - ".claude"
   - "docs/plans"
+  - "coverage"
 FILTER_REGEX_EXCLUDE: "(CLAUDE\\.md$)"
 DEFAULT_BRANCH: "main"
 IGNORE_GITIGNORED_FILES: true

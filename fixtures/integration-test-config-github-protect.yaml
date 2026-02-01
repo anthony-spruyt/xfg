@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+# Integration test config for xfg protect - tests ruleset management
+id: integration-test-github-protect
+
+# Placeholder file required by schema - excluded from target repo
+files:
+  .xfg-protect-test:
+    content: "# Placeholder for protect integration test"
+    createOnly: true
+
+settings:
+  rulesets:
+    xfg-test-ruleset:
+      target: branch
+      enforcement: active
+      conditions:
+        refName:
+          include:
+            - refs/heads/main
+      rules:
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 1
+
+repos:
+  - git: https://github.com/anthony-spruyt/xfg-test.git
+    files:
+      .xfg-protect-test: false

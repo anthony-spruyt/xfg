@@ -133,3 +133,45 @@ This is useful for repos without branch protection or when PR review isn't requi
 
 - `direct`: Repo has no branch protection, or you want to skip PR workflow entirely
 - `force`: Repo has branch protection, but you have admin privileges to bypass it (creates a PR and merges with `--admin`)
+
+## GitHub Rulesets
+
+The `xfg protect` command manages GitHub Rulesets declaratively. See [GitHub Rulesets](../configuration/rulesets.md) for full documentation.
+
+```yaml
+settings:
+  rulesets:
+    main-protection:
+      target: branch
+      enforcement: active
+      conditions:
+        refName:
+          include: [refs/heads/main]
+      rules:
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 1
+```
+
+```bash
+xfg protect --config ./config.yaml
+```
+
+### Required Permissions for Rulesets
+
+Managing rulesets requires admin access to the repository. Your token needs:
+
+- **PAT:** `admin:repo` scope
+- **GitHub App:** "Administration" permission set to "Read and write"
+
+### Rulesets vs Branch Protection
+
+GitHub Rulesets are the modern replacement for branch protection rules. They offer:
+
+- Pattern-based conditions (apply to multiple branches)
+- Multiple rules per ruleset
+- Bypass actors with fine-grained control
+- Evaluate mode for testing
+- Advanced rules (code scanning, workflows, file restrictions)
+
+xfg uses the Rulesets API exclusively. If you need legacy branch protection rules, you'll need to manage those separately.

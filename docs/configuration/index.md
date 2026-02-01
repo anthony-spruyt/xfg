@@ -27,9 +27,11 @@ repos: # List of repositories
 | `id`             | Unique identifier for this config. Used to namespace managed files in `.xfg.json` manifest. | Yes      |
 | `files`          | Map of target filenames to configs                                                          | Yes      |
 | `repos`          | Array of repository configurations                                                          | Yes      |
+| `settings`       | Global settings like `rulesets` (GitHub Rulesets). See [GitHub Rulesets](rulesets.md).      | No       |
 | `prOptions`      | Global PR merge options (can be overridden per-repo)                                        | No       |
 | `prTemplate`     | Custom PR body template (inline or `@path/to/file` reference)                               | No       |
-| `deleteOrphaned` | Global default for orphan deletion. Files removed from config are deleted from repos.       | No       |
+| `deleteOrphaned` | Global default for orphan deletion. Files/rulesets removed from config are deleted.         | No       |
+| `githubHosts`    | Array of GitHub Enterprise hostnames (e.g., `github.mycompany.com`)                         | No       |
 
 ## Per-File Fields
 
@@ -47,11 +49,12 @@ repos: # List of repositories
 
 ## Per-Repo Fields
 
-| Field       | Description                                  | Required |
-| ----------- | -------------------------------------------- | -------- |
-| `git`       | Git URL (string) or array of URLs            | Yes      |
-| `files`     | Per-repo file overrides (optional)           | No       |
-| `prOptions` | Per-repo PR merge options (overrides global) | No       |
+| Field       | Description                                                   | Required |
+| ----------- | ------------------------------------------------------------- | -------- |
+| `git`       | Git URL (string) or array of URLs                             | Yes      |
+| `files`     | Per-repo file overrides (optional)                            | No       |
+| `settings`  | Per-repo settings like `rulesets` (merged with root settings) | No       |
+| `prOptions` | Per-repo PR merge options (overrides global)                  | No       |
 
 ## Per-Repo File Override Fields
 

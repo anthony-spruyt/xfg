@@ -116,6 +116,75 @@ Use [file references](configuration/file-references.md) to load complex template
 
 ---
 
+## Branch Protection at Scale
+
+**Problem:** You need consistent branch protection rules across all repositories. Managing rulesets manually through the GitHub UI doesn't scale, and there's no audit trail for changes.
+
+**Solution:** Define GitHub Rulesets declaratively and apply them with `xfg protect`:
+
+```yaml
+settings:
+  rulesets:
+    main-protection:
+      target: branch
+      enforcement: active
+      bypassActors:
+        - actorId: 2719952
+          actorType: Integration # e.g., Renovate bot
+          bypassMode: always
+      conditions:
+        refName:
+          include:
+            - refs/heads/main
+      rules:
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 1
+            dismissStaleReviewsOnPush: true
+            requireCodeOwnerReview: true
+        - type: required_status_checks
+          parameters:
+            strictRequiredStatusChecksPolicy: true
+            requiredStatusChecks:
+              - context: "ci/build"
+              - context: "ci/test"
+
+    release-protection:
+      target: branch
+      enforcement: active
+      conditions:
+        refName:
+          include:
+            - refs/heads/release/*
+      rules:
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 2
+        - type: required_signatures
+
+repos:
+  - git:
+      - git@github.com:your-org/service-auth.git
+      - git@github.com:your-org/service-payments.git
+      - git@github.com:your-org/service-critical.git
+```
+
+Run `xfg protect --config ./config.yaml` to apply rules to all repos. Stricter requirements for specific repos? Override per-repo:
+
+```yaml
+repos:
+  - git: git@github.com:your-org/service-critical.git
+    settings:
+      rulesets:
+        main-protection:
+          rules:
+            - type: pull_request
+              parameters:
+                requiredApprovingReviewCount: 3 # Override default
+```
+
+---
+
 ## Developer Experience Consistency
 
 **Problem:** Every repository has slightly different formatter settings, editor configs, and tooling. Developers waste time adjusting to each repo's quirks.

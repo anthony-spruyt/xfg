@@ -1,35 +1,54 @@
 # Usage
 
+xfg uses subcommands to separate file sync from ruleset management.
+
+## Commands
+
+| Command       | Description                                    |
+| ------------- | ---------------------------------------------- |
+| `xfg sync`    | Sync configuration files across repositories   |
+| `xfg protect` | Manage GitHub Rulesets for repositories        |
+| `xfg`         | Alias for `xfg sync` (backwards compatibility) |
+
 ## Basic Usage
 
 ```bash
-# Basic usage
+# Sync files (both equivalent)
+xfg sync --config ./config.yaml
 xfg --config ./config.yaml
 
-# Dry run (no changes made)
-xfg --config ./config.yaml --dry-run
+# Apply rulesets
+xfg protect --config ./config.yaml
 
-# Custom work directory
-xfg --config ./config.yaml --work-dir ./my-temp
+# Dry run
+xfg sync --config ./config.yaml --dry-run
+xfg protect --config ./config.yaml --dry-run
 
-# Custom branch name
-xfg --config ./config.yaml --branch feature/update-eslint
+# Combined workflow
+xfg sync -c config.yaml && xfg protect -c config.yaml
 ```
 
 ## Dry-Run Mode
 
-The `--dry-run` flag lets you preview changes without actually making them. In dry-run mode:
+The `--dry-run` flag lets you preview changes without actually making them.
+
+**For sync:**
 
 - Files are compared but not written
 - Commits and pushes are skipped
 - PRs are not created
-- You can see exactly what would change
+
+**For protect:**
+
+- Rulesets are compared but not created/updated/deleted
+- Shows planned changes (create, update, delete, unchanged)
 
 ```bash
-xfg --config ./config.yaml --dry-run
+xfg sync --config ./config.yaml --dry-run
+xfg protect --config ./config.yaml --dry-run
 ```
 
-## CLI Options
+## Sync CLI Options
 
 | Option             | Alias | Description                                                                    | Required |
 | ------------------ | ----- | ------------------------------------------------------------------------------ | -------- |
@@ -38,9 +57,22 @@ xfg --config ./config.yaml --dry-run
 | `--work-dir`       | `-w`  | Temporary directory for cloning (default: `./tmp`)                             | No       |
 | `--retries`        | `-r`  | Number of retries for network operations (default: 3)                          | No       |
 | `--branch`         | `-b`  | Override branch name (default: `chore/sync-{filename}` or `chore/sync-config`) | No       |
-| `--merge`          | `-m`  | PR merge mode: `manual`, `auto` (default), `force` (bypass checks)             | No       |
+| `--merge`          | `-m`  | PR merge mode: `manual`, `auto` (default), `force` (bypass checks), `direct`   | No       |
 | `--merge-strategy` |       | Merge strategy: `merge`, `squash` (default), `rebase`                          | No       |
 | `--delete-branch`  |       | Delete source branch after merge                                               | No       |
+| `--no-delete`      |       | Skip deletion of orphaned files                                                | No       |
+
+## Protect CLI Options
+
+| Option        | Alias | Description                                    | Required |
+| ------------- | ----- | ---------------------------------------------- | -------- |
+| `--config`    | `-c`  | Path to YAML config file                       | Yes      |
+| `--dry-run`   | `-d`  | Show what would be done without making changes | No       |
+| `--retries`   | `-r`  | Number of retries for network operations       | No       |
+| `--no-delete` |       | Skip deletion of orphaned rulesets             | No       |
+
+!!! note
+The protect command only works with GitHub repositories. Azure DevOps and GitLab repos are skipped.
 
 ## Console Output
 

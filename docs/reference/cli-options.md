@@ -1,12 +1,26 @@
 # CLI Options Reference
 
-## Usage
+xfg uses subcommands to separate file sync (`sync`) from ruleset management (`protect`).
+
+## Subcommands
+
+| Command       | Description                                    |
+| ------------- | ---------------------------------------------- |
+| `xfg sync`    | Sync configuration files across repositories   |
+| `xfg protect` | Manage GitHub Rulesets for repositories        |
+| `xfg`         | Alias for `xfg sync` (backwards compatibility) |
+
+## Sync Command
+
+Sync configuration files across repositories.
 
 ```bash
+xfg sync --config <path> [options]
+# or (backwards compatible)
 xfg --config <path> [options]
 ```
 
-## Options
+### Sync Options
 
 | Option             | Alias | Description                                        | Default                                        |
 | ------------------ | ----- | -------------------------------------------------- | ---------------------------------------------- |
@@ -20,59 +34,91 @@ xfg --config <path> [options]
 | `--delete-branch`  |       | Delete source branch after merge                   | `true`                                         |
 | `--no-delete`      |       | Skip deletion of orphaned files even if configured | `false`                                        |
 
-## Examples
-
-### Basic Run
+### Sync Examples
 
 ```bash
-xfg --config ./config.yaml
+# Basic sync
+xfg sync --config ./config.yaml
+
+# Dry run
+xfg sync --config ./config.yaml --dry-run
+
+# Custom branch
+xfg sync --config ./config.yaml --branch feature/update-eslint
+
+# Override merge behavior
+xfg sync --config ./config.yaml --merge manual   # Leave PRs open
+xfg sync --config ./config.yaml --merge force    # Force merge
+xfg sync --config ./config.yaml --merge direct   # Push directly
+
+# Skip orphan deletion
+xfg sync --config ./config.yaml --no-delete
 ```
 
-### Dry Run
+## Protect Command
 
-Preview changes without making them:
+Manage GitHub Rulesets for repositories. Creates, updates, or deletes rulesets to match your config.
 
 ```bash
-xfg --config ./config.yaml --dry-run
+xfg protect --config <path> [options]
 ```
 
-### Custom Branch
+!!! note "GitHub-Only"
+The protect command only works with GitHub repositories. Azure DevOps and GitLab repos are skipped.
+
+### Protect Options
+
+| Option        | Alias | Description                                            | Default      |
+| ------------- | ----- | ------------------------------------------------------ | ------------ |
+| `--config`    | `-c`  | Path to YAML config file                               | **Required** |
+| `--dry-run`   | `-d`  | Show what would be done without making changes         | `false`      |
+| `--work-dir`  | `-w`  | Temporary directory (not used for protect, but shared) | `./tmp`      |
+| `--retries`   | `-r`  | Number of retries for network operations               | `3`          |
+| `--no-delete` |       | Skip deletion of orphaned rulesets                     | `false`      |
+
+### Protect Examples
 
 ```bash
-xfg --config ./config.yaml --branch feature/update-eslint
+# Apply rulesets
+xfg protect --config ./config.yaml
+
+# Preview changes
+xfg protect --config ./config.yaml --dry-run
+
+# Apply without deleting orphans
+xfg protect --config ./config.yaml --no-delete
 ```
 
-### Override Merge Behavior
+### Protect Output
 
-```bash
-# Leave PRs open for review
-xfg --config ./config.yaml --merge manual
+```text
+Loading config from: ./config.yaml
+Found 3 repositories with rulesets
 
-# Force merge (bypass checks)
-xfg --config ./config.yaml --merge force
+[1/3] your-org/frontend: Processing rulesets...
+[1/3] ✓ your-org/frontend: 1 created, 0 updated, 0 unchanged
 
-# Push directly to default branch (no PR)
-xfg --config ./config.yaml --merge direct
+[2/3] your-org/backend: Processing rulesets...
+[2/3] ✓ your-org/backend: 0 created, 1 updated, 0 unchanged
+
+[3/3] your-org/shared-lib: Processing rulesets...
+[3/3] ✓ your-org/shared-lib: 0 created, 0 updated, 1 unchanged
+
+==================================================
+Completed: 3 succeeded, 0 skipped, 0 failed
 ```
 
-### Increase Retries
+## Combined Workflow
+
+Run both commands together:
 
 ```bash
-xfg --config ./config.yaml --retries 5
-```
+# Sync files and apply rulesets
+xfg sync -c config.yaml && xfg protect -c config.yaml
 
-### Custom Work Directory
-
-```bash
-xfg --config ./config.yaml --work-dir ./my-temp
-```
-
-### Skip Orphan Deletion
-
-Skip deletion of orphaned files even when `deleteOrphaned: true` is configured:
-
-```bash
-xfg --config ./config.yaml --no-delete
+# Preview both
+xfg sync -c config.yaml --dry-run
+xfg protect -c config.yaml --dry-run
 ```
 
 ## Priority Order
@@ -80,6 +126,13 @@ xfg --config ./config.yaml --no-delete
 CLI flags override config file settings:
 
 1. CLI flags (highest priority)
-2. Per-repo `prOptions`
-3. Global `prOptions`
+2. Per-repo settings (e.g., `prOptions`, `settings.rulesets`)
+3. Global settings
 4. Built-in defaults (lowest priority)
+
+## Exit Codes
+
+| Code | Meaning                                 |
+| ---- | --------------------------------------- |
+| `0`  | Success - all operations completed      |
+| `1`  | Failure - one or more operations failed |

@@ -25,7 +25,11 @@ import { RepoInfo } from "./repo-detector.js";
 import { ProcessorOptions } from "./repository-processor.js";
 import { writeSummary, RepoResult } from "./github-summary.js";
 import { buildRepoResult, buildErrorResult } from "./summary-utils.js";
-import { RulesetProcessor } from "./ruleset-processor.js";
+import {
+  RulesetProcessor,
+  RulesetProcessorOptions,
+  RulesetProcessorResult,
+} from "./ruleset-processor.js";
 import { getManagedRulesets } from "./manifest.js";
 import { isGitHubRepo } from "./repo-detector.js";
 
@@ -51,6 +55,28 @@ export type ProcessorFactory = () => IRepositoryProcessor;
  */
 export const defaultProcessorFactory: ProcessorFactory = () =>
   new RepositoryProcessor();
+
+/**
+ * Ruleset processor interface for dependency injection in tests.
+ */
+export interface IRulesetProcessor {
+  process(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: RulesetProcessorOptions
+  ): Promise<RulesetProcessorResult>;
+}
+
+/**
+ * Factory function type for creating ruleset processors.
+ */
+export type RulesetProcessorFactory = () => IRulesetProcessor;
+
+/**
+ * Default factory that creates a real RulesetProcessor.
+ */
+export const defaultRulesetProcessorFactory: RulesetProcessorFactory = () =>
+  new RulesetProcessor();
 
 // =============================================================================
 // Shared CLI Options
@@ -133,7 +159,10 @@ function formatFileNames(fileNames: string[]): string {
   return `${fileNames.length} files`;
 }
 
-async function runSync(options: SyncOptions): Promise<void> {
+export async function runSync(
+  options: SyncOptions,
+  processorFactory: ProcessorFactory = defaultProcessorFactory
+): Promise<void> {
   const configPath = resolve(options.config);
 
   if (!existsSync(configPath)) {
@@ -162,7 +191,7 @@ async function runSync(options: SyncOptions): Promise<void> {
   console.log(`Target files: ${formatFileNames(fileNames)}`);
   console.log(`Branch: ${branchName}\n`);
 
-  const processor = defaultProcessorFactory();
+  const processor = processorFactory();
   const results: RepoResult[] = [];
 
   for (let i = 0; i < config.repos.length; i++) {
@@ -250,7 +279,10 @@ async function runSync(options: SyncOptions): Promise<void> {
 // Protect Command
 // =============================================================================
 
-async function runProtect(options: ProtectOptions): Promise<void> {
+export async function runProtect(
+  options: ProtectOptions,
+  processorFactory: RulesetProcessorFactory = defaultRulesetProcessorFactory
+): Promise<void> {
   const configPath = resolve(options.config);
 
   if (!existsSync(configPath)) {
@@ -279,7 +311,7 @@ async function runProtect(options: ProtectOptions): Promise<void> {
 
   console.log(`Found ${reposWithRulesets.length} repositories with rulesets\n`);
 
-  const processor = new RulesetProcessor();
+  const processor = processorFactory();
   const results: RepoResult[] = [];
   let successCount = 0;
   let failCount = 0;
@@ -348,7 +380,7 @@ async function runProtect(options: ProtectOptions): Promise<void> {
       }
 
       results.push({
-        repo: repoName,
+        repoName,
         status: result.skipped
           ? "skipped"
           : result.success
@@ -451,22 +483,30 @@ const protectCommand = new Command("protect")
 addSharedOptions(protectCommand);
 program.addCommand(protectCommand);
 
-// Handle backwards compatibility: if no subcommand is provided, default to sync
-// This maintains compatibility with existing usage like `xfg -c config.yaml`
-const args = process.argv.slice(2);
-const subcommands = ["sync", "protect", "help"];
-const versionFlags = ["-V", "--version"];
+// Only parse CLI when run directly (not when imported for testing)
+const isTestRun =
+  process.argv.includes("--test") ||
+  process.argv.some((arg) => arg.includes(".test.ts")) ||
+  process.env.NODE_TEST_CONTEXT !== undefined;
 
-// Check if the first argument is a subcommand or version flag
-const firstArg = args[0];
-const isSubcommand = firstArg && subcommands.includes(firstArg);
-const isVersionFlag = firstArg && versionFlags.includes(firstArg);
+if (!isTestRun) {
+  // Handle backwards compatibility: if no subcommand is provided, default to sync
+  // This maintains compatibility with existing usage like `xfg -c config.yaml`
+  const args = process.argv.slice(2);
+  const subcommands = ["sync", "protect", "help"];
+  const versionFlags = ["-V", "--version"];
 
-if (isSubcommand || isVersionFlag) {
-  // Explicit subcommand or version flag - parse normally
-  program.parse();
-} else {
-  // No subcommand - prepend 'sync' for backwards compatibility
-  // This handles: `xfg -c config.yaml`, `xfg --help`, `xfg` (no args)
-  program.parse(["node", "xfg", "sync", ...args]);
+  // Check if the first argument is a subcommand or version flag
+  const firstArg = args[0];
+  const isSubcommand = firstArg && subcommands.includes(firstArg);
+  const isVersionFlag = firstArg && versionFlags.includes(firstArg);
+
+  if (isSubcommand || isVersionFlag) {
+    // Explicit subcommand or version flag - parse normally
+    program.parse();
+  } else {
+    // No subcommand - prepend 'sync' for backwards compatibility
+    // This handles: `xfg -c config.yaml`, `xfg --help`, `xfg` (no args)
+    program.parse(["node", "xfg", "sync", ...args]);
+  }
 }
