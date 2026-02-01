@@ -2,7 +2,7 @@
 
 ## Overview
 
-TypeScript CLI tool that syncs JSON, JSON5, YAML, or text config files across multiple Git repositories via PRs (or direct push with `merge: direct`). Supports GitHub, Azure DevOps, and GitLab (including self-hosted).
+TypeScript CLI tool for repository-as-code: sync files and manage settings across GitHub, Azure DevOps, and GitLab (including self-hosted). Changes via PRs by default, or direct push with `merge: direct`.
 
 ## Documentation
 
