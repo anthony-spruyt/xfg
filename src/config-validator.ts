@@ -1,5 +1,5 @@
 import { extname, isAbsolute } from "node:path";
-import type { RawConfig } from "./config.js";
+import type { RawConfig, RawRepoSettings } from "./config.js";
 
 const VALID_STRATEGIES = ["replace", "append", "prepend"];
 
@@ -751,6 +751,59 @@ export function validateForSync(config: RawConfig): void {
     throw new Error(
       "The 'sync' command requires a 'files' section with at least one file defined. " +
         "To manage repository settings instead, use 'xfg settings'."
+    );
+  }
+}
+
+/**
+ * Checks if settings contain actionable configuration.
+ * Currently only rulesets, but extensible for future settings features.
+ */
+export function hasActionableSettings(
+  settings: RawRepoSettings | undefined
+): boolean {
+  if (!settings) return false;
+
+  // Check for rulesets
+  if (settings.rulesets && Object.keys(settings.rulesets).length > 0) {
+    return true;
+  }
+
+  // Future: check for repoConfig, creation, etc.
+  // if (settings.repoConfig) return true;
+
+  return false;
+}
+
+/**
+ * Validates that config is suitable for the settings command.
+ * @throws Error if no settings are defined or no actionable settings exist
+ */
+export function validateForSettings(config: RawConfig): void {
+  // Check if settings exist at root or in any repo
+  const hasRootSettings = config.settings !== undefined;
+  const hasRepoSettings = config.repos.some(
+    (repo) => repo.settings !== undefined
+  );
+
+  if (!hasRootSettings && !hasRepoSettings) {
+    throw new Error(
+      "The 'settings' command requires a 'settings' section at root level or " +
+        "in at least one repo. To sync files instead, use 'xfg sync'."
+    );
+  }
+
+  // Check if there's at least one actionable setting
+  const rootActionable = hasActionableSettings(config.settings);
+  const repoActionable = config.repos.some((repo) =>
+    hasActionableSettings(repo.settings)
+  );
+
+  if (!rootActionable && !repoActionable) {
+    throw new Error(
+      "No actionable settings configured. Currently supported: rulesets. " +
+        "To sync files instead, use 'xfg sync'. " +
+        "See docs: https://anthony-spruyt.github.io/xfg/settings"
     );
   }
 }

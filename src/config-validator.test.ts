@@ -1,6 +1,11 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import { validateRawConfig, validateForSync } from "./config-validator.js";
+import {
+  validateRawConfig,
+  validateForSync,
+  validateForSettings,
+  hasActionableSettings,
+} from "./config-validator.js";
 import type { RawConfig } from "./config.js";
 
 describe("validateRawConfig", () => {
@@ -2195,5 +2200,88 @@ describe("validateForSync", () => {
     };
 
     assert.doesNotThrow(() => validateForSync(config));
+  });
+});
+
+describe("validateForSettings", () => {
+  test("throws when no settings anywhere", () => {
+    const config: RawConfig = {
+      id: "files-only",
+      files: {
+        "config.json": { content: {} },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+
+    assert.throws(
+      () => validateForSettings(config),
+      /The 'settings' command requires a 'settings' section/
+    );
+  });
+
+  test("passes when settings at root level", () => {
+    const config: RawConfig = {
+      id: "root-settings",
+      files: {
+        "config.json": { content: {} },
+      },
+      settings: {
+        rulesets: {
+          "main-protection": { target: "branch" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+
+    assert.doesNotThrow(() => validateForSettings(config));
+  });
+
+  test("passes when settings only in repo", () => {
+    const config: RawConfig = {
+      id: "repo-settings",
+      files: {
+        "config.json": { content: {} },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          settings: {
+            rulesets: {
+              "main-protection": { target: "branch" },
+            },
+          },
+        },
+      ],
+    };
+
+    assert.doesNotThrow(() => validateForSettings(config));
+  });
+
+  test("throws when settings exists but has no actionable config", () => {
+    const config: RawConfig = {
+      id: "empty-settings",
+      settings: {},
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+
+    assert.throws(
+      () => validateForSettings(config),
+      /No actionable settings configured/
+    );
+  });
+
+  test("throws when settings has empty rulesets", () => {
+    const config: RawConfig = {
+      id: "empty-rulesets",
+      settings: {
+        rulesets: {},
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+
+    assert.throws(
+      () => validateForSettings(config),
+      /No actionable settings configured/
+    );
   });
 });
