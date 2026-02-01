@@ -42,6 +42,12 @@ export interface IRepositoryProcessor {
     repoInfo: RepoInfo,
     options: ProcessorOptions
   ): Promise<ProcessorResult>;
+  updateManifestOnly(
+    repoInfo: RepoInfo,
+    repoConfig: RepoConfig,
+    options: ProcessorOptions,
+    manifestUpdate: { rulesets: string[] }
+  ): Promise<ProcessorResult>;
 }
 
 /**
@@ -281,7 +287,8 @@ export async function runSync(
 
 export async function runSettings(
   options: SettingsOptions,
-  processorFactory: RulesetProcessorFactory = defaultRulesetProcessorFactory
+  processorFactory: RulesetProcessorFactory = defaultRulesetProcessorFactory,
+  repoProcessorFactory: ProcessorFactory = defaultProcessorFactory
 ): Promise<void> {
   const configPath = resolve(options.config);
 
@@ -312,7 +319,7 @@ export async function runSettings(
   console.log(`Found ${reposWithRulesets.length} repositories with rulesets\n`);
 
   const processor = processorFactory();
-  const repoProcessor = new RepositoryProcessor();
+  const repoProcessor = repoProcessorFactory();
   const results: RepoResult[] = [];
   let successCount = 0;
   let failCount = 0;

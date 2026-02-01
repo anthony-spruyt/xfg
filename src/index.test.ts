@@ -1158,8 +1158,50 @@ import {
   runSettings,
   IRulesetProcessor,
   RulesetProcessorFactory,
+  IRepositoryProcessor,
+  ProcessorFactory,
 } from "./index.js";
 import type { RulesetProcessorResult } from "./ruleset-processor.js";
+
+// Mock for repository processor used by settings command for manifest updates
+class MockSettingsRepoProcessor implements IRepositoryProcessor {
+  manifestCalls: {
+    repoInfo: unknown;
+    repoConfig: RepoConfig;
+    options: unknown;
+    manifestUpdate: { rulesets: string[] };
+  }[] = [];
+
+  async process(
+    repoConfig: RepoConfig,
+    _repoInfo: unknown,
+    _options: unknown
+  ): Promise<ProcessorResult> {
+    return {
+      success: true,
+      repoName: repoConfig.git,
+      message: "Mock process",
+    };
+  }
+
+  async updateManifestOnly(
+    repoInfo: unknown,
+    repoConfig: RepoConfig,
+    options: unknown,
+    manifestUpdate: { rulesets: string[] }
+  ): Promise<ProcessorResult> {
+    this.manifestCalls.push({ repoInfo, repoConfig, options, manifestUpdate });
+    return {
+      success: true,
+      repoName: repoConfig.git,
+      message: "Manifest updated",
+    };
+  }
+
+  reset(): void {
+    this.manifestCalls = [];
+  }
+}
 
 class MockRulesetProcessor implements IRulesetProcessor {
   calls: { repoConfig: RepoConfig; repoInfo: unknown; options: unknown }[] = [];
@@ -1408,6 +1450,54 @@ repos:
       "git@github.com:test-org/repo-with-rulesets.git"
     );
   });
+
+  test("calls updateManifestOnly when result has rulesets to track", async () => {
+    writeFileSync(
+      unitTestConfigPath,
+      `
+id: test-settings
+files:
+  test.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:test-org/test-repo.git
+    settings:
+      rulesets:
+        main-protection:
+          target: branch
+          enforcement: active
+          rules: []
+`
+    );
+
+    // Configure mock to return manifestUpdate with rulesets
+    mockProcessor.setResult("git@github.com:test-org/test-repo.git", {
+      success: true,
+      repoName: "test-org/test-repo",
+      message: "Applied rulesets",
+      changes: { create: 1, update: 0, delete: 0, unchanged: 0 },
+      manifestUpdate: {
+        rulesets: ["main-protection"],
+      },
+    });
+
+    // Create a mock repository processor to track updateManifestOnly calls
+    const mockRepoProcessor = new MockSettingsRepoProcessor();
+    const mockRepoProcessorFactory: ProcessorFactory = () => mockRepoProcessor;
+
+    await runSettings(
+      { config: unitTestConfigPath },
+      mockFactory,
+      mockRepoProcessorFactory
+    );
+
+    // Verify updateManifestOnly was called with the manifest update
+    assert.equal(mockRepoProcessor.manifestCalls.length, 1);
+    assert.deepEqual(mockRepoProcessor.manifestCalls[0].manifestUpdate, {
+      rulesets: ["main-protection"],
+    });
+  });
 });
 
 // =============================================================================
@@ -1418,6 +1508,12 @@ import { runSync, IRepositoryProcessor, ProcessorFactory } from "./index.js";
 
 class MockRepositoryProcessor implements IRepositoryProcessor {
   calls: { repoConfig: RepoConfig; repoInfo: unknown; options: unknown }[] = [];
+  manifestCalls: {
+    repoInfo: unknown;
+    repoConfig: RepoConfig;
+    options: unknown;
+    manifestUpdate: { rulesets: string[] };
+  }[] = [];
   results: Map<string, ProcessorResult> = new Map();
 
   async process(
@@ -1440,12 +1536,27 @@ class MockRepositoryProcessor implements IRepositoryProcessor {
     };
   }
 
+  async updateManifestOnly(
+    repoInfo: unknown,
+    repoConfig: RepoConfig,
+    options: unknown,
+    manifestUpdate: { rulesets: string[] }
+  ): Promise<ProcessorResult> {
+    this.manifestCalls.push({ repoInfo, repoConfig, options, manifestUpdate });
+    return {
+      success: true,
+      repoName: repoConfig.git,
+      message: "Manifest updated",
+    };
+  }
+
   setResult(gitUrl: string, result: ProcessorResult): void {
     this.results.set(gitUrl, result);
   }
 
   reset(): void {
     this.calls = [];
+    this.manifestCalls = [];
     this.results.clear();
   }
 }
