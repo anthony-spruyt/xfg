@@ -463,6 +463,31 @@ repos:
         "Should accept --delete-branch flag"
       );
     });
+
+    test("sync command fails with settings-only config", () => {
+      writeFileSync(
+        testConfigPath,
+        `
+id: settings-only
+settings:
+  rulesets:
+    main-protection:
+      target: branch
+      enforcement: active
+repos:
+  - git: git@github.com:test/repo.git
+`
+      );
+
+      const result = runCLI(["sync", "-c", testConfigPath, "--dry-run"]);
+      assert.equal(result.success, false);
+      const output = result.stdout + result.stderr;
+      assert.ok(
+        output.includes("'sync' command requires a 'files' section") ||
+          output.includes("requires a 'files' section"),
+        `Expected files requirement error, got: ${output}`
+      );
+    });
   });
 
   describe("config validation", () => {
@@ -1158,8 +1183,6 @@ import {
   runSettings,
   IRulesetProcessor,
   RulesetProcessorFactory,
-  IRepositoryProcessor,
-  ProcessorFactory,
 } from "./index.js";
 import type { RulesetProcessorResult } from "./ruleset-processor.js";
 

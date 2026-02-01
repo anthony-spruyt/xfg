@@ -3,7 +3,9 @@ import { dirname } from "node:path";
 import { parse } from "yaml";
 import type { ArrayMergeStrategy } from "./merge.js";
 import { validateRawConfig } from "./config-validator.js";
-import { normalizeConfig } from "./config-normalizer.js";
+import { normalizeConfig as normalizeConfigInternal } from "./config-normalizer.js";
+
+export { normalizeConfigInternal as normalizeConfig };
 import { resolveFileReferencesInConfig } from "./file-reference-resolver.js";
 
 // Re-export formatter functions for backwards compatibility
@@ -438,7 +440,11 @@ export interface Config {
 // Public API
 // =============================================================================
 
-export function loadConfig(filePath: string): Config {
+/**
+ * Load and validate raw config without normalization.
+ * Use this when you need to perform command-specific validation before normalizing.
+ */
+export function loadRawConfig(filePath: string): RawConfig {
   const content = readFileSync(filePath, "utf-8");
   const configDir = dirname(filePath);
 
@@ -455,5 +461,10 @@ export function loadConfig(filePath: string): Config {
 
   validateRawConfig(rawConfig);
 
-  return normalizeConfig(rawConfig);
+  return rawConfig;
+}
+
+export function loadConfig(filePath: string): Config {
+  const rawConfig = loadRawConfig(filePath);
+  return normalizeConfigInternal(rawConfig);
 }
