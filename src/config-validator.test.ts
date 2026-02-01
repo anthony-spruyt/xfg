@@ -2058,4 +2058,64 @@ describe("validateRawConfig", () => {
       );
     });
   });
+
+  describe("files/settings decoupling", () => {
+    test("accepts config with only settings (no files)", () => {
+      const config: RawConfig = {
+        id: "settings-only",
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              enforcement: "active",
+            },
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when config has neither files nor settings", () => {
+      const config = {
+        id: "empty-config",
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      } as RawConfig;
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Config requires at least one of: 'files' or 'settings'/
+      );
+    });
+
+    test("accepts config with only files (no settings)", () => {
+      const config: RawConfig = {
+        id: "files-only",
+        files: {
+          "config.json": { content: { key: "value" } },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("accepts config with both files and settings", () => {
+      const config: RawConfig = {
+        id: "full-config",
+        files: {
+          "config.json": { content: { key: "value" } },
+        },
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              enforcement: "active",
+            },
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+  });
 });

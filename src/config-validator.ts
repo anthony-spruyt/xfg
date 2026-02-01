@@ -61,14 +61,21 @@ export function validateRawConfig(config: RawConfig): void {
     );
   }
 
-  if (!config.files || typeof config.files !== "object") {
-    throw new Error("Config missing required field: files (must be an object)");
+  // Validate at least one of files or settings exists
+  const hasFiles =
+    config.files &&
+    typeof config.files === "object" &&
+    Object.keys(config.files).length > 0;
+  const hasSettings = config.settings && typeof config.settings === "object";
+
+  if (!hasFiles && !hasSettings) {
+    throw new Error(
+      "Config requires at least one of: 'files' or 'settings'. " +
+        "Use 'files' to sync configuration files, or 'settings' to manage repository settings."
+    );
   }
 
-  const fileNames = Object.keys(config.files);
-  if (fileNames.length === 0) {
-    throw new Error("Config files object cannot be empty");
-  }
+  const fileNames = hasFiles ? Object.keys(config.files!) : [];
 
   // Validate each file definition
   for (const fileName of fileNames) {
