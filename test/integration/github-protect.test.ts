@@ -83,7 +83,7 @@ describe("GitHub Protect Integration Test", () => {
 
     // Run the protect command
     console.log("\nRunning xfg protect...");
-    const output = exec(`node dist/index.js protect --config ${configPath}`, {
+    const output = exec(`node dist/cli.js protect --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -128,7 +128,7 @@ describe("GitHub Protect Integration Test", () => {
 
     // Run protect again - should update existing ruleset
     console.log("\nRunning xfg protect again (update)...");
-    const output = exec(`node dist/index.js protect --config ${configPath}`, {
+    const output = exec(`node dist/cli.js protect --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -168,7 +168,7 @@ describe("GitHub Protect Integration Test", () => {
     // Run protect with dry-run
     console.log("\nRunning xfg protect --dry-run...");
     const output = exec(
-      `node dist/index.js protect --config ${configPath} --dry-run`,
+      `node dist/cli.js protect --config ${configPath} --dry-run`,
       {
         cwd: projectRoot,
       }

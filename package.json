@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "xfg": "./dist/index.js"
+    "xfg": "./dist/cli.js"
   },
   "files": [
     "dist",
@@ -24,8 +24,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
+    "start": "node dist/cli.js",
+    "dev": "ts-node src/cli.ts",
     "test": "node --import tsx scripts/run-tests.js",
     "test:coverage": "c8 --check-coverage --lines 95 --reporter=text --reporter=lcov --all --src=src --exclude='src/**/*.test.ts' --exclude='scripts/**' npm test",
     "test:integration:github": "npm run build && node --import tsx --test test/integration/github.test.ts",

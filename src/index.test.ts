@@ -14,25 +14,20 @@ const testDir = join(process.cwd(), "test-cli-tmp");
 const testConfigPath = join(testDir, "test-config.yaml");
 
 // Helper to run CLI and capture output
-// By default, unsets GITHUB_STEP_SUMMARY and NODE_TEST_CONTEXT to ensure child process
-// runs as normal CLI invocation, not in test mode
+// Unsets GITHUB_STEP_SUMMARY by default so tests don't write to CI summary
 function runCLI(
   args: string[],
   options?: { timeout?: number; env?: Record<string, string | undefined> }
 ): { stdout: string; stderr: string; success: boolean } {
-  // Create env with test-related vars unset by default
-  // Destructure to exclude these vars (prefixed with _ to indicate intentionally unused)
-  const {
-    GITHUB_STEP_SUMMARY: _stepSummary,
-    NODE_TEST_CONTEXT: _testContext,
-    ...envWithoutTestVars
-  } = process.env;
-  const testEnv = { ...envWithoutTestVars, ...options?.env };
+  // Unset GITHUB_STEP_SUMMARY unless explicitly provided
+  const { GITHUB_STEP_SUMMARY: _stepSummary, ...envWithoutSummary } =
+    process.env;
+  const testEnv = { ...envWithoutSummary, ...options?.env };
 
   try {
     const stdout = execFileSync(
       "node",
-      ["--import", "tsx", "src/index.ts", ...args],
+      ["--import", "tsx", "src/cli.ts", ...args],
       {
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],

@@ -26,7 +26,6 @@ if (SKIP_TESTS) {
 
 // This exec helper is only used in integration tests with hardcoded commands.
 // The commands are controlled and not derived from external/user input.
-// This matches the pattern used in github.test.ts lines 19-35.
 function exec(command: string, options?: { cwd?: string }): string {
   try {
     return execSync(command, {
@@ -111,7 +110,7 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
 
     // Run the sync tool with GitHub App credentials
     console.log("Running xfg with GitHub App credentials...");
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -201,7 +200,7 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
       fixturesDir,
       "integration-test-github-app-direct.yaml"
     );
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -294,7 +293,7 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
       fixturesDir,
       "integration-test-github-app-delete-phase1.yaml"
     );
-    const output1 = exec(`node dist/index.js --config ${configPath1}`, {
+    const output1 = exec(`node dist/cli.js --config ${configPath1}`, {
       cwd: projectRoot,
     });
     console.log(output1);
@@ -323,7 +322,7 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
       fixturesDir,
       "integration-test-github-app-delete-phase2.yaml"
     );
-    const output2 = exec(`node dist/index.js --config ${configPath2}`, {
+    const output2 = exec(`node dist/cli.js --config ${configPath2}`, {
       cwd: projectRoot,
     });
     console.log(output2);

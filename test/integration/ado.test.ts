@@ -20,7 +20,6 @@ const BRANCH_NAME = "chore/sync-my-config";
 
 // This exec helper is only used in integration tests with hardcoded commands.
 // The commands are controlled and not derived from external/user input.
-// This follows the same pattern as integration-github.test.ts.
 function exec(command: string, options?: { cwd?: string }): string {
   try {
     return execSync(command, {
@@ -273,7 +272,7 @@ describe("Azure DevOps Integration Test", () => {
 
     // Run the sync tool
     console.log("Running xfg...");
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -355,7 +354,7 @@ describe("Azure DevOps Integration Test", () => {
 
     // Run the sync tool again
     console.log("\nRunning xfg again (re-sync)...");
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -462,7 +461,7 @@ describe("Azure DevOps Integration Test", () => {
       fixturesDir,
       "integration-test-createonly-ado.yaml"
     );
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -613,7 +612,7 @@ describe("Azure DevOps Integration Test", () => {
     // 5. Run sync with the test config
     console.log("\nRunning xfg with unchanged files config...");
     const configPath = join(fixturesDir, "integration-test-unchanged-ado.yaml");
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -701,7 +700,7 @@ describe("Azure DevOps Integration Test", () => {
     // 2. Run sync with direct mode config
     console.log("\nRunning xfg with direct mode config...");
     const configPath = join(fixturesDir, "integration-test-direct-ado.yaml");
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);

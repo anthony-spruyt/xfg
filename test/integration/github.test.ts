@@ -37,7 +37,26 @@ describe("GitHub Integration Test", () => {
   before(() => {
     console.log("\n=== Setting up integration test ===\n");
 
-    // 0. Initialize repo if empty (create initial commit)
+    // 0. Delete any rulesets that might block direct commits to main
+    // (e.g., leftover from protect integration tests)
+    console.log("Cleaning up any existing rulesets...");
+    try {
+      const rulesets = exec(
+        `gh api repos/${TEST_REPO}/rulesets --jq '.[].id'`
+      );
+      if (rulesets) {
+        for (const rulesetId of rulesets.split("\n").filter(Boolean)) {
+          console.log(`  Deleting ruleset ID: ${rulesetId}`);
+          exec(`gh api --method DELETE repos/${TEST_REPO}/rulesets/${rulesetId}`);
+        }
+      } else {
+        console.log("  No rulesets to delete");
+      }
+    } catch {
+      console.log("  No rulesets found or error deleting");
+    }
+
+    // 1. Initialize repo if empty (create initial commit)
     console.log("Checking if repo is initialized...");
     try {
       exec(`gh api repos/${TEST_REPO}/commits --jq '.[0].sha'`);
@@ -113,7 +132,7 @@ describe("GitHub Integration Test", () => {
 
     // Run the sync tool
     console.log("Running xfg...");
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -195,7 +214,7 @@ describe("GitHub Integration Test", () => {
 
     // Run the sync tool again
     console.log("\nRunning xfg again (re-sync)...");
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -304,7 +323,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-createonly-github.yaml"
     );
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -457,7 +476,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-unchanged-github.yaml"
     );
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -570,7 +589,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-template-github.yaml"
     );
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -716,7 +735,7 @@ describe("GitHub Integration Test", () => {
     // 2. Run sync with direct mode config
     console.log("\nRunning xfg with direct mode config...");
     const configPath = join(fixturesDir, "integration-test-direct-github.yaml");
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -835,7 +854,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-delete-orphaned-github.yaml"
     );
-    const output1 = exec(`node dist/index.js --config ${configPath1}`, {
+    const output1 = exec(`node dist/cli.js --config ${configPath1}`, {
       cwd: projectRoot,
     });
     console.log(output1);
@@ -859,8 +878,9 @@ describe("GitHub Integration Test", () => {
     const manifest = JSON.parse(manifestContent);
     console.log("  Manifest content:", JSON.stringify(manifest));
     const configId = "integration-test-delete-orphaned-github";
+    // v3 manifest format uses { files: [...], rulesets: [...] }
     assert.ok(
-      manifest.configs[configId]?.includes(orphanFile),
+      manifest.configs[configId]?.files?.includes(orphanFile),
       "Manifest should track orphan-test.json"
     );
 
@@ -870,7 +890,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-delete-orphaned-phase2-github.yaml"
     );
-    const output2 = exec(`node dist/index.js --config ${configPath2}`, {
+    const output2 = exec(`node dist/cli.js --config ${configPath2}`, {
       cwd: projectRoot,
     });
     console.log(output2);
@@ -982,7 +1002,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-divergent-github.yaml"
     );
-    const output1 = exec(`node dist/index.js --config ${configPath}`, {
+    const output1 = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output1);
@@ -1010,7 +1030,7 @@ describe("GitHub Integration Test", () => {
     console.log(
       "\n--- Phase 3: Run xfg again (should handle divergent history) ---\n"
     );
-    const output2 = exec(`node dist/index.js --config ${configPath}`, {
+    const output2 = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output2);
@@ -1155,7 +1175,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-orphan-branch-github.yaml"
     );
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);

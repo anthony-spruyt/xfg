@@ -19,7 +19,6 @@ const BRANCH_NAME = "chore/sync-my-config";
 
 // This exec helper is only used in integration tests with hardcoded commands.
 // The commands are controlled and not derived from external/user input.
-// This follows the same pattern as integration-github.test.ts and integration-ado.test.ts.
 function exec(command: string, options?: { cwd?: string }): string {
   try {
     return execSync(command, {
@@ -279,7 +278,7 @@ describe("GitLab Integration Test", () => {
 
     // Run the sync tool
     console.log("Running xfg...");
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -354,7 +353,7 @@ describe("GitLab Integration Test", () => {
 
     // Run the sync tool again
     console.log("\nRunning xfg again (re-sync)...");
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -441,7 +440,7 @@ describe("GitLab Integration Test", () => {
       fixturesDir,
       "integration-test-createonly-gitlab.yaml"
     );
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -570,7 +569,7 @@ describe("GitLab Integration Test", () => {
       fixturesDir,
       "integration-test-unchanged-gitlab.yaml"
     );
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -647,7 +646,7 @@ describe("GitLab Integration Test", () => {
     // 2. Run sync with direct mode config
     console.log("\nRunning xfg with direct mode config...");
     const configPath = join(fixturesDir, "integration-test-direct-gitlab.yaml");
-    const output = exec(`node dist/index.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
