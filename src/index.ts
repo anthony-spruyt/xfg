@@ -312,6 +312,7 @@ export async function runProtect(
   console.log(`Found ${reposWithRulesets.length} repositories with rulesets\n`);
 
   const processor = processorFactory();
+  const repoProcessor = new RepositoryProcessor();
   const results: RepoResult[] = [];
   let successCount = 0;
   let failCount = 0;
@@ -374,6 +375,31 @@ export async function runProtect(
       } else if (result.success) {
         logger.success(i + 1, repoName, result.message);
         successCount++;
+
+        // Update manifest with ruleset tracking if there are rulesets to track
+        if (result.manifestUpdate && result.manifestUpdate.rulesets.length > 0) {
+          const workDir = resolve(
+            join(options.workDir ?? "./tmp", generateWorkspaceName(i))
+          );
+          logger.progress(i + 1, repoName, "Updating manifest...");
+          const manifestResult = await repoProcessor.updateManifestOnly(
+            repoInfo,
+            repoConfig,
+            {
+              branchName: "chore/sync-rulesets",
+              workDir,
+              configId: config.id,
+              dryRun: options.dryRun,
+              retries: options.retries,
+            },
+            result.manifestUpdate
+          );
+          if (!manifestResult.success && !manifestResult.skipped) {
+            logger.info(
+              `Warning: Failed to update manifest for ${repoName}: ${manifestResult.message}`
+            );
+          }
+        }
       } else {
         logger.error(i + 1, repoName, result.message);
         failCount++;
