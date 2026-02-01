@@ -595,6 +595,32 @@ export class RepositoryProcessor {
   }
 
   /**
+   * Updates only the manifest file with ruleset tracking.
+   * Used by protect command to persist state for deleteOrphaned.
+   * Reuses existing clone/commit/PR workflow.
+   */
+  async updateManifestOnly(
+    repoInfo: RepoInfo,
+    repoConfig: RepoConfig,
+    options: ProcessorOptions,
+    manifestUpdate: { rulesets: string[] }
+  ): Promise<ProcessorResult> {
+    const repoName = getRepoDisplayName(repoInfo);
+
+    // TODO: Implement
+    void repoConfig;
+    void options;
+    void manifestUpdate;
+
+    return {
+      success: true,
+      repoName,
+      message: "Manifest update not yet implemented",
+      skipped: true,
+    };
+  }
+
+  /**
    * Format commit message based on files changed (excludes skipped files)
    */
   private formatCommitMessage(files: FileAction[]): string {
