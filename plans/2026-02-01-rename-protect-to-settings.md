@@ -15,17 +15,20 @@
 ## Task 1: Rename source code identifiers
 
 **Files:**
+
 - Modify: `src/index.ts`
 - Modify: `src/cli.ts`
 
 **Step 1: Update src/index.ts type and function names**
 
 Replace at line 100:
+
 ```typescript
 type SettingsOptions = SharedOptions;
 ```
 
 Replace comment at line 278-280:
+
 ```typescript
 // =============================================================================
 // Settings Command
@@ -33,17 +36,20 @@ Replace comment at line 278-280:
 ```
 
 Replace function name at line 282:
+
 ```typescript
 export async function runSettings(
   options: SettingsOptions,
 ```
 
 Replace comment at line 356:
+
 ```typescript
-    // Note: For settings command, we don't clone repos - we work with the API directly.
+// Note: For settings command, we don't clone repos - we work with the API directly.
 ```
 
 Replace command definition at lines 473-484:
+
 ```typescript
 // Settings command (ruleset management)
 const settingsCommand = new Command("settings")
@@ -62,8 +68,9 @@ program.addCommand(settingsCommand);
 **Step 2: Update src/cli.ts subcommands array**
 
 Replace line 8:
+
 ```typescript
-  const subcommands = ["sync", "settings", "help"];
+const subcommands = ["sync", "settings", "help"];
 ```
 
 **Step 3: Build and verify compilation**
@@ -85,11 +92,13 @@ Refs #297"
 ## Task 2: Update unit tests
 
 **Files:**
+
 - Modify: `src/index.test.ts`
 
 **Step 1: Update imports and test descriptions**
 
 Find and replace all occurrences:
+
 - `"protect command CLI"` → `"settings command CLI"`
 - `"protect --help"` → `"settings --help"`
 - `runProtect` → `runSettings`
@@ -98,6 +107,7 @@ Find and replace all occurrences:
 - Test descriptions mentioning "protect" → "settings"
 
 Key locations:
+
 - Lines 1058-1151: Describe block and tests
 - Lines 1157-1408: runSettings test suite
 
@@ -120,6 +130,7 @@ Refs #297"
 ## Task 3: Rename integration test files
 
 **Files:**
+
 - Rename: `test/integration/github-protect.test.ts` → `test/integration/github-settings.test.ts`
 - Rename: `fixtures/integration-test-config-github-protect.yaml` → `fixtures/integration-test-config-github-settings.yaml`
 
@@ -133,6 +144,7 @@ git mv fixtures/integration-test-config-github-protect.yaml fixtures/integration
 **Step 2: Update integration test content**
 
 In `test/integration/github-settings.test.ts`:
+
 - Update describe block: `"GitHub Settings Integration Test"`
 - Update test names: `"settings creates a ruleset"`, etc.
 - Update command: `"node dist/cli.js settings --config ${configPath}"`
@@ -141,6 +153,7 @@ In `test/integration/github-settings.test.ts`:
 **Step 3: Update fixture file content**
 
 In `fixtures/integration-test-config-github-settings.yaml`:
+
 - Update comment: `# Integration test config for xfg settings`
 - Update id: `id: integration-test-github-settings`
 - Update placeholder: `.xfg-settings-test:`
@@ -159,11 +172,13 @@ Refs #297"
 ## Task 4: Update package.json script
 
 **Files:**
+
 - Modify: `package.json`
 
 **Step 1: Rename test script**
 
 Replace line 35:
+
 ```json
     "test:integration:github-settings": "npm run build && node --import tsx --test test/integration/github-settings.test.ts",
 ```
@@ -182,13 +197,15 @@ Refs #297"
 ## Task 5: Update action.yml
 
 **Files:**
+
 - Modify: `action.yml`
 
 **Step 1: Update command input description**
 
 Replace line 11:
+
 ```yaml
-    description: "Command to run (sync or settings)"
+description: "Command to run (sync or settings)"
 ```
 
 **Step 2: Commit**
@@ -205,53 +222,62 @@ Refs #297"
 ## Task 6: Update CI workflow
 
 **Files:**
+
 - Modify: `.github/workflows/ci.yaml`
 
 **Step 1: Rename job and references**
 
 Replace line 210:
+
 ```yaml
-  integration-test-github-settings:
+integration-test-github-settings:
 ```
 
 Replace line 218:
+
 ```yaml
-      group: integration-github-settings
+group: integration-github-settings
 ```
 
 Replace line 247:
+
 ```yaml
-      - name: Run GitHub settings integration tests
+- name: Run GitHub settings integration tests
 ```
 
 Replace line 250:
+
 ```yaml
-        run: npm run test:integration:github-settings
+run: npm run test:integration:github-settings
 ```
 
 Replace lines 423-428:
+
 ```yaml
-      # ========== Settings Test ==========
-      - name: "[Settings] Run xfg action with settings command"
-        uses: ./
-        with:
-          command: settings
-          config: ./fixtures/integration-test-config-github-settings.yaml
+# ========== Settings Test ==========
+- name: "[Settings] Run xfg action with settings command"
+  uses: ./
+  with:
+    command: settings
+    config: ./fixtures/integration-test-config-github-settings.yaml
 ```
 
 Replace lines 432-433:
+
 ```yaml
-      - name: "[Settings] Validate - verify ruleset was created"
+- name: "[Settings] Validate - verify ruleset was created"
 ```
 
 Replace lines 443-444:
+
 ```yaml
-      - name: "[Settings] Cleanup - delete test ruleset"
+- name: "[Settings] Cleanup - delete test ruleset"
 ```
 
 Replace line 462 in summary job needs:
+
 ```yaml
-      - "integration-test-github-settings"
+- "integration-test-github-settings"
 ```
 
 **Step 2: Commit**
@@ -268,6 +294,7 @@ Refs #297"
 ## Task 7: Update documentation
 
 **Files:**
+
 - Modify: `docs/index.md`
 - Modify: `docs/usage/index.md`
 - Modify: `docs/reference/cli-options.md`
@@ -279,12 +306,14 @@ Refs #297"
 **Step 1: Update all documentation files**
 
 Global replacements in all docs:
+
 - `xfg protect` → `xfg settings`
 - `protect command` → `settings command`
 - `"protect"` → `"settings"` (in code blocks)
 - `sync or protect` → `sync or settings`
 
 Key files and locations:
+
 - `docs/index.md`: Lines 8, 52, 74
 - `docs/usage/index.md`: Lines 10, 21, 25, 28, 41-48, 75
 - `docs/reference/cli-options.md`: Lines 3, 10, 63, 66-90 (entire "Protect Options" → "Settings Options")
