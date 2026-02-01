@@ -484,9 +484,7 @@ export async function runSettings(
 
 program
   .name("xfg")
-  .description(
-    "Sync configuration files and manage GitHub Rulesets across repositories"
-  )
+  .description("Sync files and manage settings across repositories")
   .version(packageJson.version);
 
 // Sync command (file synchronization)
