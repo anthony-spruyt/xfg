@@ -372,6 +372,9 @@ jobs:
         with:
           config: ./fixtures/integration-test-action-github.yaml
           branch: ${{ env.APP_BRANCH }}
+          # Include github-token to simulate real usage where both are set
+          # This tests that GitHub App credentials take precedence over PAT
+          github-token: ${{ github.token }}
           github-app-id: ${{ vars.TEST_APP_ID }}
           github-app-private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
