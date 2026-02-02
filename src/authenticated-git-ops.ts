@@ -4,6 +4,16 @@ import { CommandExecutor, defaultExecutor } from "./command-executor.js";
 import { withRetry } from "./retry-utils.js";
 
 /**
+ * Internal interface for accessing GitOps private properties.
+ * Used for extracting executor/workDir/retries via reflection.
+ */
+interface GitOpsInternal {
+  executor?: CommandExecutor;
+  workDir?: string;
+  retries?: number;
+}
+
+/**
  * Options for authenticated git operations.
  */
 export interface GitAuthOptions {
@@ -37,12 +47,10 @@ export class AuthenticatedGitOps {
     this.gitOps = gitOps;
     this.auth = auth;
     // Extract executor and workDir from gitOps via reflection
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.executor = (gitOps as any).executor ?? defaultExecutor;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.workDir = (gitOps as any).workDir ?? ".";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.retries = (gitOps as any).retries ?? 3;
+    const internal = gitOps as unknown as GitOpsInternal;
+    this.executor = internal.executor ?? defaultExecutor;
+    this.workDir = internal.workDir ?? ".";
+    this.retries = internal.retries ?? 3;
   }
 
   /**
