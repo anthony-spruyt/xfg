@@ -89,6 +89,10 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
    *
    * Uses a repo-specific URL pattern (including owner/repo) so it has a LONGER
    * prefix match than any global config and takes precedence.
+   *
+   * Handles both HTTPS and SSH URL formats since the remote origin may be either:
+   * - HTTPS: https://github.com/owner/repo
+   * - SSH: git@github.com:owner/repo
    */
   private getGitPrefix(): string {
     if (!this.auth) {
@@ -100,8 +104,14 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
     // Our config:    url."https://x-access-token:APP@github.com/owner/repo".insteadOf = "https://github.com/owner/repo"
     // The longer prefix (owner/repo) takes precedence in git's URL matching
     const repoPath = owner && repo ? `${owner}/${repo}` : "";
-    const urlOverride = `url."https://x-access-token:${token}@${host}/${repoPath}".insteadOf="https://${host}/${repoPath}"`;
-    return `git -c ${escapeShellArg(urlOverride)}`;
+    const authUrl = `https://x-access-token:${token}@${host}/${repoPath}`;
+
+    // Rewrite HTTPS URLs
+    const httpsOverride = `url."${authUrl}".insteadOf="https://${host}/${repoPath}"`;
+    // Rewrite SSH URLs (git@host:owner/repo format)
+    const sshOverride = `url."${authUrl}".insteadOf="git@${host}:${repoPath}"`;
+
+    return `git -c ${escapeShellArg(httpsOverride)} -c ${escapeShellArg(sshOverride)}`;
   }
 
   private async execWithRetry(command: string): Promise<string> {
