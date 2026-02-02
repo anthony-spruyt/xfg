@@ -240,7 +240,7 @@ describe("File Reference Resolver", () => {
       };
 
       const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
-      assert.deepStrictEqual(result.files["config.json"].content, {
+      assert.deepStrictEqual(result.files!["config.json"].content, {
         base: true,
       });
     });
@@ -289,10 +289,10 @@ describe("File Reference Resolver", () => {
       };
 
       const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
-      assert.deepStrictEqual(result.files["config.json"].content, {
+      assert.deepStrictEqual(result.files!["config.json"].content, {
         inline: true,
       });
-      assert.strictEqual(result.files["text.txt"].content, "plain text");
+      assert.strictEqual(result.files!["text.txt"].content, "plain text");
     });
 
     test("preserves file exclusions (false values)", () => {
@@ -335,7 +335,7 @@ describe("File Reference Resolver", () => {
       };
 
       const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
-      const fileConfig = result.files["config.yaml"];
+      const fileConfig = result.files!["config.yaml"];
       assert.deepStrictEqual(fileConfig.content, { key: "value" });
       assert.strictEqual(fileConfig.createOnly, true);
       assert.strictEqual(fileConfig.header, "Auto-generated");
@@ -362,7 +362,7 @@ describe("File Reference Resolver", () => {
       resolveFileReferencesInConfig(raw, { configDir: testDir });
       // Original should still have the file reference
       assert.strictEqual(
-        raw.files["config.json"].content,
+        raw.files!["config.json"].content,
         "@templates/base.json"
       );
     });
@@ -390,11 +390,11 @@ describe("File Reference Resolver", () => {
       };
 
       const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
-      assert.deepStrictEqual(result.files[".prettierrc.json"].content, {
+      assert.deepStrictEqual(result.files![".prettierrc.json"].content, {
         semi: true,
       });
-      assert.strictEqual(result.files[".gitignore"].content, "node_modules/");
-      assert.deepStrictEqual(result.files["inline.json"].content, {
+      assert.strictEqual(result.files![".gitignore"].content, "node_modules/");
+      assert.deepStrictEqual(result.files!["inline.json"].content, {
         inline: true,
       });
     });
