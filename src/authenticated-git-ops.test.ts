@@ -432,4 +432,229 @@ describe("AuthenticatedGitOps", () => {
       );
     });
   });
+
+  describe("specialized network operations", () => {
+    it("lsRemote uses authenticated command", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          return "abc123\trefs/heads/main\n";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps, {
+        token: "test-token",
+        host: "github.com",
+        owner: "owner",
+        repo: "repo",
+      });
+
+      const result = await authOps.lsRemote("main");
+
+      assert.ok(commands[0].includes("ls-remote --exit-code --heads origin"));
+      assert.ok(commands[0].includes("-c"));
+      assert.ok(commands[0].includes("test-token"));
+      assert.equal(result, "abc123\trefs/heads/main\n");
+    });
+
+    it("pushRefspec uses authenticated command", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          return "";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps, {
+        token: "test-token",
+        host: "github.com",
+        owner: "owner",
+        repo: "repo",
+      });
+
+      await authOps.pushRefspec("HEAD:feature-branch");
+
+      assert.ok(commands[0].includes("push"));
+      assert.ok(commands[0].includes("HEAD:feature-branch"));
+      assert.ok(commands[0].includes("-c"));
+      assert.ok(commands[0].includes("test-token"));
+    });
+
+    it("pushRefspec with delete flag uses --delete", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          return "";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps, {
+        token: "test-token",
+        host: "github.com",
+        owner: "owner",
+        repo: "repo",
+      });
+
+      await authOps.pushRefspec("feature-branch", { delete: true });
+
+      assert.ok(commands[0].includes("--delete"));
+      assert.ok(commands[0].includes("feature-branch"));
+    });
+
+    it("fetchBranch uses authenticated command", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          return "";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps, {
+        token: "test-token",
+        host: "github.com",
+        owner: "owner",
+        repo: "repo",
+      });
+
+      await authOps.fetchBranch("feature-branch");
+
+      assert.ok(commands[0].includes("fetch origin"));
+      assert.ok(commands[0].includes("feature-branch"));
+      assert.ok(commands[0].includes("refs/remotes/origin/"));
+      assert.ok(commands[0].includes("-c"));
+      assert.ok(commands[0].includes("test-token"));
+    });
+
+    it("getDefaultBranch with auth uses remote show origin", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          if (cmd.includes("remote show origin")) {
+            return "* remote origin\n  HEAD branch: develop\n";
+          }
+          return "";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps, {
+        token: "test-token",
+        host: "github.com",
+        owner: "owner",
+        repo: "repo",
+      });
+
+      const result = await authOps.getDefaultBranch();
+
+      assert.equal(result.branch, "develop");
+      assert.equal(result.method, "remote HEAD");
+      assert.ok(commands[0].includes("remote show origin"));
+      assert.ok(commands[0].includes("-c"));
+    });
+
+    it("getDefaultBranch falls back to origin/main when remote show fails", async () => {
+      let callCount = 0;
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          callCount++;
+          if (cmd.includes("remote show origin")) {
+            throw new Error("remote not available");
+          }
+          if (cmd.includes("rev-parse --verify origin/main")) {
+            return "abc123";
+          }
+          throw new Error("unexpected command");
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps, {
+        token: "test-token",
+        host: "github.com",
+        owner: "owner",
+        repo: "repo",
+      });
+
+      const result = await authOps.getDefaultBranch();
+
+      assert.equal(result.branch, "main");
+      assert.equal(result.method, "origin/main exists");
+    });
+
+    it("getDefaultBranch falls back to origin/master when main not found", async () => {
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          if (cmd.includes("remote show origin")) {
+            throw new Error("remote not available");
+          }
+          if (cmd.includes("rev-parse --verify origin/main")) {
+            throw new Error("not found");
+          }
+          if (cmd.includes("rev-parse --verify origin/master")) {
+            return "abc123";
+          }
+          throw new Error("unexpected command");
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps, {
+        token: "test-token",
+        host: "github.com",
+        owner: "owner",
+        repo: "repo",
+      });
+
+      const result = await authOps.getDefaultBranch();
+
+      assert.equal(result.branch, "master");
+      assert.equal(result.method, "origin/master exists");
+    });
+
+    it("getDefaultBranch returns fallback default when all methods fail", async () => {
+      const mockExecutor = {
+        exec: async () => {
+          throw new Error("all methods fail");
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps, {
+        token: "test-token",
+        host: "github.com",
+        owner: "owner",
+        repo: "repo",
+      });
+
+      const result = await authOps.getDefaultBranch();
+
+      assert.equal(result.branch, "main");
+      assert.equal(result.method, "fallback default");
+    });
+  });
 });
