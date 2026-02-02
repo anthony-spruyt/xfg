@@ -258,5 +258,35 @@ describe("GitCommitStrategy", () => {
         "Should not call raw git push when gitOps is provided"
       );
     });
+
+    test("falls back to raw git push when gitOps is not provided", async () => {
+      mockExecutor.responses.set("git rev-parse HEAD", "abc123def456");
+
+      const strategy = new GitCommitStrategy(mockExecutor);
+
+      await strategy.commit({
+        repoInfo: githubRepoInfo,
+        branchName: "test-branch",
+        message: "test commit",
+        fileChanges: [{ path: "test.txt", content: "content" }],
+        workDir: testDir,
+        // gitOps NOT provided
+        force: true,
+      });
+
+      // Verify raw git push WAS called
+      const pushCalls = mockExecutor.calls.filter((c) =>
+        c.command.includes("git push")
+      );
+      assert.strictEqual(
+        pushCalls.length,
+        1,
+        "Should call raw git push when no gitOps"
+      );
+      assert.ok(
+        pushCalls[0].command.includes("--force-with-lease"),
+        "Should use force flag"
+      );
+    });
   });
 });
