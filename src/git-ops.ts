@@ -75,6 +75,16 @@ export class GitOps {
       `git clone ${escapeShellArg(gitUrl)} .`,
       this.workDir
     );
+
+    // Reset remote URL to canonical form after clone.
+    // Git's url.insteadOf rewrites can bake credentials into the remote URL
+    // during clone. This prevents per-command -c url.insteadOf overrides from
+    // matching (they match the canonical URL, not the rewritten one).
+    // Resetting ensures subsequent operations can use different credentials.
+    await this.exec(
+      `git remote set-url origin ${escapeShellArg(gitUrl)}`,
+      this.workDir
+    );
   }
 
   /**
