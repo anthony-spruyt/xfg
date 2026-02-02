@@ -84,6 +84,8 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
+        GITHUB_APP_ID: ${{ inputs.github-app-id }}
+        GITHUB_APP_PRIVATE_KEY: ${{ inputs.github-app-private-key }}
         AZURE_DEVOPS_TOKEN: ${{ inputs.azure-devops-token }}
         GITLAB_TOKEN: ${{ inputs.gitlab-token }}
       run: |
