@@ -234,6 +234,22 @@ describe("RepositoryProcessor", () => {
         // No-op for mock
       }
 
+      // AuthenticatedGitOps methods (stubs for testing)
+      async lsRemote(_branchName: string): Promise<string> {
+        return "";
+      }
+
+      async pushRefspec(
+        _refspec: string,
+        _options?: { delete?: boolean }
+      ): Promise<void> {
+        // No-op for mock
+      }
+
+      async fetchBranch(_branchName: string): Promise<void> {
+        // No-op for mock
+      }
+
       private getWorkDir(): string {
         return (this as unknown as { workDir: string }).workDir;
       }
@@ -2550,6 +2566,22 @@ describe("RepositoryProcessor", () => {
       }
 
       override async fetch(): Promise<void> {
+        // No-op for mock
+      }
+
+      // AuthenticatedGitOps methods (stubs for testing)
+      async lsRemote(_branchName: string): Promise<string> {
+        return "";
+      }
+
+      async pushRefspec(
+        _refspec: string,
+        _options?: { delete?: boolean }
+      ): Promise<void> {
+        // No-op for mock
+      }
+
+      async fetchBranch(_branchName: string): Promise<void> {
         // No-op for mock
       }
 

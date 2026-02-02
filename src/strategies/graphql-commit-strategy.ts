@@ -6,6 +6,7 @@ import {
 import { CommandExecutor, defaultExecutor } from "../command-executor.js";
 import { isGitHubRepo, GitHubRepoInfo } from "../repo-detector.js";
 import { escapeShellArg } from "../shell-utils.js";
+import { AuthenticatedGitOps } from "../authenticated-git-ops.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
@@ -101,6 +102,9 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       );
     }
 
+    // Get gitOps for authenticated network operations
+    const gitOps = options.gitOps;
+
     // Ensure the branch exists on remote and is up-to-date with local HEAD
     // createCommitOnBranch requires the branch to already exist
     // For PR branches (force=true), we force-update to ensure fresh start from main
@@ -108,10 +112,7 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       branchName,
       workDir,
       options.force,
-      token,
-      githubInfo.host,
-      githubInfo.owner,
-      githubInfo.repo
+      gitOps
     );
 
     // Retry loop for expectedHeadOid mismatch
@@ -121,16 +122,14 @@ export class GraphQLCommitStrategy implements CommitStrategy {
         // Fetch from remote to ensure we have the latest HEAD
         // This is critical for expectedHeadOid to match
         const safeBranch = escapeShellArg(branchName);
-        await this.executor.exec(
-          this.buildAuthenticatedGitCommand(
-            `fetch origin ${safeBranch}:refs/remotes/origin/${safeBranch}`,
-            token,
-            githubInfo.host,
-            githubInfo.owner,
-            githubInfo.repo
-          ),
-          workDir
-        );
+        if (gitOps) {
+          await gitOps.fetchBranch(branchName);
+        } else {
+          await this.executor.exec(
+            `git fetch origin ${safeBranch}:refs/remotes/origin/${safeBranch}`,
+            workDir
+          );
+        }
 
         // Get the remote HEAD SHA for this branch (not local HEAD)
         const headSha = await this.executor.exec(
@@ -271,38 +270,6 @@ export class GraphQLCommitStrategy implements CommitStrategy {
   }
 
   /**
-   * Build a git command with optional token authentication override.
-   * When a token is provided, uses -c url.insteadOf to override the global
-   * git config and authenticate with the provided token instead.
-   *
-   * This is critical for GitHub App authentication where the global git config
-   * may have a PAT token embedded, but we need to use the GitHub App installation token.
-   *
-   * Uses a repo-specific URL pattern (including owner/repo) so it has a LONGER
-   * prefix match than the global config and takes precedence.
-   *
-   * Applies to all remote operations: push, fetch, ls-remote, etc.
-   */
-  private buildAuthenticatedGitCommand(
-    gitArgs: string,
-    token?: string,
-    host: string = "github.com",
-    owner?: string,
-    repo?: string
-  ): string {
-    if (!token) {
-      return `git ${gitArgs}`;
-    }
-    // Use repo-specific URL pattern for LONGER prefix match to override global config
-    // Global config: url."https://x-access-token:PAT@github.com/".insteadOf = "https://github.com/"
-    // Our config:    url."https://x-access-token:APP@github.com/owner/repo".insteadOf = "https://github.com/owner/repo"
-    // The longer prefix (owner/repo) takes precedence in git's URL matching
-    const repoPath = owner && repo ? `${owner}/${repo}` : "";
-    const urlOverride = `url."https://x-access-token:${token}@${host}/${repoPath}".insteadOf="https://${host}/${repoPath}"`;
-    return `git -c ${escapeShellArg(urlOverride)} ${gitArgs}`;
-  }
-
-  /**
    * Ensure the branch exists on the remote and matches local HEAD.
    * createCommitOnBranch requires the branch to already exist.
    *
@@ -315,63 +282,50 @@ export class GraphQLCommitStrategy implements CommitStrategy {
     branchName: string,
     workDir: string,
     force?: boolean,
-    token?: string,
-    host?: string,
-    owner?: string,
-    repo?: string
+    gitOps?: AuthenticatedGitOps
   ): Promise<void> {
     // Branch name was validated in commit(), safe for shell use
     try {
       // Check if the branch exists on remote
-      await this.executor.exec(
-        this.buildAuthenticatedGitCommand(
-          `ls-remote --exit-code --heads origin ${escapeShellArg(branchName)}`,
-          token,
-          host,
-          owner,
-          repo
-        ),
-        workDir
-      );
+      if (gitOps) {
+        await gitOps.lsRemote(branchName);
+      } else {
+        await this.executor.exec(
+          `git ls-remote --exit-code --heads origin ${escapeShellArg(branchName)}`,
+          workDir
+        );
+      }
 
       // Branch exists - for PR branches, delete and recreate to ensure fresh from main
       if (force) {
-        await this.executor.exec(
-          this.buildAuthenticatedGitCommand(
-            `push origin --delete ${escapeShellArg(branchName)}`,
-            token,
-            host,
-            owner,
-            repo
-          ),
-          workDir
-        );
-        // Now push fresh branch from local HEAD
-        await this.executor.exec(
-          this.buildAuthenticatedGitCommand(
-            `push -u origin HEAD:${escapeShellArg(branchName)}`,
-            token,
-            host,
-            owner,
-            repo
-          ),
-          workDir
-        );
+        if (gitOps) {
+          await gitOps.pushRefspec(branchName, { delete: true });
+          // Now push fresh branch from local HEAD
+          await gitOps.pushRefspec(`HEAD:${branchName}`);
+        } else {
+          await this.executor.exec(
+            `git push origin --delete ${escapeShellArg(branchName)}`,
+            workDir
+          );
+          // Now push fresh branch from local HEAD
+          await this.executor.exec(
+            `git push -u origin HEAD:${escapeShellArg(branchName)}`,
+            workDir
+          );
+        }
       }
       // For direct mode (force=false), leave existing branch as-is
     } catch {
       // Branch doesn't exist on remote, push it
       // This pushes the current local branch to create it on remote
-      await this.executor.exec(
-        this.buildAuthenticatedGitCommand(
-          `push -u origin HEAD:${escapeShellArg(branchName)}`,
-          token,
-          host,
-          owner,
-          repo
-        ),
-        workDir
-      );
+      if (gitOps) {
+        await gitOps.pushRefspec(`HEAD:${branchName}`);
+      } else {
+        await this.executor.exec(
+          `git push -u origin HEAD:${escapeShellArg(branchName)}`,
+          workDir
+        );
+      }
     }
   }
 

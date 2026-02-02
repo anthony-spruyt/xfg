@@ -497,6 +497,7 @@ export class RepositoryProcessor {
             // Use force push (--force-with-lease) for PR branches, not for direct mode
             force: !isDirectMode,
             token,
+            gitOps: this.gitOps!,
           });
           this.log.info(
             `Committed: ${commitResult.sha} (verified: ${commitResult.verified})`
@@ -769,6 +770,7 @@ export class RepositoryProcessor {
           retries: this.retries,
           force: !isDirectMode,
           token,
+          gitOps: this.gitOps!,
         });
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
