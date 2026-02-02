@@ -4036,5 +4036,75 @@ describe("RepositoryProcessor", () => {
       assert.equal(result.skipped, true);
       assert.equal(result.message, "No manifest changes detected");
     });
+
+    test("uses GH_TOKEN for git auth when no GitHub App token", async () => {
+      const originalGhToken = process.env.GH_TOKEN;
+      process.env.GH_TOKEN = "ghp_test_pat_token";
+
+      try {
+        const mockLogger = createMockLogger();
+
+        // Track the auth options passed to factory
+        let capturedAuth: unknown = undefined;
+
+        const mockGitOpsFactory: GitOpsFactory = (opts, auth) => {
+          capturedAuth = auth;
+          return new MockGitOps(opts);
+        };
+
+        const processor = new RepositoryProcessor(
+          mockGitOpsFactory,
+          mockLogger
+        );
+
+        const repoInfo: GitHubRepoInfo = {
+          type: "github",
+          owner: "test-owner",
+          repo: "test-repo",
+          host: "github.com",
+          gitUrl: "git@github.com:test-owner/test-repo.git",
+        };
+
+        const repoConfig: RepoConfig = {
+          git: "git@github.com:test-owner/test-repo.git",
+          files: [],
+          prOptions: { merge: "direct" },
+        };
+
+        const options = {
+          branchName: "chore/sync-config",
+          workDir: join(testDir, `manifest-gh-token-${Date.now()}`),
+          configId: "test-config",
+          dryRun: false,
+          executor: createMockExecutor(),
+        };
+
+        await processor.updateManifestOnly(repoInfo, repoConfig, options, {
+          rulesets: ["test-ruleset"],
+        });
+
+        // Verify auth options were passed with GH_TOKEN
+        assert.ok(
+          capturedAuth,
+          "authOptions should be defined when GH_TOKEN is set"
+        );
+        const auth = capturedAuth as {
+          token: string;
+          host: string;
+          owner: string;
+          repo: string;
+        };
+        assert.strictEqual(auth.token, "ghp_test_pat_token");
+        assert.strictEqual(auth.host, "github.com");
+        assert.strictEqual(auth.owner, "test-owner");
+        assert.strictEqual(auth.repo, "test-repo");
+      } finally {
+        if (originalGhToken) {
+          process.env.GH_TOKEN = originalGhToken;
+        } else {
+          delete process.env.GH_TOKEN;
+        }
+      }
+    });
   });
 });
