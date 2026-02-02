@@ -1,4 +1,4 @@
-import { describe, test, beforeEach, afterEach } from "node:test";
+import { describe, test, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
@@ -6,6 +6,7 @@ import { GitCommitStrategy } from "./git-commit-strategy.js";
 import { GitHubRepoInfo } from "../repo-detector.js";
 import { CommitOptions } from "./commit-strategy.js";
 import { CommandExecutor } from "../command-executor.js";
+import { IAuthenticatedGitOps } from "../authenticated-git-ops.js";
 
 const testDir = join(process.cwd(), "test-git-commit-strategy-tmp");
 
@@ -214,6 +215,47 @@ describe("GitCommitStrategy", () => {
         () => strategy.commit(options),
         /Permission denied/,
         "Should throw on permanent error without retrying"
+      );
+    });
+
+    test("uses gitOps.push() when gitOps is provided", async () => {
+      const mockGitOps = {
+        push: mock.fn(async () => {}),
+      };
+
+      mockExecutor.responses.set("git rev-parse HEAD", "abc123def456");
+
+      const strategy = new GitCommitStrategy(mockExecutor);
+
+      await strategy.commit({
+        repoInfo: githubRepoInfo,
+        branchName: "test-branch",
+        message: "test commit",
+        fileChanges: [{ path: "test.txt", content: "content" }],
+        workDir: testDir,
+        gitOps: mockGitOps as unknown as IAuthenticatedGitOps,
+        force: true,
+      });
+
+      // Verify gitOps.push was called
+      assert.strictEqual(
+        mockGitOps.push.mock.calls.length,
+        1,
+        "gitOps.push should be called once"
+      );
+      assert.deepStrictEqual(mockGitOps.push.mock.calls[0].arguments, [
+        "test-branch",
+        { force: true },
+      ]);
+
+      // Verify raw git push was NOT called
+      const pushCalls = mockExecutor.calls.filter((c) =>
+        c.command.includes("git push")
+      );
+      assert.strictEqual(
+        pushCalls.length,
+        0,
+        "Should not call raw git push when gitOps is provided"
       );
     });
   });

@@ -821,14 +821,15 @@ describe("RepositoryProcessor", () => {
 
     test("direct mode should push to default branch", async () => {
       const mockLogger = createMockLogger();
+      let capturedMockGitOps: MockGitOpsForDirectMode | undefined;
 
       const mockFactory: GitOpsFactory = (opts, _auth) => {
-        return new AuthenticatedGitOps(new MockGitOpsForDirectMode(opts));
+        capturedMockGitOps = new MockGitOpsForDirectMode(opts);
+        return new AuthenticatedGitOps(capturedMockGitOps);
       };
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `direct-mode-push-${Date.now()}`);
-      const trackingExecutor = createTrackingMockExecutor();
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -841,11 +842,11 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: trackingExecutor,
+        executor: createMockExecutor(),
       });
 
       assert.equal(
-        trackingExecutor.pushBranch,
+        capturedMockGitOps!.pushBranch,
         "main",
         "Should push to default branch (main)"
       );
@@ -861,7 +862,9 @@ describe("RepositoryProcessor", () => {
       const mockLogger = createMockLogger();
 
       const mockFactory: GitOpsFactory = (opts, _auth) => {
-        return new AuthenticatedGitOps(new MockGitOpsForDirectMode(opts));
+        const mock = new MockGitOpsForDirectMode(opts);
+        mock.shouldRejectPush = true; // Enable push rejection
+        return new AuthenticatedGitOps(mock);
       };
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
@@ -869,19 +872,6 @@ describe("RepositoryProcessor", () => {
         testDir,
         `direct-mode-protection-${Date.now()}`
       );
-
-      // Create executor that rejects push commands
-      const rejectingExecutor: CommandExecutor = {
-        async exec(command: string): Promise<string> {
-          if (command.includes("git push")) {
-            throw new Error("Push rejected (branch protection)");
-          }
-          if (command.includes("git rev-parse HEAD")) {
-            return "abc123";
-          }
-          return "";
-        },
-      };
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -894,7 +884,7 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: rejectingExecutor,
+        executor: createMockExecutor(),
       });
 
       assert.equal(result.success, false, "Should fail");
@@ -949,14 +939,15 @@ describe("RepositoryProcessor", () => {
 
     test("direct mode should use force: false for push (issue #183)", async () => {
       const mockLogger = createMockLogger();
+      let capturedMockGitOps: MockGitOpsForDirectMode | undefined;
 
       const mockFactory: GitOpsFactory = (opts, _auth) => {
-        return new AuthenticatedGitOps(new MockGitOpsForDirectMode(opts));
+        capturedMockGitOps = new MockGitOpsForDirectMode(opts);
+        return new AuthenticatedGitOps(capturedMockGitOps);
       };
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `direct-mode-force-${Date.now()}`);
-      const trackingExecutor = createTrackingMockExecutor();
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -969,11 +960,11 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: trackingExecutor,
+        executor: createMockExecutor(),
       });
 
       assert.equal(
-        trackingExecutor.pushForce,
+        capturedMockGitOps!.pushForce,
         false,
         "Direct mode should use force: false (never force push to default branch)"
       );
@@ -981,14 +972,15 @@ describe("RepositoryProcessor", () => {
 
     test("PR mode should use force: true for push (issue #183)", async () => {
       const mockLogger = createMockLogger();
+      let capturedMockGitOps: MockGitOpsForDirectMode | undefined;
 
       const mockFactory: GitOpsFactory = (opts, _auth) => {
-        return new AuthenticatedGitOps(new MockGitOpsForDirectMode(opts));
+        capturedMockGitOps = new MockGitOpsForDirectMode(opts);
+        return new AuthenticatedGitOps(capturedMockGitOps);
       };
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `pr-mode-force-${Date.now()}`);
-      const trackingExecutor = createTrackingMockExecutor();
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -1001,11 +993,11 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
-        executor: trackingExecutor,
+        executor: createMockExecutor(),
       });
 
       assert.equal(
-        trackingExecutor.pushForce,
+        capturedMockGitOps!.pushForce,
         true,
         "PR mode should use force: true (--force-with-lease for sync branch)"
       );
@@ -3855,6 +3847,13 @@ describe("RepositoryProcessor", () => {
 
       override wouldChange(_fileName: string, _content: string): boolean {
         return true;
+      }
+
+      override async push(
+        _branchName: string,
+        _options?: { force?: boolean }
+      ): Promise<void> {
+        // No-op for mock
       }
 
       // IAuthenticatedGitOps methods

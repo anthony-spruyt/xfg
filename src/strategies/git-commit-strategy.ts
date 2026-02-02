@@ -26,7 +26,14 @@ export class GitCommitStrategy implements CommitStrategy {
    * @returns Commit result with SHA and verified: false (no signature)
    */
   async commit(options: CommitOptions): Promise<CommitResult> {
-    const { branchName, message, workDir, retries = 3, force = true } = options;
+    const {
+      branchName,
+      message,
+      workDir,
+      retries = 3,
+      force = true,
+      gitOps,
+    } = options;
 
     // Stage all changes
     await this.executor.exec("git add -A", workDir);
@@ -37,14 +44,17 @@ export class GitCommitStrategy implements CommitStrategy {
       workDir
     );
 
-    // Build push command - use --force-with-lease for PR branches, regular push for direct mode
-    const forceFlag = force ? "--force-with-lease " : "";
-    const pushCommand = `git push ${forceFlag}-u origin ${escapeShellArg(branchName)}`;
-
-    // Push with retry for transient network failures
-    await withRetry(() => this.executor.exec(pushCommand, workDir), {
-      retries,
-    });
+    // Push with authentication via gitOps if available
+    if (gitOps) {
+      await gitOps.push(branchName, { force });
+    } else {
+      // Fallback for non-authenticated scenarios (shouldn't happen in practice)
+      const forceFlag = force ? "--force-with-lease " : "";
+      const pushCommand = `git push ${forceFlag}-u origin ${escapeShellArg(branchName)}`;
+      await withRetry(() => this.executor.exec(pushCommand, workDir), {
+        retries,
+      });
+    }
 
     // Get the commit SHA
     const sha = await this.executor.exec("git rev-parse HEAD", workDir);
