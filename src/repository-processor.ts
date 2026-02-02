@@ -151,10 +151,12 @@ export class RepositoryProcessor {
       };
     }
 
-    // Build auth options if we have a token
-    const authOptions: GitAuthOptions | undefined = token
+    // Build auth options - use installation token OR fall back to GH_TOKEN for PAT flow
+    const effectiveToken =
+      token ?? (isGitHubRepo(repoInfo) ? process.env.GH_TOKEN : undefined);
+    const authOptions: GitAuthOptions | undefined = effectiveToken
       ? {
-          token,
+          token: effectiveToken,
           host: isGitHubRepo(repoInfo)
             ? (repoInfo as GitHubRepoInfo).host
             : "github.com",

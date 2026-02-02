@@ -3693,6 +3693,106 @@ describe("RepositoryProcessor", () => {
         "Host should be the custom enterprise host"
       );
     });
+
+    test("uses GH_TOKEN for git auth when no GitHub App token", async () => {
+      // Set up GH_TOKEN in environment (no GitHub App credentials)
+      const originalGhToken = process.env.GH_TOKEN;
+      process.env.GH_TOKEN = "ghp_test_pat_token";
+
+      try {
+        const mockLogger = {
+          messages: [] as string[],
+          info(message: string) {
+            this.messages.push(message);
+          },
+          fileDiff() {},
+          diffSummary() {},
+        };
+
+        // Track the auth options passed to factory
+        let capturedAuth: unknown = undefined;
+
+        const mockGitOpsFactory: GitOpsFactory = (opts, auth) => {
+          capturedAuth = auth;
+          const gitOps = new GitOps(opts);
+          const mockGitOps = Object.assign(gitOps, {
+            cleanWorkspace: () => {
+              mkdirSync(opts.workDir, { recursive: true });
+            },
+            clone: async () => {},
+            getDefaultBranch: async () => ({
+              branch: "main",
+              method: "remote" as const,
+            }),
+            createBranch: async () => {},
+            fileExistsOnBranch: async () => false,
+            writeFile: () => {},
+            getFileContent: () => null,
+            wouldChange: () => true,
+            hasStagedChanges: async () => false, // Skip actual commit
+            setExecutable: async () => {},
+            fileExists: () => false,
+          });
+          return new AuthenticatedGitOps(mockGitOps);
+        };
+
+        const processor = new RepositoryProcessor(
+          mockGitOpsFactory,
+          mockLogger
+        );
+
+        await processor.process(
+          {
+            git: "git@github.com:test-owner/repo.git",
+            files: [{ fileName: "test.json", content: { key: "value" } }],
+          },
+          {
+            type: "github",
+            gitUrl: "git@github.com:test-owner/repo.git",
+            owner: "test-owner",
+            repo: "repo",
+            host: "github.com",
+          },
+          {
+            branchName: "chore/sync-config",
+            workDir: join(testDir, "gh-token-test"),
+            configId: "test-config",
+            dryRun: false,
+            executor: createMockExecutor(),
+          }
+        );
+
+        // Verify gitOpsFactory was called with auth options containing GH_TOKEN
+        assert.ok(
+          capturedAuth,
+          "authOptions should be defined when GH_TOKEN is set"
+        );
+        const auth = capturedAuth as {
+          token: string;
+          host: string;
+          owner: string;
+          repo: string;
+        };
+        assert.strictEqual(
+          auth.token,
+          "ghp_test_pat_token",
+          "Should use GH_TOKEN"
+        );
+        assert.strictEqual(
+          auth.host,
+          "github.com",
+          "Host should be github.com"
+        );
+        assert.strictEqual(auth.owner, "test-owner", "Owner should match");
+        assert.strictEqual(auth.repo, "repo", "Repo should match");
+      } finally {
+        if (originalGhToken) {
+          process.env.GH_TOKEN = originalGhToken;
+        } else {
+          delete process.env.GH_TOKEN;
+        }
+      }
+    });
   });
 
   describe("updateManifestOnly", () => {
