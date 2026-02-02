@@ -47,14 +47,15 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 
 ## Key Modules
 
-| Module                    | Purpose                                                                   |
-| ------------------------- | ------------------------------------------------------------------------- |
-| `config-normalizer.ts`    | Parses config, expands git arrays, merges content, interpolates env vars  |
-| `repository-processor.ts` | Orchestrates per-repo: clone, write files, commit, PR/push                |
-| `xfg-template.ts`         | `${xfg:repo.name}` templating for repo-specific content                   |
-| `manifest.ts`             | Tracks managed files for orphan deletion (`deleteOrphaned`)               |
-| `github-summary.ts`       | Writes job summary to `GITHUB_STEP_SUMMARY` in CI                         |
-| `config-validator.ts`     | Validates raw config; `validateForSync`/`validateForSettings` per-command |
+| Module                     | Purpose                                                                   |
+| -------------------------- | ------------------------------------------------------------------------- |
+| `config-normalizer.ts`     | Parses config, expands git arrays, merges content, interpolates env vars  |
+| `repository-processor.ts`  | Orchestrates per-repo: clone, write files, commit, PR/push                |
+| `authenticated-git-ops.ts` | Wraps GitOps with per-command auth via `-c url.insteadOf`                 |
+| `xfg-template.ts`          | `${xfg:repo.name}` templating for repo-specific content                   |
+| `manifest.ts`              | Tracks managed files for orphan deletion (`deleteOrphaned`)               |
+| `github-summary.ts`        | Writes job summary to `GITHUB_STEP_SUMMARY` in CI                         |
+| `config-validator.ts`      | Validates raw config; `validateForSync`/`validateForSettings` per-command |
 
 ## GitHub Rulesets API
 
