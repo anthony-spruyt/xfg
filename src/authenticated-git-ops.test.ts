@@ -541,6 +541,73 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(commands[0].includes("test-token"));
     });
 
+    it("lsRemote without auth uses plain git command", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          return "abc123\trefs/heads/main\n";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps); // No auth
+
+      await authOps.lsRemote("main");
+
+      assert.ok(commands.length > 0, `No commands captured`);
+      assert.ok(
+        commands[0].startsWith("git ls-remote"),
+        `Expected command to start with 'git ls-remote', got: ${commands[0]}`
+      );
+      assert.ok(
+        !commands[0].includes("-c "),
+        `Expected no -c flag in command, got: ${commands[0]}`
+      );
+    });
+
+    it("pushRefspec without auth uses plain git command", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          return "";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps); // No auth
+
+      await authOps.pushRefspec("HEAD:feature-branch");
+
+      assert.ok(commands[0].startsWith("git push"));
+      assert.ok(!commands[0].includes("-c"));
+    });
+
+    it("fetchBranch without auth uses plain git command", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          return "";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps); // No auth
+
+      await authOps.fetchBranch("feature-branch");
+
+      assert.ok(commands[0].startsWith("git fetch"));
+      assert.ok(!commands[0].includes("-c"));
+    });
+
     it("getDefaultBranch with auth uses remote show origin", async () => {
       const commands: string[] = [];
       const mockExecutor = {
