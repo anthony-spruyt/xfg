@@ -83,9 +83,6 @@ runs:
     - name: Configure git
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ inputs.github-token }}
-        GITHUB_APP_ID: ${{ inputs.github-app-id }}
-        GITHUB_APP_PRIVATE_KEY: ${{ inputs.github-app-private-key }}
         AZURE_DEVOPS_TOKEN: ${{ inputs.azure-devops-token }}
         GITLAB_TOKEN: ${{ inputs.gitlab-token }}
       run: |
@@ -97,12 +94,8 @@ runs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
         fi
 
-        # GitHub - URL rewrite for authentication (PAT only)
-        # Skip if GitHub App auth is configured - xfg handles auth dynamically per-repo
-        # The URL rewrite bakes PAT into clone URLs, preventing App token override
-        if [ -n "${GITHUB_TOKEN}" ] && [ -z "${GITHUB_APP_ID}" ] && [ -z "${GITHUB_APP_PRIVATE_KEY}" ]; then
-          git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-        fi
+        # Note: GitHub auth is handled by xfg via per-command -c url.insteadOf
+        # No global URL rewrite needed for GitHub repos
 
         # Azure DevOps - inline credential helper
         if [ -n "${AZURE_DEVOPS_TOKEN}" ]; then
