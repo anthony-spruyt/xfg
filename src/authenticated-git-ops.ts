@@ -170,10 +170,9 @@ export class AuthenticatedGitOps {
   ): Promise<void> {
     const prefix = this.getGitPrefix();
     const deleteFlag = options?.delete ? "--delete " : "";
-    // refspec is internal (e.g., "HEAD:branchName" or ":branchName")
-    // The branch part should already be validated by caller
+    const safeRefspec = escapeShellArg(refspec);
     await this.execWithRetry(
-      `${prefix} push ${deleteFlag}-u origin ${refspec}`
+      `${prefix} push ${deleteFlag}-u origin ${safeRefspec}`
     );
   }
 
