@@ -572,10 +572,10 @@ describe("AuthenticatedGitOps", () => {
     });
 
     it("getDefaultBranch falls back to origin/main when remote show fails", async () => {
-      let callCount = 0;
+      let _callCount = 0;
       const mockExecutor = {
         exec: async (cmd: string) => {
-          callCount++;
+          _callCount++;
           if (cmd.includes("remote show origin")) {
             throw new Error("remote not available");
           }
