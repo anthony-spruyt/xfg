@@ -96,8 +96,9 @@ runs:
         fi
 
         # GitHub - URL rewrite for authentication (PAT only)
-        # Note: GitHub App auth is handled dynamically per-repo by xfg
-        if [ -n "${GITHUB_TOKEN}" ]; then
+        # Skip if GitHub App auth is configured - xfg handles auth dynamically per-repo
+        # The URL rewrite bakes PAT into clone URLs, preventing App token override
+        if [ -n "${GITHUB_TOKEN}" ] && [ -z "${GITHUB_APP_ID}" ] && [ -z "${GITHUB_APP_PRIVATE_KEY}" ]; then
           git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
         fi
 
