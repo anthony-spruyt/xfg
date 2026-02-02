@@ -107,9 +107,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github
 
+      # Reconfigure URL rewrite with limited token before GitHub App tests.
+      # If xfg accidentally uses this instead of the App token, push will fail
+      # because github.token cannot push to xfg-test repo.
+      - name: Reconfigure git URL rewrite with limited token
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git config --global --unset-all url."https://x-access-token:${{ secrets.GH_PAT }}@github.com/".insteadOf || true
+          git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+
       - name: Run GitHub App integration tests
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }} # For test validation commands
+          GH_TOKEN: ${{ secrets.GH_PAT }} # For test validation commands (gh CLI)
           XFG_GITHUB_APP_ID: ${{ vars.TEST_APP_ID }}
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
         run: npm run test:integration:github-app

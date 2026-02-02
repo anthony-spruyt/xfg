@@ -153,6 +153,21 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
     // Check the verification reason
     console.log(`  Verification reason: ${verification.reason}`);
 
+    // Verify commit author is the GitHub App, NOT github-actions[bot]
+    // This catches the bug where PAT URL rewrite leaks into clone and wrong credential is used
+    console.log("\nVerifying commit author is GitHub App...");
+    const commitAuthor = exec(
+      `gh api repos/${TEST_REPO}/commits/${commitSha} --jq '.commit.author.name'`
+    );
+    console.log(`  Commit author: ${commitAuthor}`);
+
+    assert.notEqual(
+      commitAuthor,
+      "github-actions[bot]",
+      "Commit author should be GitHub App, not github-actions[bot]. " +
+        "This indicates the PAT URL rewrite leaked into the clone URL."
+    );
+
     // Verify the file exists in the PR branch
     console.log("\nVerifying file exists in PR branch...");
     const fileContent = exec(
@@ -242,6 +257,19 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
       verification.verified,
       true,
       "Direct mode commit should be verified"
+    );
+
+    // Verify commit author is GitHub App, not github-actions[bot]
+    console.log("\nVerifying commit author is GitHub App...");
+    const commitAuthor = exec(
+      `gh api repos/${TEST_REPO}/commits/${mainCommitSha} --jq '.commit.author.name'`
+    );
+    console.log(`  Commit author: ${commitAuthor}`);
+
+    assert.notEqual(
+      commitAuthor,
+      "github-actions[bot]",
+      "Direct mode commit author should be GitHub App, not github-actions[bot]"
     );
 
     // 6. Cleanup
@@ -352,6 +380,19 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
       verification.verified,
       true,
       "Deletion commit should be verified"
+    );
+
+    // Verify commit author is GitHub App, not github-actions[bot]
+    console.log("\nVerifying commit author is GitHub App...");
+    const commitAuthor = exec(
+      `gh api repos/${TEST_REPO}/commits/${mainCommitSha} --jq '.commit.author.name'`
+    );
+    console.log(`  Commit author: ${commitAuthor}`);
+
+    assert.notEqual(
+      commitAuthor,
+      "github-actions[bot]",
+      "Deletion commit author should be GitHub App, not github-actions[bot]"
     );
 
     // 7. Cleanup
