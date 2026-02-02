@@ -131,6 +131,16 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
     const prefix = this.getGitPrefix();
     const safeUrl = escapeShellArg(gitUrl);
     await this.execWithRetry(`${prefix} clone ${safeUrl} .`);
+
+    // Reset remote URL to canonical form after clone.
+    // The insteadOf rewrite during clone bakes credentials into the remote URL,
+    // which prevents subsequent insteadOf patterns from matching on push/fetch.
+    // Resetting to the original URL allows per-command auth to work correctly.
+    const canonicalUrl = escapeShellArg(gitUrl);
+    await this.executor.exec(
+      `git remote set-url origin ${canonicalUrl}`,
+      this.workDir
+    );
   }
 
   async fetch(options?: { prune?: boolean }): Promise<void> {

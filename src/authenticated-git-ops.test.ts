@@ -120,8 +120,10 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.clone("https://github.com/test-owner/test-repo.git");
 
-      // Verify the clone command includes the auth override
-      assert.strictEqual(commands.length, 1);
+      // Verify clone command + remote set-url to reset canonical URL
+      assert.strictEqual(commands.length, 2);
+
+      // First command: clone with auth override
       assert.ok(
         commands[0].includes("-c"),
         `Expected -c flag in command: ${commands[0]}`
@@ -141,6 +143,16 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(
         commands[0].includes("clone"),
         `Expected clone in command: ${commands[0]}`
+      );
+
+      // Second command: reset remote URL to canonical form
+      assert.ok(
+        commands[1].includes("git remote set-url origin"),
+        `Expected remote set-url command: ${commands[1]}`
+      );
+      assert.ok(
+        commands[1].includes("https://github.com/test-owner/test-repo.git"),
+        `Expected canonical URL in set-url command: ${commands[1]}`
       );
     });
 
