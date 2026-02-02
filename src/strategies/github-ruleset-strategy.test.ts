@@ -6,7 +6,7 @@ import {
   GitHubRuleset,
 } from "./github-ruleset-strategy.js";
 import type { Ruleset } from "../config.js";
-import type { GitHubRepoInfo, AzureRepoInfo } from "../repo-detector.js";
+import type { GitHubRepoInfo, AzureDevOpsRepoInfo } from "../repo-detector.js";
 import type { CommandExecutor } from "../command-executor.js";
 
 // Mock executor that records commands and returns configured responses
@@ -43,11 +43,11 @@ const mockGitHubRepo: GitHubRepoInfo = {
   repo: "test-repo",
   gitUrl: "git@github.com:test-org/test-repo.git",
   host: "github.com",
-  defaultBranch: "main",
 };
 
-const mockAzureRepo: AzureRepoInfo = {
-  type: "azure",
+const mockAzureRepo: AzureDevOpsRepoInfo = {
+  type: "azure-devops",
+  owner: "test-org",
   organization: "test-org",
   project: "test-project",
   repo: "test-repo",

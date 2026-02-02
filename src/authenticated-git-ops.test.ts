@@ -1,5 +1,8 @@
-import { describe, it, mock, beforeEach } from "node:test";
-import assert from "node:assert";
+import { describe, it, mock, beforeEach, type Mock } from "node:test";
+import { strict as assert } from "node:assert";
+
+// Helper type for mock function - avoids verbose casting
+type MockFn = Mock<(...args: unknown[]) => unknown>;
 import {
   AuthenticatedGitOps,
   GitAuthOptions,
@@ -43,12 +46,11 @@ describe("AuthenticatedGitOps", () => {
       await authOps.clone("https://github.com/owner/repo.git");
 
       assert.strictEqual(
-        (mockGitOps.clone as ReturnType<typeof mock.fn>).mock.calls.length,
+        (mockGitOps.clone as unknown as MockFn).mock.calls.length,
         1
       );
       assert.deepStrictEqual(
-        (mockGitOps.clone as ReturnType<typeof mock.fn>).mock.calls[0]
-          .arguments,
+        (mockGitOps.clone as unknown as MockFn).mock.calls[0].arguments,
         ["https://github.com/owner/repo.git"]
       );
     });
@@ -58,11 +60,11 @@ describe("AuthenticatedGitOps", () => {
       await authOps.push("feature-branch", { force: true });
 
       assert.strictEqual(
-        (mockGitOps.push as ReturnType<typeof mock.fn>).mock.calls.length,
+        (mockGitOps.push as unknown as MockFn).mock.calls.length,
         1
       );
       assert.deepStrictEqual(
-        (mockGitOps.push as ReturnType<typeof mock.fn>).mock.calls[0].arguments,
+        (mockGitOps.push as unknown as MockFn).mock.calls[0].arguments,
         ["feature-branch", { force: true }]
       );
     });
@@ -72,12 +74,11 @@ describe("AuthenticatedGitOps", () => {
       await authOps.fetch({ prune: true });
 
       assert.strictEqual(
-        (mockGitOps.fetch as ReturnType<typeof mock.fn>).mock.calls.length,
+        (mockGitOps.fetch as unknown as MockFn).mock.calls.length,
         1
       );
       assert.deepStrictEqual(
-        (mockGitOps.fetch as ReturnType<typeof mock.fn>).mock.calls[0]
-          .arguments,
+        (mockGitOps.fetch as unknown as MockFn).mock.calls[0].arguments,
         [{ prune: true }]
       );
     });
@@ -87,8 +88,7 @@ describe("AuthenticatedGitOps", () => {
       const result = await authOps.getDefaultBranch();
 
       assert.strictEqual(
-        (mockGitOps.getDefaultBranch as ReturnType<typeof mock.fn>).mock.calls
-          .length,
+        (mockGitOps.getDefaultBranch as unknown as MockFn).mock.calls.length,
         1
       );
       assert.deepStrictEqual(result, { branch: "main", method: "test" });
@@ -223,8 +223,7 @@ describe("AuthenticatedGitOps", () => {
       authOps.cleanWorkspace();
 
       assert.strictEqual(
-        (mockGitOps.cleanWorkspace as ReturnType<typeof mock.fn>).mock.calls
-          .length,
+        (mockGitOps.cleanWorkspace as unknown as MockFn).mock.calls.length,
         1
       );
     });
@@ -234,13 +233,11 @@ describe("AuthenticatedGitOps", () => {
       await authOps.createBranch("new-branch");
 
       assert.strictEqual(
-        (mockGitOps.createBranch as ReturnType<typeof mock.fn>).mock.calls
-          .length,
+        (mockGitOps.createBranch as unknown as MockFn).mock.calls.length,
         1
       );
       assert.deepStrictEqual(
-        (mockGitOps.createBranch as ReturnType<typeof mock.fn>).mock.calls[0]
-          .arguments,
+        (mockGitOps.createBranch as unknown as MockFn).mock.calls[0].arguments,
         ["new-branch"]
       );
     });
@@ -250,12 +247,11 @@ describe("AuthenticatedGitOps", () => {
       authOps.writeFile("test.txt", "content");
 
       assert.strictEqual(
-        (mockGitOps.writeFile as ReturnType<typeof mock.fn>).mock.calls.length,
+        (mockGitOps.writeFile as unknown as MockFn).mock.calls.length,
         1
       );
       assert.deepStrictEqual(
-        (mockGitOps.writeFile as ReturnType<typeof mock.fn>).mock.calls[0]
-          .arguments,
+        (mockGitOps.writeFile as unknown as MockFn).mock.calls[0].arguments,
         ["test.txt", "content"]
       );
     });
@@ -265,12 +261,11 @@ describe("AuthenticatedGitOps", () => {
       await authOps.commit("test message");
 
       assert.strictEqual(
-        (mockGitOps.commit as ReturnType<typeof mock.fn>).mock.calls.length,
+        (mockGitOps.commit as unknown as MockFn).mock.calls.length,
         1
       );
       assert.deepStrictEqual(
-        (mockGitOps.commit as ReturnType<typeof mock.fn>).mock.calls[0]
-          .arguments,
+        (mockGitOps.commit as unknown as MockFn).mock.calls[0].arguments,
         ["test message"]
       );
     });
@@ -280,8 +275,7 @@ describe("AuthenticatedGitOps", () => {
       authOps.getFileContent("test.txt");
 
       assert.strictEqual(
-        (mockGitOps.getFileContent as ReturnType<typeof mock.fn>).mock.calls
-          .length,
+        (mockGitOps.getFileContent as unknown as MockFn).mock.calls.length,
         1
       );
     });
@@ -291,8 +285,7 @@ describe("AuthenticatedGitOps", () => {
       authOps.wouldChange("test.txt", "content");
 
       assert.strictEqual(
-        (mockGitOps.wouldChange as ReturnType<typeof mock.fn>).mock.calls
-          .length,
+        (mockGitOps.wouldChange as unknown as MockFn).mock.calls.length,
         1
       );
     });
@@ -302,7 +295,7 @@ describe("AuthenticatedGitOps", () => {
       await authOps.hasChanges();
 
       assert.strictEqual(
-        (mockGitOps.hasChanges as ReturnType<typeof mock.fn>).mock.calls.length,
+        (mockGitOps.hasChanges as unknown as MockFn).mock.calls.length,
         1
       );
     });
@@ -312,8 +305,7 @@ describe("AuthenticatedGitOps", () => {
       await authOps.hasStagedChanges();
 
       assert.strictEqual(
-        (mockGitOps.hasStagedChanges as ReturnType<typeof mock.fn>).mock.calls
-          .length,
+        (mockGitOps.hasStagedChanges as unknown as MockFn).mock.calls.length,
         1
       );
     });
@@ -323,8 +315,7 @@ describe("AuthenticatedGitOps", () => {
       await authOps.fileExistsOnBranch("test.txt", "main");
 
       assert.strictEqual(
-        (mockGitOps.fileExistsOnBranch as ReturnType<typeof mock.fn>).mock.calls
-          .length,
+        (mockGitOps.fileExistsOnBranch as unknown as MockFn).mock.calls.length,
         1
       );
     });
@@ -334,7 +325,7 @@ describe("AuthenticatedGitOps", () => {
       authOps.fileExists("test.txt");
 
       assert.strictEqual(
-        (mockGitOps.fileExists as ReturnType<typeof mock.fn>).mock.calls.length,
+        (mockGitOps.fileExists as unknown as MockFn).mock.calls.length,
         1
       );
     });
@@ -344,7 +335,7 @@ describe("AuthenticatedGitOps", () => {
       authOps.deleteFile("test.txt");
 
       assert.strictEqual(
-        (mockGitOps.deleteFile as ReturnType<typeof mock.fn>).mock.calls.length,
+        (mockGitOps.deleteFile as unknown as MockFn).mock.calls.length,
         1
       );
     });
@@ -354,8 +345,7 @@ describe("AuthenticatedGitOps", () => {
       await authOps.setExecutable("test.sh");
 
       assert.strictEqual(
-        (mockGitOps.setExecutable as ReturnType<typeof mock.fn>).mock.calls
-          .length,
+        (mockGitOps.setExecutable as unknown as MockFn).mock.calls.length,
         1
       );
     });
@@ -365,8 +355,7 @@ describe("AuthenticatedGitOps", () => {
       await authOps.getChangedFiles();
 
       assert.strictEqual(
-        (mockGitOps.getChangedFiles as ReturnType<typeof mock.fn>).mock.calls
-          .length,
+        (mockGitOps.getChangedFiles as unknown as MockFn).mock.calls.length,
         1
       );
     });

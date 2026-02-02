@@ -28,6 +28,36 @@ export interface GitAuthOptions {
 }
 
 /**
+ * Interface for authenticated git operations.
+ * Enables proper mocking in tests without relying on class inheritance.
+ */
+export interface IAuthenticatedGitOps {
+  // Network operations
+  clone(gitUrl: string): Promise<void>;
+  fetch(options?: { prune?: boolean }): Promise<void>;
+  push(branchName: string, options?: { force?: boolean }): Promise<void>;
+  getDefaultBranch(): Promise<{ branch: string; method: string }>;
+  lsRemote(branchName: string): Promise<string>;
+  pushRefspec(refspec: string, options?: { delete?: boolean }): Promise<void>;
+  fetchBranch(branchName: string): Promise<void>;
+
+  // Local operations
+  cleanWorkspace(): void;
+  createBranch(branchName: string): Promise<void>;
+  writeFile(fileName: string, content: string): void;
+  setExecutable(fileName: string): Promise<void>;
+  getFileContent(fileName: string): string | null;
+  wouldChange(fileName: string, content: string): boolean;
+  hasChanges(): Promise<boolean>;
+  getChangedFiles(): Promise<string[]>;
+  hasStagedChanges(): Promise<boolean>;
+  fileExistsOnBranch(fileName: string, branch: string): Promise<boolean>;
+  fileExists(fileName: string): boolean;
+  deleteFile(fileName: string): void;
+  commit(message: string): Promise<boolean>;
+}
+
+/**
  * Wrapper around GitOps that adds authentication to network operations.
  *
  * When auth options are provided, network operations (clone, fetch, push,
@@ -36,7 +66,7 @@ export interface GitAuthOptions {
  *
  * Local operations (commit, writeFile, etc.) pass through unchanged.
  */
-export class AuthenticatedGitOps {
+export class AuthenticatedGitOps implements IAuthenticatedGitOps {
   private gitOps: GitOps;
   private auth?: GitAuthOptions;
   private executor: CommandExecutor;

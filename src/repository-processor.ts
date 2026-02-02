@@ -16,6 +16,7 @@ import { interpolateXfgContent } from "./xfg-template.js";
 import { GitOps, GitOpsOptions } from "./git-ops.js";
 import {
   AuthenticatedGitOps,
+  IAuthenticatedGitOps,
   GitAuthOptions,
 } from "./authenticated-git-ops.js";
 import { createPR, mergePR, PRResult, FileAction } from "./pr-creator.js";
@@ -77,13 +78,13 @@ export interface ProcessorOptions {
 }
 
 /**
- * Factory function type for creating AuthenticatedGitOps instances.
+ * Factory function type for creating IAuthenticatedGitOps instances.
  * Allows dependency injection for testing.
  */
 export type GitOpsFactory = (
   options: GitOpsOptions,
   auth?: GitAuthOptions
-) => AuthenticatedGitOps;
+) => IAuthenticatedGitOps;
 
 export interface ProcessorResult {
   success: boolean;
@@ -100,7 +101,7 @@ export interface ProcessorResult {
 }
 
 export class RepositoryProcessor {
-  private gitOps: AuthenticatedGitOps | null = null;
+  private gitOps: IAuthenticatedGitOps | null = null;
   private readonly gitOpsFactory: GitOpsFactory;
   private readonly log: ILogger;
   private retries: number = 3;

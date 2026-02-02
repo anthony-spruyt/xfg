@@ -6,7 +6,7 @@ import {
 import { CommandExecutor, defaultExecutor } from "../command-executor.js";
 import { isGitHubRepo, GitHubRepoInfo } from "../repo-detector.js";
 import { escapeShellArg } from "../shell-utils.js";
-import { AuthenticatedGitOps } from "../authenticated-git-ops.js";
+import { IAuthenticatedGitOps } from "../authenticated-git-ops.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
@@ -282,7 +282,7 @@ export class GraphQLCommitStrategy implements CommitStrategy {
     branchName: string,
     workDir: string,
     force?: boolean,
-    gitOps?: AuthenticatedGitOps
+    gitOps?: IAuthenticatedGitOps
   ): Promise<void> {
     // Branch name was validated in commit(), safe for shell use
     try {
