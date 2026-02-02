@@ -82,38 +82,6 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
     this.workDir = internal.workDir ?? ".";
     this.retries = internal.retries ?? 3;
   }
-
-  /**
-   * Build the git command prefix with optional authentication.
-   * When auth is provided, includes -c url.insteadOf to override credentials.
-   *
-   * Uses a repo-specific URL pattern (including owner/repo) so it has a LONGER
-   * prefix match than any global config and takes precedence.
-   *
-   * Handles both HTTPS and SSH URL formats since the remote origin may be either:
-   * - HTTPS: https://github.com/owner/repo
-   * - SSH: git@github.com:owner/repo
-   */
-  private getGitPrefix(): string {
-    if (!this.auth) {
-      return "git";
-    }
-    const { token, host, owner, repo } = this.auth;
-    // Use repo-specific URL pattern for LONGER prefix match to override global config
-    // Global config: url."https://x-access-token:PAT@github.com/".insteadOf = "https://github.com/"
-    // Our config:    url."https://x-access-token:APP@github.com/owner/repo".insteadOf = "https://github.com/owner/repo"
-    // The longer prefix (owner/repo) takes precedence in git's URL matching
-    const repoPath = owner && repo ? `${owner}/${repo}` : "";
-    const authUrl = `https://x-access-token:${token}@${host}/${repoPath}`;
-
-    // Rewrite HTTPS URLs
-    const httpsOverride = `url."${authUrl}".insteadOf="https://${host}/${repoPath}"`;
-    // Rewrite SSH URLs (git@host:owner/repo format)
-    const sshOverride = `url."${authUrl}".insteadOf="git@${host}:${repoPath}"`;
-
-    return `git -c ${escapeShellArg(httpsOverride)} -c ${escapeShellArg(sshOverride)}`;
-  }
-
   private async execWithRetry(command: string): Promise<string> {
     return withRetry(() => this.executor.exec(command, this.workDir), {
       retries: this.retries,
@@ -124,56 +92,49 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
   // Network operations - use authenticated command when token provided
   // ============================================================
 
+  /**
+   * Build the authenticated remote URL.
+   */
+  private getAuthenticatedUrl(): string {
+    const { token, host, owner, repo } = this.auth!;
+    return `https://x-access-token:${token}@${host}/${owner}/${repo}`;
+  }
+
   async clone(gitUrl: string): Promise<void> {
     if (!this.auth) {
       return this.gitOps.clone(gitUrl);
     }
-    const prefix = this.getGitPrefix();
-    const safeUrl = escapeShellArg(gitUrl);
-    await this.execWithRetry(`${prefix} clone ${safeUrl} .`);
-
-    // Reset remote URL to canonical form after clone.
-    // The insteadOf rewrite during clone bakes credentials into the remote URL,
-    // which prevents subsequent insteadOf patterns from matching on push/fetch.
-    // Resetting to the original URL allows per-command auth to work correctly.
-    const canonicalUrl = escapeShellArg(gitUrl);
-    await this.executor.exec(
-      `git remote set-url origin ${canonicalUrl}`,
-      this.workDir
-    );
+    // Clone using authenticated URL directly - no insteadOf needed
+    const authUrl = escapeShellArg(this.getAuthenticatedUrl());
+    await this.execWithRetry(`git clone ${authUrl} .`);
   }
 
   async fetch(options?: { prune?: boolean }): Promise<void> {
     if (!this.auth) {
       return this.gitOps.fetch(options);
     }
-    const prefix = this.getGitPrefix();
+    // Remote URL already has auth from clone, just fetch
     const pruneFlag = options?.prune ? " --prune" : "";
-    await this.execWithRetry(`${prefix} fetch origin${pruneFlag}`);
+    await this.execWithRetry(`git fetch origin${pruneFlag}`);
   }
 
   async push(branchName: string, options?: { force?: boolean }): Promise<void> {
     if (!this.auth) {
       return this.gitOps.push(branchName, options);
     }
-    const prefix = this.getGitPrefix();
+    // Remote URL already has auth from clone, just push
     const forceFlag = options?.force ? "--force-with-lease " : "";
     const safeBranch = escapeShellArg(branchName);
-    await this.execWithRetry(
-      `${prefix} push ${forceFlag}-u origin ${safeBranch}`
-    );
+    await this.execWithRetry(`git push ${forceFlag}-u origin ${safeBranch}`);
   }
 
   async getDefaultBranch(): Promise<{ branch: string; method: string }> {
     if (!this.auth) {
       return this.gitOps.getDefaultBranch();
     }
-    // Network operation with auth
+    // Network operation - remote URL already has auth from clone
     try {
-      const prefix = this.getGitPrefix();
-      const remoteInfo = await this.execWithRetry(
-        `${prefix} remote show origin`
-      );
+      const remoteInfo = await this.execWithRetry(`git remote show origin`);
       const match = remoteInfo.match(/HEAD branch: (\S+)/);
       if (match) {
         return { branch: match[1], method: "remote HEAD" };
@@ -211,10 +172,10 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
    * Used by GraphQLCommitStrategy to check if branch exists on remote.
    */
   async lsRemote(branchName: string): Promise<string> {
-    const prefix = this.getGitPrefix();
+    // Remote URL already has auth from clone
     const safeBranch = escapeShellArg(branchName);
     return this.execWithRetry(
-      `${prefix} ls-remote --exit-code --heads origin ${safeBranch}`
+      `git ls-remote --exit-code --heads origin ${safeBranch}`
     );
   }
 
@@ -226,12 +187,10 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
     refspec: string,
     options?: { delete?: boolean }
   ): Promise<void> {
-    const prefix = this.getGitPrefix();
+    // Remote URL already has auth from clone
     const deleteFlag = options?.delete ? "--delete " : "";
     const safeRefspec = escapeShellArg(refspec);
-    await this.execWithRetry(
-      `${prefix} push ${deleteFlag}-u origin ${safeRefspec}`
-    );
+    await this.execWithRetry(`git push ${deleteFlag}-u origin ${safeRefspec}`);
   }
 
   /**
@@ -239,10 +198,10 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
    * Used by GraphQLCommitStrategy to update local refs.
    */
   async fetchBranch(branchName: string): Promise<void> {
-    const prefix = this.getGitPrefix();
+    // Remote URL already has auth from clone
     const safeBranch = escapeShellArg(branchName);
     await this.execWithRetry(
-      `${prefix} fetch origin ${safeBranch}:refs/remotes/origin/${safeBranch}`
+      `git fetch origin ${safeBranch}:refs/remotes/origin/${safeBranch}`
     );
   }
 

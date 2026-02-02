@@ -103,7 +103,7 @@ describe("AuthenticatedGitOps", () => {
       repo: "test-repo",
     };
 
-    it("clone uses authenticated command with -c url.insteadOf", async () => {
+    it("clone uses authenticated URL directly", async () => {
       // Create a real GitOps with mock executor to verify command
       const commands: string[] = [];
       const mockExecutor = {
@@ -120,43 +120,29 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.clone("https://github.com/test-owner/test-repo.git");
 
-      // Verify clone command + remote set-url to reset canonical URL
-      assert.strictEqual(commands.length, 2);
+      // Verify clone command uses authenticated URL directly
+      assert.strictEqual(commands.length, 1);
 
-      // First command: clone with auth override
+      // Clone with authenticated URL (token embedded)
       assert.ok(
-        commands[0].includes("-c"),
-        `Expected -c flag in command: ${commands[0]}`
-      );
-      assert.ok(
-        commands[0].includes("url."),
-        `Expected url. config in command: ${commands[0]}`
-      );
-      assert.ok(
-        commands[0].includes("insteadOf"),
-        `Expected insteadOf in command: ${commands[0]}`
+        commands[0].includes("clone"),
+        `Expected clone in command: ${commands[0]}`
       );
       assert.ok(
         commands[0].includes("test-token-123"),
         `Expected token in command: ${commands[0]}`
       );
       assert.ok(
-        commands[0].includes("clone"),
-        `Expected clone in command: ${commands[0]}`
-      );
-
-      // Second command: reset remote URL to canonical form
-      assert.ok(
-        commands[1].includes("git remote set-url origin"),
-        `Expected remote set-url command: ${commands[1]}`
+        commands[0].includes("x-access-token"),
+        `Expected x-access-token in command: ${commands[0]}`
       );
       assert.ok(
-        commands[1].includes("https://github.com/test-owner/test-repo.git"),
-        `Expected canonical URL in set-url command: ${commands[1]}`
+        commands[0].includes("github.com/test-owner/test-repo"),
+        `Expected repo path in command: ${commands[0]}`
       );
     });
 
-    it("push uses authenticated command with -c url.insteadOf", async () => {
+    it("push uses plain git command (remote already has auth)", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -172,27 +158,23 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.push("feature-branch");
 
-      // Verify the push command includes the auth override
+      // Verify plain git push (no -c flag needed, remote URL has auth)
       assert.strictEqual(commands.length, 1);
       assert.ok(
-        commands[0].includes("-c"),
-        `Expected -c flag in command: ${commands[0]}`
+        commands[0].startsWith("git push"),
+        `Expected git push command: ${commands[0]}`
       );
       assert.ok(
-        commands[0].includes("url."),
-        `Expected url. config in command: ${commands[0]}`
+        !commands[0].includes("insteadOf"),
+        `Should not have -c flag: ${commands[0]}`
       );
       assert.ok(
-        commands[0].includes("test-token-123"),
-        `Expected token in command: ${commands[0]}`
-      );
-      assert.ok(
-        commands[0].includes("push"),
-        `Expected push in command: ${commands[0]}`
+        commands[0].includes("feature-branch"),
+        `Expected branch name in command: ${commands[0]}`
       );
     });
 
-    it("fetch uses authenticated command with -c url.insteadOf", async () => {
+    it("fetch uses plain git command (remote already has auth)", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -208,23 +190,19 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.fetch({ prune: true });
 
-      // Verify the fetch command includes the auth override
+      // Verify plain git fetch (no -c flag needed, remote URL has auth)
       assert.strictEqual(commands.length, 1);
       assert.ok(
-        commands[0].includes("-c"),
-        `Expected -c flag in command: ${commands[0]}`
+        commands[0].startsWith("git fetch"),
+        `Expected git fetch command: ${commands[0]}`
       );
       assert.ok(
-        commands[0].includes("url."),
-        `Expected url. config in command: ${commands[0]}`
+        !commands[0].includes("insteadOf"),
+        `Should not have -c flag: ${commands[0]}`
       );
       assert.ok(
-        commands[0].includes("test-token-123"),
-        `Expected token in command: ${commands[0]}`
-      );
-      assert.ok(
-        commands[0].includes("fetch"),
-        `Expected fetch in command: ${commands[0]}`
+        commands[0].includes("--prune"),
+        `Expected --prune flag in command: ${commands[0]}`
       );
     });
   });
@@ -373,8 +351,8 @@ describe("AuthenticatedGitOps", () => {
     });
   });
 
-  describe("buildAuthenticatedCommand", () => {
-    it("uses repo-specific URL pattern for longer prefix match", async () => {
+  describe("authenticated URL embedding", () => {
+    it("clone embeds auth token directly in URL", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -395,10 +373,14 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.clone("https://github.com/myorg/myrepo.git");
 
-      // The URL pattern should include owner/repo for longer prefix match
+      // Clone uses authenticated URL directly (no insteadOf)
       assert.ok(
-        commands[0].includes("myorg/myrepo"),
-        `Expected owner/repo in URL pattern: ${commands[0]}`
+        commands[0].includes("x-access-token:my-token@github.com/myorg/myrepo"),
+        `Expected authenticated URL: ${commands[0]}`
+      );
+      assert.ok(
+        !commands[0].includes("insteadOf"),
+        `Should not use insteadOf: ${commands[0]}`
       );
     });
 
@@ -423,52 +405,18 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.clone("https://github.mycompany.com/org/repo.git");
 
-      // Use regex to verify the host appears in the correct URL position
-      // (after https:// and before /)
+      // Clone uses authenticated URL with custom host
       const hostPattern =
-        /https:\/\/x-access-token:[^@]+@github\.mycompany\.com\//;
+        /https:\/\/x-access-token:[^@]+@github\.mycompany\.com\/org\/repo/;
       assert.ok(
         hostPattern.test(commands[0]),
-        `Expected custom host in URL override: ${commands[0]}`
-      );
-    });
-
-    it("includes SSH URL rewrite pattern for git@ URLs", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
-          return "";
-        },
-      };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "my-token",
-        host: "github.com",
-        owner: "myorg",
-        repo: "myrepo",
-      });
-
-      await authOps.push("main", { force: false });
-
-      // Should include both HTTPS and SSH insteadOf patterns
-      const cmd = commands[0];
-      assert.ok(
-        cmd.includes('insteadOf="https://github.com/myorg/myrepo"'),
-        `Expected HTTPS insteadOf pattern: ${cmd}`
-      );
-      assert.ok(
-        cmd.includes('insteadOf="git@github.com:myorg/myrepo"'),
-        `Expected SSH insteadOf pattern: ${cmd}`
+        `Expected custom host in authenticated URL: ${commands[0]}`
       );
     });
   });
 
   describe("specialized network operations", () => {
-    it("lsRemote uses authenticated command", async () => {
+    it("lsRemote uses plain git command (remote already has auth)", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -490,12 +438,16 @@ describe("AuthenticatedGitOps", () => {
       const result = await authOps.lsRemote("main");
 
       assert.ok(commands[0].includes("ls-remote --exit-code --heads origin"));
-      assert.ok(commands[0].includes("-c"));
-      assert.ok(commands[0].includes("test-token"));
+      // Check that we're not using -c url.insteadOf pattern
+      assert.ok(!commands[0].includes("insteadOf"), "Should not use insteadOf");
+      assert.ok(
+        commands[0].startsWith("git ls-remote"),
+        "Should be plain git command"
+      );
       assert.equal(result, "abc123\trefs/heads/main\n");
     });
 
-    it("pushRefspec uses authenticated command", async () => {
+    it("pushRefspec uses plain git command (remote already has auth)", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -518,8 +470,7 @@ describe("AuthenticatedGitOps", () => {
 
       assert.ok(commands[0].includes("push"));
       assert.ok(commands[0].includes("HEAD:feature-branch"));
-      assert.ok(commands[0].includes("-c"));
-      assert.ok(commands[0].includes("test-token"));
+      assert.ok(!commands[0].includes("insteadOf"), "Should not have -c flag");
     });
 
     it("pushRefspec with delete flag uses --delete", async () => {
@@ -547,7 +498,7 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(commands[0].includes("feature-branch"));
     });
 
-    it("fetchBranch uses authenticated command", async () => {
+    it("fetchBranch uses plain git command (remote already has auth)", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -571,8 +522,7 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(commands[0].includes("fetch origin"));
       assert.ok(commands[0].includes("feature-branch"));
       assert.ok(commands[0].includes("refs/remotes/origin/"));
-      assert.ok(commands[0].includes("-c"));
-      assert.ok(commands[0].includes("test-token"));
+      assert.ok(!commands[0].includes("insteadOf"), "Should not have -c flag");
     });
 
     it("lsRemote without auth uses plain git command", async () => {
@@ -597,8 +547,8 @@ describe("AuthenticatedGitOps", () => {
         `Expected command to start with 'git ls-remote', got: ${commands[0]}`
       );
       assert.ok(
-        !commands[0].includes("-c "),
-        `Expected no -c flag in command, got: ${commands[0]}`
+        !commands[0].includes("insteadOf"),
+        `Expected no insteadOf in command, got: ${commands[0]}`
       );
     });
 
@@ -619,7 +569,7 @@ describe("AuthenticatedGitOps", () => {
       await authOps.pushRefspec("HEAD:feature-branch");
 
       assert.ok(commands[0].startsWith("git push"));
-      assert.ok(!commands[0].includes("-c"));
+      assert.ok(!commands[0].includes("insteadOf"));
     });
 
     it("fetchBranch without auth uses plain git command", async () => {
@@ -639,10 +589,10 @@ describe("AuthenticatedGitOps", () => {
       await authOps.fetchBranch("feature-branch");
 
       assert.ok(commands[0].startsWith("git fetch"));
-      assert.ok(!commands[0].includes("-c"));
+      assert.ok(!commands[0].includes("insteadOf"));
     });
 
-    it("getDefaultBranch with auth uses remote show origin", async () => {
+    it("getDefaultBranch with auth uses remote show origin (plain git command)", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -669,7 +619,7 @@ describe("AuthenticatedGitOps", () => {
       assert.equal(result.branch, "develop");
       assert.equal(result.method, "remote HEAD");
       assert.ok(commands[0].includes("remote show origin"));
-      assert.ok(commands[0].includes("-c"));
+      assert.ok(!commands[0].includes("insteadOf"), "Should not have -c flag");
     });
 
     it("getDefaultBranch falls back to origin/main when remote show fails", async () => {
