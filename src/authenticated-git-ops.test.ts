@@ -420,6 +420,39 @@ describe("AuthenticatedGitOps", () => {
         `Expected custom host in URL override: ${commands[0]}`
       );
     });
+
+    it("includes SSH URL rewrite pattern for git@ URLs", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          return "";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps, {
+        token: "my-token",
+        host: "github.com",
+        owner: "myorg",
+        repo: "myrepo",
+      });
+
+      await authOps.push("main", { force: false });
+
+      // Should include both HTTPS and SSH insteadOf patterns
+      const cmd = commands[0];
+      assert.ok(
+        cmd.includes('insteadOf="https://github.com/myorg/myrepo"'),
+        `Expected HTTPS insteadOf pattern: ${cmd}`
+      );
+      assert.ok(
+        cmd.includes('insteadOf="git@github.com:myorg/myrepo"'),
+        `Expected SSH insteadOf pattern: ${cmd}`
+      );
+    });
   });
 
   describe("specialized network operations", () => {
