@@ -109,7 +109,9 @@ export class GraphQLCommitStrategy implements CommitStrategy {
       workDir,
       options.force,
       token,
-      githubInfo.host
+      githubInfo.host,
+      githubInfo.owner,
+      githubInfo.repo
     );
 
     // Retry loop for expectedHeadOid mismatch
@@ -123,7 +125,9 @@ export class GraphQLCommitStrategy implements CommitStrategy {
           this.buildAuthenticatedGitCommand(
             `fetch origin ${safeBranch}:refs/remotes/origin/${safeBranch}`,
             token,
-            githubInfo.host
+            githubInfo.host,
+            githubInfo.owner,
+            githubInfo.repo
           ),
           workDir
         );
@@ -274,18 +278,27 @@ export class GraphQLCommitStrategy implements CommitStrategy {
    * This is critical for GitHub App authentication where the global git config
    * may have a PAT token embedded, but we need to use the GitHub App installation token.
    *
+   * Uses a repo-specific URL pattern (including owner/repo) so it has a LONGER
+   * prefix match than the global config and takes precedence.
+   *
    * Applies to all remote operations: push, fetch, ls-remote, etc.
    */
   private buildAuthenticatedGitCommand(
     gitArgs: string,
     token?: string,
-    host: string = "github.com"
+    host: string = "github.com",
+    owner?: string,
+    repo?: string
   ): string {
     if (!token) {
       return `git ${gitArgs}`;
     }
-    // Override URL rewrite to use the provided token
-    const urlOverride = `url."https://x-access-token:${token}@${host}/".insteadOf="https://${host}/"`;
+    // Use repo-specific URL pattern for LONGER prefix match to override global config
+    // Global config: url."https://x-access-token:PAT@github.com/".insteadOf = "https://github.com/"
+    // Our config:    url."https://x-access-token:APP@github.com/owner/repo".insteadOf = "https://github.com/owner/repo"
+    // The longer prefix (owner/repo) takes precedence in git's URL matching
+    const repoPath = owner && repo ? `${owner}/${repo}` : "";
+    const urlOverride = `url."https://x-access-token:${token}@${host}/${repoPath}".insteadOf="https://${host}/${repoPath}"`;
     return `git -c ${escapeShellArg(urlOverride)} ${gitArgs}`;
   }
 
@@ -303,7 +316,9 @@ export class GraphQLCommitStrategy implements CommitStrategy {
     workDir: string,
     force?: boolean,
     token?: string,
-    host?: string
+    host?: string,
+    owner?: string,
+    repo?: string
   ): Promise<void> {
     // Branch name was validated in commit(), safe for shell use
     try {
@@ -312,7 +327,9 @@ export class GraphQLCommitStrategy implements CommitStrategy {
         this.buildAuthenticatedGitCommand(
           `ls-remote --exit-code --heads origin ${escapeShellArg(branchName)}`,
           token,
-          host
+          host,
+          owner,
+          repo
         ),
         workDir
       );
@@ -323,7 +340,9 @@ export class GraphQLCommitStrategy implements CommitStrategy {
           this.buildAuthenticatedGitCommand(
             `push origin --delete ${escapeShellArg(branchName)}`,
             token,
-            host
+            host,
+            owner,
+            repo
           ),
           workDir
         );
@@ -332,7 +351,9 @@ export class GraphQLCommitStrategy implements CommitStrategy {
           this.buildAuthenticatedGitCommand(
             `push -u origin HEAD:${escapeShellArg(branchName)}`,
             token,
-            host
+            host,
+            owner,
+            repo
           ),
           workDir
         );
@@ -345,7 +366,9 @@ export class GraphQLCommitStrategy implements CommitStrategy {
         this.buildAuthenticatedGitCommand(
           `push -u origin HEAD:${escapeShellArg(branchName)}`,
           token,
-          host
+          host,
+          owner,
+          repo
         ),
         workDir
       );
