@@ -46,16 +46,15 @@ export class AuthenticatedGitOps {
   }
 
   /**
-   * Build a git command with optional token authentication override.
-   * When a token is provided, uses -c url.insteadOf to override the global
-   * git config and authenticate with the provided token instead.
+   * Build the git command prefix with optional authentication.
+   * When auth is provided, includes -c url.insteadOf to override credentials.
    *
    * Uses a repo-specific URL pattern (including owner/repo) so it has a LONGER
-   * prefix match than the global config and takes precedence.
+   * prefix match than any global config and takes precedence.
    */
-  private buildAuthenticatedCommand(gitArgs: string): string {
+  private getGitPrefix(): string {
     if (!this.auth) {
-      return `git ${gitArgs}`;
+      return "git";
     }
     const { token, host, owner, repo } = this.auth;
     // Use repo-specific URL pattern for LONGER prefix match to override global config
@@ -64,7 +63,7 @@ export class AuthenticatedGitOps {
     // The longer prefix (owner/repo) takes precedence in git's URL matching
     const repoPath = owner && repo ? `${owner}/${repo}` : "";
     const urlOverride = `url."https://x-access-token:${token}@${host}/${repoPath}".insteadOf="https://${host}/${repoPath}"`;
-    return `git -c ${escapeShellArg(urlOverride)} ${gitArgs}`;
+    return `git -c ${escapeShellArg(urlOverride)}`;
   }
 
   private async execWithRetry(command: string): Promise<string> {
@@ -81,30 +80,30 @@ export class AuthenticatedGitOps {
     if (!this.auth) {
       return this.gitOps.clone(gitUrl);
     }
-    const command = this.buildAuthenticatedCommand(
-      `clone ${escapeShellArg(gitUrl)} .`
-    );
-    await this.execWithRetry(command);
+    const prefix = this.getGitPrefix();
+    const safeUrl = escapeShellArg(gitUrl);
+    await this.execWithRetry(`${prefix} clone ${safeUrl} .`);
   }
 
   async fetch(options?: { prune?: boolean }): Promise<void> {
     if (!this.auth) {
       return this.gitOps.fetch(options);
     }
+    const prefix = this.getGitPrefix();
     const pruneFlag = options?.prune ? " --prune" : "";
-    const command = this.buildAuthenticatedCommand(`fetch origin${pruneFlag}`);
-    await this.execWithRetry(command);
+    await this.execWithRetry(`${prefix} fetch origin${pruneFlag}`);
   }
 
   async push(branchName: string, options?: { force?: boolean }): Promise<void> {
     if (!this.auth) {
       return this.gitOps.push(branchName, options);
     }
+    const prefix = this.getGitPrefix();
     const forceFlag = options?.force ? "--force-with-lease " : "";
-    const command = this.buildAuthenticatedCommand(
-      `push ${forceFlag}-u origin ${escapeShellArg(branchName)}`
+    const safeBranch = escapeShellArg(branchName);
+    await this.execWithRetry(
+      `${prefix} push ${forceFlag}-u origin ${safeBranch}`
     );
-    await this.execWithRetry(command);
   }
 
   async getDefaultBranch(): Promise<{ branch: string; method: string }> {
@@ -113,8 +112,10 @@ export class AuthenticatedGitOps {
     }
     // Network operation with auth
     try {
-      const command = this.buildAuthenticatedCommand("remote show origin");
-      const remoteInfo = await this.execWithRetry(command);
+      const prefix = this.getGitPrefix();
+      const remoteInfo = await this.execWithRetry(
+        `${prefix} remote show origin`
+      );
       const match = remoteInfo.match(/HEAD branch: (\S+)/);
       if (match) {
         return { branch: match[1], method: "remote HEAD" };
@@ -152,10 +153,11 @@ export class AuthenticatedGitOps {
    * Used by GraphQLCommitStrategy to check if branch exists on remote.
    */
   async lsRemote(branchName: string): Promise<string> {
-    const command = this.buildAuthenticatedCommand(
-      `ls-remote --exit-code --heads origin ${escapeShellArg(branchName)}`
+    const prefix = this.getGitPrefix();
+    const safeBranch = escapeShellArg(branchName);
+    return this.execWithRetry(
+      `${prefix} ls-remote --exit-code --heads origin ${safeBranch}`
     );
-    return this.execWithRetry(command);
   }
 
   /**
@@ -166,11 +168,13 @@ export class AuthenticatedGitOps {
     refspec: string,
     options?: { delete?: boolean }
   ): Promise<void> {
+    const prefix = this.getGitPrefix();
     const deleteFlag = options?.delete ? "--delete " : "";
-    const command = this.buildAuthenticatedCommand(
-      `push ${deleteFlag}-u origin ${refspec}`
+    // refspec is internal (e.g., "HEAD:branchName" or ":branchName")
+    // The branch part should already be validated by caller
+    await this.execWithRetry(
+      `${prefix} push ${deleteFlag}-u origin ${refspec}`
     );
-    await this.execWithRetry(command);
   }
 
   /**
@@ -178,11 +182,11 @@ export class AuthenticatedGitOps {
    * Used by GraphQLCommitStrategy to update local refs.
    */
   async fetchBranch(branchName: string): Promise<void> {
+    const prefix = this.getGitPrefix();
     const safeBranch = escapeShellArg(branchName);
-    const command = this.buildAuthenticatedCommand(
-      `fetch origin ${safeBranch}:refs/remotes/origin/${safeBranch}`
+    await this.execWithRetry(
+      `${prefix} fetch origin ${safeBranch}:refs/remotes/origin/${safeBranch}`
     );
-    await this.execWithRetry(command);
   }
 
   // ============================================================

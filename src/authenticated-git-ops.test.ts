@@ -4,14 +4,14 @@ import {
   AuthenticatedGitOps,
   GitAuthOptions,
 } from "./authenticated-git-ops.js";
-import { GitOps, GitOpsOptions } from "./git-ops.js";
+import { GitOps, GitOpsOptions as _GitOpsOptions } from "./git-ops.js";
 
 describe("AuthenticatedGitOps", () => {
   let mockGitOps: GitOps;
-  let execCalls: Array<{ command: string; cwd?: string }>;
+  let _execCalls: Array<{ command: string; cwd?: string }>;
 
   beforeEach(() => {
-    execCalls = [];
+    _execCalls = [];
     // Create a mock GitOps with spied methods
     mockGitOps = {
       clone: mock.fn(async () => {}),
@@ -422,9 +422,13 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.clone("https://github.mycompany.com/org/repo.git");
 
+      // Use regex to verify the host appears in the correct URL position
+      // (after https:// and before /)
+      const hostPattern =
+        /https:\/\/x-access-token:[^@]+@github\.mycompany\.com\//;
       assert.ok(
-        commands[0].includes("github.mycompany.com"),
-        `Expected custom host in command: ${commands[0]}`
+        hostPattern.test(commands[0]),
+        `Expected custom host in URL override: ${commands[0]}`
       );
     });
   });

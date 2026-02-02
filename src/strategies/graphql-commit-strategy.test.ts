@@ -918,7 +918,7 @@ describe("GraphQLCommitStrategy", () => {
 
       // Create mock gitOps that throws on lsRemote (branch doesn't exist)
       const mockGitOps = createMockGitOps();
-      const originalLsRemote = mockGitOps.lsRemote.bind(mockGitOps);
+      const _originalLsRemote = mockGitOps.lsRemote.bind(mockGitOps);
       mockGitOps.lsRemote = async (branchName: string) => {
         mockGitOps.calls.push({ method: "lsRemote", args: [branchName] });
         throw new Error("fatal: could not read from remote");
