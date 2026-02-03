@@ -31,7 +31,7 @@ export interface CommitResult {
  * Strategy interface for creating commits.
  * Implementations handle platform-specific commit mechanisms.
  */
-export interface CommitStrategy {
+export interface ICommitStrategy {
   /**
    * Create a commit with the given file changes and push to remote.
    * @returns Commit result with SHA and verification status

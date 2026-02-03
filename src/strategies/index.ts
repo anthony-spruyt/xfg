@@ -25,7 +25,7 @@ export { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
 
 // Commit strategy exports
 export type {
-  CommitStrategy,
+  ICommitStrategy,
   CommitOptions,
   CommitResult,
   FileChange,

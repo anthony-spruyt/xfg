@@ -1,5 +1,5 @@
 import { RepoInfo, isGitHubRepo } from "../repo-detector.js";
-import { CommitStrategy } from "./commit-strategy.js";
+import { ICommitStrategy } from "./commit-strategy.js";
 import { GitCommitStrategy } from "./git-commit-strategy.js";
 import { GraphQLCommitStrategy } from "./graphql-commit-strategy.js";
 import { ICommandExecutor } from "../command-executor.js";
@@ -30,7 +30,7 @@ export function hasGitHubAppCredentials(): boolean {
 export function getCommitStrategy(
   repoInfo: RepoInfo,
   executor?: ICommandExecutor
-): CommitStrategy {
+): ICommitStrategy {
   if (isGitHubRepo(repoInfo) && hasGitHubAppCredentials()) {
     return new GraphQLCommitStrategy(executor);
   }

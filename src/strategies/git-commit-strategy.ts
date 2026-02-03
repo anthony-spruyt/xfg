@@ -1,5 +1,5 @@
 import {
-  CommitStrategy,
+  ICommitStrategy,
   CommitOptions,
   CommitResult,
 } from "./commit-strategy.js";
@@ -12,7 +12,7 @@ import { escapeShellArg } from "../shell-utils.js";
  * Used with PAT authentication. Commits via this strategy are NOT verified
  * by GitHub (no signature).
  */
-export class GitCommitStrategy implements CommitStrategy {
+export class GitCommitStrategy implements ICommitStrategy {
   private executor: ICommandExecutor;
 
   constructor(executor?: ICommandExecutor) {
