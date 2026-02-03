@@ -10,7 +10,7 @@ import {
 } from "./graphql-commit-strategy.js";
 import { GitHubRepoInfo, AzureDevOpsRepoInfo } from "../repo-detector.js";
 import { CommitOptions } from "./commit-strategy.js";
-import { CommandExecutor } from "../command-executor.js";
+import { ICommandExecutor } from "../command-executor.js";
 import { AuthenticatedGitOps } from "../authenticated-git-ops.js";
 
 // Create a mock AuthenticatedGitOps for testing
@@ -37,8 +37,8 @@ function createMockGitOps(): AuthenticatedGitOps & {
 
 const testDir = join(process.cwd(), "test-graphql-commit-strategy-tmp");
 
-// Mock executor for testing - implements CommandExecutor interface
-function createMockExecutor(): CommandExecutor & {
+// Mock executor for testing - implements ICommandExecutor interface
+function createMockExecutor(): ICommandExecutor & {
   calls: Array<{ command: string; cwd: string }>;
   responses: Map<string, string | Error | (() => string | Error)>;
   reset: () => void;

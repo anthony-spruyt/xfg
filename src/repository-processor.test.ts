@@ -12,12 +12,12 @@ import {
   IAuthenticatedGitOps,
 } from "./authenticated-git-ops.js";
 import { ILogger } from "./logger.js";
-import { CommandExecutor } from "./command-executor.js";
+import { ICommandExecutor } from "./command-executor.js";
 
 const testDir = join(tmpdir(), "repo-processor-test-" + Date.now());
 
 // Mock executor that returns empty results for all commands (prevents real CLI calls during tests)
-function createMockExecutor(): CommandExecutor {
+function createMockExecutor(): ICommandExecutor {
   return {
     async exec(): Promise<string> {
       return "";
@@ -26,7 +26,7 @@ function createMockExecutor(): CommandExecutor {
 }
 
 // Mock executor that tracks commit messages for tests verifying commit behavior
-function createTrackingMockExecutor(): CommandExecutor & {
+function createTrackingMockExecutor(): ICommandExecutor & {
   lastCommitMessage: string | null;
   pushBranch: string | null;
   pushForce: boolean | undefined;
@@ -2619,7 +2619,7 @@ describe("RepositoryProcessor", () => {
 
         // Track executor calls to verify GraphQL vs git commit
         const executorCalls: string[] = [];
-        const mockExecutor: CommandExecutor = {
+        const mockExecutor: ICommandExecutor = {
           async exec(command: string): Promise<string> {
             executorCalls.push(command);
 
@@ -2725,7 +2725,7 @@ describe("RepositoryProcessor", () => {
         };
 
         // Mock executor that fails on GraphQL commit with branch protection error
-        const mockExecutor: CommandExecutor = {
+        const mockExecutor: ICommandExecutor = {
           async exec(command: string): Promise<string> {
             if (command.includes("gh api graphql")) {
               throw new Error("Push rejected: protected branch");
@@ -2797,7 +2797,7 @@ describe("RepositoryProcessor", () => {
         };
 
         // Test uses mock executor to simulate protected branch error
-        const mockExecutor: CommandExecutor = {
+        const mockExecutor: ICommandExecutor = {
           async exec(command: string): Promise<string> {
             if (command.includes("gh api graphql")) {
               throw new Error("Cannot push to protected branch");
@@ -2863,7 +2863,7 @@ describe("RepositoryProcessor", () => {
         };
 
         // Test uses mock executor to simulate permission denied error
-        const mockExecutor: CommandExecutor = {
+        const mockExecutor: ICommandExecutor = {
           async exec(command: string): Promise<string> {
             if (command.includes("gh api graphql")) {
               throw new Error("Permission denied for this operation");
@@ -2929,7 +2929,7 @@ describe("RepositoryProcessor", () => {
         };
 
         // Test uses mock executor to simulate network error
-        const mockExecutor: CommandExecutor = {
+        const mockExecutor: ICommandExecutor = {
           async exec(command: string): Promise<string> {
             if (command.includes("gh api graphql")) {
               throw new Error("Network timeout");
@@ -3067,7 +3067,7 @@ describe("RepositoryProcessor", () => {
     }
 
     // Mock executor that returns a PR URL (safe test mock - no actual shell execution)
-    function createPRMockExecutor(): CommandExecutor {
+    function createPRMockExecutor(): ICommandExecutor {
       return {
         async exec(): Promise<string> {
           return "https://github.com/test/repo/pull/123";

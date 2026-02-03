@@ -1,6 +1,6 @@
 import { PRResult } from "../pr-creator.js";
 import { RepoInfo } from "../repo-detector.js";
-import { CommandExecutor, defaultExecutor } from "../command-executor.js";
+import { ICommandExecutor, defaultExecutor } from "../command-executor.js";
 import type { MergeMode, MergeStrategy } from "../config.js";
 
 export interface PRMergeConfig {
@@ -92,9 +92,9 @@ export interface PRStrategy {
 
 export abstract class BasePRStrategy implements PRStrategy {
   protected bodyFilePath: string = ".pr-body.md";
-  protected executor: CommandExecutor;
+  protected executor: ICommandExecutor;
 
-  constructor(executor?: CommandExecutor) {
+  constructor(executor?: ICommandExecutor) {
     this.executor = executor ?? defaultExecutor;
   }
 

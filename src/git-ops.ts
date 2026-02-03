@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import { join, resolve, relative, isAbsolute, dirname } from "node:path";
 import { escapeShellArg } from "./shell-utils.js";
-import { CommandExecutor, defaultExecutor } from "./command-executor.js";
+import { ICommandExecutor, defaultExecutor } from "./command-executor.js";
 import { withRetry } from "./retry-utils.js";
 import { logger } from "./logger.js";
 
@@ -35,7 +35,7 @@ export interface IGitOps {
 export interface GitOpsOptions {
   workDir: string;
   dryRun?: boolean;
-  executor?: CommandExecutor;
+  executor?: ICommandExecutor;
   /** Number of retries for network operations (default: 3) */
   retries?: number;
 }
@@ -43,7 +43,7 @@ export interface GitOpsOptions {
 export class GitOps implements IGitOps {
   private workDir: string;
   private dryRun: boolean;
-  private executor: CommandExecutor;
+  private executor: ICommandExecutor;
   private retries: number;
 
   constructor(options: GitOpsOptions) {

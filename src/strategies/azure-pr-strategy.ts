@@ -12,10 +12,10 @@ import {
 } from "./pr-strategy.js";
 import { logger } from "../logger.js";
 import { withRetry, isPermanentError } from "../retry-utils.js";
-import { CommandExecutor } from "../command-executor.js";
+import { ICommandExecutor } from "../command-executor.js";
 
 export class AzurePRStrategy extends BasePRStrategy {
-  constructor(executor?: CommandExecutor) {
+  constructor(executor?: ICommandExecutor) {
     super(executor);
     this.bodyFilePath = ".pr-description.md";
   }

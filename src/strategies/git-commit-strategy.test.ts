@@ -5,13 +5,13 @@ import { join } from "node:path";
 import { GitCommitStrategy } from "./git-commit-strategy.js";
 import { GitHubRepoInfo } from "../repo-detector.js";
 import { CommitOptions } from "./commit-strategy.js";
-import { CommandExecutor } from "../command-executor.js";
+import { ICommandExecutor } from "../command-executor.js";
 import { IAuthenticatedGitOps } from "../authenticated-git-ops.js";
 
 const testDir = join(process.cwd(), "test-git-commit-strategy-tmp");
 
-// Mock executor for testing - implements CommandExecutor interface
-function createMockExecutor(): CommandExecutor & {
+// Mock executor for testing - implements ICommandExecutor interface
+function createMockExecutor(): ICommandExecutor & {
   calls: Array<{ command: string; cwd: string }>;
   responses: Map<string, string | Error>;
   reset: () => void;

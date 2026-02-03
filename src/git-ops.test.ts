@@ -11,7 +11,7 @@ import {
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { GitOps, sanitizeBranchName, validateBranchName } from "./git-ops.js";
-import { CommandExecutor } from "./command-executor.js";
+import { ICommandExecutor } from "./command-executor.js";
 
 const testDir = join(tmpdir(), "git-ops-test-" + Date.now());
 
@@ -418,14 +418,14 @@ describe("GitOps", () => {
     });
   });
 
-  describe("CommandExecutor injection", () => {
+  describe("ICommandExecutor injection", () => {
     beforeEach(() => {
       mkdirSync(workDir, { recursive: true });
     });
 
     test("accepts custom executor", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         exec: async (command: string, _cwd: string) => {
           commands.push(command);
           return "";
@@ -503,7 +503,7 @@ describe("GitOps", () => {
 
     test("calls git update-index with chmod flag", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           return "";
@@ -522,7 +522,7 @@ describe("GitOps", () => {
 
     test("does not execute in dry-run mode", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           return "";
@@ -550,7 +550,7 @@ describe("GitOps", () => {
 
     test("handles subdirectory paths", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           return "";
@@ -567,7 +567,7 @@ describe("GitOps", () => {
     });
 
     test("sets filesystem executable permission (chmod 755)", async () => {
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(_command: string, _cwd: string): Promise<string> {
           return "";
         },
@@ -599,7 +599,7 @@ describe("GitOps", () => {
     });
 
     test("does not set filesystem permissions in dry-run mode", async () => {
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(_command: string, _cwd: string): Promise<string> {
           return "";
         },
@@ -633,7 +633,7 @@ describe("GitOps", () => {
 
     test("returns true in dry-run mode without running commands", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           return "";
@@ -653,7 +653,7 @@ describe("GitOps", () => {
 
     test("stages and commits changes when there are staged changes", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           // git diff --cached --quiet exits with code 1 when there are changes
@@ -675,7 +675,7 @@ describe("GitOps", () => {
 
     test("returns false when no staged changes after git add", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           // git diff --cached --quiet exits with code 0 when no changes
@@ -703,7 +703,7 @@ describe("GitOps", () => {
 
     test("does nothing in dry-run mode", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           return "";
@@ -722,7 +722,7 @@ describe("GitOps", () => {
 
     test("pushes to origin with -u flag", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           return "";
@@ -743,7 +743,7 @@ describe("GitOps", () => {
 
     test("uses --force-with-lease when force option is true", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           return "";
@@ -768,7 +768,7 @@ describe("GitOps", () => {
 
     test("does not use force flag when force option is false", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           return "";
@@ -793,7 +793,7 @@ describe("GitOps", () => {
 
     test("does not use force flag when options is undefined", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           return "";
@@ -822,7 +822,7 @@ describe("GitOps", () => {
 
     test("fetches from origin without prune by default", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           return "";
@@ -843,7 +843,7 @@ describe("GitOps", () => {
 
     test("fetches with prune flag when prune option is true", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           return "";
@@ -863,7 +863,7 @@ describe("GitOps", () => {
 
     test("does not include prune when prune option is false", async () => {
       const commands: string[] = [];
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
           return "";
@@ -889,7 +889,7 @@ describe("GitOps", () => {
     });
 
     test("returns branch from remote HEAD when available", async () => {
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           if (command.includes("git remote show origin")) {
             return "HEAD branch: main\n  Remote branches:";
@@ -910,7 +910,7 @@ describe("GitOps", () => {
     });
 
     test("falls back to origin/main when remote show fails", async () => {
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           if (command.includes("git remote show origin")) {
             throw new Error("remote show failed");
@@ -934,7 +934,7 @@ describe("GitOps", () => {
     });
 
     test("falls back to origin/master when main does not exist", async () => {
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           if (command.includes("git remote show origin")) {
             throw new Error("remote show failed");
@@ -961,7 +961,7 @@ describe("GitOps", () => {
     });
 
     test("falls back to main as default when nothing works", async () => {
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           if (command.includes("git remote show origin")) {
             throw new Error("remote show failed");
@@ -1024,7 +1024,7 @@ describe("GitOps", () => {
     });
 
     test("returns empty array when no changes", async () => {
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           if (command.includes("git status --porcelain")) {
             return "";
@@ -1040,7 +1040,7 @@ describe("GitOps", () => {
     });
 
     test("returns list of changed files", async () => {
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           if (command.includes("git status --porcelain")) {
             return " M config.json\n?? new-file.txt\nA  added.json";
@@ -1062,7 +1062,7 @@ describe("GitOps", () => {
     });
 
     test("returns true when file exists on branch", async () => {
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           if (command.includes("git show")) {
             return "file content";
@@ -1078,7 +1078,7 @@ describe("GitOps", () => {
     });
 
     test("returns false when file does not exist on branch", async () => {
-      const mockExecutor: CommandExecutor = {
+      const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           if (command.includes("git show")) {
             throw new Error("file not found");

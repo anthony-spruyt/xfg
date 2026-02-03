@@ -12,11 +12,11 @@ import {
 } from "./pr-strategy.js";
 import { logger } from "../logger.js";
 import { withRetry, isPermanentError } from "../retry-utils.js";
-import { CommandExecutor } from "../command-executor.js";
+import { ICommandExecutor } from "../command-executor.js";
 import type { MergeStrategy } from "../config.js";
 
 export class GitLabPRStrategy extends BasePRStrategy {
-  constructor(executor?: CommandExecutor) {
+  constructor(executor?: ICommandExecutor) {
     super(executor);
     this.bodyFilePath = ".mr-description.md";
   }

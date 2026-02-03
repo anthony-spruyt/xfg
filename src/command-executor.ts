@@ -4,7 +4,7 @@ import { execSync } from "node:child_process";
  * Interface for executing shell commands.
  * Enables dependency injection for testing and alternative implementations.
  */
-export interface CommandExecutor {
+export interface ICommandExecutor {
   /**
    * Execute a shell command and return the output.
    * @param command The command to execute
@@ -19,7 +19,7 @@ export interface CommandExecutor {
  * Default implementation that uses Node.js child_process.execSync.
  * Note: Commands are escaped using escapeShellArg before being passed here.
  */
-export class ShellCommandExecutor implements CommandExecutor {
+export class ShellCommandExecutor implements ICommandExecutor {
   async exec(command: string, cwd: string): Promise<string> {
     try {
       return execSync(command, {
@@ -48,4 +48,4 @@ export class ShellCommandExecutor implements CommandExecutor {
 /**
  * Default executor instance for production use.
  */
-export const defaultExecutor: CommandExecutor = new ShellCommandExecutor();
+export const defaultExecutor: ICommandExecutor = new ShellCommandExecutor();

@@ -1,6 +1,6 @@
 /**
  * Tests for command-executor.ts
- * This file tests the existing CommandExecutor abstraction used for DI in git operations.
+ * This file tests the existing ICommandExecutor abstraction used for DI in git operations.
  */
 import { describe, test } from "node:test";
 import assert from "node:assert";
@@ -10,7 +10,7 @@ import { join } from "node:path";
 import {
   ShellCommandExecutor,
   defaultExecutor,
-  CommandExecutor,
+  ICommandExecutor,
 } from "./command-executor.js";
 
 describe("ShellCommandExecutor", () => {
@@ -79,7 +79,7 @@ describe("defaultExecutor", () => {
     assert.ok(defaultExecutor instanceof ShellCommandExecutor);
   });
 
-  test("implements CommandExecutor interface", () => {
+  test("implements ICommandExecutor interface", () => {
     // TypeScript ensures this at compile time, but verify at runtime
     assert.strictEqual(typeof defaultExecutor.exec, "function");
   });
@@ -90,9 +90,9 @@ describe("defaultExecutor", () => {
   });
 });
 
-describe("CommandExecutor interface", () => {
+describe("ICommandExecutor interface", () => {
   test("can be implemented with custom executor", async () => {
-    const mockExecutor: CommandExecutor = {
+    const mockExecutor: ICommandExecutor = {
       async exec(_command: string, _cwd: string): Promise<string> {
         return "mocked output";
       },
@@ -105,7 +105,7 @@ describe("CommandExecutor interface", () => {
   test("allows tracking of executed commands", async () => {
     const commands: Array<{ command: string; cwd: string }> = [];
 
-    const trackingExecutor: CommandExecutor = {
+    const trackingExecutor: ICommandExecutor = {
       async exec(command: string, cwd: string): Promise<string> {
         commands.push({ command, cwd });
         return "tracked";

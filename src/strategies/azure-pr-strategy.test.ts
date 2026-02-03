@@ -5,12 +5,12 @@ import { join } from "node:path";
 import { AzurePRStrategy } from "./azure-pr-strategy.js";
 import { AzureDevOpsRepoInfo, GitHubRepoInfo } from "../repo-detector.js";
 import { PRStrategyOptions } from "./pr-strategy.js";
-import { CommandExecutor } from "../command-executor.js";
+import { ICommandExecutor } from "../command-executor.js";
 
 const testDir = join(process.cwd(), "test-azure-strategy-tmp");
 
-// Mock executor factory - creates CommandExecutor for testing
-function createMockExecutor(): CommandExecutor & {
+// Mock executor factory - creates ICommandExecutor for testing
+function createMockExecutor(): ICommandExecutor & {
   calls: Array<{ command: string; cwd: string }>;
   responses: Map<string, string | Error>;
 } {
@@ -19,7 +19,7 @@ function createMockExecutor(): CommandExecutor & {
     responses: new Map<string, string | Error>(),
   };
 
-  const executor: CommandExecutor = {
+  const executor: ICommandExecutor = {
     exec: async (command: string, cwd: string): Promise<string> => {
       state.calls.push({ command, cwd });
 

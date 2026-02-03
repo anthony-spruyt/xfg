@@ -8,7 +8,7 @@ import type { PRStrategy } from "./pr-strategy.js";
 import { GitHubPRStrategy } from "./github-pr-strategy.js";
 import { AzurePRStrategy } from "./azure-pr-strategy.js";
 import { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
-import { CommandExecutor } from "../command-executor.js";
+import { ICommandExecutor } from "../command-executor.js";
 
 export type {
   PRStrategy,
@@ -47,7 +47,7 @@ export {
  */
 export function getPRStrategy(
   repoInfo: RepoInfo,
-  executor?: CommandExecutor
+  executor?: ICommandExecutor
 ): PRStrategy {
   if (isGitHubRepo(repoInfo)) {
     return new GitHubPRStrategy(executor);

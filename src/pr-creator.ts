@@ -8,7 +8,7 @@ import {
   PRMergeConfig,
 } from "./strategies/index.js";
 import { interpolateXfgContent } from "./xfg-template.js";
-import { CommandExecutor } from "./command-executor.js";
+import { ICommandExecutor } from "./command-executor.js";
 
 // Re-export for backwards compatibility and testing
 export { escapeShellArg } from "./shell-utils.js";
@@ -30,7 +30,7 @@ export interface PROptions {
   /** Custom PR body template */
   prTemplate?: string;
   /** Optional command executor for shell commands (for testing) */
-  executor?: CommandExecutor;
+  executor?: ICommandExecutor;
   /** GitHub App installation token for authentication */
   token?: string;
 }
@@ -193,7 +193,7 @@ export interface MergePROptions {
   dryRun?: boolean;
   retries?: number;
   /** Optional command executor for shell commands (for testing) */
-  executor?: CommandExecutor;
+  executor?: ICommandExecutor;
   /** GitHub App installation token for authentication */
   token?: string;
 }

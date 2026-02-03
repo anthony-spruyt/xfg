@@ -3,7 +3,7 @@ import {
   CommitOptions,
   CommitResult,
 } from "./commit-strategy.js";
-import { CommandExecutor, defaultExecutor } from "../command-executor.js";
+import { ICommandExecutor, defaultExecutor } from "../command-executor.js";
 import { withRetry } from "../retry-utils.js";
 import { escapeShellArg } from "../shell-utils.js";
 
@@ -13,9 +13,9 @@ import { escapeShellArg } from "../shell-utils.js";
  * by GitHub (no signature).
  */
 export class GitCommitStrategy implements CommitStrategy {
-  private executor: CommandExecutor;
+  private executor: ICommandExecutor;
 
-  constructor(executor?: CommandExecutor) {
+  constructor(executor?: ICommandExecutor) {
     this.executor = executor ?? defaultExecutor;
   }
 

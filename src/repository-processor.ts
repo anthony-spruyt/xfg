@@ -27,7 +27,7 @@ import {
   hasGitHubAppCredentials,
 } from "./strategies/index.js";
 import type { PRMergeConfig, FileChange } from "./strategies/index.js";
-import { CommandExecutor, defaultExecutor } from "./command-executor.js";
+import { ICommandExecutor, defaultExecutor } from "./command-executor.js";
 import {
   getFileStatus,
   generateDiff,
@@ -84,7 +84,7 @@ export interface ProcessorOptions {
   /** Number of retries for network operations (default: 3) */
   retries?: number;
   /** Command executor for shell commands (for testing) */
-  executor?: CommandExecutor;
+  executor?: ICommandExecutor;
   /** Custom PR body template */
   prTemplate?: string;
   /** Skip deleting orphaned files even if deleteOrphaned is configured */
@@ -119,7 +119,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
   private readonly gitOpsFactory: GitOpsFactory;
   private readonly log: ILogger;
   private retries: number = 3;
-  private executor: CommandExecutor = defaultExecutor;
+  private executor: ICommandExecutor = defaultExecutor;
   private readonly tokenManager: GitHubAppTokenManager | null;
 
   /**

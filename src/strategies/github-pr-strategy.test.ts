@@ -5,12 +5,12 @@ import { join } from "node:path";
 import { GitHubPRStrategy } from "./github-pr-strategy.js";
 import { GitHubRepoInfo } from "../repo-detector.js";
 import { PRStrategyOptions } from "./pr-strategy.js";
-import { CommandExecutor } from "../command-executor.js";
+import { ICommandExecutor } from "../command-executor.js";
 
 const testDir = join(process.cwd(), "test-github-strategy-tmp");
 
-// Mock executor for testing - implements CommandExecutor interface
-function createMockExecutor(): CommandExecutor & {
+// Mock executor for testing - implements ICommandExecutor interface
+function createMockExecutor(): ICommandExecutor & {
   calls: Array<{ command: string; cwd: string }>;
   responses: Map<string, string | Error>;
   reset: () => void;

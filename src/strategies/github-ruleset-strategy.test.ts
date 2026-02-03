@@ -7,10 +7,10 @@ import {
 } from "./github-ruleset-strategy.js";
 import type { Ruleset } from "../config.js";
 import type { GitHubRepoInfo, AzureDevOpsRepoInfo } from "../repo-detector.js";
-import type { CommandExecutor } from "../command-executor.js";
+import type { ICommandExecutor } from "../command-executor.js";
 
 // Mock executor that records commands and returns configured responses
-class MockExecutor implements CommandExecutor {
+class MockExecutor implements ICommandExecutor {
   commands: string[] = [];
   responses: Map<string, string> = new Map();
   defaultResponse = "{}";

@@ -1,6 +1,6 @@
 import { GitOps } from "./git-ops.js";
 import { escapeShellArg } from "./shell-utils.js";
-import { CommandExecutor, defaultExecutor } from "./command-executor.js";
+import { ICommandExecutor, defaultExecutor } from "./command-executor.js";
 import { withRetry } from "./retry-utils.js";
 
 /**
@@ -8,7 +8,7 @@ import { withRetry } from "./retry-utils.js";
  * Used for extracting executor/workDir/retries via reflection.
  */
 interface GitOpsInternal {
-  executor?: CommandExecutor;
+  executor?: ICommandExecutor;
   workDir?: string;
   retries?: number;
 }
@@ -72,7 +72,7 @@ export interface IAuthenticatedGitOps {
 export class AuthenticatedGitOps implements IAuthenticatedGitOps {
   private gitOps: GitOps;
   private auth?: GitAuthOptions;
-  private executor: CommandExecutor;
+  private executor: ICommandExecutor;
   private workDir: string;
   private retries: number;
 

@@ -1,4 +1,4 @@
-import { CommandExecutor, defaultExecutor } from "../command-executor.js";
+import { ICommandExecutor, defaultExecutor } from "../command-executor.js";
 import { isGitHubRepo, GitHubRepoInfo, RepoInfo } from "../repo-detector.js";
 import { escapeShellArg } from "../shell-utils.js";
 import type { Ruleset, RulesetRule } from "../config.js";
@@ -194,9 +194,9 @@ export interface RulesetStrategyOptions {
  * Uses `gh api` CLI for authentication and API calls.
  */
 export class GitHubRulesetStrategy implements IRulesetStrategy {
-  private executor: CommandExecutor;
+  private executor: ICommandExecutor;
 
-  constructor(executor?: CommandExecutor) {
+  constructor(executor?: ICommandExecutor) {
     this.executor = executor ?? defaultExecutor;
   }
 
