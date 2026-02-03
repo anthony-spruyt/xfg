@@ -2093,91 +2093,6 @@ describe("RepositoryProcessor", () => {
   });
 
   describe("diffStats in non-dry-run mode (issue #252)", () => {
-    const createMockLogger = (): ILogger & { messages: string[] } => ({
-      messages: [] as string[],
-      info(message: string) {
-        this.messages.push(message);
-      },
-      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
-        // No-op for mock
-      },
-      diffSummary(
-        _newCount: number,
-        _modifiedCount: number,
-        _unchangedCount: number
-      ) {
-        // No-op for mock
-      },
-    });
-
-    class MockGitOpsForDiffStats extends GitOps {
-      fileExistsMap: Map<string, boolean> = new Map();
-
-      constructor(options: GitOpsOptions) {
-        super(options);
-      }
-
-      override cleanWorkspace(): void {
-        mkdirSync(this.getWorkDir(), { recursive: true });
-      }
-
-      override async clone(_gitUrl: string): Promise<void> {
-        // No-op for mock
-      }
-
-      override async getDefaultBranch(): Promise<{
-        branch: string;
-        method: string;
-      }> {
-        return { branch: "main", method: "mock" };
-      }
-
-      override async createBranch(_branchName: string): Promise<void> {
-        // No-op for mock
-      }
-
-      override writeFile(fileName: string, content: string): void {
-        const filePath = join(this.getWorkDir(), fileName);
-        mkdirSync(this.getWorkDir(), { recursive: true });
-        writeFileSync(filePath, content, "utf-8");
-      }
-
-      override async fileExistsOnBranch(
-        _fileName: string,
-        _branch: string
-      ): Promise<boolean> {
-        return false;
-      }
-
-      override async commit(_message: string): Promise<boolean> {
-        return true;
-      }
-
-      override async push(_branchName: string): Promise<void> {
-        // No-op for mock
-      }
-
-      override async fetch(): Promise<void> {
-        // No-op for mock
-      }
-
-      override fileExists(fileName: string): boolean {
-        return this.fileExistsMap.get(fileName) ?? false;
-      }
-
-      override deleteFile(_fileName: string): void {
-        // No-op for mock
-      }
-
-      private getWorkDir(): string {
-        return (this as unknown as { workDir: string }).workDir;
-      }
-
-      setupFileExists(fileName: string, exists: boolean): void {
-        this.fileExistsMap.set(fileName, exists);
-      }
-    }
-
     // Mock executor that returns a PR URL (safe test mock - no actual shell execution)
     function createPRMockExecutor(): ICommandExecutor {
       return {
@@ -2188,24 +2103,25 @@ describe("RepositoryProcessor", () => {
     }
 
     test("should populate diffStats with correct counts in non-dry-run mode", async () => {
-      const mockLogger = createMockLogger();
-      let mockGitOps: MockGitOpsForDiffStats | null = null;
+      const { mock: mockLogger } = createMockLogger();
+      const localWorkDir = join(testDir, `diffstats-nondr-${Date.now()}`);
+      mkdirSync(localWorkDir, { recursive: true });
+      // Pre-create existing.json so existsSync returns true for it
+      writeFileSync(join(localWorkDir, "existing.json"), '{"old": true}');
 
-      const mockFactory: GitOpsFactory = (opts, _auth) => {
-        mockGitOps = new MockGitOpsForDiffStats(opts);
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
         // existing.json exists (update), new-file.json doesn't (create)
-        // wouldChange will return true since content changes
-        mockGitOps.setupFileExists("existing.json", true);
-        mockGitOps.setupFileExists("new-file.json", false);
-        return new AuthenticatedGitOps(mockGitOps);
-      };
+        fileExists: (fileName) => fileName === "existing.json",
+        wouldChange: true,
+        hasChanges: true,
+        fileExistsOnBranch: false,
+        onWriteFile: (fileName, content) => {
+          writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+        },
+      });
+      const mockFactory: GitOpsFactory = () => mockGitOps;
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
-      const localWorkDir = join(testDir, `diffstats-nondr-${Date.now()}`);
-
-      // Pre-create existing.json so existsSync returns true for it
-      mkdirSync(localWorkDir, { recursive: true });
-      writeFileSync(join(localWorkDir, "existing.json"), '{"old": true}');
 
       const repoConfig: RepoConfig = {
         git: "git@github.com:test/repo.git",
@@ -2239,22 +2155,25 @@ describe("RepositoryProcessor", () => {
     });
 
     test("should count deleted files in diffStats", async () => {
-      const mockLogger = createMockLogger();
-      let mockGitOps: MockGitOpsForDiffStats | null = null;
+      const { mock: mockLogger } = createMockLogger();
+      const localWorkDir = join(testDir, `diffstats-delete-${Date.now()}`);
+      mkdirSync(localWorkDir, { recursive: true });
 
-      const mockFactory: GitOpsFactory = (opts, _auth) => {
-        mockGitOps = new MockGitOpsForDiffStats(opts);
-        // Git reports config.json changed, orphaned.json will be deleted
-        // wouldChange will return true since we write new content
-        mockGitOps.setupFileExists("orphaned.json", true); // Orphan exists
-        return new AuthenticatedGitOps(mockGitOps);
-      };
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        // orphaned.json exists (will be deleted), config.json doesn't (new)
+        fileExists: (fileName) => fileName === "orphaned.json",
+        wouldChange: true,
+        hasChanges: true,
+        fileExistsOnBranch: false,
+        onWriteFile: (fileName, content) => {
+          writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+        },
+      });
+      const mockFactory: GitOpsFactory = () => mockGitOps;
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
-      const localWorkDir = join(testDir, `diffstats-delete-${Date.now()}`);
 
       // Create manifest tracking orphaned.json
-      mkdirSync(localWorkDir, { recursive: true });
       writeFileSync(
         join(localWorkDir, ".xfg.json"),
         JSON.stringify({
