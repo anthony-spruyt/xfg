@@ -2,6 +2,7 @@ export { createMockExecutor } from "./executor.mock.js";
 export type {
   ExecutorMockConfig,
   ExecutorMockResult,
+  GitCommandTracking,
 } from "./executor.mock.js";
 
 export { createMockLogger } from "./logger.mock.js";

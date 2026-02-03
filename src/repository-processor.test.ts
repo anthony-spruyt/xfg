@@ -12,11 +12,12 @@ import { ICommandExecutor } from "./command-executor.js";
 import {
   createMockLogger,
   createMockAuthenticatedGitOps,
+  createMockExecutor as createExecutorMock,
 } from "../test/mocks/index.js";
 
 const testDir = join(tmpdir(), "repo-processor-test-" + Date.now());
 
-// Mock executor that returns empty results for all commands (prevents real CLI calls during tests)
+// Simple mock executor that returns empty results for all commands
 function createMockExecutor(): ICommandExecutor {
   return {
     async exec(): Promise<string> {
@@ -26,48 +27,24 @@ function createMockExecutor(): ICommandExecutor {
 }
 
 // Mock executor that tracks commit messages for tests verifying commit behavior
-function createTrackingMockExecutor(): ICommandExecutor & {
-  lastCommitMessage: string | null;
-  pushBranch: string | null;
-  pushForce: boolean | undefined;
-} {
-  const tracker = {
-    lastCommitMessage: null as string | null,
-    pushBranch: null as string | null,
-    pushForce: undefined as boolean | undefined,
-    async exec(command: string): Promise<string> {
-      // Track commit message from git commit command
-      if (command.includes("git commit")) {
-        const match = command.match(/-m ['"](.+)['"]/);
-        if (match) {
-          tracker.lastCommitMessage = match[1];
-        } else {
-          // Handle shell escaping - look for -m followed by escaped content
-          const msgMatch = command.match(/-m \$'([^']+)'/);
-          if (msgMatch) {
-            tracker.lastCommitMessage = msgMatch[1].replace(/\\'/g, "'");
-          }
-        }
-      }
-      // Track push branch and force flag
-      if (command.includes("git push")) {
-        tracker.pushForce = command.includes("--force-with-lease");
-        // Branch name may be shell-escaped with single quotes
-        const branchMatch = command.match(
-          /git push.*origin\s+'?([^'\s]+)'?(?:\s|$)/
-        );
-        if (branchMatch) {
-          tracker.pushBranch = branchMatch[1];
-        }
-      }
-      // Return HEAD SHA for commit strategy
-      if (command.includes("git rev-parse HEAD")) {
-        return "abc123def456";
-      }
-      return "";
+function createTrackingMockExecutor() {
+  const result = createExecutorMock({
+    trackGitCommands: true,
+    responses: new Map([["git rev-parse HEAD", "abc123def456"]]),
+  });
+  // Return an object with flattened access to git tracking for backwards compatibility
+  return {
+    ...result.mock,
+    get lastCommitMessage() {
+      return result.git.lastCommitMessage;
+    },
+    get pushBranch() {
+      return result.git.pushBranch;
+    },
+    get pushForce() {
+      return result.git.pushForce;
     },
   };
-  return tracker;
 }
 
 describe("RepositoryProcessor", () => {
