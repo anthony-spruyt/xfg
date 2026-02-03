@@ -13,6 +13,10 @@ import {
 } from "./authenticated-git-ops.js";
 import { ILogger } from "./logger.js";
 import { ICommandExecutor } from "./command-executor.js";
+import {
+  createMockLogger,
+  createMockAuthenticatedGitOps,
+} from "../test/mocks/index.js";
 
 const testDir = join(tmpdir(), "repo-processor-test-" + Date.now());
 
@@ -146,143 +150,15 @@ describe("RepositoryProcessor", () => {
   });
 
   describe("action detection behavior", () => {
-    // Mock logger that captures log messages
-    const createMockLogger = (): ILogger & { messages: string[] } => ({
-      messages: [] as string[],
-      info(message: string) {
-        this.messages.push(message);
-      },
-      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
-        // No-op for mock
-      },
-      diffSummary(
-        _newCount: number,
-        _modifiedCount: number,
-        _unchangedCount: number
-      ) {
-        // No-op for mock
-      },
-    });
-
-    // Mock GitOps that simulates different scenarios
-    class MockGitOps extends GitOps {
-      mockFileExists = false;
-      contentMatches = false;
-      createPRCalled = false;
-      lastAction: "create" | "update" | null = null;
-
-      override fileExists(_fileName: string): boolean {
-        return this.mockFileExists;
-      }
-
-      constructor(options: GitOpsOptions) {
-        super(options);
-      }
-
-      override cleanWorkspace(): void {
-        mkdirSync(this.getWorkDir(), { recursive: true });
-      }
-
-      override async clone(_gitUrl: string): Promise<void> {
-        // No-op for mock
-      }
-
-      override async getDefaultBranch(): Promise<{
-        branch: string;
-        method: string;
-      }> {
-        return { branch: "main", method: "mock" };
-      }
-
-      override async createBranch(_branchName: string): Promise<void> {
-        // No-op for mock
-      }
-
-      override writeFile(fileName: string, content: string): void {
-        // Simulate writing the file
-        const filePath = join(this.getWorkDir(), fileName);
-        writeFileSync(filePath, content, "utf-8");
-      }
-
-      override wouldChange(_fileName: string, _content: string): boolean {
-        // If file exists with same content, no change
-        if (this.mockFileExists && this.contentMatches) {
-          return false;
-        }
-        return true;
-      }
-
-      override async hasChanges(): Promise<boolean> {
-        // Same logic for actual git check
-        if (this.mockFileExists && this.contentMatches) {
-          return false;
-        }
-        return true;
-      }
-
-      override async fileExistsOnBranch(
-        _fileName: string,
-        _branch: string
-      ): Promise<boolean> {
-        // For tests, assume file doesn't exist on base branch unless specified
-        return false;
-      }
-
-      override async commit(_message: string): Promise<boolean> {
-        // Return true to indicate commit was made
-        return true;
-      }
-
-      override async push(_branchName: string): Promise<void> {
-        // No-op for mock
-      }
-
-      // AuthenticatedGitOps methods (stubs for testing)
-      async lsRemote(_branchName: string): Promise<string> {
-        return "";
-      }
-
-      async pushRefspec(
-        _refspec: string,
-        _options?: { delete?: boolean }
-      ): Promise<void> {
-        // No-op for mock
-      }
-
-      async fetchBranch(_branchName: string): Promise<void> {
-        // No-op for mock
-      }
-
-      private getWorkDir(): string {
-        return (this as unknown as { workDir: string }).workDir;
-      }
-
-      // Setup methods for test scenarios
-      setupFileExists(exists: boolean, contentMatches: boolean): void {
-        this.mockFileExists = exists;
-        this.contentMatches = contentMatches;
-        if (exists) {
-          // Create the file in workspace
-          const filePath = join(this.getWorkDir(), "config.json");
-          mkdirSync(this.getWorkDir(), { recursive: true });
-          if (contentMatches) {
-            writeFileSync(filePath, '{\n  "key": "value"\n}\n', "utf-8");
-          } else {
-            writeFileSync(filePath, '{\n  "key": "old-value"\n}\n', "utf-8");
-          }
-        }
-      }
-    }
-
     test("should correctly skip when existing file has identical content", async () => {
-      const mockLogger = createMockLogger();
-      let mockGitOps: MockGitOps | null = null;
+      const { mock: mockLogger } = createMockLogger();
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        fileExists: true,
+        wouldChange: false,
+        hasChanges: false,
+      });
 
-      const mockFactory: GitOpsFactory = (opts, _auth) => {
-        mockGitOps = new MockGitOps(opts);
-        mockGitOps.setupFileExists(true, true); // File exists with same content
-        return new AuthenticatedGitOps(mockGitOps);
-      };
+      const mockFactory: GitOpsFactory = () => mockGitOps;
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `action-test-skip-${Date.now()}`);
@@ -300,14 +176,14 @@ describe("RepositoryProcessor", () => {
     });
 
     test("should correctly report 'update' action when file exists but content differs", async () => {
-      const mockLogger = createMockLogger();
-      let mockGitOps: MockGitOps | null = null;
+      const { mock: mockLogger } = createMockLogger();
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        fileExists: true,
+        wouldChange: true,
+        hasChanges: true,
+      });
 
-      const mockFactory: GitOpsFactory = (opts, _auth) => {
-        mockGitOps = new MockGitOps(opts);
-        mockGitOps.setupFileExists(true, false); // File exists with different content
-        return new AuthenticatedGitOps(mockGitOps);
-      };
+      const mockFactory: GitOpsFactory = () => mockGitOps;
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `action-test-update-${Date.now()}`);
@@ -330,14 +206,14 @@ describe("RepositoryProcessor", () => {
     });
 
     test("should correctly report 'create' action when file does not exist", async () => {
-      const mockLogger = createMockLogger();
-      let mockGitOps: MockGitOps | null = null;
+      const { mock: mockLogger } = createMockLogger();
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        fileExists: false,
+        wouldChange: true,
+        hasChanges: true,
+      });
 
-      const mockFactory: GitOpsFactory = (opts, _auth) => {
-        mockGitOps = new MockGitOps(opts);
-        mockGitOps.setupFileExists(false, false); // File doesn't exist
-        return new AuthenticatedGitOps(mockGitOps);
-      };
+      const mockFactory: GitOpsFactory = () => mockGitOps;
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `action-test-create-${Date.now()}`);
@@ -360,26 +236,16 @@ describe("RepositoryProcessor", () => {
     });
 
     test("should skip when commit returns false (no staged changes after git add)", async () => {
-      const mockLogger = createMockLogger();
+      const { mock: mockLogger } = createMockLogger();
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        fileExists: false,
+        wouldChange: true,
+        hasChanges: true,
+        changedFiles: ["config.json"],
+        hasStagedChanges: false, // No staged changes after git add -A
+      });
 
-      // Extend MockGitOps to return false from hasStagedChanges
-      class MockGitOpsNoStagedChanges extends MockGitOps {
-        override async getChangedFiles(): Promise<string[]> {
-          // Report that files changed (so we proceed to commit step)
-          return ["config.json"];
-        }
-
-        override async hasStagedChanges(): Promise<boolean> {
-          // Return false to indicate no staged changes after git add -A
-          return false;
-        }
-      }
-
-      const mockFactory: GitOpsFactory = (opts, _auth) => {
-        const mockGitOps = new MockGitOpsNoStagedChanges(opts);
-        mockGitOps.setupFileExists(false, false); // File doesn't exist, so it will try to create
-        return new AuthenticatedGitOps(mockGitOps);
-      };
+      const mockFactory: GitOpsFactory = () => mockGitOps;
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `action-test-no-staged-${Date.now()}`);
