@@ -2,6 +2,7 @@ import { CommandExecutor, defaultExecutor } from "../command-executor.js";
 import { isGitHubRepo, GitHubRepoInfo, RepoInfo } from "../repo-detector.js";
 import { escapeShellArg } from "../shell-utils.js";
 import type { Ruleset, RulesetRule } from "../config.js";
+import type { IRulesetStrategy } from "./ruleset-strategy.js";
 
 // =============================================================================
 // GitHub API Types
@@ -192,7 +193,7 @@ export interface RulesetStrategyOptions {
  * GitHub Ruleset Strategy for managing repository rulesets via GitHub REST API.
  * Uses `gh api` CLI for authentication and API calls.
  */
-export class GitHubRulesetStrategy {
+export class GitHubRulesetStrategy implements IRulesetStrategy {
   private executor: CommandExecutor;
 
   constructor(executor?: CommandExecutor) {
