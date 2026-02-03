@@ -6,12 +6,8 @@ import { tmpdir } from "node:os";
 import { RepositoryProcessor, GitOpsFactory } from "./repository-processor.js";
 import { RepoConfig } from "./config.js";
 import { GitHubRepoInfo } from "./repo-detector.js";
-import { GitOps, GitOpsOptions } from "./git-ops.js";
-import {
-  AuthenticatedGitOps,
-  IAuthenticatedGitOps,
-} from "./authenticated-git-ops.js";
-import { ILogger } from "./logger.js";
+import { GitOps } from "./git-ops.js";
+import { AuthenticatedGitOps } from "./authenticated-git-ops.js";
 import { ICommandExecutor } from "./command-executor.js";
 import {
   createMockLogger,
@@ -2819,88 +2815,20 @@ describe("RepositoryProcessor", () => {
   });
 
   describe("updateManifestOnly", () => {
-    // Mock logger that captures log messages
-    const createMockLogger = (): ILogger & { messages: string[] } => ({
-      messages: [] as string[],
-      info(message: string) {
-        this.messages.push(message);
-      },
-      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
-        // No-op for mock
-      },
-      diffSummary(
-        _newCount: number,
-        _modifiedCount: number,
-        _unchangedCount: number
-      ) {
-        // No-op for mock
-      },
-    });
-
-    // Mock GitOps for updateManifestOnly tests
-    class MockGitOps extends GitOps implements IAuthenticatedGitOps {
-      constructor(options: GitOpsOptions) {
-        super(options);
-      }
-
-      override cleanWorkspace(): void {
-        mkdirSync((this as unknown as { workDir: string }).workDir, {
-          recursive: true,
-        });
-      }
-
-      override async clone(_gitUrl: string): Promise<void> {
-        // No-op for mock
-      }
-
-      override async getDefaultBranch(): Promise<{
-        branch: string;
-        method: string;
-      }> {
-        return { branch: "main", method: "mock" };
-      }
-
-      override async createBranch(_branchName: string): Promise<void> {
-        // No-op for mock
-      }
-
-      override async fetch(_options?: { prune?: boolean }): Promise<void> {
-        // No-op for mock
-      }
-
-      override async hasStagedChanges(): Promise<boolean> {
-        return true;
-      }
-
-      override getFileContent(_fileName: string): string | null {
-        return null;
-      }
-
-      override wouldChange(_fileName: string, _content: string): boolean {
-        return true;
-      }
-
-      override async push(
-        _branchName: string,
-        _options?: { force?: boolean }
-      ): Promise<void> {
-        // No-op for mock
-      }
-
-      // IAuthenticatedGitOps methods
-      async lsRemote(_branchName: string): Promise<string> {
-        return "";
-      }
-      async pushRefspec(
-        _refspec: string,
-        _options?: { delete?: boolean }
-      ): Promise<void> {}
-      async fetchBranch(_branchName: string): Promise<void> {}
-    }
-
     test("updates manifest with rulesets and commits", async () => {
-      const mockLogger = createMockLogger();
-      const mockFactory: GitOpsFactory = (opts, _auth) => new MockGitOps(opts);
+      const { mock: mockLogger } = createMockLogger();
+      const localWorkDir = join(testDir, `manifest-update-${Date.now()}`);
+      mkdirSync(localWorkDir, { recursive: true });
+
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        hasStagedChanges: true,
+        wouldChange: true,
+        fileContent: null,
+        onWriteFile: (fileName, content) => {
+          writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+        },
+      });
+      const mockFactory: GitOpsFactory = () => mockGitOps;
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
 
       const repoInfo: GitHubRepoInfo = {
@@ -2919,7 +2847,7 @@ describe("RepositoryProcessor", () => {
 
       const options = {
         branchName: "chore/sync-config",
-        workDir: join(testDir, `manifest-update-${Date.now()}`),
+        workDir: localWorkDir,
         configId: "test-config",
         dryRun: false,
         executor: createMockExecutor(),
@@ -2938,8 +2866,19 @@ describe("RepositoryProcessor", () => {
     });
 
     test("dry-run mode does not commit changes", async () => {
-      const mockLogger = createMockLogger();
-      const mockFactory: GitOpsFactory = (opts, _auth) => new MockGitOps(opts);
+      const { mock: mockLogger } = createMockLogger();
+      const localWorkDir = join(testDir, `manifest-dryrun-${Date.now()}`);
+      mkdirSync(localWorkDir, { recursive: true });
+
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        hasStagedChanges: true,
+        wouldChange: true,
+        fileContent: null,
+        onWriteFile: (fileName, content) => {
+          writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+        },
+      });
+      const mockFactory: GitOpsFactory = () => mockGitOps;
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
 
       const repoInfo: GitHubRepoInfo = {
@@ -2958,7 +2897,7 @@ describe("RepositoryProcessor", () => {
 
       const options = {
         branchName: "chore/sync-config",
-        workDir: join(testDir, `manifest-dryrun-${Date.now()}`),
+        workDir: localWorkDir,
         configId: "test-config",
         dryRun: true,
         executor: createMockExecutor(),
@@ -2978,40 +2917,13 @@ describe("RepositoryProcessor", () => {
     });
 
     test("skips when no manifest changes detected", async () => {
-      const mockLogger = createMockLogger();
-
-      // Create mock that simulates existing manifest with same rulesets
-      class MockGitOpsWithManifest extends MockGitOps {
-        override getFileContent(fileName: string): string | null {
-          if (fileName === ".xfg.json") {
-            return JSON.stringify({
-              version: 3,
-              configs: {
-                "test-config": {
-                  rulesets: ["pr-rules", "release-rules"],
-                },
-              },
-            });
-          }
-          return null;
-        }
-
-        override wouldChange(fileName: string, content: string): boolean {
-          if (fileName === ".xfg.json") {
-            // Check if content matches existing
-            const existing = this.getFileContent(fileName);
-            return existing !== content;
-          }
-          return true;
-        }
-      }
+      const { mock: mockLogger } = createMockLogger();
 
       const workDir = join(testDir, `manifest-no-change-${Date.now()}`);
 
       // Create the manifest file in the workspace
       mkdirSync(workDir, { recursive: true });
-      writeFileSync(
-        join(workDir, ".xfg.json"),
+      const manifestContent =
         JSON.stringify(
           {
             version: 3,
@@ -3023,11 +2935,45 @@ describe("RepositoryProcessor", () => {
           },
           null,
           2
-        ) + "\n"
-      );
+        ) + "\n";
+      writeFileSync(join(workDir, ".xfg.json"), manifestContent);
 
-      const mockFactory: GitOpsFactory = (opts, _auth) =>
-        new MockGitOpsWithManifest(opts);
+      // Mock that simulates existing manifest with same rulesets
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        hasStagedChanges: true,
+        fileContent: (fileName) => {
+          if (fileName === ".xfg.json") {
+            return JSON.stringify({
+              version: 3,
+              configs: {
+                "test-config": {
+                  rulesets: ["pr-rules", "release-rules"],
+                },
+              },
+            });
+          }
+          return null;
+        },
+        wouldChange: (fileName, content) => {
+          if (fileName === ".xfg.json") {
+            // Check if content matches existing
+            const existing = JSON.stringify({
+              version: 3,
+              configs: {
+                "test-config": {
+                  rulesets: ["pr-rules", "release-rules"],
+                },
+              },
+            });
+            return existing !== content;
+          }
+          return true;
+        },
+        onWriteFile: (fileName, content) => {
+          writeFileSync(join(workDir, fileName), content, "utf-8");
+        },
+      });
+      const mockFactory: GitOpsFactory = () => mockGitOps;
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
 
       const repoInfo: GitHubRepoInfo = {
@@ -3072,14 +3018,25 @@ describe("RepositoryProcessor", () => {
       process.env.GH_TOKEN = "ghp_test_pat_token";
 
       try {
-        const mockLogger = createMockLogger();
+        const { mock: mockLogger } = createMockLogger();
+        const localWorkDir = join(testDir, `manifest-gh-token-${Date.now()}`);
+        mkdirSync(localWorkDir, { recursive: true });
+
+        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+          hasStagedChanges: true,
+          wouldChange: true,
+          fileContent: null,
+          onWriteFile: (fileName, content) => {
+            writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+          },
+        });
 
         // Track the auth options passed to factory
         let capturedAuth: unknown = undefined;
 
-        const mockGitOpsFactory: GitOpsFactory = (opts, auth) => {
+        const mockGitOpsFactory: GitOpsFactory = (_opts, auth) => {
           capturedAuth = auth;
-          return new MockGitOps(opts);
+          return mockGitOps;
         };
 
         const processor = new RepositoryProcessor(
@@ -3103,7 +3060,7 @@ describe("RepositoryProcessor", () => {
 
         const options = {
           branchName: "chore/sync-config",
-          workDir: join(testDir, `manifest-gh-token-${Date.now()}`),
+          workDir: localWorkDir,
           configId: "test-config",
           dryRun: false,
           executor: createMockExecutor(),
