@@ -10,5 +10,6 @@ useDefault = true
 [allowlist]
 description = "Allowlist for test RSA keys"
 paths = [
+  '''test/fixtures/test-fixtures\.ts$''',
   '''fixtures/test-fixtures\.ts$''',
 ]

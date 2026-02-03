@@ -303,7 +303,7 @@ jobs:
       - name: "[PAT] Run xfg action"
         uses: ./
         with:
-          config: ./fixtures/integration-test-action-github.yaml
+          config: ./test/fixtures/integration-test-action-github.yaml
           branch: ${{ env.PAT_BRANCH }}
           github-token: ${{ secrets.GH_PAT }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
@@ -364,7 +364,7 @@ jobs:
       - name: "[App] Run xfg action with GitHub App credentials"
         uses: ./
         with:
-          config: ./fixtures/integration-test-action-github.yaml
+          config: ./test/fixtures/integration-test-action-github.yaml
           branch: ${{ env.APP_BRANCH }}
           # Include github-token to simulate real usage where both are set
           # This tests that GitHub App credentials take precedence over PAT
@@ -422,7 +422,7 @@ jobs:
         uses: ./
         with:
           command: settings
-          config: ./fixtures/integration-test-config-github-settings.yaml
+          config: ./test/fixtures/integration-test-config-github-settings.yaml
           github-token: ${{ secrets.GH_PAT }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 

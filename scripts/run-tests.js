@@ -10,8 +10,10 @@ import { run } from "node:test";
 import { spec as SpecReporter } from "node:test/reporters";
 import { globSync } from "node:fs";
 
-// Find all test files in src/ directory (excluding integration tests in test/)
-const testFiles = globSync("src/**/*.test.ts", { windowsPathsNoEscape: true });
+// Find all unit test files in test/unit/ directory
+const testFiles = globSync("test/unit/**/*.test.ts", {
+  windowsPathsNoEscape: true,
+});
 
 if (testFiles.length === 0) {
   console.error("No test files found in src/");

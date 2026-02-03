@@ -1,4 +1,4 @@
-fixtures/templates/invalid.json
+test/fixtures/templates/invalid.json
 
 # MkDocs documentation uses admonition syntax that Prettier doesn't understand
 docs/**/*.md

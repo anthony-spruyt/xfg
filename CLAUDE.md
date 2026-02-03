@@ -76,7 +76,7 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 - **Enable automerge after PR creation:** `gh pr merge <num> --auto --squash --delete-branch`
 - **Wait for CI before claiming done** - verify checks pass, don't just run local lint
 - **Check CI on main after PR merge** - integration tests only run on main; verify they pass before releasing
-- **Do not commit plans to `docs/`** - that's GitHub Pages; use scratchpad for temporary plans
+- **Do not commit plans to `docs/`** - that's GitHub Pages; use `plans/` for plans
 - Output format determined by file extension: `.json`/`.json5`/`.yaml`/`.yml` → object content; others → string/string[]
 - Escape `${VAR}` as `$${VAR}` to output literal (for devcontainer.json, shell scripts)
 - Escape `${xfg:var}` as `$${xfg:var}` similarly

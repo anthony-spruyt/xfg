@@ -24,4 +24,4 @@ EXCLUDED_DIRECTORIES:
   - tmp
 
 # Exclude intentionally invalid test fixtures from JSON linting
-JSON_JSONLINT_FILTER_REGEX_EXCLUDE: "fixtures/templates/invalid\\.json"
+JSON_JSONLINT_FILTER_REGEX_EXCLUDE: "test/fixtures/templates/invalid\\.json"
