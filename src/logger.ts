@@ -10,6 +10,13 @@ export interface ILogger {
     unchangedCount: number,
     deletedCount?: number
   ): void;
+  setTotal(total: number): void;
+  progress(current: number, repoName: string, message: string): void;
+  success(current: number, repoName: string, message: string): void;
+  skip(current: number, repoName: string, reason: string): void;
+  error(current: number, repoName: string, error: string): void;
+  summary(): void;
+  hasFailures(): boolean;
 }
 
 export interface LoggerStats {
@@ -19,7 +26,7 @@ export interface LoggerStats {
   skipped: number;
 }
 
-export class Logger {
+export class Logger implements ILogger {
   private stats: LoggerStats = {
     total: 0,
     succeeded: 0,
