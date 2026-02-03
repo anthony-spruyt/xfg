@@ -19,7 +19,7 @@ export interface AuthenticatedGitOpsMockConfig {
   cloneError?: Error;
   pushError?: Error;
   commitError?: Error;
-  cleanupError?: Error;
+  cleanupError?: Error | ((callCount: number) => Error | undefined);
   lsRemoteError?: Error;
 
   // Callbacks for side effects (e.g., writing files)
@@ -29,6 +29,7 @@ export interface AuthenticatedGitOpsMockConfig {
 }
 
 export interface AuthenticatedGitOpsMockCalls {
+  cleanWorkspace: Array<Record<string, never>>;
   clone: Array<{ gitUrl: string }>;
   fetch: Array<{ options?: { prune?: boolean } }>;
   createBranch: Array<{ branchName: string }>;
@@ -52,6 +53,7 @@ export function createMockAuthenticatedGitOps(
   config: AuthenticatedGitOpsMockConfig = {}
 ): AuthenticatedGitOpsMockResult {
   const calls: AuthenticatedGitOpsMockCalls = {
+    cleanWorkspace: [],
     clone: [],
     fetch: [],
     createBranch: [],
@@ -67,8 +69,15 @@ export function createMockAuthenticatedGitOps(
 
   const mock: IAuthenticatedGitOps = {
     cleanWorkspace(): void {
+      calls.cleanWorkspace.push({});
       if (config.cleanupError) {
-        throw config.cleanupError;
+        // Support conditional cleanup error (e.g., only on 2nd call)
+        if (typeof config.cleanupError === "function") {
+          const error = config.cleanupError(calls.cleanWorkspace.length);
+          if (error) throw error;
+        } else {
+          throw config.cleanupError;
+        }
       }
     },
 
@@ -204,6 +213,7 @@ export function createMockAuthenticatedGitOps(
     mock,
     calls,
     reset: () => {
+      calls.cleanWorkspace.length = 0;
       calls.clone.length = 0;
       calls.fetch.length = 0;
       calls.createBranch.length = 0;

@@ -5,7 +5,7 @@ export type {
 } from "./executor.mock.js";
 
 export { createMockLogger } from "./logger.mock.js";
-export type { LoggerMockResult } from "./logger.mock.js";
+export type { LoggerMockResult, DiffStatusEntry } from "./logger.mock.js";
 
 export { createMockGitOps } from "./git-ops.mock.js";
 export type {

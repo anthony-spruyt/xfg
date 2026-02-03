@@ -1,25 +1,28 @@
 import type { ILogger } from "../../src/logger.js";
 import type { FileStatus } from "../../src/diff-utils.js";
 
+export interface DiffStatusEntry {
+  fileName: string;
+  status: FileStatus;
+}
+
 export interface LoggerMockResult {
   mock: ILogger;
   messages: string[];
+  diffStatuses: DiffStatusEntry[];
   reset: () => void;
 }
 
 export function createMockLogger(): LoggerMockResult {
   const messages: string[] = [];
+  const diffStatuses: DiffStatusEntry[] = [];
 
   const mock: ILogger = {
     info(message: string): void {
       messages.push(message);
     },
-    fileDiff(
-      _fileName: string,
-      _status: FileStatus,
-      _diffLines: string[]
-    ): void {
-      // No-op
+    fileDiff(fileName: string, status: FileStatus, _diffLines: string[]): void {
+      diffStatuses.push({ fileName, status });
     },
     diffSummary(
       _newCount: number,
@@ -55,8 +58,10 @@ export function createMockLogger(): LoggerMockResult {
   return {
     mock,
     messages,
+    diffStatuses,
     reset: () => {
       messages.length = 0;
+      diffStatuses.length = 0;
     },
   };
 }
