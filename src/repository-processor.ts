@@ -44,6 +44,20 @@ import {
 } from "./manifest.js";
 import { GitHubAppTokenManager } from "./github-app-token-manager.js";
 
+export interface IRepositoryProcessor {
+  process(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: ProcessorOptions
+  ): Promise<ProcessorResult>;
+  updateManifestOnly(
+    repoInfo: RepoInfo,
+    repoConfig: RepoConfig,
+    options: ProcessorOptions,
+    manifestUpdate: { rulesets: string[] }
+  ): Promise<ProcessorResult>;
+}
+
 /**
  * Determines if a file should be marked as executable.
  * .sh files are auto-executable unless explicit executable: false is set.
@@ -100,7 +114,7 @@ export interface ProcessorResult {
   diffStats?: DiffStats;
 }
 
-export class RepositoryProcessor {
+export class RepositoryProcessor implements IRepositoryProcessor {
   private gitOps: IAuthenticatedGitOps | null = null;
   private readonly gitOpsFactory: GitOpsFactory;
   private readonly log: ILogger;
