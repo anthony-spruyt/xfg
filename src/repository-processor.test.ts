@@ -2227,14 +2227,7 @@ describe("RepositoryProcessor", () => {
         "XFG_GITHUB_APP_PRIVATE_KEY should not be set"
       );
 
-      const mockLogger = {
-        messages: [] as string[],
-        info(message: string) {
-          this.messages.push(message);
-        },
-        fileDiff() {},
-        diffSummary() {},
-      };
+      const { mock: mockLogger } = createMockLogger();
 
       // Create a minimal mock GitOps that simulates a working repository
       const mockGitOpsFactory: GitOpsFactory = (opts, _auth) => {
@@ -2327,14 +2320,7 @@ describe("RepositoryProcessor", () => {
       process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
       process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
 
-      const mockLogger = {
-        messages: [] as string[],
-        info(message: string) {
-          this.messages.push(message);
-        },
-        fileDiff() {},
-        diffSummary() {},
-      };
+      const { mock: mockLogger } = createMockLogger();
 
       // Mock fetch to return empty installations array
       const originalFetch = globalThis.fetch;
@@ -2418,14 +2404,7 @@ describe("RepositoryProcessor", () => {
       process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
       process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
 
-      const mockLogger = {
-        messages: [] as string[],
-        info(message: string) {
-          this.messages.push(message);
-        },
-        fileDiff() {},
-        diffSummary() {},
-      };
+      const { mock: mockLogger, messages: logMessages } = createMockLogger();
 
       // Mock fetch to fail on installations discovery
       const originalFetch = globalThis.fetch;
@@ -2490,12 +2469,12 @@ describe("RepositoryProcessor", () => {
         );
 
         // Should have logged warning about token failure
-        const warningMessage = mockLogger.messages.find((m) =>
+        const warningMessage = logMessages.find((m) =>
           m.includes("Failed to get GitHub App token")
         );
         assert.ok(
           warningMessage,
-          `Expected warning about token failure, got messages: ${mockLogger.messages.join(", ")}`
+          `Expected warning about token failure, got messages: ${logMessages.join(", ")}`
         );
       } finally {
         globalThis.fetch = originalFetch;
@@ -2510,14 +2489,7 @@ describe("RepositoryProcessor", () => {
       process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
       process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
 
-      const mockLogger = {
-        messages: [] as string[],
-        info(message: string) {
-          this.messages.push(message);
-        },
-        fileDiff() {},
-        diffSummary() {},
-      };
+      const { mock: mockLogger } = createMockLogger();
 
       // Track the auth options passed to factory
       let capturedAuth: unknown = undefined;
@@ -2606,14 +2578,7 @@ describe("RepositoryProcessor", () => {
       process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
       process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
 
-      const mockLogger = {
-        messages: [] as string[],
-        info(message: string) {
-          this.messages.push(message);
-        },
-        fileDiff() {},
-        diffSummary() {},
-      };
+      const { mock: mockLogger } = createMockLogger();
 
       // Track the auth options passed to factory
       let capturedAuth: unknown = undefined;
@@ -2696,14 +2661,7 @@ describe("RepositoryProcessor", () => {
       process.env.GH_TOKEN = "ghp_test_pat_token";
 
       try {
-        const mockLogger = {
-          messages: [] as string[],
-          info(message: string) {
-            this.messages.push(message);
-          },
-          fileDiff() {},
-          diffSummary() {},
-        };
+        const { mock: mockLogger } = createMockLogger();
 
         // Track the auth options passed to factory
         let capturedAuth: unknown = undefined;
@@ -3069,6 +3027,252 @@ describe("RepositoryProcessor", () => {
           delete process.env.GH_TOKEN;
         }
       }
+    });
+
+    test("creates PR and handles merge when using auto mode", async () => {
+      const { mock: mockLogger } = createMockLogger();
+      const localWorkDir = join(testDir, `manifest-pr-mode-${Date.now()}`);
+      mkdirSync(localWorkDir, { recursive: true });
+
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        hasStagedChanges: true,
+        wouldChange: true,
+        fileContent: null,
+        onWriteFile: (fileName, content) => {
+          writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+        },
+      });
+      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+
+      const repoInfo: GitHubRepoInfo = {
+        type: "github",
+        owner: "test-owner",
+        repo: "test-repo",
+        host: "github.com",
+        gitUrl: "git@github.com:test-owner/test-repo.git",
+      };
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-owner/test-repo.git",
+        files: [],
+        prOptions: { merge: "auto" }, // Non-direct mode triggers PR creation
+      };
+
+      // Mock executor that returns PR URL for gh commands
+      const mockPRExecutor: ICommandExecutor = {
+        async exec(cmd: string): Promise<string> {
+          if (cmd.includes("gh pr list")) {
+            return ""; // No existing PR
+          }
+          if (cmd.includes("gh pr create")) {
+            return "https://github.com/test-owner/test-repo/pull/42";
+          }
+          if (cmd.includes("gh pr merge")) {
+            return "Merged";
+          }
+          return "";
+        },
+      };
+
+      const options = {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        configId: "test-config",
+        dryRun: false,
+        executor: mockPRExecutor,
+      };
+
+      const manifestUpdate = { rulesets: ["pr-rules"] };
+
+      const result = await processor.updateManifestOnly(
+        repoInfo,
+        repoConfig,
+        options,
+        manifestUpdate
+      );
+
+      assert.equal(result.success, true);
+      assert.ok(
+        result.prUrl?.includes("pull/42"),
+        "Should return PR URL from createPR"
+      );
+    });
+  });
+
+  describe("deletion-only commit messages", () => {
+    test("should format commit message for single deletion", async () => {
+      const { mock: mockLogger } = createMockLogger();
+      const localWorkDir = join(testDir, `delete-single-${Date.now()}`);
+      mkdirSync(localWorkDir, { recursive: true });
+
+      // Write manifest with a file that will become orphaned
+      const manifestContent = JSON.stringify(
+        {
+          version: 3,
+          configs: {
+            "test-config": {
+              files: ["orphaned.json"],
+            },
+          },
+        },
+        null,
+        2
+      );
+      writeFileSync(join(localWorkDir, ".xfg.json"), manifestContent);
+      // Create the orphaned file so it can be deleted
+      writeFileSync(join(localWorkDir, "orphaned.json"), "{}");
+
+      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
+        hasStagedChanges: true,
+        wouldChange: false, // No new files changing
+        fileContent: (fileName) => {
+          if (fileName === ".xfg.json") return manifestContent;
+          if (fileName === "orphaned.json") return "{}";
+          return null;
+        },
+        fileExists: (fileName) => {
+          return (
+            fileName === ".xfg.json" ||
+            fileName === "orphaned.json" ||
+            readdirSync(localWorkDir).includes(fileName)
+          );
+        },
+        onWriteFile: (fileName, content) => {
+          writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+        },
+        onDeleteFile: () => {
+          // Allow deletion
+        },
+      });
+      const mockFactory: GitOpsFactory = () => mockGitOps;
+
+      // Mock executor
+      const trackingExecutor: ICommandExecutor = {
+        async exec(cmd: string): Promise<string> {
+          if (cmd.includes("git rev-parse HEAD")) {
+            return "abc123";
+          }
+          return "";
+        },
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [], // Empty files array - orphaned.json will be deleted
+        prOptions: { merge: "direct" },
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        configId: "test-config",
+        dryRun: false,
+        executor: trackingExecutor,
+      });
+
+      // Verify the orphaned file was deleted
+      assert.ok(
+        calls.deleteFile.some((c) => c.fileName === "orphaned.json"),
+        "Should delete orphaned file"
+      );
+    });
+
+    test("should format commit message for multiple deletions", async () => {
+      const { mock: mockLogger } = createMockLogger();
+      const localWorkDir = join(testDir, `delete-multiple-${Date.now()}`);
+      mkdirSync(localWorkDir, { recursive: true });
+
+      // Write manifest with multiple files that will become orphaned
+      const manifestContent = JSON.stringify(
+        {
+          version: 3,
+          configs: {
+            "test-config": {
+              files: ["orphaned1.json", "orphaned2.json", "orphaned3.json"],
+            },
+          },
+        },
+        null,
+        2
+      );
+      writeFileSync(join(localWorkDir, ".xfg.json"), manifestContent);
+      // Create the orphaned files so they can be deleted
+      writeFileSync(join(localWorkDir, "orphaned1.json"), "{}");
+      writeFileSync(join(localWorkDir, "orphaned2.json"), "{}");
+      writeFileSync(join(localWorkDir, "orphaned3.json"), "{}");
+
+      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
+        hasStagedChanges: true,
+        wouldChange: false, // No new files changing
+        fileContent: (fileName) => {
+          if (fileName === ".xfg.json") return manifestContent;
+          if (
+            fileName === "orphaned1.json" ||
+            fileName === "orphaned2.json" ||
+            fileName === "orphaned3.json"
+          ) {
+            return "{}";
+          }
+          return null;
+        },
+        fileExists: (fileName) => {
+          return (
+            fileName === ".xfg.json" ||
+            fileName.startsWith("orphaned") ||
+            readdirSync(localWorkDir).includes(fileName)
+          );
+        },
+        onWriteFile: (fileName, content) => {
+          writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+        },
+        onDeleteFile: () => {
+          // Allow deletion
+        },
+      });
+      const mockFactory: GitOpsFactory = () => mockGitOps;
+
+      // Mock executor
+      const trackingExecutor: ICommandExecutor = {
+        async exec(cmd: string): Promise<string> {
+          if (cmd.includes("git rev-parse HEAD")) {
+            return "abc123";
+          }
+          return "";
+        },
+      };
+
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test/repo.git",
+        files: [], // Empty files array - all files will be deleted
+        prOptions: { merge: "direct" },
+      };
+
+      await processor.process(repoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        configId: "test-config",
+        dryRun: false,
+        executor: trackingExecutor,
+      });
+
+      // Verify the orphaned files were deleted
+      assert.ok(
+        calls.deleteFile.some((c) => c.fileName === "orphaned1.json"),
+        "Should delete first orphaned file"
+      );
+      assert.ok(
+        calls.deleteFile.some((c) => c.fileName === "orphaned2.json"),
+        "Should delete second orphaned file"
+      );
+      assert.ok(
+        calls.deleteFile.some((c) => c.fileName === "orphaned3.json"),
+        "Should delete third orphaned file"
+      );
     });
   });
 });

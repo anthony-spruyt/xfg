@@ -13,6 +13,9 @@ coverage:
 ignore:
   # Interface-only files with no executable code
   - "src/strategies/commit-strategy.ts"
+  - "src/strategies/ruleset-strategy.ts"
+  # Test utilities (mock implementations for testing, not production code)
+  - "test/mocks/**"
 
 comment:
   layout: "reach,diff,flags,files"
