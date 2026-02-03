@@ -5,6 +5,18 @@ import { GitHubRulesetStrategy } from "./strategies/github-ruleset-strategy.js";
 import { diffRulesets } from "./ruleset-diff.js";
 
 // =============================================================================
+// Interfaces
+// =============================================================================
+
+export interface IRulesetProcessor {
+  process(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: RulesetProcessorOptions
+  ): Promise<RulesetProcessorResult>;
+}
+
+// =============================================================================
 // Types
 // =============================================================================
 
@@ -41,7 +53,7 @@ export interface RulesetProcessorResult {
  * Processes ruleset configuration for a repository.
  * Handles create/update/delete operations via GitHub Rulesets API.
  */
-export class RulesetProcessor {
+export class RulesetProcessor implements IRulesetProcessor {
   private readonly strategy: GitHubRulesetStrategy;
 
   constructor(strategy?: GitHubRulesetStrategy) {
