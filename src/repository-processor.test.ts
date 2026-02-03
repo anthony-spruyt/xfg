@@ -1690,97 +1690,6 @@ describe("RepositoryProcessor", () => {
   });
 
   describe("CommitStrategy integration", () => {
-    const createMockLogger = (): ILogger & { messages: string[] } => ({
-      messages: [] as string[],
-      info(message: string) {
-        this.messages.push(message);
-      },
-      fileDiff(_fileName: string, _status: unknown, _diffLines: string[]) {
-        // No-op for mock
-      },
-      diffSummary(
-        _newCount: number,
-        _modifiedCount: number,
-        _unchangedCount: number
-      ) {
-        // No-op for mock
-      },
-    });
-
-    class MockGitOpsForCommitStrategy
-      extends GitOps
-      implements IAuthenticatedGitOps
-    {
-      constructor(options: GitOpsOptions) {
-        super(options);
-      }
-
-      override cleanWorkspace(): void {
-        mkdirSync(this.getWorkDir(), { recursive: true });
-      }
-
-      override async clone(_gitUrl: string): Promise<void> {
-        // No-op for mock
-      }
-
-      override async getDefaultBranch(): Promise<{
-        branch: string;
-        method: string;
-      }> {
-        return { branch: "main", method: "mock" };
-      }
-
-      override async createBranch(_branchName: string): Promise<void> {
-        // No-op for mock
-      }
-
-      override writeFile(fileName: string, content: string): void {
-        const filePath = join(this.getWorkDir(), fileName);
-        mkdirSync(this.getWorkDir(), { recursive: true });
-        writeFileSync(filePath, content, "utf-8");
-      }
-
-      override async fileExistsOnBranch(
-        _fileName: string,
-        _branch: string
-      ): Promise<boolean> {
-        return false;
-      }
-
-      // Note: commit and push are not called when using CommitStrategy
-      override async commit(_message: string): Promise<boolean> {
-        return true;
-      }
-
-      override async push(_branchName: string): Promise<void> {
-        // No-op for mock
-      }
-
-      override async fetch(): Promise<void> {
-        // No-op for mock
-      }
-
-      // IAuthenticatedGitOps methods
-      async lsRemote(_branchName: string): Promise<string> {
-        return "";
-      }
-
-      async pushRefspec(
-        _refspec: string,
-        _options?: { delete?: boolean }
-      ): Promise<void> {
-        // No-op for mock
-      }
-
-      async fetchBranch(_branchName: string): Promise<void> {
-        // No-op for mock
-      }
-
-      private getWorkDir(): string {
-        return (this as unknown as { workDir: string }).workDir;
-      }
-    }
-
     test("should use GraphQL commit strategy when GitHub App credentials are set", async () => {
       // Save original env values
       const originalAppId = process.env.XFG_GITHUB_APP_ID;
@@ -1791,14 +1700,15 @@ describe("RepositoryProcessor", () => {
         process.env.XFG_GITHUB_APP_ID = "12345";
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
-        const mockLogger = createMockLogger();
-        let mockGitOps: MockGitOpsForCommitStrategy | null = null;
-
-        const mockFactory: GitOpsFactory = (opts, _auth) => {
-          mockGitOps = new MockGitOpsForCommitStrategy(opts);
-          // Return mock directly - it implements IAuthenticatedGitOps
-          return mockGitOps;
-        };
+        const { mock: mockLogger, messages: loggerMessages } =
+          createMockLogger();
+        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+          fileExistsOnBranch: false,
+        });
+        const mockFactory: GitOpsFactory = () => mockGitOps;
 
         // Track executor calls to verify GraphQL vs git commit
         const executorCalls: string[] = [];
@@ -1839,6 +1749,8 @@ describe("RepositoryProcessor", () => {
           files: [{ fileName: "config.json", content: { key: "value" } }],
         };
 
+        mkdirSync(localWorkDir, { recursive: true });
+
         const result = await processor.process(repoConfig, mockRepoInfo, {
           branchName: "chore/sync-config",
           workDir: localWorkDir,
@@ -1869,7 +1781,7 @@ describe("RepositoryProcessor", () => {
         );
 
         // Verify log message mentions verified commit
-        const verifiedLog = mockLogger.messages.find((m) =>
+        const verifiedLog = loggerMessages.find((m: string) =>
           m.includes("verified")
         );
         assert.ok(verifiedLog, "Should log that commit is verified");
@@ -1898,16 +1810,16 @@ describe("RepositoryProcessor", () => {
         process.env.XFG_GITHUB_APP_ID = "12345";
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
-        const mockLogger = createMockLogger();
-        let mockGitOps: MockGitOpsForCommitStrategy | null = null;
+        const { mock: mockLogger } = createMockLogger();
+        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+          fileExistsOnBranch: false,
+        });
+        const mockFactory: GitOpsFactory = () => mockGitOps;
 
-        const mockFactory: GitOpsFactory = (opts, _auth) => {
-          mockGitOps = new MockGitOpsForCommitStrategy(opts);
-          // Return mock directly - it implements IAuthenticatedGitOps
-          return mockGitOps;
-        };
-
-        // Mock executor that fails on GraphQL commit with branch protection error
+        // Mock executor with ICommandExecutor interface
         const mockExecutor: ICommandExecutor = {
           async exec(command: string): Promise<string> {
             if (command.includes("gh api graphql")) {
@@ -1931,6 +1843,8 @@ describe("RepositoryProcessor", () => {
           files: [{ fileName: "config.json", content: { key: "value" } }],
           prOptions: { merge: "direct" },
         };
+
+        mkdirSync(localWorkDir, { recursive: true });
 
         const result = await processor.process(repoConfig, mockRepoInfo, {
           branchName: "chore/sync-config",
@@ -1973,11 +1887,14 @@ describe("RepositoryProcessor", () => {
         process.env.XFG_GITHUB_APP_ID = "12345";
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
-        const mockLogger = createMockLogger();
-
-        const mockFactory: GitOpsFactory = (opts, _auth) => {
-          return new MockGitOpsForCommitStrategy(opts);
-        };
+        const { mock: mockLogger } = createMockLogger();
+        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+          fileExistsOnBranch: false,
+        });
+        const mockFactory: GitOpsFactory = () => mockGitOps;
 
         // Test uses mock executor to simulate protected branch error
         const mockExecutor: ICommandExecutor = {
@@ -2003,6 +1920,8 @@ describe("RepositoryProcessor", () => {
           files: [{ fileName: "config.json", content: { key: "value" } }],
           prOptions: { merge: "direct" },
         };
+
+        mkdirSync(localWorkDir, { recursive: true });
 
         const result = await processor.process(repoConfig, mockRepoInfo, {
           branchName: "chore/sync-config",
@@ -2039,11 +1958,14 @@ describe("RepositoryProcessor", () => {
         process.env.XFG_GITHUB_APP_ID = "12345";
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
-        const mockLogger = createMockLogger();
-
-        const mockFactory: GitOpsFactory = (opts, _auth) => {
-          return new MockGitOpsForCommitStrategy(opts);
-        };
+        const { mock: mockLogger } = createMockLogger();
+        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+          fileExistsOnBranch: false,
+        });
+        const mockFactory: GitOpsFactory = () => mockGitOps;
 
         // Test uses mock executor to simulate permission denied error
         const mockExecutor: ICommandExecutor = {
@@ -2069,6 +1991,8 @@ describe("RepositoryProcessor", () => {
           files: [{ fileName: "config.json", content: { key: "value" } }],
           prOptions: { merge: "direct" },
         };
+
+        mkdirSync(localWorkDir, { recursive: true });
 
         const result = await processor.process(repoConfig, mockRepoInfo, {
           branchName: "chore/sync-config",
@@ -2105,11 +2029,14 @@ describe("RepositoryProcessor", () => {
         process.env.XFG_GITHUB_APP_ID = "12345";
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
-        const mockLogger = createMockLogger();
-
-        const mockFactory: GitOpsFactory = (opts, _auth) => {
-          return new MockGitOpsForCommitStrategy(opts);
-        };
+        const { mock: mockLogger } = createMockLogger();
+        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+          fileExistsOnBranch: false,
+        });
+        const mockFactory: GitOpsFactory = () => mockGitOps;
 
         // Test uses mock executor to simulate network error
         const mockExecutor: ICommandExecutor = {
@@ -2135,6 +2062,8 @@ describe("RepositoryProcessor", () => {
           files: [{ fileName: "config.json", content: { key: "value" } }],
           prOptions: { merge: "direct" },
         };
+
+        mkdirSync(localWorkDir, { recursive: true });
 
         await assert.rejects(
           () =>
