@@ -8,7 +8,7 @@ import { rmSync, existsSync } from "node:fs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, "../..");
-const fixturesDir = join(projectRoot, "fixtures");
+const fixturesDir = join(projectRoot, "test", "fixtures");
 
 // Azure DevOps test repository
 const TEST_ORG = "aspruyt";

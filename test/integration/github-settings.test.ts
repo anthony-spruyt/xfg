@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, "../..");
-const fixturesDir = join(projectRoot, "fixtures");
+const fixturesDir = join(projectRoot, "test", "fixtures");
 
 const TEST_REPO = "anthony-spruyt/xfg-test";
 const RULESET_NAME = "xfg-test-ruleset";
