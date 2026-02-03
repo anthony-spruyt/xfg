@@ -47,6 +47,41 @@ function deleteRulesetIfExists(): void {
   }
 }
 
+/**
+ * Polls GitHub API until the ruleset is visible, handling eventual consistency.
+ * This prevents flaky tests where a newly created ruleset isn't immediately
+ * visible in the list endpoint.
+ *
+ * Note: Uses the exec helper defined above. The rulesetId is a number from
+ * trusted API responses, not user input.
+ */
+async function waitForRulesetVisible(
+  rulesetId: number,
+  timeoutMs = 10000
+): Promise<void> {
+  const startTime = Date.now();
+  const pollInterval = 500;
+
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      const result = exec(
+        `gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.id == ${rulesetId}) | .id'`
+      );
+      if (result.trim() === String(rulesetId)) {
+        console.log(
+          `  Ruleset ${rulesetId} visible after ${Date.now() - startTime}ms`
+        );
+        return;
+      }
+    } catch {
+      // API call failed, continue polling
+    }
+    await new Promise((resolve) => setTimeout(resolve, pollInterval));
+  }
+
+  throw new Error(`Ruleset ${rulesetId} not visible after ${timeoutMs}ms`);
+}
+
 describe("GitHub Settings Integration Test", () => {
   before(() => {
     console.log("\n=== Setting up settings integration test ===\n");
@@ -104,6 +139,12 @@ describe("GitHub Settings Integration Test", () => {
     assert.equal(ruleset.name, RULESET_NAME, "Ruleset name should match");
     assert.equal(ruleset.enforcement, "active", "Ruleset should be active");
     assert.equal(ruleset.target, "branch", "Ruleset target should be branch");
+
+    // Wait for API consistency before next test runs
+    // GitHub API has eventual consistency - newly created rulesets may not
+    // immediately appear in the list endpoint
+    console.log("\nWaiting for API consistency...");
+    await waitForRulesetVisible(ruleset.id);
 
     console.log("\n=== Settings integration test passed ===\n");
   });
