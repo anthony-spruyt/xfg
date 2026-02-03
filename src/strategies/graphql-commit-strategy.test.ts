@@ -20,8 +20,8 @@ function createMockGitOps(): AuthenticatedGitOps & {
   const calls: Array<{ method: string; args: unknown[] }> = [];
   return {
     calls,
-    async lsRemote(branchName: string) {
-      calls.push({ method: "lsRemote", args: [branchName] });
+    async lsRemote(branchName: string, options?: { skipRetry?: boolean }) {
+      calls.push({ method: "lsRemote", args: [branchName, options] });
       return "";
     },
     async fetchBranch(branchName: string) {
@@ -919,8 +919,14 @@ describe("GraphQLCommitStrategy", () => {
       // Create mock gitOps that throws on lsRemote (branch doesn't exist)
       const mockGitOps = createMockGitOps();
       const _originalLsRemote = mockGitOps.lsRemote.bind(mockGitOps);
-      mockGitOps.lsRemote = async (branchName: string) => {
-        mockGitOps.calls.push({ method: "lsRemote", args: [branchName] });
+      mockGitOps.lsRemote = async (
+        branchName: string,
+        options?: { skipRetry?: boolean }
+      ) => {
+        mockGitOps.calls.push({
+          method: "lsRemote",
+          args: [branchName, options],
+        });
         throw new Error("fatal: could not read from remote");
       };
 
@@ -1017,8 +1023,14 @@ describe("GraphQLCommitStrategy", () => {
 
       // Create mock gitOps that throws on lsRemote (branch doesn't exist)
       const mockGitOps = createMockGitOps();
-      mockGitOps.lsRemote = async (branchName: string) => {
-        mockGitOps.calls.push({ method: "lsRemote", args: [branchName] });
+      mockGitOps.lsRemote = async (
+        branchName: string,
+        options?: { skipRetry?: boolean }
+      ) => {
+        mockGitOps.calls.push({
+          method: "lsRemote",
+          args: [branchName, options],
+        });
         throw new Error("fatal: could not read from remote");
       };
 

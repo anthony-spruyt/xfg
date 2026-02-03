@@ -287,8 +287,9 @@ export class GraphQLCommitStrategy implements CommitStrategy {
     // Branch name was validated in commit(), safe for shell use
     try {
       // Check if the branch exists on remote
+      // Use skipRetry because failure is expected for new branches
       if (gitOps) {
-        await gitOps.lsRemote(branchName);
+        await gitOps.lsRemote(branchName, { skipRetry: true });
       } else {
         await this.executor.exec(
           `git ls-remote --exit-code --heads origin ${escapeShellArg(branchName)}`,

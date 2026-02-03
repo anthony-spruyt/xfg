@@ -37,7 +37,10 @@ export interface IAuthenticatedGitOps {
   fetch(options?: { prune?: boolean }): Promise<void>;
   push(branchName: string, options?: { force?: boolean }): Promise<void>;
   getDefaultBranch(): Promise<{ branch: string; method: string }>;
-  lsRemote(branchName: string): Promise<string>;
+  lsRemote(
+    branchName: string,
+    options?: { skipRetry?: boolean }
+  ): Promise<string>;
   pushRefspec(refspec: string, options?: { delete?: boolean }): Promise<void>;
   fetchBranch(branchName: string): Promise<void>;
 
@@ -170,13 +173,22 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
   /**
    * Execute ls-remote with authentication.
    * Used by GraphQLCommitStrategy to check if branch exists on remote.
+   *
+   * @param options.skipRetry - If true, don't retry on failure. Use when checking
+   *   branch existence where failure is expected for new branches.
    */
-  async lsRemote(branchName: string): Promise<string> {
+  async lsRemote(
+    branchName: string,
+    options?: { skipRetry?: boolean }
+  ): Promise<string> {
     // Remote URL already has auth from clone
     const safeBranch = escapeShellArg(branchName);
-    return this.execWithRetry(
-      `git ls-remote --exit-code --heads origin ${safeBranch}`
-    );
+    const command = `git ls-remote --exit-code --heads origin ${safeBranch}`;
+
+    if (options?.skipRetry) {
+      return this.executor.exec(command, this.workDir);
+    }
+    return this.execWithRetry(command);
   }
 
   /**

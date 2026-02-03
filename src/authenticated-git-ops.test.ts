@@ -552,6 +552,39 @@ describe("AuthenticatedGitOps", () => {
       );
     });
 
+    it("lsRemote with skipRetry does not retry on failure", async () => {
+      let callCount = 0;
+      const mockExecutor = {
+        exec: async () => {
+          callCount++;
+          throw new Error("Command failed: git ls-remote");
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+        retries: 3, // Would normally retry 3 times
+      });
+      const authOps = new AuthenticatedGitOps(gitOps, {
+        token: "test-token",
+        host: "github.com",
+        owner: "owner",
+        repo: "repo",
+      });
+
+      await assert.rejects(
+        async () => authOps.lsRemote("nonexistent-branch", { skipRetry: true }),
+        /Command failed: git ls-remote/
+      );
+
+      // With skipRetry: true, should only be called once (no retries)
+      assert.strictEqual(
+        callCount,
+        1,
+        "Should not retry when skipRetry is true"
+      );
+    });
+
     it("pushRefspec without auth uses plain git command", async () => {
       const commands: string[] = [];
       const mockExecutor = {
