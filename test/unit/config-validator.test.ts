@@ -224,6 +224,20 @@ describe("validateRawConfig", () => {
       });
       assert.doesNotThrow(() => validateRawConfig(config));
     });
+
+    test("throws when 'inherit' is used as a filename at root level", () => {
+      const config = createValidConfig({
+        files: {
+          "inherit.json": { content: { key: "value" } },
+          inherit: { content: "some text" },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /'inherit' is a reserved key and cannot be used as a filename/
+      );
+    });
   });
 
   describe("per-file mergeStrategy validation", () => {
@@ -1439,6 +1453,21 @@ describe("validateRawConfig", () => {
   });
 
   describe("settings.rulesets validation", () => {
+    test("throws when 'inherit' is used as a ruleset name at root level", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            inherit: { target: "branch" },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /'inherit' is a reserved key and cannot be used as a ruleset name/
+      );
+    });
+
     test("allows valid root-level settings with rulesets", () => {
       const config = createValidConfig({
         settings: {

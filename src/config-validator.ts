@@ -77,6 +77,13 @@ export function validateRawConfig(config: RawConfig): void {
 
   const fileNames = hasFiles ? Object.keys(config.files!) : [];
 
+  // Check for reserved key 'inherit' at root files level
+  if (hasFiles && "inherit" in config.files!) {
+    throw new Error(
+      "'inherit' is a reserved key and cannot be used as a filename"
+    );
+  }
+
   // Validate each file definition
   for (const fileName of fileNames) {
     validateFileName(fileName);
@@ -200,6 +207,13 @@ export function validateRawConfig(config: RawConfig): void {
   // Validate root settings
   if (config.settings !== undefined) {
     validateSettings(config.settings, "Root");
+
+    // Check for reserved key 'inherit' at root rulesets level
+    if (config.settings.rulesets && "inherit" in config.settings.rulesets) {
+      throw new Error(
+        "'inherit' is a reserved key and cannot be used as a ruleset name"
+      );
+    }
   }
 
   // Validate githubHosts if provided
