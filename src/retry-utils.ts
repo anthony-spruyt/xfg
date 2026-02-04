@@ -1,5 +1,6 @@
 import pRetry, { AbortError } from "p-retry";
 import { logger } from "./logger.js";
+import { sanitizeCredentials } from "./sanitize-utils.js";
 
 /**
  * Default patterns indicating permanent errors that should NOT be retried.
@@ -156,7 +157,8 @@ export async function withRetry<T>(
       onFailedAttempt: (context) => {
         // Only log if this isn't the last attempt
         if (context.retriesLeft > 0) {
-          const msg = context.error.message || "Unknown error";
+          const msg =
+            sanitizeCredentials(context.error.message) || "Unknown error";
           logger.info(
             `Attempt ${context.attemptNumber}/${retries + 1} failed: ${msg}. Retrying...`
           );

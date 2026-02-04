@@ -6,6 +6,7 @@ import {
   withRetry,
   promisify,
 } from "../../src/retry-utils.js";
+import { logger } from "../../src/logger.js";
 
 describe("isPermanentError", () => {
   test("returns true for permission denied", () => {
@@ -248,6 +249,38 @@ describe("withRetry", () => {
       );
     });
     assert.equal(attempts, 1);
+  });
+
+  test("sanitizes credentials in retry log messages", async () => {
+    const logs: string[] = [];
+    const originalInfo = logger.info;
+    logger.info = (msg: string) => logs.push(msg);
+
+    let attempts = 0;
+    try {
+      await withRetry(
+        async () => {
+          attempts++;
+          if (attempts < 3) {
+            // Use a transient error (connection timeout) that contains credentials
+            throw new Error(
+              "Connection timed out for 'https://x-access-token:secret123@github.com/repo'"
+            );
+          }
+          return "success";
+        },
+        { retries: 3 }
+      );
+    } finally {
+      logger.info = originalInfo;
+    }
+
+    // Verify credentials were sanitized in log output
+    assert.equal(logs.length, 2); // 2 failed attempts before success
+    for (const log of logs) {
+      assert.ok(!log.includes("secret123"), "Token should be sanitized");
+      assert.ok(log.includes("***"), "Token should be replaced with ***");
+    }
   });
 });
 
