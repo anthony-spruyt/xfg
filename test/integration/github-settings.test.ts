@@ -1,35 +1,16 @@
 import { test, describe, before, after } from "node:test";
 import { strict as assert } from "node:assert";
-import { execSync } from "node:child_process";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
+import {
+  exec,
+  projectRoot,
+  waitForRulesetVisible as waitForRulesetVisibleBase,
+} from "./test-helpers.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const projectRoot = join(__dirname, "../..");
 const fixturesDir = join(projectRoot, "test", "fixtures");
 
 const TEST_REPO = "anthony-spruyt/xfg-test";
 const RULESET_NAME = "xfg-test-ruleset";
-
-// This exec helper is only used in integration tests with hardcoded commands.
-// The commands are controlled and not derived from external/user input.
-function exec(command: string, options?: { cwd?: string }): string {
-  try {
-    return execSync(command, {
-      // codeql-disable-next-line js/shell-command-injection-from-environment
-      cwd: options?.cwd ?? projectRoot,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    }).trim();
-  } catch (error) {
-    const err = error as { stderr?: string; stdout?: string };
-    console.error("Command failed:", command);
-    console.error("stderr:", err.stderr);
-    console.error("stdout:", err.stdout);
-    throw error;
-  }
-}
 
 function deleteRulesetIfExists(): void {
   try {
@@ -47,39 +28,12 @@ function deleteRulesetIfExists(): void {
   }
 }
 
-/**
- * Polls GitHub API until the ruleset is visible, handling eventual consistency.
- * This prevents flaky tests where a newly created ruleset isn't immediately
- * visible in the list endpoint.
- *
- * Note: Uses the exec helper defined above. The rulesetId is a number from
- * trusted API responses, not user input.
- */
+// Wrapper to use TEST_REPO by default
 async function waitForRulesetVisible(
   rulesetId: number,
   timeoutMs = 10000
 ): Promise<void> {
-  const startTime = Date.now();
-  const pollInterval = 500;
-
-  while (Date.now() - startTime < timeoutMs) {
-    try {
-      const result = exec(
-        `gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.id == ${rulesetId}) | .id'`
-      );
-      if (result.trim() === String(rulesetId)) {
-        console.log(
-          `  Ruleset ${rulesetId} visible after ${Date.now() - startTime}ms`
-        );
-        return;
-      }
-    } catch {
-      // API call failed, continue polling
-    }
-    await new Promise((resolve) => setTimeout(resolve, pollInterval));
-  }
-
-  throw new Error(`Ruleset ${rulesetId} not visible after ${timeoutMs}ms`);
+  return waitForRulesetVisibleBase(TEST_REPO, rulesetId, timeoutMs);
 }
 
 describe("GitHub Settings Integration Test", () => {

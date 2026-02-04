@@ -1,13 +1,13 @@
 import { test, describe, before } from "node:test";
 import { strict as assert } from "node:assert";
-import { execSync } from "node:child_process";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { rmSync, existsSync } from "node:fs";
+import {
+  exec,
+  projectRoot,
+  waitForFileVisible as waitForFileVisibleBase,
+} from "./test-helpers.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const projectRoot = join(__dirname, "../..");
 const fixturesDir = join(projectRoot, "test", "fixtures");
 
 const TEST_REPO = "anthony-spruyt/xfg-test";
@@ -24,23 +24,12 @@ if (SKIP_TESTS) {
   );
 }
 
-// This exec helper is only used in integration tests with hardcoded commands.
-// The commands are controlled and not derived from external/user input.
-function exec(command: string, options?: { cwd?: string }): string {
-  try {
-    return execSync(command, {
-      // codeql-disable-next-line js/shell-command-injection-from-environment
-      cwd: options?.cwd ?? projectRoot,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    }).trim();
-  } catch (error) {
-    const err = error as { stderr?: string; stdout?: string };
-    console.error("Command failed:", command);
-    console.error("stderr:", err.stderr);
-    console.error("stdout:", err.stdout);
-    throw error;
-  }
+// Wrapper to use TEST_REPO by default
+async function waitForFileVisible(
+  filePath: string,
+  timeoutMs = 10000
+): Promise<string> {
+  return waitForFileVisibleBase(TEST_REPO, filePath, timeoutMs);
 }
 
 describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
@@ -231,11 +220,9 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
       console.log("  No PR found - correct for direct mode");
     }
 
-    // 4. Verify the file exists on main
+    // 4. Verify the file exists on main (with retry for eventual consistency)
     console.log("\nVerifying file exists on main branch...");
-    const fileContent = exec(
-      `gh api repos/${TEST_REPO}/contents/${directFile} --jq '.content' | base64 -d`
-    );
+    const fileContent = await waitForFileVisible(directFile);
 
     assert.ok(fileContent, "File should exist on main branch");
     const json = JSON.parse(fileContent);
@@ -326,17 +313,13 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
     });
     console.log(output1);
 
-    // 3. Verify files exist on main
+    // 3. Verify files exist on main (with retry for eventual consistency)
     console.log("\nVerifying files exist on main...");
-    const orphanContent = exec(
-      `gh api repos/${TEST_REPO}/contents/${orphanFile} --jq '.content' | base64 -d`
-    );
+    const orphanContent = await waitForFileVisible(orphanFile);
     assert.ok(orphanContent, "Orphan file should exist");
     console.log(`  ${orphanFile} exists`);
 
-    const manifestContent = exec(
-      `gh api repos/${TEST_REPO}/contents/${manifestFile} --jq '.content' | base64 -d`
-    );
+    const manifestContent = await waitForFileVisible(manifestFile);
     const manifest = JSON.parse(manifestContent);
     // v3 manifest format uses { files: [...], rulesets: [...] }
     assert.ok(

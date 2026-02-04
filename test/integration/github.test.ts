@@ -1,71 +1,25 @@
 import { test, describe, before } from "node:test";
 import { strict as assert } from "node:assert";
-import { execSync } from "node:child_process";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { rmSync, existsSync } from "node:fs";
+import {
+  exec,
+  projectRoot,
+  waitForFileVisible as waitForFileVisibleBase,
+} from "./test-helpers.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const projectRoot = join(__dirname, "../..");
 const fixturesDir = join(projectRoot, "test", "fixtures");
 
 const TEST_REPO = "anthony-spruyt/xfg-test";
 const TARGET_FILE = "my.config.json";
 const BRANCH_NAME = "chore/sync-my-config";
 
-// This exec helper is only used in integration tests with hardcoded commands.
-// The commands are controlled and not derived from external/user input.
-function exec(command: string, options?: { cwd?: string }): string {
-  try {
-    return execSync(command, {
-      // codeql-disable-next-line js/shell-command-injection-from-environment
-      cwd: options?.cwd ?? projectRoot,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    }).trim();
-  } catch (error) {
-    const err = error as { stderr?: string; stdout?: string };
-    console.error("Command failed:", command);
-    console.error("stderr:", err.stderr);
-    console.error("stdout:", err.stdout);
-    throw error;
-  }
-}
-
-/**
- * Polls GitHub API until a file is visible, handling eventual consistency.
- * This prevents flaky tests where a recently pushed file isn't immediately
- * visible via the contents API.
- *
- * Note: Uses the exec helper defined above. The filePath is a hardcoded
- * test constant, not user input.
- */
+// Wrapper to use TEST_REPO by default
 async function waitForFileVisible(
   filePath: string,
   timeoutMs = 10000
 ): Promise<string> {
-  const startTime = Date.now();
-  const pollInterval = 500;
-
-  while (Date.now() - startTime < timeoutMs) {
-    try {
-      const content = exec(
-        `gh api repos/${TEST_REPO}/contents/${filePath} --jq '.content' | base64 -d`
-      );
-      if (content) {
-        console.log(
-          `  File ${filePath} visible after ${Date.now() - startTime}ms`
-        );
-        return content;
-      }
-    } catch {
-      // API call failed, continue polling
-    }
-    await new Promise((resolve) => setTimeout(resolve, pollInterval));
-  }
-
-  throw new Error(`File ${filePath} not visible after ${timeoutMs}ms`);
+  return waitForFileVisibleBase(TEST_REPO, filePath, timeoutMs);
 }
 
 describe("GitHub Integration Test", () => {
