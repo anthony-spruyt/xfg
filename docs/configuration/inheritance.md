@@ -92,6 +92,43 @@ repos:
       .eslintrc.json: false # Excluded from this repo
 ```
 
+## Skipping All Inherited Files
+
+Use `inherit: false` to skip all root-level files for a specific repo. You can optionally add repo-specific files:
+
+```yaml
+files:
+  .eslintrc.json:
+    content:
+      extends: ["@company/base"]
+  .prettierrc.json:
+    content:
+      semi: true
+
+repos:
+  # Standard repo - gets all files
+  - git: git@github.com:org/frontend.git
+
+  # Settings-only repo - skip all files
+  - git: git@github.com:org/settings-only.git
+    files:
+      inherit: false
+
+  # Custom files repo - skip inherited, add custom
+  - git: git@github.com:org/custom-repo.git
+    files:
+      inherit: false
+      .custom-config.json:
+        content:
+          custom: true
+```
+
+When `inherit: false`:
+
+- All files defined in root `files` are skipped
+- Only files explicitly defined in the repo's `files` object are included
+- `inherit: true` (or omitting `inherit`) means inherit all root files (default behavior)
+
 ## Example: Team-Specific Configurations
 
 ```yaml
