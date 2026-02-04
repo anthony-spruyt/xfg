@@ -43,6 +43,37 @@ function exec(command: string, options?: { cwd?: string }): string {
   }
 }
 
+// Helper to wait for GitHub API eventual consistency
+// Retries reading a file until it exists or max attempts reached
+async function waitForFile(
+  repo: string,
+  filePath: string,
+  maxAttempts = 10,
+  delayMs = 1000
+): Promise<string> {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const content = exec(
+        `gh api repos/${repo}/contents/${filePath} --jq '.content' | base64 -d`
+      );
+      if (content && !content.includes("Not Found")) {
+        return content;
+      }
+    } catch {
+      // File not found yet
+    }
+    if (attempt < maxAttempts) {
+      console.log(
+        `  Waiting for ${filePath} (attempt ${attempt}/${maxAttempts})...`
+      );
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+  throw new Error(
+    `File ${filePath} not found after ${maxAttempts} attempts (GitHub API eventual consistency)`
+  );
+}
+
 describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
   before(() => {
     console.log("\n=== Setting up GitHub App integration test ===\n");
@@ -326,17 +357,13 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
     });
     console.log(output1);
 
-    // 3. Verify files exist on main
+    // 3. Verify files exist on main (with retry for eventual consistency)
     console.log("\nVerifying files exist on main...");
-    const orphanContent = exec(
-      `gh api repos/${TEST_REPO}/contents/${orphanFile} --jq '.content' | base64 -d`
-    );
+    const orphanContent = await waitForFile(TEST_REPO, orphanFile);
     assert.ok(orphanContent, "Orphan file should exist");
     console.log(`  ${orphanFile} exists`);
 
-    const manifestContent = exec(
-      `gh api repos/${TEST_REPO}/contents/${manifestFile} --jq '.content' | base64 -d`
-    );
+    const manifestContent = await waitForFile(TEST_REPO, manifestFile);
     const manifest = JSON.parse(manifestContent);
     // v3 manifest format uses { files: [...], rulesets: [...] }
     assert.ok(
