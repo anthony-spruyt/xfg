@@ -33,6 +33,41 @@ function exec(command: string, options?: { cwd?: string }): string {
   }
 }
 
+/**
+ * Polls GitHub API until a file is visible, handling eventual consistency.
+ * This prevents flaky tests where a recently pushed file isn't immediately
+ * visible via the contents API.
+ *
+ * Note: Uses the exec helper defined above. The filePath is a hardcoded
+ * test constant, not user input.
+ */
+async function waitForFileVisible(
+  filePath: string,
+  timeoutMs = 10000
+): Promise<string> {
+  const startTime = Date.now();
+  const pollInterval = 500;
+
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      const content = exec(
+        `gh api repos/${TEST_REPO}/contents/${filePath} --jq '.content' | base64 -d`
+      );
+      if (content) {
+        console.log(
+          `  File ${filePath} visible after ${Date.now() - startTime}ms`
+        );
+        return content;
+      }
+    } catch {
+      // API call failed, continue polling
+    }
+    await new Promise((resolve) => setTimeout(resolve, pollInterval));
+  }
+
+  throw new Error(`File ${filePath} not visible after ${timeoutMs}ms`);
+}
+
 describe("GitHub Integration Test", () => {
   before(() => {
     console.log("\n=== Setting up integration test ===\n");
@@ -757,11 +792,9 @@ describe("GitHub Integration Test", () => {
       console.log("  No PR found - this is correct for direct mode");
     }
 
-    // 5. Verify the file exists directly on main branch
+    // 5. Verify the file exists directly on main branch (with retry for API consistency)
     console.log("\nVerifying file exists on main branch...");
-    const fileContent = exec(
-      `gh api repos/${TEST_REPO}/contents/${directFile} --jq '.content' | base64 -d`
-    );
+    const fileContent = await waitForFileVisible(directFile);
 
     assert.ok(fileContent, "File should exist on main branch");
     const json = JSON.parse(fileContent);
