@@ -290,12 +290,34 @@ export function normalizeConfig(raw: RawConfig): Config {
     }
   }
 
+  // Normalize root settings (filter out inherit key if present)
+  let normalizedRootSettings: RepoSettings | undefined;
+  if (raw.settings) {
+    normalizedRootSettings = {};
+    if (raw.settings.rulesets) {
+      const filteredRulesets: Record<string, Ruleset> = {};
+      for (const [name, ruleset] of Object.entries(raw.settings.rulesets)) {
+        if (name === "inherit" || ruleset === false) continue;
+        filteredRulesets[name] = ruleset as Ruleset;
+      }
+      if (Object.keys(filteredRulesets).length > 0) {
+        normalizedRootSettings.rulesets = filteredRulesets;
+      }
+    }
+    if (raw.settings.deleteOrphaned !== undefined) {
+      normalizedRootSettings.deleteOrphaned = raw.settings.deleteOrphaned;
+    }
+    if (Object.keys(normalizedRootSettings).length === 0) {
+      normalizedRootSettings = undefined;
+    }
+  }
+
   return {
     id: raw.id,
     repos: expandedRepos,
     prTemplate: raw.prTemplate,
     githubHosts: raw.githubHosts,
     deleteOrphaned: raw.deleteOrphaned,
-    settings: raw.settings,
+    settings: normalizedRootSettings,
   };
 }
