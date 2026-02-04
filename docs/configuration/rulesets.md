@@ -178,9 +178,13 @@ settings:
     maxFileSize: 10485760 # 10MB in bytes
 ```
 
-## Inheritance
+## Inheritance and Opt-Out
 
-Like files, rulesets support inheritance. Define defaults at the root level and override per-repo:
+Like files, rulesets support inheritance with options to opt out.
+
+### Default Inheritance
+
+Define defaults at the root level and override per-repo:
 
 ```yaml
 # Root-level defaults for all repos
@@ -210,6 +214,64 @@ repos:
             - type: pull_request
               parameters:
                 requiredApprovingReviewCount: 3 # Override
+```
+
+### Single Ruleset Opt-Out
+
+Set a ruleset to `false` to exclude it from a specific repo:
+
+```yaml
+settings:
+  rulesets:
+    main-protection:
+      target: branch
+      enforcement: active
+    release-protection:
+      target: branch
+      enforcement: active
+
+repos:
+  # Gets both rulesets
+  - git: git@github.com:your-org/standard-repo.git
+
+  # Skips release-protection only
+  - git: git@github.com:your-org/no-releases.git
+    settings:
+      rulesets:
+        release-protection: false
+```
+
+### Skipping All Inherited Rulesets
+
+Use `inherit: false` to skip all root-level rulesets. You can optionally add repo-specific rulesets:
+
+```yaml
+settings:
+  rulesets:
+    main-protection:
+      target: branch
+      enforcement: active
+
+repos:
+  # No rulesets at all
+  - git: git@github.com:your-org/experimental.git
+    settings:
+      rulesets:
+        inherit: false
+
+  # Skip inherited, add custom
+  - git: git@github.com:your-org/custom-rules.git
+    settings:
+      rulesets:
+        inherit: false
+        custom-ruleset:
+          target: tag
+          enforcement: active
+          conditions:
+            refName:
+              include: [refs/tags/v*]
+          rules:
+            - type: required_signatures
 ```
 
 ## Bypass Actors
