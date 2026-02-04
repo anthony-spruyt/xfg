@@ -511,6 +511,53 @@
                 ]
               },
               "description": "Allowed merge methods for PRs"
+            },
+            "requiredReviewers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/requiredReviewer"
+              },
+              "description": "Required reviewers for specific file patterns (beta feature)"
+            }
+          }
+        }
+      }
+    },
+    "requiredReviewer": {
+      "type": "object",
+      "description": "Required reviewer configuration for specific file patterns",
+      "required": [
+        "filePatterns",
+        "minimumApprovals",
+        "reviewer"
+      ],
+      "properties": {
+        "filePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "File path patterns that require this reviewer"
+        },
+        "minimumApprovals": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum number of approvals required from this reviewer"
+        },
+        "reviewer": {
+          "type": "object",
+          "required": [
+            "id",
+            "type"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "description": "Team ID for the reviewer"
+            },
+            "type": {
+              "const": "Team",
+              "description": "Reviewer type (currently only Team is supported)"
             }
           }
         }
