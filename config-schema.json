@@ -431,7 +431,19 @@
           "$ref": "#/definitions/requiredStatusChecksRule"
         },
         {
-          "$ref": "#/definitions/simpleRule"
+          "$ref": "#/definitions/requiredSignaturesRule"
+        },
+        {
+          "$ref": "#/definitions/requiredLinearHistoryRule"
+        },
+        {
+          "$ref": "#/definitions/nonFastForwardRule"
+        },
+        {
+          "$ref": "#/definitions/creationRule"
+        },
+        {
+          "$ref": "#/definitions/deletionRule"
         },
         {
           "$ref": "#/definitions/updateRule"
@@ -608,23 +620,63 @@
         }
       }
     },
-    "simpleRule": {
+    "requiredSignaturesRule": {
       "type": "object",
-      "description": "Simple rule with no parameters",
+      "description": "Require signed commits",
       "required": [
         "type"
       ],
       "properties": {
         "type": {
-          "type": "string",
-          "enum": [
-            "required_signatures",
-            "required_linear_history",
-            "non_fast_forward",
-            "creation",
-            "deletion"
-          ],
-          "description": "Rule type: required_signatures (require signed commits), required_linear_history (no merge commits), non_fast_forward (prevent force push), creation (restrict ref creation), deletion (restrict ref deletion)"
+          "const": "required_signatures"
+        }
+      }
+    },
+    "requiredLinearHistoryRule": {
+      "type": "object",
+      "description": "Require linear history (no merge commits)",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "required_linear_history"
+        }
+      }
+    },
+    "nonFastForwardRule": {
+      "type": "object",
+      "description": "Prevent force pushes",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "non_fast_forward"
+        }
+      }
+    },
+    "creationRule": {
+      "type": "object",
+      "description": "Restrict ref creation",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "creation"
+        }
+      }
+    },
+    "deletionRule": {
+      "type": "object",
+      "description": "Restrict ref deletion",
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "const": "deletion"
         }
       }
     },
