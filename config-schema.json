@@ -169,7 +169,13 @@
         },
         "files": {
           "type": "object",
-          "description": "Per-repo file overrides or exclusions. Keys must reference files defined in the root 'files' object. Set to false to exclude a file from this repo.",
+          "description": "Per-repo file overrides or exclusions. Keys must reference files defined in the root 'files' object. Set to false to exclude a file from this repo. Set inherit: false to skip all inherited files.",
+          "properties": {
+            "inherit": {
+              "type": "boolean",
+              "description": "Set to false to skip all inherited root files. Default: true"
+            }
+          },
           "additionalProperties": {
             "oneOf": [
               {
@@ -310,9 +316,24 @@
       "properties": {
         "rulesets": {
           "type": "object",
-          "description": "Map of ruleset names to configurations. Each ruleset defines rules to enforce on branches or tags.",
+          "description": "Map of ruleset names to configurations. Set a ruleset to false to opt out. Set inherit: false to skip all inherited rulesets.",
+          "properties": {
+            "inherit": {
+              "type": "boolean",
+              "description": "Set to false to skip all inherited root rulesets. Default: true"
+            }
+          },
           "additionalProperties": {
-            "$ref": "#/definitions/ruleset"
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to opt out of this inherited ruleset"
+              },
+              {
+                "$ref": "#/definitions/ruleset"
+              }
+            ]
           }
         },
         "deleteOrphaned": {
