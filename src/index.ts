@@ -343,6 +343,7 @@ export async function runSettings(
   }
 
   console.log(`Found ${reposWithRulesets.length} repositories with rulesets\n`);
+  logger.setTotal(reposWithRulesets.length);
 
   const processor = processorFactory();
   const repoProcessor = repoProcessorFactory();
@@ -351,16 +352,8 @@ export async function runSettings(
   let failCount = 0;
   let skipCount = 0;
 
-  for (let i = 0; i < config.repos.length; i++) {
-    const repoConfig = config.repos[i];
-
-    // Skip repos without rulesets
-    if (
-      !repoConfig.settings?.rulesets ||
-      Object.keys(repoConfig.settings.rulesets).length === 0
-    ) {
-      continue;
-    }
+  for (let i = 0; i < reposWithRulesets.length; i++) {
+    const repoConfig = reposWithRulesets[i];
 
     let repoInfo;
     try {
