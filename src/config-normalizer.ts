@@ -129,12 +129,25 @@ export function normalizeConfig(raw: RawConfig): Config {
     for (const gitUrl of gitUrls) {
       const files: FileContent[] = [];
 
+      // Check if repo opts out of all inherited files
+      const inheritFiles =
+        (rawRepo.files as Record<string, unknown> | undefined)?.inherit !==
+        false;
+
       // Step 2: Process each file definition
       for (const fileName of fileNames) {
+        // Skip reserved key
+        if (fileName === "inherit") continue;
+
         const repoOverride = rawRepo.files?.[fileName];
 
         // Skip excluded files (set to false)
         if (repoOverride === false) {
+          continue;
+        }
+
+        // Skip if inherit: false and no repo-specific override
+        if (!inheritFiles && !repoOverride) {
           continue;
         }
 

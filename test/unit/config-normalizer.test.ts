@@ -1910,4 +1910,74 @@ describe("normalizeConfig", () => {
       );
     });
   });
+
+  describe("inheritance opt-out", () => {
+    describe("files inherit: false", () => {
+      test("inherit: false skips all root files", () => {
+        const raw: RawConfig = {
+          id: "test-config",
+          files: {
+            "eslint.json": { content: { extends: ["base"] } },
+            "prettier.json": { content: { semi: true } },
+          },
+          repos: [
+            {
+              git: "git@github.com:org/repo.git",
+              files: {
+                inherit: false,
+              },
+            },
+          ],
+        };
+
+        const result = normalizeConfig(raw);
+        assert.equal(result.repos[0].files.length, 0);
+      });
+
+      test("inherit: false with custom file includes only custom", () => {
+        const raw: RawConfig = {
+          id: "test-config",
+          files: {
+            "eslint.json": { content: { extends: ["base"] } },
+            "custom.json": { content: {} },
+          },
+          repos: [
+            {
+              git: "git@github.com:org/repo.git",
+              files: {
+                inherit: false,
+                "custom.json": { content: { custom: true } },
+              },
+            },
+          ],
+        };
+
+        const result = normalizeConfig(raw);
+        assert.equal(result.repos[0].files.length, 1);
+        assert.equal(result.repos[0].files[0].fileName, "custom.json");
+        assert.deepEqual(result.repos[0].files[0].content, { custom: true });
+      });
+
+      test("inherit: true is same as not specifying", () => {
+        const raw: RawConfig = {
+          id: "test-config",
+          files: {
+            "eslint.json": { content: { extends: ["base"] } },
+          },
+          repos: [
+            {
+              git: "git@github.com:org/repo.git",
+              files: {
+                inherit: true,
+              },
+            },
+          ],
+        };
+
+        const result = normalizeConfig(raw);
+        assert.equal(result.repos[0].files.length, 1);
+        assert.equal(result.repos[0].files[0].fileName, "eslint.json");
+      });
+    });
+  });
 });
