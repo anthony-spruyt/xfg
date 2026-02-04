@@ -13,6 +13,7 @@ import {
 import { logger } from "../logger.js";
 import { withRetry, isPermanentError } from "../retry-utils.js";
 import { ICommandExecutor } from "../command-executor.js";
+import { sanitizeCredentials } from "../sanitize-utils.js";
 import type { MergeStrategy } from "../config.js";
 
 export class GitLabPRStrategy extends BasePRStrategy {
@@ -117,7 +118,9 @@ export class GitLabPRStrategy extends BasePRStrategy {
         // Log unexpected errors for debugging
         const stderr = (error as { stderr?: string }).stderr ?? "";
         if (stderr && !stderr.includes("no merge requests")) {
-          logger.info(`Debug: GitLab MR check failed - ${stderr.trim()}`);
+          logger.info(
+            `Debug: GitLab MR check failed - ${sanitizeCredentials(stderr).trim()}`
+          );
         }
       }
       return null;

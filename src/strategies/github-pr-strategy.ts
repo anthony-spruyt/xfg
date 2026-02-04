@@ -12,6 +12,7 @@ import {
 } from "./pr-strategy.js";
 import { logger } from "../logger.js";
 import { withRetry, isPermanentError } from "../retry-utils.js";
+import { sanitizeCredentials } from "../sanitize-utils.js";
 import type { MergeStrategy } from "../config.js";
 
 /**
@@ -86,7 +87,9 @@ export class GitHubPRStrategy extends BasePRStrategy {
         // Log unexpected errors for debugging (expected: empty result means no PR)
         const stderr = (error as { stderr?: string }).stderr ?? "";
         if (stderr && !stderr.includes("no pull requests match")) {
-          logger.info(`Debug: GitHub PR check failed - ${stderr.trim()}`);
+          logger.info(
+            `Debug: GitHub PR check failed - ${sanitizeCredentials(stderr).trim()}`
+          );
         }
       }
       return null;
