@@ -18,10 +18,10 @@ ENABLE_LINTERS:
   - "TYPESCRIPT_ES"
   - "TYPESCRIPT_PRETTIER"
 EXCLUDED_DIRECTORIES:
-  - coverage
-  - dist
-  - site
-  - tmp
+  - "coverage"
+  - "dist"
+  - "site"
+  - "tmp"
 
 # Exclude intentionally invalid test fixtures from JSON linting
 JSON_JSONLINT_FILTER_REGEX_EXCLUDE: "test/fixtures/templates/invalid\\.json"
