@@ -150,22 +150,38 @@ describe("GitHub Settings Integration Test", () => {
   });
 
   test("settings updates an existing ruleset", async () => {
-    // Create a modified config with different settings
     const configPath = join(
       fixturesDir,
       "integration-test-config-github-settings.yaml"
     );
 
-    // First verify the ruleset exists from previous test
-    console.log("Verifying ruleset exists from previous test...");
-    const rulesetBefore = exec(
+    // Setup: ensure clean state and create ruleset (self-contained test)
+    console.log("Setting up: creating ruleset for update test...");
+    deleteRulesetIfExists();
+
+    // Create ruleset via xfg settings (mirrors real usage)
+    console.log("\nCreating initial ruleset...");
+    const createOutput = exec(
+      `node dist/cli.js settings --config ${configPath}`,
+      {
+        cwd: projectRoot,
+      }
+    );
+    console.log(createOutput);
+
+    // Get the created ruleset and wait for visibility
+    const rulesetCreated = exec(
       `gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
     );
-    assert.ok(rulesetBefore, "Expected ruleset to exist from previous test");
+    assert.ok(rulesetCreated, "Expected ruleset to be created");
 
-    const rulesetBeforeParsed = JSON.parse(rulesetBefore);
+    const rulesetBeforeParsed = JSON.parse(rulesetCreated);
     const rulesetIdBefore = rulesetBeforeParsed.id;
-    console.log(`  Ruleset ID before: ${rulesetIdBefore}`);
+    console.log(`  Ruleset ID before update: ${rulesetIdBefore}`);
+
+    // Wait for API consistency before update
+    console.log("\nWaiting for API consistency...");
+    await waitForRulesetVisible(rulesetIdBefore);
 
     // Run settings again - should update existing ruleset
     console.log("\nRunning xfg settings again (update)...");
