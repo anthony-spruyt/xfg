@@ -376,15 +376,16 @@ export interface RawRepoFileOverride {
 
 // Raw settings (before normalization)
 export interface RawRepoSettings {
-  rulesets?: Record<string, Ruleset>;
+  rulesets?: Record<string, Ruleset | false> & { inherit?: boolean };
   deleteOrphaned?: boolean;
 }
 
 // Repo configuration
 // files can map to false to exclude, or an object to override
+// inherit: false skips all root files
 export interface RawRepoConfig {
   git: string | string[];
-  files?: Record<string, RawRepoFileOverride | false>;
+  files?: Record<string, RawRepoFileOverride | false> & { inherit?: boolean };
   prOptions?: PRMergeOptions;
   settings?: RawRepoSettings;
 }
