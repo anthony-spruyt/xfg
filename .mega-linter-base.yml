@@ -15,10 +15,10 @@ ENABLE_LINTERS:
   - "SPELL_LYCHEE"
   - "YAML_YAMLLINT"
 EXCLUDED_DIRECTORIES:
-  - ".git"
   - ".claude"
-  - "coverage"
+  - ".git"
   - "docs/plans"
+  - "plans"
 FILTER_REGEX_EXCLUDE: "(CLAUDE\\.md$)"
 DEFAULT_BRANCH: "main"
 IGNORE_GITIGNORED_FILES: true
