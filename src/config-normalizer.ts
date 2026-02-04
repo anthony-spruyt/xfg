@@ -90,18 +90,41 @@ export function mergeSettings(
   // Merge rulesets by name - each ruleset is deep merged
   const rootRulesets = root?.rulesets ?? {};
   const repoRulesets = perRepo?.rulesets ?? {};
+
+  // Check if repo opts out of all inherited rulesets
+  const inheritRulesets =
+    (repoRulesets as Record<string, unknown>)?.inherit !== false;
+
   const allRulesetNames = new Set([
-    ...Object.keys(rootRulesets),
-    ...Object.keys(repoRulesets),
+    ...Object.keys(rootRulesets).filter((name) => name !== "inherit"),
+    ...Object.keys(repoRulesets).filter((name) => name !== "inherit"),
   ]);
 
   if (allRulesetNames.size > 0) {
     result.rulesets = {};
     for (const name of allRulesetNames) {
+      const rootRuleset = rootRulesets[name];
+      const repoRuleset = repoRulesets[name];
+
+      // Skip if repo explicitly opts out of this ruleset
+      if (repoRuleset === false) {
+        continue;
+      }
+
+      // Skip root rulesets if inherit: false (unless repo has override)
+      if (!inheritRulesets && !repoRuleset && rootRuleset) {
+        continue;
+      }
+
       result.rulesets[name] = mergeRuleset(
-        rootRulesets[name],
-        repoRulesets[name]
+        rootRuleset as Ruleset | undefined,
+        repoRuleset as Ruleset | undefined
       );
+    }
+
+    // Clean up empty rulesets object
+    if (Object.keys(result.rulesets).length === 0) {
+      delete result.rulesets;
     }
   }
 

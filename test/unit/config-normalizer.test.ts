@@ -1979,5 +1979,38 @@ describe("normalizeConfig", () => {
         assert.equal(result.repos[0].files[0].fileName, "eslint.json");
       });
     });
+
+    describe("rulesets opt-out", () => {
+      test("rulesetName: false excludes single ruleset", () => {
+        const raw: RawConfig = {
+          id: "test-config",
+          files: { "config.json": { content: {} } },
+          repos: [
+            {
+              git: "git@github.com:org/repo.git",
+              settings: {
+                rulesets: {
+                  "main-protection": false,
+                },
+              },
+            },
+          ],
+          settings: {
+            rulesets: {
+              "main-protection": { target: "branch", enforcement: "active" },
+              "release-protection": { target: "branch", enforcement: "active" },
+            },
+          },
+        };
+
+        const result = normalizeConfig(raw);
+        assert.ok(result.repos[0].settings?.rulesets);
+        assert.equal(
+          result.repos[0].settings?.rulesets?.["main-protection"],
+          undefined
+        );
+        assert.ok(result.repos[0].settings?.rulesets?.["release-protection"]);
+      });
+    });
   });
 });
