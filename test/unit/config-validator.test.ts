@@ -1468,6 +1468,53 @@ describe("validateRawConfig", () => {
       );
     });
 
+    test("throws when opting out of non-existent ruleset", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": { target: "branch" },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "nonexistent-ruleset": false,
+              },
+            },
+          },
+        ],
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Cannot opt out of 'nonexistent-ruleset' - not defined in root settings\.rulesets/
+      );
+    });
+
+    test("allows opting out of existing ruleset with false", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": { target: "branch" },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "main-protection": false,
+              },
+            },
+          },
+        ],
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
     test("allows valid root-level settings with rulesets", () => {
       const config = createValidConfig({
         settings: {

@@ -385,7 +385,14 @@ export function validateRawConfig(config: RawConfig): void {
 
     // Validate per-repo settings
     if (repo.settings !== undefined) {
-      validateSettings(repo.settings, `Repo ${getGitDisplayName(repo.git)}`);
+      const rootRulesetNames = config.settings?.rulesets
+        ? Object.keys(config.settings.rulesets).filter((k) => k !== "inherit")
+        : [];
+      validateSettings(
+        repo.settings,
+        `Repo ${getGitDisplayName(repo.git)}`,
+        rootRulesetNames
+      );
     }
   }
 }
@@ -713,7 +720,11 @@ function validateRuleset(
 /**
  * Validates settings object containing rulesets.
  */
-export function validateSettings(settings: unknown, context: string): void {
+export function validateSettings(
+  settings: unknown,
+  context: string,
+  rootRulesetNames?: string[]
+): void {
   if (
     typeof settings !== "object" ||
     settings === null ||
@@ -735,6 +746,19 @@ export function validateSettings(settings: unknown, context: string): void {
 
     const rulesets = s.rulesets as Record<string, unknown>;
     for (const [name, ruleset] of Object.entries(rulesets)) {
+      // Skip reserved key
+      if (name === "inherit") continue;
+
+      // Check for opt-out of non-existent root ruleset
+      if (ruleset === false) {
+        if (rootRulesetNames && !rootRulesetNames.includes(name)) {
+          throw new Error(
+            `${context}: Cannot opt out of '${name}' - not defined in root settings.rulesets`
+          );
+        }
+        continue; // Skip further validation for false entries
+      }
+
       validateRuleset(ruleset, name, context);
     }
   }
