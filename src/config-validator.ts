@@ -259,6 +259,17 @@ export function validateRawConfig(config: RawConfig): void {
       }
 
       for (const fileName of Object.keys(repo.files)) {
+        // Skip reserved key 'inherit'
+        if (fileName === "inherit") {
+          const inheritValue = (repo.files as Record<string, unknown>).inherit;
+          if (typeof inheritValue !== "boolean") {
+            throw new Error(
+              `Repo at index ${i}: files.inherit must be a boolean`
+            );
+          }
+          continue;
+        }
+
         // Ensure the file is defined at root level
         if (!config.files || !config.files[fileName]) {
           throw new Error(

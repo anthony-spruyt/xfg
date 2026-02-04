@@ -1515,6 +1515,72 @@ describe("validateRawConfig", () => {
       assert.doesNotThrow(() => validateRawConfig(config));
     });
 
+    test("allows inherit: false in repo files", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              inherit: false,
+            },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows inherit: true in repo files", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              inherit: true,
+            },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows inherit: false in repo rulesets", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": { target: "branch" },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                inherit: false,
+              },
+            },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when files.inherit is not a boolean", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              inherit: "false" as unknown as boolean,
+            },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /files\.inherit must be a boolean/
+      );
+    });
+
     test("allows valid root-level settings with rulesets", () => {
       const config = createValidConfig({
         settings: {
