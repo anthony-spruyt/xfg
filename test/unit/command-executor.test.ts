@@ -120,3 +120,46 @@ describe("ICommandExecutor interface", () => {
     assert.strictEqual(commands[1].command, "git log");
   });
 });
+
+describe("credential sanitization", () => {
+  // These tests use node -e with hardcoded strings (no user input) for testing
+  // credential sanitization in error output paths
+
+  test("sanitizes credentials in error messages", async () => {
+    const executor = new ShellCommandExecutor();
+
+    try {
+      // Simulate a failing command that outputs credentials to stderr
+      await executor.exec(
+        "node -e \"console.error('fatal: https://x-access-token:secret@github.com'); process.exit(1)\"",
+        "."
+      );
+      assert.fail("Should have thrown");
+    } catch (error) {
+      const message = (error as Error).message;
+      assert.ok(
+        !message.includes("secret"),
+        "Token should be sanitized from error"
+      );
+      assert.ok(message.includes("***"), "Token should be replaced with ***");
+    }
+  });
+
+  test("sanitizes credentials in stderr", async () => {
+    const executor = new ShellCommandExecutor();
+
+    try {
+      await executor.exec(
+        "node -e \"console.error('https://oauth2:glpat-xyz@gitlab.com'); process.exit(1)\"",
+        "."
+      );
+      assert.fail("Should have thrown");
+    } catch (error) {
+      const stderr = (error as { stderr?: string }).stderr ?? "";
+      assert.ok(
+        !stderr.includes("glpat-xyz"),
+        "Token should be sanitized from stderr"
+      );
+    }
+  });
+});

@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import { sanitizeCredentials } from "./sanitize-utils.js";
 
 /**
  * Interface for executing shell commands.
@@ -36,9 +37,16 @@ export class ShellCommandExecutor implements ICommandExecutor {
       if (execError.stderr && typeof execError.stderr !== "string") {
         execError.stderr = execError.stderr.toString();
       }
-      // Include stderr in error message for better debugging
+      // Sanitize credentials from stderr before including in error
+      if (execError.stderr) {
+        execError.stderr = sanitizeCredentials(execError.stderr);
+      }
+      // Include sanitized stderr in error message for better debugging
       if (execError.stderr && execError.message) {
-        execError.message = `${execError.message}\n${execError.stderr}`;
+        execError.message =
+          sanitizeCredentials(execError.message) + "\n" + execError.stderr;
+      } else if (execError.message) {
+        execError.message = sanitizeCredentials(execError.message);
       }
       throw error;
     }
