@@ -39,6 +39,11 @@ import {
 } from "./ruleset-processor.js";
 import { getManagedRulesets } from "./manifest.js";
 import { isGitHubRepo } from "./repo-detector.js";
+import {
+  RepoSettingsProcessor,
+  IRepoSettingsProcessor,
+  RepoSettingsProcessorResult,
+} from "./repo-settings-processor.js";
 
 /**
  * Processor interface for dependency injection in tests.
@@ -90,6 +95,17 @@ export type RulesetProcessorFactory = () => IRulesetProcessor;
  */
 export const defaultRulesetProcessorFactory: RulesetProcessorFactory = () =>
   new RulesetProcessor();
+
+/**
+ * Repo settings processor factory function type.
+ */
+export type RepoSettingsProcessorFactory = () => IRepoSettingsProcessor;
+
+/**
+ * Default factory that creates a real RepoSettingsProcessor.
+ */
+export const defaultRepoSettingsProcessorFactory: RepoSettingsProcessorFactory =
+  () => new RepoSettingsProcessor();
 
 // =============================================================================
 // Shared CLI Options
@@ -305,7 +321,8 @@ export async function runSync(
 export async function runSettings(
   options: SettingsOptions,
   processorFactory: RulesetProcessorFactory = defaultRulesetProcessorFactory,
-  repoProcessorFactory: ProcessorFactory = defaultProcessorFactory
+  repoProcessorFactory: ProcessorFactory = defaultProcessorFactory,
+  repoSettingsProcessorFactory: RepoSettingsProcessorFactory = defaultRepoSettingsProcessorFactory
 ): Promise<void> {
   const configPath = resolve(options.config);
 
@@ -336,15 +353,28 @@ export async function runSettings(
     (r) => r.settings?.rulesets && Object.keys(r.settings.rulesets).length > 0
   );
 
-  if (reposWithRulesets.length === 0) {
+  // Check if any repos have repo settings configured
+  const reposWithRepoSettings = config.repos.filter(
+    (r) => r.settings?.repo && Object.keys(r.settings.repo).length > 0
+  );
+
+  if (reposWithRulesets.length === 0 && reposWithRepoSettings.length === 0) {
     console.log(
-      "No rulesets configured. Add settings.rulesets to your config to manage GitHub Rulesets."
+      "No settings configured. Add settings.rulesets or settings.repo to your config."
     );
     return;
   }
 
-  console.log(`Found ${reposWithRulesets.length} repositories with rulesets\n`);
-  logger.setTotal(reposWithRulesets.length);
+  if (reposWithRulesets.length > 0) {
+    console.log(`Found ${reposWithRulesets.length} repositories with rulesets`);
+  }
+  if (reposWithRepoSettings.length > 0) {
+    console.log(
+      `Found ${reposWithRepoSettings.length} repositories with repo settings`
+    );
+  }
+  console.log("");
+  logger.setTotal(reposWithRulesets.length + reposWithRepoSettings.length);
 
   const processor = processorFactory();
   const repoProcessor = repoProcessorFactory();
@@ -481,6 +511,67 @@ export async function runSettings(
     }
   }
 
+  // Process repo settings
+  if (reposWithRepoSettings.length > 0) {
+    const repoSettingsProcessor = repoSettingsProcessorFactory();
+
+    console.log(
+      `\nProcessing repo settings for ${reposWithRepoSettings.length} repositories\n`
+    );
+
+    for (let i = 0; i < reposWithRepoSettings.length; i++) {
+      const repoConfig = reposWithRepoSettings[i];
+      let repoInfo;
+      try {
+        repoInfo = parseGitUrl(repoConfig.git, {
+          githubHosts: config.githubHosts,
+        });
+      } catch (error) {
+        console.error(`Failed to parse ${repoConfig.git}: ${error}`);
+        failCount++;
+        continue;
+      }
+
+      const repoName = getRepoDisplayName(repoInfo);
+
+      try {
+        const result = await repoSettingsProcessor.process(
+          repoConfig,
+          repoInfo,
+          {
+            dryRun: options.dryRun,
+          }
+        );
+
+        if (result.planOutput && result.planOutput.lines.length > 0) {
+          console.log(`\n  ${chalk.bold(repoName)}:`);
+          console.log("  Repo Settings:");
+          for (const line of result.planOutput.lines) {
+            console.log(line);
+          }
+          if (result.warnings && result.warnings.length > 0) {
+            for (const warning of result.warnings) {
+              console.log(chalk.yellow(`  ⚠️  Warning: ${warning}`));
+            }
+          }
+        }
+
+        if (result.skipped) {
+          // Silent skip for repos without repo settings
+        } else if (result.success) {
+          console.log(chalk.green(`  ✓ ${repoName}: ${result.message}`));
+          successCount++;
+        } else {
+          console.log(chalk.red(`  ✗ ${repoName}: ${result.message}`));
+          failCount++;
+        }
+      } catch (error) {
+        console.error(`  ✗ ${repoName}: ${error}`);
+        failCount++;
+      }
+    }
+  }
+
   // Multi-repo summary for dry-run mode
   if (options.dryRun && reposWithChanges > 0) {
     console.log("");
@@ -507,7 +598,7 @@ export async function runSettings(
 
   // Write GitHub Actions job summary if available
   writeSummary({
-    total: reposWithRulesets.length,
+    total: reposWithRulesets.length + reposWithRepoSettings.length,
     succeeded: successCount,
     skipped: skipCount,
     failed: failCount,
