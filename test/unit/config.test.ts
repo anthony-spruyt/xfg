@@ -17,6 +17,7 @@ import {
   type BypassActor,
   type StatusCheckConfig,
   type CodeScanningTool,
+  type GitHubRepoSettings,
 } from "../../src/config.js";
 import { parse } from "yaml";
 
@@ -1032,5 +1033,58 @@ describe("normalized config types", () => {
       },
     };
     assert.ok(config.settings?.rulesets);
+  });
+});
+
+describe("GitHubRepoSettings type", () => {
+  test("should accept valid repo settings", () => {
+    const settings: GitHubRepoSettings = {
+      hasIssues: true,
+      hasWiki: false,
+      allowSquashMerge: true,
+      secretScanning: true,
+    };
+    assert.equal(settings.hasIssues, true);
+  });
+
+  test("should accept all feature settings", () => {
+    const settings: GitHubRepoSettings = {
+      hasIssues: true,
+      hasProjects: false,
+      hasWiki: true,
+      hasDiscussions: false,
+      isTemplate: false,
+      allowForking: true,
+      visibility: "private",
+      archived: false,
+    };
+    assert.equal(settings.visibility, "private");
+  });
+
+  test("should accept all merge settings", () => {
+    const settings: GitHubRepoSettings = {
+      allowSquashMerge: true,
+      allowMergeCommit: false,
+      allowRebaseMerge: true,
+      allowAutoMerge: true,
+      deleteBranchOnMerge: true,
+      allowUpdateBranch: true,
+      squashMergeCommitTitle: "PR_TITLE",
+      squashMergeCommitMessage: "COMMIT_MESSAGES",
+      mergeCommitTitle: "MERGE_MESSAGE",
+      mergeCommitMessage: "PR_BODY",
+    };
+    assert.equal(settings.squashMergeCommitTitle, "PR_TITLE");
+  });
+
+  test("should accept all security settings", () => {
+    const settings: GitHubRepoSettings = {
+      vulnerabilityAlerts: true,
+      automatedSecurityFixes: true,
+      secretScanning: true,
+      secretScanningPushProtection: true,
+      privateVulnerabilityReporting: true,
+    };
+    assert.equal(settings.secretScanning, true);
   });
 });
