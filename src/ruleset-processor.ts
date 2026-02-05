@@ -3,6 +3,10 @@ import type { RepoInfo, GitHubRepoInfo } from "./repo-detector.js";
 import { isGitHubRepo, getRepoDisplayName } from "./repo-detector.js";
 import { GitHubRulesetStrategy } from "./strategies/github-ruleset-strategy.js";
 import { diffRulesets } from "./ruleset-diff.js";
+import {
+  formatRulesetPlan,
+  RulesetPlanResult,
+} from "./ruleset-plan-formatter.js";
 
 // =============================================================================
 // Interfaces
@@ -43,6 +47,7 @@ export interface RulesetProcessorResult {
   manifestUpdate?: {
     rulesets: string[];
   };
+  planOutput?: RulesetPlanResult;
 }
 
 // =============================================================================
@@ -130,12 +135,14 @@ export class RulesetProcessor implements IRulesetProcessor {
       // Dry run mode - report planned changes without applying
       if (dryRun) {
         const summary = this.formatChangeSummary(changeCounts);
+        const planOutput = formatRulesetPlan(changes);
         return {
           success: true,
           repoName,
           message: `[DRY RUN] ${summary}`,
           dryRun: true,
           changes: changeCounts,
+          planOutput,
           manifestUpdate: this.computeManifestUpdate(
             desiredRulesets,
             deleteOrphaned

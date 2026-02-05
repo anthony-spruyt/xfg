@@ -357,6 +357,34 @@ describe("RulesetProcessor", () => {
       assert.ok(result.changes);
       assert.equal(result.changes.create, 1);
     });
+
+    test("returns formatted plan in dry-run mode", async () => {
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-org/test-repo.git",
+        files: [],
+        settings: {
+          rulesets: {
+            existing: { target: "branch", enforcement: "active" },
+            newone: { target: "branch", enforcement: "active" },
+          },
+        },
+      };
+      mockStrategy.setListResponse([
+        { id: 1, name: "existing", target: "branch", enforcement: "disabled" },
+      ]);
+
+      const result = await processor.process(repoConfig, mockGitHubRepo, {
+        configId: "test-config",
+        dryRun: true,
+        managedRulesets: ["existing"],
+      });
+
+      assert.equal(result.dryRun, true);
+      assert.ok(result.planOutput); // Should have plan output
+      assert.ok(result.planOutput!.lines.length > 0);
+      assert.equal(result.planOutput!.creates, 1);
+      assert.equal(result.planOutput!.updates, 1);
+    });
   });
 
   describe("non-GitHub repos", () => {
