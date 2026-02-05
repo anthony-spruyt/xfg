@@ -926,8 +926,10 @@ export function hasActionableSettings(
     return true;
   }
 
-  // Future: check for repoConfig, creation, etc.
-  // if (settings.repoConfig) return true;
+  // Check for repo settings
+  if (settings.repo && Object.keys(settings.repo).length > 0) {
+    return true;
+  }
 
   return false;
 }

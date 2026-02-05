@@ -2459,6 +2459,31 @@ describe("hasActionableSettings", () => {
   test("returns false for deleteOrphaned only", () => {
     assert.equal(hasActionableSettings({ deleteOrphaned: true }), false);
   });
+
+  test("returns true when repo settings exist", () => {
+    assert.equal(
+      hasActionableSettings({
+        repo: {
+          hasIssues: true,
+        },
+      }),
+      true
+    );
+  });
+
+  test("returns true when both rulesets and repo exist", () => {
+    assert.equal(
+      hasActionableSettings({
+        rulesets: { "main-protection": { enforcement: "active" } },
+        repo: { hasIssues: true },
+      }),
+      true
+    );
+  });
+
+  test("returns false for empty repo settings", () => {
+    assert.equal(hasActionableSettings({ repo: {} }), false);
+  });
 });
 
 describe("validateRepoSettings", () => {
