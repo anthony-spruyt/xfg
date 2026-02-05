@@ -51,4 +51,101 @@ describe("computePropertyDiffs", () => {
       });
     });
   });
+
+  describe("nested objects", () => {
+    test("detects changes in nested properties", () => {
+      const current = {
+        rules: {
+          pull_request: {
+            required_approving_review_count: 1,
+          },
+        },
+      };
+      const desired = {
+        rules: {
+          pull_request: {
+            required_approving_review_count: 2,
+          },
+        },
+      };
+
+      const diffs = computePropertyDiffs(current, desired);
+
+      assert.equal(diffs.length, 1);
+      assert.deepEqual(diffs[0].path, [
+        "rules",
+        "pull_request",
+        "required_approving_review_count",
+      ]);
+      assert.equal(diffs[0].action, "change");
+      assert.equal(diffs[0].oldValue, 1);
+      assert.equal(diffs[0].newValue, 2);
+    });
+
+    test("detects added nested property", () => {
+      const current = {
+        rules: {
+          pull_request: {
+            required_approving_review_count: 1,
+          },
+        },
+      };
+      const desired = {
+        rules: {
+          pull_request: {
+            required_approving_review_count: 1,
+            dismiss_stale_reviews_on_push: true,
+          },
+        },
+      };
+
+      const diffs = computePropertyDiffs(current, desired);
+
+      assert.equal(diffs.length, 1);
+      assert.deepEqual(diffs[0].path, [
+        "rules",
+        "pull_request",
+        "dismiss_stale_reviews_on_push",
+      ]);
+      assert.equal(diffs[0].action, "add");
+    });
+  });
+
+  describe("arrays", () => {
+    test("detects changed array", () => {
+      const current = {
+        conditions: {
+          ref_name: {
+            include: ["~DEFAULT_BRANCH"],
+          },
+        },
+      };
+      const desired = {
+        conditions: {
+          ref_name: {
+            include: ["~DEFAULT_BRANCH", "release/*"],
+          },
+        },
+      };
+
+      const diffs = computePropertyDiffs(current, desired);
+
+      assert.equal(diffs.length, 1);
+      assert.deepEqual(diffs[0].path, ["conditions", "ref_name", "include"]);
+      assert.equal(diffs[0].action, "change");
+    });
+
+    test("treats identical arrays as unchanged", () => {
+      const current = {
+        conditions: { ref_name: { include: ["main", "develop"] } },
+      };
+      const desired = {
+        conditions: { ref_name: { include: ["main", "develop"] } },
+      };
+
+      const diffs = computePropertyDiffs(current, desired);
+
+      assert.equal(diffs.length, 0);
+    });
+  });
 });
