@@ -16,6 +16,7 @@ import type {
   RepoSettings,
   RawRepoSettings,
   Ruleset,
+  GitHubRepoSettings,
 } from "./config.js";
 
 /**
@@ -132,6 +133,13 @@ export function mergeSettings(
   const deleteOrphaned = perRepo?.deleteOrphaned ?? root?.deleteOrphaned;
   if (deleteOrphaned !== undefined) {
     result.deleteOrphaned = deleteOrphaned;
+  }
+
+  // Merge repo settings: per-repo overrides root (shallow merge)
+  const rootRepo = root?.repo;
+  const perRepoRepo = perRepo?.repo;
+  if (rootRepo || perRepoRepo) {
+    result.repo = { ...rootRepo, ...perRepoRepo };
   }
 
   return Object.keys(result).length > 0 ? result : undefined;
@@ -303,6 +311,9 @@ export function normalizeConfig(raw: RawConfig): Config {
       if (Object.keys(filteredRulesets).length > 0) {
         normalizedRootSettings.rulesets = filteredRulesets;
       }
+    }
+    if (raw.settings.repo) {
+      normalizedRootSettings.repo = raw.settings.repo as GitHubRepoSettings;
     }
     if (raw.settings.deleteOrphaned !== undefined) {
       normalizedRootSettings.deleteOrphaned = raw.settings.deleteOrphaned;

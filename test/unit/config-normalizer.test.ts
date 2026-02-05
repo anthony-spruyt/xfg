@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { normalizeConfig } from "../../src/config-normalizer.js";
+import { normalizeConfig, mergeSettings } from "../../src/config-normalizer.js";
 import type { RawConfig, PullRequestRuleParameters } from "../../src/config.js";
 
 describe("normalizeConfig", () => {
@@ -2097,6 +2097,71 @@ describe("normalizeConfig", () => {
         const result = normalizeConfig(raw);
         assert.ok(result.repos[0].settings?.rulesets?.["main-protection"]);
       });
+    });
+  });
+});
+
+describe("mergeSettings with repo", () => {
+  test("should merge root and per-repo repo settings", () => {
+    const root = {
+      repo: {
+        hasIssues: true,
+        hasWiki: true,
+      },
+    };
+    const perRepo = {
+      repo: {
+        hasWiki: false,
+        allowSquashMerge: true,
+      },
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.deepEqual(result?.repo, {
+      hasIssues: true,
+      hasWiki: false,
+      allowSquashMerge: true,
+    });
+  });
+
+  test("should use only root repo settings when no per-repo override", () => {
+    const root = {
+      repo: {
+        hasIssues: true,
+      },
+    };
+    const result = mergeSettings(root, undefined);
+    assert.deepEqual(result?.repo, { hasIssues: true });
+  });
+
+  test("should use only per-repo repo settings when no root", () => {
+    const perRepo = {
+      repo: {
+        hasIssues: false,
+      },
+    };
+    const result = mergeSettings(undefined, perRepo);
+    assert.deepEqual(result?.repo, { hasIssues: false });
+  });
+
+  test("should merge both rulesets and repo settings", () => {
+    const root = {
+      rulesets: {
+        "main-protection": { target: "branch" as const },
+      },
+      repo: {
+        hasIssues: true,
+      },
+    };
+    const perRepo = {
+      repo: {
+        hasWiki: false,
+      },
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.ok(result?.rulesets?.["main-protection"]);
+    assert.deepEqual(result?.repo, {
+      hasIssues: true,
+      hasWiki: false,
     });
   });
 });
