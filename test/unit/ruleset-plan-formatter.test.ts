@@ -3,6 +3,7 @@ import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   computePropertyDiffs,
+  formatPropertyTree,
   PropertyDiff,
 } from "../../src/ruleset-plan-formatter.js";
 
@@ -147,5 +148,72 @@ describe("computePropertyDiffs", () => {
 
       assert.equal(diffs.length, 0);
     });
+  });
+});
+
+describe("formatPropertyTree", () => {
+  test("formats single scalar change", () => {
+    const diffs: PropertyDiff[] = [
+      {
+        path: ["enforcement"],
+        action: "change",
+        oldValue: "disabled",
+        newValue: "active",
+      },
+    ];
+
+    const lines = formatPropertyTree(diffs);
+
+    assert.equal(lines.length, 1);
+    // Line should contain: ~ enforcement: disabled → active
+    assert.ok(lines[0].includes("enforcement"));
+    assert.ok(lines[0].includes("disabled"));
+    assert.ok(lines[0].includes("active"));
+  });
+
+  test("formats nested changes with indentation", () => {
+    const diffs: PropertyDiff[] = [
+      {
+        path: ["rules", "pull_request", "required_approving_review_count"],
+        action: "change",
+        oldValue: 1,
+        newValue: 2,
+      },
+    ];
+
+    const lines = formatPropertyTree(diffs);
+
+    // Should produce tree structure:
+    // ~ rules:
+    //     ~ pull_request:
+    //         ~ required_approving_review_count: 1 → 2
+    assert.ok(lines.some((l) => l.includes("rules")));
+    assert.ok(lines.some((l) => l.includes("pull_request")));
+    assert.ok(lines.some((l) => l.includes("required_approving_review_count")));
+  });
+
+  test("formats added property with +", () => {
+    const diffs: PropertyDiff[] = [
+      { path: ["enforcement"], action: "add", newValue: "active" },
+    ];
+
+    const lines = formatPropertyTree(diffs);
+
+    // Should show: + enforcement: active
+    assert.ok(lines[0].includes("+") || lines[0].includes("add"));
+    assert.ok(lines[0].includes("enforcement"));
+    assert.ok(lines[0].includes("active"));
+  });
+
+  test("formats removed property with -", () => {
+    const diffs: PropertyDiff[] = [
+      { path: ["enforcement"], action: "remove", oldValue: "active" },
+    ];
+
+    const lines = formatPropertyTree(diffs);
+
+    // Should show: - enforcement (was: active)
+    assert.ok(lines[0].includes("-") || lines[0].includes("remove"));
+    assert.ok(lines[0].includes("enforcement"));
   });
 });
