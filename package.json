@@ -32,7 +32,8 @@
     "test:integration:ado": "npm run build && node --import tsx --test test/integration/ado.test.ts",
     "test:integration:gitlab": "npm run build && node --import tsx --test test/integration/gitlab.test.ts",
     "test:integration:github-app": "npm run build && node --import tsx --test test/integration/github-app.test.ts",
-    "test:integration:github-settings": "npm run build && node --import tsx --test test/integration/github-settings.test.ts",
+    "test:integration:github-rulesets": "npm run build && node --import tsx --test test/integration/github-rulesets.test.ts",
+    "test:integration:github-repo-settings": "npm run build && node --import tsx --test test/integration/github-repo-settings.test.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

@@ -204,7 +204,7 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: npm run test:integration:gitlab
 
-  integration-test-github-settings:
+  integration-test-github-rulesets:
     needs:
       - "lint"
       - "build"
@@ -241,7 +241,46 @@ jobs:
       - name: Run GitHub settings integration tests
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: npm run test:integration:github-settings
+        run: npm run test:integration:github-rulesets
+
+  integration-test-github-repo-settings:
+    needs:
+      - "lint"
+      - "build"
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: integration-github-repo-settings
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run GitHub repo settings integration tests
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: npm run test:integration:github-repo-settings
 
   # Combined action tests (PAT + GitHub App)
   integration-test-action:
@@ -422,7 +461,7 @@ jobs:
         uses: ./
         with:
           command: settings
-          config: ./test/fixtures/integration-test-config-github-settings.yaml
+          config: ./test/fixtures/integration-test-config-github-rulesets.yaml
           github-token: ${{ secrets.GH_PAT }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
@@ -456,7 +495,8 @@ jobs:
       - "integration-test-github"
       - "integration-test-ado"
       - "integration-test-gitlab"
-      - "integration-test-github-settings"
+      - "integration-test-github-rulesets"
+      - "integration-test-github-repo-settings"
       - "integration-test-action"
     if: "always()"
     uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@main"

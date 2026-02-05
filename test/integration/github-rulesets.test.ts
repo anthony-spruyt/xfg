@@ -60,7 +60,7 @@ describe("GitHub Settings Integration Test", () => {
   test("settings creates a ruleset in the test repository", async () => {
     const configPath = join(
       fixturesDir,
-      "integration-test-config-github-settings.yaml"
+      "integration-test-config-github-rulesets.yaml"
     );
 
     // Verify no ruleset exists before
@@ -106,7 +106,7 @@ describe("GitHub Settings Integration Test", () => {
   test("settings updates an existing ruleset", async () => {
     const configPath = join(
       fixturesDir,
-      "integration-test-config-github-settings.yaml"
+      "integration-test-config-github-rulesets.yaml"
     );
 
     // Setup: ensure clean state and create ruleset (self-contained test)
@@ -163,7 +163,7 @@ describe("GitHub Settings Integration Test", () => {
   test("settings dry-run shows changes without applying", async () => {
     const configPath = join(
       fixturesDir,
-      "integration-test-config-github-settings.yaml"
+      "integration-test-config-github-rulesets.yaml"
     );
 
     // Delete the ruleset first
