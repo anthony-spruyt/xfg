@@ -1,5 +1,7 @@
 // src/ruleset-plan-formatter.ts
 import chalk from "chalk";
+import type { RulesetChange } from "./ruleset-diff.js";
+import type { Ruleset } from "./config.js";
 
 // =============================================================================
 // Types
@@ -12,6 +14,14 @@ export interface PropertyDiff {
   action: DiffAction;
   oldValue?: unknown;
   newValue?: unknown;
+}
+
+export interface RulesetPlanResult {
+  lines: string[];
+  creates: number;
+  updates: number;
+  deletes: number;
+  unchanged: number;
 }
 
 // =============================================================================
@@ -229,4 +239,157 @@ export function formatPropertyTree(diffs: PropertyDiff[]): string[] {
 
   const tree = buildTree(diffs);
   return renderTree(tree);
+}
+
+// =============================================================================
+// Ruleset Plan Formatter
+// =============================================================================
+
+/**
+ * Normalize a GitHubRuleset or Ruleset for comparison.
+ * Converts to snake_case and removes metadata fields.
+ */
+function normalizeForDiff(
+  obj: Record<string, unknown>
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  const ignoreFields = new Set(["id", "name", "source_type", "source"]);
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (ignoreFields.has(key) || value === undefined) continue;
+    // Convert camelCase to snake_case for consistency
+    const snakeKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+    result[snakeKey] = normalizeNestedValue(value);
+  }
+
+  return result;
+}
+
+function normalizeNestedValue(value: unknown): unknown {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map(normalizeNestedValue);
+  if (typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    const result: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(obj)) {
+      const snakeKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+      result[snakeKey] = normalizeNestedValue(val);
+    }
+    return result;
+  }
+  return value;
+}
+
+/**
+ * Format a full ruleset config as tree lines (for create action).
+ */
+function formatFullConfig(ruleset: Ruleset, indent: number = 2): string[] {
+  const lines: string[] = [];
+  const style = getActionStyle("add");
+
+  function renderValue(
+    key: string,
+    value: unknown,
+    currentIndent: number
+  ): void {
+    const pad = "    ".repeat(currentIndent);
+    if (value === null || value === undefined) return;
+
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        lines.push(style.color(`${pad}+ ${key}: []`));
+      } else if (value.every((v) => typeof v !== "object")) {
+        lines.push(style.color(`${pad}+ ${key}: ${formatValue(value)}`));
+      } else {
+        lines.push(style.color(`${pad}+ ${key}:`));
+        for (const item of value) {
+          if (typeof item === "object" && item !== null) {
+            lines.push(style.color(`${pad}    - ${JSON.stringify(item)}`));
+          } else {
+            lines.push(style.color(`${pad}    - ${formatValue(item)}`));
+          }
+        }
+      }
+    } else if (typeof value === "object") {
+      lines.push(style.color(`${pad}+ ${key}:`));
+      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+        renderValue(k, v, currentIndent + 1);
+      }
+    } else {
+      lines.push(style.color(`${pad}+ ${key}: ${formatValue(value)}`));
+    }
+  }
+
+  for (const [key, value] of Object.entries(ruleset)) {
+    renderValue(key, value, indent);
+  }
+
+  return lines;
+}
+
+/**
+ * Format ruleset changes as a Terraform-style plan.
+ */
+export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
+  const lines: string[] = [];
+  let creates = 0;
+  let updates = 0;
+  let deletes = 0;
+  let unchanged = 0;
+
+  // Group by action type
+  const createChanges = changes.filter((c) => c.action === "create");
+  const updateChanges = changes.filter((c) => c.action === "update");
+  const deleteChanges = changes.filter((c) => c.action === "delete");
+  const unchangedChanges = changes.filter((c) => c.action === "unchanged");
+
+  creates = createChanges.length;
+  updates = updateChanges.length;
+  deletes = deleteChanges.length;
+  unchanged = unchangedChanges.length;
+
+  // Format creates
+  if (createChanges.length > 0) {
+    lines.push(chalk.bold("  Create:"));
+    for (const change of createChanges) {
+      lines.push(chalk.green(`    + ruleset "${change.name}"`));
+      if (change.desired) {
+        lines.push(...formatFullConfig(change.desired, 2));
+      }
+      lines.push(""); // Blank line between rulesets
+    }
+  }
+
+  // Format updates
+  if (updateChanges.length > 0) {
+    lines.push(chalk.bold("  Update:"));
+    for (const change of updateChanges) {
+      lines.push(chalk.yellow(`    ~ ruleset "${change.name}"`));
+      if (change.current && change.desired) {
+        const currentNorm = normalizeForDiff(
+          change.current as Record<string, unknown>
+        );
+        const desiredNorm = normalizeForDiff(
+          change.desired as unknown as Record<string, unknown>
+        );
+        const diffs = computePropertyDiffs(currentNorm, desiredNorm);
+        const treeLines = formatPropertyTree(diffs);
+        for (const line of treeLines) {
+          lines.push(`        ${line}`);
+        }
+      }
+      lines.push(""); // Blank line between rulesets
+    }
+  }
+
+  // Format deletes
+  if (deleteChanges.length > 0) {
+    lines.push(chalk.bold("  Delete:"));
+    for (const change of deleteChanges) {
+      lines.push(chalk.red(`    - ruleset "${change.name}"`));
+    }
+    lines.push(""); // Blank line after deletes
+  }
+
+  return { lines, creates, updates, deletes, unchanged };
 }

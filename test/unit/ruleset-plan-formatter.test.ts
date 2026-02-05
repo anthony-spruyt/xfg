@@ -1,10 +1,13 @@
 // test/unit/ruleset-plan-formatter.test.ts
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
+import type { RulesetChange } from "../../src/ruleset-diff.js";
 import {
   computePropertyDiffs,
   formatPropertyTree,
+  formatRulesetPlan,
   PropertyDiff,
+  RulesetPlanResult,
 } from "../../src/ruleset-plan-formatter.js";
 
 describe("computePropertyDiffs", () => {
@@ -215,5 +218,112 @@ describe("formatPropertyTree", () => {
     // Should show: - enforcement (was: active)
     assert.ok(lines[0].includes("-") || lines[0].includes("remove"));
     assert.ok(lines[0].includes("enforcement"));
+  });
+});
+
+describe("formatRulesetPlan", () => {
+  test("formats create action with full config", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "create",
+        name: "branch-protection",
+        desired: {
+          target: "branch",
+          enforcement: "active",
+          conditions: {
+            refName: { include: ["~DEFAULT_BRANCH"] },
+          },
+        },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    assert.equal(result.creates, 1);
+    assert.equal(result.updates, 0);
+    assert.equal(result.deletes, 0);
+    // Should contain ruleset name and full config
+    const output = result.lines.join("\n");
+    assert.ok(output.includes("branch-protection"));
+    assert.ok(output.includes("enforcement"));
+    assert.ok(output.includes("active"));
+  });
+
+  test("formats update action with property diff", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "update",
+        name: "branch-protection",
+        rulesetId: 1,
+        current: {
+          id: 1,
+          name: "branch-protection",
+          target: "branch",
+          enforcement: "disabled",
+        },
+        desired: {
+          target: "branch",
+          enforcement: "active",
+        },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    assert.equal(result.updates, 1);
+    const output = result.lines.join("\n");
+    assert.ok(output.includes("branch-protection"));
+    // Should show the diff: disabled → active
+    assert.ok(output.includes("disabled") || output.includes("active"));
+  });
+
+  test("formats delete action with just name", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "delete",
+        name: "old-ruleset",
+        rulesetId: 1,
+        current: {
+          id: 1,
+          name: "old-ruleset",
+          target: "branch",
+          enforcement: "active",
+        },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    assert.equal(result.deletes, 1);
+    const output = result.lines.join("\n");
+    assert.ok(output.includes("old-ruleset"));
+    // Should NOT show full config for deletes
+    assert.ok(
+      !output.includes("enforcement") || output.split("enforcement").length <= 2
+    );
+  });
+
+  test("excludes unchanged from output but includes in count", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "unchanged",
+        name: "stable-ruleset",
+        rulesetId: 1,
+        current: {
+          id: 1,
+          name: "stable-ruleset",
+          target: "branch",
+          enforcement: "active",
+        },
+        desired: { target: "branch", enforcement: "active" },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    assert.equal(result.unchanged, 1);
+    // Unchanged should not appear in output
+    const output = result.lines.join("\n");
+    assert.ok(!output.includes("stable-ruleset"));
   });
 });
