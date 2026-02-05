@@ -1,6 +1,13 @@
 import chalk from "chalk";
 import { FileStatus, formatStatusBadge } from "./diff-utils.js";
 
+export interface RulesetPlanCounts {
+  creates: number;
+  updates: number;
+  deletes: number;
+  unchanged: number;
+}
+
 export interface ILogger {
   info(message: string): void;
   fileDiff(fileName: string, status: FileStatus, diffLines: string[]): void;
@@ -9,6 +16,11 @@ export interface ILogger {
     modifiedCount: number,
     unchangedCount: number,
     deletedCount?: number
+  ): void;
+  rulesetPlan(
+    repoName: string,
+    planLines: string[],
+    counts: RulesetPlanCounts
   ): void;
   setTotal(total: number): void;
   progress(current: number, repoName: string, message: string): void;
@@ -109,6 +121,40 @@ export class Logger implements ILogger {
     if (parts.length > 0) {
       console.log(chalk.gray(`    Summary: ${parts.join(", ")}`));
     }
+  }
+
+  /**
+   * Display ruleset plan output for dry-run mode.
+   */
+  rulesetPlan(
+    repoName: string,
+    planLines: string[],
+    counts: RulesetPlanCounts
+  ): void {
+    console.log("");
+    console.log(chalk.bold(`Repository: ${repoName}`));
+
+    for (const line of planLines) {
+      console.log(line);
+    }
+
+    // Summary line
+    const parts: string[] = [];
+    if (counts.creates > 0)
+      parts.push(chalk.green(`${counts.creates} to create`));
+    if (counts.updates > 0)
+      parts.push(chalk.yellow(`${counts.updates} to update`));
+    if (counts.deletes > 0)
+      parts.push(chalk.red(`${counts.deletes} to delete`));
+
+    const unchangedPart =
+      counts.unchanged > 0
+        ? chalk.gray(` (${counts.unchanged} unchanged)`)
+        : "";
+    const summaryLine =
+      parts.length > 0 ? parts.join(", ") + unchangedPart : "No changes";
+
+    console.log(chalk.gray(`Plan: ${summaryLine}`));
   }
 
   summary(): void {

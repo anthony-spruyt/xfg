@@ -275,4 +275,52 @@ describe("Logger", () => {
       assert.ok(!output.includes("unchanged"));
     });
   });
+
+  describe("rulesetPlan", () => {
+    test("outputs plan lines with summary", () => {
+      logger.rulesetPlan("org/repo", ["  Create:", '    + ruleset "test"'], {
+        creates: 1,
+        updates: 0,
+        deletes: 0,
+        unchanged: 2,
+      });
+
+      const output = consoleLogs.join("\n");
+      // Should output repo header
+      assert.ok(output.includes("org/repo"));
+      // Should output plan lines
+      assert.ok(output.includes("Create"));
+      // Should output summary
+      assert.ok(output.includes("1 to create"));
+      assert.ok(output.includes("2 unchanged"));
+    });
+
+    test("outputs multiple change types in summary", () => {
+      logger.rulesetPlan("org/repo", ["  Update:", '    ~ ruleset "test"'], {
+        creates: 2,
+        updates: 1,
+        deletes: 3,
+        unchanged: 0,
+      });
+
+      const output = consoleLogs.join("\n");
+      assert.ok(output.includes("2 to create"));
+      assert.ok(output.includes("1 to update"));
+      assert.ok(output.includes("3 to delete"));
+    });
+
+    test("shows 'No changes' when no changes", () => {
+      logger.rulesetPlan("org/repo", [], {
+        creates: 0,
+        updates: 0,
+        deletes: 0,
+        unchanged: 5,
+      });
+
+      const output = consoleLogs.join("\n");
+      assert.ok(
+        output.includes("No changes") || output.includes("5 unchanged")
+      );
+    });
+  });
 });
