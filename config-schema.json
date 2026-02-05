@@ -312,7 +312,7 @@
     },
     "repoSettings": {
       "type": "object",
-      "description": "Repository settings including GitHub Rulesets",
+      "description": "Repository settings including GitHub Rulesets and repository features",
       "properties": {
         "rulesets": {
           "type": "object",
@@ -336,10 +336,135 @@
             ]
           }
         },
+        "repo": {
+          "$ref": "#/definitions/githubRepoSettings",
+          "description": "GitHub repository settings (features, merge options, security)"
+        },
         "deleteOrphaned": {
           "type": "boolean",
           "default": false,
           "description": "Track rulesets for orphan deletion. When true, if a ruleset is removed from the config, it will be deleted from the repo. Default: false"
+        }
+      }
+    },
+    "githubRepoSettings": {
+      "type": "object",
+      "description": "GitHub repository settings for features, merge options, and security",
+      "properties": {
+        "hasIssues": {
+          "type": "boolean",
+          "description": "Enable or disable GitHub Issues. Warning: Disabling may hide existing issues."
+        },
+        "hasProjects": {
+          "type": "boolean",
+          "description": "Enable or disable GitHub Projects. Warning: Disabling may hide existing projects."
+        },
+        "hasWiki": {
+          "type": "boolean",
+          "description": "Enable or disable the repository wiki. Warning: Disabling may hide existing wiki content."
+        },
+        "hasDiscussions": {
+          "type": "boolean",
+          "description": "Enable or disable GitHub Discussions"
+        },
+        "isTemplate": {
+          "type": "boolean",
+          "description": "Mark the repository as a template repository"
+        },
+        "allowForking": {
+          "type": "boolean",
+          "description": "Allow forking of a private repository"
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "public",
+            "private",
+            "internal"
+          ],
+          "description": "Repository visibility. Warning: Changing visibility may expose or hide repository content."
+        },
+        "archived": {
+          "type": "boolean",
+          "description": "Archive the repository. Warning: Archived repositories are read-only."
+        },
+        "allowSquashMerge": {
+          "type": "boolean",
+          "description": "Allow squash-merging pull requests"
+        },
+        "allowMergeCommit": {
+          "type": "boolean",
+          "description": "Allow merge commits for pull requests"
+        },
+        "allowRebaseMerge": {
+          "type": "boolean",
+          "description": "Allow rebase-merging pull requests"
+        },
+        "allowAutoMerge": {
+          "type": "boolean",
+          "description": "Allow auto-merge on pull requests"
+        },
+        "deleteBranchOnMerge": {
+          "type": "boolean",
+          "description": "Automatically delete head branches after pull requests are merged"
+        },
+        "allowUpdateBranch": {
+          "type": "boolean",
+          "description": "Show 'Update branch' button in pull requests"
+        },
+        "squashMergeCommitTitle": {
+          "type": "string",
+          "enum": [
+            "PR_TITLE",
+            "COMMIT_OR_PR_TITLE"
+          ],
+          "description": "Default title for squash merge commits"
+        },
+        "squashMergeCommitMessage": {
+          "type": "string",
+          "enum": [
+            "PR_BODY",
+            "COMMIT_MESSAGES",
+            "BLANK"
+          ],
+          "description": "Default message for squash merge commits"
+        },
+        "mergeCommitTitle": {
+          "type": "string",
+          "enum": [
+            "PR_TITLE",
+            "MERGE_MESSAGE"
+          ],
+          "description": "Default title for merge commits"
+        },
+        "mergeCommitMessage": {
+          "type": "string",
+          "enum": [
+            "PR_BODY",
+            "PR_TITLE",
+            "BLANK"
+          ],
+          "description": "Default message for merge commits"
+        },
+        "vulnerabilityAlerts": {
+          "type": "boolean",
+          "description": "Enable or disable Dependabot vulnerability alerts"
+        },
+        "automatedSecurityFixes": {
+          "type": "boolean",
+          "description": "Enable or disable Dependabot automated security fixes"
+        },
+        "secretScanning": {
+          "type": "boolean",
+          "description": "Enable or disable secret scanning"
+        },
+        "secretScanningPushProtection": {
+          "type": "boolean",
+          "description": "Enable or disable secret scanning push protection"
+        },
+        "privateVulnerabilityReporting": {
+          "type": "boolean",
+          "description": "Enable or disable private vulnerability reporting"
         }
       }
     },
