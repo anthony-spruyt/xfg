@@ -1,0 +1,166 @@
+import type { RepoConfig, GitHubRepoSettings } from "./config.js";
+import type { RepoInfo, GitHubRepoInfo } from "./repo-detector.js";
+import { isGitHubRepo, getRepoDisplayName } from "./repo-detector.js";
+import { GitHubRepoSettingsStrategy } from "./strategies/github-repo-settings-strategy.js";
+import type { IRepoSettingsStrategy } from "./strategies/repo-settings-strategy.js";
+import { diffRepoSettings, hasChanges } from "./repo-settings-diff.js";
+import {
+  formatRepoSettingsPlan,
+  RepoSettingsPlanResult,
+} from "./repo-settings-plan-formatter.js";
+
+export interface IRepoSettingsProcessor {
+  process(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: RepoSettingsProcessorOptions
+  ): Promise<RepoSettingsProcessorResult>;
+}
+
+export interface RepoSettingsProcessorOptions {
+  dryRun?: boolean;
+  token?: string;
+}
+
+export interface RepoSettingsProcessorResult {
+  success: boolean;
+  repoName: string;
+  message: string;
+  skipped?: boolean;
+  dryRun?: boolean;
+  changes?: {
+    adds: number;
+    changes: number;
+  };
+  warnings?: string[];
+  planOutput?: RepoSettingsPlanResult;
+}
+
+export class RepoSettingsProcessor implements IRepoSettingsProcessor {
+  private readonly strategy: IRepoSettingsStrategy;
+
+  constructor(strategy?: IRepoSettingsStrategy) {
+    this.strategy = strategy ?? new GitHubRepoSettingsStrategy();
+  }
+
+  async process(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: RepoSettingsProcessorOptions
+  ): Promise<RepoSettingsProcessorResult> {
+    const repoName = getRepoDisplayName(repoInfo);
+    const { dryRun, token } = options;
+
+    // Check if this is a GitHub repo
+    if (!isGitHubRepo(repoInfo)) {
+      return {
+        success: true,
+        repoName,
+        message: `Skipped: ${repoName} is not a GitHub repository`,
+        skipped: true,
+      };
+    }
+
+    const githubRepo = repoInfo as GitHubRepoInfo;
+    const desiredSettings = repoConfig.settings?.repo;
+
+    // If no repo settings configured, skip
+    if (!desiredSettings || Object.keys(desiredSettings).length === 0) {
+      return {
+        success: true,
+        repoName,
+        message: "No repo settings configured",
+        skipped: true,
+      };
+    }
+
+    try {
+      const strategyOptions = { token, host: githubRepo.host };
+
+      // Fetch current settings
+      const currentSettings = await this.strategy.getSettings(
+        githubRepo,
+        strategyOptions
+      );
+
+      // Compute diff
+      const changes = diffRepoSettings(currentSettings, desiredSettings);
+
+      if (!hasChanges(changes)) {
+        return {
+          success: true,
+          repoName,
+          message: "No changes needed",
+          changes: { adds: 0, changes: 0 },
+        };
+      }
+
+      // Format plan output
+      const planOutput = formatRepoSettingsPlan(changes);
+
+      // Dry run mode - report planned changes without applying
+      if (dryRun) {
+        return {
+          success: true,
+          repoName,
+          message: `[DRY RUN] ${planOutput.adds} to add, ${planOutput.changes} to change`,
+          dryRun: true,
+          changes: { adds: planOutput.adds, changes: planOutput.changes },
+          warnings: planOutput.warnings,
+          planOutput,
+        };
+      }
+
+      // Apply changes
+      await this.applyChanges(githubRepo, desiredSettings, strategyOptions);
+
+      return {
+        success: true,
+        repoName,
+        message: `Applied: ${planOutput.adds} added, ${planOutput.changes} changed`,
+        changes: { adds: planOutput.adds, changes: planOutput.changes },
+        warnings: planOutput.warnings,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        success: false,
+        repoName,
+        message: `Failed: ${message}`,
+      };
+    }
+  }
+
+  private async applyChanges(
+    repoInfo: GitHubRepoInfo,
+    settings: GitHubRepoSettings,
+    options: { token?: string; host?: string }
+  ): Promise<void> {
+    // Extract settings that need separate API calls
+    const { vulnerabilityAlerts, automatedSecurityFixes, ...mainSettings } =
+      settings;
+
+    // Update main settings via PATCH /repos
+    if (Object.keys(mainSettings).length > 0) {
+      await this.strategy.updateSettings(repoInfo, mainSettings, options);
+    }
+
+    // Handle vulnerability alerts (separate endpoint)
+    if (vulnerabilityAlerts !== undefined) {
+      await this.strategy.setVulnerabilityAlerts(
+        repoInfo,
+        vulnerabilityAlerts,
+        options
+      );
+    }
+
+    // Handle automated security fixes (separate endpoint)
+    if (automatedSecurityFixes !== undefined) {
+      await this.strategy.setAutomatedSecurityFixes(
+        repoInfo,
+        automatedSecurityFixes,
+        options
+      );
+    }
+  }
+}
