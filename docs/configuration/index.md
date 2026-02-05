@@ -27,7 +27,7 @@ repos: # List of repositories
 | `id`             | Unique identifier for this config. Used to namespace managed files in `.xfg.json` manifest. | Yes      |
 | `files`          | Map of target filenames to configs                                                          | *        |
 | `repos`          | Array of repository configurations                                                          | Yes      |
-| `settings`       | Global settings like `rulesets` (GitHub Rulesets). See [GitHub Rulesets](rulesets.md).      | *        |
+| `settings`       | Global settings: `repo` for repository features, `rulesets` for branch protection. See [Repo Settings](repo-settings.md) and [Rulesets](rulesets.md). | *        |
 | `prOptions`      | Global PR merge options (can be overridden per-repo)                                        | No       |
 | `prTemplate`     | Custom PR body template (inline or `@path/to/file` reference)                               | No       |
 | `deleteOrphaned` | Global default for orphan deletion. Files/rulesets removed from config are deleted.         | No       |

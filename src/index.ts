@@ -42,7 +42,6 @@ import { isGitHubRepo } from "./repo-detector.js";
 import {
   RepoSettingsProcessor,
   IRepoSettingsProcessor,
-  RepoSettingsProcessorResult,
 } from "./repo-settings-processor.js";
 
 /**
