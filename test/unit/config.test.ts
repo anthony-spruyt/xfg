@@ -1036,6 +1036,29 @@ describe("normalized config types", () => {
   });
 });
 
+describe("RepoSettings with repo property", () => {
+  test("should accept repo settings in RepoSettings", () => {
+    const settings: RepoSettings = {
+      rulesets: {},
+      repo: {
+        hasIssues: true,
+        allowSquashMerge: true,
+      },
+    };
+    assert.equal(settings.repo?.hasIssues, true);
+  });
+
+  test("should accept repo settings in RawRepoSettings", () => {
+    const settings: RawRepoSettings = {
+      repo: {
+        hasWiki: false,
+        visibility: "private",
+      },
+    };
+    assert.equal(settings.repo?.visibility, "private");
+  });
+});
+
 describe("GitHubRepoSettings type", () => {
   test("should accept valid repo settings", () => {
     const settings: GitHubRepoSettings = {

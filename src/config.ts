@@ -393,6 +393,8 @@ export interface GitHubRepoSettings {
 export interface RepoSettings {
   /** GitHub rulesets keyed by name */
   rulesets?: Record<string, Ruleset>;
+  /** GitHub repository settings */
+  repo?: GitHubRepoSettings;
   deleteOrphaned?: boolean;
 }
 
@@ -432,6 +434,7 @@ export interface RawRepoFileOverride {
 // Raw settings (before normalization)
 export interface RawRepoSettings {
   rulesets?: Record<string, Ruleset | false> & { inherit?: boolean };
+  repo?: GitHubRepoSettings;
   deleteOrphaned?: boolean;
 }
 
