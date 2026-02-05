@@ -4,6 +4,7 @@ import { program, Command } from "commander";
 import { resolve, join, dirname } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import chalk from "chalk";
 import {
   loadRawConfig,
   normalizeConfig,
@@ -352,6 +353,12 @@ export async function runSettings(
   let failCount = 0;
   let skipCount = 0;
 
+  // Tracking for multi-repo summary in dry-run mode
+  let totalCreates = 0;
+  let totalUpdates = 0;
+  let totalDeletes = 0;
+  let reposWithChanges = 0;
+
   for (let i = 0; i < reposWithRulesets.length; i++) {
     const repoConfig = reposWithRulesets[i];
 
@@ -396,17 +403,27 @@ export async function runSettings(
       });
 
       // Display plan output for dry-run mode
-      if (
-        options.dryRun &&
-        result.planOutput &&
-        result.planOutput.lines.length > 0
-      ) {
-        logger.rulesetPlan(repoName, result.planOutput.lines, {
-          creates: result.planOutput.creates,
-          updates: result.planOutput.updates,
-          deletes: result.planOutput.deletes,
-          unchanged: result.planOutput.unchanged,
-        });
+      if (options.dryRun && result.planOutput) {
+        if (result.planOutput.lines.length > 0) {
+          logger.rulesetPlan(repoName, result.planOutput.lines, {
+            creates: result.planOutput.creates,
+            updates: result.planOutput.updates,
+            deletes: result.planOutput.deletes,
+            unchanged: result.planOutput.unchanged,
+          });
+        }
+        // Accumulate totals for multi-repo summary
+        totalCreates += result.planOutput.creates;
+        totalUpdates += result.planOutput.updates;
+        totalDeletes += result.planOutput.deletes;
+        if (
+          result.planOutput.creates +
+            result.planOutput.updates +
+            result.planOutput.deletes >
+          0
+        ) {
+          reposWithChanges++;
+        }
       }
 
       if (result.skipped) {
@@ -462,6 +479,24 @@ export async function runSettings(
       results.push(buildErrorResult(repoName, error));
       failCount++;
     }
+  }
+
+  // Multi-repo summary for dry-run mode
+  if (options.dryRun && reposWithChanges > 0) {
+    console.log("");
+    console.log(chalk.gray("─".repeat(40)));
+    const totalParts: string[] = [];
+    if (totalCreates > 0)
+      totalParts.push(chalk.green(`${totalCreates} to create`));
+    if (totalUpdates > 0)
+      totalParts.push(chalk.yellow(`${totalUpdates} to update`));
+    if (totalDeletes > 0)
+      totalParts.push(chalk.red(`${totalDeletes} to delete`));
+    console.log(
+      chalk.bold(
+        `Total: ${totalParts.join(", ")} across ${reposWithChanges} ${reposWithChanges === 1 ? "repository" : "repositories"}`
+      )
+    );
   }
 
   // Summary
