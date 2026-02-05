@@ -65,6 +65,11 @@ files:
       tabWidth: 2
 
 settings:
+  repo:
+    allowSquashMerge: true
+    deleteBranchOnMerge: true
+    vulnerabilityAlerts: true
+
   rulesets:
     main-protection:
       target: branch
@@ -84,7 +89,7 @@ repos:
       - git@github.com:your-org/backend-api.git
 ```
 
-**Result:** PRs are created with `.prettierrc.json` files, and repos get branch protection rules.
+**Result:** PRs are created with `.prettierrc.json` files, and repos get standardized merge options, security settings, and branch protection rules.
 
 ## Documentation
 

@@ -38,7 +38,7 @@ xfg settings -c config.yaml
 ### Features
 
 | Setting | Type | Description |
-|---------|------|-------------|
+| ------- | ---- | ----------- |
 | `hasIssues` | boolean | Enable/disable GitHub Issues |
 | `hasProjects` | boolean | Enable/disable GitHub Projects |
 | `hasWiki` | boolean | Enable/disable the repository wiki |
@@ -51,7 +51,7 @@ xfg settings -c config.yaml
 ### Merge Options
 
 | Setting | Type | Description |
-|---------|------|-------------|
+| ------- | ---- | ----------- |
 | `allowSquashMerge` | boolean | Allow squash merging |
 | `allowMergeCommit` | boolean | Allow merge commits |
 | `allowRebaseMerge` | boolean | Allow rebase merging |
@@ -66,7 +66,7 @@ xfg settings -c config.yaml
 ### Security
 
 | Setting | Type | Description |
-|---------|------|-------------|
+| ------- | ---- | ----------- |
 | `vulnerabilityAlerts` | boolean | Dependabot vulnerability alerts |
 | `automatedSecurityFixes` | boolean | Dependabot security updates |
 | `secretScanning` | boolean | Secret scanning |
@@ -108,14 +108,14 @@ repos:
 xfg displays warnings for potentially destructive operations:
 
 | Operation | Warning |
-|-----------|---------|
+| --------- | ------- |
 | Change `visibility` | "visibility change may expose or hide repository" |
 | Set `archived: true` | "archiving makes repository read-only" |
 | Disable `hasIssues`, `hasWiki`, `hasProjects` | "may hide existing content" |
 
 Example output:
 
-```
+```text
   your-org/your-repo:
   Repo Settings:
     ~ visibility: "private" → "public"
@@ -132,7 +132,7 @@ xfg settings -c config.yaml --dry-run
 
 Output shows planned changes in Terraform-style format:
 
-```
+```text
 Processing repo settings for 2 repositories
 
   your-org/repo-a:

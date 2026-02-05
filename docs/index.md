@@ -5,7 +5,7 @@ A CLI tool for repository-as-code. Sync files and manage settings across GitHub,
 **Two commands, one config:**
 
 - **`xfg sync`** - Sync JSON, YAML, or text files across repos via PRs
-- **`xfg settings`** - Manage GitHub Rulesets declaratively
+- **`xfg settings`** - Manage GitHub repository settings and rulesets declaratively
 
 ## Quick Start
 
@@ -26,6 +26,11 @@ files:
       tabWidth: 2
 
 settings:
+  repo:
+    allowSquashMerge: true
+    deleteBranchOnMerge: true
+    vulnerabilityAlerts: true
+
   rulesets:
     main-protection:
       target: branch
@@ -52,7 +57,7 @@ xfg sync --config ./config.yaml
 xfg settings --config ./config.yaml
 ```
 
-**Result:** PRs are created with `.prettierrc.json` files, and all repos get identical branch protection rules.
+**Result:** PRs are created with `.prettierrc.json` files, and all repos get standardized merge options, security settings, and branch protection rules.
 
 ## Features
 
@@ -71,7 +76,17 @@ xfg settings --config ./config.yaml
 - **Empty Files** - Create files with no content (e.g., `.prettierignore`)
 - **YAML Comments** - Add header comments and schema directives to YAML files
 
-### GitHub Rulesets (`xfg settings`)
+### GitHub Settings (`xfg settings`)
+
+#### Repository Settings
+
+- **Merge Options** - Control squash, rebase, and merge commit strategies; auto-delete branches
+- **Security Settings** - Enable Dependabot alerts, automated security fixes, secret scanning
+- **Feature Toggles** - Enable/disable Issues, Wiki, Projects, Discussions
+- **Visibility Control** - Manage public/private/internal visibility
+- **Terraform-Style Diff** - Preview changes with `+`/`~`/`-` indicators in dry-run mode
+
+#### GitHub Rulesets
 
 - **Declarative Rulesets** - Define GitHub Rulesets in YAML, apply with a single command
 - **Full API Coverage** - All rule types: pull_request, status_checks, signatures, code_scanning, and more
@@ -154,3 +169,41 @@ For each repository in the config, the tool:
 9. Checks for changes (skips if no changes)
 10. Commits and pushes changes
 11. **PR modes:** Creates a pull request and handles auto-merge | **Direct mode:** Done (changes are on default branch)
+
+### Settings Workflow (`xfg settings`)
+
+```mermaid
+flowchart TB
+    subgraph Input
+        YAML[/"YAML Config File<br/>settings{} + repos[]"/]
+    end
+
+    subgraph Normalization
+        PARSE[Parse config] --> MERGE[Merge base + per-repo<br/>settings overrides]
+    end
+
+    subgraph Processing["For Each GitHub Repository"]
+        FETCH[Fetch Current Settings<br/>via GitHub API] --> DIFF{Compare<br/>Current vs Desired}
+        DIFF -->|No Changes| SKIP[Skip - Already Matches]
+        DIFF -->|Changes Needed| PLAN[Generate Change Plan]
+        PLAN --> DRY{Dry Run?}
+        DRY -->|Yes| SHOW[Show Terraform-Style Diff<br/>+ additions  ~ changes  - removals]
+        DRY -->|No| APPLY[Apply via GitHub API]
+    end
+
+    subgraph Settings["What Gets Applied"]
+        APPLY --> REPO[Repository Settings<br/>merge options, security, features]
+        APPLY --> RULES[Rulesets<br/>branch/tag protection rules]
+    end
+
+    YAML --> PARSE
+    MERGE --> FETCH
+```
+
+For each GitHub repository:
+
+1. Fetches current repository settings and rulesets via GitHub API
+2. Merges global settings with per-repo overrides
+3. Computes diff between current state and desired state
+4. **Dry-run mode:** Shows planned changes with `+`/`~`/`-` indicators
+5. **Apply mode:** Updates repository settings and rulesets via GitHub API

@@ -185,6 +185,82 @@ repos:
 
 ---
 
+## Repository Settings at Scale
+
+**Problem:** Your GitHub repositories have inconsistent merge strategies, security settings, and feature toggles. Some repos allow merge commits while others only allow squash. Dependabot alerts are enabled on some but not others. Managing this through the GitHub UI doesn't scale.
+
+**Solution:** Define repository settings declaratively and apply them with `xfg settings`:
+
+```yaml
+settings:
+  repo:
+    # Standardize merge options
+    allowSquashMerge: true
+    allowMergeCommit: false
+    allowRebaseMerge: false
+    deleteBranchOnMerge: true
+    allowAutoMerge: true
+
+    # Enforce security settings
+    vulnerabilityAlerts: true
+    automatedSecurityFixes: true
+    secretScanning: true
+    secretScanningPushProtection: true
+
+    # Disable unused features
+    hasWiki: false
+    hasProjects: false
+
+repos:
+  - git:
+      - git@github.com:your-org/service-auth.git
+      - git@github.com:your-org/service-payments.git
+      - git@github.com:your-org/service-notifications.git
+```
+
+Preview changes with dry-run:
+
+```bash
+xfg settings -c config.yaml --dry-run
+```
+
+Output shows exactly what will change:
+
+```text
+Processing repo settings for 3 repositories
+
+  your-org/service-auth:
+  Repo Settings:
+    + allowAutoMerge: true
+    ~ allowMergeCommit: true → false
+    ~ deleteBranchOnMerge: false → true
+    + secretScanning: true
+
+  your-org/service-payments:
+  Repo Settings:
+    (no changes)
+
+  your-org/service-notifications:
+  Repo Settings:
+    + vulnerabilityAlerts: true
+    + automatedSecurityFixes: true
+```
+
+Override settings for specific repos that need different configuration:
+
+```yaml
+repos:
+  - git: git@github.com:your-org/legacy-monolith.git
+    settings:
+      repo:
+        # This repo needs merge commits for its workflow
+        allowMergeCommit: true
+        # Keep wiki for legacy docs
+        hasWiki: true
+```
+
+---
+
 ## Developer Experience Consistency
 
 **Problem:** Every repository has slightly different formatter settings, editor configs, and tooling. Developers waste time adjusting to each repo's quirks.
