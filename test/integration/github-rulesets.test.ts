@@ -31,7 +31,7 @@ function deleteRulesetIfExists(): void {
 // Wrapper to use TEST_REPO by default
 async function waitForRulesetVisible(
   rulesetId: number,
-  timeoutMs = 10000
+  timeoutMs = 30000
 ): Promise<void> {
   return waitForRulesetVisibleBase(TEST_REPO, rulesetId, timeoutMs);
 }

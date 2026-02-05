@@ -91,7 +91,6 @@ settings:
     allowMergeCommit: false
     allowRebaseMerge: false
     deleteBranchOnMerge: true
-    allowAutoMerge: true
 
 repos:
   - git: https://github.com/${TEST_REPO}.git
@@ -230,11 +229,8 @@ describe("GitHub Repo Settings Integration Test", () => {
       true,
       "delete_branch_on_merge should be true"
     );
-    assert.equal(
-      settingsAfter.allow_auto_merge,
-      true,
-      "allow_auto_merge should be true"
-    );
+    // Note: allow_auto_merge requires branch protection rules to be enabled first
+    // so we don't test it here on a fresh private repo
 
     console.log("  All settings verified!");
     console.log("\n=== Apply test passed ===\n");

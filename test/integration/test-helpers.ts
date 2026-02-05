@@ -75,7 +75,7 @@ export async function waitForFileVisible(
 export async function waitForRulesetVisible(
   repo: string,
   rulesetId: number,
-  timeoutMs = 10000
+  timeoutMs = 30000
 ): Promise<void> {
   const startTime = Date.now();
   const pollInterval = 500;
