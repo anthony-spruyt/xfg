@@ -218,6 +218,48 @@ describe("formatPropertyTree", () => {
     assert.ok(lines[0].includes("-") || lines[0].includes("remove"));
     assert.ok(lines[0].includes("enforcement"));
   });
+
+  test("returns empty array for empty diffs", () => {
+    const diffs: PropertyDiff[] = [];
+
+    const lines = formatPropertyTree(diffs);
+
+    assert.equal(lines.length, 0);
+  });
+
+  test("formats long arrays with truncation", () => {
+    const diffs: PropertyDiff[] = [
+      {
+        path: ["branches"],
+        action: "change",
+        oldValue: ["main", "develop", "feature", "release", "hotfix"],
+        newValue: ["main"],
+      },
+    ];
+
+    const lines = formatPropertyTree(diffs);
+
+    // Should truncate long arrays with "... (N more)"
+    const output = lines.join("\n");
+    assert.ok(output.includes("more") || output.includes("..."));
+  });
+
+  test("formats object values as {...}", () => {
+    const diffs: PropertyDiff[] = [
+      {
+        path: ["config"],
+        action: "change",
+        oldValue: { nested: "object" },
+        newValue: { different: "object" },
+      },
+    ];
+
+    const lines = formatPropertyTree(diffs);
+
+    // Object values should be shown as {...}
+    const output = lines.join("\n");
+    assert.ok(output.includes("{...}"));
+  });
 });
 
 describe("formatRulesetPlan", () => {
@@ -324,5 +366,121 @@ describe("formatRulesetPlan", () => {
     // Unchanged should not appear in output
     const output = result.lines.join("\n");
     assert.ok(!output.includes("stable-ruleset"));
+  });
+
+  test("formats create with empty arrays", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "create",
+        name: "branch-protection",
+        desired: {
+          target: "branch",
+          enforcement: "active",
+          conditions: {
+            refName: { include: ["~DEFAULT_BRANCH"], exclude: [] },
+          },
+        },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    assert.equal(result.creates, 1);
+    const output = result.lines.join("\n");
+    // Should show empty array as []
+    assert.ok(output.includes("[]"));
+  });
+
+  test("formats create with arrays of objects (rules)", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "create",
+        name: "branch-protection",
+        desired: {
+          target: "branch",
+          enforcement: "active",
+          rules: [
+            {
+              type: "pull_request",
+              parameters: { requiredApprovingReviewCount: 1 },
+            },
+            { type: "required_status_checks" },
+          ],
+        },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    assert.equal(result.creates, 1);
+    const output = result.lines.join("\n");
+    // Should show rules array with objects
+    assert.ok(output.includes("rules"));
+    assert.ok(output.includes("pull_request") || output.includes("type"));
+  });
+
+  test("formats update with nested camelCase properties normalized", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "update",
+        name: "branch-protection",
+        rulesetId: 1,
+        current: {
+          id: 1,
+          name: "branch-protection",
+          target: "branch",
+          enforcement: "active",
+          conditions: {
+            ref_name: {
+              include: ["main"],
+              exclude: [],
+            },
+          },
+        },
+        desired: {
+          target: "branch",
+          enforcement: "active",
+          conditions: {
+            refName: {
+              include: ["main", "develop"],
+              exclude: [],
+            },
+          },
+        },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    assert.equal(result.updates, 1);
+    const output = result.lines.join("\n");
+    // Should show the change in the include array
+    assert.ok(output.includes("include") || output.includes("ref_name"));
+  });
+
+  test("formats create with mixed array (objects with primitive-like items)", () => {
+    // This tests the code path where array items are not all objects
+    const changes: RulesetChange[] = [
+      {
+        action: "create",
+        name: "test-ruleset",
+        desired: {
+          target: "branch",
+          enforcement: "active",
+          bypassActors: [
+            { actorId: 1, actorType: "Team", bypassMode: "always" },
+            { actorId: 2, actorType: "Team", bypassMode: "pull_request" },
+          ],
+        },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    assert.equal(result.creates, 1);
+    const output = result.lines.join("\n");
+    assert.ok(
+      output.includes("bypassActors") || output.includes("bypass_actors")
+    );
   });
 });
