@@ -367,7 +367,7 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
       lines.push(chalk.yellow(`    ~ ruleset "${change.name}"`));
       if (change.current && change.desired) {
         const currentNorm = normalizeForDiff(
-          change.current as Record<string, unknown>
+          change.current as unknown as Record<string, unknown>
         );
         const desiredNorm = normalizeForDiff(
           change.desired as unknown as Record<string, unknown>

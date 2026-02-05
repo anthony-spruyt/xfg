@@ -395,6 +395,20 @@ export async function runSettings(
         noDelete: options.noDelete,
       });
 
+      // Display plan output for dry-run mode
+      if (
+        options.dryRun &&
+        result.planOutput &&
+        result.planOutput.lines.length > 0
+      ) {
+        logger.rulesetPlan(repoName, result.planOutput.lines, {
+          creates: result.planOutput.creates,
+          updates: result.planOutput.updates,
+          deletes: result.planOutput.deletes,
+          unchanged: result.planOutput.unchanged,
+        });
+      }
+
       if (result.skipped) {
         logger.skip(i + 1, repoName, result.message);
         skipCount++;
