@@ -71,3 +71,21 @@ export interface IRepoSettingsStrategy {
     options?: RepoSettingsStrategyOptions
   ): Promise<void>;
 }
+
+/**
+ * Type guard to check if an object implements IRepoSettingsStrategy.
+ */
+export function isRepoSettingsStrategy(
+  obj: unknown
+): obj is IRepoSettingsStrategy {
+  if (typeof obj !== "object" || obj === null) {
+    return false;
+  }
+  const strategy = obj as Record<string, unknown>;
+  return (
+    typeof strategy.getSettings === "function" &&
+    typeof strategy.updateSettings === "function" &&
+    typeof strategy.setVulnerabilityAlerts === "function" &&
+    typeof strategy.setAutomatedSecurityFixes === "function"
+  );
+}
