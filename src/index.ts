@@ -302,6 +302,7 @@ export async function runSync(
   const failed = results.filter((r) => r.status === "failed").length;
   writeSummary({
     title: "Config Sync Summary",
+    dryRun: options.dryRun,
     total: config.repos.length,
     succeeded,
     skipped,
@@ -599,6 +600,7 @@ export async function runSettings(
   // Write GitHub Actions job summary if available
   writeSummary({
     title: "Repository Settings Summary",
+    dryRun: options.dryRun,
     total: reposWithRulesets.length + reposWithRepoSettings.length,
     succeeded: successCount,
     skipped: skipCount,
