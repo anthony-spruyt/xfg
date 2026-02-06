@@ -331,6 +331,26 @@ export interface Ruleset {
   rules?: RulesetRule[];
 }
 
+/**
+ * Maps Ruleset config keys (camelCase) to GitHub API keys (snake_case).
+ * TypeScript enforces this stays in sync with the Ruleset interface.
+ */
+const RULESET_FIELD_MAP: Record<keyof Ruleset, string> = {
+  target: "target",
+  enforcement: "enforcement",
+  bypassActors: "bypass_actors",
+  conditions: "conditions",
+  rules: "rules",
+};
+
+/**
+ * Set of snake_case field names that are comparable between config and API.
+ * Used as an allowlist — any API response field not in this set is ignored.
+ */
+export const RULESET_COMPARABLE_FIELDS = new Set(
+  Object.values(RULESET_FIELD_MAP)
+);
+
 // =============================================================================
 // GitHub Repository Settings Types
 // =============================================================================
