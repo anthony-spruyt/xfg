@@ -234,6 +234,50 @@ describe("diffRulesets", () => {
 
       assert.equal(changes[0].action, "unchanged");
     });
+
+    test("treats partial config as unchanged when API has extra nested params", () => {
+      const current: GitHubRuleset[] = [
+        {
+          id: 1,
+          name: "pr-rules",
+          target: "branch",
+          enforcement: "active",
+          rules: [
+            {
+              type: "pull_request",
+              parameters: {
+                required_approving_review_count: 1,
+                dismiss_stale_reviews_on_push: false,
+                require_code_owner_review: false,
+                require_last_push_approval: false,
+                required_review_thread_resolution: false,
+              },
+            },
+          ],
+        },
+      ];
+      const desired = new Map<string, Ruleset>([
+        [
+          "pr-rules",
+          {
+            target: "branch",
+            enforcement: "active",
+            rules: [
+              {
+                type: "pull_request",
+                parameters: {
+                  requiredApprovingReviewCount: 1,
+                },
+              },
+            ],
+          },
+        ],
+      ]);
+
+      const changes = diffRulesets(current, desired, []);
+
+      assert.equal(changes[0].action, "unchanged");
+    });
   });
 
   describe("deleted rulesets", () => {
@@ -646,7 +690,7 @@ describe("diffRulesets edge cases", () => {
     assert.equal(changes[0].action, "update");
   });
 
-  test("detects change when object has extra keys", () => {
+  test("ignores extra API params when config does not declare them", () => {
     const current: GitHubRuleset[] = [
       {
         id: 1,
@@ -683,7 +727,7 @@ describe("diffRulesets edge cases", () => {
     ]);
 
     const changes = diffRulesets(current, desired, []);
-    assert.equal(changes[0].action, "update");
+    assert.equal(changes[0].action, "unchanged");
   });
 });
 

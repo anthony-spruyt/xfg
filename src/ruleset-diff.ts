@@ -268,8 +268,12 @@ export function diffRulesets(
       // Existing ruleset - check if changed
       const normalizedCurrent = normalizeGitHubRuleset(currentRuleset);
       const normalizedDesired = normalizeConfigRuleset(desiredRuleset);
+      const projectedCurrent = projectToDesiredShape(
+        normalizedCurrent,
+        normalizedDesired
+      ) as Record<string, unknown>;
 
-      if (deepEqual(normalizedCurrent, normalizedDesired)) {
+      if (deepEqual(projectedCurrent, normalizedDesired)) {
         changes.push({
           action: "unchanged",
           name,
