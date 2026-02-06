@@ -38,22 +38,23 @@ function formatFileChanges(changes?: FileChanges): string {
   return `+${changes.added} ~${changes.modified} -${changes.deleted}`;
 }
 
-function formatStatus(result: RepoResult): string {
-  if (result.status === "skipped") return "⏭️ Skipped";
-  if (result.status === "failed") return "❌ Failed";
+function formatStatus(result: RepoResult, dryRun?: boolean): string {
+  if (result.status === "skipped")
+    return dryRun ? "⏭️ Would Skip" : "⏭️ Skipped";
+  if (result.status === "failed") return dryRun ? "❌ Would Fail" : "❌ Failed";
 
   // Succeeded - format based on merge outcome
   switch (result.mergeOutcome) {
     case "manual":
-      return "✅ Open";
+      return dryRun ? "✅ Would Open" : "✅ Open";
     case "auto":
-      return "✅ Auto-merge";
+      return dryRun ? "✅ Would Auto-merge" : "✅ Auto-merge";
     case "force":
-      return "✅ Merged";
+      return dryRun ? "✅ Would Merge" : "✅ Merged";
     case "direct":
-      return "✅ Pushed";
+      return dryRun ? "✅ Would Push" : "✅ Pushed";
     default:
-      return "✅ Succeeded";
+      return dryRun ? "✅ Would Succeed" : "✅ Succeeded";
   }
 }
 
@@ -109,7 +110,7 @@ export function formatSummary(data: SummaryData): string {
 
     for (const result of data.results) {
       const repo = result.repoName;
-      const status = formatStatus(result);
+      const status = formatStatus(result, data.dryRun);
       const changes = formatFileChanges(result.fileChanges);
       const resultText = formatResult(result);
       lines.push(`| ${repo} | ${status} | ${changes} | ${resultText} |`);
