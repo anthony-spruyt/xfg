@@ -1,4 +1,4 @@
-import type { Ruleset } from "./config.js";
+import { RULESET_COMPARABLE_FIELDS, type Ruleset } from "./config.js";
 import type { GitHubRuleset } from "./strategies/github-ruleset-strategy.js";
 
 // =============================================================================
@@ -52,12 +52,6 @@ function normalizeValue(value: unknown): unknown {
 }
 
 /**
- * Fields to ignore when comparing rulesets (API-only metadata).
- * The "name" field is compared via map key, not content.
- */
-const IGNORE_FIELDS = new Set(["id", "name", "source_type", "source"]);
-
-/**
  * Normalizes a GitHub ruleset for comparison.
  */
 function normalizeGitHubRuleset(
@@ -66,7 +60,7 @@ function normalizeGitHubRuleset(
   const normalized: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(ruleset)) {
-    if (IGNORE_FIELDS.has(key) || value === undefined) {
+    if (!RULESET_COMPARABLE_FIELDS.has(key) || value === undefined) {
       continue;
     }
     normalized[key] = normalizeValue(value);

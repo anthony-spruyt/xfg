@@ -204,7 +204,7 @@ describe("diffRulesets", () => {
       assert.equal(changes[0].action, "unchanged");
     });
 
-    test("ignores extra fields from GitHub API response", () => {
+    test("ignores read-only API metadata fields (node_id, _links, created_at, updated_at, current_user_can_bypass)", () => {
       const current: GitHubRuleset[] = [
         {
           id: 1,
@@ -213,6 +213,15 @@ describe("diffRulesets", () => {
           enforcement: "active",
           source_type: "Repository",
           source: "test-org/test-repo",
+          // These are read-only API fields not in GitHubRuleset interface
+          // but present in real API responses via JSON.parse
+          ...({
+            node_id: "RRS_lACqUmVwb3NpdG9yec5Di7RzzgC1f1Y",
+            _links: { self: { href: "https://api.github.com/..." } },
+            created_at: "2026-01-17T05:42:55.087Z",
+            updated_at: "2026-01-30T12:34:29.079Z",
+            current_user_can_bypass: "always",
+          } as unknown as Partial<GitHubRuleset>),
         },
       ];
       const desired = new Map<string, Ruleset>([
