@@ -607,6 +607,53 @@ describe("formatRulesetPlan", () => {
     assert.ok(!output.includes("current_user_can_bypass"));
   });
 
+  test("update with partial config ignores extra API params", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "update",
+        name: "pr-rules",
+        rulesetId: 1,
+        current: {
+          id: 1,
+          name: "pr-rules",
+          target: "branch",
+          enforcement: "active",
+          rules: [
+            {
+              type: "pull_request",
+              parameters: {
+                required_approving_review_count: 1,
+                dismiss_stale_reviews_on_push: false,
+                require_last_push_approval: false,
+              },
+            },
+          ],
+        },
+        desired: {
+          target: "branch",
+          enforcement: "active",
+          rules: [
+            {
+              type: "pull_request",
+              parameters: {
+                requiredApprovingReviewCount: 2,
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    const output = result.lines.join("\n");
+    // Should show the real change
+    assert.ok(output.includes("required_approving_review_count"));
+    // Should NOT show extra API params as removals
+    assert.ok(!output.includes("dismiss_stale_reviews_on_push"));
+    assert.ok(!output.includes("require_last_push_approval"));
+  });
+
   describe("entries population", () => {
     test("populates entry for create with property count", () => {
       const changes: RulesetChange[] = [

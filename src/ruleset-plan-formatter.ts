@@ -1,6 +1,10 @@
 // src/ruleset-plan-formatter.ts
 import chalk from "chalk";
-import type { RulesetChange, RulesetAction } from "./ruleset-diff.js";
+import {
+  projectToDesiredShape,
+  type RulesetChange,
+  type RulesetAction,
+} from "./ruleset-diff.js";
 import { RULESET_COMPARABLE_FIELDS, type Ruleset } from "./config.js";
 
 // =============================================================================
@@ -501,7 +505,11 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
         const desiredNorm = normalizeForDiff(
           change.desired as unknown as Record<string, unknown>
         );
-        const diffs = computePropertyDiffs(currentNorm, desiredNorm);
+        const projectedCurrent = projectToDesiredShape(
+          currentNorm,
+          desiredNorm
+        ) as Record<string, unknown>;
+        const diffs = computePropertyDiffs(projectedCurrent, desiredNorm);
         const treeLines = formatPropertyTree(diffs);
         for (const line of treeLines) {
           lines.push(`        ${line}`);
