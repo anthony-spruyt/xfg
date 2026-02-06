@@ -77,6 +77,7 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 - **Wait for CI before claiming done** - verify checks pass, don't just run local lint
 - **Check CI on main after PR merge** - integration tests only run on main; verify they pass before releasing
 - **Do not commit plans to `docs/`** - that's GitHub Pages; use `plans/` for plans
+- **Do not commit plans to main branch** - create a new branch
 - Output format determined by file extension: `.json`/`.json5`/`.yaml`/`.yml` → object content; others → string/string[]
 - Escape `${VAR}` as `$${VAR}` to output literal (for devcontainer.json, shell scripts)
 - Escape `${xfg:var}` as `$${xfg:var}` similarly
