@@ -465,6 +465,66 @@ describe("formatSummary", () => {
       assert.ok(!markdown.includes("⏭️ Skipped"));
       assert.ok(!markdown.includes("❌ Failed"));
     });
+
+    test("repo detail statuses show hypothetical wording", () => {
+      const results: RepoResult[] = [
+        {
+          repoName: "org/repo-a",
+          status: "succeeded",
+          message: "PR created",
+          prUrl: "https://github.com/org/repo-a/pull/42",
+          mergeOutcome: "manual",
+        },
+        {
+          repoName: "org/repo-b",
+          status: "succeeded",
+          message: "Auto-merge enabled",
+          prUrl: "https://github.com/org/repo-b/pull/15",
+          mergeOutcome: "auto",
+        },
+        {
+          repoName: "org/repo-c",
+          status: "succeeded",
+          message: "PR merged",
+          prUrl: "https://github.com/org/repo-c/pull/99",
+          mergeOutcome: "force",
+        },
+        {
+          repoName: "org/repo-d",
+          status: "succeeded",
+          message: "Pushed to main",
+          mergeOutcome: "direct",
+        },
+        {
+          repoName: "org/repo-e",
+          status: "skipped",
+          message: "No changes",
+        },
+        {
+          repoName: "org/repo-f",
+          status: "failed",
+          message: "Clone failed",
+        },
+      ];
+      const data: SummaryData = {
+        title: "Config Sync Summary",
+        dryRun: true,
+        total: 6,
+        succeeded: 4,
+        skipped: 1,
+        failed: 1,
+        results,
+      };
+
+      const markdown = formatSummary(data);
+
+      assert.ok(markdown.includes("✅ Would Open"));
+      assert.ok(markdown.includes("✅ Would Auto-merge"));
+      assert.ok(markdown.includes("✅ Would Merge"));
+      assert.ok(markdown.includes("✅ Would Push"));
+      assert.ok(markdown.includes("⏭️ Would Skip"));
+      assert.ok(markdown.includes("❌ Would Fail"));
+    });
   });
 });
 
