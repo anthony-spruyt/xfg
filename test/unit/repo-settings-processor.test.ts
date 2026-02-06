@@ -165,6 +165,32 @@ describe("RepoSettingsProcessor", () => {
     assert.equal(mockStrategy.updateSettingsCalls.length, 1);
   });
 
+  test("should include planOutput with entries in non-dry-run results", async () => {
+    mockStrategy.getSettingsResult = { has_wiki: true };
+
+    const processor = new RepoSettingsProcessor(mockStrategy);
+    const repoConfig: RepoConfig = {
+      git: githubRepo.gitUrl,
+      files: [],
+      settings: { repo: { hasWiki: false } },
+    };
+
+    const result = await processor.process(repoConfig, githubRepo, {
+      dryRun: false,
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(result.dryRun, undefined);
+    assert.ok(result.planOutput);
+    assert.ok(Array.isArray(result.planOutput!.entries));
+    assert.ok(result.planOutput!.entries.length > 0);
+    assert.ok(
+      result.planOutput!.entries.some(
+        (e) => e.property === "hasWiki" && e.action === "change"
+      )
+    );
+  });
+
   test("should report no changes when settings match", async () => {
     mockStrategy.getSettingsResult = { has_wiki: true };
 

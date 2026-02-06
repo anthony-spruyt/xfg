@@ -120,6 +120,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
         message: `Applied: ${planOutput.adds} added, ${planOutput.changes} changed`,
         changes: { adds: planOutput.adds, changes: planOutput.changes },
         warnings: planOutput.warnings,
+        planOutput,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

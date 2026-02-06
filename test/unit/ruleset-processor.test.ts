@@ -387,6 +387,40 @@ describe("RulesetProcessor", () => {
     });
   });
 
+  describe("plan output in non-dry-run", () => {
+    test("includes planOutput with entries in non-dry-run results", async () => {
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-org/test-repo.git",
+        files: [],
+        settings: {
+          rulesets: {
+            "new-ruleset": { target: "branch", enforcement: "active" },
+          },
+        },
+      };
+      mockStrategy.setListResponse([
+        { id: 1, name: "existing", target: "branch", enforcement: "disabled" },
+      ]);
+
+      const result = await processor.process(repoConfig, mockGitHubRepo, {
+        configId: "test-config",
+        dryRun: false,
+        managedRulesets: ["existing"],
+      });
+
+      assert.equal(result.success, true);
+      assert.equal(result.dryRun, undefined);
+      assert.ok(result.planOutput);
+      assert.ok(Array.isArray(result.planOutput!.entries));
+      assert.equal(result.planOutput!.creates, 1);
+      assert.ok(
+        result.planOutput!.entries.some(
+          (e) => e.name === "new-ruleset" && e.action === "create"
+        )
+      );
+    });
+  });
+
   describe("non-GitHub repos", () => {
     test("skips non-GitHub repos with appropriate message", async () => {
       const repoConfig: RepoConfig = {

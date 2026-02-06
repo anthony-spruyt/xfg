@@ -132,10 +132,11 @@ export class RulesetProcessor implements IRulesetProcessor {
         unchanged: changes.filter((c) => c.action === "unchanged").length,
       };
 
+      const planOutput = formatRulesetPlan(changes);
+
       // Dry run mode - report planned changes without applying
       if (dryRun) {
         const summary = this.formatChangeSummary(changeCounts);
-        const planOutput = formatRulesetPlan(changes);
         return {
           success: true,
           repoName,
@@ -204,6 +205,7 @@ export class RulesetProcessor implements IRulesetProcessor {
         repoName,
         message: appliedCount > 0 ? `Applied: ${summary}` : "No changes needed",
         changes: changeCounts,
+        planOutput,
         manifestUpdate: this.computeManifestUpdate(
           desiredRulesets,
           deleteOrphaned
