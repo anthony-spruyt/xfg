@@ -150,6 +150,89 @@ describe("computePropertyDiffs", () => {
 
       assert.equal(diffs.length, 0);
     });
+
+    test("recurses into arrays of objects matching by type", () => {
+      const current = {
+        rules: [
+          {
+            type: "pull_request",
+            parameters: {
+              required_approving_review_count: 1,
+            },
+          },
+          { type: "required_signatures" },
+        ],
+      };
+      const desired = {
+        rules: [
+          {
+            type: "pull_request",
+            parameters: {
+              required_approving_review_count: 2,
+            },
+          },
+          { type: "required_signatures" },
+        ],
+      };
+
+      const diffs = computePropertyDiffs(current, desired);
+
+      // Should show a change at the parameter level, not the whole rules array
+      assert.equal(diffs.length, 1);
+      assert.deepEqual(diffs[0].path, [
+        "rules",
+        "[0] (pull_request)",
+        "parameters",
+        "required_approving_review_count",
+      ]);
+      assert.equal(diffs[0].action, "change");
+      assert.equal(diffs[0].oldValue, 1);
+      assert.equal(diffs[0].newValue, 2);
+    });
+
+    test("detects added array item", () => {
+      const current = {
+        rules: [{ type: "pull_request" }],
+      };
+      const desired = {
+        rules: [{ type: "pull_request" }, { type: "required_signatures" }],
+      };
+
+      const diffs = computePropertyDiffs(current, desired);
+
+      assert.ok(diffs.some((d) => d.action === "add"));
+    });
+
+    test("detects removed array item", () => {
+      const current = {
+        rules: [{ type: "pull_request" }, { type: "required_signatures" }],
+      };
+      const desired = {
+        rules: [{ type: "pull_request" }],
+      };
+
+      const diffs = computePropertyDiffs(current, desired);
+
+      assert.ok(diffs.some((d) => d.action === "remove"));
+    });
+
+    test("falls back to index matching for arrays without type field", () => {
+      const current = {
+        bypass_actors: [{ actor_id: 5, actor_type: "RepositoryRole" }],
+      };
+      const desired = {
+        bypass_actors: [{ actor_id: 5, actor_type: "Team" }],
+      };
+
+      const diffs = computePropertyDiffs(current, desired);
+
+      // Should detect change at actor_type level, not whole array
+      assert.ok(
+        diffs.some(
+          (d) => d.path.includes("actor_type") && d.action === "change"
+        )
+      );
+    });
   });
 });
 
