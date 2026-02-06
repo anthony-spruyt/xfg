@@ -1,6 +1,6 @@
 // src/ruleset-plan-formatter.ts
 import chalk from "chalk";
-import type { RulesetChange } from "./ruleset-diff.js";
+import type { RulesetChange, RulesetAction } from "./ruleset-diff.js";
 import type { Ruleset } from "./config.js";
 
 // =============================================================================
@@ -16,12 +16,24 @@ export interface PropertyDiff {
   newValue?: unknown;
 }
 
+export interface RulesetPlanEntry {
+  name: string;
+  action: RulesetAction;
+  propertyCount?: number;
+  propertyChanges?: {
+    added: number;
+    changed: number;
+    removed: number;
+  };
+}
+
 export interface RulesetPlanResult {
   lines: string[];
   creates: number;
   updates: number;
   deletes: number;
   unchanged: number;
+  entries: RulesetPlanEntry[];
 }
 
 // =============================================================================
@@ -336,6 +348,7 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
   let updates = 0;
   let deletes = 0;
   let unchanged = 0;
+  const entries: RulesetPlanEntry[] = [];
 
   // Group by action type
   const createChanges = changes.filter((c) => c.action === "create");
@@ -356,6 +369,10 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
       if (change.desired) {
         lines.push(...formatFullConfig(change.desired, 2));
       }
+      const propertyCount = change.desired
+        ? Object.keys(change.desired).length
+        : 0;
+      entries.push({ name: change.name, action: "create", propertyCount });
       lines.push(""); // Blank line between rulesets
     }
   }
@@ -377,6 +394,17 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
         for (const line of treeLines) {
           lines.push(`        ${line}`);
         }
+
+        const added = diffs.filter((d) => d.action === "add").length;
+        const changed = diffs.filter((d) => d.action === "change").length;
+        const removed = diffs.filter((d) => d.action === "remove").length;
+        entries.push({
+          name: change.name,
+          action: "update",
+          propertyChanges: { added, changed, removed },
+        });
+      } else {
+        entries.push({ name: change.name, action: "update" });
       }
       lines.push(""); // Blank line between rulesets
     }
@@ -387,9 +415,14 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     lines.push(chalk.bold("  Delete:"));
     for (const change of deleteChanges) {
       lines.push(chalk.red(`    - ruleset "${change.name}"`));
+      entries.push({ name: change.name, action: "delete" });
     }
     lines.push(""); // Blank line after deletes
   }
 
-  return { lines, creates, updates, deletes, unchanged };
+  for (const change of unchangedChanges) {
+    entries.push({ name: change.name, action: "unchanged" });
+  }
+
+  return { lines, creates, updates, deletes, unchanged, entries };
 }

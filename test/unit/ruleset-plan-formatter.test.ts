@@ -7,6 +7,7 @@ import {
   formatPropertyTree,
   formatRulesetPlan,
   PropertyDiff,
+  RulesetPlanEntry,
 } from "../../src/ruleset-plan-formatter.js";
 
 describe("computePropertyDiffs", () => {
@@ -482,5 +483,159 @@ describe("formatRulesetPlan", () => {
     assert.ok(
       output.includes("bypassActors") || output.includes("bypass_actors")
     );
+  });
+
+  describe("entries population", () => {
+    test("populates entry for create with property count", () => {
+      const changes: RulesetChange[] = [
+        {
+          action: "create",
+          name: "new-ruleset",
+          desired: {
+            target: "branch",
+            enforcement: "active",
+            conditions: {
+              refName: { include: ["~DEFAULT_BRANCH"], exclude: [] },
+            },
+          },
+        },
+      ];
+
+      const result = formatRulesetPlan(changes);
+
+      assert.equal(result.entries.length, 1);
+      assert.equal(result.entries[0].name, "new-ruleset");
+      assert.equal(result.entries[0].action, "create");
+      assert.equal(result.entries[0].propertyCount, 3);
+    });
+
+    test("populates entry for update with diff counts", () => {
+      const changes: RulesetChange[] = [
+        {
+          action: "update",
+          name: "my-ruleset",
+          rulesetId: 1,
+          current: {
+            id: 1,
+            name: "my-ruleset",
+            target: "branch",
+            enforcement: "disabled",
+            conditions: {
+              ref_name: { include: ["main"], exclude: [] },
+            },
+          },
+          desired: {
+            target: "branch",
+            enforcement: "active",
+            bypassActors: [
+              { actorId: 1, actorType: "Team", bypassMode: "always" },
+            ],
+          },
+        },
+      ];
+
+      const result = formatRulesetPlan(changes);
+
+      assert.equal(result.entries.length, 1);
+      assert.equal(result.entries[0].name, "my-ruleset");
+      assert.equal(result.entries[0].action, "update");
+      assert.ok(result.entries[0].propertyChanges);
+      assert.ok(result.entries[0].propertyChanges!.added >= 0);
+      assert.ok(result.entries[0].propertyChanges!.changed >= 0);
+      assert.ok(result.entries[0].propertyChanges!.removed >= 0);
+      const total =
+        result.entries[0].propertyChanges!.added +
+        result.entries[0].propertyChanges!.changed +
+        result.entries[0].propertyChanges!.removed;
+      assert.ok(total > 0);
+    });
+
+    test("populates entry for delete without property changes", () => {
+      const changes: RulesetChange[] = [
+        {
+          action: "delete",
+          name: "old-ruleset",
+          rulesetId: 1,
+          current: {
+            id: 1,
+            name: "old-ruleset",
+            target: "branch",
+            enforcement: "active",
+          },
+        },
+      ];
+
+      const result = formatRulesetPlan(changes);
+
+      assert.equal(result.entries.length, 1);
+      assert.equal(result.entries[0].name, "old-ruleset");
+      assert.equal(result.entries[0].action, "delete");
+      assert.equal(result.entries[0].propertyChanges, undefined);
+      assert.equal(result.entries[0].propertyCount, undefined);
+    });
+
+    test("populates entry for unchanged without property changes", () => {
+      const changes: RulesetChange[] = [
+        {
+          action: "unchanged",
+          name: "stable-ruleset",
+          rulesetId: 1,
+          current: {
+            id: 1,
+            name: "stable-ruleset",
+            target: "branch",
+            enforcement: "active",
+          },
+          desired: { target: "branch", enforcement: "active" },
+        },
+      ];
+
+      const result = formatRulesetPlan(changes);
+
+      assert.equal(result.entries.length, 1);
+      assert.equal(result.entries[0].name, "stable-ruleset");
+      assert.equal(result.entries[0].action, "unchanged");
+      assert.equal(result.entries[0].propertyChanges, undefined);
+    });
+
+    test("populates entries for mixed actions", () => {
+      const changes: RulesetChange[] = [
+        {
+          action: "create",
+          name: "new-one",
+          desired: { target: "branch", enforcement: "active" },
+        },
+        {
+          action: "update",
+          name: "existing",
+          rulesetId: 2,
+          current: {
+            id: 2,
+            name: "existing",
+            target: "branch",
+            enforcement: "disabled",
+          },
+          desired: { target: "branch", enforcement: "active" },
+        },
+        {
+          action: "delete",
+          name: "old-one",
+          rulesetId: 3,
+          current: {
+            id: 3,
+            name: "old-one",
+            target: "branch",
+            enforcement: "active",
+          },
+        },
+      ];
+
+      const result = formatRulesetPlan(changes);
+
+      assert.equal(result.entries.length, 3);
+      assert.equal(result.entries[0].action, "create");
+      assert.equal(result.entries[1].action, "update");
+      assert.equal(result.entries[2].action, "delete");
+    });
   });
 });
