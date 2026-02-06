@@ -241,6 +241,60 @@ describe("formatSummary", () => {
       assert.ok(markdown.includes("-0"));
     });
 
+    test("shows ruleset plan summary in changes column when no fileChanges", () => {
+      const result: RepoResult = {
+        repoName: "org/repo",
+        status: "succeeded",
+        message: "Applied: 1 created",
+        rulesetPlanDetails: [
+          { name: "pr-rules", action: "create", propertyCount: 4 },
+        ],
+      };
+      const data: SummaryData = {
+        title: "Repository Settings Summary",
+        total: 1,
+        succeeded: 1,
+        skipped: 0,
+        failed: 0,
+        results: [result],
+      };
+
+      const markdown = formatSummary(data);
+
+      assert.ok(
+        markdown.includes("1 to create"),
+        "Changes column should show ruleset plan summary"
+      );
+      assert.ok(
+        !markdown.includes("| - |"),
+        "Changes column should not show dash when plan details exist"
+      );
+    });
+
+    test("shows repo settings plan summary in changes column when no fileChanges", () => {
+      const result: RepoResult = {
+        repoName: "org/repo",
+        status: "succeeded",
+        message: "Applied: 0 added, 1 changed",
+        repoSettingsPlanDetails: [{ property: "hasWiki", action: "change" }],
+      };
+      const data: SummaryData = {
+        title: "Repository Settings Summary",
+        total: 1,
+        succeeded: 1,
+        skipped: 0,
+        failed: 0,
+        results: [result],
+      };
+
+      const markdown = formatSummary(data);
+
+      assert.ok(
+        markdown.includes("1 to change"),
+        "Changes column should show settings plan summary"
+      );
+    });
+
     test("shows dash when no fileChanges", () => {
       const result: RepoResult = {
         repoName: "org/repo",
@@ -889,6 +943,30 @@ describe("writeSummary", () => {
     const content = readFileSync(tempFile, "utf-8");
     assert.ok(content.includes("# Existing Content"));
     assert.ok(content.includes("## Config Sync Summary"));
+  });
+
+  test("consecutive writes have blank line between summaries for heading rendering", () => {
+    writeFileSync(tempFile, "");
+    process.env.GITHUB_STEP_SUMMARY = tempFile;
+    const data: SummaryData = {
+      title: "Repository Settings Summary",
+      total: 1,
+      succeeded: 1,
+      skipped: 0,
+      failed: 0,
+      results: [{ repoName: "org/repo", status: "succeeded", message: "Done" }],
+    };
+
+    writeSummary(data);
+    writeSummary(data);
+
+    const content = readFileSync(tempFile, "utf-8");
+    // The closing </details> of the first summary and the ## heading of the
+    // second must be separated by a blank line so GitHub renders the heading.
+    assert.ok(
+      content.includes("</details>\n\n##"),
+      "Expected blank line between </details> and next ## heading"
+    );
   });
 
   test("no-ops when env var not set", () => {

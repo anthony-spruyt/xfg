@@ -56,6 +56,24 @@ function formatFileChanges(changes?: FileChanges): string {
   return `+${changes.added} ~${changes.modified} -${changes.deleted}`;
 }
 
+function formatChangesColumn(result: RepoResult): string {
+  if (result.fileChanges) {
+    return formatFileChanges(result.fileChanges);
+  }
+  // For settings results, derive changes from plan details
+  const parts: string[] = [];
+  if (result.rulesetPlanDetails && result.rulesetPlanDetails.length > 0) {
+    parts.push(formatRulesetPlanSummary(result.rulesetPlanDetails));
+  }
+  if (
+    result.repoSettingsPlanDetails &&
+    result.repoSettingsPlanDetails.length > 0
+  ) {
+    parts.push(formatSettingsPlanSummary(result.repoSettingsPlanDetails));
+  }
+  return parts.length > 0 ? parts.join("; ") : "-";
+}
+
 function formatStatus(result: RepoResult, dryRun?: boolean): string {
   if (result.status === "skipped")
     return dryRun ? "⏭️ Would Skip" : "⏭️ Skipped";
@@ -185,7 +203,7 @@ export function formatSummary(data: SummaryData): string {
     for (const result of data.results) {
       const repo = result.repoName;
       const status = formatStatus(result, data.dryRun);
-      const changes = formatFileChanges(result.fileChanges);
+      const changes = formatChangesColumn(result);
       const resultText = formatResult(result);
       lines.push(`| ${repo} | ${status} | ${changes} | ${resultText} |`);
     }
@@ -248,5 +266,5 @@ export function writeSummary(data: SummaryData): void {
   if (!summaryPath) return;
 
   const markdown = formatSummary(data);
-  appendFileSync(summaryPath, markdown + "\n");
+  appendFileSync(summaryPath, "\n" + markdown + "\n");
 }
