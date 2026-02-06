@@ -1,7 +1,7 @@
 // src/ruleset-plan-formatter.ts
 import chalk from "chalk";
 import type { RulesetChange, RulesetAction } from "./ruleset-diff.js";
-import type { Ruleset } from "./config.js";
+import { RULESET_COMPARABLE_FIELDS, type Ruleset } from "./config.js";
 
 // =============================================================================
 // Types
@@ -265,12 +265,12 @@ function normalizeForDiff(
   obj: Record<string, unknown>
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
-  const ignoreFields = new Set(["id", "name", "source_type", "source"]);
 
   for (const [key, value] of Object.entries(obj)) {
-    if (ignoreFields.has(key) || value === undefined) continue;
     // Convert camelCase to snake_case for consistency
     const snakeKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+    if (!RULESET_COMPARABLE_FIELDS.has(snakeKey) || value === undefined)
+      continue;
     result[snakeKey] = normalizeNestedValue(value);
   }
 

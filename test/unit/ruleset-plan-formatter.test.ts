@@ -484,6 +484,46 @@ describe("formatRulesetPlan", () => {
     );
   });
 
+  test("filters read-only API metadata fields from update diff", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "update",
+        name: "pr-rules",
+        rulesetId: 1,
+        current: {
+          id: 1,
+          name: "pr-rules",
+          target: "branch",
+          enforcement: "disabled",
+          // Read-only API fields that should not appear in diff
+          ...({
+            node_id: "RRS_lACqUmVwb3NpdG9yec5Di7RzzgC1f1Y",
+            _links: { self: { href: "https://api.github.com/..." } },
+            created_at: "2026-01-17T05:42:55.087Z",
+            updated_at: "2026-01-30T12:34:29.079Z",
+            current_user_can_bypass: "always",
+          } as Record<string, unknown>),
+        },
+        desired: {
+          target: "branch",
+          enforcement: "active",
+        },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    const output = result.lines.join("\n");
+    // Should show the real change
+    assert.ok(output.includes("enforcement"));
+    // Should NOT show read-only fields as removals
+    assert.ok(!output.includes("node_id"));
+    assert.ok(!output.includes("_links"));
+    assert.ok(!output.includes("created_at"));
+    assert.ok(!output.includes("updated_at"));
+    assert.ok(!output.includes("current_user_can_bypass"));
+  });
+
   describe("entries population", () => {
     test("populates entry for create with property count", () => {
       const changes: RulesetChange[] = [
