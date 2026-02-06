@@ -310,7 +310,7 @@ describe("formatPropertyTree", () => {
     assert.equal(lines.length, 0);
   });
 
-  test("formats long arrays with truncation", () => {
+  test("formats primitive arrays inline", () => {
     const diffs: PropertyDiff[] = [
       {
         path: ["branches"],
@@ -322,26 +322,55 @@ describe("formatPropertyTree", () => {
 
     const lines = formatPropertyTree(diffs);
 
-    // Should truncate long arrays with "... (N more)"
     const output = lines.join("\n");
-    assert.ok(output.includes("more") || output.includes("..."));
+    // Primitive arrays should render inline
+    assert.ok(output.includes("branches"));
+    assert.ok(output.includes("main"));
   });
 
-  test("formats object values as {...}", () => {
+  test("expands object values recursively", () => {
     const diffs: PropertyDiff[] = [
       {
         path: ["config"],
-        action: "change",
-        oldValue: { nested: "object" },
-        newValue: { different: "object" },
+        action: "add",
+        newValue: { nested: "value", count: 42 },
       },
     ];
 
     const lines = formatPropertyTree(diffs);
 
-    // Object values should be shown as {...}
     const output = lines.join("\n");
-    assert.ok(output.includes("{...}"));
+    // Should NOT collapse to {...}
+    assert.ok(!output.includes("{...}"));
+    // Should show nested properties
+    assert.ok(output.includes("nested"));
+    assert.ok(output.includes("value"));
+    assert.ok(output.includes("count"));
+    assert.ok(output.includes("42"));
+  });
+
+  test("expands array of objects recursively", () => {
+    const diffs: PropertyDiff[] = [
+      {
+        path: ["rules"],
+        action: "add",
+        newValue: [
+          {
+            type: "pull_request",
+            parameters: { required_approving_review_count: 1 },
+          },
+          { type: "required_signatures" },
+        ],
+      },
+    ];
+
+    const lines = formatPropertyTree(diffs);
+
+    const output = lines.join("\n");
+    assert.ok(!output.includes("{...}"));
+    assert.ok(output.includes("pull_request"));
+    assert.ok(output.includes("required_signatures"));
+    assert.ok(output.includes("required_approving_review_count"));
   });
 });
 

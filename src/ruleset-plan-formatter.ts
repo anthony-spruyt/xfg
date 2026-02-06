@@ -286,22 +286,97 @@ function buildTree(diffs: PropertyDiff[]): TreeNode {
 }
 
 /**
- * Format a value for display.
+ * Format a value for inline display (scalars and simple arrays only).
  */
 function formatValue(val: unknown): string {
   if (val === null) return "null";
   if (val === undefined) return "undefined";
   if (typeof val === "string") return `"${val}"`;
   if (Array.isArray(val)) {
-    if (val.length <= 3) {
+    if (val.every((v) => typeof v !== "object" || v === null)) {
       return `[${val.map(formatValue).join(", ")}]`;
     }
-    return `[${val.slice(0, 3).map(formatValue).join(", ")}, ... (${val.length - 3} more)]`;
+    // Arrays of objects are rendered by renderNestedValue
+    return `[${val.length} items]`;
   }
   if (typeof val === "object") {
-    return "{...}";
+    // Objects are rendered by renderNestedValue
+    return `{${Object.keys(val).length} properties}`;
   }
   return String(val);
+}
+
+/**
+ * Render a nested value (object or array) as indented tree lines.
+ */
+function renderNestedValue(
+  val: unknown,
+  action: DiffAction,
+  indent: number
+): string[] {
+  const lines: string[] = [];
+  const style = getActionStyle(action);
+  const indentStr = "    ".repeat(indent);
+
+  if (Array.isArray(val)) {
+    for (let i = 0; i < val.length; i++) {
+      const item = val[i];
+      if (isObject(item)) {
+        const obj = item as Record<string, unknown>;
+        const typeLabel = "type" in obj ? ` (${obj.type})` : "";
+        lines.push(
+          style.color(`${indentStr}${style.symbol} [${i}]${typeLabel}:`)
+        );
+        lines.push(...renderNestedObject(obj, action, indent + 1));
+      } else {
+        lines.push(
+          style.color(
+            `${indentStr}${style.symbol} [${i}]: ${formatValue(item)}`
+          )
+        );
+      }
+    }
+  } else if (isObject(val)) {
+    lines.push(
+      ...renderNestedObject(val as Record<string, unknown>, action, indent)
+    );
+  }
+
+  return lines;
+}
+
+function renderNestedObject(
+  obj: Record<string, unknown>,
+  action: DiffAction,
+  indent: number
+): string[] {
+  const lines: string[] = [];
+  const style = getActionStyle(action);
+  const indentStr = "    ".repeat(indent);
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === null || value === undefined) continue;
+
+    if (Array.isArray(value) && value.some((v) => isObject(v))) {
+      lines.push(style.color(`${indentStr}${style.symbol} ${key}:`));
+      lines.push(...renderNestedValue(value, action, indent + 1));
+    } else if (isObject(value)) {
+      lines.push(style.color(`${indentStr}${style.symbol} ${key}:`));
+      lines.push(
+        ...renderNestedObject(
+          value as Record<string, unknown>,
+          action,
+          indent + 1
+        )
+      );
+    } else {
+      lines.push(
+        style.color(`${indentStr}${style.symbol} ${key}: ${formatValue(value)}`)
+      );
+    }
+  }
+
+  return lines;
 }
 
 /**
@@ -340,17 +415,53 @@ function renderTree(node: TreeNode, indent: number = 0): string[] {
       lines.push(...renderTree(child, indent + 1));
     } else {
       // Leaf node with value
-      let valuePart = "";
-      if (child.action === "change") {
-        valuePart = `: ${formatValue(child.oldValue)} → ${formatValue(child.newValue)}`;
-      } else if (child.action === "add") {
-        valuePart = `: ${formatValue(child.newValue)}`;
-      } else if (child.action === "remove") {
-        valuePart = ` (was: ${formatValue(child.oldValue)})`;
+      const hasComplexNew =
+        isObject(child.newValue) ||
+        (Array.isArray(child.newValue) &&
+          child.newValue.some((v) => isObject(v)));
+      const hasComplexOld =
+        isObject(child.oldValue) ||
+        (Array.isArray(child.oldValue) &&
+          (child.oldValue as unknown[]).some((v) => isObject(v)));
+
+      if (child.action === "add" && hasComplexNew) {
+        lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));
+        lines.push(
+          ...renderNestedValue(child.newValue, child.action, indent + 1)
+        );
+      } else if (child.action === "remove" && hasComplexOld) {
+        lines.push(
+          style.color(`${indentStr}${style.symbol} ${child.name} (removed):`)
+        );
+        lines.push(
+          ...renderNestedValue(child.oldValue, child.action, indent + 1)
+        );
+      } else if (
+        child.action === "change" &&
+        (hasComplexNew || hasComplexOld)
+      ) {
+        lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));
+        if (hasComplexOld) {
+          lines.push(
+            ...renderNestedValue(child.oldValue, "remove", indent + 1)
+          );
+        }
+        if (hasComplexNew) {
+          lines.push(...renderNestedValue(child.newValue, "add", indent + 1));
+        }
+      } else {
+        let valuePart = "";
+        if (child.action === "change") {
+          valuePart = `: ${formatValue(child.oldValue)} → ${formatValue(child.newValue)}`;
+        } else if (child.action === "add") {
+          valuePart = `: ${formatValue(child.newValue)}`;
+        } else if (child.action === "remove") {
+          valuePart = ` (was: ${formatValue(child.oldValue)})`;
+        }
+        lines.push(
+          style.color(`${indentStr}${style.symbol} ${child.name}${valuePart}`)
+        );
       }
-      lines.push(
-        style.color(`${indentStr}${style.symbol} ${child.name}${valuePart}`)
-      );
     }
   }
 
