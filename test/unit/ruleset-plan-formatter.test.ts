@@ -7,7 +7,6 @@ import {
   formatPropertyTree,
   formatRulesetPlan,
   PropertyDiff,
-  RulesetPlanEntry,
 } from "../../src/ruleset-plan-formatter.js";
 
 describe("computePropertyDiffs", () => {

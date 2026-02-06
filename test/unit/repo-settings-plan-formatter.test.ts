@@ -3,7 +3,6 @@ import { strict as assert } from "node:assert";
 import {
   formatRepoSettingsPlan,
   formatWarnings,
-  RepoSettingsPlanEntry,
 } from "../../src/repo-settings-plan-formatter.js";
 import type { RepoSettingsChange } from "../../src/repo-settings-diff.js";
 

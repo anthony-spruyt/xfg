@@ -9,8 +9,6 @@ import {
   isGitHubActions,
   SummaryData,
   RepoResult,
-  RulesetPlanDetail,
-  RepoSettingsPlanDetail,
 } from "../../src/github-summary.js";
 
 describe("formatSummary", () => {
