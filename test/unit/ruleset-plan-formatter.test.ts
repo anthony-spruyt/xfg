@@ -233,6 +233,38 @@ describe("computePropertyDiffs", () => {
         )
       );
     });
+
+    test("index fallback detects added and removed items by length", () => {
+      const current = {
+        bypass_actors: [{ actor_id: 5, actor_type: "RepositoryRole" }],
+      };
+      const desired = {
+        bypass_actors: [
+          { actor_id: 5, actor_type: "RepositoryRole" },
+          { actor_id: 10, actor_type: "Team" },
+        ],
+      };
+
+      const diffs = computePropertyDiffs(current, desired);
+
+      assert.ok(diffs.some((d) => d.action === "add"));
+    });
+
+    test("index fallback detects removed items when current is longer", () => {
+      const current = {
+        bypass_actors: [
+          { actor_id: 5, actor_type: "RepositoryRole" },
+          { actor_id: 10, actor_type: "Team" },
+        ],
+      };
+      const desired = {
+        bypass_actors: [{ actor_id: 5, actor_type: "RepositoryRole" }],
+      };
+
+      const diffs = computePropertyDiffs(current, desired);
+
+      assert.ok(diffs.some((d) => d.action === "remove"));
+    });
   });
 });
 
@@ -371,6 +403,76 @@ describe("formatPropertyTree", () => {
     assert.ok(output.includes("pull_request"));
     assert.ok(output.includes("required_signatures"));
     assert.ok(output.includes("required_approving_review_count"));
+  });
+
+  test("expands removed object value recursively", () => {
+    const diffs: PropertyDiff[] = [
+      {
+        path: ["config"],
+        action: "remove",
+        oldValue: { nested: "value", count: 42 },
+      },
+    ];
+
+    const lines = formatPropertyTree(diffs);
+
+    const output = lines.join("\n");
+    assert.ok(!output.includes("{...}"));
+    assert.ok(output.includes("nested"));
+    assert.ok(output.includes("count"));
+  });
+
+  test("expands changed complex values showing old and new", () => {
+    const diffs: PropertyDiff[] = [
+      {
+        path: ["config"],
+        action: "change",
+        oldValue: { nested: "old" },
+        newValue: { nested: "new" },
+      },
+    ];
+
+    const lines = formatPropertyTree(diffs);
+
+    const output = lines.join("\n");
+    assert.ok(!output.includes("{...}"));
+    assert.ok(output.includes("old"));
+    assert.ok(output.includes("new"));
+  });
+
+  test("renders nested array with mixed object and primitive items", () => {
+    const diffs: PropertyDiff[] = [
+      {
+        path: ["items"],
+        action: "add",
+        newValue: [{ type: "a" }, "primitive"],
+      },
+    ];
+
+    const lines = formatPropertyTree(diffs);
+
+    const output = lines.join("\n");
+    assert.ok(output.includes("a"));
+    assert.ok(output.includes("primitive"));
+  });
+
+  test("renders nested object with array-of-objects property", () => {
+    const diffs: PropertyDiff[] = [
+      {
+        path: ["ruleset"],
+        action: "add",
+        newValue: {
+          rules: [{ type: "pull_request", parameters: { count: 1 } }],
+        },
+      },
+    ];
+
+    const lines = formatPropertyTree(diffs);
+
+    const output = lines.join("\n");
+    assert.ok(output.includes("rules"));
+    assert.ok(output.includes("pull_request"));
+    assert.ok(output.includes("count"));
   });
 });
 
@@ -594,6 +696,56 @@ describe("formatRulesetPlan", () => {
     assert.ok(
       output.includes("bypassActors") || output.includes("bypass_actors")
     );
+  });
+
+  test("formats create with mixed array containing primitives and objects", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "create",
+        name: "test-ruleset",
+        desired: {
+          target: "branch",
+          enforcement: "active",
+          rules: [
+            { type: "pull_request" },
+            "not-an-object" as unknown as Record<string, unknown>,
+          ],
+        },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    const output = result.lines.join("\n");
+    assert.ok(output.includes("rules"));
+  });
+
+  test("formats create with no desired (edge case)", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "create",
+        name: "empty-ruleset",
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    assert.equal(result.entries[0].propertyCount, 0);
+  });
+
+  test("formats update without current and desired", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "update",
+        name: "partial-update",
+        rulesetId: 1,
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    assert.equal(result.entries[0].action, "update");
+    assert.equal(result.entries[0].propertyChanges, undefined);
   });
 
   test("filters read-only API metadata fields from update diff", () => {
