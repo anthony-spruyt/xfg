@@ -1,11 +1,17 @@
 import chalk from "chalk";
 import type { RepoSettingsChange } from "./repo-settings-diff.js";
 
+export interface RepoSettingsPlanEntry {
+  property: string;
+  action: "add" | "change";
+}
+
 export interface RepoSettingsPlanResult {
   lines: string[];
   adds: number;
   changes: number;
   warnings: string[];
+  entries: RepoSettingsPlanEntry[];
 }
 
 /**
@@ -50,9 +56,10 @@ export function formatRepoSettingsPlan(
   const warnings: string[] = [];
   let adds = 0;
   let changesCount = 0;
+  const entries: RepoSettingsPlanEntry[] = [];
 
   if (changes.length === 0) {
-    return { lines, adds, changes: 0, warnings };
+    return { lines, adds, changes: 0, warnings, entries };
   }
 
   for (const change of changes) {
@@ -66,6 +73,7 @@ export function formatRepoSettingsPlan(
         chalk.green(`    + ${change.property}: ${formatValue(change.newValue)}`)
       );
       adds++;
+      entries.push({ property: change.property, action: "add" });
     } else if (change.action === "change") {
       lines.push(
         chalk.yellow(
@@ -73,10 +81,11 @@ export function formatRepoSettingsPlan(
         )
       );
       changesCount++;
+      entries.push({ property: change.property, action: "change" });
     }
   }
 
-  return { lines, adds, changes: changesCount, warnings };
+  return { lines, adds, changes: changesCount, warnings, entries };
 }
 
 /**

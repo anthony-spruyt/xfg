@@ -3,6 +3,7 @@ import { strict as assert } from "node:assert";
 import {
   formatRepoSettingsPlan,
   formatWarnings,
+  RepoSettingsPlanEntry,
 } from "../../src/repo-settings-plan-formatter.js";
 import type { RepoSettingsChange } from "../../src/repo-settings-diff.js";
 
@@ -118,6 +119,81 @@ describe("formatRepoSettingsPlan", () => {
     assert.equal(result.lines.length, 3);
     assert.equal(result.adds, 1);
     assert.equal(result.changes, 2);
+  });
+
+  describe("entries population", () => {
+    test("populates entry for add action", () => {
+      const changes: RepoSettingsChange[] = [
+        { property: "allowAutoMerge", action: "add", newValue: true },
+      ];
+
+      const result = formatRepoSettingsPlan(changes);
+
+      assert.equal(result.entries.length, 1);
+      assert.equal(result.entries[0].property, "allowAutoMerge");
+      assert.equal(result.entries[0].action, "add");
+    });
+
+    test("populates entry for change action", () => {
+      const changes: RepoSettingsChange[] = [
+        {
+          property: "hasWiki",
+          action: "change",
+          oldValue: true,
+          newValue: false,
+        },
+      ];
+
+      const result = formatRepoSettingsPlan(changes);
+
+      assert.equal(result.entries.length, 1);
+      assert.equal(result.entries[0].property, "hasWiki");
+      assert.equal(result.entries[0].action, "change");
+    });
+
+    test("excludes unchanged actions from entries", () => {
+      const changes: RepoSettingsChange[] = [
+        { property: "hasWiki", action: "unchanged", oldValue: true },
+      ];
+
+      const result = formatRepoSettingsPlan(changes);
+
+      assert.equal(result.entries.length, 0);
+    });
+
+    test("populates entries for mixed actions", () => {
+      const changes: RepoSettingsChange[] = [
+        {
+          property: "hasWiki",
+          action: "change",
+          oldValue: true,
+          newValue: false,
+        },
+        { property: "allowAutoMerge", action: "add", newValue: true },
+        {
+          property: "allowSquashMerge",
+          action: "change",
+          oldValue: false,
+          newValue: true,
+        },
+      ];
+
+      const result = formatRepoSettingsPlan(changes);
+
+      assert.equal(result.entries.length, 3);
+      assert.equal(result.entries[0].property, "hasWiki");
+      assert.equal(result.entries[0].action, "change");
+      assert.equal(result.entries[1].property, "allowAutoMerge");
+      assert.equal(result.entries[1].action, "add");
+      assert.equal(result.entries[2].property, "allowSquashMerge");
+      assert.equal(result.entries[2].action, "change");
+    });
+
+    test("returns empty entries for empty changes", () => {
+      const result = formatRepoSettingsPlan([]);
+
+      assert.equal(result.entries.length, 0);
+    });
   });
 });
 
