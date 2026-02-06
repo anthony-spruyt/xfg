@@ -19,6 +19,7 @@ export interface RepoResult {
 }
 
 export interface SummaryData {
+  title: string;
   total: number;
   succeeded: number;
   skipped: number;
@@ -74,7 +75,7 @@ export function formatSummary(data: SummaryData): string {
   const lines: string[] = [];
 
   // Header
-  lines.push("## Config Sync Summary");
+  lines.push(`## ${data.title}`);
   lines.push("");
 
   // Stats table

@@ -12,9 +12,28 @@ import {
 } from "../../src/github-summary.js";
 
 describe("formatSummary", () => {
+  describe("title", () => {
+    test("uses provided title as the summary header", () => {
+      const data: SummaryData = {
+        title: "Repository Settings Summary",
+        total: 1,
+        succeeded: 1,
+        skipped: 0,
+        failed: 0,
+        results: [],
+      };
+
+      const markdown = formatSummary(data);
+
+      assert.ok(markdown.includes("## Repository Settings Summary"));
+      assert.ok(!markdown.includes("Config Sync Summary"));
+    });
+  });
+
   describe("stats table", () => {
     test("generates stats table with all counts", () => {
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 4,
         succeeded: 2,
         skipped: 1,
@@ -37,6 +56,7 @@ describe("formatSummary", () => {
 
     test("handles zero counts correctly", () => {
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 0,
         succeeded: 0,
         skipped: 0,
@@ -61,6 +81,7 @@ describe("formatSummary", () => {
         mergeOutcome: "manual",
       };
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 1,
         succeeded: 1,
         skipped: 0,
@@ -87,6 +108,7 @@ describe("formatSummary", () => {
         mergeOutcome: "auto",
       };
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 1,
         succeeded: 1,
         skipped: 0,
@@ -110,6 +132,7 @@ describe("formatSummary", () => {
         mergeOutcome: "force",
       };
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 1,
         succeeded: 1,
         skipped: 0,
@@ -132,6 +155,7 @@ describe("formatSummary", () => {
         mergeOutcome: "direct",
       };
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 1,
         succeeded: 1,
         skipped: 0,
@@ -153,6 +177,7 @@ describe("formatSummary", () => {
         message: "No changes",
       };
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 1,
         succeeded: 0,
         skipped: 1,
@@ -174,6 +199,7 @@ describe("formatSummary", () => {
         message: "Clone failed: timeout",
       };
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 1,
         succeeded: 0,
         skipped: 0,
@@ -200,6 +226,7 @@ describe("formatSummary", () => {
         fileChanges: { added: 2, modified: 1, deleted: 0, unchanged: 0 },
       };
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 1,
         succeeded: 1,
         skipped: 0,
@@ -221,6 +248,7 @@ describe("formatSummary", () => {
         message: "No changes",
       };
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 1,
         succeeded: 0,
         skipped: 1,
@@ -238,6 +266,7 @@ describe("formatSummary", () => {
   describe("edge cases", () => {
     test("handles empty results array", () => {
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 0,
         succeeded: 0,
         skipped: 0,
@@ -260,6 +289,7 @@ describe("formatSummary", () => {
         message: "Error: `code` and |pipe| chars",
       };
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 1,
         succeeded: 0,
         skipped: 0,
@@ -280,6 +310,7 @@ describe("formatSummary", () => {
         message: "Error with \\| backslash-pipe",
       };
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 1,
         succeeded: 0,
         skipped: 0,
@@ -296,6 +327,7 @@ describe("formatSummary", () => {
 
     test("handles all repos skipped", () => {
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 2,
         succeeded: 0,
         skipped: 2,
@@ -314,6 +346,7 @@ describe("formatSummary", () => {
 
     test("handles all repos failed", () => {
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 2,
         succeeded: 0,
         skipped: 0,
@@ -338,6 +371,7 @@ describe("formatSummary", () => {
         message: "Done",
       };
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 1,
         succeeded: 1,
         skipped: 0,
@@ -360,6 +394,7 @@ describe("formatSummary", () => {
         mergeOutcome: "manual",
       };
       const data: SummaryData = {
+        title: "Config Sync Summary",
         total: 1,
         succeeded: 1,
         skipped: 0,
@@ -398,6 +433,7 @@ describe("writeSummary", () => {
   test("writes markdown to GITHUB_STEP_SUMMARY path", () => {
     process.env.GITHUB_STEP_SUMMARY = tempFile;
     const data: SummaryData = {
+      title: "Config Sync Summary",
       total: 1,
       succeeded: 1,
       skipped: 0,
@@ -415,6 +451,7 @@ describe("writeSummary", () => {
   test("appends newline after content", () => {
     process.env.GITHUB_STEP_SUMMARY = tempFile;
     const data: SummaryData = {
+      title: "Config Sync Summary",
       total: 1,
       succeeded: 1,
       skipped: 0,
@@ -432,6 +469,7 @@ describe("writeSummary", () => {
     writeFileSync(tempFile, "# Existing Content\n");
     process.env.GITHUB_STEP_SUMMARY = tempFile;
     const data: SummaryData = {
+      title: "Config Sync Summary",
       total: 1,
       succeeded: 1,
       skipped: 0,
@@ -449,6 +487,7 @@ describe("writeSummary", () => {
   test("no-ops when env var not set", () => {
     delete process.env.GITHUB_STEP_SUMMARY;
     const data: SummaryData = {
+      title: "Config Sync Summary",
       total: 1,
       succeeded: 1,
       skipped: 0,
@@ -466,6 +505,7 @@ describe("writeSummary", () => {
   test("no-ops when env var is empty string", () => {
     process.env.GITHUB_STEP_SUMMARY = "";
     const data: SummaryData = {
+      title: "Config Sync Summary",
       total: 1,
       succeeded: 1,
       skipped: 0,
