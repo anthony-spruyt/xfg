@@ -9,6 +9,8 @@ import {
   isGitHubActions,
   SummaryData,
   RepoResult,
+  RulesetPlanDetail,
+  RepoSettingsPlanDetail,
 } from "../../src/github-summary.js";
 
 describe("formatSummary", () => {
@@ -561,6 +563,258 @@ describe("formatSummary", () => {
       assert.ok(!markdown.includes("(Dry Run)"));
       assert.ok(!markdown.includes("[!WARNING]"));
       assert.ok(markdown.includes("✅ Succeeded"));
+    });
+  });
+
+  describe("plan details rendering", () => {
+    describe("ruleset plan details", () => {
+      test("renders nested details with ruleset table for updates", () => {
+        const result: RepoResult = {
+          repoName: "org/repo-a",
+          status: "succeeded",
+          message: "[DRY RUN] 2 to update",
+          rulesetPlanDetails: [
+            {
+              name: "pr-rules",
+              action: "update",
+              propertyChanges: { added: 1, changed: 1, removed: 0 },
+            },
+            {
+              name: "push-protection",
+              action: "update",
+              propertyChanges: { added: 2, changed: 0, removed: 0 },
+            },
+          ],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          dryRun: true,
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        // Nested details block
+        assert.ok(markdown.includes("<summary>org/repo-a"));
+        assert.ok(markdown.includes("Rulesets:"));
+        assert.ok(markdown.includes("2 to update"));
+        // Table headers
+        assert.ok(markdown.includes("| Ruleset |"));
+        assert.ok(markdown.includes("| Action |"));
+        assert.ok(markdown.includes("| Properties |"));
+        // Table rows
+        assert.ok(markdown.includes("pr-rules"));
+        assert.ok(markdown.includes("~ Update"));
+        assert.ok(markdown.includes("+1 ~1 -0"));
+        assert.ok(markdown.includes("push-protection"));
+        assert.ok(markdown.includes("+2 ~0 -0"));
+      });
+
+      test("renders create action with property count", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "[DRY RUN] 1 to create",
+          rulesetPlanDetails: [
+            {
+              name: "new-rules",
+              action: "create",
+              propertyCount: 5,
+            },
+          ],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          dryRun: true,
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        assert.ok(markdown.includes("+ Create"));
+        assert.ok(markdown.includes("5 properties"));
+        assert.ok(markdown.includes("1 to create"));
+      });
+
+      test("renders delete action with dash for properties", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "[DRY RUN] 1 to delete",
+          rulesetPlanDetails: [{ name: "old-rules", action: "delete" }],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          dryRun: true,
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        assert.ok(markdown.includes("- Delete"));
+        assert.ok(markdown.includes("old-rules"));
+      });
+
+      test("renders mixed actions in summary line", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "[DRY RUN] 1 to create, 1 to update, 1 to delete",
+          rulesetPlanDetails: [
+            { name: "new-one", action: "create", propertyCount: 3 },
+            {
+              name: "existing",
+              action: "update",
+              propertyChanges: { added: 0, changed: 1, removed: 0 },
+            },
+            { name: "old-one", action: "delete" },
+          ],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          dryRun: true,
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        assert.ok(markdown.includes("1 to create"));
+        assert.ok(markdown.includes("1 to update"));
+        assert.ok(markdown.includes("1 to delete"));
+      });
+    });
+
+    describe("repo settings plan details", () => {
+      test("renders nested details with settings table", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "[DRY RUN] 1 to add, 1 to change",
+          repoSettingsPlanDetails: [
+            { property: "allowAutoMerge", action: "add" },
+            { property: "hasWiki", action: "change" },
+          ],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          dryRun: true,
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        assert.ok(markdown.includes("Repo Settings:"));
+        assert.ok(markdown.includes("1 to add"));
+        assert.ok(markdown.includes("1 to change"));
+        assert.ok(markdown.includes("| Setting |"));
+        assert.ok(markdown.includes("| Action |"));
+        assert.ok(markdown.includes("allowAutoMerge"));
+        assert.ok(markdown.includes("+ Add"));
+        assert.ok(markdown.includes("hasWiki"));
+        assert.ok(markdown.includes("~ Change"));
+      });
+    });
+
+    describe("both plan details on same result", () => {
+      test("renders both ruleset and settings nested details", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "Done",
+          rulesetPlanDetails: [
+            {
+              name: "pr-rules",
+              action: "update",
+              propertyChanges: { added: 0, changed: 1, removed: 0 },
+            },
+          ],
+          repoSettingsPlanDetails: [{ property: "hasWiki", action: "change" }],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          dryRun: true,
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        assert.ok(markdown.includes("Rulesets:"));
+        assert.ok(markdown.includes("Repo Settings:"));
+        assert.ok(markdown.includes("pr-rules"));
+        assert.ok(markdown.includes("hasWiki"));
+      });
+    });
+
+    describe("backwards compatibility", () => {
+      test("no plan details produces no nested details blocks", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "Done",
+        };
+        const data: SummaryData = {
+          title: "Config Sync Summary",
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        // Should have outer details but no nested ones for plan data
+        assert.ok(markdown.includes("<summary>Repository Details</summary>"));
+        assert.ok(!markdown.includes("Rulesets:"));
+        assert.ok(!markdown.includes("Repo Settings:"));
+      });
+
+      test("empty plan details arrays produce no nested details", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "Done",
+          rulesetPlanDetails: [],
+          repoSettingsPlanDetails: [],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        assert.ok(!markdown.includes("Rulesets:"));
+        assert.ok(!markdown.includes("Repo Settings:"));
+      });
     });
   });
 });
