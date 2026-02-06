@@ -20,6 +20,7 @@ export interface RepoResult {
 
 export interface SummaryData {
   title: string;
+  dryRun?: boolean;
   total: number;
   succeeded: number;
   skipped: number;
@@ -75,8 +76,16 @@ export function formatSummary(data: SummaryData): string {
   const lines: string[] = [];
 
   // Header
-  lines.push(`## ${data.title}`);
+  const titleSuffix = data.dryRun ? " (Dry Run)" : "";
+  lines.push(`## ${data.title}${titleSuffix}`);
   lines.push("");
+
+  // Dry-run warning banner
+  if (data.dryRun) {
+    lines.push("> [!WARNING]");
+    lines.push("> This was a dry run — no changes were applied");
+    lines.push("");
+  }
 
   // Stats table
   lines.push("| Status | Count |");
