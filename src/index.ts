@@ -504,6 +504,7 @@ export async function runSettings(
             ? "succeeded"
             : "failed",
         message: result.message,
+        rulesetPlanDetails: result.planOutput?.entries,
       });
     } catch (error) {
       logger.error(i + 1, repoName, String(error));
@@ -565,6 +566,21 @@ export async function runSettings(
         } else {
           console.log(chalk.red(`  ✗ ${repoName}: ${result.message}`));
           failCount++;
+        }
+
+        // Merge repo settings plan details into existing result or push new
+        if (!result.skipped) {
+          const existing = results.find((r) => r.repoName === repoName);
+          if (existing) {
+            existing.repoSettingsPlanDetails = result.planOutput?.entries;
+          } else {
+            results.push({
+              repoName,
+              status: result.success ? "succeeded" : "failed",
+              message: result.message,
+              repoSettingsPlanDetails: result.planOutput?.entries,
+            });
+          }
         }
       } catch (error) {
         console.error(`  ✗ ${repoName}: ${error}`);
