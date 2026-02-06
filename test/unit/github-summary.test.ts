@@ -408,6 +408,43 @@ describe("formatSummary", () => {
       assert.ok(markdown.includes("[PR #PR]"));
     });
   });
+
+  describe("dry-run mode", () => {
+    test("appends '(Dry Run)' to the title", () => {
+      const data: SummaryData = {
+        title: "Config Sync Summary",
+        dryRun: true,
+        total: 1,
+        succeeded: 1,
+        skipped: 0,
+        failed: 0,
+        results: [],
+      };
+
+      const markdown = formatSummary(data);
+
+      assert.ok(markdown.includes("## Config Sync Summary (Dry Run)"));
+    });
+
+    test("includes warning admonition banner", () => {
+      const data: SummaryData = {
+        title: "Config Sync Summary",
+        dryRun: true,
+        total: 1,
+        succeeded: 1,
+        skipped: 0,
+        failed: 0,
+        results: [],
+      };
+
+      const markdown = formatSummary(data);
+
+      assert.ok(markdown.includes("> [!WARNING]"));
+      assert.ok(
+        markdown.includes("> This was a dry run — no changes were applied")
+      );
+    });
+  });
 });
 
 describe("writeSummary", () => {
