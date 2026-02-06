@@ -525,6 +525,43 @@ describe("formatSummary", () => {
       assert.ok(markdown.includes("⏭️ Would Skip"));
       assert.ok(markdown.includes("❌ Would Fail"));
     });
+
+    test("dryRun false produces normal output", () => {
+      const data: SummaryData = {
+        title: "Config Sync Summary",
+        dryRun: false,
+        total: 1,
+        succeeded: 1,
+        skipped: 0,
+        failed: 0,
+        results: [],
+      };
+
+      const markdown = formatSummary(data);
+
+      assert.ok(markdown.includes("## Config Sync Summary"));
+      assert.ok(!markdown.includes("(Dry Run)"));
+      assert.ok(!markdown.includes("[!WARNING]"));
+      assert.ok(markdown.includes("✅ Succeeded"));
+    });
+
+    test("dryRun undefined produces normal output", () => {
+      const data: SummaryData = {
+        title: "Config Sync Summary",
+        total: 1,
+        succeeded: 1,
+        skipped: 0,
+        failed: 0,
+        results: [],
+      };
+
+      const markdown = formatSummary(data);
+
+      assert.ok(markdown.includes("## Config Sync Summary"));
+      assert.ok(!markdown.includes("(Dry Run)"));
+      assert.ok(!markdown.includes("[!WARNING]"));
+      assert.ok(markdown.includes("✅ Succeeded"));
+    });
   });
 });
 
