@@ -19,6 +19,7 @@ permissions:
 
 jobs:
   lint:
+    if: github.event_name == 'pull_request'
     uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@main"
     secrets: "inherit"
 
@@ -67,7 +68,6 @@ jobs:
   # Combined GitHub integration tests (PAT + GitHub App)
   integration-test-github:
     needs:
-      - "lint"
       - "build"
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -113,7 +113,6 @@ jobs:
 
   integration-test-ado:
     needs:
-      - "lint"
       - "build"
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -159,7 +158,6 @@ jobs:
 
   integration-test-gitlab:
     needs:
-      - "lint"
       - "build"
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -206,7 +204,6 @@ jobs:
 
   integration-test-github-rulesets:
     needs:
-      - "lint"
       - "build"
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -245,7 +242,6 @@ jobs:
 
   integration-test-github-repo-settings:
     needs:
-      - "lint"
       - "build"
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -285,7 +281,6 @@ jobs:
   # Combined action tests (PAT + GitHub App)
   integration-test-action:
     needs:
-      - "lint"
       - "build"
       - "integration-test-github"
     if: github.event_name == 'push'
