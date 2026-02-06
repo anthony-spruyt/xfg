@@ -88,11 +88,14 @@ export function formatSummary(data: SummaryData): string {
   }
 
   // Stats table
+  const succeededLabel = data.dryRun ? "✅ Would Succeed" : "✅ Succeeded";
+  const skippedLabel = data.dryRun ? "⏭️ Would Skip" : "⏭️ Skipped";
+  const failedLabel = data.dryRun ? "❌ Would Fail" : "❌ Failed";
   lines.push("| Status | Count |");
   lines.push("|--------|-------|");
-  lines.push(`| ✅ Succeeded | ${data.succeeded} |`);
-  lines.push(`| ⏭️ Skipped | ${data.skipped} |`);
-  lines.push(`| ❌ Failed | ${data.failed} |`);
+  lines.push(`| ${succeededLabel} | ${data.succeeded} |`);
+  lines.push(`| ${skippedLabel} | ${data.skipped} |`);
+  lines.push(`| ${failedLabel} | ${data.failed} |`);
   lines.push(`| **Total** | **${data.total}** |`);
 
   // Repo details table (only if there are results)
