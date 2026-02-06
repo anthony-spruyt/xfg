@@ -444,6 +444,27 @@ describe("formatSummary", () => {
         markdown.includes("> This was a dry run — no changes were applied")
       );
     });
+
+    test("stats table shows hypothetical labels", () => {
+      const data: SummaryData = {
+        title: "Config Sync Summary",
+        dryRun: true,
+        total: 3,
+        succeeded: 1,
+        skipped: 1,
+        failed: 1,
+        results: [],
+      };
+
+      const markdown = formatSummary(data);
+
+      assert.ok(markdown.includes("✅ Would Succeed"));
+      assert.ok(markdown.includes("⏭️ Would Skip"));
+      assert.ok(markdown.includes("❌ Would Fail"));
+      assert.ok(!markdown.includes("✅ Succeeded"));
+      assert.ok(!markdown.includes("⏭️ Skipped"));
+      assert.ok(!markdown.includes("❌ Failed"));
+    });
   });
 });
 
