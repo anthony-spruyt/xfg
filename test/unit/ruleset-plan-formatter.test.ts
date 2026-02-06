@@ -836,4 +836,103 @@ describe("formatRulesetPlan", () => {
       assert.equal(result.entries[2].action, "delete");
     });
   });
+
+  test("regression #361: identical data with different key casing produces no diff", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "update",
+        name: "pr-rules",
+        rulesetId: 1,
+        current: {
+          id: 1,
+          name: "pr-rules",
+          target: "branch",
+          enforcement: "active",
+          bypass_actors: [
+            {
+              actor_id: 5,
+              actor_type: "RepositoryRole",
+              bypass_mode: "always",
+            },
+          ],
+          conditions: {
+            ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] },
+          },
+          rules: [
+            {
+              type: "pull_request",
+              parameters: { required_approving_review_count: 1 },
+            },
+            { type: "required_signatures" },
+          ],
+        },
+        desired: {
+          target: "branch",
+          enforcement: "active",
+          bypassActors: [
+            { actorId: 5, actorType: "RepositoryRole", bypassMode: "always" },
+          ],
+          conditions: {
+            refName: { include: ["~DEFAULT_BRANCH"], exclude: [] },
+          },
+          rules: [
+            {
+              type: "pull_request",
+              parameters: { requiredApprovingReviewCount: 1 },
+            },
+            { type: "required_signatures" },
+          ],
+        },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    // Should have zero property diffs — data is identical after normalization
+    assert.ok(result.entries[0].propertyChanges);
+    const total =
+      result.entries[0].propertyChanges!.added +
+      result.entries[0].propertyChanges!.changed +
+      result.entries[0].propertyChanges!.removed;
+    assert.equal(total, 0, "Should have no property diffs for identical data");
+  });
+
+  test("issue #360: create shows expanded rules instead of {...}", () => {
+    const changes: RulesetChange[] = [
+      {
+        action: "create",
+        name: "pr-rules",
+        desired: {
+          target: "branch",
+          enforcement: "active",
+          rules: [
+            {
+              type: "pull_request",
+              parameters: {
+                requiredApprovingReviewCount: 1,
+                dismissStaleReviewsOnPush: true,
+              },
+            },
+            { type: "required_signatures" },
+          ],
+        },
+      },
+    ];
+
+    const result = formatRulesetPlan(changes);
+
+    const output = result.lines.join("\n");
+    // Should NOT contain collapsed objects
+    assert.ok(
+      !output.includes("{...}"),
+      `Output should not contain {…}: ${output}`
+    );
+    // Should show rule details
+    assert.ok(output.includes("pull_request"));
+    assert.ok(output.includes("required_signatures"));
+    assert.ok(
+      output.includes("requiredApprovingReviewCount") ||
+        output.includes("required_approving_review_count")
+    );
+  });
 });
