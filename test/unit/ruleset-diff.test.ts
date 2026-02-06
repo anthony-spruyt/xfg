@@ -4,6 +4,7 @@ import {
   diffRulesets,
   RulesetChange,
   formatDiff,
+  projectToDesiredShape,
 } from "../../src/ruleset-diff.js";
 import type { Ruleset } from "../../src/config.js";
 import type { GitHubRuleset } from "../../src/strategies/github-ruleset-strategy.js";
@@ -683,5 +684,183 @@ describe("diffRulesets edge cases", () => {
 
     const changes = diffRulesets(current, desired, []);
     assert.equal(changes[0].action, "update");
+  });
+});
+
+describe("projectToDesiredShape", () => {
+  test("keeps only keys present in desired for objects", () => {
+    const current = {
+      target: "branch",
+      enforcement: "active",
+      extra_api_field: "noise",
+    };
+    const desired = {
+      target: "branch",
+      enforcement: "active",
+    };
+
+    const result = projectToDesiredShape(current, desired);
+
+    assert.deepEqual(result, {
+      target: "branch",
+      enforcement: "active",
+    });
+  });
+
+  test("recurses into nested objects", () => {
+    const current = {
+      conditions: {
+        ref_name: {
+          include: ["main"],
+          exclude: [],
+          extra_nested: true,
+        },
+      },
+    };
+    const desired = {
+      conditions: {
+        ref_name: {
+          include: ["main"],
+          exclude: [],
+        },
+      },
+    };
+
+    const result = projectToDesiredShape(current, desired);
+
+    assert.deepEqual(result, {
+      conditions: {
+        ref_name: {
+          include: ["main"],
+          exclude: [],
+        },
+      },
+    });
+  });
+
+  test("matches array items by type field and projects each pair", () => {
+    const current = {
+      rules: [
+        {
+          type: "pull_request",
+          parameters: {
+            required_approving_review_count: 1,
+            require_last_push_approval: false,
+            required_review_thread_resolution: false,
+          },
+        },
+        {
+          type: "required_signatures",
+        },
+      ],
+    };
+    const desired = {
+      rules: [
+        {
+          type: "pull_request",
+          parameters: {
+            required_approving_review_count: 1,
+          },
+        },
+        {
+          type: "required_signatures",
+        },
+      ],
+    };
+
+    const result = projectToDesiredShape(current, desired);
+
+    assert.deepEqual(result, {
+      rules: [
+        {
+          type: "pull_request",
+          parameters: {
+            required_approving_review_count: 1,
+          },
+        },
+        {
+          type: "required_signatures",
+        },
+      ],
+    });
+  });
+
+  test("falls back to index matching when no type field", () => {
+    const current = {
+      bypass_actors: [
+        {
+          actor_id: 5,
+          actor_type: "RepositoryRole",
+          bypass_mode: "always",
+          extra: true,
+        },
+        { actor_id: 10, actor_type: "Team", bypass_mode: "pull_request" },
+      ],
+    };
+    const desired = {
+      bypass_actors: [
+        { actor_id: 5, actor_type: "RepositoryRole", bypass_mode: "always" },
+        { actor_id: 10, actor_type: "Team", bypass_mode: "pull_request" },
+      ],
+    };
+
+    const result = projectToDesiredShape(current, desired);
+
+    assert.deepEqual(result, {
+      bypass_actors: [
+        { actor_id: 5, actor_type: "RepositoryRole", bypass_mode: "always" },
+        { actor_id: 10, actor_type: "Team", bypass_mode: "pull_request" },
+      ],
+    });
+  });
+
+  test("returns current as-is for scalar values", () => {
+    const result = projectToDesiredShape("active", "active");
+
+    assert.equal(result, "active");
+  });
+
+  test("returns current as-is for primitive arrays", () => {
+    const result = projectToDesiredShape(
+      ["main", "develop"],
+      ["main", "develop"]
+    );
+
+    assert.deepEqual(result, ["main", "develop"]);
+  });
+
+  test("handles desired items not in current (additions)", () => {
+    const current = {
+      rules: [
+        {
+          type: "pull_request",
+          parameters: { required_approving_review_count: 1 },
+        },
+      ],
+    };
+    const desired = {
+      rules: [
+        {
+          type: "pull_request",
+          parameters: { required_approving_review_count: 1 },
+        },
+        { type: "required_signatures" },
+      ],
+    };
+
+    const result = projectToDesiredShape(current, desired);
+
+    // Current only has pull_request, required_signatures has no match
+    // so current side should only contain the matched pull_request
+    assert.equal((result as Record<string, unknown[]>).rules.length, 1);
+  });
+
+  test("handles empty desired", () => {
+    const current = { target: "branch", enforcement: "active" };
+    const desired = {};
+
+    const result = projectToDesiredShape(current, desired);
+
+    assert.deepEqual(result, {});
   });
 });

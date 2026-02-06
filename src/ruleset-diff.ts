@@ -133,6 +133,106 @@ function deepEqual(a: unknown, b: unknown): boolean {
 }
 
 // =============================================================================
+// Desired-Side Projection
+// =============================================================================
+
+/**
+ * Projects `current` onto the shape of `desired`.
+ * Only keeps keys/structure present in `desired`, filtering out API noise.
+ * For arrays of objects, matches items by `type` field if present, else by index.
+ */
+export function projectToDesiredShape(
+  current: unknown,
+  desired: unknown
+): unknown {
+  // Both must be same general type to project
+  if (desired === null || desired === undefined) return desired;
+  if (current === null || current === undefined) return current;
+
+  // Arrays
+  if (Array.isArray(desired) && Array.isArray(current)) {
+    return projectArrays(current, desired);
+  }
+
+  // Objects
+  if (isPlainObject(desired) && isPlainObject(current)) {
+    return projectObjects(
+      current as Record<string, unknown>,
+      desired as Record<string, unknown>
+    );
+  }
+
+  // Scalars — return current as-is
+  return current;
+}
+
+function isPlainObject(val: unknown): val is Record<string, unknown> {
+  return val !== null && typeof val === "object" && !Array.isArray(val);
+}
+
+function projectObjects(
+  current: Record<string, unknown>,
+  desired: Record<string, unknown>
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const key of Object.keys(desired)) {
+    if (key in current) {
+      result[key] = projectToDesiredShape(current[key], desired[key]);
+    }
+    // If key not in current, skip — diff will handle it as an addition
+  }
+  return result;
+}
+
+function projectArrays(current: unknown[], desired: unknown[]): unknown[] {
+  // Primitive arrays — return current as-is
+  if (desired.length === 0 || !isPlainObject(desired[0])) {
+    return current;
+  }
+
+  // Arrays of objects — match by `type` field if available
+  const hasType = desired.every(
+    (item) => isPlainObject(item) && "type" in (item as Record<string, unknown>)
+  );
+
+  if (hasType) {
+    return matchByType(current, desired);
+  }
+
+  // Fallback: match by index
+  return matchByIndex(current, desired);
+}
+
+function matchByType(current: unknown[], desired: unknown[]): unknown[] {
+  const currentByType = new Map<string, unknown>();
+  for (const item of current) {
+    if (isPlainObject(item)) {
+      const type = (item as Record<string, unknown>).type as string;
+      if (type) currentByType.set(type, item);
+    }
+  }
+
+  const result: unknown[] = [];
+  for (const desiredItem of desired) {
+    const type = (desiredItem as Record<string, unknown>).type as string;
+    const currentItem = currentByType.get(type);
+    if (currentItem) {
+      result.push(projectToDesiredShape(currentItem, desiredItem));
+    }
+    // If no match in current, skip — diff handles additions
+  }
+  return result;
+}
+
+function matchByIndex(current: unknown[], desired: unknown[]): unknown[] {
+  const result: unknown[] = [];
+  for (let i = 0; i < Math.min(current.length, desired.length); i++) {
+    result.push(projectToDesiredShape(current[i], desired[i]));
+  }
+  return result;
+}
+
+// =============================================================================
 // Diff Algorithm
 // =============================================================================
 
