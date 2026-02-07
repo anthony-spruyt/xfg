@@ -462,9 +462,7 @@ jobs:
   # GitHub Action test — GitHub App credentials (isolated, no GH_TOKEN in Act step)
   integration-test-action-app:
     needs:
-      - "build"
-      - "integration-test-github"
-      - "integration-test-github-app"
+      - "integration-test-action-pat"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
@@ -578,9 +576,7 @@ jobs:
   # GitHub Action test — settings command
   integration-test-action-settings:
     needs:
-      - "build"
-      - "integration-test-github"
-      - "integration-test-github-app"
+      - "integration-test-action-app"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
