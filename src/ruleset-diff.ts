@@ -62,14 +62,15 @@ export function normalizeRuleset(
   const normalized: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    if (value == null) {
+    if (value === undefined) {
       continue;
     }
     const snakeKey = camelToSnake(key);
     if (!RULESET_COMPARABLE_FIELDS.has(snakeKey)) {
       continue;
     }
-    normalized[snakeKey] = normalizeValue(value);
+    // Preserve null explicitly — it means "API couldn't read this field"
+    normalized[snakeKey] = value === null ? null : normalizeValue(value);
   }
 
   return normalized;
@@ -173,7 +174,12 @@ function projectObjects(
   const result: Record<string, unknown> = {};
   for (const key of Object.keys(desired)) {
     if (key in current) {
-      result[key] = projectToDesiredShape(current[key], desired[key]);
+      if (current[key] === null) {
+        // null means "API token can't read this field" — assume it matches desired
+        result[key] = desired[key];
+      } else {
+        result[key] = projectToDesiredShape(current[key], desired[key]);
+      }
     } else if (
       Array.isArray(desired[key]) &&
       (desired[key] as unknown[]).length === 0

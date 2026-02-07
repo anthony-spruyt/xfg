@@ -645,7 +645,7 @@ describe("diffRulesets bypass_actors null vs empty array", () => {
     assert.equal(changes[0].action, "unchanged");
   });
 
-  test("treats API bypass_actors: null as equivalent to config with bypass actor", () => {
+  test("treats API bypass_actors: null as unreadable — assumes matches desired", () => {
     const current: GitHubRuleset[] = [
       {
         id: 1,
@@ -672,8 +672,8 @@ describe("diffRulesets bypass_actors null vs empty array", () => {
 
     const changes = diffRulesets(current, desired, []);
 
-    // This IS a real change - null (no actors) vs actual actors
-    assert.equal(changes[0].action, "update");
+    // null means "token can't read this field" — assume it matches desired
+    assert.equal(changes[0].action, "unchanged");
   });
 
   test("treats API bypass_actors: [] as equivalent to config bypassActors: []", () => {
@@ -952,7 +952,7 @@ describe("normalizeRuleset", () => {
     });
   });
 
-  test("skips properties with null values (API returns null for empty arrays)", () => {
+  test("preserves null values (API returns null when token can't read field)", () => {
     const ruleset = {
       target: "branch",
       enforcement: "active",
@@ -961,12 +961,9 @@ describe("normalizeRuleset", () => {
 
     const result = normalizeRuleset(ruleset);
 
-    // null should be excluded entirely - no phantom key with undefined value
-    assert.equal("bypass_actors" in result, false);
-    assert.deepEqual(result, {
-      target: "branch",
-      enforcement: "active",
-    });
+    // null is preserved — it means "token can't read this field"
+    assert.equal("bypass_actors" in result, true);
+    assert.equal(result.bypass_actors, null);
   });
 
   test("converts camelCase keys to snake_case", () => {

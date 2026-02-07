@@ -10,6 +10,8 @@ import {
   formatRulesetPlan,
   RulesetPlanResult,
 } from "./ruleset-plan-formatter.js";
+import { hasGitHubAppCredentials } from "./strategies/index.js";
+import { GitHubAppTokenManager } from "./github-app-token-manager.js";
 
 // =============================================================================
 // Interfaces
@@ -63,9 +65,19 @@ export interface RulesetProcessorResult {
  */
 export class RulesetProcessor implements IRulesetProcessor {
   private readonly strategy: GitHubRulesetStrategy;
+  private readonly tokenManager: GitHubAppTokenManager | null;
 
   constructor(strategy?: GitHubRulesetStrategy) {
     this.strategy = strategy ?? new GitHubRulesetStrategy();
+
+    if (hasGitHubAppCredentials()) {
+      this.tokenManager = new GitHubAppTokenManager(
+        process.env.XFG_GITHUB_APP_ID!,
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY!
+      );
+    } else {
+      this.tokenManager = null;
+    }
   }
 
   /**
@@ -108,8 +120,10 @@ export class RulesetProcessor implements IRulesetProcessor {
     }
 
     try {
-      // Fetch current rulesets
-      const strategyOptions = { token, host: githubRepo.host };
+      // Resolve App token if available, fall back to provided token
+      const effectiveToken =
+        token ?? (await this.getInstallationToken(githubRepo));
+      const strategyOptions = { token: effectiveToken, host: githubRepo.host };
       const currentRulesets = await this.strategy.list(
         githubRepo,
         strategyOptions
@@ -269,5 +283,24 @@ export class RulesetProcessor implements IRulesetProcessor {
     // Track all ruleset names when deleteOrphaned is enabled
     const rulesetNames = Object.keys(rulesets).sort();
     return { rulesets: rulesetNames };
+  }
+
+  /**
+   * Resolves a GitHub App installation token for the given repo.
+   * Returns undefined if no token manager or token resolution fails.
+   */
+  private async getInstallationToken(
+    repoInfo: GitHubRepoInfo
+  ): Promise<string | undefined> {
+    if (!this.tokenManager) {
+      return undefined;
+    }
+
+    try {
+      const token = await this.tokenManager.getTokenForRepo(repoInfo);
+      return token ?? undefined;
+    } catch {
+      return undefined;
+    }
   }
 }

@@ -13,7 +13,7 @@ import type {
 
 // Mock strategy that tracks calls and returns configured responses
 class MockRulesetStrategy {
-  calls: { method: string; args: unknown[] }[] = [];
+  calls: { method: string; args: unknown[]; options?: unknown }[] = [];
   listResponse: GitHubRuleset[] = [];
   getResponseMap: Map<number, GitHubRuleset> = new Map();
   createResponse: GitHubRuleset = {
@@ -29,13 +29,20 @@ class MockRulesetStrategy {
     enforcement: "active",
   };
 
-  async list(): Promise<GitHubRuleset[]> {
-    this.calls.push({ method: "list", args: [] });
+  async list(
+    _repo: GitHubRepoInfo,
+    options?: unknown
+  ): Promise<GitHubRuleset[]> {
+    this.calls.push({ method: "list", args: [], options });
     return this.listResponse;
   }
 
-  async get(_repo: GitHubRepoInfo, id: number): Promise<GitHubRuleset> {
-    this.calls.push({ method: "get", args: [id] });
+  async get(
+    _repo: GitHubRepoInfo,
+    id: number,
+    options?: unknown
+  ): Promise<GitHubRuleset> {
+    this.calls.push({ method: "get", args: [id], options });
     return (
       this.getResponseMap.get(id) ??
       this.listResponse.find((r) => r.id === id) ??
@@ -638,6 +645,150 @@ describe("RulesetProcessor", () => {
       assert.equal(result.success, true);
       assert.equal(result.skipped, true);
       assert.ok(result.message.includes("not a GitHub repository"));
+    });
+  });
+
+  describe("GitHub App token resolution", () => {
+    test("passes resolved App token to strategy when App credentials are set", async () => {
+      const origAppId = process.env.XFG_GITHUB_APP_ID;
+      const origPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+      process.env.XFG_GITHUB_APP_ID = "12345";
+      process.env.XFG_GITHUB_APP_PRIVATE_KEY = "fake-key";
+
+      const freshStrategy = new MockRulesetStrategy();
+      const freshProcessor = new RulesetProcessor(
+        freshStrategy as unknown as GitHubRulesetStrategy
+      );
+
+      // Replace tokenManager with mock (same pattern as repository-processor tests)
+      const mockTokenManager = {
+        async getTokenForRepo() {
+          return "ghs_mock_installation_token";
+        },
+      };
+      (
+        freshProcessor as unknown as { tokenManager: typeof mockTokenManager }
+      ).tokenManager = mockTokenManager;
+
+      freshStrategy.setListResponse([
+        {
+          id: 1,
+          name: "test-ruleset",
+          target: "branch",
+          enforcement: "active",
+        },
+      ]);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-org/test-repo.git",
+        files: [],
+        settings: {
+          rulesets: {
+            "test-ruleset": {
+              target: "branch",
+              enforcement: "active",
+            },
+          },
+        },
+      };
+
+      const result = await freshProcessor.process(repoConfig, mockGitHubRepo, {
+        configId: "test-config",
+        dryRun: true,
+        managedRulesets: [],
+      });
+
+      const listCalls = freshStrategy.calls.filter((c) => c.method === "list");
+      assert.equal(listCalls.length, 1);
+
+      const listOptions = listCalls[0].options as
+        | { token?: string; host?: string }
+        | undefined;
+      assert.equal(
+        listOptions?.token,
+        "ghs_mock_installation_token",
+        "list() should receive the resolved App installation token"
+      );
+
+      assert.equal(result.success, true);
+
+      // Restore env
+      if (origAppId !== undefined) {
+        process.env.XFG_GITHUB_APP_ID = origAppId;
+      } else {
+        delete process.env.XFG_GITHUB_APP_ID;
+      }
+      if (origPrivateKey !== undefined) {
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY = origPrivateKey;
+      } else {
+        delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+      }
+    });
+
+    test("falls back gracefully when token manager returns null", async () => {
+      const origAppId = process.env.XFG_GITHUB_APP_ID;
+      const origPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+      process.env.XFG_GITHUB_APP_ID = "12345";
+      process.env.XFG_GITHUB_APP_PRIVATE_KEY = "fake-key";
+
+      const freshStrategy = new MockRulesetStrategy();
+      const freshProcessor = new RulesetProcessor(
+        freshStrategy as unknown as GitHubRulesetStrategy
+      );
+
+      const mockTokenManager = {
+        async getTokenForRepo() {
+          return null;
+        },
+      };
+      (
+        freshProcessor as unknown as { tokenManager: typeof mockTokenManager }
+      ).tokenManager = mockTokenManager;
+
+      freshStrategy.setListResponse([]);
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-org/test-repo.git",
+        files: [],
+        settings: {
+          rulesets: {
+            "test-ruleset": {
+              target: "branch",
+              enforcement: "active",
+            },
+          },
+        },
+      };
+
+      const result = await freshProcessor.process(repoConfig, mockGitHubRepo, {
+        configId: "test-config",
+        dryRun: true,
+        managedRulesets: [],
+      });
+
+      const listCalls = freshStrategy.calls.filter((c) => c.method === "list");
+      const listOptions = listCalls[0].options as
+        | { token?: string; host?: string }
+        | undefined;
+      assert.equal(
+        listOptions?.token,
+        undefined,
+        "list() should receive undefined token when manager returns null"
+      );
+
+      assert.equal(result.success, true);
+
+      // Restore env
+      if (origAppId !== undefined) {
+        process.env.XFG_GITHUB_APP_ID = origAppId;
+      } else {
+        delete process.env.XFG_GITHUB_APP_ID;
+      }
+      if (origPrivateKey !== undefined) {
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY = origPrivateKey;
+      } else {
+        delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+      }
     });
   });
 
