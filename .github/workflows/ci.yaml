@@ -24,6 +24,9 @@ jobs:
     secrets: "inherit"
 
   build:
+    needs:
+      - "lint"
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
 
     concurrency:
@@ -67,7 +70,7 @@ jobs:
   integration-test-github:
     needs:
       - "build"
-    if: github.event_name == 'push'
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
@@ -112,7 +115,7 @@ jobs:
   integration-test-ado:
     needs:
       - "build"
-    if: github.event_name == 'push'
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
@@ -157,7 +160,7 @@ jobs:
   integration-test-gitlab:
     needs:
       - "build"
-    if: github.event_name == 'push'
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
@@ -203,7 +206,7 @@ jobs:
   integration-test-github-rulesets:
     needs:
       - "build"
-    if: github.event_name == 'push'
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
@@ -241,7 +244,7 @@ jobs:
   integration-test-github-repo-settings:
     needs:
       - "build"
-    if: github.event_name == 'push'
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
@@ -281,7 +284,7 @@ jobs:
     needs:
       - "build"
       - "integration-test-github"
-    if: github.event_name == 'push'
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
