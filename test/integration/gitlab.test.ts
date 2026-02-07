@@ -1,13 +1,9 @@
 import { test, describe, before } from "node:test";
 import { strict as assert } from "node:assert";
-import { execSync } from "node:child_process";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { rmSync, existsSync } from "node:fs";
+import { exec, projectRoot } from "./test-helpers.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const projectRoot = join(__dirname, "../..");
 const fixturesDir = join(projectRoot, "test", "fixtures");
 
 // GitLab test repository
@@ -16,25 +12,6 @@ const TEST_REPO = "xfg-test";
 const PROJECT_PATH = `${TEST_NAMESPACE}/${TEST_REPO}`;
 const TARGET_FILE = "my.config.json";
 const BRANCH_NAME = "chore/sync-my-config";
-
-// This exec helper is only used in integration tests with hardcoded commands.
-// The commands are controlled and not derived from external/user input.
-function exec(command: string, options?: { cwd?: string }): string {
-  try {
-    return execSync(command, {
-      // codeql-disable-next-line js/shell-command-injection-from-environment
-      cwd: options?.cwd ?? projectRoot,
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    }).trim();
-  } catch (error) {
-    const err = error as { stderr?: string; stdout?: string };
-    console.error("Command failed:", command);
-    console.error("stderr:", err.stderr);
-    console.error("stdout:", err.stdout);
-    throw error;
-  }
-}
 
 // Helper to call GitLab API via glab cli
 function glabApi(
