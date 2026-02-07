@@ -52,18 +52,24 @@ function normalizeValue(value: unknown): unknown {
 }
 
 /**
- * Normalizes a GitHub ruleset for comparison.
+ * Normalizes any ruleset object (GitHub API or config) for comparison.
+ * Converts all keys to snake_case, filters to comparable fields only,
+ * and recursively normalizes values.
  */
-function normalizeGitHubRuleset(
-  ruleset: GitHubRuleset
+export function normalizeRuleset(
+  obj: GitHubRuleset | Ruleset
 ): Record<string, unknown> {
   const normalized: Record<string, unknown> = {};
 
-  for (const [key, value] of Object.entries(ruleset)) {
-    if (!RULESET_COMPARABLE_FIELDS.has(key) || value === undefined) {
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined) {
       continue;
     }
-    normalized[key] = normalizeValue(value);
+    const snakeKey = camelToSnake(key);
+    if (!RULESET_COMPARABLE_FIELDS.has(snakeKey)) {
+      continue;
+    }
+    normalized[snakeKey] = normalizeValue(value);
   }
 
   return normalized;
@@ -79,17 +85,7 @@ function normalizeConfigRuleset(ruleset: Ruleset): Record<string, unknown> {
     ...ruleset,
   };
 
-  const normalized: Record<string, unknown> = {};
-
-  for (const [key, value] of Object.entries(withDefaults)) {
-    if (value === undefined) {
-      continue;
-    }
-    const snakeKey = camelToSnake(key);
-    normalized[snakeKey] = normalizeValue(value);
-  }
-
-  return normalized;
+  return normalizeRuleset(withDefaults);
 }
 
 /**
@@ -266,7 +262,7 @@ export function diffRulesets(
       });
     } else {
       // Existing ruleset - check if changed
-      const normalizedCurrent = normalizeGitHubRuleset(currentRuleset);
+      const normalizedCurrent = normalizeRuleset(currentRuleset);
       const normalizedDesired = normalizeConfigRuleset(desiredRuleset);
       const projectedCurrent = projectToDesiredShape(
         normalizedCurrent,

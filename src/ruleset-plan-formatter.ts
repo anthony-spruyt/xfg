@@ -2,10 +2,11 @@
 import chalk from "chalk";
 import {
   projectToDesiredShape,
+  normalizeRuleset,
   type RulesetChange,
   type RulesetAction,
 } from "./ruleset-diff.js";
-import { RULESET_COMPARABLE_FIELDS, type Ruleset } from "./config.js";
+import type { Ruleset } from "./config.js";
 
 // =============================================================================
 // Types
@@ -485,41 +486,6 @@ export function formatPropertyTree(diffs: PropertyDiff[]): string[] {
 // =============================================================================
 
 /**
- * Normalize a GitHubRuleset or Ruleset for comparison.
- * Converts to snake_case and removes metadata fields.
- */
-function normalizeForDiff(
-  obj: Record<string, unknown>
-): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-
-  for (const [key, value] of Object.entries(obj)) {
-    // Convert camelCase to snake_case for consistency
-    const snakeKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
-    if (!RULESET_COMPARABLE_FIELDS.has(snakeKey) || value === undefined)
-      continue;
-    result[snakeKey] = normalizeNestedValue(value);
-  }
-
-  return result;
-}
-
-function normalizeNestedValue(value: unknown): unknown {
-  if (value === null || value === undefined) return value;
-  if (Array.isArray(value)) return value.map(normalizeNestedValue);
-  if (typeof value === "object") {
-    const obj = value as Record<string, unknown>;
-    const result: Record<string, unknown> = {};
-    for (const [key, val] of Object.entries(obj)) {
-      const snakeKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
-      result[snakeKey] = normalizeNestedValue(val);
-    }
-    return result;
-  }
-  return value;
-}
-
-/**
  * Format a full ruleset config as tree lines (for create action).
  */
 function formatFullConfig(ruleset: Ruleset, indent: number = 2): string[] {
@@ -610,12 +576,8 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     for (const change of updateChanges) {
       lines.push(chalk.yellow(`    ~ ruleset "${change.name}"`));
       if (change.current && change.desired) {
-        const currentNorm = normalizeForDiff(
-          change.current as unknown as Record<string, unknown>
-        );
-        const desiredNorm = normalizeForDiff(
-          change.desired as unknown as Record<string, unknown>
-        );
+        const currentNorm = normalizeRuleset(change.current);
+        const desiredNorm = normalizeRuleset(change.desired);
         const projectedCurrent = projectToDesiredShape(
           currentNorm,
           desiredNorm
