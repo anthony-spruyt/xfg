@@ -72,7 +72,7 @@ while IFS= read -r file_path; do
   ESCAPED_PATH=$(printf '%s' "${file_path}" | jq -Rs '.')
   ACTIONS+="{\"action\":\"delete\",\"file_path\":${ESCAPED_PATH}}"
   NEEDS_COMMA=true
-done <<< "$(printf '%s' "${TREE_JSON}" | jq -r '.[]? | select(.type == "blob") | .path')"
+done <<<"$(printf '%s' "${TREE_JSON}" | jq -r '.[]? | select(.type == "blob") | .path')"
 
 # Add/update README.md
 if [ "${NEEDS_COMMA}" = true ]; then
@@ -98,7 +98,7 @@ COMMIT_BODY=$(jq -n \
   --argjson actions "${ACTIONS}" \
   '{branch: $branch, commit_message: $message, actions: $actions}')
 
-glab api --method POST "projects/${PROJECT_ID}/repository/commits" --input - <<< "${COMMIT_BODY}" >/dev/null 2>&1 || true
+glab api --method POST "projects/${PROJECT_ID}/repository/commits" --input - <<<"${COMMIT_BODY}" >/dev/null 2>&1 || true
 
 echo "  Reset ${DEFAULT_BRANCH} to README-only"
 

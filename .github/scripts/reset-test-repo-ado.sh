@@ -81,14 +81,14 @@ while IFS=' ' read -r ref_name object_id; do
       --object-id "${object_id}" 2>/dev/null || true
     echo "  Deleted branch ${branch_name}"
   fi
-done <<< "${REFS}"
+done <<<"${REFS}"
 
 # Step 4 — Reset default branch to README-only
 echo "Step 4: Resetting ${DEFAULT_BRANCH} to README-only..."
 
 # Get latest commit on default branch
-LATEST_COMMIT=$(printf '%s' "$(ado_api GET "${ORG_URL}/${PROJECT}/_apis/git/repositories/${REPO}/refs?filter=heads/${DEFAULT_BRANCH}&api-version=7.0")" \
-  | jq -r '.value[0].objectId // empty')
+LATEST_COMMIT=$(printf '%s' "$(ado_api GET "${ORG_URL}/${PROJECT}/_apis/git/repositories/${REPO}/refs?filter=heads/${DEFAULT_BRANCH}&api-version=7.0")" |
+  jq -r '.value[0].objectId // empty')
 
 if [ -z "${LATEST_COMMIT}" ]; then
   echo "  No commits on default branch, skipping reset"
@@ -116,7 +116,7 @@ while IFS= read -r item_path; do
     CHANGES+="{\"changeType\":\"delete\",\"item\":{\"path\":\"${item_path}\"}}"
     NEEDS_CHANGES=true
   fi
-done <<< "${ITEMS}"
+done <<<"${ITEMS}"
 
 # Add/edit README.md
 if [ "${NEEDS_CHANGES}" = true ]; then
@@ -134,7 +134,8 @@ fi
 CHANGES+="{\"changeType\":\"${CHANGE_TYPE}\",\"item\":{\"path\":\"/README.md\"},\"newContent\":{\"content\":\"${README_CONTENT}\",\"contentType\":\"base64encoded\"}}"
 CHANGES+="]"
 
-PUSH_BODY=$(cat <<PUSH_JSON
+PUSH_BODY=$(
+  cat <<PUSH_JSON
 {
   "refUpdates": [{"name": "refs/heads/${DEFAULT_BRANCH}", "oldObjectId": "${LATEST_COMMIT}"}],
   "commits": [{"comment": "test: reset to clean state", "changes": ${CHANGES}}]

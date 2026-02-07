@@ -116,28 +116,6 @@ function pushFileChange(
   adoApi("POST", uri, JSON.stringify(pushBody));
 }
 
-// Helper to delete a branch (requires getting object_id first)
-function deleteBranch(branchName: string): boolean {
-  try {
-    // First get the branch's object_id
-    const refsUri = `${ORG_URL}/${TEST_PROJECT}/_apis/git/repositories/${TEST_REPO}/refs?filter=heads/${encodeURIComponent(branchName)}&api-version=7.0`;
-    const result = adoApi("GET", refsUri);
-    const json = JSON.parse(result);
-    if (!json.value || json.value.length === 0) {
-      return false; // Branch doesn't exist
-    }
-    const objectId = json.value[0].objectId;
-
-    // Now delete with object_id
-    exec(
-      `az repos ref delete --name refs/heads/${branchName} --repository ${TEST_REPO} --org ${ORG_URL} --project ${TEST_PROJECT} --object-id ${objectId}`
-    );
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 const RESET_SCRIPT = join(
   projectRoot,
   ".github/scripts/reset-test-repo-ado.sh"
