@@ -15,6 +15,7 @@ import type {
 class MockRulesetStrategy {
   calls: { method: string; args: unknown[] }[] = [];
   listResponse: GitHubRuleset[] = [];
+  getResponseMap: Map<number, GitHubRuleset> = new Map();
   createResponse: GitHubRuleset = {
     id: 1,
     name: "test",
@@ -35,7 +36,11 @@ class MockRulesetStrategy {
 
   async get(_repo: GitHubRepoInfo, id: number): Promise<GitHubRuleset> {
     this.calls.push({ method: "get", args: [id] });
-    return this.listResponse.find((r) => r.id === id) ?? this.createResponse;
+    return (
+      this.getResponseMap.get(id) ??
+      this.listResponse.find((r) => r.id === id) ??
+      this.createResponse
+    );
   }
 
   async create(
@@ -64,10 +69,15 @@ class MockRulesetStrategy {
   reset(): void {
     this.calls = [];
     this.listResponse = [];
+    this.getResponseMap = new Map();
   }
 
   setListResponse(rulesets: GitHubRuleset[]): void {
     this.listResponse = rulesets;
+  }
+
+  setGetResponse(id: number, ruleset: GitHubRuleset): void {
+    this.getResponseMap.set(id, ruleset);
   }
 }
 
@@ -267,6 +277,189 @@ describe("RulesetProcessor", () => {
       );
       assert.equal(createCalls.length, 0);
       assert.equal(updateCalls.length, 0);
+    });
+
+    test("fetches full details for rulesets matching desired config", async () => {
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-org/test-repo.git",
+        files: [],
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              enforcement: "active",
+              rules: [{ type: "pull_request" }],
+            },
+          },
+        },
+      };
+      // List returns partial data (no rules/conditions)
+      mockStrategy.setListResponse([
+        {
+          id: 100,
+          name: "main-protection",
+          target: "branch",
+          enforcement: "active",
+        },
+      ]);
+      // Get returns full data with rules
+      mockStrategy.setGetResponse(100, {
+        id: 100,
+        name: "main-protection",
+        target: "branch",
+        enforcement: "active",
+        rules: [
+          {
+            type: "pull_request",
+            parameters: {
+              required_approving_review_count: 0,
+              dismiss_stale_reviews_on_push: false,
+              require_code_owner_review: false,
+              require_last_push_approval: false,
+              required_review_thread_resolution: false,
+              allowed_merge_methods: ["merge", "squash", "rebase"],
+            },
+          },
+        ],
+      });
+
+      const result = await processor.process(repoConfig, mockGitHubRepo, {
+        configId: "test-config",
+        dryRun: false,
+        managedRulesets: ["main-protection"],
+      });
+
+      assert.equal(result.success, true);
+      // Should have called get() for the matching ruleset
+      const getCalls = mockStrategy.calls.filter((c) => c.method === "get");
+      assert.equal(getCalls.length, 1);
+      assert.equal(getCalls[0].args[0], 100);
+      // With full data from get(), this should be unchanged (not update)
+      assert.equal(result.changes?.unchanged, 1);
+      assert.equal(result.changes?.update, 0);
+    });
+
+    test("does not fetch full details for rulesets not in desired config", async () => {
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-org/test-repo.git",
+        files: [],
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              enforcement: "active",
+            },
+          },
+        },
+      };
+      // List returns two rulesets, only one matches desired config
+      mockStrategy.setListResponse([
+        {
+          id: 100,
+          name: "main-protection",
+          target: "branch",
+          enforcement: "active",
+        },
+        {
+          id: 200,
+          name: "unrelated-ruleset",
+          target: "branch",
+          enforcement: "active",
+        },
+      ]);
+      mockStrategy.setGetResponse(100, {
+        id: 100,
+        name: "main-protection",
+        target: "branch",
+        enforcement: "active",
+      });
+
+      await processor.process(repoConfig, mockGitHubRepo, {
+        configId: "test-config",
+        dryRun: false,
+        managedRulesets: ["main-protection"],
+      });
+
+      // Should only call get() for "main-protection", not "unrelated-ruleset"
+      const getCalls = mockStrategy.calls.filter((c) => c.method === "get");
+      assert.equal(getCalls.length, 1);
+      assert.equal(getCalls[0].args[0], 100);
+    });
+
+    test("list returns partial data and get returns full data - round trip unchanged", async () => {
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-org/test-repo.git",
+        files: [],
+        settings: {
+          rulesets: {
+            "branch-rules": {
+              target: "branch",
+              enforcement: "active",
+              conditions: {
+                refName: {
+                  include: ["refs/heads/main"],
+                  exclude: [],
+                },
+              },
+              rules: [{ type: "pull_request" }],
+              bypassActors: [
+                { actorId: 1, actorType: "Team", bypassMode: "always" },
+              ],
+            },
+          },
+        },
+      };
+      // List returns summary only (no rules, conditions, or bypass_actors)
+      mockStrategy.setListResponse([
+        {
+          id: 42,
+          name: "branch-rules",
+          target: "branch",
+          enforcement: "active",
+        },
+      ]);
+      // Get returns full details
+      mockStrategy.setGetResponse(42, {
+        id: 42,
+        name: "branch-rules",
+        target: "branch",
+        enforcement: "active",
+        conditions: {
+          ref_name: {
+            include: ["refs/heads/main"],
+            exclude: [],
+          },
+        },
+        rules: [
+          {
+            type: "pull_request",
+            parameters: {
+              required_approving_review_count: 0,
+              dismiss_stale_reviews_on_push: false,
+              require_code_owner_review: false,
+              require_last_push_approval: false,
+              required_review_thread_resolution: false,
+              allowed_merge_methods: ["merge", "squash", "rebase"],
+            },
+          },
+        ],
+        bypass_actors: [
+          { actor_id: 1, actor_type: "Team", bypass_mode: "always" },
+        ],
+      });
+
+      const result = await processor.process(repoConfig, mockGitHubRepo, {
+        configId: "test-config",
+        dryRun: true,
+        managedRulesets: ["branch-rules"],
+      });
+
+      assert.equal(result.success, true);
+      // Should be unchanged since full data from get() matches config
+      assert.equal(result.changes?.unchanged, 1);
+      assert.equal(result.changes?.create, 0);
+      assert.equal(result.changes?.update, 0);
+      assert.equal(result.changes?.delete, 0);
     });
 
     test("respects noDelete option", async () => {

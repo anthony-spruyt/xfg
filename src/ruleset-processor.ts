@@ -1,7 +1,10 @@
 import type { RepoConfig, Ruleset } from "./config.js";
 import type { RepoInfo, GitHubRepoInfo } from "./repo-detector.js";
 import { isGitHubRepo, getRepoDisplayName } from "./repo-detector.js";
-import { GitHubRulesetStrategy } from "./strategies/github-ruleset-strategy.js";
+import {
+  GitHubRulesetStrategy,
+  type GitHubRuleset,
+} from "./strategies/github-ruleset-strategy.js";
 import { diffRulesets } from "./ruleset-diff.js";
 import {
   formatRulesetPlan,
@@ -117,12 +120,25 @@ export class RulesetProcessor implements IRulesetProcessor {
         Object.entries(desiredRulesets)
       );
 
+      // Hydrate rulesets that match desired names with full details from get()
+      // The list endpoint only returns summary fields (id, name, target, enforcement)
+      // but not rules, conditions, or bypass_actors needed for accurate diffing
+      const fullRulesets: GitHubRuleset[] = [];
+      for (const summary of currentRulesets) {
+        if (desiredMap.has(summary.name)) {
+          const full = await this.strategy.get(
+            githubRepo,
+            summary.id,
+            strategyOptions
+          );
+          fullRulesets.push(full);
+        } else {
+          fullRulesets.push(summary);
+        }
+      }
+
       // Compute diff
-      const changes = diffRulesets(
-        currentRulesets,
-        desiredMap,
-        managedRulesets
-      );
+      const changes = diffRulesets(fullRulesets, desiredMap, managedRulesets);
 
       // Count changes by type
       const changeCounts = {
