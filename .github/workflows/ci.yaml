@@ -202,10 +202,23 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      # Cleanup before — reset test repo to clean state
+      - name: Cleanup — reset test repo
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
+
       - name: Run GitHub integration tests (PAT)
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github
+
+      # Cleanup — always runs regardless of pass/fail
+      - name: Cleanup — reset test repo
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
 
   integration-test-cli-sync-github-app:
     needs:
@@ -240,11 +253,11 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Cleanup before — teardown leftover state from previous runs
-      - name: Cleanup — teardown leftover state
+      # Cleanup before — reset test repo to clean state
+      - name: Cleanup — reset test repo
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/cleanup-github-app-tests.sh
+        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
 
       # Act — only App credentials, no GH_TOKEN
       - name: Act — run GitHub App integration tests
@@ -260,11 +273,11 @@ jobs:
         run: .github/scripts/assert-github-app-tests.sh
 
       # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — teardown test state
+      - name: Cleanup — reset test repo
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/cleanup-github-app-tests.sh
+        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
 
   integration-test-cli-settings-rulesets-pat:
     needs:
@@ -299,10 +312,23 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      # Cleanup before — reset test repo to clean state
+      - name: Cleanup — reset test repo
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
+
       - name: Run GitHub settings integration tests
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github-rulesets
+
+      # Cleanup — always runs regardless of pass/fail
+      - name: Cleanup — reset test repo
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
 
   integration-test-cli-settings-repo-pat:
     needs:
@@ -337,10 +363,23 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      # Cleanup before — reset test repo to clean state
+      - name: Cleanup — reset test repo
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
+
       - name: Run GitHub repo settings integration tests
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github-repo-settings
+
+      # Cleanup — always runs regardless of pass/fail
+      - name: Cleanup — reset test repo
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
 
   integration-test-action-sync-pat:
     needs:
@@ -382,13 +421,11 @@ jobs:
       - name: Set package path
         run: echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
 
-      # Cleanup before — teardown leftover state from previous runs
-      - name: Cleanup — teardown leftover state
+      # Cleanup before — reset test repo to clean state
+      - name: Cleanup — reset test repo
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${PAT_BRANCH}"
-          .github/scripts/delete-manifest.sh "${TEST_REPO}"
+        run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
 
       # Arrange — seed manifest and configure git identity
       - name: Arrange — seed manifest
@@ -445,13 +482,11 @@ jobs:
         run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.pat-validate.outputs.commit_sha }}"
 
       # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — teardown test state
+      - name: Cleanup — reset test repo
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${PAT_BRANCH}"
-          .github/scripts/delete-manifest.sh "${TEST_REPO}"
+        run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
 
   integration-test-action-sync-app:
     needs:
@@ -493,13 +528,11 @@ jobs:
       - name: Set package path
         run: echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
 
-      # Cleanup before — teardown leftover state from previous runs
-      - name: Cleanup — teardown leftover state
+      # Cleanup before — reset test repo to clean state
+      - name: Cleanup — reset test repo
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
-          .github/scripts/delete-manifest.sh "${TEST_REPO}"
+        run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
 
       # Arrange — seed manifest
       - name: Arrange — seed manifest
@@ -558,13 +591,11 @@ jobs:
         run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.app-validate.outputs.commit_sha }}"
 
       # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — teardown test state
+      - name: Cleanup — reset test repo
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
-          .github/scripts/delete-manifest.sh "${TEST_REPO}"
+        run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
 
   integration-test-action-settings-app:
     needs:
@@ -605,16 +636,11 @@ jobs:
       - name: Set package path
         run: echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
 
-      # Cleanup before — teardown leftover rulesets from previous runs
-      - name: Cleanup — teardown leftover rulesets
+      # Cleanup before — reset test repo to clean state
+      - name: Cleanup — reset test repo
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          RULESET_ID=$(gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset") | .id')
-          if [ -n "$RULESET_ID" ]; then
-            gh api --method DELETE repos/${TEST_REPO}/rulesets/${RULESET_ID}
-            echo "Cleaned up leftover test ruleset"
-          fi
+        run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
 
       # Act — run xfg action with settings command
       - name: Act — run xfg action with settings command
@@ -638,16 +664,11 @@ jobs:
           echo "Ruleset created successfully"
 
       # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — teardown test ruleset
+      - name: Cleanup — reset test repo
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          RULESET_ID=$(gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset") | .id')
-          if [ -n "$RULESET_ID" ]; then
-            gh api --method DELETE repos/${TEST_REPO}/rulesets/${RULESET_ID}
-            echo "Cleaned up test ruleset"
-          fi
+        run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
 
   # Summary job for branch protection - add jobs to 'needs' array
   summary:
