@@ -24,9 +24,6 @@ jobs:
     secrets: "inherit"
 
   build:
-    needs:
-      - "lint"
-    if: ${{ !cancelled() && needs.lint.result != 'failure' }}
     runs-on: ubuntu-latest
 
     concurrency:
