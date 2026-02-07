@@ -15,7 +15,19 @@ RULESET_NAME="xfg-app-bypass-test"
 
 echo "=== Setting up GitHub App integration tests ==="
 
-# 1. Close any existing PRs from the sync branch
+# 1. Delete test rulesets first (they enforce branch protection that blocks file deletion)
+echo "Cleaning up test rulesets..."
+RULESET_IDS=$(gh api "repos/${TEST_REPO}/rulesets" --jq ".[] | select(.name == \"${RULESET_NAME}\") | .id" 2>/dev/null || true)
+if [ -n "${RULESET_IDS}" ]; then
+  for id in ${RULESET_IDS}; do
+    echo "  Deleting ruleset ${id}"
+    gh api --method DELETE "repos/${TEST_REPO}/rulesets/${id}" 2>/dev/null || true
+  done
+else
+  echo "  No test rulesets found"
+fi
+
+# 2. Close any existing PRs from the sync branch
 echo "Closing any existing PRs for ${SYNC_BRANCH}..."
 PR_NUMBERS=$(gh pr list --repo "${TEST_REPO}" --head "${SYNC_BRANCH}" --json number --jq '.[].number' 2>/dev/null || true)
 if [ -n "${PR_NUMBERS}" ]; then
@@ -27,11 +39,11 @@ else
   echo "  No existing PRs found"
 fi
 
-# 2. Delete the sync branch if it exists
+# 3. Delete the sync branch if it exists
 echo "Deleting remote branch ${SYNC_BRANCH} if exists..."
 gh api --method DELETE "repos/${TEST_REPO}/git/refs/heads/${SYNC_BRANCH}" 2>/dev/null || echo "  Branch does not exist"
 
-# 3. Delete test files if they exist
+# 4. Delete test files if they exist
 for file in "${TARGET_FILE}" "${DIRECT_FILE}" "${ORPHAN_FILE}" "${REMAINING_FILE}" "${MANIFEST_FILE}"; do
   echo "Checking ${file}..."
   SHA=$(gh api "repos/${TEST_REPO}/contents/${file}" --jq '.sha' 2>/dev/null || true)
@@ -44,17 +56,5 @@ for file in "${TARGET_FILE}" "${DIRECT_FILE}" "${ORPHAN_FILE}" "${REMAINING_FILE
     echo "  ${file} does not exist"
   fi
 done
-
-# 4. Delete test rulesets if they exist
-echo "Cleaning up test rulesets..."
-RULESET_IDS=$(gh api "repos/${TEST_REPO}/rulesets" --jq ".[] | select(.name == \"${RULESET_NAME}\") | .id" 2>/dev/null || true)
-if [ -n "${RULESET_IDS}" ]; then
-  for id in ${RULESET_IDS}; do
-    echo "  Deleting ruleset ${id}"
-    gh api --method DELETE "repos/${TEST_REPO}/rulesets/${id}" 2>/dev/null || true
-  done
-else
-  echo "  No test rulesets found"
-fi
 
 echo "=== Setup complete ==="
