@@ -15,8 +15,8 @@ settings:
       target: branch
       enforcement: active
       bypassActors:
-        - actorId: 5
-          actorType: RepositoryRole
+        - actorId: 2719952
+          actorType: Integration
           bypassMode: always
       conditions:
         refName:
