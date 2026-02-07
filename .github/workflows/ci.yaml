@@ -66,6 +66,18 @@ jobs:
           path: dist/
           retention-days: 1
 
+      - name: Create package for action tests
+        if: github.event_name == 'push'
+        run: npm pack
+
+      - name: Upload package artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v6
+        with:
+          name: package
+          path: "*.tgz"
+          retention-days: 1
+
   # GitHub PAT integration tests
   integration-test-github:
     needs:
