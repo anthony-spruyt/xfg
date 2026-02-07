@@ -45,10 +45,11 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
     const output = exec(`node dist/cli.js --config ${configPath}`, xfgEnv);
     console.log(output);
 
-    // xfg should complete successfully (direct push)
+    // exec throws on non-zero exit code, so reaching here means success.
+    // Verify xfg reported a successful outcome.
     assert.ok(
-      !output.includes("Failed") && !output.includes("Error"),
-      "xfg direct mode should complete without errors"
+      output.includes("succeeded"),
+      "xfg direct mode should report success"
     );
   });
 
