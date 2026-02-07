@@ -78,8 +78,98 @@ jobs:
           path: "*.tgz"
           retention-days: 1
 
-  # GitHub PAT integration tests
-  integration-test-github:
+  integration-test-cli-sync-ado-pat:
+    needs:
+      - "build"
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: integration-ado
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Install Azure CLI DevOps Extension
+        run: az extension add --name azure-devops --yes
+
+      - name: Configure git credential helper for Azure DevOps
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          # Use credential helper that reads from env var (more secure than URL-embedded PAT)
+          chmod +x .github/scripts/git-credential-ado.sh
+          git config --global credential."https://dev.azure.com".helper "$(pwd)/.github/scripts/git-credential-ado.sh"
+          git config --global credential."https://dev.azure.com".useHttpPath true
+
+      - name: Run Azure DevOps integration tests
+        env:
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+        run: npm run test:integration:ado
+
+  integration-test-cli-sync-gitlab-pat:
+    needs:
+      - "build"
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: integration-gitlab
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Install GitLab CLI
+        run: |
+          curl -sSL "https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository" | sudo bash
+          sudo apt-get install -y glab
+
+      - name: Configure git credential helper for GitLab
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          chmod +x .github/scripts/git-credential-gitlab.sh
+          git config --global credential."https://gitlab.com".helper "$(pwd)/.github/scripts/git-credential-gitlab.sh"
+          git config --global credential."https://gitlab.com".useHttpPath true
+
+      - name: Run GitLab integration tests
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: npm run test:integration:gitlab
+
+  integration-test-cli-sync-github-pat:
     needs:
       - "build"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
@@ -117,16 +207,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github
 
-  # GitHub App integration tests (isolated — no GH_TOKEN in test environment)
-  integration-test-github-app:
+  integration-test-cli-sync-github-app:
     needs:
-      - "build"
-      - "integration-test-github"
+      - "integration-test-cli-sync-github-pat"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-github-app
+      group: integration-github
       cancel-in-progress: false
 
     steps:
@@ -178,105 +266,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: .github/scripts/cleanup-github-app-tests.sh
 
-  integration-test-ado:
+  integration-test-cli-settings-rulesets-pat:
     needs:
-      - "build"
+      - "integration-test-cli-sync-github-app"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-ado
-      cancel-in-progress: false
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: dist
-          path: dist/
-
-      - name: Install Azure CLI DevOps Extension
-        run: az extension add --name azure-devops --yes
-
-      - name: Configure git credential helper for Azure DevOps
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          # Use credential helper that reads from env var (more secure than URL-embedded PAT)
-          chmod +x .github/scripts/git-credential-ado.sh
-          git config --global credential."https://dev.azure.com".helper "$(pwd)/.github/scripts/git-credential-ado.sh"
-          git config --global credential."https://dev.azure.com".useHttpPath true
-
-      - name: Run Azure DevOps integration tests
-        env:
-          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
-        run: npm run test:integration:ado
-
-  integration-test-gitlab:
-    needs:
-      - "build"
-    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
-    runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-gitlab
-      cancel-in-progress: false
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: dist
-          path: dist/
-
-      - name: Install GitLab CLI
-        run: |
-          curl -sSL "https://raw.githubusercontent.com/upciti/wakemeops/main/assets/install_repository" | sudo bash
-          sudo apt-get install -y glab
-
-      - name: Configure git credential helper for GitLab
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          chmod +x .github/scripts/git-credential-gitlab.sh
-          git config --global credential."https://gitlab.com".helper "$(pwd)/.github/scripts/git-credential-gitlab.sh"
-          git config --global credential."https://gitlab.com".useHttpPath true
-
-      - name: Run GitLab integration tests
-        env:
-          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-        run: npm run test:integration:gitlab
-
-  integration-test-github-rulesets:
-    needs:
-      - "build"
-    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
-    runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github-settings
+      group: integration-github
       cancel-in-progress: false
 
     steps:
@@ -307,14 +304,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github-rulesets
 
-  integration-test-github-repo-settings:
+  integration-test-cli-settings-repo-pat:
     needs:
-      - "build"
+      - "integration-test-cli-settings-rulesets-pat"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-github-repo-settings
+      group: integration-github
       cancel-in-progress: false
 
     steps:
@@ -345,12 +342,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github-repo-settings
 
-  # GitHub Action test — PAT credentials
-  integration-test-action-pat:
+  integration-test-action-sync-pat:
     needs:
-      - "build"
-      - "integration-test-github"
-      - "integration-test-github-app"
+      - "integration-test-cli-settings-repo-pat"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
@@ -459,10 +453,9 @@ jobs:
           .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${PAT_BRANCH}"
           .github/scripts/delete-manifest.sh "${TEST_REPO}"
 
-  # GitHub Action test — GitHub App credentials (isolated, no GH_TOKEN in Act step)
-  integration-test-action-app:
+  integration-test-action-sync-app:
     needs:
-      - "integration-test-action-pat"
+      - "integration-test-action-sync-pat"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
@@ -573,10 +566,9 @@ jobs:
           .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
           .github/scripts/delete-manifest.sh "${TEST_REPO}"
 
-  # GitHub Action test — settings command
-  integration-test-action-settings:
+  integration-test-action-settings-app:
     needs:
-      - "integration-test-action-app"
+      - "integration-test-action-sync-app"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
@@ -662,14 +654,14 @@ jobs:
     needs:
       - "lint"
       - "build"
-      - "integration-test-github"
-      - "integration-test-github-app"
-      - "integration-test-ado"
-      - "integration-test-gitlab"
-      - "integration-test-github-rulesets"
-      - "integration-test-github-repo-settings"
-      - "integration-test-action-pat"
-      - "integration-test-action-app"
-      - "integration-test-action-settings"
+      - "integration-test-cli-sync-ado-pat"
+      - "integration-test-cli-sync-gitlab-pat"
+      - "integration-test-cli-sync-github-pat"
+      - "integration-test-cli-sync-github-app"
+      - "integration-test-cli-settings-rulesets-pat"
+      - "integration-test-cli-settings-repo-pat"
+      - "integration-test-action-sync-pat"
+      - "integration-test-action-sync-app"
+      - "integration-test-action-settings-app"
     if: "always()"
     uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@main"
