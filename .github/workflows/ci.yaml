@@ -118,10 +118,23 @@ jobs:
           git config --global credential."https://dev.azure.com".helper "$(pwd)/.github/scripts/git-credential-ado.sh"
           git config --global credential."https://dev.azure.com".useHttpPath true
 
+      # Cleanup before — reset test repo to clean state
+      - name: Cleanup — reset ADO test repo
+        env:
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+        run: .github/scripts/reset-test-repo-ado.sh https://dev.azure.com/aspruyt fxg fxg-test
+
       - name: Run Azure DevOps integration tests
         env:
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         run: npm run test:integration:ado
+
+      # Cleanup — always runs regardless of pass/fail
+      - name: Cleanup — reset ADO test repo
+        if: always()
+        env:
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+        run: .github/scripts/reset-test-repo-ado.sh https://dev.azure.com/aspruyt fxg fxg-test
 
   integration-test-cli-sync-gitlab-pat:
     needs:
@@ -164,10 +177,23 @@ jobs:
           git config --global credential."https://gitlab.com".helper "$(pwd)/.github/scripts/git-credential-gitlab.sh"
           git config --global credential."https://gitlab.com".useHttpPath true
 
+      # Cleanup before — reset test repo to clean state
+      - name: Cleanup — reset GitLab test repo
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: .github/scripts/reset-test-repo-gitlab.sh anthony-spruyt1/xfg-test
+
       - name: Run GitLab integration tests
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: npm run test:integration:gitlab
+
+      # Cleanup — always runs regardless of pass/fail
+      - name: Cleanup — reset GitLab test repo
+        if: always()
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: .github/scripts/reset-test-repo-gitlab.sh anthony-spruyt1/xfg-test
 
   integration-test-cli-sync-github-pat:
     needs:
