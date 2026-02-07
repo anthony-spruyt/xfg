@@ -459,6 +459,122 @@ jobs:
           .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${PAT_BRANCH}"
           .github/scripts/delete-manifest.sh "${TEST_REPO}"
 
+  # GitHub Action test — GitHub App credentials (isolated, no GH_TOKEN in Act step)
+  integration-test-action-app:
+    needs:
+      - "build"
+      - "integration-test-github"
+      - "integration-test-github-app"
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: integration-github
+      cancel-in-progress: false
+
+    env:
+      TEST_REPO: anthony-spruyt/xfg-test
+      APP_BRANCH: chore/sync-app-test
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Download package artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: package
+
+      - name: Set package path
+        run: echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
+
+      # Cleanup before — teardown leftover state from previous runs
+      - name: Cleanup — teardown leftover state
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
+          .github/scripts/delete-manifest.sh "${TEST_REPO}"
+
+      # Arrange — seed manifest
+      - name: Arrange — seed manifest
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/seed-manifest.sh "${TEST_REPO}"
+
+      # Act — run xfg action with GitHub App credentials (NO GH_TOKEN)
+      - name: Act — run xfg action with GitHub App credentials
+        uses: ./
+        with:
+          config: ./test/fixtures/integration-test-action-github.yaml
+          branch: ${{ env.APP_BRANCH }}
+          # Include github-token to simulate real usage where both are set
+          # This tests that GitHub App credentials take precedence over PAT
+          github-token: ${{ github.token }}
+          github-app-id: ${{ vars.TEST_APP_ID }}
+          github-app-private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+          xfg-package: "./${{ env.XFG_PACKAGE }}"
+
+      # Assert — verify commit author is GitHub App
+      - name: Assert — verify commit author is GitHub App
+        id: app-validate
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          echo "Verifying PR was created..."
+          PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${APP_BRANCH} --json number,title,url --jq '.[0]')
+          if [ -z "$PR_INFO" ]; then
+            echo "ERROR: No PR was created"
+            exit 1
+          fi
+          echo "PR created successfully:"
+          echo "$PR_INFO" | jq .
+
+          # Get commit author - should be GitHub App, NOT github-actions[bot]
+          PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
+          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo ${TEST_REPO} --json commits --jq '.commits[-1].oid')
+          COMMIT_AUTHOR=$(gh api "repos/${TEST_REPO}/commits/${COMMIT_SHA}" --jq '.commit.author.name')
+          echo "Commit author: $COMMIT_AUTHOR"
+
+          # Verify commit author is GitHub App, not github-actions[bot] (issue #268)
+          if [ "$COMMIT_AUTHOR" = "github-actions[bot]" ]; then
+            echo "ERROR: Commit author is github-actions[bot] but should be the GitHub App"
+            echo "This indicates the GitHub App token is not being used for GraphQL commits"
+            exit 1
+          fi
+          echo "Commit author is correct (GitHub App)"
+
+          # Export commit SHA for next step
+          echo "commit_sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Assert — verify file count in commit message
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.app-validate.outputs.commit_sha }}"
+
+      # Cleanup — always runs regardless of pass/fail
+      - name: Cleanup — teardown test state
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
+          .github/scripts/delete-manifest.sh "${TEST_REPO}"
+
   # Summary job for branch protection - add jobs to 'needs' array
   summary:
     needs:
