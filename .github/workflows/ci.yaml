@@ -153,8 +153,14 @@ jobs:
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
         run: npm run test:integration:github-app
 
-      # Assert — PAT for validation + cleanup
-      - name: Assert — validate results and cleanup
+      # Assert — PAT for validation
+      - name: Assert — validate results
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/assert-github-app-tests.sh
+
+      # Cleanup — always runs regardless of pass/fail
+      - name: Cleanup — teardown test state
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
