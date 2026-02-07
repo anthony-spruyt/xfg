@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
-# Integration test: settings command with GitHub App token for bypass_actors
-# Regression test for issue #378 - bypass_actors: null false diff
-id: integration-test-github-app-settings
+# Action integration test config for settings command with GitHub App
+id: integration-test-action-settings-app
 
 # Placeholder file required by schema - excluded from target repo
 files:
@@ -11,13 +10,9 @@ files:
 
 settings:
   rulesets:
-    xfg-app-bypass-test:
+    xfg-test-ruleset:
       target: branch
       enforcement: active
-      bypassActors:
-        - actorId: 2753244
-          actorType: Integration
-          bypassMode: always
       conditions:
         refName:
           include:
@@ -25,9 +20,9 @@ settings:
       rules:
         - type: pull_request
           parameters:
-            requiredApprovingReviewCount: 0
+            requiredApprovingReviewCount: 1
 
 repos:
-  - git: https://github.com/anthony-spruyt/xfg-test-2.git
+  - git: https://github.com/anthony-spruyt/xfg-test-6.git
     files:
       .xfg-settings-test: false

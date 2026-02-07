@@ -9,7 +9,7 @@ import {
 
 const fixturesDir = join(projectRoot, "test", "fixtures");
 
-const TEST_REPO = "anthony-spruyt/xfg-test";
+const TEST_REPO = "anthony-spruyt/xfg-test-3";
 const RULESET_NAME = "xfg-test-ruleset";
 
 function deleteRulesetIfExists(): void {

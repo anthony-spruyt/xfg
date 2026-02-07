@@ -21,7 +21,7 @@ const RESET_SCRIPT = join(projectRoot, ".github/scripts/reset-test-repo.sh");
 
 function resetTestRepo(): void {
   console.log("\n=== Resetting test repo to clean state ===\n");
-  exec(`bash ${RESET_SCRIPT} anthony-spruyt/xfg-test`);
+  exec(`bash ${RESET_SCRIPT} anthony-spruyt/xfg-test-2`);
   console.log("\n=== Reset complete ===\n");
 }
 

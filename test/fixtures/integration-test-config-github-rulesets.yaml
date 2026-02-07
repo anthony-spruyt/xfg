@@ -23,6 +23,6 @@ settings:
             requiredApprovingReviewCount: 1
 
 repos:
-  - git: https://github.com/anthony-spruyt/xfg-test.git
+  - git: https://github.com/anthony-spruyt/xfg-test-3.git
     files:
       .xfg-settings-test: false

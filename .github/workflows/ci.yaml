@@ -176,7 +176,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-github
+      group: integration-github-1
       cancel-in-progress: false
 
     steps:
@@ -209,12 +209,12 @@ jobs:
 
   integration-test-cli-sync-github-app:
     needs:
-      - "integration-test-cli-sync-github-pat"
+      - "build"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-github
+      group: integration-github-2
       cancel-in-progress: false
 
     steps:
@@ -257,12 +257,12 @@ jobs:
 
   integration-test-cli-settings-rulesets-pat:
     needs:
-      - "integration-test-cli-sync-github-app"
+      - "build"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-github
+      group: integration-github-3
       cancel-in-progress: false
 
     steps:
@@ -295,12 +295,12 @@ jobs:
 
   integration-test-cli-settings-repo-pat:
     needs:
-      - "integration-test-cli-settings-rulesets-pat"
+      - "build"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-github
+      group: integration-github-4
       cancel-in-progress: false
 
     steps:
@@ -333,16 +333,16 @@ jobs:
 
   integration-test-action-sync-pat:
     needs:
-      - "integration-test-cli-settings-repo-pat"
+      - "build"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-github
+      group: integration-github-5
       cancel-in-progress: false
 
     env:
-      TEST_REPO: anthony-spruyt/xfg-test
+      TEST_REPO: anthony-spruyt/xfg-test-4
       PAT_BRANCH: chore/sync-my-config
 
     steps:
@@ -381,7 +381,7 @@ jobs:
       - name: Arrange — seed manifest
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/seed-manifest.sh "${TEST_REPO}"
+        run: .github/scripts/seed-manifest.sh "${TEST_REPO}" "integration-test-action-github-pat"
 
       - name: Arrange — configure custom git identity
         run: |
@@ -392,7 +392,7 @@ jobs:
       - name: Act — run xfg action
         uses: ./
         with:
-          config: ./test/fixtures/integration-test-action-github.yaml
+          config: ./test/fixtures/integration-test-action-github-pat.yaml
           branch: ${{ env.PAT_BRANCH }}
           github-token: ${{ secrets.GH_PAT }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
@@ -433,16 +433,16 @@ jobs:
 
   integration-test-action-sync-app:
     needs:
-      - "integration-test-action-sync-pat"
+      - "build"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-github
+      group: integration-github-6
       cancel-in-progress: false
 
     env:
-      TEST_REPO: anthony-spruyt/xfg-test
+      TEST_REPO: anthony-spruyt/xfg-test-5
       APP_BRANCH: chore/sync-app-test
 
     steps:
@@ -481,13 +481,13 @@ jobs:
       - name: Arrange — seed manifest
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/seed-manifest.sh "${TEST_REPO}"
+        run: .github/scripts/seed-manifest.sh "${TEST_REPO}" "integration-test-action-github-app"
 
       # Act — run xfg action with GitHub App credentials (NO GH_TOKEN)
       - name: Act — run xfg action with GitHub App credentials
         uses: ./
         with:
-          config: ./test/fixtures/integration-test-action-github.yaml
+          config: ./test/fixtures/integration-test-action-github-app.yaml
           branch: ${{ env.APP_BRANCH }}
           # Include github-token to simulate real usage where both are set
           # This tests that GitHub App credentials take precedence over PAT
@@ -535,16 +535,16 @@ jobs:
 
   integration-test-action-settings-app:
     needs:
-      - "integration-test-action-sync-app"
+      - "build"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
     concurrency:
-      group: integration-github
+      group: integration-github-7
       cancel-in-progress: false
 
     env:
-      TEST_REPO: anthony-spruyt/xfg-test
+      TEST_REPO: anthony-spruyt/xfg-test-6
 
     steps:
       - uses: actions/checkout@v6
@@ -583,7 +583,7 @@ jobs:
         uses: ./
         with:
           command: settings
-          config: ./test/fixtures/integration-test-config-github-rulesets.yaml
+          config: ./test/fixtures/integration-test-action-settings-app.yaml
           github-token: ${{ secrets.GH_PAT }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 

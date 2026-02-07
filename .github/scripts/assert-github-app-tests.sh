@@ -4,7 +4,7 @@ set -euo pipefail
 # Assert step for GitHub App integration tests.
 # Validates results using GH_TOKEN (PAT) — completely separate from the test step.
 
-TEST_REPO="anthony-spruyt/xfg-test"
+TEST_REPO="anthony-spruyt/xfg-test-2"
 SYNC_BRANCH="chore/sync-github-app-test"
 DIRECT_FILE="github-app-direct-test.json"
 

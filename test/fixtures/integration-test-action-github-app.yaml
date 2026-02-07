@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
-# Action integration test config - tests multiple files with deleteOrphaned to catch bug #268
-id: integration-test-action-github
+# Action integration test config (GitHub App) - tests multiple files with deleteOrphaned to catch bug #268
+id: integration-test-action-github-app
 deleteOrphaned: true
 files:
   action-test.json:
@@ -13,4 +13,4 @@ files:
       setting2: value2
 
 repos:
-  - git: https://github.com/anthony-spruyt/xfg-test.git
+  - git: https://github.com/anthony-spruyt/xfg-test-5.git
