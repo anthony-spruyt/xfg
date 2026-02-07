@@ -240,15 +240,11 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Cleanup before — reset test repo to clean state
-      - name: Cleanup — reset test repo
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
-
-      # Act — only App credentials, no GH_TOKEN
+      # GH_TOKEN needed for resetTestRepo() in tests (cross-repo access).
+      # xfg commands strip GH_TOKEN via xfgEnv — only App credentials are used.
       - name: Act — run GitHub App integration tests
         env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
           XFG_GITHUB_APP_ID: ${{ vars.TEST_APP_ID }}
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
         run: npm run test:integration:github-app
@@ -292,12 +288,6 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Cleanup before — reset test repo to clean state
-      - name: Cleanup — reset test repo
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
-
       - name: Run GitHub settings integration tests
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
@@ -335,12 +325,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      # Cleanup before — reset test repo to clean state
-      - name: Cleanup — reset test repo
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
 
       - name: Run GitHub repo settings integration tests
         env:

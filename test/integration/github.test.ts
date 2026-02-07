@@ -1,4 +1,4 @@
-import { test, describe } from "node:test";
+import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
 import {
@@ -30,9 +30,11 @@ function resetTestRepo(): void {
 }
 
 describe("GitHub Integration Test", () => {
-  test("sync creates a PR in the test repository", async () => {
+  beforeEach(() => {
     resetTestRepo();
+  });
 
+  test("sync creates a PR in the test repository", async () => {
     const configPath = join(fixturesDir, "integration-test-config-github.yaml");
 
     // Run the sync tool
@@ -102,8 +104,6 @@ describe("GitHub Integration Test", () => {
   });
 
   test("re-sync closes existing PR and creates fresh one", async () => {
-    resetTestRepo();
-
     // Arrange — create initial PR by running xfg
     const configPath = join(fixturesDir, "integration-test-config-github.yaml");
     console.log("Creating initial PR...");
@@ -159,8 +159,6 @@ describe("GitHub Integration Test", () => {
   });
 
   test("createOnly skips file when it exists on base branch", async () => {
-    resetTestRepo();
-
     // This test uses a separate config file with createOnly: true
     const createOnlyFile = "createonly-test.json";
     const createOnlyBranch = "chore/sync-createonly-test";
@@ -231,8 +229,6 @@ describe("GitHub Integration Test", () => {
   });
 
   test("PR title only includes files that actually changed (issue #90)", async () => {
-    resetTestRepo();
-
     // This test verifies the bug fix for issue #90:
     // When some files in the config don't actually change (content matches repo),
     // they should NOT appear in the PR title or commit message.
@@ -295,8 +291,6 @@ describe("GitHub Integration Test", () => {
   });
 
   test("template feature interpolates ${xfg:...} variables in files and PR body", async () => {
-    resetTestRepo();
-
     // This test verifies the template feature (issue #133):
     // 1. Files with template: true should have ${xfg:...} variables interpolated
     // 2. Custom prTemplate should have ${xfg:...} variables interpolated in PR body
@@ -421,8 +415,6 @@ describe("GitHub Integration Test", () => {
   });
 
   test("direct mode pushes directly to main branch without creating PR (issue #134)", async () => {
-    resetTestRepo();
-
     // This test verifies the direct mode feature (issue #134):
     // Files are pushed directly to the default branch without creating a PR.
 
@@ -471,8 +463,6 @@ describe("GitHub Integration Test", () => {
   });
 
   test("deleteOrphaned removes files when removed from config (issue #132)", async () => {
-    resetTestRepo();
-
     // This test verifies the deleteOrphaned feature (issue #132):
     // 1. Sync a file with deleteOrphaned: true (tracked in .xfg.json manifest)
     // 2. Remove the file from config
@@ -555,8 +545,6 @@ describe("GitHub Integration Test", () => {
   });
 
   test("handles divergent branch when existing PR is present (issue #183)", async () => {
-    resetTestRepo();
-
     // This test verifies the fix for issue #183:
     // When xfg tries to push to a sync branch that has diverged from the new local changes,
     // it should use --force-with-lease to handle the divergent history gracefully.
@@ -634,8 +622,6 @@ describe("GitHub Integration Test", () => {
   });
 
   test("handles divergent branch when no PR exists but branch exists (issue #183)", async () => {
-    resetTestRepo();
-
     // This test verifies the fix for issue #183, specifically the case where:
     // - closeExistingPR has nothing to close (no PR exists)
     // - But the remote sync branch still exists from a previous run

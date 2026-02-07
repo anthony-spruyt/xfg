@@ -1,7 +1,7 @@
-import { test, describe, before, after } from "node:test";
+import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
-import { writeFileSync, unlinkSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { exec, projectRoot } from "./test-helpers.js";
 
 // Test constants - these are hardcoded and not derived from user input
@@ -99,53 +99,18 @@ repos:
   console.log(`  Created config file: ${configPath}`);
 }
 
-/**
- * Clean up the config file.
- */
-function deleteConfigFile(): void {
-  try {
-    unlinkSync(configPath);
-    console.log(`  Deleted config file: ${configPath}`);
-  } catch {
-    // File doesn't exist, that's fine
-  }
+async function resetTestRepo(): Promise<void> {
+  console.log("\n=== Resetting repo settings test repo ===\n");
+  deleteRepoIfExists();
+  createTestRepo();
+  await waitForRepoReady();
+  createConfigFile();
+  console.log("\n=== Reset complete ===\n");
 }
 
 describe("GitHub Repo Settings Integration Test", () => {
-  before(async () => {
-    console.log("\n=== Setting up repo settings integration test ===\n");
-
-    // Delete test repo if it exists from previous runs
-    console.log("Cleaning up any existing test repository...");
-    deleteRepoIfExists();
-
-    // Create fresh test repo
-    console.log("\nCreating test repository...");
-    createTestRepo();
-
-    // Wait for repo to be ready
-    console.log("\nWaiting for repository to be ready...");
-    await waitForRepoReady();
-
-    // Create config file
-    console.log("\nCreating config file...");
-    createConfigFile();
-
-    console.log("\n=== Setup complete ===\n");
-  });
-
-  after(() => {
-    console.log("\n=== Cleaning up ===\n");
-
-    // Delete config file
-    console.log("Deleting config file...");
-    deleteConfigFile();
-
-    // Delete test repo
-    console.log("Deleting test repository...");
-    deleteRepoIfExists();
-
-    console.log("\n=== Cleanup complete ===\n");
+  beforeEach(async () => {
+    await resetTestRepo();
   });
 
   test("settings dry-run shows planned repo settings changes", async () => {
@@ -237,6 +202,12 @@ describe("GitHub Repo Settings Integration Test", () => {
   });
 
   test("settings reports no changes when already in desired state", async () => {
+    // Apply settings first so repo is in desired state
+    console.log("Applying settings to reach desired state...");
+    exec(`node dist/cli.js settings --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+
     // Run settings again - should report no changes
     console.log("Running xfg settings again (should report no changes)...");
     const output = exec(`node dist/cli.js settings --config ${configPath}`, {

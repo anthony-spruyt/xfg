@@ -1,4 +1,4 @@
-import { test, describe, before, after } from "node:test";
+import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
 import {
@@ -36,25 +36,17 @@ async function waitForRulesetVisible(
   return waitForRulesetVisibleBase(TEST_REPO, rulesetId, timeoutMs);
 }
 
+const RESET_SCRIPT = join(projectRoot, ".github/scripts/reset-test-repo.sh");
+
+function resetTestRepo(): void {
+  console.log("\n=== Resetting test repo to clean state ===\n");
+  exec(`bash ${RESET_SCRIPT} ${TEST_REPO}`);
+  console.log("\n=== Reset complete ===\n");
+}
+
 describe("GitHub Settings Integration Test", () => {
-  before(() => {
-    console.log("\n=== Setting up settings integration test ===\n");
-
-    // Delete test ruleset if it exists from previous runs
-    console.log("Cleaning up any existing test rulesets...");
-    deleteRulesetIfExists();
-
-    console.log("\n=== Setup complete ===\n");
-  });
-
-  after(() => {
-    console.log("\n=== Cleaning up ===\n");
-
-    // Delete test ruleset created during tests
-    console.log("Deleting test ruleset...");
-    deleteRulesetIfExists();
-
-    console.log("\n=== Cleanup complete ===\n");
+  beforeEach(() => {
+    resetTestRepo();
   });
 
   test("settings creates a ruleset in the test repository", async () => {

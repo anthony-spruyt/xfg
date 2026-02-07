@@ -1,4 +1,4 @@
-import { test, describe } from "node:test";
+import { test, describe, beforeEach } from "node:test";
 import { join } from "node:path";
 import { exec, projectRoot } from "./test-helpers.js";
 
@@ -17,9 +17,21 @@ if (SKIP_TESTS) {
 // xfg commands must NOT see GH_TOKEN — only App credentials
 const xfgEnv = { cwd: projectRoot, env: { GH_TOKEN: undefined } };
 
+const RESET_SCRIPT = join(projectRoot, ".github/scripts/reset-test-repo.sh");
+
+function resetTestRepo(): void {
+  console.log("\n=== Resetting test repo to clean state ===\n");
+  exec(`bash ${RESET_SCRIPT} anthony-spruyt/xfg-test`);
+  console.log("\n=== Reset complete ===\n");
+}
+
 // Act only — exec() throws on non-zero exit code.
 // All assertions (commit verified, author is App) are in the Assert CI step.
 describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
+  beforeEach(() => {
+    resetTestRepo();
+  });
+
   test("sync creates PR via GraphQL API with GitHub App credentials", () => {
     const configPath = join(fixturesDir, "integration-test-github-app.yaml");
     console.log("Running xfg sync with GitHub App credentials...");

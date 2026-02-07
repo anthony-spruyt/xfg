@@ -1,4 +1,4 @@
-import { test, describe } from "node:test";
+import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
 import { exec, projectRoot } from "./test-helpers.js";
@@ -128,9 +128,11 @@ function resetTestRepo(): void {
 }
 
 describe("Azure DevOps Integration Test", () => {
-  test("sync creates a PR in the test repository", async () => {
+  beforeEach(() => {
     resetTestRepo();
+  });
 
+  test("sync creates a PR in the test repository", async () => {
     const configPath = join(fixturesDir, "integration-test-config-ado.yaml");
 
     // Run the sync tool
@@ -200,8 +202,6 @@ describe("Azure DevOps Integration Test", () => {
   });
 
   test("re-sync closes existing PR and creates fresh one", async () => {
-    resetTestRepo();
-
     // Arrange — create initial PR by running xfg
     const configPath = join(fixturesDir, "integration-test-config-ado.yaml");
     console.log("Creating initial PR...");
@@ -258,8 +258,6 @@ describe("Azure DevOps Integration Test", () => {
   });
 
   test("createOnly skips file when it exists on base branch", async () => {
-    resetTestRepo();
-
     const createOnlyFile = "createonly-test.json";
     const createOnlyBranch = "chore/sync-createonly-test";
 
@@ -326,8 +324,6 @@ describe("Azure DevOps Integration Test", () => {
   });
 
   test("PR title only includes files that actually changed (issue #90)", async () => {
-    resetTestRepo();
-
     const unchangedFile = "unchanged-test.json";
     const changedFile = "changed-test.json";
     const testBranch = "chore/sync-config";
@@ -382,8 +378,6 @@ describe("Azure DevOps Integration Test", () => {
   });
 
   test("direct mode pushes directly to main branch without creating PR (issue #134)", async () => {
-    resetTestRepo();
-
     const directFile = "direct-test.config.json";
 
     console.log("\n=== Setting up direct mode test (issue #134) ===\n");
