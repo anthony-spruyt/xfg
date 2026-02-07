@@ -129,13 +129,6 @@ jobs:
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         run: npm run test:integration:ado
 
-      # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — reset ADO test repo
-        if: always()
-        env:
-          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
-        run: .github/scripts/reset-test-repo-ado.sh https://dev.azure.com/aspruyt fxg fxg-test
-
   integration-test-cli-sync-gitlab-pat:
     needs:
       - "build"
@@ -188,13 +181,6 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: npm run test:integration:gitlab
 
-      # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — reset GitLab test repo
-        if: always()
-        env:
-          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-        run: .github/scripts/reset-test-repo-gitlab.sh anthony-spruyt1/xfg-test
-
   integration-test-cli-sync-github-pat:
     needs:
       - "build"
@@ -238,13 +224,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github
-
-      # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — reset test repo
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
 
   integration-test-cli-sync-github-app:
     needs:
@@ -298,13 +277,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: .github/scripts/assert-github-app-tests.sh
 
-      # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — reset test repo
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
-
   integration-test-cli-settings-rulesets-pat:
     needs:
       - "integration-test-cli-sync-github-app"
@@ -349,13 +321,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github-rulesets
 
-      # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — reset test repo
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
-
   integration-test-cli-settings-repo-pat:
     needs:
       - "integration-test-cli-settings-rulesets-pat"
@@ -399,13 +364,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github-repo-settings
-
-      # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — reset test repo
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test
 
   integration-test-action-sync-pat:
     needs:
@@ -506,13 +464,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.pat-validate.outputs.commit_sha }}"
-
-      # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — reset test repo
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
 
   integration-test-action-sync-app:
     needs:
@@ -616,13 +567,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.app-validate.outputs.commit_sha }}"
 
-      # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — reset test repo
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
-
   integration-test-action-settings-app:
     needs:
       - "integration-test-action-sync-app"
@@ -688,13 +632,6 @@ jobs:
             exit 1
           fi
           echo "Ruleset created successfully"
-
-      # Cleanup — always runs regardless of pass/fail
-      - name: Cleanup — reset test repo
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
 
   # Summary job for branch protection - add jobs to 'needs' array
   summary:
