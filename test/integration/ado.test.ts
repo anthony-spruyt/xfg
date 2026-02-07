@@ -1,7 +1,6 @@
-import { test, describe, before } from "node:test";
+import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
-import { rmSync, existsSync } from "node:fs";
 import { exec, projectRoot } from "./test-helpers.js";
 
 const fixturesDir = join(projectRoot, "test", "fixtures");
@@ -139,112 +138,21 @@ function deleteBranch(branchName: string): boolean {
   }
 }
 
+const RESET_SCRIPT = join(
+  projectRoot,
+  ".github/scripts/reset-test-repo-ado.sh"
+);
+
+function resetTestRepo(): void {
+  console.log("\n=== Resetting ADO test repo to clean state ===\n");
+  exec(`bash ${RESET_SCRIPT} ${ORG_URL} ${TEST_PROJECT} ${TEST_REPO}`);
+  console.log("\n=== Reset complete ===\n");
+}
+
 describe("Azure DevOps Integration Test", () => {
-  before(() => {
-    console.log("\n=== Setting up Azure DevOps integration test ===\n");
-
-    // 0. Initialize repo if empty (create initial commit)
-    console.log("Checking if repo is initialized...");
-    try {
-      const defaultBranch = getDefaultBranch();
-      getLatestCommit(defaultBranch);
-      console.log("  Repo has commits");
-    } catch {
-      console.log("  Repo is empty, initializing with README...");
-      // Create initial commit with README
-      const pushBody = {
-        refUpdates: [
-          {
-            name: "refs/heads/main",
-            oldObjectId: "0000000000000000000000000000000000000000",
-          },
-        ],
-        commits: [
-          {
-            comment: "Initial commit",
-            changes: [
-              {
-                changeType: "add",
-                item: { path: "/README.md" },
-                newContent: {
-                  content: Buffer.from(
-                    "# Test Repository\n\nThis repo is used for integration testing xfg."
-                  ).toString("base64"),
-                  contentType: "base64encoded",
-                },
-              },
-            ],
-          },
-        ],
-      };
-      const uri = `${ORG_URL}/${TEST_PROJECT}/_apis/git/repositories/${TEST_REPO}/pushes?api-version=7.0`;
-      exec(
-        `az rest --method post --uri "${uri}" --body '${JSON.stringify(pushBody)}'`
-      );
-      console.log("  Repo initialized");
-    }
-
-    // 1. Close/abandon any existing PRs from the sync branch
-    console.log("Abandoning any existing PRs...");
-    try {
-      const existingPRs = exec(
-        `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[].pullRequestId" -o tsv`
-      );
-      if (existingPRs) {
-        for (const prId of existingPRs.split("\n").filter(Boolean)) {
-          console.log(`  Abandoning PR #${prId}`);
-          exec(
-            `az repos pr update --id ${prId} --status abandoned --org ${ORG_URL}`
-          );
-        }
-      } else {
-        console.log("  No existing PRs found");
-      }
-    } catch {
-      console.log("  No existing PRs to abandon");
-    }
-
-    // 2. Delete the target file if it exists in the default branch
-    console.log(`Checking if ${TARGET_FILE} exists in repo...`);
-    try {
-      const defaultBranch = getDefaultBranch();
-      const fileInfo = getFileContent(TARGET_FILE);
-      if (fileInfo) {
-        console.log(`  Deleting ${TARGET_FILE} from repo...`);
-        pushFileChange(
-          TARGET_FILE,
-          null,
-          `test: remove ${TARGET_FILE} for integration test`,
-          defaultBranch,
-          fileInfo.objectId
-        );
-        console.log("  File deleted");
-      } else {
-        console.log("  File does not exist");
-      }
-    } catch {
-      console.log("  File does not exist or already deleted");
-    }
-
-    // 3. Delete the remote branch if it exists
-    console.log(`Deleting remote branch ${BRANCH_NAME} if exists...`);
-    if (deleteBranch(BRANCH_NAME)) {
-      console.log("  Branch deleted");
-    } else {
-      console.log("  Branch does not exist");
-    }
-
-    // 4. Clean up local tmp directory
-    const tmpDir = join(projectRoot, "tmp");
-    if (existsSync(tmpDir)) {
-      console.log("Cleaning up tmp directory...");
-      rmSync(tmpDir, { recursive: true, force: true });
-    }
-
-    console.log("\n=== Setup complete ===\n");
-  });
-
   test("sync creates a PR in the test repository", async () => {
+    resetTestRepo();
+
     const configPath = join(fixturesDir, "integration-test-config-ado.yaml");
 
     // Run the sync tool
@@ -314,10 +222,12 @@ describe("Azure DevOps Integration Test", () => {
   });
 
   test("re-sync closes existing PR and creates fresh one", async () => {
-    // This test relies on the previous test having created a PR
-    // We'll run sync again and verify the behavior
+    resetTestRepo();
 
+    // Arrange — create initial PR by running xfg
     const configPath = join(fixturesDir, "integration-test-config-ado.yaml");
+    console.log("Creating initial PR...");
+    exec(`node dist/cli.js --config ${configPath}`, { cwd: projectRoot });
 
     // Get the current PR ID before re-sync
     console.log("Getting current PR ID...");
@@ -326,8 +236,7 @@ describe("Azure DevOps Integration Test", () => {
     );
     const prIdBefore = prListBefore ? parseInt(prListBefore, 10) : null;
     console.log(`  Current PR: #${prIdBefore}`);
-
-    assert.ok(prIdBefore, "Expected a PR to exist from previous test");
+    assert.ok(prIdBefore, "Expected a PR to exist after initial sync");
 
     // Run the sync tool again
     console.log("\nRunning xfg again (re-sync)...");
@@ -350,7 +259,6 @@ describe("Azure DevOps Integration Test", () => {
     console.log(`  PR after re-sync: #${prAfter.pullRequestId}`);
 
     // The old PR should be abandoned
-    // Check that the old PR is now abandoned
     console.log("\nVerifying old PR was abandoned...");
     try {
       const oldPRStatus = exec(
@@ -363,7 +271,6 @@ describe("Azure DevOps Integration Test", () => {
         "Old PR should be abandoned after re-sync"
       );
     } catch {
-      // If we can't get the old PR, it might have been deleted
       console.log(
         `  Old PR #${prIdBefore} appears to have been deleted or abandoned`
       );
@@ -373,66 +280,27 @@ describe("Azure DevOps Integration Test", () => {
   });
 
   test("createOnly skips file when it exists on base branch", async () => {
-    // This test uses a separate config file with createOnly: true
+    resetTestRepo();
+
     const createOnlyFile = "createonly-test.json";
     const createOnlyBranch = "chore/sync-createonly-test";
 
     console.log("\n=== Setting up createOnly test ===\n");
 
-    // 1. Close/abandon any existing PRs from the createOnly branch
-    console.log("Abandoning any existing createOnly test PRs...");
-    try {
-      const existingPRs = exec(
-        `az repos pr list --repository ${TEST_REPO} --source-branch ${createOnlyBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[].pullRequestId" -o tsv`
-      );
-      if (existingPRs) {
-        for (const prId of existingPRs.split("\n").filter(Boolean)) {
-          console.log(`  Abandoning PR #${prId}`);
-          exec(
-            `az repos pr update --id ${prId} --status abandoned --org ${ORG_URL}`
-          );
-        }
-      }
-    } catch {
-      console.log("  No existing PRs to abandon");
-    }
-
-    // 2. Delete the remote branch if it exists
-    console.log(`Deleting remote branch ${createOnlyBranch} if exists...`);
-    if (deleteBranch(createOnlyBranch)) {
-      console.log("  Branch deleted");
-    } else {
-      console.log("  Branch does not exist");
-    }
-
-    // 3. Create the file on main branch (simulating it already exists)
+    // Create the file on main branch (simulating it already exists)
     console.log(`Creating ${createOnlyFile} on main branch...`);
     const existingContent = JSON.stringify({ existing: true }, null, 2);
     const defaultBranch = getDefaultBranch();
 
-    // Check if file exists
-    const fileInfo = getFileContent(createOnlyFile);
-    if (fileInfo) {
-      // Update existing file
-      pushFileChange(
-        createOnlyFile,
-        existingContent,
-        `test: update ${createOnlyFile} for createOnly test`,
-        defaultBranch,
-        fileInfo.objectId
-      );
-    } else {
-      // Create new file
-      pushFileChange(
-        createOnlyFile,
-        existingContent,
-        `test: create ${createOnlyFile} for createOnly test`,
-        defaultBranch
-      );
-    }
+    pushFileChange(
+      createOnlyFile,
+      existingContent,
+      `test: create ${createOnlyFile} for createOnly test`,
+      defaultBranch
+    );
     console.log("  File created on main");
 
-    // 4. Run sync with createOnly config
+    // Run sync with createOnly config
     console.log("\nRunning xfg with createOnly config...");
     const configPath = join(
       fixturesDir,
@@ -443,14 +311,13 @@ describe("Azure DevOps Integration Test", () => {
     });
     console.log(output);
 
-    // 5. Verify the behavior - output should indicate skipping
+    // Verify the behavior - output should indicate skipping
     assert.ok(
       output.includes("createOnly") || output.includes("skip"),
       "Output should mention createOnly or skip"
     );
 
-    // 6. Check if a PR was created - with createOnly the file should be skipped
-    // If all files are skipped, no PR should be created
+    // Check if a PR was created - with createOnly the file should be skipped
     console.log("\nVerifying createOnly behavior...");
     try {
       const prList = exec(
@@ -458,14 +325,10 @@ describe("Azure DevOps Integration Test", () => {
       );
       if (prList) {
         console.log(`  PR was created: #${prList}`);
-        // If a PR was created, the file content should NOT have been changed
-        // because createOnly should skip when file exists on base
         const prFileInfo = getFileContent(createOnlyFile, createOnlyBranch);
         if (prFileInfo) {
           const json = JSON.parse(prFileInfo.content);
           console.log("  File content in PR branch:", JSON.stringify(json));
-          // The file should still have the original content (existing: true)
-          // NOT the new content from config
           assert.equal(
             json.existing,
             true,
@@ -481,31 +344,11 @@ describe("Azure DevOps Integration Test", () => {
       console.log("  No PR was created - expected if all files were skipped");
     }
 
-    // 7. Cleanup - delete the test file from main
-    console.log("\nCleaning up createOnly test file...");
-    try {
-      const cleanupFileInfo = getFileContent(createOnlyFile);
-      if (cleanupFileInfo) {
-        pushFileChange(
-          createOnlyFile,
-          null,
-          `test: cleanup ${createOnlyFile}`,
-          defaultBranch,
-          cleanupFileInfo.objectId
-        );
-        console.log("  File deleted");
-      }
-    } catch {
-      console.log("  Could not delete file");
-    }
-
     console.log("\n=== createOnly test passed ===\n");
   });
 
   test("PR title only includes files that actually changed (issue #90)", async () => {
-    // This test verifies the bug fix for issue #90:
-    // When some files in the config don't actually change (content matches repo),
-    // they should NOT appear in the PR title or commit message.
+    resetTestRepo();
 
     const unchangedFile = "unchanged-test.json";
     const changedFile = "changed-test.json";
@@ -513,34 +356,7 @@ describe("Azure DevOps Integration Test", () => {
 
     console.log("\n=== Setting up unchanged files test (issue #90) ===\n");
 
-    // 1. Close/abandon any existing PRs from this branch
-    console.log("Abandoning any existing PRs...");
-    try {
-      const existingPRs = exec(
-        `az repos pr list --repository ${TEST_REPO} --source-branch ${testBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[].pullRequestId" -o tsv`
-      );
-      if (existingPRs) {
-        for (const prId of existingPRs.split("\n").filter(Boolean)) {
-          console.log(`  Abandoning PR #${prId}`);
-          exec(
-            `az repos pr update --id ${prId} --status abandoned --org ${ORG_URL}`
-          );
-        }
-      }
-    } catch {
-      console.log("  No existing PRs to abandon");
-    }
-
-    // 2. Delete the remote branch if it exists
-    console.log(`Deleting remote branch ${testBranch} if exists...`);
-    if (deleteBranch(testBranch)) {
-      console.log("  Branch deleted");
-    } else {
-      console.log("  Branch does not exist");
-    }
-
-    // 3. Create the "unchanged" file on main branch with content that matches config
-    // The config has: { "unchanged": true }
+    // Create the "unchanged" file on main branch with content that matches config
     console.log(
       `Creating ${unchangedFile} on main branch (will NOT change)...`
     );
@@ -548,45 +364,15 @@ describe("Azure DevOps Integration Test", () => {
       JSON.stringify({ unchanged: true }, null, 2) + "\n";
     const defaultBranch = getDefaultBranch();
 
-    // Check if file exists
-    const fileInfo = getFileContent(unchangedFile);
-    if (fileInfo) {
-      pushFileChange(
-        unchangedFile,
-        unchangedContent,
-        `test: setup ${unchangedFile} for issue #90 test`,
-        defaultBranch,
-        fileInfo.objectId
-      );
-    } else {
-      pushFileChange(
-        unchangedFile,
-        unchangedContent,
-        `test: setup ${unchangedFile} for issue #90 test`,
-        defaultBranch
-      );
-    }
+    pushFileChange(
+      unchangedFile,
+      unchangedContent,
+      `test: setup ${unchangedFile} for issue #90 test`,
+      defaultBranch
+    );
     console.log("  File created with content matching config");
 
-    // 4. Delete changed-test.json if it exists (to ensure it will be created)
-    console.log(`Deleting ${changedFile} if exists...`);
-    try {
-      const changedFileInfo = getFileContent(changedFile);
-      if (changedFileInfo) {
-        pushFileChange(
-          changedFile,
-          null,
-          `test: cleanup ${changedFile}`,
-          defaultBranch,
-          changedFileInfo.objectId
-        );
-        console.log("  File deleted");
-      }
-    } catch {
-      console.log("  File does not exist");
-    }
-
-    // 5. Run sync with the test config
+    // Run sync with the test config
     console.log("\nRunning xfg with unchanged files config...");
     const configPath = join(fixturesDir, "integration-test-unchanged-ado.yaml");
     const output = exec(`node dist/cli.js --config ${configPath}`, {
@@ -594,7 +380,7 @@ describe("Azure DevOps Integration Test", () => {
     });
     console.log(output);
 
-    // 6. Get the PR and check its title
+    // Get the PR and check its title
     console.log("\nVerifying PR title...");
     const prInfo = exec(
       `az repos pr list --repository ${TEST_REPO} --source-branch ${testBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`
@@ -605,8 +391,6 @@ describe("Azure DevOps Integration Test", () => {
     console.log(`  PR #${pr.pullRequestId}: ${pr.title}`);
 
     // THE KEY ASSERTION: PR title should only mention the changed file
-    // With the bug: title would be "chore: sync changed-test.json, unchanged-test.json"
-    // After fix: title should be "chore: sync changed-test.json"
     assert.ok(
       pr.title.includes(changedFile),
       `PR title should include ${changedFile}`
@@ -616,65 +400,17 @@ describe("Azure DevOps Integration Test", () => {
       `PR title should NOT include ${unchangedFile} (bug #90: unchanged files incorrectly listed)`
     );
 
-    // 7. Cleanup
-    console.log("\nCleaning up test files...");
-    try {
-      const cleanupFileInfo = getFileContent(unchangedFile);
-      if (cleanupFileInfo) {
-        pushFileChange(
-          unchangedFile,
-          null,
-          `test: cleanup ${unchangedFile}`,
-          defaultBranch,
-          cleanupFileInfo.objectId
-        );
-        console.log(`  Deleted ${unchangedFile}`);
-      }
-    } catch {
-      console.log(`  Could not delete ${unchangedFile}`);
-    }
-
-    try {
-      // Note: changed-test.json only exists on the PR branch, not main
-      // It will be cleaned up when the PR is closed
-      console.log(`  ${changedFile} exists only on PR branch`);
-    } catch {
-      console.log(`  ${changedFile} not found`);
-    }
-
     console.log("\n=== Unchanged files test (issue #90) passed ===\n");
   });
 
   test("direct mode pushes directly to main branch without creating PR (issue #134)", async () => {
-    // This test verifies the direct mode feature (issue #134):
-    // Files are pushed directly to the default branch without creating a PR.
-    // NOTE: This test uses the same exec() helper defined at line 24-40, which
-    // is safe because all commands are hardcoded (not derived from user input).
+    resetTestRepo();
 
     const directFile = "direct-test.config.json";
 
     console.log("\n=== Setting up direct mode test (issue #134) ===\n");
 
-    // 1. Delete the direct test file if it exists in the default branch
-    console.log(`Deleting ${directFile} if exists...`);
-    try {
-      const defaultBranch = getDefaultBranch();
-      const fileInfo = getFileContent(directFile);
-      if (fileInfo) {
-        pushFileChange(
-          directFile,
-          null,
-          `test: cleanup ${directFile}`,
-          defaultBranch,
-          fileInfo.objectId
-        );
-        console.log("  File deleted");
-      }
-    } catch {
-      console.log("  File does not exist");
-    }
-
-    // 2. Run sync with direct mode config
+    // Run sync with direct mode config
     console.log("\nRunning xfg with direct mode config...");
     const configPath = join(fixturesDir, "integration-test-direct-ado.yaml");
     const output = exec(`node dist/cli.js --config ${configPath}`, {
@@ -682,13 +418,13 @@ describe("Azure DevOps Integration Test", () => {
     });
     console.log(output);
 
-    // 3. Verify the output mentions direct push
+    // Verify the output mentions direct push
     assert.ok(
       output.includes("Pushed directly") || output.includes("direct"),
       "Output should mention direct push"
     );
 
-    // 4. Verify NO PR was created
+    // Verify NO PR was created
     console.log("\nVerifying no PR was created...");
     try {
       const prList = exec(
@@ -699,7 +435,7 @@ describe("Azure DevOps Integration Test", () => {
       console.log("  No PR found - this is correct for direct mode");
     }
 
-    // 5. Verify the file exists directly on main branch
+    // Verify the file exists directly on main branch
     console.log("\nVerifying file exists on main branch...");
     const fileInfo = getFileContent(directFile);
 
@@ -710,25 +446,6 @@ describe("Azure DevOps Integration Test", () => {
     assert.equal(json.directMode, true, "File should have directMode: true");
 
     console.log("  Direct push verified - file is on main without PR");
-
-    // 6. Cleanup - delete the test file from main
-    console.log("\nCleaning up direct test file...");
-    try {
-      const defaultBranch = getDefaultBranch();
-      const cleanupFileInfo = getFileContent(directFile);
-      if (cleanupFileInfo) {
-        pushFileChange(
-          directFile,
-          null,
-          `test: cleanup ${directFile}`,
-          defaultBranch,
-          cleanupFileInfo.objectId
-        );
-        console.log("  File deleted");
-      }
-    } catch {
-      console.log("  Could not delete file");
-    }
 
     console.log("\n=== Direct mode test (issue #134) passed ===\n");
   });
