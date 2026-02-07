@@ -5,6 +5,7 @@ import {
   RulesetChange,
   formatDiff,
   projectToDesiredShape,
+  normalizeRuleset,
 } from "../../src/ruleset-diff.js";
 import type { Ruleset } from "../../src/config.js";
 import type { GitHubRuleset } from "../../src/strategies/github-ruleset-strategy.js";
@@ -611,6 +612,209 @@ describe("formatDiff", () => {
   });
 });
 
+describe("diffRulesets bypass_actors null vs empty array", () => {
+  test("treats API bypass_actors: null as equivalent to config bypassActors: []", () => {
+    const current: GitHubRuleset[] = [
+      {
+        id: 1,
+        name: "push-protection",
+        target: "branch",
+        enforcement: "active",
+        bypass_actors: null as unknown as GitHubRuleset["bypass_actors"],
+        conditions: { ref_name: { include: ["refs/heads/main"], exclude: [] } },
+        rules: [{ type: "non_fast_forward" }, { type: "creation" }],
+      },
+    ];
+    const desired = new Map<string, Ruleset>([
+      [
+        "push-protection",
+        {
+          target: "branch",
+          enforcement: "active",
+          bypassActors: [],
+          conditions: {
+            refName: { include: ["refs/heads/main"], exclude: [] },
+          },
+          rules: [{ type: "non_fast_forward" }, { type: "creation" }],
+        },
+      ],
+    ]);
+
+    const changes = diffRulesets(current, desired, []);
+
+    assert.equal(changes[0].action, "unchanged");
+  });
+
+  test("treats API bypass_actors: null as equivalent to config with bypass actor", () => {
+    const current: GitHubRuleset[] = [
+      {
+        id: 1,
+        name: "pr-rules",
+        target: "branch",
+        enforcement: "active",
+        bypass_actors: null as unknown as GitHubRuleset["bypass_actors"],
+        rules: [{ type: "pull_request" }],
+      },
+    ];
+    const desired = new Map<string, Ruleset>([
+      [
+        "pr-rules",
+        {
+          target: "branch",
+          enforcement: "active",
+          bypassActors: [
+            { actorId: 123, actorType: "Integration", bypassMode: "always" },
+          ],
+          rules: [{ type: "pull_request" }],
+        },
+      ],
+    ]);
+
+    const changes = diffRulesets(current, desired, []);
+
+    // This IS a real change - null (no actors) vs actual actors
+    assert.equal(changes[0].action, "update");
+  });
+
+  test("treats API bypass_actors: [] as equivalent to config bypassActors: []", () => {
+    const current: GitHubRuleset[] = [
+      {
+        id: 1,
+        name: "tag-rules",
+        target: "tag",
+        enforcement: "active",
+        bypass_actors: [],
+        conditions: { ref_name: { include: ["refs/tags/v*"], exclude: [] } },
+        rules: [{ type: "deletion" }, { type: "non_fast_forward" }],
+      },
+    ];
+    const desired = new Map<string, Ruleset>([
+      [
+        "tag-rules",
+        {
+          target: "tag",
+          enforcement: "active",
+          bypassActors: [],
+          conditions: { refName: { include: ["refs/tags/v*"], exclude: [] } },
+          rules: [{ type: "deletion" }, { type: "non_fast_forward" }],
+        },
+      ],
+    ]);
+
+    const changes = diffRulesets(current, desired, []);
+
+    assert.equal(changes[0].action, "unchanged");
+  });
+
+  test("no-op for real-world xfg rulesets (API null bypass_actors)", () => {
+    // Simulates the exact CI failure: API returns full ruleset details
+    // but bypass_actors is null (GitHub App token behavior)
+    const current: GitHubRuleset[] = [
+      {
+        id: 11894614,
+        name: "pr-rules",
+        target: "branch",
+        enforcement: "active",
+        bypass_actors: [
+          {
+            actor_id: 2719952,
+            actor_type: "Integration",
+            bypass_mode: "always",
+          },
+        ],
+        rules: [
+          {
+            type: "pull_request",
+            parameters: { required_approving_review_count: 0 },
+          },
+        ],
+        conditions: {
+          ref_name: { include: ["refs/heads/main"], exclude: [] },
+        },
+      },
+      {
+        id: 11894616,
+        name: "push-protection",
+        target: "branch",
+        enforcement: "active",
+        bypass_actors: null as unknown as GitHubRuleset["bypass_actors"],
+        rules: [{ type: "non_fast_forward" }, { type: "creation" }],
+        conditions: {
+          ref_name: { include: ["refs/heads/main"], exclude: [] },
+        },
+      },
+      {
+        id: 12105737,
+        name: "tag-rules",
+        target: "tag",
+        enforcement: "active",
+        bypass_actors: null as unknown as GitHubRuleset["bypass_actors"],
+        rules: [{ type: "deletion" }, { type: "non_fast_forward" }],
+        conditions: {
+          ref_name: { include: ["refs/tags/v*"], exclude: [] },
+        },
+      },
+    ];
+
+    const desired = new Map<string, Ruleset>([
+      [
+        "pr-rules",
+        {
+          target: "branch",
+          enforcement: "active",
+          bypassActors: [
+            {
+              actorId: 2719952,
+              actorType: "Integration",
+              bypassMode: "always",
+            },
+          ],
+          rules: [
+            {
+              type: "pull_request",
+              parameters: { requiredApprovingReviewCount: 0 },
+            },
+          ],
+          conditions: {
+            refName: { include: ["refs/heads/main"], exclude: [] },
+          },
+        },
+      ],
+      [
+        "push-protection",
+        {
+          target: "branch",
+          enforcement: "active",
+          bypassActors: [],
+          rules: [{ type: "non_fast_forward" }, { type: "creation" }],
+          conditions: {
+            refName: { include: ["refs/heads/main"], exclude: [] },
+          },
+        },
+      ],
+      [
+        "tag-rules",
+        {
+          target: "tag",
+          enforcement: "active",
+          bypassActors: [],
+          rules: [{ type: "deletion" }, { type: "non_fast_forward" }],
+          conditions: {
+            refName: { include: ["refs/tags/v*"], exclude: [] },
+          },
+        },
+      ],
+    ]);
+
+    const changes = diffRulesets(current, desired, []);
+
+    const byName = new Map(changes.map((c) => [c.name, c]));
+    assert.equal(byName.get("pr-rules")?.action, "unchanged");
+    assert.equal(byName.get("push-protection")?.action, "unchanged");
+    assert.equal(byName.get("tag-rules")?.action, "unchanged");
+  });
+});
+
 describe("diffRulesets edge cases", () => {
   test("detects change when comparing null vs undefined in parameters", () => {
     const current: GitHubRuleset[] = [
@@ -728,6 +932,74 @@ describe("diffRulesets edge cases", () => {
 
     const changes = diffRulesets(current, desired, []);
     assert.equal(changes[0].action, "unchanged");
+  });
+});
+
+describe("normalizeRuleset", () => {
+  test("skips properties with undefined values", () => {
+    const ruleset = {
+      target: "branch",
+      enforcement: "active",
+      bypass_actors: undefined,
+    } as unknown as GitHubRuleset;
+
+    const result = normalizeRuleset(ruleset);
+
+    assert.equal("bypass_actors" in result, false);
+    assert.deepEqual(result, {
+      target: "branch",
+      enforcement: "active",
+    });
+  });
+
+  test("skips properties with null values (API returns null for empty arrays)", () => {
+    const ruleset = {
+      target: "branch",
+      enforcement: "active",
+      bypass_actors: null,
+    } as unknown as GitHubRuleset;
+
+    const result = normalizeRuleset(ruleset);
+
+    // null should be excluded entirely - no phantom key with undefined value
+    assert.equal("bypass_actors" in result, false);
+    assert.deepEqual(result, {
+      target: "branch",
+      enforcement: "active",
+    });
+  });
+
+  test("converts camelCase keys to snake_case", () => {
+    const ruleset = {
+      target: "branch",
+      enforcement: "active",
+      bypassActors: [{ actorId: 1, actorType: "Team", bypassMode: "always" }],
+    } as unknown as Ruleset;
+
+    const result = normalizeRuleset(ruleset);
+
+    assert.ok("bypass_actors" in result);
+    assert.equal("bypassActors" in result, false);
+  });
+
+  test("filters to comparable fields only", () => {
+    const ruleset = {
+      id: 1,
+      name: "test",
+      target: "branch",
+      enforcement: "active",
+      source_type: "Repository",
+      node_id: "RRS_xxx",
+    } as unknown as GitHubRuleset;
+
+    const result = normalizeRuleset(ruleset);
+
+    assert.ok("target" in result);
+    assert.ok("enforcement" in result);
+    assert.equal("id" in result, false);
+    assert.equal("name" in result, false);
+    assert.equal("source_type" in result, false);
+    assert.equal("node_id" in result, false);
   });
 });
 

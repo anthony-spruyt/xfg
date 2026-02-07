@@ -62,7 +62,7 @@ export function normalizeRuleset(
   const normalized: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    if (value === undefined) {
+    if (value == null) {
       continue;
     }
     const snakeKey = camelToSnake(key);
@@ -174,6 +174,13 @@ function projectObjects(
   for (const key of Object.keys(desired)) {
     if (key in current) {
       result[key] = projectToDesiredShape(current[key], desired[key]);
+    } else if (
+      Array.isArray(desired[key]) &&
+      (desired[key] as unknown[]).length === 0
+    ) {
+      // API returns null for empty arrays (normalized to absent key).
+      // Config uses explicit empty array []. Both mean "none" — match them.
+      result[key] = [];
     }
     // If key not in current, skip — diff will handle it as an addition
   }
