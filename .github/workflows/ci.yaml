@@ -66,7 +66,7 @@ jobs:
           path: dist/
           retention-days: 1
 
-  # Combined GitHub integration tests (PAT + GitHub App)
+  # GitHub PAT integration tests
   integration-test-github:
     needs:
       - "build"
@@ -105,12 +105,60 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github
 
-      - name: Run GitHub App integration tests
+  # GitHub App integration tests (isolated — no GH_TOKEN in test environment)
+  integration-test-github-app:
+    needs:
+      - "build"
+      - "integration-test-github"
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: integration-github-app
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Arrange — PAT for setup, completely separate from test step
+      - name: Arrange — setup test fixtures
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }} # For test validation commands (gh CLI)
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/setup-github-app-tests.sh
+
+      # Act — only App credentials, no GH_TOKEN
+      - name: Act — run GitHub App integration tests
+        env:
           XFG_GITHUB_APP_ID: ${{ vars.TEST_APP_ID }}
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
         run: npm run test:integration:github-app
+
+      # Assert — PAT for validation + cleanup
+      - name: Assert — validate results and cleanup
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: .github/scripts/cleanup-github-app-tests.sh
 
   integration-test-ado:
     needs:
@@ -284,6 +332,7 @@ jobs:
     needs:
       - "build"
       - "integration-test-github"
+      - "integration-test-github-app"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
@@ -489,6 +538,7 @@ jobs:
       - "lint"
       - "build"
       - "integration-test-github"
+      - "integration-test-github-app"
       - "integration-test-ado"
       - "integration-test-gitlab"
       - "integration-test-github-rulesets"

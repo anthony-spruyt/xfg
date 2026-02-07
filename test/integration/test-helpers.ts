@@ -11,13 +11,17 @@ export const projectRoot = join(__dirname, "../..");
  * This helper is only used in integration tests with hardcoded commands.
  * The commands are controlled and not derived from external/user input.
  */
-export function exec(command: string, options?: { cwd?: string }): string {
+export function exec(
+  command: string,
+  options?: { cwd?: string; env?: Record<string, string | undefined> }
+): string {
   try {
     return execSync(command, {
       // codeql-disable-next-line js/shell-command-injection-from-environment
       cwd: options?.cwd ?? projectRoot,
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
+      ...(options?.env && { env: { ...process.env, ...options.env } }),
     }).trim();
   } catch (error) {
     const err = error as { stderr?: string; stdout?: string };
@@ -38,7 +42,8 @@ export function exec(command: string, options?: { cwd?: string }): string {
 export async function waitForFileVisible(
   repo: string,
   filePath: string,
-  timeoutMs = 10000
+  timeoutMs = 10000,
+  envOptions?: { env: Record<string, string | undefined> }
 ): Promise<string> {
   const startTime = Date.now();
   const pollInterval = 500;
@@ -46,7 +51,8 @@ export async function waitForFileVisible(
   while (Date.now() - startTime < timeoutMs) {
     try {
       const content = exec(
-        `gh api repos/${repo}/contents/${filePath} --jq '.content' | base64 -d`
+        `gh api repos/${repo}/contents/${filePath} --jq '.content' | base64 -d`,
+        envOptions
       );
       if (content && !content.includes("Not Found")) {
         console.log(
@@ -75,7 +81,8 @@ export async function waitForFileVisible(
 export async function waitForRulesetVisible(
   repo: string,
   rulesetId: number,
-  timeoutMs = 30000
+  timeoutMs = 30000,
+  envOptions?: { env: Record<string, string | undefined> }
 ): Promise<void> {
   const startTime = Date.now();
   const pollInterval = 500;
@@ -83,7 +90,8 @@ export async function waitForRulesetVisible(
   while (Date.now() - startTime < timeoutMs) {
     try {
       const result = exec(
-        `gh api repos/${repo}/rulesets --jq '.[] | select(.id == ${rulesetId}) | .id'`
+        `gh api repos/${repo}/rulesets --jq '.[] | select(.id == ${rulesetId}) | .id'`,
+        envOptions
       );
       if (result.trim() === String(rulesetId)) {
         console.log(
@@ -109,14 +117,15 @@ export async function waitForRulesetVisible(
 export async function waitForFileDeleted(
   repo: string,
   filePath: string,
-  timeoutMs = 10000
+  timeoutMs = 10000,
+  envOptions?: { env: Record<string, string | undefined> }
 ): Promise<void> {
   const startTime = Date.now();
   const pollInterval = 500;
 
   while (Date.now() - startTime < timeoutMs) {
     try {
-      exec(`gh api repos/${repo}/contents/${filePath} --jq '.sha'`);
+      exec(`gh api repos/${repo}/contents/${filePath} --jq '.sha'`, envOptions);
       // File still exists, continue polling
     } catch {
       // 404 - file is deleted
