@@ -276,6 +276,95 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
     console.log("\n=== Direct mode with GitHub App test passed ===\n");
   });
 
+  test("settings command uses App token — bypass_actors diff is stable (no false update)", async () => {
+    const RULESET_NAME = "xfg-app-bypass-test";
+    const configPath = join(
+      fixturesDir,
+      "integration-test-github-app-settings.yaml"
+    );
+
+    console.log(
+      "\n=== Testing settings command bypass_actors stability with App token ===\n"
+    );
+
+    // 1. Cleanup: delete the test ruleset if it exists
+    console.log("Cleaning up any existing test rulesets...");
+    try {
+      const rulesets = exec(
+        `gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}") | .id'`
+      );
+      if (rulesets) {
+        for (const rulesetId of rulesets.split("\n").filter(Boolean)) {
+          console.log(`  Deleting ruleset ID: ${rulesetId}`);
+          exec(
+            `gh api --method DELETE repos/${TEST_REPO}/rulesets/${rulesetId}`
+          );
+        }
+      }
+    } catch {
+      console.log("  No existing rulesets to delete");
+    }
+
+    // 2. Create the ruleset (first run)
+    console.log("\nCreating ruleset with bypass_actors...");
+    const createOutput = exec(
+      `node dist/cli.js settings --config ${configPath}`,
+      { cwd: projectRoot }
+    );
+    console.log(createOutput);
+
+    // 3. Verify ruleset was created with bypass_actors
+    console.log("\nVerifying ruleset was created with bypass_actors...");
+    const rulesetJson = exec(
+      `gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+    );
+    assert.ok(rulesetJson, "Expected ruleset to be created");
+    const ruleset = JSON.parse(rulesetJson);
+    console.log(`  Ruleset ID: ${ruleset.id}`);
+
+    // Fetch full details to check bypass_actors
+    const fullRuleset = exec(
+      `gh api repos/${TEST_REPO}/rulesets/${ruleset.id}`
+    );
+    const full = JSON.parse(fullRuleset);
+    console.log(`  bypass_actors: ${JSON.stringify(full.bypass_actors)}`);
+    assert.ok(
+      full.bypass_actors && full.bypass_actors.length > 0,
+      "Ruleset should have bypass_actors"
+    );
+
+    // 4. Run settings again in dry-run — should show UNCHANGED, not UPDATE
+    // This is the regression test: if the settings command doesn't use the App
+    // token, the API returns bypass_actors: null and the diff falsely shows "update"
+    console.log("\nRunning settings --dry-run (should be stable/unchanged)...");
+    const dryRunOutput = exec(
+      `node dist/cli.js settings --config ${configPath} --dry-run`,
+      { cwd: projectRoot }
+    );
+    console.log(dryRunOutput);
+
+    // The dry-run output should NOT show any updates
+    assert.ok(
+      !dryRunOutput.includes("update") || dryRunOutput.includes("0 to update"),
+      "Dry-run should show no updates (bypass_actors should not cause false diff). " +
+        "If this fails, the settings command is not using the App token for API calls, " +
+        "so bypass_actors comes back as null and creates a false diff. See issue #378."
+    );
+
+    // 5. Cleanup
+    console.log("\nCleaning up test ruleset...");
+    try {
+      exec(`gh api --method DELETE repos/${TEST_REPO}/rulesets/${ruleset.id}`);
+      console.log("  Ruleset deleted");
+    } catch {
+      console.log("  Could not delete ruleset");
+    }
+
+    console.log(
+      "\n=== Settings command bypass_actors stability test passed ===\n"
+    );
+  });
+
   test("deleteOrphaned removes files via GraphQL API with verified commit", async () => {
     const orphanFile = "github-app-orphan-test.json";
     const remainingFile = "github-app-remaining.json";
