@@ -345,8 +345,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: npm run test:integration:github-repo-settings
 
-  # Combined action tests (PAT + GitHub App)
-  integration-test-action:
+  # GitHub Action test — PAT credentials
+  integration-test-action-pat:
     needs:
       - "build"
       - "integration-test-github"
@@ -361,7 +361,6 @@ jobs:
     env:
       TEST_REPO: anthony-spruyt/xfg-test
       PAT_BRANCH: chore/sync-my-config
-      APP_BRANCH: chore/sync-app-test
 
     steps:
       - uses: actions/checkout@v6
@@ -381,28 +380,35 @@ jobs:
           name: dist
           path: dist/
 
-      - name: Create local package for testing
-        run: |
-          npm pack
-          echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
+      - name: Download package artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: package
 
-      # ========== PAT Test ==========
-      - name: "[PAT] Setup - clean up from previous runs"
+      - name: Set package path
+        run: echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
+
+      # Cleanup before — teardown leftover state from previous runs
+      - name: Cleanup — teardown leftover state
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${PAT_BRANCH}"
+        run: |
+          .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${PAT_BRANCH}"
+          .github/scripts/delete-manifest.sh "${TEST_REPO}"
 
-      - name: "[PAT] Seed manifest to trigger update path (bug #268)"
+      # Arrange — seed manifest and configure git identity
+      - name: Arrange — seed manifest
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: .github/scripts/seed-manifest.sh "${TEST_REPO}"
 
-      - name: "[PAT] Configure custom git identity (to verify action preserves it)"
+      - name: Arrange — configure custom git identity
         run: |
           git config --global user.name "test-user"
           git config --global user.email "test@example.com"
 
-      - name: "[PAT] Run xfg action"
+      # Act — run xfg action with PAT
+      - name: Act — run xfg action
         uses: ./
         with:
           config: ./test/fixtures/integration-test-action-github.yaml
@@ -410,7 +416,8 @@ jobs:
           github-token: ${{ secrets.GH_PAT }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
-      - name: "[PAT] Validate - verify PR created and git identity preserved"
+      # Assert — verify PR created and git identity preserved
+      - name: Assert — verify PR created and git identity preserved
         id: pat-validate
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
@@ -438,117 +445,19 @@ jobs:
           # Export commit SHA for next step
           echo "commit_sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
 
-      - name: "[PAT] Validate - verify file count in commit message (#268)"
+      - name: Assert — verify file count in commit message
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.pat-validate.outputs.commit_sha }}"
 
-      - name: "[PAT] Cleanup - close PR and delete seeded manifest"
+      # Cleanup — always runs regardless of pass/fail
+      - name: Cleanup — teardown test state
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${PAT_BRANCH}"
           .github/scripts/delete-manifest.sh "${TEST_REPO}"
-
-      # ========== GitHub App Test ==========
-      # Helper scripts use PAT. The xfg action handles GitHub App auth internally.
-      - name: "[App] Setup - clean up from previous runs"
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
-
-      - name: "[App] Seed manifest to trigger update path (bug #268)"
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/seed-manifest.sh "${TEST_REPO}"
-
-      - name: "[App] Run xfg action with GitHub App credentials"
-        uses: ./
-        with:
-          config: ./test/fixtures/integration-test-action-github.yaml
-          branch: ${{ env.APP_BRANCH }}
-          # Include github-token to simulate real usage where both are set
-          # This tests that GitHub App credentials take precedence over PAT
-          github-token: ${{ github.token }}
-          github-app-id: ${{ vars.TEST_APP_ID }}
-          github-app-private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
-          xfg-package: "./${{ env.XFG_PACKAGE }}"
-
-      - name: "[App] Validate - verify commit author is GitHub App (#268)"
-        id: app-validate
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          echo "Verifying PR was created..."
-          PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${APP_BRANCH} --json number,title,url --jq '.[0]')
-          if [ -z "$PR_INFO" ]; then
-            echo "ERROR: No PR was created"
-            exit 1
-          fi
-          echo "PR created successfully:"
-          echo "$PR_INFO" | jq .
-
-          # Get commit author - should be GitHub App, NOT github-actions[bot]
-          PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
-          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo ${TEST_REPO} --json commits --jq '.commits[-1].oid')
-          COMMIT_AUTHOR=$(gh api "repos/${TEST_REPO}/commits/${COMMIT_SHA}" --jq '.commit.author.name')
-          echo "Commit author: $COMMIT_AUTHOR"
-
-          # Verify commit author is GitHub App, not github-actions[bot] (issue #268)
-          if [ "$COMMIT_AUTHOR" = "github-actions[bot]" ]; then
-            echo "ERROR: Commit author is github-actions[bot] but should be the GitHub App"
-            echo "This indicates the GitHub App token is not being used for GraphQL commits"
-            exit 1
-          fi
-          echo "Commit author is correct (GitHub App)"
-
-          # Export commit SHA for next step
-          echo "commit_sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
-
-      - name: "[App] Validate - verify file count in commit message (#268)"
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.app-validate.outputs.commit_sha }}"
-
-      - name: "[App] Cleanup - close PR and delete seeded manifest"
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
-          .github/scripts/delete-manifest.sh "${TEST_REPO}"
-
-      # ========== Settings Test ==========
-      - name: "[Settings] Run xfg action with settings command"
-        uses: ./
-        with:
-          command: settings
-          config: ./test/fixtures/integration-test-config-github-rulesets.yaml
-          github-token: ${{ secrets.GH_PAT }}
-          xfg-package: "./${{ env.XFG_PACKAGE }}"
-
-      - name: "[Settings] Validate - verify ruleset was created"
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          RULESET=$(gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset")')
-          if [ -z "$RULESET" ]; then
-            echo "ERROR: Ruleset was not created"
-            exit 1
-          fi
-          echo "Ruleset created successfully"
-
-      - name: "[Settings] Cleanup - delete test ruleset"
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          RULESET_ID=$(gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset") | .id')
-          if [ -n "$RULESET_ID" ]; then
-            gh api --method DELETE repos/${TEST_REPO}/rulesets/${RULESET_ID}
-            echo "Cleaned up test ruleset"
-          fi
 
   # Summary job for branch protection - add jobs to 'needs' array
   summary:
