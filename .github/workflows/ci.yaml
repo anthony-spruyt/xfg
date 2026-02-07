@@ -575,6 +575,92 @@ jobs:
           .github/scripts/cleanup-test-pr.sh "${TEST_REPO}" "${APP_BRANCH}"
           .github/scripts/delete-manifest.sh "${TEST_REPO}"
 
+  # GitHub Action test — settings command
+  integration-test-action-settings:
+    needs:
+      - "build"
+      - "integration-test-github"
+      - "integration-test-github-app"
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: integration-github
+      cancel-in-progress: false
+
+    env:
+      TEST_REPO: anthony-spruyt/xfg-test
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Download package artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: package
+
+      - name: Set package path
+        run: echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
+
+      # Cleanup before — teardown leftover rulesets from previous runs
+      - name: Cleanup — teardown leftover rulesets
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          RULESET_ID=$(gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset") | .id')
+          if [ -n "$RULESET_ID" ]; then
+            gh api --method DELETE repos/${TEST_REPO}/rulesets/${RULESET_ID}
+            echo "Cleaned up leftover test ruleset"
+          fi
+
+      # Act — run xfg action with settings command
+      - name: Act — run xfg action with settings command
+        uses: ./
+        with:
+          command: settings
+          config: ./test/fixtures/integration-test-config-github-rulesets.yaml
+          github-token: ${{ secrets.GH_PAT }}
+          xfg-package: "./${{ env.XFG_PACKAGE }}"
+
+      # Assert — verify ruleset was created
+      - name: Assert — verify ruleset was created
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          RULESET=$(gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset")')
+          if [ -z "$RULESET" ]; then
+            echo "ERROR: Ruleset was not created"
+            exit 1
+          fi
+          echo "Ruleset created successfully"
+
+      # Cleanup — always runs regardless of pass/fail
+      - name: Cleanup — teardown test ruleset
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          RULESET_ID=$(gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset") | .id')
+          if [ -n "$RULESET_ID" ]; then
+            gh api --method DELETE repos/${TEST_REPO}/rulesets/${RULESET_ID}
+            echo "Cleaned up test ruleset"
+          fi
+
   # Summary job for branch protection - add jobs to 'needs' array
   summary:
     needs:
