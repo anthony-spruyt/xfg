@@ -15,7 +15,7 @@ settings:
       target: branch
       enforcement: active
       bypassActors:
-        - actorId: 2719952
+        - actorId: 2753244
           actorType: Integration
           bypassMode: always
       conditions:
