@@ -140,11 +140,11 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Arrange — PAT for setup, completely separate from test step
-      - name: Arrange — setup test fixtures
+      # Cleanup before — teardown leftover state from previous runs
+      - name: Cleanup — teardown leftover state
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/setup-github-app-tests.sh
+        run: .github/scripts/cleanup-github-app-tests.sh
 
       # Act — only App credentials, no GH_TOKEN
       - name: Act — run GitHub App integration tests
