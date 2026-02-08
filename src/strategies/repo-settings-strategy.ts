@@ -35,6 +35,10 @@ export interface CurrentRepoSettings {
     secret_scanning_push_protection?: { status: string };
     secret_scanning_validity_checks?: { status: string };
   };
+  // Security settings (fetched from separate endpoints)
+  vulnerability_alerts?: boolean;
+  automated_security_fixes?: boolean;
+  private_vulnerability_reporting?: boolean;
 }
 
 export interface IRepoSettingsStrategy {

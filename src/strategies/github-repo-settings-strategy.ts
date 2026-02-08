@@ -99,8 +99,21 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
 
     const endpoint = `/repos/${github.owner}/${github.repo}`;
     const result = await this.ghApi("GET", endpoint, undefined, options);
+    const settings = JSON.parse(result) as CurrentRepoSettings;
 
-    return JSON.parse(result) as CurrentRepoSettings;
+    // Fetch security settings from separate endpoints
+    settings.vulnerability_alerts = await this.getVulnerabilityAlerts(
+      github,
+      options
+    );
+    settings.automated_security_fixes = await this.getAutomatedSecurityFixes(
+      github,
+      options
+    );
+    settings.private_vulnerability_reporting =
+      await this.getPrivateVulnerabilityReporting(github, options);
+
+    return settings;
   }
 
   async updateSettings(
@@ -146,6 +159,50 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     const endpoint = `/repos/${github.owner}/${github.repo}/automated-security-fixes`;
     const method = enable ? "PUT" : "DELETE";
     await this.ghApi(method, endpoint, undefined, options);
+  }
+
+  private async getVulnerabilityAlerts(
+    github: GitHubRepoInfo,
+    options?: RepoSettingsStrategyOptions
+  ): Promise<boolean> {
+    const endpoint = `/repos/${github.owner}/${github.repo}/vulnerability-alerts`;
+    try {
+      await this.ghApi("GET", endpoint, undefined, options);
+      return true; // 204 = enabled
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("HTTP 404")) {
+        return false; // 404 = disabled
+      }
+      throw error; // Re-throw other errors
+    }
+  }
+
+  private async getAutomatedSecurityFixes(
+    github: GitHubRepoInfo,
+    options?: RepoSettingsStrategyOptions
+  ): Promise<boolean> {
+    const endpoint = `/repos/${github.owner}/${github.repo}/automated-security-fixes`;
+    try {
+      await this.ghApi("GET", endpoint, undefined, options);
+      return true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("HTTP 404")) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  private async getPrivateVulnerabilityReporting(
+    github: GitHubRepoInfo,
+    options?: RepoSettingsStrategyOptions
+  ): Promise<boolean> {
+    const endpoint = `/repos/${github.owner}/${github.repo}/private-vulnerability-reporting`;
+    const result = await this.ghApi("GET", endpoint, undefined, options);
+    const data = JSON.parse(result);
+    return data.enabled === true;
   }
 
   private validateGitHub(repoInfo: RepoInfo): void {

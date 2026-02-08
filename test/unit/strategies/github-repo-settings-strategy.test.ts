@@ -64,22 +64,179 @@ describe("GitHubRepoSettingsStrategy", () => {
   describe("getSettings", () => {
     test("should fetch repository settings", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo",
+        "/repos/test-org/test-repo'",
         JSON.stringify({
           has_issues: true,
           has_wiki: false,
           allow_squash_merge: true,
         })
       );
+      mockExecutor.setResponse("vulnerability-alerts", "");
+      mockExecutor.setResponse("automated-security-fixes", "");
+      mockExecutor.setResponse(
+        "private-vulnerability-reporting",
+        JSON.stringify({ enabled: false })
+      );
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
       const result = await strategy.getSettings(githubRepo);
 
-      assert.equal(mockExecutor.commands.length, 1);
+      // 4 commands: base settings + 3 security endpoints
+      assert.equal(mockExecutor.commands.length, 4);
       assert.ok(mockExecutor.commands[0].includes("gh api"));
       assert.ok(mockExecutor.commands[0].includes("/repos/test-org/test-repo"));
       assert.equal(result.has_issues, true);
       assert.equal(result.has_wiki, false);
+    });
+  });
+
+  describe("getSettings security endpoints", () => {
+    test("should return vulnerability_alerts true when endpoint returns 204", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({ has_issues: true })
+      );
+      mockExecutor.setResponse("vulnerability-alerts", "");
+      mockExecutor.setResponse("automated-security-fixes", "");
+      mockExecutor.setResponse(
+        "private-vulnerability-reporting",
+        JSON.stringify({ enabled: false })
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      const result = await strategy.getSettings(githubRepo);
+
+      assert.equal(result.vulnerability_alerts, true);
+    });
+
+    test("should return vulnerability_alerts false when endpoint returns 404", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({ has_issues: true })
+      );
+      mockExecutor.setError("vulnerability-alerts", "gh: Not Found (HTTP 404)");
+      mockExecutor.setResponse("automated-security-fixes", "");
+      mockExecutor.setResponse(
+        "private-vulnerability-reporting",
+        JSON.stringify({ enabled: false })
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      const result = await strategy.getSettings(githubRepo);
+
+      assert.equal(result.vulnerability_alerts, false);
+    });
+
+    test("should throw on non-404 errors for vulnerability_alerts", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({ has_issues: true })
+      );
+      mockExecutor.setError(
+        "vulnerability-alerts",
+        "gh: Server Error (HTTP 500)"
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+
+      await assert.rejects(
+        async () => strategy.getSettings(githubRepo),
+        /HTTP 500/
+      );
+    });
+
+    test("should return automated_security_fixes true when endpoint returns 204", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({ has_issues: true })
+      );
+      mockExecutor.setResponse("vulnerability-alerts", "");
+      mockExecutor.setResponse("automated-security-fixes", "");
+      mockExecutor.setResponse(
+        "private-vulnerability-reporting",
+        JSON.stringify({ enabled: false })
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      const result = await strategy.getSettings(githubRepo);
+
+      assert.equal(result.automated_security_fixes, true);
+    });
+
+    test("should return automated_security_fixes false when endpoint returns 404", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({ has_issues: true })
+      );
+      mockExecutor.setResponse("vulnerability-alerts", "");
+      mockExecutor.setError(
+        "automated-security-fixes",
+        "gh: Not Found (HTTP 404)"
+      );
+      mockExecutor.setResponse(
+        "private-vulnerability-reporting",
+        JSON.stringify({ enabled: false })
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      const result = await strategy.getSettings(githubRepo);
+
+      assert.equal(result.automated_security_fixes, false);
+    });
+
+    test("should throw on non-404 errors for automated_security_fixes", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({ has_issues: true })
+      );
+      mockExecutor.setResponse("vulnerability-alerts", "");
+      mockExecutor.setError(
+        "automated-security-fixes",
+        "gh: Unauthorized (HTTP 401)"
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+
+      await assert.rejects(
+        async () => strategy.getSettings(githubRepo),
+        /HTTP 401/
+      );
+    });
+
+    test("should return private_vulnerability_reporting true when enabled", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({ has_issues: true })
+      );
+      mockExecutor.setResponse("vulnerability-alerts", "");
+      mockExecutor.setResponse("automated-security-fixes", "");
+      mockExecutor.setResponse(
+        "private-vulnerability-reporting",
+        JSON.stringify({ enabled: true })
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      const result = await strategy.getSettings(githubRepo);
+
+      assert.equal(result.private_vulnerability_reporting, true);
+    });
+
+    test("should return private_vulnerability_reporting false when disabled", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({ has_issues: true })
+      );
+      mockExecutor.setResponse("vulnerability-alerts", "");
+      mockExecutor.setResponse("automated-security-fixes", "");
+      mockExecutor.setResponse(
+        "private-vulnerability-reporting",
+        JSON.stringify({ enabled: false })
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      const result = await strategy.getSettings(githubRepo);
+
+      assert.equal(result.private_vulnerability_reporting, false);
     });
   });
 

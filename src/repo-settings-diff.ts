@@ -34,11 +34,11 @@ const PROPERTY_MAPPING: Record<keyof GitHubRepoSettings, string> = {
   mergeCommitMessage: "merge_commit_message",
   webCommitSignoffRequired: "web_commit_signoff_required",
   defaultBranch: "default_branch",
-  vulnerabilityAlerts: "_vulnerability_alerts",
-  automatedSecurityFixes: "_automated_security_fixes",
+  vulnerabilityAlerts: "vulnerability_alerts",
+  automatedSecurityFixes: "automated_security_fixes",
   secretScanning: "_secret_scanning",
   secretScanningPushProtection: "_secret_scanning_push_protection",
-  privateVulnerabilityReporting: "_private_vulnerability_reporting",
+  privateVulnerabilityReporting: "private_vulnerability_reporting",
 };
 
 /**
