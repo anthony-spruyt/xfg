@@ -105,6 +105,43 @@ repos:
         allowMergeCommit: true
 ```
 
+## Opting Out of Repo Settings
+
+If you define repo settings at the root level but want specific repos to skip them entirely, set `repo: false` at the per-repo level:
+
+```yaml
+settings:
+  repo:
+    allowSquashMerge: true
+    deleteBranchOnMerge: true
+    vulnerabilityAlerts: true
+
+  rulesets:
+    main-protection:
+      target: branch
+      enforcement: active
+
+repos:
+  # Inherits all repo settings + rulesets
+  - git: git@github.com:your-org/standard-repo.git
+
+  # Opts out of repo settings, still inherits rulesets
+  - git: git@github.com:your-org/special-repo.git
+    settings:
+      repo: false
+
+  # Opts out of repo settings and overrides rulesets
+  - git: git@github.com:your-org/custom-repo.git
+    settings:
+      repo: false
+      rulesets:
+        main-protection:
+          enforcement: evaluate
+```
+
+!!! note
+    `repo: false` is only valid at the per-repo level when root-level repo settings are defined. It cannot be used at the root level.
+
 ## Warnings
 
 xfg displays warnings for potentially destructive operations:
