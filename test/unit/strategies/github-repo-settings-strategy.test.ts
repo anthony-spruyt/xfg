@@ -361,6 +361,34 @@ describe("GitHubRepoSettingsStrategy", () => {
     });
   });
 
+  describe("setPrivateVulnerabilityReporting", () => {
+    test("should enable private vulnerability reporting via PUT", async () => {
+      mockExecutor.setResponse("private-vulnerability-reporting", "");
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      await strategy.setPrivateVulnerabilityReporting(githubRepo, true);
+
+      assert.equal(mockExecutor.commands.length, 1);
+      assert.ok(mockExecutor.commands[0].includes("-X PUT"));
+      assert.ok(
+        mockExecutor.commands[0].includes("private-vulnerability-reporting")
+      );
+    });
+
+    test("should disable private vulnerability reporting via DELETE", async () => {
+      mockExecutor.setResponse("private-vulnerability-reporting", "");
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      await strategy.setPrivateVulnerabilityReporting(githubRepo, false);
+
+      assert.equal(mockExecutor.commands.length, 1);
+      assert.ok(mockExecutor.commands[0].includes("-X DELETE"));
+      assert.ok(
+        mockExecutor.commands[0].includes("private-vulnerability-reporting")
+      );
+    });
+  });
+
   describe("validation", () => {
     test("should throw for non-GitHub repos", async () => {
       const azureRepo = {
