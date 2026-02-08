@@ -122,7 +122,11 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
     const output2 = exec(`node dist/cli.js --config ${configPath2}`, xfgEnv);
     console.log(output2);
   });
+});
 
+// Separate describe block without beforeEach reset - these tests don't need full repo reset
+// and running after the main tests avoids overwriting verified commits on main
+describe("GitHub App Repo Settings Test", { skip: SKIP_TESTS }, () => {
   // Regression test for issue #418 - RepoSettingsProcessor missing GitHub App token support
   test("repo settings with GitHub App token is idempotent", () => {
     const configPath = join(
@@ -131,6 +135,7 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
     );
 
     // Reset repo settings to defaults (uses gh CLI with GH_TOKEN for setup)
+    // Note: This does NOT reset the repo content/commits, only settings
     resetRepoSettings();
 
     // Apply repo settings with GitHub App credentials (no GH_TOKEN)
