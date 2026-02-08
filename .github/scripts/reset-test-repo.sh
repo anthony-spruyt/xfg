@@ -54,16 +54,24 @@ echo "Step 4: Resetting ${DEFAULT_BRANCH} to README-only..."
 
 README_CONTENT=$(printf '# xfg-test\n\nIntegration test repository for xfg.\n' | base64 -w 0)
 
-# Create blob
+# Try Git Data API first; falls back to Contents API for empty repos (HTTP 409)
 BLOB_SHA=$(gh api "repos/${REPO}/git/blobs" \
   -f content="${README_CONTENT}" \
   -f encoding="base64" \
-  --jq '.sha')
+  --jq '.sha' 2>/dev/null) || BLOB_SHA=""
 
-# Create tree with only README.md
-TREE_SHA=$(
-  gh api "repos/${REPO}/git/trees" \
-    --input - --jq '.sha' <<TREE_JSON
+if [ -z "${BLOB_SHA}" ]; then
+  # Repo is empty — bootstrap via Contents API (creates initial commit automatically)
+  echo "  Repo is empty, bootstrapping via Contents API..."
+  gh api --method PUT "repos/${REPO}/contents/README.md" \
+    -f message="test: reset to clean state" \
+    -f content="${README_CONTENT}" >/dev/null
+  echo "  Bootstrapped ${DEFAULT_BRANCH} with README.md"
+else
+  # Create tree with only README.md
+  TREE_SHA=$(
+    gh api "repos/${REPO}/git/trees" \
+      --input - --jq '.sha' <<TREE_JSON
 {
   "tree": [
     {
@@ -75,25 +83,26 @@ TREE_SHA=$(
   ]
 }
 TREE_JSON
-)
+  )
 
-# Create orphan commit (no parents)
-COMMIT_SHA=$(
-  gh api "repos/${REPO}/git/commits" \
-    --input - --jq '.sha' <<COMMIT_JSON
+  # Create orphan commit (no parents)
+  COMMIT_SHA=$(
+    gh api "repos/${REPO}/git/commits" \
+      --input - --jq '.sha' <<COMMIT_JSON
 {
   "message": "test: reset to clean state",
   "tree": "${TREE_SHA}",
   "parents": []
 }
 COMMIT_JSON
-)
+  )
 
-# Force-update default branch ref
-gh api --method PATCH "repos/${REPO}/git/refs/heads/${DEFAULT_BRANCH}" \
-  -f sha="${COMMIT_SHA}" \
-  -F force=true >/dev/null
+  # Force-update default branch ref
+  gh api --method PATCH "repos/${REPO}/git/refs/heads/${DEFAULT_BRANCH}" \
+    -f sha="${COMMIT_SHA}" \
+    -F force=true >/dev/null
 
-echo "  Reset ${DEFAULT_BRANCH} to commit ${COMMIT_SHA}"
+  echo "  Reset ${DEFAULT_BRANCH} to commit ${COMMIT_SHA}"
+fi
 
 echo "=== Reset complete ==="
