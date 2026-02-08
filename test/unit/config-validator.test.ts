@@ -1530,6 +1530,28 @@ describe("validateRawConfig", () => {
       );
     });
 
+    test("allows per-repo repo: false when root repo settings exist", () => {
+      const config = createValidConfig({
+        settings: {
+          repo: {
+            hasIssues: true,
+            hasWiki: true,
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              repo: false as never,
+            },
+          },
+        ],
+        files: undefined,
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
     test("allows opting out of existing ruleset with false", () => {
       const config = createValidConfig({
         settings: {
