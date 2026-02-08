@@ -19,12 +19,14 @@ const configPath = join(
 
 /**
  * Delete the test repository if it exists.
+ * Uses REST API (not GraphQL) to avoid eventual-consistency mismatches
+ * where GraphQL says "not found" but REST still sees the repo.
  * Note: Uses hardcoded TEST_REPO constant, not user input.
  */
 function deleteRepoIfExists(): void {
   try {
-    console.log(`  Checking if ${TEST_REPO} exists...`);
-    exec(`gh repo view ${TEST_REPO} --json name`);
+    console.log(`  Checking if ${TEST_REPO} exists (REST)...`);
+    exec(`gh api repos/${TEST_REPO} --jq '.name'`);
     console.log(`  Deleting ${TEST_REPO}...`);
     exec(`gh repo delete ${TEST_REPO} --yes`);
     console.log(`  Deleted ${TEST_REPO}`);
@@ -34,13 +36,46 @@ function deleteRepoIfExists(): void {
 }
 
 /**
- * Create a new test repository.
+ * Synchronous sleep using Atomics.wait (no child_process needed).
+ */
+function sleepSync(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+/**
+ * Create a new test repository with retry.
+ * Handles the ghost-repo race condition where the repo was recently deleted
+ * but GitHub's API still reports "name already exists". In that case, wait
+ * and retry since GitHub will finish the deletion shortly.
  * Note: Uses hardcoded TEST_REPO constant, not user input.
  */
 function createTestRepo(): void {
-  console.log(`  Creating ${TEST_REPO}...`);
-  exec(`gh repo create ${TEST_REPO} --private --add-readme`);
-  console.log(`  Created ${TEST_REPO}`);
+  const maxAttempts = 5;
+  const delayMs = 3000;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      console.log(`  Creating ${TEST_REPO} (attempt ${attempt})...`);
+      exec(`gh repo create ${TEST_REPO} --private --add-readme`);
+      console.log(`  Created ${TEST_REPO}`);
+      return;
+    } catch (err: unknown) {
+      const stderr = (err as { stderr?: string }).stderr ?? "";
+      if (stderr.includes("already exists") && attempt < maxAttempts) {
+        console.log(
+          `  Repo name still reserved (ghost repo), waiting ${delayMs}ms...`
+        );
+        try {
+          exec(`gh repo delete ${TEST_REPO} --yes`);
+          console.log(`  Force-deleted ghost repo`);
+        } catch {
+          // ignore — may already be gone
+        }
+        sleepSync(delayMs);
+        continue;
+      }
+      throw err;
+    }
+  }
 }
 
 /**
