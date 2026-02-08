@@ -68,6 +68,65 @@ describe("plan-summary", () => {
       assert.ok(markdown.includes("create"));
     });
 
+    test("uses correct symbols for all action types", () => {
+      const plan: Plan = {
+        resources: [
+          { type: "file", repo: "org/repo", name: "new.yml", action: "create" },
+          {
+            type: "file",
+            repo: "org/repo",
+            name: "modified.yml",
+            action: "update",
+          },
+          {
+            type: "file",
+            repo: "org/repo",
+            name: "removed.yml",
+            action: "delete",
+          },
+          {
+            type: "ruleset",
+            repo: "org/repo",
+            name: "skipped-rule",
+            action: "skipped",
+          },
+        ],
+      };
+
+      const markdown = formatPlanMarkdown(plan, {
+        title: "Summary",
+        dryRun: false,
+      });
+
+      // Verify symbols for each action type
+      assert.ok(markdown.includes("+ file"), "should have + for create");
+      assert.ok(markdown.includes("~ file"), "should have ~ for update");
+      assert.ok(markdown.includes("- file"), "should have - for delete");
+      assert.ok(markdown.includes("⊘ ruleset"), "should have ⊘ for skipped");
+    });
+
+    test("handles unknown action type gracefully", () => {
+      // Use type assertion to test unknown action type
+      const plan: Plan = {
+        resources: [
+          {
+            type: "file",
+            repo: "org/repo",
+            name: "unknown.yml",
+            action: "unknown" as "create",
+          },
+        ],
+      };
+
+      const markdown = formatPlanMarkdown(plan, {
+        title: "Summary",
+        dryRun: false,
+      });
+
+      // Should still render the resource without a symbol prefix
+      assert.ok(markdown.includes('file "org/repo/unknown.yml"'));
+    });
+
     test("shows no changes message", () => {
       const plan: Plan = { resources: [] };
 

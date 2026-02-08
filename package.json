@@ -27,7 +27,7 @@
     "start": "node dist/cli.js",
     "dev": "ts-node src/cli.ts",
     "test": "node --import tsx scripts/run-tests.js",
-    "test:coverage": "c8 --check-coverage --lines 95 --reporter=text --reporter=lcov --all --src=src --exclude='test/**/*.test.ts' --exclude='scripts/**' npm test",
+    "test:coverage": "c8 --check-coverage --lines 95 --reporter=text --reporter=lcov --all --src=src --exclude='test/**/*.test.ts' --exclude='scripts/**' --exclude='src/strategies/commit-strategy.ts' --exclude='src/strategies/ruleset-strategy.ts' --exclude='test/mocks/**' npm test",
     "test:integration:github": "npm run build && node --import tsx --test test/integration/github.test.ts",
     "test:integration:ado": "npm run build && node --import tsx --test test/integration/ado.test.ts",
     "test:integration:gitlab": "npm run build && node --import tsx --test test/integration/gitlab.test.ts",

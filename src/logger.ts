@@ -1,13 +1,6 @@
 import chalk from "chalk";
 import { FileStatus, formatStatusBadge } from "./diff-utils.js";
 
-export interface RulesetPlanCounts {
-  creates: number;
-  updates: number;
-  deletes: number;
-  unchanged: number;
-}
-
 export interface ILogger {
   info(message: string): void;
   fileDiff(fileName: string, status: FileStatus, diffLines: string[]): void;
@@ -17,18 +10,11 @@ export interface ILogger {
     unchangedCount: number,
     deletedCount?: number
   ): void;
-  rulesetPlan(
-    repoName: string,
-    planLines: string[],
-    counts: RulesetPlanCounts
-  ): void;
   setTotal(total: number): void;
   progress(current: number, repoName: string, message: string): void;
   success(current: number, repoName: string, message: string): void;
   skip(current: number, repoName: string, reason: string): void;
   error(current: number, repoName: string, error: string): void;
-  summary(): void;
-  hasFailures(): boolean;
 }
 
 export interface LoggerStats {
@@ -121,53 +107,6 @@ export class Logger implements ILogger {
     if (parts.length > 0) {
       console.log(chalk.gray(`    Summary: ${parts.join(", ")}`));
     }
-  }
-
-  /**
-   * Display ruleset plan output for dry-run mode.
-   */
-  rulesetPlan(
-    repoName: string,
-    planLines: string[],
-    counts: RulesetPlanCounts
-  ): void {
-    console.log("");
-    console.log(chalk.bold(`Repository: ${repoName}`));
-
-    for (const line of planLines) {
-      console.log(line);
-    }
-
-    // Summary line
-    const parts: string[] = [];
-    if (counts.creates > 0)
-      parts.push(chalk.green(`${counts.creates} to create`));
-    if (counts.updates > 0)
-      parts.push(chalk.yellow(`${counts.updates} to update`));
-    if (counts.deletes > 0)
-      parts.push(chalk.red(`${counts.deletes} to delete`));
-
-    const unchangedPart =
-      counts.unchanged > 0
-        ? chalk.gray(` (${counts.unchanged} unchanged)`)
-        : "";
-    const summaryLine =
-      parts.length > 0 ? parts.join(", ") + unchangedPart : "No changes";
-
-    console.log(chalk.gray(`Plan: ${summaryLine}`));
-  }
-
-  summary(): void {
-    console.log("");
-    console.log(chalk.bold("Summary:"));
-    console.log(`  Total:     ${this.stats.total}`);
-    console.log(chalk.green(`  Succeeded: ${this.stats.succeeded}`));
-    console.log(chalk.yellow(`  Skipped:   ${this.stats.skipped}`));
-    console.log(chalk.red(`  Failed:    ${this.stats.failed}`));
-  }
-
-  hasFailures(): boolean {
-    return this.stats.failed > 0;
   }
 }
 

@@ -47,12 +47,6 @@ export function createMockLogger(): LoggerMockResult {
     error(_current: number, _repoName: string, _error: string): void {
       // No-op
     },
-    summary(): void {
-      // No-op
-    },
-    hasFailures(): boolean {
-      return false;
-    },
   };
 
   return {
