@@ -32,6 +32,11 @@ class MockStrategy implements IRepoSettingsStrategy {
     enable: boolean;
     options?: RepoSettingsStrategyOptions;
   }> = [];
+  privateVulnerabilityReportingCalls: Array<{
+    repoInfo: RepoInfo;
+    enable: boolean;
+    options?: RepoSettingsStrategyOptions;
+  }> = [];
 
   async getSettings(
     repoInfo: RepoInfo,
@@ -65,12 +70,21 @@ class MockStrategy implements IRepoSettingsStrategy {
     this.automatedSecurityFixesCalls.push({ repoInfo, enable, options });
   }
 
+  async setPrivateVulnerabilityReporting(
+    repoInfo: RepoInfo,
+    enable: boolean,
+    options?: RepoSettingsStrategyOptions
+  ): Promise<void> {
+    this.privateVulnerabilityReportingCalls.push({ repoInfo, enable, options });
+  }
+
   reset(): void {
     this.getSettingsResult = {};
     this.getSettingsCalls = [];
     this.updateSettingsCalls = [];
     this.vulnerabilityAlertsCalls = [];
     this.automatedSecurityFixesCalls = [];
+    this.privateVulnerabilityReportingCalls = [];
   }
 }
 
@@ -270,6 +284,27 @@ describe("RepoSettingsProcessor", () => {
     assert.equal(mockStrategy.automatedSecurityFixesCalls[0].enable, false);
   });
 
+  test("should call setPrivateVulnerabilityReporting for privateVulnerabilityReporting setting", async () => {
+    mockStrategy.getSettingsResult = {};
+
+    const processor = new RepoSettingsProcessor(mockStrategy);
+    const repoConfig: RepoConfig = {
+      git: githubRepo.gitUrl,
+      files: [],
+      settings: { repo: { privateVulnerabilityReporting: true } },
+    };
+
+    await processor.process(repoConfig, githubRepo, {
+      dryRun: false,
+    });
+
+    assert.equal(mockStrategy.privateVulnerabilityReportingCalls.length, 1);
+    assert.equal(
+      mockStrategy.privateVulnerabilityReportingCalls[0].enable,
+      true
+    );
+  });
+
   test("should handle errors gracefully", async () => {
     const errorStrategy: IRepoSettingsStrategy = {
       getSettings: async () => {
@@ -278,6 +313,7 @@ describe("RepoSettingsProcessor", () => {
       updateSettings: async () => {},
       setVulnerabilityAlerts: async () => {},
       setAutomatedSecurityFixes: async () => {},
+      setPrivateVulnerabilityReporting: async () => {},
     };
 
     const processor = new RepoSettingsProcessor(errorStrategy);

@@ -55,11 +55,14 @@ function getSecuritySettings(): {
     vulnerabilityAlerts = false;
   }
 
-  // Check automated security fixes (204 = enabled, 404 = disabled)
+  // Check automated security fixes (JSON response with {enabled: boolean})
   let automatedSecurityFixes = false;
   try {
-    exec(`gh api repos/${TEST_REPO}/automated-security-fixes`);
-    automatedSecurityFixes = true;
+    const asfResult = exec(
+      `gh api repos/${TEST_REPO}/automated-security-fixes`
+    );
+    const asfData = JSON.parse(asfResult);
+    automatedSecurityFixes = asfData.enabled === true;
   } catch {
     automatedSecurityFixes = false;
   }
