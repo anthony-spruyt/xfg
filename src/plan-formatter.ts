@@ -74,3 +74,67 @@ export function formatPlanSummary(counts: PlanCounts): string {
 
   return summary;
 }
+
+export interface Plan {
+  resources: Resource[];
+  errors?: RepoError[];
+}
+
+export interface RepoError {
+  repo: string;
+  message: string;
+}
+
+export function formatPlan(plan: Plan): string[] {
+  const lines: string[] = [];
+
+  // Filter to only changed resources
+  const changedResources = plan.resources.filter(
+    (r) => r.action !== "unchanged"
+  );
+
+  // Format each resource
+  for (const resource of changedResources) {
+    lines.push(formatResourceLine(resource));
+
+    // Add details if present (indented)
+    if (resource.details?.diff) {
+      for (const diffLine of resource.details.diff) {
+        lines.push(`    ${diffLine}`);
+      }
+    }
+  }
+
+  // Add errors
+  if (plan.errors && plan.errors.length > 0) {
+    for (const error of plan.errors) {
+      lines.push(chalk.red(`✗ ${error.repo}`));
+      lines.push(chalk.red(`    Error: ${error.message}`));
+    }
+  }
+
+  // Add blank line before summary
+  if (lines.length > 0) {
+    lines.push("");
+  }
+
+  // Count actions
+  const counts: PlanCounts = {
+    create: plan.resources.filter((r) => r.action === "create").length,
+    update: plan.resources.filter((r) => r.action === "update").length,
+    delete: plan.resources.filter((r) => r.action === "delete").length,
+  };
+
+  lines.push(formatPlanSummary(counts));
+
+  // Add error count if any
+  if (plan.errors && plan.errors.length > 0) {
+    lines.push(
+      chalk.red(
+        `${plan.errors.length} ${plan.errors.length === 1 ? "repository" : "repositories"} failed.`
+      )
+    );
+  }
+
+  return lines;
+}

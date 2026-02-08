@@ -6,7 +6,9 @@ import {
   formatResourceId,
   formatResourceLine,
   formatPlanSummary,
+  formatPlan,
   PlanCounts,
+  Plan,
 } from "../../src/plan-formatter.js";
 
 describe("plan-formatter", () => {
@@ -149,6 +151,88 @@ describe("plan-formatter", () => {
       const result = formatPlanSummary(counts);
 
       assert.ok(result.includes("No changes"));
+    });
+  });
+
+  describe("formatPlan", () => {
+    test("formats multiple resources with summary", () => {
+      const plan: Plan = {
+        resources: [
+          { type: "file", repo: "org/repo", name: "ci.yml", action: "create" },
+          {
+            type: "ruleset",
+            repo: "org/repo",
+            name: "pr-rules",
+            action: "update",
+          },
+        ],
+      };
+
+      const lines = formatPlan(plan);
+
+      // Should have resource lines
+      assert.ok(lines.some((l) => l.includes('file "org/repo/ci.yml"')));
+      assert.ok(lines.some((l) => l.includes('ruleset "org/repo/pr-rules"')));
+      // Should have summary line
+      assert.ok(lines.some((l) => l.includes("Plan:")));
+    });
+
+    test("shows no changes message for empty plan", () => {
+      const plan: Plan = { resources: [] };
+
+      const lines = formatPlan(plan);
+
+      assert.ok(lines.some((l) => l.includes("No changes")));
+    });
+
+    test("excludes unchanged resources from output", () => {
+      const plan: Plan = {
+        resources: [
+          {
+            type: "file",
+            repo: "org/repo",
+            name: "ci.yml",
+            action: "unchanged",
+          },
+        ],
+      };
+
+      const lines = formatPlan(plan);
+
+      assert.ok(lines.some((l) => l.includes("No changes")));
+    });
+
+    test("includes error information", () => {
+      const plan: Plan = {
+        resources: [],
+        errors: [{ repo: "org/failed-repo", message: "Connection refused" }],
+      };
+
+      const lines = formatPlan(plan);
+
+      assert.ok(lines.some((l) => l.includes("org/failed-repo")));
+      assert.ok(lines.some((l) => l.includes("Connection refused")));
+    });
+
+    test("includes diff details when present", () => {
+      const plan: Plan = {
+        resources: [
+          {
+            type: "file",
+            repo: "org/repo",
+            name: "ci.yml",
+            action: "update",
+            details: {
+              diff: ["- old line", "+ new line"],
+            },
+          },
+        ],
+      };
+
+      const lines = formatPlan(plan);
+
+      assert.ok(lines.some((l) => l.includes("- old line")));
+      assert.ok(lines.some((l) => l.includes("+ new line")));
     });
   });
 });
