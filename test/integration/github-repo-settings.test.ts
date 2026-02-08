@@ -55,7 +55,7 @@ function createTestRepo(): void {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       console.log(`  Creating ${TEST_REPO} (attempt ${attempt})...`);
-      exec(`gh repo create ${TEST_REPO} --private --add-readme`);
+      exec(`gh repo create ${TEST_REPO} --public --add-readme`);
       console.log(`  Created ${TEST_REPO}`);
       return;
     } catch (err: unknown) {
