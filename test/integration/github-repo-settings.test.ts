@@ -39,6 +39,69 @@ function resetRepoSettings(): void {
 }
 
 /**
+ * Get current security settings from GitHub API.
+ */
+function getSecuritySettings(): {
+  vulnerabilityAlerts: boolean;
+  automatedSecurityFixes: boolean;
+  privateVulnerabilityReporting: boolean;
+} {
+  // Check vulnerability alerts (204 = enabled, 404 = disabled)
+  let vulnerabilityAlerts = false;
+  try {
+    exec(`gh api repos/${TEST_REPO}/vulnerability-alerts`);
+    vulnerabilityAlerts = true;
+  } catch {
+    vulnerabilityAlerts = false;
+  }
+
+  // Check automated security fixes (204 = enabled, 404 = disabled)
+  let automatedSecurityFixes = false;
+  try {
+    exec(`gh api repos/${TEST_REPO}/automated-security-fixes`);
+    automatedSecurityFixes = true;
+  } catch {
+    automatedSecurityFixes = false;
+  }
+
+  // Check private vulnerability reporting (JSON response)
+  const pvrResult = exec(
+    `gh api repos/${TEST_REPO}/private-vulnerability-reporting`
+  );
+  const pvrData = JSON.parse(pvrResult);
+  const privateVulnerabilityReporting = pvrData.enabled === true;
+
+  return {
+    vulnerabilityAlerts,
+    automatedSecurityFixes,
+    privateVulnerabilityReporting,
+  };
+}
+
+/**
+ * Reset security settings to known state (all disabled).
+ */
+function resetSecuritySettings(): void {
+  console.log("  Resetting security settings...");
+  try {
+    exec(`gh api -X DELETE repos/${TEST_REPO}/vulnerability-alerts`);
+  } catch {
+    // Already disabled
+  }
+  try {
+    exec(`gh api -X DELETE repos/${TEST_REPO}/automated-security-fixes`);
+  } catch {
+    // Already disabled
+  }
+  try {
+    exec(`gh api -X DELETE repos/${TEST_REPO}/private-vulnerability-reporting`);
+  } catch {
+    // Already disabled
+  }
+  console.log("  Security settings reset");
+}
+
+/**
  * Get current repo settings from GitHub API.
  * Note: Uses hardcoded TEST_REPO constant, not user input.
  */
@@ -63,6 +126,9 @@ settings:
     allowMergeCommit: false
     allowRebaseMerge: false
     deleteBranchOnMerge: true
+    vulnerabilityAlerts: true
+    automatedSecurityFixes: false
+    privateVulnerabilityReporting: true
 
 repos:
   - git: https://github.com/${TEST_REPO}.git
@@ -74,6 +140,7 @@ repos:
 async function resetTestRepo(): Promise<void> {
   console.log("\n=== Resetting repo settings test repo ===\n");
   resetRepoSettings();
+  resetSecuritySettings();
   createConfigFile();
   console.log("\n=== Reset complete ===\n");
 }
@@ -163,6 +230,24 @@ describe("GitHub Repo Settings Integration Test", () => {
       settingsAfter.delete_branch_on_merge,
       true,
       "delete_branch_on_merge should be true"
+    );
+
+    // Verify security settings
+    const securitySettings = getSecuritySettings();
+    assert.equal(
+      securitySettings.vulnerabilityAlerts,
+      true,
+      "vulnerabilityAlerts should be true"
+    );
+    assert.equal(
+      securitySettings.automatedSecurityFixes,
+      false,
+      "automatedSecurityFixes should be false"
+    );
+    assert.equal(
+      securitySettings.privateVulnerabilityReporting,
+      true,
+      "privateVulnerabilityReporting should be true"
     );
 
     console.log("  All settings verified!");
