@@ -56,9 +56,8 @@ inputs:
     description: "GitHub App private key (PEM format) for JWT signing"
     required: false
   xfg-package:
-    description: "xfg package to install (npm package name, local .tgz path, or 'skip' to use pre-installed). Used for CI testing."
+    description: "Override xfg package to install (npm package name, local .tgz path, or 'skip' to use pre-installed). Defaults to the version matching this action release."
     required: false
-    default: "@aspruyt/xfg"
 
 runs:
   using: "composite"
@@ -114,9 +113,13 @@ runs:
       run: |
         if [ "${{ inputs.xfg-package }}" = "skip" ]; then
           echo "Skipping xfg installation (using pre-installed)"
-        else
+        elif [ -n "${{ inputs.xfg-package }}" ]; then
           echo "Installing xfg from: ${{ inputs.xfg-package }}"
           npm install -g "${{ inputs.xfg-package }}"
+        else
+          VERSION=$(node -p "require('${{ github.action_path }}/package.json').version")
+          echo "Installing xfg@${VERSION} (from action release)"
+          npm install -g "@aspruyt/xfg@${VERSION}"
         fi
 
     - name: Run xfg
