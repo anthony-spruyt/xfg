@@ -183,14 +183,11 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   private async getAutomatedSecurityFixes(
     github: GitHubRepoInfo,
     options?: RepoSettingsStrategyOptions,
-    vulnerabilityAlertsEnabled?: boolean
+    _vulnerabilityAlertsEnabled?: boolean
   ): Promise<boolean> {
-    // Automated security fixes require vulnerability alerts to be enabled.
-    // When vuln alerts are disabled, the endpoint may return 204 (success),
-    // but the feature is effectively disabled.
-    if (vulnerabilityAlertsEnabled === false) {
-      return false;
-    }
+    // Note: Even when vulnerability alerts are disabled, this endpoint returns
+    // the configured state. This allows the diff to correctly show changes needed
+    // when vulnerability alerts will be enabled.
     const endpoint = `/repos/${github.owner}/${github.repo}/automated-security-fixes`;
     try {
       await this.ghApi("GET", endpoint, undefined, options);

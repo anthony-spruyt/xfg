@@ -163,14 +163,14 @@ describe("GitHubRepoSettingsStrategy", () => {
       assert.equal(result.automated_security_fixes, true);
     });
 
-    test("should return automated_security_fixes false when vulnerability_alerts is disabled", async () => {
+    test("should return automated_security_fixes based on API even when vulnerability_alerts is disabled", async () => {
       mockExecutor.setResponse(
         "/repos/test-org/test-repo'",
         JSON.stringify({ has_issues: true })
       );
       // vulnerability-alerts returns 404 (disabled)
       mockExecutor.setError("vulnerability-alerts", "gh: Not Found (HTTP 404)");
-      // automated-security-fixes endpoint would return 204, but should be ignored
+      // automated-security-fixes endpoint returns 204 (enabled in GitHub's config)
       mockExecutor.setResponse("automated-security-fixes", "");
       mockExecutor.setResponse(
         "private-vulnerability-reporting",
@@ -180,8 +180,9 @@ describe("GitHubRepoSettingsStrategy", () => {
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
       const result = await strategy.getSettings(githubRepo);
 
-      // Should return false because vulnerability_alerts is disabled
-      assert.equal(result.automated_security_fixes, false);
+      // Should return true based on API response, not vulnerability_alerts state
+      // This allows diff to correctly show change is needed when vuln alerts are enabled
+      assert.equal(result.automated_security_fixes, true);
     });
 
     test("should return automated_security_fixes false when endpoint returns 404", async () => {
