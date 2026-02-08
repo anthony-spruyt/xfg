@@ -80,19 +80,29 @@ function getSecuritySettings(): {
 
 /**
  * Reset security settings to known state (all disabled).
+ * Order matters: automated-security-fixes requires vulnerability-alerts to be enabled first.
  */
 function resetSecuritySettings(): void {
   console.log("  Resetting security settings...");
+  // 1. Enable vulnerability alerts first (required to configure automated-security-fixes)
   try {
-    exec(`gh api -X DELETE repos/${TEST_REPO}/vulnerability-alerts`);
+    exec(`gh api -X PUT repos/${TEST_REPO}/vulnerability-alerts`);
   } catch {
-    // Already disabled
+    // Already enabled
   }
+  // 2. Disable automated security fixes (now possible since vuln alerts are enabled)
   try {
     exec(`gh api -X DELETE repos/${TEST_REPO}/automated-security-fixes`);
   } catch {
     // Already disabled
   }
+  // 3. Disable vulnerability alerts
+  try {
+    exec(`gh api -X DELETE repos/${TEST_REPO}/vulnerability-alerts`);
+  } catch {
+    // Already disabled
+  }
+  // 4. Disable private vulnerability reporting
   try {
     exec(`gh api -X DELETE repos/${TEST_REPO}/private-vulnerability-reporting`);
   } catch {
