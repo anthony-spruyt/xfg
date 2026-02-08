@@ -1,5 +1,5 @@
-import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
+import { test, describe, beforeEach, afterEach } from "node:test";
 import {
   Resource,
   ResourceAction,
@@ -7,6 +7,7 @@ import {
   formatResourceLine,
   formatPlanSummary,
   formatPlan,
+  printPlan,
   PlanCounts,
   Plan,
 } from "../../src/plan-formatter.js";
@@ -288,6 +289,36 @@ describe("plan-formatter", () => {
       assert.ok(
         lines.some((l) => l.includes('ruleset "gitlab.com/org/repo/pr-rules"'))
       );
+    });
+  });
+
+  describe("printPlan", () => {
+    let consoleLogs: string[];
+    let originalConsoleLog: typeof console.log;
+
+    beforeEach(() => {
+      consoleLogs = [];
+      originalConsoleLog = console.log;
+      console.log = (...args: unknown[]) => {
+        consoleLogs.push(args.map(String).join(" "));
+      };
+    });
+
+    afterEach(() => {
+      console.log = originalConsoleLog;
+    });
+
+    test("prints each line to console", () => {
+      const plan: Plan = {
+        resources: [
+          { type: "file", repo: "org/repo", name: "ci.yml", action: "create" },
+        ],
+      };
+
+      printPlan(plan);
+
+      assert.ok(consoleLogs.some((l) => l.includes("file")));
+      assert.ok(consoleLogs.some((l) => l.includes("Plan:")));
     });
   });
 });

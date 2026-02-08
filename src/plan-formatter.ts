@@ -147,3 +147,10 @@ export function formatPlan(plan: Plan): string[] {
 
   return lines;
 }
+
+export function printPlan(plan: Plan): void {
+  const lines = formatPlan(plan);
+  for (const line of lines) {
+    console.log(line);
+  }
+}
