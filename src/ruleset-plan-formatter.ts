@@ -509,9 +509,9 @@ function formatFullConfig(ruleset: Ruleset, indent: number = 2): string[] {
         lines.push(style.color(`${pad}+ ${key}:`));
         for (const item of value) {
           if (typeof item === "object" && item !== null) {
-            lines.push(style.color(`${pad}    - ${JSON.stringify(item)}`));
+            lines.push(style.color(`${pad}    + ${JSON.stringify(item)}`));
           } else {
-            lines.push(style.color(`${pad}    - ${formatValue(item)}`));
+            lines.push(style.color(`${pad}    + ${formatValue(item)}`));
           }
         }
       }
