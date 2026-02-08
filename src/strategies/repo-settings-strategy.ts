@@ -76,6 +76,15 @@ export interface IRepoSettingsStrategy {
     enable: boolean,
     options?: RepoSettingsStrategyOptions
   ): Promise<void>;
+
+  /**
+   * Enables or disables private vulnerability reporting.
+   */
+  setPrivateVulnerabilityReporting(
+    repoInfo: RepoInfo,
+    enable: boolean,
+    options?: RepoSettingsStrategyOptions
+  ): Promise<void>;
 }
 
 /**
@@ -92,6 +101,7 @@ export function isRepoSettingsStrategy(
     typeof strategy.getSettings === "function" &&
     typeof strategy.updateSettings === "function" &&
     typeof strategy.setVulnerabilityAlerts === "function" &&
-    typeof strategy.setAutomatedSecurityFixes === "function"
+    typeof strategy.setAutomatedSecurityFixes === "function" &&
+    typeof strategy.setPrivateVulnerabilityReporting === "function"
   );
 }

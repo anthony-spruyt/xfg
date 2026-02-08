@@ -153,8 +153,12 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     options: { token?: string; host?: string }
   ): Promise<void> {
     // Extract settings that need separate API calls
-    const { vulnerabilityAlerts, automatedSecurityFixes, ...mainSettings } =
-      settings;
+    const {
+      vulnerabilityAlerts,
+      automatedSecurityFixes,
+      privateVulnerabilityReporting,
+      ...mainSettings
+    } = settings;
 
     // Update main settings via PATCH /repos
     if (Object.keys(mainSettings).length > 0) {
@@ -175,6 +179,15 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
       await this.strategy.setAutomatedSecurityFixes(
         repoInfo,
         automatedSecurityFixes,
+        options
+      );
+    }
+
+    // Handle private vulnerability reporting (separate endpoint)
+    if (privateVulnerabilityReporting !== undefined) {
+      await this.strategy.setPrivateVulnerabilityReporting(
+        repoInfo,
+        privateVulnerabilityReporting,
         options
       );
     }

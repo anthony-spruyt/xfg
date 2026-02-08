@@ -13,11 +13,13 @@ describe("IRepoSettingsStrategy interface", () => {
       updateSettings: async () => {},
       setVulnerabilityAlerts: async () => {},
       setAutomatedSecurityFixes: async () => {},
+      setPrivateVulnerabilityReporting: async () => {},
     };
     assert.ok(mockStrategy.getSettings);
     assert.ok(mockStrategy.updateSettings);
     assert.ok(mockStrategy.setVulnerabilityAlerts);
     assert.ok(mockStrategy.setAutomatedSecurityFixes);
+    assert.ok(mockStrategy.setPrivateVulnerabilityReporting);
   });
 });
 
@@ -28,6 +30,7 @@ describe("isRepoSettingsStrategy", () => {
       updateSettings: async () => {},
       setVulnerabilityAlerts: async () => {},
       setAutomatedSecurityFixes: async () => {},
+      setPrivateVulnerabilityReporting: async () => {},
     };
     assert.equal(isRepoSettingsStrategy(mockStrategy), true);
   });
@@ -63,6 +66,15 @@ describe("isRepoSettingsStrategy", () => {
       }),
       false
     );
+    assert.equal(
+      isRepoSettingsStrategy({
+        getSettings: async () => ({}),
+        updateSettings: async () => {},
+        setVulnerabilityAlerts: async () => {},
+        setAutomatedSecurityFixes: async () => {},
+      }),
+      false
+    );
   });
 
   test("should return false for object with non-function properties", () => {
@@ -72,6 +84,7 @@ describe("isRepoSettingsStrategy", () => {
         updateSettings: async () => {},
         setVulnerabilityAlerts: async () => {},
         setAutomatedSecurityFixes: async () => {},
+        setPrivateVulnerabilityReporting: async () => {},
       }),
       false
     );

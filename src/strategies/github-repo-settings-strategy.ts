@@ -163,6 +163,19 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     await this.ghApi(method, endpoint, undefined, options);
   }
 
+  async setPrivateVulnerabilityReporting(
+    repoInfo: RepoInfo,
+    enable: boolean,
+    options?: RepoSettingsStrategyOptions
+  ): Promise<void> {
+    this.validateGitHub(repoInfo);
+    const github = repoInfo as GitHubRepoInfo;
+
+    const endpoint = `/repos/${github.owner}/${github.repo}/private-vulnerability-reporting`;
+    const method = enable ? "PUT" : "DELETE";
+    await this.ghApi(method, endpoint, undefined, options);
+  }
+
   private async getVulnerabilityAlerts(
     github: GitHubRepoInfo,
     options?: RepoSettingsStrategyOptions
