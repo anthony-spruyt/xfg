@@ -9,10 +9,18 @@ import type { ICommandExecutor } from "../../../src/command-executor.js";
 class MockExecutor implements ICommandExecutor {
   commands: string[] = [];
   responses: Map<string, string> = new Map();
+  errors: Map<string, string> = new Map();
   defaultResponse = "{}";
 
   async exec(command: string, _cwd: string): Promise<string> {
     this.commands.push(command);
+
+    // Check for error responses first
+    for (const [pattern, errorMessage] of this.errors) {
+      if (command.includes(pattern)) {
+        throw new Error(errorMessage);
+      }
+    }
 
     // Find matching response by endpoint pattern
     for (const [pattern, response] of this.responses) {
@@ -27,9 +35,14 @@ class MockExecutor implements ICommandExecutor {
     this.responses.set(pattern, response);
   }
 
+  setError(pattern: string, errorMessage: string): void {
+    this.errors.set(pattern, errorMessage);
+  }
+
   reset(): void {
     this.commands = [];
     this.responses.clear();
+    this.errors.clear();
   }
 }
 
