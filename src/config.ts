@@ -456,7 +456,7 @@ export interface RawRepoFileOverride {
 // Raw settings (before normalization)
 export interface RawRepoSettings {
   rulesets?: Record<string, Ruleset | false> & { inherit?: boolean };
-  repo?: GitHubRepoSettings;
+  repo?: GitHubRepoSettings | false;
   deleteOrphaned?: boolean;
 }
 
