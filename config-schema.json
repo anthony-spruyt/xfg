@@ -337,8 +337,17 @@
           }
         },
         "repo": {
-          "$ref": "#/definitions/githubRepoSettings",
-          "description": "GitHub repository settings (features, merge options, security)"
+          "oneOf": [
+            {
+              "type": "boolean",
+              "const": false,
+              "description": "Set to false to opt out of all inherited repository settings"
+            },
+            {
+              "$ref": "#/definitions/githubRepoSettings"
+            }
+          ],
+          "description": "GitHub repository settings (features, merge options, security). Set to false at per-repo level to opt out of inherited settings."
         },
         "deleteOrphaned": {
           "type": "boolean",
