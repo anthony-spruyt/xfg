@@ -166,19 +166,11 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     }
 
     // Handle vulnerability alerts (separate endpoint)
+    // Must be done before automated security fixes
     if (vulnerabilityAlerts !== undefined) {
       await this.strategy.setVulnerabilityAlerts(
         repoInfo,
         vulnerabilityAlerts,
-        options
-      );
-    }
-
-    // Handle automated security fixes (separate endpoint)
-    if (automatedSecurityFixes !== undefined) {
-      await this.strategy.setAutomatedSecurityFixes(
-        repoInfo,
-        automatedSecurityFixes,
         options
       );
     }
@@ -188,6 +180,16 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
       await this.strategy.setPrivateVulnerabilityReporting(
         repoInfo,
         privateVulnerabilityReporting,
+        options
+      );
+    }
+
+    // Handle automated security fixes (separate endpoint)
+    // Done last to ensure vulnerability alerts have been fully processed
+    if (automatedSecurityFixes !== undefined) {
+      await this.strategy.setAutomatedSecurityFixes(
+        repoInfo,
+        automatedSecurityFixes,
         options
       );
     }

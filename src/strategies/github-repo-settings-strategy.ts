@@ -198,12 +198,16 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     options?: RepoSettingsStrategyOptions,
     _vulnerabilityAlertsEnabled?: boolean
   ): Promise<boolean> {
-    // Note: Even when vulnerability alerts are disabled, this endpoint returns
-    // the configured state. This allows the diff to correctly show changes needed
-    // when vulnerability alerts will be enabled.
+    // Note: GitHub returns JSON with {enabled: boolean} for this endpoint
     const endpoint = `/repos/${github.owner}/${github.repo}/automated-security-fixes`;
     try {
-      await this.ghApi("GET", endpoint, undefined, options);
+      const result = await this.ghApi("GET", endpoint, undefined, options);
+      // Parse JSON response - GitHub returns {"enabled": true/false}
+      if (result) {
+        const data = JSON.parse(result);
+        return data.enabled === true;
+      }
+      // Empty response (204) means enabled
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
