@@ -889,7 +889,17 @@ export function validateSettings(
 
   // Validate repo settings
   if (s.repo !== undefined) {
-    validateRepoSettings(s.repo, context);
+    if (s.repo === false) {
+      if (!rootRulesetNames) {
+        // Root level — repo: false not valid here
+        throw new Error(
+          `${context}: repo: false is not valid at root level. Define repo settings or remove the field.`
+        );
+      }
+      // Per-repo level — valid opt-out, skip further repo validation
+    } else {
+      validateRepoSettings(s.repo, context);
+    }
   }
 }
 

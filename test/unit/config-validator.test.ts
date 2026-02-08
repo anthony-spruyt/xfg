@@ -1493,6 +1493,20 @@ describe("validateRawConfig", () => {
       );
     });
 
+    test("throws when root settings has repo: false", () => {
+      const config = createValidConfig({
+        settings: {
+          repo: false as never,
+        },
+        files: undefined,
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /repo: false is not valid at root level/
+      );
+    });
+
     test("allows opting out of existing ruleset with false", () => {
       const config = createValidConfig({
         settings: {
