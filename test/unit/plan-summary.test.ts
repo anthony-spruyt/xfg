@@ -1,6 +1,13 @@
-import { test, describe } from "node:test";
+import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { formatPlanMarkdown, Plan } from "../../src/plan-summary.js";
+import { existsSync, readFileSync, unlinkSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import {
+  formatPlanMarkdown,
+  writePlanSummary,
+  Plan,
+} from "../../src/plan-summary.js";
 
 describe("plan-summary", () => {
   describe("formatPlanMarkdown", () => {
@@ -130,6 +137,52 @@ describe("plan-summary", () => {
       });
 
       assert.ok(!markdown.includes("```diff"));
+    });
+  });
+
+  describe("writePlanSummary", () => {
+    let tempFile: string;
+    let originalEnv: string | undefined;
+
+    beforeEach(() => {
+      tempFile = join(tmpdir(), `plan-summary-test-${Date.now()}.md`);
+      originalEnv = process.env.GITHUB_STEP_SUMMARY;
+    });
+
+    afterEach(() => {
+      if (originalEnv === undefined) {
+        delete process.env.GITHUB_STEP_SUMMARY;
+      } else {
+        process.env.GITHUB_STEP_SUMMARY = originalEnv;
+      }
+      if (existsSync(tempFile)) {
+        unlinkSync(tempFile);
+      }
+    });
+
+    test("writes markdown to GITHUB_STEP_SUMMARY path", () => {
+      process.env.GITHUB_STEP_SUMMARY = tempFile;
+      const plan: Plan = {
+        resources: [
+          { type: "file", repo: "org/repo", name: "ci.yml", action: "create" },
+        ],
+      };
+
+      writePlanSummary(plan, { title: "Test Summary", dryRun: false });
+
+      assert.ok(existsSync(tempFile));
+      const content = readFileSync(tempFile, "utf-8");
+      assert.ok(content.includes("## Test Summary"));
+    });
+
+    test("no-ops when env var not set", () => {
+      delete process.env.GITHUB_STEP_SUMMARY;
+      const plan: Plan = { resources: [] };
+
+      // Should not throw
+      writePlanSummary(plan, { title: "Test", dryRun: false });
+
+      assert.ok(!existsSync(tempFile));
     });
   });
 });

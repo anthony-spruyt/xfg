@@ -1,3 +1,4 @@
+import { appendFileSync } from "node:fs";
 import type {
   Plan,
   Resource,
@@ -138,4 +139,15 @@ export function formatPlanMarkdown(
   }
 
   return lines.join("\n");
+}
+
+export function writePlanSummary(
+  plan: Plan,
+  options: PlanMarkdownOptions
+): void {
+  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+  if (!summaryPath) return;
+
+  const markdown = formatPlanMarkdown(plan, options);
+  appendFileSync(summaryPath, "\n" + markdown + "\n");
 }
