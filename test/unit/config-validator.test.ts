@@ -1507,6 +1507,29 @@ describe("validateRawConfig", () => {
       );
     });
 
+    test("throws when per-repo repo: false but no root repo settings defined", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": { target: "branch" },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              repo: false as never,
+            },
+          },
+        ],
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Cannot opt out of repo settings .* not defined in root settings/
+      );
+    });
+
     test("allows opting out of existing ruleset with false", () => {
       const config = createValidConfig({
         settings: {

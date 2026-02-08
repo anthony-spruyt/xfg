@@ -399,10 +399,13 @@ export function validateRawConfig(config: RawConfig): void {
       const rootRulesetNames = config.settings?.rulesets
         ? Object.keys(config.settings.rulesets).filter((k) => k !== "inherit")
         : [];
+      const hasRootRepoSettings =
+        config.settings?.repo !== undefined && config.settings.repo !== false;
       validateSettings(
         repo.settings,
         `Repo ${getGitDisplayName(repo.git)}`,
-        rootRulesetNames
+        rootRulesetNames,
+        hasRootRepoSettings
       );
     }
   }
@@ -843,7 +846,8 @@ function validateRuleset(
 export function validateSettings(
   settings: unknown,
   context: string,
-  rootRulesetNames?: string[]
+  rootRulesetNames?: string[],
+  hasRootRepoSettings?: boolean
 ): void {
   if (
     typeof settings !== "object" ||
@@ -896,7 +900,13 @@ export function validateSettings(
           `${context}: repo: false is not valid at root level. Define repo settings or remove the field.`
         );
       }
-      // Per-repo level — valid opt-out, skip further repo validation
+      // Per-repo level — check root has repo settings to opt out of
+      if (!hasRootRepoSettings) {
+        throw new Error(
+          `${context}: Cannot opt out of repo settings — not defined in root settings.repo`
+        );
+      }
+      // Valid opt-out, skip further repo validation
     } else {
       validateRepoSettings(s.repo, context);
     }
