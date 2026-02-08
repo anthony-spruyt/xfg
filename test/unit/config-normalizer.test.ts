@@ -2099,6 +2099,57 @@ describe("normalizeConfig", () => {
       });
     });
   });
+
+  describe("repo settings opt-out", () => {
+    test("repo: false excludes all root repo settings", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        settings: {
+          repo: {
+            hasIssues: true,
+            hasWiki: true,
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              repo: false as never,
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].settings?.repo, undefined);
+    });
+
+    test("repo: false still allows rulesets to be inherited", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        settings: {
+          repo: {
+            hasIssues: true,
+          },
+          rulesets: {
+            "main-protection": { target: "branch", enforcement: "active" },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              repo: false as never,
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw);
+      assert.equal(result.repos[0].settings?.repo, undefined);
+      assert.ok(result.repos[0].settings?.rulesets?.["main-protection"]);
+    });
+  });
 });
 
 describe("mergeSettings with repo", () => {
@@ -2163,5 +2214,27 @@ describe("mergeSettings with repo", () => {
       hasIssues: true,
       hasWiki: false,
     });
+  });
+
+  test("should return no repo settings when per-repo repo is false", () => {
+    const root: RawRepoSettings = {
+      repo: {
+        hasIssues: true,
+        hasWiki: true,
+      },
+    };
+    const perRepo: RawRepoSettings = {
+      repo: false,
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.equal(result?.repo, undefined);
+  });
+
+  test("should return no repo settings when per-repo repo is false even without root", () => {
+    const perRepo: RawRepoSettings = {
+      repo: false,
+    };
+    const result = mergeSettings(undefined, perRepo);
+    assert.equal(result?.repo, undefined);
   });
 });

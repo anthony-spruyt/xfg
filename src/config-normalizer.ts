@@ -136,10 +136,18 @@ export function mergeSettings(
   }
 
   // Merge repo settings: per-repo overrides root (shallow merge)
-  const rootRepo = root?.repo;
-  const perRepoRepo = perRepo?.repo;
-  if (rootRepo || perRepoRepo) {
-    result.repo = { ...rootRepo, ...perRepoRepo };
+  // repo: false means opt out of all root repo settings
+  if (perRepo?.repo === false) {
+    // Opt-out: don't include any repo settings
+  } else {
+    const rootRepo = root?.repo;
+    const perRepoRepo = perRepo?.repo;
+    if (rootRepo || perRepoRepo) {
+      result.repo = {
+        ...(rootRepo === false ? {} : rootRepo),
+        ...perRepoRepo,
+      } as GitHubRepoSettings;
+    }
   }
 
   return Object.keys(result).length > 0 ? result : undefined;
