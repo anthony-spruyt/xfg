@@ -3,7 +3,7 @@
 xfg can manage GitHub Rulesets declaratively using the `settings` command. Define rulesets in your config file, and xfg will create, update, or delete them to match your desired state.
 
 !!! note "GitHub-Only Feature"
-Rulesets are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg settings`.
+    Rulesets are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg settings`.
 
 ## Quick Start
 
@@ -297,7 +297,7 @@ bypassActors:
 ```
 
 !!! tip "Finding Actor IDs"
-Use the GitHub API to find actor IDs.
+    Use the GitHub API to find actor IDs.
 
 ```bash
 # Team ID

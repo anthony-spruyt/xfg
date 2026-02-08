@@ -8,8 +8,6 @@ import {
   formatRepoSettingsPlan,
   RepoSettingsPlanResult,
 } from "./repo-settings-plan-formatter.js";
-import { hasGitHubAppCredentials } from "./strategies/index.js";
-import { GitHubAppTokenManager } from "./github-app-token-manager.js";
 
 export interface IRepoSettingsProcessor {
   process(
@@ -40,19 +38,9 @@ export interface RepoSettingsProcessorResult {
 
 export class RepoSettingsProcessor implements IRepoSettingsProcessor {
   private readonly strategy: IRepoSettingsStrategy;
-  private readonly tokenManager: GitHubAppTokenManager | null;
 
   constructor(strategy?: IRepoSettingsStrategy) {
     this.strategy = strategy ?? new GitHubRepoSettingsStrategy();
-
-    if (hasGitHubAppCredentials()) {
-      this.tokenManager = new GitHubAppTokenManager(
-        process.env.XFG_GITHUB_APP_ID!,
-        process.env.XFG_GITHUB_APP_PRIVATE_KEY!
-      );
-    } else {
-      this.tokenManager = null;
-    }
   }
 
   async process(
@@ -87,10 +75,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     }
 
     try {
-      // Resolve App token if available, fall back to provided token
-      const effectiveToken =
-        token ?? (await this.getInstallationToken(githubRepo));
-      const strategyOptions = { token: effectiveToken, host: githubRepo.host };
+      const strategyOptions = { token, host: githubRepo.host };
 
       // Fetch current settings
       const currentSettings = await this.strategy.getSettings(
@@ -177,25 +162,6 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
         automatedSecurityFixes,
         options
       );
-    }
-  }
-
-  /**
-   * Resolves a GitHub App installation token for the given repo.
-   * Returns undefined if no token manager or token resolution fails.
-   */
-  private async getInstallationToken(
-    repoInfo: GitHubRepoInfo
-  ): Promise<string | undefined> {
-    if (!this.tokenManager) {
-      return undefined;
-    }
-
-    try {
-      const token = await this.tokenManager.getTokenForRepo(repoInfo);
-      return token ?? undefined;
-    } catch {
-      return undefined;
     }
   }
 }
