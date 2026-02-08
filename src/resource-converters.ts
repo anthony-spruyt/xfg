@@ -5,15 +5,18 @@ import type { RepoConfig } from "./config.js";
 
 /**
  * Convert RulesetProcessorResult planOutput entries to Resource objects.
+ * Includes the detailed plan lines in the first resource's details for display.
  */
 export function rulesetResultToResources(
   repoName: string,
   result: RulesetProcessorResult
 ): Resource[] {
   const resources: Resource[] = [];
+  const planLines = result.planOutput?.lines ?? [];
 
   if (result.planOutput?.entries) {
-    for (const entry of result.planOutput.entries) {
+    for (let i = 0; i < result.planOutput.entries.length; i++) {
+      const entry = result.planOutput.entries[i];
       let action: ResourceAction;
       switch (entry.action) {
         case "create":
@@ -29,11 +32,16 @@ export function rulesetResultToResources(
           action = "unchanged";
       }
 
+      // Attach all plan lines to first resource for GitHub summary display
+      const details =
+        i === 0 && planLines.length > 0 ? { diff: planLines } : undefined;
+
       resources.push({
         type: "ruleset",
         repo: repoName,
         name: entry.name,
         action,
+        details,
       });
     }
   }
@@ -99,22 +107,34 @@ export function syncResultToResources(
 
 /**
  * Convert repo settings processor planOutput entries to Resource objects.
+ * Includes the detailed plan lines in the first resource's details for display.
  */
 export function repoSettingsResultToResources(
   repoName: string,
   result: {
-    planOutput?: { entries?: Array<{ property: string; action: string }> };
+    planOutput?: {
+      entries?: Array<{ property: string; action: string }>;
+      lines?: string[];
+    };
   }
 ): Resource[] {
   const resources: Resource[] = [];
+  const planLines = result.planOutput?.lines ?? [];
 
   if (result.planOutput?.entries) {
-    for (const entry of result.planOutput.entries) {
+    for (let i = 0; i < result.planOutput.entries.length; i++) {
+      const entry = result.planOutput.entries[i];
+
+      // Attach all plan lines to first resource for GitHub summary display
+      const details =
+        i === 0 && planLines.length > 0 ? { diff: planLines } : undefined;
+
       resources.push({
         type: "setting",
         repo: repoName,
         name: entry.property,
         action: entry.action === "add" ? "create" : "update",
+        details,
       });
     }
   }

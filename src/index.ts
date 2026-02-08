@@ -458,6 +458,15 @@ export async function runSettings(
         noDelete: options.noDelete,
       });
 
+      // Print detailed ruleset plan output
+      if (result.planOutput && result.planOutput.lines.length > 0) {
+        logger.info("");
+        logger.info(chalk.bold(`${repoName} - Rulesets:`));
+        for (const line of result.planOutput.lines) {
+          logger.info(line);
+        }
+      }
+
       if (result.skipped) {
         logger.skip(i + 1, repoName, result.message);
       } else if (result.success) {

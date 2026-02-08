@@ -18,12 +18,10 @@ describe("resource-converters", () => {
       const resources = rulesetResultToResources("org/repo", result);
 
       assert.equal(resources.length, 1);
-      assert.deepEqual(resources[0], {
-        type: "ruleset",
-        repo: "org/repo",
-        name: "branch-protection",
-        action: "create",
-      });
+      assert.equal(resources[0].type, "ruleset");
+      assert.equal(resources[0].repo, "org/repo");
+      assert.equal(resources[0].name, "branch-protection");
+      assert.equal(resources[0].action, "create");
     });
 
     test("converts update entries to resources", () => {
@@ -98,6 +96,42 @@ describe("resource-converters", () => {
       const resources = rulesetResultToResources("org/repo", result);
 
       assert.equal(resources.length, 0);
+    });
+
+    test("includes plan lines in first resource details", () => {
+      const result = {
+        planOutput: {
+          entries: [
+            { name: "rule1", action: "create" },
+            { name: "rule2", action: "update" },
+          ],
+          lines: ["+ ruleset.rule1", "  name: test", "~ ruleset.rule2"],
+        },
+      };
+
+      const resources = rulesetResultToResources("org/repo", result);
+
+      assert.equal(resources.length, 2);
+      assert.ok(resources[0].details?.diff);
+      assert.deepEqual(resources[0].details?.diff, [
+        "+ ruleset.rule1",
+        "  name: test",
+        "~ ruleset.rule2",
+      ]);
+      assert.equal(resources[1].details, undefined);
+    });
+
+    test("no details when no plan lines", () => {
+      const result = {
+        planOutput: {
+          entries: [{ name: "rule1", action: "create" }],
+          lines: [],
+        },
+      };
+
+      const resources = rulesetResultToResources("org/repo", result);
+
+      assert.equal(resources[0].details, undefined);
     });
   });
 
@@ -216,12 +250,10 @@ describe("resource-converters", () => {
       const resources = repoSettingsResultToResources("org/repo", result);
 
       assert.equal(resources.length, 1);
-      assert.deepEqual(resources[0], {
-        type: "setting",
-        repo: "org/repo",
-        name: "description",
-        action: "create",
-      });
+      assert.equal(resources[0].type, "setting");
+      assert.equal(resources[0].repo, "org/repo");
+      assert.equal(resources[0].name, "description");
+      assert.equal(resources[0].action, "create");
     });
 
     test("converts change entries to update resources", () => {
@@ -285,6 +317,28 @@ describe("resource-converters", () => {
       const resources = repoSettingsResultToResources("org/repo", result);
 
       assert.equal(resources.length, 0);
+    });
+
+    test("includes plan lines in first resource details", () => {
+      const result = {
+        planOutput: {
+          entries: [
+            { property: "description", action: "add" },
+            { property: "topics", action: "change" },
+          ],
+          lines: ["+ description: New description", "~ topics: [new, topics]"],
+        },
+      };
+
+      const resources = repoSettingsResultToResources("org/repo", result);
+
+      assert.equal(resources.length, 2);
+      assert.ok(resources[0].details?.diff);
+      assert.deepEqual(resources[0].details?.diff, [
+        "+ description: New description",
+        "~ topics: [new, topics]",
+      ]);
+      assert.equal(resources[1].details, undefined);
     });
   });
 });
