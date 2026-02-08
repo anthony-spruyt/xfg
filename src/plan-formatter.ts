@@ -1,7 +1,12 @@
 import chalk from "chalk";
 
 export type ResourceType = "file" | "ruleset" | "setting";
-export type ResourceAction = "create" | "update" | "delete" | "unchanged";
+export type ResourceAction =
+  | "create"
+  | "update"
+  | "delete"
+  | "unchanged"
+  | "skipped";
 
 export interface Resource {
   type: ResourceType;
@@ -9,6 +14,7 @@ export interface Resource {
   name: string;
   action: ResourceAction;
   details?: ResourceDetails;
+  skipReason?: string;
 }
 
 export interface ResourceDetails {
@@ -37,6 +43,8 @@ export function formatResourceLine(resource: Resource): string {
       return chalk.yellow(`~ ${id}`);
     case "delete":
       return chalk.red(`- ${id}`);
+    case "skipped":
+      return chalk.gray(`⊘ ${id}`);
     case "unchanged":
       return chalk.gray(`  ${id}`);
   }
@@ -123,6 +131,7 @@ export function formatPlan(plan: Plan): string[] {
     create: plan.resources.filter((r) => r.action === "create").length,
     update: plan.resources.filter((r) => r.action === "update").length,
     delete: plan.resources.filter((r) => r.action === "delete").length,
+    skipped: plan.resources.filter((r) => r.action === "skipped").length,
   };
 
   lines.push(formatPlanSummary(counts));

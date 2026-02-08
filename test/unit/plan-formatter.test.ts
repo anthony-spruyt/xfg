@@ -235,4 +235,59 @@ describe("plan-formatter", () => {
       assert.ok(lines.some((l) => l.includes("+ new line")));
     });
   });
+
+  describe("skipped resources", () => {
+    test("formats skipped resource with reason", () => {
+      const resource: Resource = {
+        type: "ruleset",
+        repo: "gitlab.com/org/repo",
+        name: "pr-rules",
+        action: "skipped" as ResourceAction,
+        skipReason: "Rulesets only supported for GitHub repositories",
+      };
+
+      const result = formatResourceLine(resource);
+
+      assert.ok(result.includes("⊘"));
+      assert.ok(result.includes('ruleset "gitlab.com/org/repo/pr-rules"'));
+    });
+
+    test("includes skipped count in summary", () => {
+      const plan: Plan = {
+        resources: [
+          {
+            type: "ruleset",
+            repo: "gitlab.com/org/repo",
+            name: "pr-rules",
+            action: "skipped" as ResourceAction,
+            skipReason: "Not supported",
+          },
+        ],
+      };
+
+      const lines = formatPlan(plan);
+
+      assert.ok(lines.some((l) => l.includes("1 skipped")));
+    });
+
+    test("shows skipped resources in plan output", () => {
+      const plan: Plan = {
+        resources: [
+          {
+            type: "ruleset",
+            repo: "gitlab.com/org/repo",
+            name: "pr-rules",
+            action: "skipped" as ResourceAction,
+            skipReason: "Not supported",
+          },
+        ],
+      };
+
+      const lines = formatPlan(plan);
+
+      assert.ok(
+        lines.some((l) => l.includes('ruleset "gitlab.com/org/repo/pr-rules"'))
+      );
+    });
+  });
 });
