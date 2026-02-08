@@ -2543,6 +2543,10 @@ describe("hasActionableSettings", () => {
   test("returns false for empty repo settings", () => {
     assert.equal(hasActionableSettings({ repo: {} }), false);
   });
+
+  test("returns false when repo is false (opt-out)", () => {
+    assert.equal(hasActionableSettings({ repo: false as never }), false);
+  });
 });
 
 describe("validateRepoSettings", () => {
