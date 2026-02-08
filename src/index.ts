@@ -43,6 +43,8 @@ import {
   RepoSettingsProcessor,
   IRepoSettingsProcessor,
 } from "./repo-settings-processor.js";
+import { Plan, Resource, ResourceAction, printPlan } from "./plan-formatter.js";
+import { writePlanSummary } from "./plan-summary.js";
 
 /**
  * Processor interface for dependency injection in tests.
@@ -105,6 +107,73 @@ export type RepoSettingsProcessorFactory = () => IRepoSettingsProcessor;
  */
 export const defaultRepoSettingsProcessorFactory: RepoSettingsProcessorFactory =
   () => new RepoSettingsProcessor();
+
+// =============================================================================
+// Resource Conversion Helpers
+// =============================================================================
+
+/**
+ * Convert RulesetProcessorResult planOutput entries to Resource objects.
+ */
+function rulesetResultToResources(
+  repoName: string,
+  result: RulesetProcessorResult
+): Resource[] {
+  const resources: Resource[] = [];
+
+  if (result.planOutput?.entries) {
+    for (const entry of result.planOutput.entries) {
+      let action: ResourceAction;
+      switch (entry.action) {
+        case "create":
+          action = "create";
+          break;
+        case "update":
+          action = "update";
+          break;
+        case "delete":
+          action = "delete";
+          break;
+        default:
+          action = "unchanged";
+      }
+
+      resources.push({
+        type: "ruleset",
+        repo: repoName,
+        name: entry.name,
+        action,
+      });
+    }
+  }
+
+  return resources;
+}
+
+/**
+ * Convert repo settings processor planOutput entries to Resource objects.
+ */
+function repoSettingsResultToResources(
+  repoName: string,
+  result: {
+    planOutput?: { entries?: Array<{ property: string; action: string }> };
+  }
+): Resource[] {
+  const resources: Resource[] = [];
+
+  if (result.planOutput?.entries) {
+    for (const entry of result.planOutput.entries) {
+      resources.push({
+        type: "setting",
+        repo: repoName,
+        name: entry.property,
+        action: entry.action === "add" ? "create" : "update",
+      });
+    }
+  }
+
+  return resources;
+}
 
 // =============================================================================
 // Shared CLI Options
