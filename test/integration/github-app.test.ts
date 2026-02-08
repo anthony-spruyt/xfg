@@ -1,4 +1,5 @@
 import { test, describe, beforeEach } from "node:test";
+import { strict as assert } from "node:assert";
 import { join } from "node:path";
 import { exec, projectRoot } from "./test-helpers.js";
 
@@ -18,11 +19,35 @@ if (SKIP_TESTS) {
 const xfgEnv = { cwd: projectRoot, env: { GH_TOKEN: undefined } };
 
 const RESET_SCRIPT = join(projectRoot, ".github/scripts/reset-test-repo.sh");
+const TEST_REPO = "anthony-spruyt/xfg-test-2";
+
+// GitHub default repo settings — used to reset between tests
+const GITHUB_DEFAULTS = {
+  has_wiki: true,
+  has_projects: true,
+  allow_squash_merge: true,
+  allow_merge_commit: true,
+  allow_rebase_merge: true,
+  delete_branch_on_merge: false,
+};
 
 function resetTestRepo(): void {
   console.log("\n=== Resetting test repo to clean state ===\n");
-  exec(`bash ${RESET_SCRIPT} anthony-spruyt/xfg-test-2`);
+  exec(`bash ${RESET_SCRIPT} ${TEST_REPO}`);
   console.log("\n=== Reset complete ===\n");
+}
+
+/**
+ * Reset repo settings to GitHub defaults via PATCH API.
+ * Uses gh CLI which has GH_TOKEN - this is intentional for setup.
+ */
+function resetRepoSettings(): void {
+  console.log("  Resetting repo settings to defaults...");
+  const fields = Object.entries(GITHUB_DEFAULTS)
+    .map(([k, v]) => `-F ${k}=${v}`)
+    .join(" ");
+  exec(`gh api --method PATCH repos/${TEST_REPO} ${fields}`);
+  console.log("  Settings reset to defaults");
 }
 
 // Act only — exec() throws on non-zero exit code.
@@ -96,5 +121,41 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
     );
     const output2 = exec(`node dist/cli.js --config ${configPath2}`, xfgEnv);
     console.log(output2);
+  });
+
+  // Regression test for issue #418 - RepoSettingsProcessor missing GitHub App token support
+  test("repo settings with GitHub App token is idempotent", () => {
+    const configPath = join(
+      fixturesDir,
+      "integration-test-github-app-repo-settings.yaml"
+    );
+
+    // Reset repo settings to defaults (uses gh CLI with GH_TOKEN for setup)
+    resetRepoSettings();
+
+    // Apply repo settings with GitHub App credentials (no GH_TOKEN)
+    console.log("Applying repo settings with GitHub App credentials...");
+    const applyOutput = exec(
+      `node dist/cli.js settings --config ${configPath}`,
+      xfgEnv
+    );
+    console.log(applyOutput);
+
+    // Run again - should report no changes (idempotency check)
+    // Before fix #418, this would show all settings as "additions" because
+    // RepoSettingsProcessor couldn't fetch current settings without token
+    console.log("\nRunning settings again (should report no changes)...");
+    const secondOutput = exec(
+      `node dist/cli.js settings --config ${configPath}`,
+      xfgEnv
+    );
+    console.log(secondOutput);
+
+    // Assert idempotency - second run should have no changes
+    assert.ok(
+      secondOutput.includes("No changes needed") ||
+        secondOutput.includes("0 to add, 0 to change"),
+      `Expected no changes on second run, got: ${secondOutput}`
+    );
   });
 });

@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+# Integration test: repo settings with GitHub App token
+# Regression test for issue #418 - RepoSettingsProcessor missing GitHub App token support
+id: integration-test-github-app-repo-settings
+
+settings:
+  repo:
+    hasWiki: false
+    hasProjects: false
+    allowSquashMerge: true
+    allowMergeCommit: false
+    deleteBranchOnMerge: true
+
+repos:
+  - git: https://github.com/anthony-spruyt/xfg-test-2.git
