@@ -385,6 +385,8 @@ export interface GitHubRepoSettings {
   allowForking?: boolean;
   visibility?: RepoVisibility;
   archived?: boolean;
+  webCommitSignoffRequired?: boolean;
+  defaultBranch?: string;
 
   // Merge options
   allowSquashMerge?: boolean;

@@ -482,12 +482,18 @@ function validateRepoSettings(repo: unknown, context: string): void {
     "secretScanning",
     "secretScanningPushProtection",
     "privateVulnerabilityReporting",
+    "webCommitSignoffRequired",
   ];
 
   for (const field of booleanFields) {
     if (r[field] !== undefined && typeof r[field] !== "boolean") {
       throw new Error(`${context}: ${field} must be a boolean`);
     }
+  }
+
+  // Validate string fields
+  if (r.defaultBranch !== undefined && typeof r.defaultBranch !== "string") {
+    throw new Error(`${context}: defaultBranch must be a string`);
   }
 
   // Validate enum fields

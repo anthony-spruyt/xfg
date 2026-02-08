@@ -43,6 +43,9 @@ function getWarning(change: RepoSettingsChange): string | undefined {
   ) {
     return `disabling ${change.property} may hide existing content`;
   }
+  if (change.property === "defaultBranch") {
+    return `changing default branch may affect existing PRs, CI workflows, and branch protections`;
+  }
   return undefined;
 }
 

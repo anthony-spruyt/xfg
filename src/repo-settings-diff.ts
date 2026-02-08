@@ -32,6 +32,8 @@ const PROPERTY_MAPPING: Record<keyof GitHubRepoSettings, string> = {
   squashMergeCommitMessage: "squash_merge_commit_message",
   mergeCommitTitle: "merge_commit_title",
   mergeCommitMessage: "merge_commit_message",
+  webCommitSignoffRequired: "web_commit_signoff_required",
+  defaultBranch: "default_branch",
   vulnerabilityAlerts: "_vulnerability_alerts",
   automatedSecurityFixes: "_automated_security_fixes",
   secretScanning: "_secret_scanning",

@@ -28,6 +28,8 @@ export interface CurrentRepoSettings {
   squash_merge_commit_message?: string;
   merge_commit_title?: string;
   merge_commit_message?: string;
+  web_commit_signoff_required?: boolean;
+  default_branch?: string;
   security_and_analysis?: {
     secret_scanning?: { status: string };
     secret_scanning_push_protection?: { status: string };

@@ -43,6 +43,8 @@ function configToGitHubPayload(
     "squashMergeCommitMessage",
     "mergeCommitTitle",
     "mergeCommitMessage",
+    "webCommitSignoffRequired",
+    "defaultBranch",
   ];
 
   for (const key of directMappings) {

@@ -96,6 +96,21 @@ describe("formatRepoSettingsPlan", () => {
     assert.ok(result.warnings.some((w) => w.includes("hide existing content")));
   });
 
+  test("should generate warning for defaultBranch change", () => {
+    const changes: RepoSettingsChange[] = [
+      {
+        property: "defaultBranch",
+        action: "change",
+        oldValue: "main",
+        newValue: "develop",
+      },
+    ];
+
+    const result = formatRepoSettingsPlan(changes);
+
+    assert.ok(result.warnings.some((w) => w.includes("default branch")));
+  });
+
   test("should format multiple changes", () => {
     const changes: RepoSettingsChange[] = [
       {

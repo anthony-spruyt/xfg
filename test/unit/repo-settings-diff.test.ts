@@ -107,6 +107,36 @@ describe("diffRepoSettings", () => {
     );
   });
 
+  test("should detect changed webCommitSignoffRequired", () => {
+    const current: CurrentRepoSettings = { web_commit_signoff_required: false };
+    const desired: GitHubRepoSettings = { webCommitSignoffRequired: true };
+
+    const changes = diffRepoSettings(current, desired);
+
+    assert.equal(changes.length, 1);
+    assert.deepEqual(changes[0], {
+      property: "webCommitSignoffRequired",
+      action: "change",
+      oldValue: false,
+      newValue: true,
+    });
+  });
+
+  test("should detect changed defaultBranch", () => {
+    const current: CurrentRepoSettings = { default_branch: "main" };
+    const desired: GitHubRepoSettings = { defaultBranch: "develop" };
+
+    const changes = diffRepoSettings(current, desired);
+
+    assert.equal(changes.length, 1);
+    assert.deepEqual(changes[0], {
+      property: "defaultBranch",
+      action: "change",
+      oldValue: "main",
+      newValue: "develop",
+    });
+  });
+
   test("should ignore undefined desired values", () => {
     const current: CurrentRepoSettings = { has_wiki: true };
     const desired: GitHubRepoSettings = { hasWiki: undefined };

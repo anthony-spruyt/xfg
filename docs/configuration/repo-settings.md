@@ -47,6 +47,8 @@ xfg settings -c config.yaml
 | `allowForking` | boolean | Allow forking (private repos) |
 | `visibility` | string | `public`, `private`, or `internal` |
 | `archived` | boolean | Archive the repository |
+| `webCommitSignoffRequired` | boolean | Require sign-off on web-based commits |
+| `defaultBranch` | string | Set the default branch |
 
 ### Merge Options
 
@@ -112,6 +114,7 @@ xfg displays warnings for potentially destructive operations:
 | Change `visibility` | "visibility change may expose or hide repository" |
 | Set `archived: true` | "archiving makes repository read-only" |
 | Disable `hasIssues`, `hasWiki`, `hasProjects` | "may hide existing content" |
+| Change `defaultBranch` | "may affect existing PRs, CI workflows, and branch protections" |
 
 Example output:
 

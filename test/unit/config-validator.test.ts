@@ -2636,6 +2636,40 @@ describe("validateRepoSettings", () => {
     assert.doesNotThrow(() => validateRawConfig(config));
   });
 
+  test("rejects non-boolean webCommitSignoffRequired", () => {
+    const config = createSettingsConfig({
+      webCommitSignoffRequired: "yes",
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /webCommitSignoffRequired must be a boolean/
+    );
+  });
+
+  test("accepts valid webCommitSignoffRequired", () => {
+    const config = createSettingsConfig({
+      webCommitSignoffRequired: true,
+    });
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("rejects non-string defaultBranch", () => {
+    const config = createSettingsConfig({
+      defaultBranch: 123,
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /defaultBranch must be a string/
+    );
+  });
+
+  test("accepts valid defaultBranch", () => {
+    const config = createSettingsConfig({
+      defaultBranch: "develop",
+    });
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
   test("rejects repo settings that is not an object", () => {
     const config: import("../../src/config.js").RawConfig = {
       id: "test-config",

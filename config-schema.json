@@ -465,6 +465,14 @@
         "privateVulnerabilityReporting": {
           "type": "boolean",
           "description": "Enable or disable private vulnerability reporting"
+        },
+        "webCommitSignoffRequired": {
+          "type": "boolean",
+          "description": "Require contributors to sign off on web-based commits"
+        },
+        "defaultBranch": {
+          "type": "string",
+          "description": "The default branch for the repository"
         }
       }
     },

@@ -85,6 +85,34 @@ describe("GitHubRepoSettingsStrategy", () => {
       assert.ok(mockExecutor.commands[0].includes("has_issues"));
     });
 
+    test("should include web_commit_signoff_required in payload", async () => {
+      mockExecutor.setResponse("/repos/test-org/test-repo", "{}");
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      await strategy.updateSettings(githubRepo, {
+        webCommitSignoffRequired: true,
+      });
+
+      assert.equal(mockExecutor.commands.length, 1);
+      assert.ok(mockExecutor.commands[0].includes("-X PATCH"));
+      assert.ok(
+        mockExecutor.commands[0].includes("web_commit_signoff_required")
+      );
+    });
+
+    test("should include default_branch in payload", async () => {
+      mockExecutor.setResponse("/repos/test-org/test-repo", "{}");
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      await strategy.updateSettings(githubRepo, {
+        defaultBranch: "develop",
+      });
+
+      assert.equal(mockExecutor.commands.length, 1);
+      assert.ok(mockExecutor.commands[0].includes("-X PATCH"));
+      assert.ok(mockExecutor.commands[0].includes("default_branch"));
+    });
+
     test("should skip update when no settings provided", async () => {
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
       await strategy.updateSettings(githubRepo, {});
