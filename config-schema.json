@@ -6,8 +6,19 @@
   "type": "object",
   "required": [
     "id",
-    "files",
     "repos"
+  ],
+  "anyOf": [
+    {
+      "required": [
+        "files"
+      ]
+    },
+    {
+      "required": [
+        "settings"
+      ]
+    }
   ],
   "properties": {
     "id": {
