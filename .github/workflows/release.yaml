@@ -130,7 +130,8 @@ jobs:
           COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
 
           # Delete and recreate the major version tag (e.g., v3)
-          if gh api "repos/$REPO/git/refs/tags/v${MAJOR}" &>/dev/null; then
+          # Use git/ref (singular) for exact match — git/refs (plural) does prefix matching
+          if gh api "repos/$REPO/git/ref/tags/v${MAJOR}" &>/dev/null; then
             gh api --method DELETE "repos/$REPO/git/refs/tags/v${MAJOR}"
             echo "Deleted existing v${MAJOR} tag"
           fi
