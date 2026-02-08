@@ -3,6 +3,12 @@
 # Regression test for issue #418 - RepoSettingsProcessor missing GitHub App token support
 id: integration-test-github-app-repo-settings
 
+# Placeholder file required by schema - excluded from target repo
+files:
+  .xfg-repo-settings-test:
+    content: "# Placeholder for repo settings integration test"
+    createOnly: true
+
 settings:
   repo:
     hasWiki: false
@@ -13,3 +19,5 @@ settings:
 
 repos:
   - git: https://github.com/anthony-spruyt/xfg-test-2.git
+    files:
+      .xfg-repo-settings-test: false
