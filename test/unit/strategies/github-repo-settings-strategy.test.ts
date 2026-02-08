@@ -163,6 +163,27 @@ describe("GitHubRepoSettingsStrategy", () => {
       assert.equal(result.automated_security_fixes, true);
     });
 
+    test("should return automated_security_fixes false when vulnerability_alerts is disabled", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({ has_issues: true })
+      );
+      // vulnerability-alerts returns 404 (disabled)
+      mockExecutor.setError("vulnerability-alerts", "gh: Not Found (HTTP 404)");
+      // automated-security-fixes endpoint would return 204, but should be ignored
+      mockExecutor.setResponse("automated-security-fixes", "");
+      mockExecutor.setResponse(
+        "private-vulnerability-reporting",
+        JSON.stringify({ enabled: false })
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      const result = await strategy.getSettings(githubRepo);
+
+      // Should return false because vulnerability_alerts is disabled
+      assert.equal(result.automated_security_fixes, false);
+    });
+
     test("should return automated_security_fixes false when endpoint returns 404", async () => {
       mockExecutor.setResponse(
         "/repos/test-org/test-repo'",
