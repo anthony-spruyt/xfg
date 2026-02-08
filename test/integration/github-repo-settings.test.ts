@@ -4,10 +4,8 @@ import { join } from "node:path";
 import { writeFileSync } from "node:fs";
 import { exec, projectRoot } from "./test-helpers.js";
 
-// Test constants - these are hardcoded and not derived from user input
-const TEST_REPO_NAME = "xfg-test-repo-settings";
-const TEST_OWNER = "anthony-spruyt";
-const TEST_REPO = `${TEST_OWNER}/${TEST_REPO_NAME}`;
+// Test constants - repo is pre-created and persistent (never deleted)
+const TEST_REPO = "anthony-spruyt/xfg-test-7";
 
 // Dynamic config file path (created during test)
 const configPath = join(
@@ -17,88 +15,27 @@ const configPath = join(
   "integration-test-config-repo-settings.yaml"
 );
 
-/**
- * Delete the test repository if it exists.
- * Uses REST API (not GraphQL) to avoid eventual-consistency mismatches
- * where GraphQL says "not found" but REST still sees the repo.
- * Note: Uses hardcoded TEST_REPO constant, not user input.
- */
-function deleteRepoIfExists(): void {
-  try {
-    console.log(`  Checking if ${TEST_REPO} exists (REST)...`);
-    exec(`gh api repos/${TEST_REPO} --jq '.name'`);
-    console.log(`  Deleting ${TEST_REPO}...`);
-    exec(`gh repo delete ${TEST_REPO} --yes`);
-    console.log(`  Deleted ${TEST_REPO}`);
-  } catch {
-    console.log(`  Repository ${TEST_REPO} does not exist`);
-  }
-}
+// GitHub default repo settings — used to reset between tests
+const GITHUB_DEFAULTS = {
+  has_wiki: true,
+  has_projects: true,
+  allow_squash_merge: true,
+  allow_merge_commit: true,
+  allow_rebase_merge: true,
+  delete_branch_on_merge: false,
+};
 
 /**
- * Synchronous sleep using Atomics.wait (no child_process needed).
+ * Reset repo settings to GitHub defaults via PATCH API.
+ * Repo is pre-created and persistent — never deleted or recreated.
  */
-function sleepSync(ms: number): void {
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
-}
-
-/**
- * Create a new test repository with retry.
- * Handles the ghost-repo race condition where the repo was recently deleted
- * but GitHub's API still reports "name already exists". In that case, wait
- * and retry since GitHub will finish the deletion shortly.
- * Note: Uses hardcoded TEST_REPO constant, not user input.
- */
-function createTestRepo(): void {
-  const maxAttempts = 5;
-  const delayMs = 3000;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      console.log(`  Creating ${TEST_REPO} (attempt ${attempt})...`);
-      exec(`gh repo create ${TEST_REPO} --public --add-readme`);
-      console.log(`  Created ${TEST_REPO}`);
-      return;
-    } catch (err: unknown) {
-      const stderr = (err as { stderr?: string }).stderr ?? "";
-      if (stderr.includes("already exists") && attempt < maxAttempts) {
-        console.log(
-          `  Repo name still reserved (ghost repo), waiting ${delayMs}ms...`
-        );
-        try {
-          exec(`gh repo delete ${TEST_REPO} --yes`);
-          console.log(`  Force-deleted ghost repo`);
-        } catch {
-          // ignore — may already be gone
-        }
-        sleepSync(delayMs);
-        continue;
-      }
-      throw err;
-    }
-  }
-}
-
-/**
- * Wait for the repository to be fully available.
- * Note: Uses hardcoded TEST_REPO constant, not user input.
- */
-async function waitForRepoReady(timeoutMs = 30000): Promise<void> {
-  const startTime = Date.now();
-  const pollInterval = 1000;
-
-  while (Date.now() - startTime < timeoutMs) {
-    try {
-      // Try to fetch repo settings - this confirms API is ready
-      exec(`gh api repos/${TEST_REPO} --jq '.id'`);
-      console.log(`  Repository ready after ${Date.now() - startTime}ms`);
-      return;
-    } catch {
-      // API not ready yet, continue polling
-    }
-    await new Promise((resolve) => setTimeout(resolve, pollInterval));
-  }
-
-  throw new Error(`Repository ${TEST_REPO} not ready after ${timeoutMs}ms`);
+function resetRepoSettings(): void {
+  console.log("  Resetting repo settings to defaults...");
+  const fields = Object.entries(GITHUB_DEFAULTS)
+    .map(([k, v]) => `-F ${k}=${v}`)
+    .join(" ");
+  exec(`gh api --method PATCH repos/${TEST_REPO} ${fields}`);
+  console.log("  Settings reset to defaults");
 }
 
 /**
@@ -136,9 +73,7 @@ repos:
 
 async function resetTestRepo(): Promise<void> {
   console.log("\n=== Resetting repo settings test repo ===\n");
-  deleteRepoIfExists();
-  createTestRepo();
-  await waitForRepoReady();
+  resetRepoSettings();
   createConfigFile();
   console.log("\n=== Reset complete ===\n");
 }
@@ -229,8 +164,6 @@ describe("GitHub Repo Settings Integration Test", () => {
       true,
       "delete_branch_on_merge should be true"
     );
-    // Note: allow_auto_merge requires branch protection rules to be enabled first
-    // so we don't test it here on a fresh private repo
 
     console.log("  All settings verified!");
     console.log("\n=== Apply test passed ===\n");
