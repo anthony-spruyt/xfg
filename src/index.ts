@@ -151,6 +151,62 @@ function rulesetResultToResources(
 }
 
 /**
+ * Convert sync ProcessorResult diffStats to Resource objects.
+ * Since we don't have per-file details, we represent each file from config
+ * with the aggregate action based on diffStats.
+ */
+function syncResultToResources(
+  repoName: string,
+  repoConfig: RepoConfig,
+  result: ProcessorResult
+): Resource[] {
+  const resources: Resource[] = [];
+
+  if (result.skipped) {
+    // Mark all files as unchanged when skipped
+    for (const file of repoConfig.files) {
+      resources.push({
+        type: "file",
+        repo: repoName,
+        name: file.fileName,
+        action: "unchanged",
+      });
+    }
+    return resources;
+  }
+
+  if (!result.diffStats) {
+    return resources;
+  }
+
+  // With aggregate stats, we can show repo-level summary
+  // For now, create one resource per file in config with best-effort action
+  // Note: This is approximate since we don't have per-file tracking
+  const { newCount, modifiedCount, deletedCount } = result.diffStats;
+
+  for (const file of repoConfig.files) {
+    // Determine action based on aggregate stats - this is a simplification
+    let action: ResourceAction = "unchanged";
+    if (newCount > 0) {
+      action = "create";
+    } else if (modifiedCount > 0) {
+      action = "update";
+    } else if (deletedCount > 0) {
+      action = "delete";
+    }
+
+    resources.push({
+      type: "file",
+      repo: repoName,
+      name: file.fileName,
+      action,
+    });
+  }
+
+  return resources;
+}
+
+/**
  * Convert repo settings processor planOutput entries to Resource objects.
  */
 function repoSettingsResultToResources(
@@ -301,6 +357,9 @@ export async function runSync(
   const processor = processorFactory();
   const results: RepoResult[] = [];
 
+  // Build plan for Terraform-style output
+  const plan: Plan = { resources: [], errors: [] };
+
   for (let i = 0; i < config.repos.length; i++) {
     const repoConfig = config.repos[i];
 
@@ -326,6 +385,10 @@ export async function runSync(
     } catch (error) {
       logger.error(current, repoConfig.git, String(error));
       results.push(buildErrorResult(repoConfig.git, error));
+      plan.errors!.push({
+        repo: repoConfig.git,
+        message: error instanceof Error ? error.message : String(error),
+      });
       continue;
     }
 
@@ -357,29 +420,32 @@ export async function runSync(
       } else {
         logger.error(current, repoName, result.message);
       }
+
+      // Collect resources for plan output
+      plan.resources.push(
+        ...syncResultToResources(repoName, repoConfig, result)
+      );
     } catch (error) {
       logger.error(current, repoName, String(error));
       results.push(buildErrorResult(repoName, error));
+      plan.errors!.push({
+        repo: repoName,
+        message: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
-  logger.summary();
+  // Print Terraform-style plan summary
+  console.log("");
+  printPlan(plan);
 
-  // Write GitHub Actions job summary if running in GitHub Actions
-  const succeeded = results.filter((r) => r.status === "succeeded").length;
-  const skipped = results.filter((r) => r.status === "skipped").length;
-  const failed = results.filter((r) => r.status === "failed").length;
-  writeSummary({
+  // Write GitHub Actions job summary
+  writePlanSummary(plan, {
     title: "Config Sync Summary",
-    dryRun: options.dryRun,
-    total: config.repos.length,
-    succeeded,
-    skipped,
-    failed,
-    results,
+    dryRun: options.dryRun ?? false,
   });
 
-  if (logger.hasFailures()) {
+  if (plan.errors && plan.errors.length > 0) {
     process.exit(1);
   }
 }
