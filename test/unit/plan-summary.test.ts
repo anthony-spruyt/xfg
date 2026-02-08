@@ -88,4 +88,48 @@ describe("plan-summary", () => {
       assert.ok(markdown.includes("Connection refused"));
     });
   });
+
+  describe("diff details", () => {
+    test("includes collapsible diff for modified resources", () => {
+      const plan: Plan = {
+        resources: [
+          {
+            type: "file",
+            repo: "org/repo",
+            name: "ci.yml",
+            action: "update",
+            details: {
+              diff: ["- version: 1", "+ version: 2"],
+            },
+          },
+        ],
+      };
+
+      const markdown = formatPlanMarkdown(plan, {
+        title: "Summary",
+        dryRun: false,
+      });
+
+      assert.ok(markdown.includes("<details>"));
+      assert.ok(markdown.includes("Diff:"));
+      assert.ok(markdown.includes("```diff"));
+      assert.ok(markdown.includes("- version: 1"));
+      assert.ok(markdown.includes("+ version: 2"));
+    });
+
+    test("omits diff section for resources without details", () => {
+      const plan: Plan = {
+        resources: [
+          { type: "file", repo: "org/repo", name: "ci.yml", action: "create" },
+        ],
+      };
+
+      const markdown = formatPlanMarkdown(plan, {
+        title: "Summary",
+        dryRun: false,
+      });
+
+      assert.ok(!markdown.includes("```diff"));
+    });
+  });
 });

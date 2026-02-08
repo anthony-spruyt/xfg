@@ -99,6 +99,27 @@ export function formatPlanMarkdown(
     lines.push("</details>");
   }
 
+  // Add diff details for resources that have them
+  const resourcesWithDiffs = changedResources.filter(
+    (r) => r.details?.diff && r.details.diff.length > 0
+  );
+
+  for (const resource of resourcesWithDiffs) {
+    lines.push("");
+    lines.push("<details>");
+    lines.push(
+      `<summary><strong>Diff: ${formatResourceIdPlain(resource)}</strong></summary>`
+    );
+    lines.push("");
+    lines.push("```diff");
+    for (const diffLine of resource.details!.diff!) {
+      lines.push(diffLine);
+    }
+    lines.push("```");
+    lines.push("");
+    lines.push("</details>");
+  }
+
   // Error section
   if (plan.errors && plan.errors.length > 0) {
     lines.push("");
