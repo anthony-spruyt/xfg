@@ -127,6 +127,28 @@ describe("RepoSettingsProcessor", () => {
     assert.ok(result.message.includes("No repo settings configured"));
   });
 
+  test("should skip repos where repo settings were opted out (undefined after normalization)", async () => {
+    const processor = new RepoSettingsProcessor(mockStrategy);
+    const repoConfig: RepoConfig = {
+      git: githubRepo.gitUrl,
+      files: [],
+      settings: {
+        rulesets: {
+          "main-protection": { target: "branch", enforcement: "active" },
+        },
+        // repo is undefined (opted out via repo: false, stripped by normalizer)
+      },
+    };
+
+    const result = await processor.process(repoConfig, githubRepo, {
+      dryRun: false,
+    });
+
+    assert.equal(result.skipped, true);
+    assert.ok(result.message.includes("No repo settings configured"));
+    assert.equal(mockStrategy.getSettingsCalls.length, 0);
+  });
+
   test("should detect and report changes in dry-run mode", async () => {
     mockStrategy.getSettingsResult = { has_wiki: true };
 
