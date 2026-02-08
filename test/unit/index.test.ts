@@ -815,16 +815,12 @@ repos:
 
       const summary = readFileSync(summaryPath, "utf-8");
 
-      // Verify summary content
+      // Verify summary content - new Terraform-style format
       assert.ok(
         summary.includes("## Config Sync Summary"),
         "Should have summary header"
       );
-      assert.ok(
-        summary.includes("| Status | Count |"),
-        "Should have stats table"
-      );
-      assert.ok(summary.includes("Total"), "Should show total count");
+      assert.ok(summary.includes("### Plan:"), "Should have plan summary line");
     });
 
     test("does not write summary when GITHUB_STEP_SUMMARY not set", () => {

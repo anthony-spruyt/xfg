@@ -30,7 +30,7 @@ import {
 import { RepoConfig } from "./config.js";
 import { RepoInfo } from "./repo-detector.js";
 import { ProcessorOptions } from "./repository-processor.js";
-import { writeSummary, RepoResult } from "./github-summary.js";
+import { RepoResult } from "./github-summary.js";
 import { buildRepoResult, buildErrorResult } from "./summary-utils.js";
 import {
   RulesetProcessor,
