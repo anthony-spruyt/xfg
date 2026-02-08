@@ -145,6 +145,62 @@ describe("diffRepoSettings", () => {
 
     assert.equal(changes.length, 0);
   });
+
+  test("should show security settings as changes when values differ", () => {
+    const current: CurrentRepoSettings = {
+      vulnerability_alerts: true,
+      automated_security_fixes: false,
+      private_vulnerability_reporting: false,
+    };
+
+    const desired: GitHubRepoSettings = {
+      vulnerabilityAlerts: false,
+      automatedSecurityFixes: true,
+      privateVulnerabilityReporting: true,
+    };
+
+    const changes = diffRepoSettings(current, desired);
+
+    const vulnChange = changes.find(
+      (c) => c.property === "vulnerabilityAlerts"
+    );
+    const autoChange = changes.find(
+      (c) => c.property === "automatedSecurityFixes"
+    );
+    const pvrChange = changes.find(
+      (c) => c.property === "privateVulnerabilityReporting"
+    );
+
+    assert.equal(vulnChange?.action, "change");
+    assert.equal(vulnChange?.oldValue, true);
+    assert.equal(vulnChange?.newValue, false);
+
+    assert.equal(autoChange?.action, "change");
+    assert.equal(autoChange?.oldValue, false);
+    assert.equal(autoChange?.newValue, true);
+
+    assert.equal(pvrChange?.action, "change");
+    assert.equal(pvrChange?.oldValue, false);
+    assert.equal(pvrChange?.newValue, true);
+  });
+
+  test("should not include unchanged security settings", () => {
+    const current: CurrentRepoSettings = {
+      vulnerability_alerts: true,
+      automated_security_fixes: true,
+      private_vulnerability_reporting: true,
+    };
+
+    const desired: GitHubRepoSettings = {
+      vulnerabilityAlerts: true,
+      automatedSecurityFixes: true,
+      privateVulnerabilityReporting: true,
+    };
+
+    const changes = diffRepoSettings(current, desired);
+
+    assert.equal(changes.length, 0);
+  });
 });
 
 describe("hasChanges", () => {
