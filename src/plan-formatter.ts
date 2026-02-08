@@ -41,3 +41,36 @@ export function formatResourceLine(resource: Resource): string {
       return chalk.gray(`  ${id}`);
   }
 }
+
+export interface PlanCounts {
+  create: number;
+  update: number;
+  delete: number;
+  skipped?: number;
+}
+
+export function formatPlanSummary(counts: PlanCounts): string {
+  const parts: string[] = [];
+
+  if (counts.create > 0) {
+    parts.push(chalk.green(`${counts.create} to create`));
+  }
+  if (counts.update > 0) {
+    parts.push(chalk.yellow(`${counts.update} to change`));
+  }
+  if (counts.delete > 0) {
+    parts.push(chalk.red(`${counts.delete} to destroy`));
+  }
+
+  if (parts.length === 0 && (!counts.skipped || counts.skipped === 0)) {
+    return "No changes. Your repositories match the configuration.";
+  }
+
+  let summary = parts.length > 0 ? `Plan: ${parts.join(", ")}` : "Plan:";
+
+  if (counts.skipped && counts.skipped > 0) {
+    summary += chalk.gray(` (${counts.skipped} skipped)`);
+  }
+
+  return summary;
+}

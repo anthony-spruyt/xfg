@@ -5,6 +5,8 @@ import {
   ResourceAction,
   formatResourceId,
   formatResourceLine,
+  formatPlanSummary,
+  PlanCounts,
 } from "../../src/plan-formatter.js";
 
 describe("plan-formatter", () => {
@@ -104,6 +106,49 @@ describe("plan-formatter", () => {
       const result = formatResourceLine(resource);
 
       assert.ok(result.includes('file "org/repo/unchanged.txt"'));
+    });
+  });
+
+  describe("formatPlanSummary", () => {
+    test("formats counts with all action types", () => {
+      const counts: PlanCounts = {
+        create: 2,
+        update: 3,
+        delete: 1,
+      };
+
+      const result = formatPlanSummary(counts);
+
+      assert.ok(result.includes("Plan:"));
+      assert.ok(result.includes("2 to create"));
+      assert.ok(result.includes("3 to change"));
+      assert.ok(result.includes("1 to destroy"));
+    });
+
+    test("omits zero counts", () => {
+      const counts: PlanCounts = {
+        create: 1,
+        update: 0,
+        delete: 0,
+      };
+
+      const result = formatPlanSummary(counts);
+
+      assert.ok(result.includes("1 to create"));
+      assert.ok(!result.includes("to change"));
+      assert.ok(!result.includes("to destroy"));
+    });
+
+    test("returns no changes message when all zero", () => {
+      const counts: PlanCounts = {
+        create: 0,
+        update: 0,
+        delete: 0,
+      };
+
+      const result = formatPlanSummary(counts);
+
+      assert.ok(result.includes("No changes"));
     });
   });
 });
