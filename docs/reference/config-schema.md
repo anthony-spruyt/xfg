@@ -40,16 +40,16 @@ Or configure in `.vscode/settings.json`:
 | Field            | Type        | Required | Description                                       |
 | ---------------- | ----------- | -------- | ------------------------------------------------- |
 | `id`             | `string`    | Yes      | Unique config identifier (alphanumeric, `-`, `_`) |
-| `files`          | `object`    | *        | Map of filenames to file configs                  |
+| `files`          | `object`    | \*       | Map of filenames to file configs                  |
 | `repos`          | `array`     | Yes      | List of repository configurations                 |
-| `settings`       | `object`    | *        | Repository settings (rulesets, etc.)              |
+| `settings`       | `object`    | \*       | Repository settings (rulesets, etc.)              |
 | `prOptions`      | `PROptions` | No       | Global PR merge options                           |
 | `prTemplate`     | `string`    | No       | Custom PR body template                           |
 | `githubHosts`    | `array`     | No       | GitHub Enterprise Server hostnames                |
 | `deleteOrphaned` | `boolean`   | No       | Global default for orphan file deletion           |
 
 !!! note "files/settings requirement"
-    At least one of `files` or `settings` must be present. The `sync` command requires `files`, while the `settings` command requires `settings`.
+At least one of `files` or `settings` must be present. The `sync` command requires `files`, while the `settings` command requires `settings`.
 
 ### File Config
 
