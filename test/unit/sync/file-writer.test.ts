@@ -181,7 +181,7 @@ describe("FileWriter", () => {
         }
       );
 
-      assert.equal(writtenFiles[0]?.content, "# repo");
+      assert.equal(writtenFiles[0]?.content, "# repo\n");
     });
 
     test("does not write files in dryRun mode", async () => {
