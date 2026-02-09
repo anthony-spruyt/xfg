@@ -43,6 +43,14 @@ import {
   MANIFEST_FILENAME,
 } from "./manifest.js";
 import { GitHubAppTokenManager } from "./github-app-token-manager.js";
+import {
+  FileWriter,
+  ManifestManager,
+  BranchManager,
+  type IFileWriter,
+  type IManifestManager,
+  type IBranchManager,
+} from "./sync/index.js";
 
 export interface IRepositoryProcessor {
   process(
@@ -121,17 +129,32 @@ export class RepositoryProcessor implements IRepositoryProcessor {
   private retries: number = 3;
   private executor: ICommandExecutor = defaultExecutor;
   private readonly tokenManager: GitHubAppTokenManager | null;
+  private readonly fileWriter: IFileWriter;
+  private readonly manifestManager: IManifestManager;
+  private readonly branchManager: IBranchManager;
 
   /**
    * Creates a new RepositoryProcessor.
    * @param gitOpsFactory - Optional factory for creating AuthenticatedGitOps instances (for testing)
    * @param log - Optional logger instance (for testing)
+   * @param components - Optional component injections (for testing)
    */
-  constructor(gitOpsFactory?: GitOpsFactory, log?: ILogger) {
+  constructor(
+    gitOpsFactory?: GitOpsFactory,
+    log?: ILogger,
+    components?: {
+      fileWriter?: IFileWriter;
+      manifestManager?: IManifestManager;
+      branchManager?: IBranchManager;
+    }
+  ) {
     this.gitOpsFactory =
       gitOpsFactory ??
       ((opts, auth) => new AuthenticatedGitOps(new GitOps(opts), auth));
     this.log = log ?? logger;
+    this.fileWriter = components?.fileWriter ?? new FileWriter();
+    this.manifestManager = components?.manifestManager ?? new ManifestManager();
+    this.branchManager = components?.branchManager ?? new BranchManager();
 
     // Initialize GitHub App token manager if credentials are configured
     if (hasGitHubAppCredentials()) {
