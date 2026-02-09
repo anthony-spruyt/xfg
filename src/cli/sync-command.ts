@@ -18,11 +18,7 @@ import { buildRepoResult, buildErrorResult } from "../summary-utils.js";
 import { Plan, printPlan } from "../plan-formatter.js";
 import { writePlanSummary } from "../plan-summary.js";
 import { syncResultToResources } from "../resource-converters.js";
-import {
-  IRepositoryProcessor,
-  ProcessorFactory,
-  defaultProcessorFactory,
-} from "./types.js";
+import { ProcessorFactory, defaultProcessorFactory } from "./types.js";
 
 /**
  * Shared options common to all commands.
