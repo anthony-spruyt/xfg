@@ -6,7 +6,6 @@ import {
   deepEqual,
   isObject,
   isArrayOfObjects,
-  type PropertyDiff,
 } from "../../../../src/settings/rulesets/index.js";
 
 describe("diff-algorithm", () => {
