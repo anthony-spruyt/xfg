@@ -12,7 +12,7 @@ import {
 } from "../ruleset-processor.js";
 import {
   RepoSettingsProcessor,
-  IRepoSettingsProcessor,
+  type IRepoSettingsProcessor,
 } from "../repo-settings-processor.js";
 
 /**

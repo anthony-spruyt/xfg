@@ -1,16 +1,23 @@
 // CLI command implementations
-export { runSync, SyncOptions, SharedOptions } from "./sync-command.js";
-export { runSettings, SettingsOptions } from "./settings-command.js";
+export { runSync } from "./sync-command.js";
+export { runSettings } from "./settings-command.js";
 
-// Processor interfaces and factories for dependency injection
+// Export types - using 'export type' for type aliases, but interfaces need special handling
+// For ESM compatibility, re-export everything from types.js
 export {
-  IRepositoryProcessor,
-  ProcessorFactory,
+  // Interfaces (can be imported without 'type' keyword)
+  type IRepositoryProcessor,
+  type ProcessorFactory,
+  type IRulesetProcessor,
+  type RulesetProcessorFactory,
+  type RepoSettingsProcessorFactory,
+  type IRepoSettingsProcessor,
+  // Runtime values
   defaultProcessorFactory,
-  IRulesetProcessor,
-  RulesetProcessorFactory,
   defaultRulesetProcessorFactory,
-  RepoSettingsProcessorFactory,
   defaultRepoSettingsProcessorFactory,
-  IRepoSettingsProcessor,
 } from "./types.js";
+
+// Export command option types
+export type { SyncOptions, SharedOptions } from "./sync-command.js";
+export type { SettingsOptions } from "./settings-command.js";
