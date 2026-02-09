@@ -66,23 +66,6 @@ export interface IRepositoryProcessor {
   ): Promise<ProcessorResult>;
 }
 
-/**
- * Determines if a file should be marked as executable.
- * .sh files are auto-executable unless explicit executable: false is set.
- * Non-.sh files are executable only if executable: true is explicitly set.
- */
-function shouldBeExecutable(file: FileContent): boolean {
-  const isShellScript = file.fileName.endsWith(".sh");
-
-  if (file.executable !== undefined) {
-    // Explicit setting takes precedence
-    return file.executable;
-  }
-
-  // Default: .sh files are executable, others are not
-  return isShellScript;
-}
-
 export interface ProcessorOptions {
   branchName: string;
   workDir: string;
@@ -269,14 +252,25 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         this.log.info(`Direct mode: staying on ${baseBranch}`);
       }
 
-      // Step 5: Write all config files and track changes
-      //
-      // DESIGN NOTE: Change detection differs between dry-run and normal mode:
-      // - Dry-run: Uses wouldChange() for read-only content comparison (no side effects)
-      // - Normal: Uses git status after writing (source of truth for what git will commit)
-      //
-      // Track all file changes with content and action - single source of truth
-      // Used for both commit message generation and actual commit
+      // Step 5: Write all config files using FileWriter
+      const { fileChanges: fileWriteResults, diffStats } =
+        await this.fileWriter.writeFiles(
+          repoConfig.files,
+          {
+            repoInfo,
+            baseBranch,
+            workDir,
+            dryRun: dryRun ?? false,
+            noDelete: options.noDelete ?? false,
+            configId: options.configId,
+          },
+          {
+            gitOps: this.gitOps!,
+            log: this.log,
+          }
+        );
+
+      // Convert to the format used by the rest of the method
       const fileChangesForCommit = new Map<
         string,
         {
@@ -284,102 +278,11 @@ export class RepositoryProcessor implements IRepositoryProcessor {
           action: "create" | "update" | "delete" | "skip";
         }
       >();
-      const diffStats: DiffStats = createDiffStats();
-
-      for (const file of repoConfig.files) {
-        const filePath = join(workDir, file.fileName);
-        const fileExistsLocal = existsSync(filePath);
-
-        // Handle createOnly - check against BASE branch, not current working directory
-        // This ensures consistent behavior: createOnly means "only create if doesn't exist on main"
-        if (file.createOnly) {
-          const existsOnBase = await this.gitOps.fileExistsOnBranch(
-            file.fileName,
-            baseBranch
-          );
-          if (existsOnBase) {
-            this.log.info(
-              `Skipping ${file.fileName} (createOnly: exists on ${baseBranch})`
-            );
-            fileChangesForCommit.set(file.fileName, {
-              content: null,
-              action: "skip",
-            });
-            continue;
-          }
-        }
-
-        this.log.info(`Writing ${file.fileName}...`);
-
-        // Apply xfg templating if enabled
-        let contentToWrite: ContentValue | null = file.content;
-        if (file.template && contentToWrite !== null) {
-          contentToWrite = interpolateXfgContent(
-            contentToWrite,
-            {
-              repoInfo,
-              fileName: file.fileName,
-              vars: file.vars,
-            },
-            { strict: true }
-          );
-        }
-
-        const fileContent = convertContentToString(
-          contentToWrite,
-          file.fileName,
-          {
-            header: file.header,
-            schemaUrl: file.schemaUrl,
-          }
-        );
-
-        // Determine action type (create vs update) BEFORE writing
-        const action: "create" | "update" = fileExistsLocal
-          ? "update"
-          : "create";
-
-        // Check if file would change (needed for both modes)
-        const existingContent = this.gitOps.getFileContent(file.fileName);
-        const changed = this.gitOps.wouldChange(file.fileName, fileContent);
-
-        if (changed) {
-          // Track in single source of truth
-          fileChangesForCommit.set(file.fileName, {
-            content: fileContent,
-            action,
-          });
-        }
-
-        if (dryRun) {
-          // In dry-run, show diff but don't write
-          const status = getFileStatus(existingContent !== null, changed);
-          incrementDiffStats(diffStats, status);
-
-          const diffLines = generateDiff(
-            existingContent,
-            fileContent,
-            file.fileName
-          );
-          this.log.fileDiff(file.fileName, status, diffLines);
-        } else {
-          // Write the file
-          this.gitOps.writeFile(file.fileName, fileContent);
-        }
-      }
-
-      // Step 5b: Set executable permission for files that need it
-      for (const file of repoConfig.files) {
-        // Skip files that were excluded (createOnly + exists)
-        const tracked = fileChangesForCommit.get(file.fileName);
-        if (tracked?.action === "skip") {
-          continue;
-        }
-
-        if (shouldBeExecutable(file)) {
-          this.log.info(`Setting executable: ${file.fileName}`);
-          await this.gitOps!.setExecutable(file.fileName);
-        }
+      for (const [fileName, result] of fileWriteResults) {
+        fileChangesForCommit.set(fileName, {
+          content: result.content,
+          action: result.action,
+        });
       }
 
       // Step 5c: Handle orphaned file deletion (manifest-based tracking)
