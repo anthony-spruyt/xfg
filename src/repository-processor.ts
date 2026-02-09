@@ -14,7 +14,6 @@ import {
 import { createPR, mergePR, PRResult, FileAction } from "./pr-creator.js";
 import { logger, ILogger } from "./logger.js";
 import {
-  getPRStrategy,
   getCommitStrategy,
   hasGitHubAppCredentials,
 } from "./strategies/index.js";
@@ -605,23 +604,20 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         };
       }
 
-      // Prepare branch for commit
-      if (!isDirectMode) {
-        const strategy = getPRStrategy(repoInfo, this.executor);
-        if (
-          await strategy.closeExistingPR({
-            repoInfo,
-            branchName,
-            baseBranch,
-            workDir,
-            retries: this.retries,
-            token,
-          })
-        ) {
-          await this.gitOps.fetch({ prune: true });
-        }
-        await this.gitOps.createBranch(branchName);
-      }
+      // Prepare branch for commit using BranchManager
+      await this.branchManager.setupBranch({
+        repoInfo,
+        branchName,
+        baseBranch,
+        workDir,
+        isDirectMode,
+        dryRun: false, // Already handled above
+        retries: this.retries,
+        token,
+        gitOps: this.gitOps!,
+        log: this.log,
+        executor: this.executor,
+      });
 
       // Save manifest and commit
       saveManifest(workDir, newManifest);
