@@ -3,6 +3,7 @@ import type { RepoInfo } from "../repo-detector.js";
 import type { IAuthenticatedGitOps } from "../authenticated-git-ops.js";
 import type { DiffStats } from "../diff-utils.js";
 import type { ILogger } from "../logger.js";
+import type { XfgManifest } from "../manifest.js";
 
 /**
  * Result of processing a single file
@@ -53,4 +54,63 @@ export interface IFileWriter {
     ctx: FileWriteContext,
     deps: FileWriterDeps
   ): Promise<FileWriteAllResult>;
+}
+
+/**
+ * Result of processing orphans
+ */
+export interface OrphanProcessResult {
+  manifest: XfgManifest;
+  filesToDelete: string[];
+}
+
+/**
+ * Options for orphan deletion
+ */
+export interface OrphanDeleteOptions {
+  dryRun: boolean;
+  noDelete: boolean;
+}
+
+/**
+ * Dependencies for orphan deletion
+ */
+export interface OrphanDeleteDeps {
+  gitOps: IAuthenticatedGitOps;
+  log: ILogger;
+  fileChanges: Map<string, FileWriteResult>;
+}
+
+/**
+ * Interface for manifest management operations
+ */
+export interface IManifestManager {
+  /**
+   * Process manifest to find orphaned files
+   */
+  processOrphans(
+    workDir: string,
+    configId: string,
+    filesWithDeleteOrphaned: Map<string, boolean | undefined>
+  ): OrphanProcessResult;
+
+  /**
+   * Delete orphaned files
+   */
+  deleteOrphans(
+    filesToDelete: string[],
+    options: OrphanDeleteOptions,
+    deps: OrphanDeleteDeps
+  ): Promise<void>;
+
+  /**
+   * Save updated manifest
+   */
+  saveUpdatedManifest(
+    workDir: string,
+    manifest: XfgManifest,
+    existingManifest: XfgManifest | null,
+    dryRun: boolean,
+    fileChanges: Map<string, FileWriteResult>
+  ): void;
 }
