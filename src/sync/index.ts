@@ -1,5 +1,6 @@
 export { FileWriter, shouldBeExecutable } from "./file-writer.js";
 export { ManifestManager } from "./manifest-manager.js";
+export { BranchManager } from "./branch-manager.js";
 export type {
   IFileWriter,
   FileWriteContext,
@@ -10,4 +11,6 @@ export type {
   OrphanProcessResult,
   OrphanDeleteOptions,
   OrphanDeleteDeps,
+  IBranchManager,
+  BranchSetupOptions,
 } from "./types.js";

@@ -4,6 +4,7 @@ import type { IAuthenticatedGitOps } from "../authenticated-git-ops.js";
 import type { DiffStats } from "../diff-utils.js";
 import type { ILogger } from "../logger.js";
 import type { XfgManifest } from "../manifest.js";
+import type { ICommandExecutor } from "../command-executor.js";
 
 /**
  * Result of processing a single file
@@ -113,4 +114,31 @@ export interface IManifestManager {
     dryRun: boolean,
     fileChanges: Map<string, FileWriteResult>
   ): void;
+}
+
+/**
+ * Options for branch setup
+ */
+export interface BranchSetupOptions {
+  repoInfo: RepoInfo;
+  branchName: string;
+  baseBranch: string;
+  workDir: string;
+  isDirectMode: boolean;
+  dryRun: boolean;
+  retries: number;
+  token?: string;
+  gitOps: IAuthenticatedGitOps;
+  log: ILogger;
+  executor: ICommandExecutor;
+}
+
+/**
+ * Interface for branch management operations
+ */
+export interface IBranchManager {
+  /**
+   * Setup branch for sync (close existing PR, create fresh branch)
+   */
+  setupBranch(options: BranchSetupOptions): Promise<void>;
 }
