@@ -270,22 +270,10 @@ export class RepositoryProcessor implements IRepositoryProcessor {
           }
         );
 
-      // Convert to the format used by the rest of the method
-      const fileChangesForCommit = new Map<
-        string,
-        {
-          content: string | null;
-          action: "create" | "update" | "delete" | "skip";
-        }
-      >();
-      for (const [fileName, result] of fileWriteResults) {
-        fileChangesForCommit.set(fileName, {
-          content: result.content,
-          action: result.action,
-        });
-      }
+      // Use FileWriter results directly as the source of truth
+      const fileChangesForCommit = fileWriteResults;
 
-      // Step 5c: Handle orphaned file deletion (manifest-based tracking)
+      // Step 5c: Handle orphaned file deletion using ManifestManager
       const existingManifest = loadManifest(workDir);
 
       // Build map of files with their deleteOrphaned setting
@@ -296,62 +284,42 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         filesWithDeleteOrphaned.set(file.fileName, file.deleteOrphaned);
       }
 
-      // Update manifest and get list of files to delete
-      const { manifest: newManifest, filesToDelete } = updateManifest(
-        existingManifest,
-        options.configId,
-        filesWithDeleteOrphaned
+      // Process manifest and get orphans
+      const { manifest: newManifest, filesToDelete } =
+        this.manifestManager.processOrphans(
+          workDir,
+          options.configId,
+          filesWithDeleteOrphaned
+        );
+
+      // Delete orphaned files
+      await this.manifestManager.deleteOrphans(
+        filesToDelete,
+        { dryRun: dryRun ?? false, noDelete: options.noDelete ?? false },
+        {
+          gitOps: this.gitOps!,
+          log: this.log,
+          fileChanges: fileChangesForCommit,
+        }
       );
 
-      // Delete orphaned files (unless --no-delete flag is set)
-      if (filesToDelete.length > 0 && !options.noDelete) {
+      // Increment diff stats for deletions in dry-run mode
+      if (dryRun && filesToDelete.length > 0 && !options.noDelete) {
         for (const fileName of filesToDelete) {
-          // Only delete if file actually exists in the working directory
           if (this.gitOps!.fileExists(fileName)) {
-            // Track deletion in single source of truth
-            fileChangesForCommit.set(fileName, {
-              content: null,
-              action: "delete",
-            });
-
-            if (dryRun) {
-              // In dry-run, show what would be deleted
-              this.log.fileDiff(fileName, "DELETED", []);
-              incrementDiffStats(diffStats, "DELETED");
-            } else {
-              this.log.info(`Deleting orphaned file: ${fileName}`);
-              this.gitOps!.deleteFile(fileName);
-            }
+            incrementDiffStats(diffStats, "DELETED");
           }
         }
-      } else if (filesToDelete.length > 0 && options.noDelete) {
-        this.log.info(
-          `Skipping deletion of ${filesToDelete.length} orphaned file(s) (--no-delete flag)`
-        );
       }
 
-      // Save updated manifest (tracks files with deleteOrphaned: true)
-      // Only save if there are managed files for any config, or if we had a previous manifest
-      const hasAnyManagedFiles = Object.keys(newManifest.configs).length > 0;
-      if (hasAnyManagedFiles || existingManifest !== null) {
-        // Track manifest file as changed if it would be different
-        const existingConfigs = existingManifest?.configs ?? {};
-        const manifestChanged =
-          JSON.stringify(existingConfigs) !==
-          JSON.stringify(newManifest.configs);
-        if (manifestChanged) {
-          const manifestExisted = existsSync(join(workDir, MANIFEST_FILENAME));
-          const manifestContent = JSON.stringify(newManifest, null, 2) + "\n";
-          fileChangesForCommit.set(MANIFEST_FILENAME, {
-            content: manifestContent,
-            action: manifestExisted ? "update" : "create",
-          });
-        }
-
-        if (!dryRun) {
-          saveManifest(workDir, newManifest);
-        }
-      }
+      // Save updated manifest
+      this.manifestManager.saveUpdatedManifest(
+        workDir,
+        newManifest,
+        existingManifest,
+        dryRun ?? false,
+        fileChangesForCommit
+      );
 
       // Show diff summary in dry-run mode
       if (dryRun) {
