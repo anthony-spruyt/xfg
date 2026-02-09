@@ -35,7 +35,6 @@ describe("BranchManager", () => {
 
   describe("setupBranch", () => {
     test("creates branch for non-direct mode", async () => {
-      const createdBranches: string[] = [];
       const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});

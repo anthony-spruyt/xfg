@@ -1,18 +1,10 @@
-import { existsSync } from "node:fs";
-import { join } from "node:path";
-import {
-  RepoConfig,
-  FileContent,
-  ContentValue,
-  convertContentToString,
-} from "./config.js";
+import { RepoConfig } from "./config.js";
 import {
   RepoInfo,
   getRepoDisplayName,
   isGitHubRepo,
   GitHubRepoInfo,
 } from "./repo-detector.js";
-import { interpolateXfgContent } from "./xfg-template.js";
 import { GitOps, GitOpsOptions } from "./git-ops.js";
 import {
   AuthenticatedGitOps,
@@ -28,17 +20,10 @@ import {
 } from "./strategies/index.js";
 import type { PRMergeConfig, FileChange } from "./strategies/index.js";
 import { ICommandExecutor, defaultExecutor } from "./command-executor.js";
-import {
-  getFileStatus,
-  generateDiff,
-  createDiffStats,
-  incrementDiffStats,
-  DiffStats,
-} from "./diff-utils.js";
+import { incrementDiffStats, DiffStats } from "./diff-utils.js";
 import {
   loadManifest,
   saveManifest,
-  updateManifest,
   updateManifestRulesets,
   MANIFEST_FILENAME,
 } from "./manifest.js";

@@ -165,7 +165,7 @@ describe("FileWriter", () => {
         },
       ];
 
-      const result = await writer.writeFiles(
+      await writer.writeFiles(
         files,
         {
           repoInfo: mockRepoInfo,

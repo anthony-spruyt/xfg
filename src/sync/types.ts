@@ -1,4 +1,4 @@
-import type { ContentValue, FileContent } from "../config/types.js";
+import type { FileContent } from "../config/types.js";
 import type { RepoInfo } from "../repo-detector.js";
 import type { IAuthenticatedGitOps } from "../authenticated-git-ops.js";
 import type { DiffStats } from "../diff-utils.js";
