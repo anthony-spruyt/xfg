@@ -221,36 +221,20 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         `Default branch: ${baseBranch} (detected via ${detectionMethod})`
       );
 
-      // Step 3.5: Close existing PR if exists (fresh start approach)
-      // This ensures isolated sync attempts - each run starts from clean state
-      // Skip for direct mode - no PR involved
-      if (!dryRun && !isDirectMode) {
-        this.log.info("Checking for existing PR...");
-        const strategy = getPRStrategy(repoInfo, this.executor);
-        const closed = await strategy.closeExistingPR({
-          repoInfo,
-          branchName,
-          baseBranch,
-          workDir,
-          retries: this.retries,
-          token,
-        });
-        if (closed) {
-          this.log.info("Closed existing PR and deleted branch for fresh sync");
-          // Prune stale remote tracking refs so --force-with-lease works correctly
-          // The remote branch was deleted but local git still has tracking info
-          await this.gitOps.fetch({ prune: true });
-        }
-      }
-
-      // Step 4: Create branch (always fresh from base branch)
-      // Skip for direct mode - stay on default branch
-      if (!isDirectMode) {
-        this.log.info(`Creating branch: ${branchName}`);
-        await this.gitOps.createBranch(branchName);
-      } else {
-        this.log.info(`Direct mode: staying on ${baseBranch}`);
-      }
+      // Step 3.5 & 4: Setup branch using BranchManager
+      await this.branchManager.setupBranch({
+        repoInfo,
+        branchName,
+        baseBranch,
+        workDir,
+        isDirectMode,
+        dryRun: dryRun ?? false,
+        retries: this.retries,
+        token,
+        gitOps: this.gitOps!,
+        log: this.log,
+        executor: this.executor,
+      });
 
       // Step 5: Write all config files using FileWriter
       const { fileChanges: fileWriteResults, diffStats } =
