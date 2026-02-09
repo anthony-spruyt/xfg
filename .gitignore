@@ -43,3 +43,5 @@ Thumbs.db
 
 # Worktrees
 .worktrees/
+
+docs/plans
