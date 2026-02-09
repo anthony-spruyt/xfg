@@ -5,7 +5,7 @@ import {
   isTextContent,
   mergeTextContent,
 } from "./merge.js";
-import { interpolateContent } from "./env.js";
+import { interpolateContent } from "./shared/env.js";
 import type {
   RawConfig,
   Config,

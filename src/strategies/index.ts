@@ -3,12 +3,12 @@ import {
   isGitHubRepo,
   isAzureDevOpsRepo,
   isGitLabRepo,
-} from "../repo-detector.js";
+} from "../shared/repo-detector.js";
 import type { IPRStrategy } from "./pr-strategy.js";
 import { GitHubPRStrategy } from "./github-pr-strategy.js";
 import { AzurePRStrategy } from "./azure-pr-strategy.js";
 import { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
-import { ICommandExecutor } from "../command-executor.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
 
 export type {
   IPRStrategy,

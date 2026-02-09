@@ -8,11 +8,11 @@ import {
   RepoConfig,
 } from "../config.js";
 import { validateForSync } from "../config-validator.js";
-import { parseGitUrl, getRepoDisplayName } from "../repo-detector.js";
+import { parseGitUrl, getRepoDisplayName } from "../shared/repo-detector.js";
 import { sanitizeBranchName, validateBranchName } from "../git-ops.js";
-import { logger } from "../logger.js";
-import { generateWorkspaceName } from "../workspace-utils.js";
-import { RepoInfo } from "../repo-detector.js";
+import { logger } from "../shared/logger.js";
+import { generateWorkspaceName } from "../shared/workspace-utils.js";
+import { RepoInfo } from "../shared/repo-detector.js";
 import { RepoResult } from "../github-summary.js";
 import { buildRepoResult, buildErrorResult } from "../summary-utils.js";
 import { Plan, printPlan } from "../plan-formatter.js";

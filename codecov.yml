@@ -11,6 +11,10 @@ coverage:
         threshold: 1%
 
 ignore:
+  # Types
+  - "src/cli/types.ts"
+  - "src/config/types.ts"
+  - "src/sync/types.ts"
   # Interface-only files with no executable code
   - "src/strategies/commit-strategy.ts"
   - "src/strategies/ruleset-strategy.ts"

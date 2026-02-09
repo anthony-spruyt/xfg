@@ -11,7 +11,7 @@ import {
   ShellCommandExecutor,
   defaultExecutor,
   ICommandExecutor,
-} from "../../src/command-executor.js";
+} from "../../src/shared/command-executor.js";
 
 describe("ShellCommandExecutor", () => {
   const executor = new ShellCommandExecutor();

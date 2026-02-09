@@ -1,6 +1,9 @@
 import { PRResult } from "../pr-creator.js";
-import { RepoInfo } from "../repo-detector.js";
-import { ICommandExecutor, defaultExecutor } from "../command-executor.js";
+import { RepoInfo } from "../shared/repo-detector.js";
+import {
+  ICommandExecutor,
+  defaultExecutor,
+} from "../shared/command-executor.js";
 import type { MergeMode, MergeStrategy } from "../config.js";
 
 export interface PRMergeConfig {

@@ -4,7 +4,7 @@ import {
   getRepoDisplayName,
   isGitHubRepo,
   GitHubRepoInfo,
-} from "./repo-detector.js";
+} from "./shared/repo-detector.js";
 import { GitOps, GitOpsOptions } from "./git-ops.js";
 import {
   AuthenticatedGitOps,
@@ -12,13 +12,16 @@ import {
   GitAuthOptions,
 } from "./authenticated-git-ops.js";
 import { createPR, mergePR, PRResult, FileAction } from "./pr-creator.js";
-import { logger, ILogger } from "./logger.js";
+import { logger, ILogger } from "./shared/logger.js";
 import {
   getCommitStrategy,
   hasGitHubAppCredentials,
 } from "./strategies/index.js";
 import type { PRMergeConfig, FileChange } from "./strategies/index.js";
-import { ICommandExecutor, defaultExecutor } from "./command-executor.js";
+import {
+  ICommandExecutor,
+  defaultExecutor,
+} from "./shared/command-executor.js";
 import { incrementDiffStats, DiffStats } from "./diff-utils.js";
 import {
   loadManifest,

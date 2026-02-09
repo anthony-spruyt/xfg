@@ -1,10 +1,10 @@
 import type { FileContent } from "../config/types.js";
-import type { RepoInfo } from "../repo-detector.js";
+import type { RepoInfo } from "../shared/repo-detector.js";
 import type { IAuthenticatedGitOps } from "../authenticated-git-ops.js";
 import type { DiffStats } from "../diff-utils.js";
-import type { ILogger } from "../logger.js";
+import type { ILogger } from "../shared/logger.js";
 import type { XfgManifest } from "../manifest.js";
-import type { ICommandExecutor } from "../command-executor.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 
 /**
  * Result of processing a single file

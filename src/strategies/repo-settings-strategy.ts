@@ -1,4 +1,4 @@
-import type { RepoInfo } from "../repo-detector.js";
+import type { RepoInfo } from "../shared/repo-detector.js";
 import type { GitHubRepoSettings } from "../config.js";
 
 export interface RepoSettingsStrategyOptions {

@@ -7,7 +7,7 @@ import {
   isGitLabRepo,
   isGitHubRepo,
   type AzureDevOpsRepoInfo,
-} from "../../src/repo-detector.js";
+} from "../../src/shared/repo-detector.js";
 
 describe("detectRepoType", () => {
   test("detects GitHub SSH URL", () => {

@@ -1,6 +1,6 @@
 import type { RepoConfig, GitHubRepoSettings } from "./config.js";
-import type { RepoInfo, GitHubRepoInfo } from "./repo-detector.js";
-import { isGitHubRepo, getRepoDisplayName } from "./repo-detector.js";
+import type { RepoInfo, GitHubRepoInfo } from "./shared/repo-detector.js";
+import { isGitHubRepo, getRepoDisplayName } from "./shared/repo-detector.js";
 import { GitHubRepoSettingsStrategy } from "./strategies/github-repo-settings-strategy.js";
 import type { IRepoSettingsStrategy } from "./strategies/repo-settings-strategy.js";
 import { diffRepoSettings, hasChanges } from "./repo-settings-diff.js";

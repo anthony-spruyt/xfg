@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import { generateWorkspaceName } from "../../src/workspace-utils.js";
+import { generateWorkspaceName } from "../../src/shared/workspace-utils.js";
 
 describe("generateWorkspaceName", () => {
   test("generates name with correct prefix", () => {

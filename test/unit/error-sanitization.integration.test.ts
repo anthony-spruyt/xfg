@@ -1,8 +1,8 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import { ShellCommandExecutor } from "../../src/command-executor.js";
-import { withRetry } from "../../src/retry-utils.js";
-import { logger } from "../../src/logger.js";
+import { ShellCommandExecutor } from "../../src/shared/command-executor.js";
+import { withRetry } from "../../src/shared/retry-utils.js";
+import { logger } from "../../src/shared/logger.js";
 
 /**
  * Integration tests verifying credentials don't leak through error paths.

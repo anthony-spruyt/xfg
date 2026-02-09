@@ -6,7 +6,7 @@ import {
   interpolateEnvVarsInLines,
   interpolateContent,
   type EnvInterpolationOptions,
-} from "../../src/env.js";
+} from "../../src/shared/env.js";
 
 describe("interpolateEnvVars", () => {
   const originalEnv = { ...process.env };

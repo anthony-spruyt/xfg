@@ -5,8 +5,8 @@ import {
   isTransientError,
   withRetry,
   promisify,
-} from "../../src/retry-utils.js";
-import { logger } from "../../src/logger.js";
+} from "../../src/shared/retry-utils.js";
+import { logger } from "../../src/shared/logger.js";
 
 describe("isPermanentError", () => {
   test("returns true for permission denied", () => {

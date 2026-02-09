@@ -3,9 +3,12 @@ import {
   CommitOptions,
   CommitResult,
 } from "./commit-strategy.js";
-import { ICommandExecutor, defaultExecutor } from "../command-executor.js";
-import { withRetry } from "../retry-utils.js";
-import { escapeShellArg } from "../shell-utils.js";
+import {
+  ICommandExecutor,
+  defaultExecutor,
+} from "../shared/command-executor.js";
+import { withRetry } from "../shared/retry-utils.js";
+import { escapeShellArg } from "../shared/shell-utils.js";
 
 /**
  * Git-based commit strategy using standard git commands (add, commit, push).

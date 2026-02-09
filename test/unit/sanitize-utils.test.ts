@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import { sanitizeCredentials } from "../../src/sanitize-utils.js";
+import { sanitizeCredentials } from "../../src/shared/sanitize-utils.js";
 
 describe("sanitizeCredentials", () => {
   test("sanitizes x-access-token in URLs", () => {

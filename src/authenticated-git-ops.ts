@@ -1,7 +1,10 @@
 import { GitOps } from "./git-ops.js";
-import { escapeShellArg } from "./shell-utils.js";
-import { ICommandExecutor, defaultExecutor } from "./command-executor.js";
-import { withRetry } from "./retry-utils.js";
+import { escapeShellArg } from "./shared/shell-utils.js";
+import {
+  ICommandExecutor,
+  defaultExecutor,
+} from "./shared/command-executor.js";
+import { withRetry } from "./shared/retry-utils.js";
 
 /**
  * Internal interface for accessing GitOps private properties.

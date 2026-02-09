@@ -1,6 +1,6 @@
 import type { RepoConfig, Ruleset } from "./config.js";
-import type { RepoInfo, GitHubRepoInfo } from "./repo-detector.js";
-import { isGitHubRepo, getRepoDisplayName } from "./repo-detector.js";
+import type { RepoInfo, GitHubRepoInfo } from "./shared/repo-detector.js";
+import { isGitHubRepo, getRepoDisplayName } from "./shared/repo-detector.js";
 import {
   GitHubRulesetStrategy,
   type GitHubRuleset,

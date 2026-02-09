@@ -3,9 +3,12 @@ import {
   CommitOptions,
   CommitResult,
 } from "./commit-strategy.js";
-import { ICommandExecutor, defaultExecutor } from "../command-executor.js";
-import { isGitHubRepo, GitHubRepoInfo } from "../repo-detector.js";
-import { escapeShellArg } from "../shell-utils.js";
+import {
+  ICommandExecutor,
+  defaultExecutor,
+} from "../shared/command-executor.js";
+import { isGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
+import { escapeShellArg } from "../shared/shell-utils.js";
 import { IAuthenticatedGitOps } from "../authenticated-git-ops.js";
 
 /**

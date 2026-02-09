@@ -1,8 +1,8 @@
-import { RepoInfo, isGitHubRepo } from "../repo-detector.js";
+import { RepoInfo, isGitHubRepo } from "../shared/repo-detector.js";
 import { ICommitStrategy } from "./commit-strategy.js";
 import { GitCommitStrategy } from "./git-commit-strategy.js";
 import { GraphQLCommitStrategy } from "./graphql-commit-strategy.js";
-import { ICommandExecutor } from "../command-executor.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
 
 /**
  * Checks if GitHub App credentials are configured via environment variables.

@@ -1,7 +1,7 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { escapeShellArg } from "../shell-utils.js";
-import { isGitLabRepo, GitLabRepoInfo } from "../repo-detector.js";
+import { escapeShellArg } from "../shared/shell-utils.js";
+import { isGitLabRepo, GitLabRepoInfo } from "../shared/repo-detector.js";
 import { PRResult } from "../pr-creator.js";
 import {
   BasePRStrategy,
@@ -10,10 +10,10 @@ import {
   MergeOptions,
   MergeResult,
 } from "./pr-strategy.js";
-import { logger } from "../logger.js";
-import { withRetry, isPermanentError } from "../retry-utils.js";
-import { ICommandExecutor } from "../command-executor.js";
-import { sanitizeCredentials } from "../sanitize-utils.js";
+import { logger } from "../shared/logger.js";
+import { withRetry, isPermanentError } from "../shared/retry-utils.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
+import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import type { MergeStrategy } from "../config.js";
 
 export class GitLabPRStrategy extends BasePRStrategy {

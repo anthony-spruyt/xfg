@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { Logger } from "../../src/logger.js";
+import { Logger } from "../../src/shared/logger.js";
 
 describe("Logger", () => {
   let logger: Logger;
