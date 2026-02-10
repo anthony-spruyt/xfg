@@ -153,7 +153,7 @@ jobs:
         with:
           node-version: "24"
       - run: npm install -g @aspruyt/xfg
-      - run: xfg --config ./config.yaml
+      - run: xfg sync --config ./config.yaml
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
 ```
@@ -195,7 +195,7 @@ jobs:
         with:
           node-version: "24"
       - run: npm install -g @aspruyt/xfg
-      - run: xfg --config ./configs/${{ matrix.config }}
+      - run: xfg sync --config ./configs/${{ matrix.config }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
 ```
@@ -219,7 +219,7 @@ jobs:
         with:
           node-version: "24"
       - run: npm install -g @aspruyt/xfg
-      - run: xfg --config ./config.yaml --dry-run
+      - run: xfg sync --config ./config.yaml --dry-run
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
 ```

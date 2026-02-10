@@ -61,7 +61,7 @@ If you see "Missing required environment variable" errors:
 ```bash
 # Set the variable before running
 export MY_VAR=value
-xfg --config ./config.yaml
+xfg sync --config ./config.yaml
 
 # Or use default values in config
 # ${MY_VAR:-default-value}
@@ -83,10 +83,10 @@ The tool automatically retries transient errors (timeouts, connection resets, ra
 
 ```bash
 # Increase retries for unreliable networks
-xfg --config ./config.yaml --retries 5
+xfg sync --config ./config.yaml --retries 5
 
 # Disable retries
-xfg --config ./config.yaml --retries 0
+xfg sync --config ./config.yaml --retries 0
 ```
 
 Permanent errors (authentication failures, permission denied, repository not found) are not retried.

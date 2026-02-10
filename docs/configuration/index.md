@@ -136,5 +136,5 @@ repos:
 Use the `--no-delete` CLI flag to skip deletion even if configured:
 
 ```bash
-xfg --config config.yaml --no-delete
+xfg sync --config config.yaml --no-delete
 ```

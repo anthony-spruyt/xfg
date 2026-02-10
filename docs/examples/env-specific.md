@@ -30,7 +30,7 @@ export DB_PORT=5432
 export DB_PASSWORD=secret123
 export API_BASE_URL=https://api.example.com
 
-xfg --config ./config.yaml
+xfg sync --config ./config.yaml
 ```
 
 ## Result

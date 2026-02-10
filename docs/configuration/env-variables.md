@@ -29,7 +29,7 @@ Then run with environment variables:
 ```bash
 export API_URL=https://api.example.com
 export SECRET=my-secret-key
-xfg --config ./config.yaml
+xfg sync --config ./config.yaml
 ```
 
 ## Escaping Variable Syntax

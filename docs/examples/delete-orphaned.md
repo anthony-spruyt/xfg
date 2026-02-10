@@ -69,7 +69,7 @@ repos:
 Use the `--no-delete` CLI flag to skip deletion even if configured:
 
 ```bash
-xfg --config config.yaml --no-delete
+xfg sync --config config.yaml --no-delete
 ```
 
 This is useful for:
@@ -107,7 +107,7 @@ When Config A removes `foo.json` from its config, only `foo.json` is deleted - C
 When using `--dry-run`, xfg shows which files would be deleted without making changes:
 
 ```bash
-xfg --config config.yaml --dry-run
+xfg sync --config config.yaml --dry-run
 ```
 
 Output shows `[DELETED]` badges for files that would be removed.

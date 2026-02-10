@@ -362,7 +362,7 @@ jobs:
         with:
           node-version: "24"
       - run: npm install -g @aspruyt/xfg
-      - run: xfg --config ./config.yaml
+      - run: xfg sync --config ./config.yaml
         env:
           GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
 ```

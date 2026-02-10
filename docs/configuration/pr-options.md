@@ -56,13 +56,13 @@ CLI flags take highest priority:
 
 ```bash
 # Disable auto-merge, leave PRs open for review
-xfg --config ./config.yaml --merge manual
+xfg sync --config ./config.yaml --merge manual
 
 # Force merge all PRs (useful for urgent updates)
-xfg --config ./config.yaml --merge force
+xfg sync --config ./config.yaml --merge force
 
 # Push directly to default branch without creating PRs
-xfg --config ./config.yaml --merge direct
+xfg sync --config ./config.yaml --merge direct
 ```
 
 ## Direct Push Mode

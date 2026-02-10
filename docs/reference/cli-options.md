@@ -4,11 +4,10 @@ xfg uses subcommands to separate file sync (`sync`) from ruleset management (`se
 
 ## Subcommands
 
-| Command        | Description                                    |
-| -------------- | ---------------------------------------------- |
-| `xfg sync`     | Sync configuration files across repositories   |
-| `xfg settings` | Manage GitHub Rulesets for repositories        |
-| `xfg`          | Alias for `xfg sync` (backwards compatibility) |
+| Command        | Description                                  |
+| -------------- | -------------------------------------------- |
+| `xfg sync`     | Sync configuration files across repositories |
+| `xfg settings` | Manage GitHub Rulesets for repositories      |
 
 ## Sync Command
 
@@ -16,8 +15,6 @@ Sync configuration files across repositories.
 
 ```bash
 xfg sync --config <path> [options]
-# or (backwards compatible)
-xfg --config <path> [options]
 ```
 
 !!! warning "Config Requirement"

@@ -18,7 +18,7 @@ steps:
       versionSpec: "20.x"
   - script: npm install -g @aspruyt/xfg
     displayName: "Install xfg"
-  - script: xfg --config ./config.yaml
+  - script: xfg sync --config ./config.yaml
     displayName: "Sync configs"
     env:
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
@@ -34,7 +34,7 @@ Ensure the build service account has permission to create PRs in target reposito
 The `$(System.AccessToken)` provides access within the same Azure DevOps organization. For cross-organization access, use a PAT:
 
 ```yaml
-- script: xfg --config ./config.yaml
+- script: xfg sync --config ./config.yaml
   displayName: "Sync configs"
   env:
     AZURE_DEVOPS_EXT_PAT: $(MY_PAT)
@@ -67,7 +67,7 @@ steps:
       versionSpec: "20.x"
   - script: npm install -g @aspruyt/xfg
     displayName: "Install xfg"
-  - script: xfg --config ./configs/$(configFile)
+  - script: xfg sync --config ./configs/$(configFile)
     displayName: "Sync $(configFile)"
     env:
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
