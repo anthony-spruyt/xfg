@@ -3,13 +3,13 @@ import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, writeFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import {
-  RepositoryProcessor,
+import { RepositoryProcessor } from "../../src/sync/repository-processor.js";
+import type {
   GitOpsFactory,
-  type IRepositorySession,
-  type ICommitPushManager,
-  type IAuthOptionsBuilder,
-} from "../../src/sync/repository-processor.js";
+  IRepositorySession,
+  ICommitPushManager,
+  IAuthOptionsBuilder,
+} from "../../src/sync/index.js";
 import { RepoConfig } from "../../src/config/index.js";
 import { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
 import { GitOps } from "../../src/vcs/git-ops.js";
