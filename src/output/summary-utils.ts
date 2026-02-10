@@ -1,4 +1,4 @@
-import { ProcessorResult } from "../sync/repository-processor.js";
+import type { ProcessorResult } from "../sync/index.js";
 import { RepoConfig } from "../config/index.js";
 import { MergeOutcome, FileChanges, RepoResult } from "./github-summary.js";
 import { DiffStats } from "../sync/diff-utils.js";

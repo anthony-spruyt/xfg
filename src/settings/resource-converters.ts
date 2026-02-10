@@ -1,6 +1,6 @@
 import type { Resource, ResourceAction } from "../output/plan-formatter.js";
 import type { RulesetProcessorResult } from "./rulesets/processor.js";
-import type { ProcessorResult } from "../sync/repository-processor.js";
+import type { ProcessorResult } from "../sync/index.js";
 import type { RepoConfig } from "../config/index.js";
 
 /**

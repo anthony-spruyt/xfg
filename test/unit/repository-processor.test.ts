@@ -3,10 +3,13 @@ import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, writeFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import {
-  RepositoryProcessor,
+import { RepositoryProcessor } from "../../src/sync/repository-processor.js";
+import type {
   GitOpsFactory,
-} from "../../src/sync/repository-processor.js";
+  IRepositorySession,
+  ICommitPushManager,
+  IAuthOptionsBuilder,
+} from "../../src/sync/index.js";
 import { RepoConfig } from "../../src/config/index.js";
 import { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
 import { GitOps } from "../../src/vcs/git-ops.js";
@@ -1056,20 +1059,44 @@ describe("RepositoryProcessor", () => {
   describe("cleanup error handling", () => {
     test("should suppress cleanup errors in finally block", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        cloneError: new Error("Clone failed"),
-        // Cleanup error only on 2nd call (in finally block)
-        cleanupError: (callCount) =>
-          callCount > 1 ? new Error("Cleanup failed") : undefined,
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
-
-      const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `cleanup-error-${Date.now()}`);
+      mkdirSync(localWorkDir, { recursive: true });
 
-      // The processor throws errors from clone, it doesn't catch them
+      let cleanupCallCount = 0;
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        hasStagedChanges: true,
+      });
+
+      // Create mock repositorySession that tracks cleanup calls
+      const mockRepositorySession: IRepositorySession = {
+        async setup() {
+          return {
+            gitOps: mockGitOps,
+            baseBranch: "main",
+            cleanup: () => {
+              cleanupCallCount++;
+              if (cleanupCallCount > 0) {
+                throw new Error("Cleanup failed");
+              }
+            },
+          };
+        },
+      };
+
+      // Create mock commitPushManager that throws
+      const mockCommitPushManager: ICommitPushManager = {
+        async commitAndPush() {
+          throw new Error("Commit failed");
+        },
+      };
+
+      const processor = new RepositoryProcessor(undefined, mockLogger, {
+        repositorySession: mockRepositorySession,
+        commitPushManager: mockCommitPushManager,
+      });
+
+      // The processor throws errors from commit, not cleanup errors
       // The test verifies that cleanup errors in finally block are suppressed
-      // (i.e., the original clone error is thrown, not the cleanup error)
       try {
         await processor.process(mockRepoConfig, mockRepoInfo, {
           branchName: "chore/sync-config",
@@ -1080,18 +1107,18 @@ describe("RepositoryProcessor", () => {
         });
         assert.fail("Should have thrown an error");
       } catch (error) {
-        // Should throw clone error, not cleanup error
+        // Should throw commit error, not cleanup error
         assert.ok(error instanceof Error);
         assert.ok(
-          error.message.includes("Clone failed"),
-          "Error should be from clone, not cleanup"
+          error.message.includes("Commit failed"),
+          `Error should be from commit, not cleanup. Got: ${error.message}`
         );
       }
 
-      // Cleanup should have been attempted twice (initial + finally)
+      // Cleanup should have been called
       assert.ok(
-        calls.cleanWorkspace.length >= 2,
-        "Should attempt cleanup in finally block"
+        cleanupCallCount >= 1,
+        `Should attempt cleanup in finally block, got ${cleanupCallCount} calls`
       );
     });
   });
@@ -2485,13 +2512,6 @@ describe("RepositoryProcessor", () => {
     });
 
     test("passes auth options to factory when GitHub App token is obtained", async () => {
-      const { TEST_PRIVATE_KEY, TEST_APP_ID } =
-        await import("../fixtures/test-fixtures.js");
-
-      // Set GitHub App credentials to enable tokenManager creation
-      process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
-      process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
-
       const { mock: mockLogger } = createMockLogger();
 
       // Track the auth options passed to factory
@@ -2521,18 +2541,24 @@ describe("RepositoryProcessor", () => {
         return new AuthenticatedGitOps(mockGitOps);
       };
 
-      const processor = new RepositoryProcessor(mockGitOpsFactory, mockLogger);
-
-      // Replace the tokenManager with a mock that returns a token directly
-      // This bypasses the complex JWT/fetch flow while still testing auth options building
-      const mockTokenManager = {
-        async getTokenForRepo() {
-          return "ghs_test_installation_token_abc123";
+      // Create mock authOptionsBuilder that returns a specific token
+      const mockAuthOptionsBuilder: IAuthOptionsBuilder = {
+        async resolve() {
+          return {
+            token: "ghs_test_installation_token_abc123",
+            authOptions: {
+              token: "ghs_test_installation_token_abc123",
+              host: "github.com",
+              owner: "test-owner",
+              repo: "repo",
+            },
+          };
         },
       };
-      (
-        processor as unknown as { tokenManager: typeof mockTokenManager }
-      ).tokenManager = mockTokenManager;
+
+      const processor = new RepositoryProcessor(mockGitOpsFactory, mockLogger, {
+        authOptionsBuilder: mockAuthOptionsBuilder,
+      });
 
       await processor.process(
         {
@@ -2574,13 +2600,6 @@ describe("RepositoryProcessor", () => {
     });
 
     test("passes auth options with custom host for GitHub Enterprise", async () => {
-      const { TEST_PRIVATE_KEY, TEST_APP_ID } =
-        await import("../fixtures/test-fixtures.js");
-
-      // Set GitHub App credentials to enable tokenManager creation
-      process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
-      process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
-
       const { mock: mockLogger } = createMockLogger();
 
       // Track the auth options passed to factory
@@ -2610,17 +2629,24 @@ describe("RepositoryProcessor", () => {
         return new AuthenticatedGitOps(mockGitOps);
       };
 
-      const processor = new RepositoryProcessor(mockGitOpsFactory, mockLogger);
-
-      // Replace the tokenManager with a mock that returns a token directly
-      const mockTokenManager = {
-        async getTokenForRepo() {
-          return "ghs_enterprise_token_xyz789";
+      // Create mock authOptionsBuilder that returns a specific token for GHE
+      const mockAuthOptionsBuilder: IAuthOptionsBuilder = {
+        async resolve() {
+          return {
+            token: "ghs_enterprise_token_xyz789",
+            authOptions: {
+              token: "ghs_enterprise_token_xyz789",
+              host: "github.mycompany.com",
+              owner: "enterprise-owner",
+              repo: "repo",
+            },
+          };
         },
       };
-      (
-        processor as unknown as { tokenManager: typeof mockTokenManager }
-      ).tokenManager = mockTokenManager;
+
+      const processor = new RepositoryProcessor(mockGitOpsFactory, mockLogger, {
+        authOptionsBuilder: mockAuthOptionsBuilder,
+      });
 
       await processor.process(
         {
