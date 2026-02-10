@@ -4,10 +4,10 @@ import {
   isAzureDevOpsRepo,
   isGitLabRepo,
 } from "../shared/repo-detector.js";
-import type { IPRStrategy } from "./pr-strategy.js";
-import { GitHubPRStrategy } from "./github-pr-strategy.js";
-import { AzurePRStrategy } from "./azure-pr-strategy.js";
-import { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
+import type { IPRStrategy } from "../vcs/pr-strategy.js";
+import { GitHubPRStrategy } from "../vcs/github-pr-strategy.js";
+import { AzurePRStrategy } from "../vcs/azure-pr-strategy.js";
+import { GitLabPRStrategy } from "../vcs/gitlab-pr-strategy.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 
 export type {
@@ -17,11 +17,11 @@ export type {
   PRMergeConfig,
   MergeOptions,
   MergeResult,
-} from "./pr-strategy.js";
-export { BasePRStrategy, PRWorkflowExecutor } from "./pr-strategy.js";
-export { GitHubPRStrategy } from "./github-pr-strategy.js";
-export { AzurePRStrategy } from "./azure-pr-strategy.js";
-export { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
+} from "../vcs/pr-strategy.js";
+export { BasePRStrategy, PRWorkflowExecutor } from "../vcs/pr-strategy.js";
+export { GitHubPRStrategy } from "../vcs/github-pr-strategy.js";
+export { AzurePRStrategy } from "../vcs/azure-pr-strategy.js";
+export { GitLabPRStrategy } from "../vcs/gitlab-pr-strategy.js";
 
 // Commit strategy exports
 export type {

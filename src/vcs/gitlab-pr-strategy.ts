@@ -2,7 +2,7 @@ import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { escapeShellArg } from "../shared/shell-utils.js";
 import { isGitLabRepo, GitLabRepoInfo } from "../shared/repo-detector.js";
-import { PRResult } from "../vcs/pr-creator.js";
+import { PRResult } from "./pr-creator.js";
 import {
   BasePRStrategy,
   PRStrategyOptions,
