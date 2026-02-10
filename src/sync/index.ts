@@ -32,6 +32,8 @@ export type {
   ProcessorResult,
   IFileSyncOrchestrator,
   FileSyncResult,
+  IPRMergeHandler,
+  PRHandlerOptions,
 } from "./types.js";
 
 // Repository processor

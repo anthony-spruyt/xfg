@@ -337,3 +337,35 @@ export interface IFileSyncOrchestrator {
     options: ProcessorOptions
   ): Promise<FileSyncResult>;
 }
+
+/**
+ * Options for PR creation and merge
+ */
+export interface PRHandlerOptions {
+  branchName: string;
+  baseBranch: string;
+  workDir: string;
+  dryRun: boolean;
+  retries: number;
+  prTemplate?: string;
+  token?: string;
+  executor: ICommandExecutor;
+}
+
+/**
+ * Interface for PR creation and merge handling
+ */
+export interface IPRMergeHandler {
+  /**
+   * Create PR and optionally merge based on repo config.
+   * Returns ProcessorResult with PR URL and merge status.
+   */
+  createAndMerge(
+    repoInfo: RepoInfo,
+    repoConfig: RepoConfig,
+    options: PRHandlerOptions,
+    changedFiles: FileAction[],
+    repoName: string,
+    diffStats?: DiffStats
+  ): Promise<ProcessorResult>;
+}
