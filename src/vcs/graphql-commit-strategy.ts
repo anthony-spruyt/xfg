@@ -1,8 +1,4 @@
-import {
-  ICommitStrategy,
-  CommitOptions,
-  CommitResult,
-} from "./commit-strategy.js";
+import type { ICommitStrategy, CommitOptions, CommitResult } from "./types.js";
 import {
   ICommandExecutor,
   defaultExecutor,
