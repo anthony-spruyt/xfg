@@ -11,7 +11,7 @@ import {
 import { diffRulesets } from "./diff.js";
 import { formatRulesetPlan, RulesetPlanResult } from "./formatter.js";
 import { hasGitHubAppCredentials } from "../../strategies/index.js";
-import { GitHubAppTokenManager } from "../../git/github-app-token-manager.js";
+import { GitHubAppTokenManager } from "../../vcs/github-app-token-manager.js";
 
 // =============================================================================
 // Interfaces

@@ -6,11 +6,11 @@ type MockFn = Mock<(...args: unknown[]) => unknown>;
 import {
   AuthenticatedGitOps,
   GitAuthOptions,
-} from "../../src/git/authenticated-git-ops.js";
+} from "../../src/vcs/authenticated-git-ops.js";
 import {
   GitOps,
   GitOpsOptions as _GitOpsOptions,
-} from "../../src/git/git-ops.js";
+} from "../../src/vcs/git-ops.js";
 
 describe("AuthenticatedGitOps", () => {
   let mockGitOps: GitOps;

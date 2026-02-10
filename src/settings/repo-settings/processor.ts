@@ -9,7 +9,7 @@ import type { IRepoSettingsStrategy } from "../../strategies/repo-settings-strat
 import { diffRepoSettings, hasChanges } from "./diff.js";
 import { formatRepoSettingsPlan, RepoSettingsPlanResult } from "./formatter.js";
 import { hasGitHubAppCredentials } from "../../strategies/index.js";
-import { GitHubAppTokenManager } from "../../git/github-app-token-manager.js";
+import { GitHubAppTokenManager } from "../../vcs/github-app-token-manager.js";
 
 export interface IRepoSettingsProcessor {
   process(

@@ -9,8 +9,8 @@ import {
 } from "../../src/sync/repository-processor.js";
 import { RepoConfig } from "../../src/config/index.js";
 import { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
-import { GitOps } from "../../src/git/git-ops.js";
-import { AuthenticatedGitOps } from "../../src/git/authenticated-git-ops.js";
+import { GitOps } from "../../src/vcs/git-ops.js";
+import { AuthenticatedGitOps } from "../../src/vcs/authenticated-git-ops.js";
 import { ICommandExecutor } from "../../src/shared/command-executor.js";
 import {
   createMockLogger,

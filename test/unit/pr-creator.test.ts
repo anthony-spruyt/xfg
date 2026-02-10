@@ -10,7 +10,7 @@ import {
   createPR,
   mergePR,
   FileAction,
-} from "../../src/git/pr-creator.js";
+} from "../../src/vcs/pr-creator.js";
 import type { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
 
 // Helper to create a mock repo info for tests

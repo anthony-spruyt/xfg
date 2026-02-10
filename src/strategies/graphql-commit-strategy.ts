@@ -9,7 +9,7 @@ import {
 } from "../shared/command-executor.js";
 import { isGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
-import { IAuthenticatedGitOps } from "../git/authenticated-git-ops.js";
+import { IAuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).

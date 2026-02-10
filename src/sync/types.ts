@@ -1,6 +1,6 @@
 import type { FileContent } from "../config/types.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
-import type { IAuthenticatedGitOps } from "../git/authenticated-git-ops.js";
+import type { IAuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
 import type { DiffStats } from "./diff-utils.js";
 import type { ILogger } from "../shared/logger.js";
 import type { XfgManifest } from "./manifest.js";

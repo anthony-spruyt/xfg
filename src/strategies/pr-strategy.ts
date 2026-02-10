@@ -1,4 +1,4 @@
-import { PRResult } from "../git/pr-creator.js";
+import { PRResult } from "../vcs/pr-creator.js";
 import { RepoInfo } from "../shared/repo-detector.js";
 import {
   ICommandExecutor,

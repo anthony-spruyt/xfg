@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach, mock } from "node:test";
 import { strict as assert } from "node:assert";
-import { GitHubAppTokenManager } from "../../src/git/github-app-token-manager.js";
+import { GitHubAppTokenManager } from "../../src/vcs/github-app-token-manager.js";
 import { TEST_PRIVATE_KEY, TEST_APP_ID } from "../fixtures/test-fixtures.js";
 function base64UrlDecode(str: string): string {
   // Add padding if needed

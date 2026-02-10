@@ -14,7 +14,7 @@ import {
   GitOps,
   sanitizeBranchName,
   validateBranchName,
-} from "../../src/git/git-ops.js";
+} from "../../src/vcs/git-ops.js";
 import { ICommandExecutor } from "../../src/shared/command-executor.js";
 
 const testDir = join(tmpdir(), "git-ops-test-" + Date.now());
