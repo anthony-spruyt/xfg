@@ -4,8 +4,8 @@ import {
   isGitHubRepo,
   getRepoDisplayName,
 } from "../../shared/repo-detector.js";
-import { GitHubRepoSettingsStrategy } from "../../strategies/github-repo-settings-strategy.js";
-import type { IRepoSettingsStrategy } from "../../strategies/repo-settings-strategy.js";
+import { GitHubRepoSettingsStrategy } from "./github-repo-settings-strategy.js";
+import type { IRepoSettingsStrategy } from "./types.js";
 import { diffRepoSettings, hasChanges } from "./diff.js";
 import { formatRepoSettingsPlan, RepoSettingsPlanResult } from "./formatter.js";
 import { hasGitHubAppCredentials } from "../../strategies/index.js";

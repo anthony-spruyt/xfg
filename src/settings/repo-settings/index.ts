@@ -1,3 +1,11 @@
+// Types
+export {
+  isRepoSettingsStrategy,
+  type IRepoSettingsStrategy,
+  type RepoSettingsStrategyOptions,
+  type CurrentRepoSettings,
+} from "./types.js";
+
 // Repo settings processor
 export {
   RepoSettingsProcessor,
@@ -20,3 +28,6 @@ export {
   type RepoSettingsPlanResult,
   type RepoSettingsPlanEntry,
 } from "./formatter.js";
+
+// Repo settings strategies
+export { GitHubRepoSettingsStrategy } from "./github-repo-settings-strategy.js";

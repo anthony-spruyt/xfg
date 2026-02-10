@@ -1,5 +1,5 @@
 import type { GitHubRepoSettings } from "../../config/index.js";
-import type { CurrentRepoSettings } from "../../strategies/repo-settings-strategy.js";
+import type { CurrentRepoSettings } from "./types.js";
 
 export type RepoSettingsAction = "add" | "change" | "unchanged";
 

@@ -1,19 +1,19 @@
 import {
   ICommandExecutor,
   defaultExecutor,
-} from "../shared/command-executor.js";
+} from "../../shared/command-executor.js";
 import {
   isGitHubRepo,
   GitHubRepoInfo,
   RepoInfo,
-} from "../shared/repo-detector.js";
-import { escapeShellArg } from "../shared/shell-utils.js";
-import type { GitHubRepoSettings } from "../config/index.js";
+} from "../../shared/repo-detector.js";
+import { escapeShellArg } from "../../shared/shell-utils.js";
+import type { GitHubRepoSettings } from "../../config/index.js";
 import type {
   IRepoSettingsStrategy,
   RepoSettingsStrategyOptions,
   CurrentRepoSettings,
-} from "./repo-settings-strategy.js";
+} from "./types.js";
 
 /**
  * Converts camelCase to snake_case.
