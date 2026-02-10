@@ -1,7 +1,7 @@
 import { RepoInfo } from "../shared/repo-detector.js";
 import { ILogger } from "../shared/logger.js";
-import type { GitOpsFactory } from "./repository-processor.js";
 import type {
+  GitOpsFactory,
   SessionOptions,
   SessionContext,
   IRepositorySession,

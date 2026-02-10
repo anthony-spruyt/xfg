@@ -1,11 +1,7 @@
 import { RepoConfig } from "../config/index.js";
 import { RepoInfo, getRepoDisplayName } from "../shared/repo-detector.js";
-import { GitOps, GitOpsOptions } from "../vcs/git-ops.js";
-import {
-  AuthenticatedGitOps,
-  IAuthenticatedGitOps,
-  GitAuthOptions,
-} from "../vcs/authenticated-git-ops.js";
+import { GitOps } from "../vcs/git-ops.js";
+import { AuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
 import { createPR, mergePR, PRResult, FileAction } from "../vcs/pr-creator.js";
 import { logger, ILogger } from "../shared/logger.js";
 import { hasGitHubAppCredentials } from "../vcs/index.js";
@@ -35,53 +31,13 @@ import {
   type IAuthOptionsBuilder,
   type IRepositorySession,
   type ICommitPushManager,
+  type IRepositoryProcessor,
   type FileWriteResult,
   type SessionContext,
+  type GitOpsFactory,
+  type ProcessorOptions,
+  type ProcessorResult,
 } from "./index.js";
-
-export interface IRepositoryProcessor {
-  process(
-    repoConfig: RepoConfig,
-    repoInfo: RepoInfo,
-    options: ProcessorOptions
-  ): Promise<ProcessorResult>;
-  updateManifestOnly(
-    repoInfo: RepoInfo,
-    repoConfig: RepoConfig,
-    options: ProcessorOptions,
-    manifestUpdate: { rulesets: string[] }
-  ): Promise<ProcessorResult>;
-}
-
-export interface ProcessorOptions {
-  branchName: string;
-  workDir: string;
-  configId: string;
-  dryRun?: boolean;
-  retries?: number;
-  executor?: ICommandExecutor;
-  prTemplate?: string;
-  noDelete?: boolean;
-}
-
-export type GitOpsFactory = (
-  options: GitOpsOptions,
-  auth?: GitAuthOptions
-) => IAuthenticatedGitOps;
-
-export interface ProcessorResult {
-  success: boolean;
-  repoName: string;
-  message: string;
-  prUrl?: string;
-  skipped?: boolean;
-  mergeResult?: {
-    merged: boolean;
-    autoMergeEnabled?: boolean;
-    message: string;
-  };
-  diffStats?: DiffStats;
-}
 
 export class RepositoryProcessor implements IRepositoryProcessor {
   private readonly gitOpsFactory: GitOpsFactory;

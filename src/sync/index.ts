@@ -24,16 +24,14 @@ export type {
   ICommitPushManager,
   CommitPushOptions,
   CommitPushResult,
+  GitOpsFactory,
+  IRepositoryProcessor,
+  ProcessorOptions,
+  ProcessorResult,
 } from "./types.js";
 
 // Repository processor
-export {
-  RepositoryProcessor,
-  type IRepositoryProcessor,
-  type ProcessorResult,
-  type ProcessorOptions,
-  type GitOpsFactory,
-} from "./repository-processor.js";
+export { RepositoryProcessor } from "./repository-processor.js";
 
 // Manifest handling
 export {

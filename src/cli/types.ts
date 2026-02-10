@@ -1,10 +1,10 @@
 import { RepoConfig } from "../config/index.js";
 import { RepoInfo } from "../shared/repo-detector.js";
 import {
-  ProcessorResult,
-  ProcessorOptions,
   RepositoryProcessor,
-} from "../sync/repository-processor.js";
+  type ProcessorResult,
+  type ProcessorOptions,
+} from "../sync/index.js";
 import {
   RulesetProcessor,
   RulesetProcessorOptions,

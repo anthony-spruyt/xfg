@@ -1,13 +1,23 @@
-import type { FileContent } from "../config/types.js";
-import type { RepoInfo, GitHubRepoInfo } from "../shared/repo-detector.js";
+import type { FileContent, RepoConfig } from "../config/types.js";
+import type { RepoInfo } from "../shared/repo-detector.js";
 import type {
   IAuthenticatedGitOps,
   GitAuthOptions,
 } from "../vcs/authenticated-git-ops.js";
+import type { GitOpsOptions } from "../vcs/git-ops.js";
 import type { DiffStats } from "./diff-utils.js";
 import type { ILogger } from "../shared/logger.js";
 import type { XfgManifest } from "./manifest.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
+
+/**
+ * Factory function type for creating IAuthenticatedGitOps instances.
+ * Allows dependency injection for testing.
+ */
+export type GitOpsFactory = (
+  options: GitOpsOptions,
+  auth?: GitAuthOptions
+) => IAuthenticatedGitOps;
 
 /**
  * Result of processing a single file
@@ -252,4 +262,52 @@ export interface ICommitPushManager {
     options: CommitPushOptions,
     repoName: string
   ): Promise<CommitPushResult>;
+}
+
+/**
+ * Options for repository processing
+ */
+export interface ProcessorOptions {
+  branchName: string;
+  workDir: string;
+  configId: string;
+  dryRun?: boolean;
+  retries?: number;
+  executor?: ICommandExecutor;
+  prTemplate?: string;
+  noDelete?: boolean;
+}
+
+/**
+ * Result of repository processing
+ */
+export interface ProcessorResult {
+  success: boolean;
+  repoName: string;
+  message: string;
+  prUrl?: string;
+  skipped?: boolean;
+  mergeResult?: {
+    merged: boolean;
+    autoMergeEnabled?: boolean;
+    message: string;
+  };
+  diffStats?: DiffStats;
+}
+
+/**
+ * Interface for repository processing operations
+ */
+export interface IRepositoryProcessor {
+  process(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: ProcessorOptions
+  ): Promise<ProcessorResult>;
+  updateManifestOnly(
+    repoInfo: RepoInfo,
+    repoConfig: RepoConfig,
+    options: ProcessorOptions,
+    manifestUpdate: { rulesets: string[] }
+  ): Promise<ProcessorResult>;
 }
