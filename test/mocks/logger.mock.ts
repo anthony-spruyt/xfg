@@ -6,16 +6,25 @@ export interface DiffStatusEntry {
   status: FileStatus;
 }
 
+export interface DiffSummaryEntry {
+  newCount: number;
+  modifiedCount: number;
+  unchangedCount: number;
+  deletedCount?: number;
+}
+
 export interface LoggerMockResult {
   mock: ILogger;
   messages: string[];
   diffStatuses: DiffStatusEntry[];
+  diffSummaries: DiffSummaryEntry[];
   reset: () => void;
 }
 
 export function createMockLogger(): LoggerMockResult {
   const messages: string[] = [];
   const diffStatuses: DiffStatusEntry[] = [];
+  const diffSummaries: DiffSummaryEntry[] = [];
 
   const mock: ILogger = {
     info(message: string): void {
@@ -25,12 +34,17 @@ export function createMockLogger(): LoggerMockResult {
       diffStatuses.push({ fileName, status });
     },
     diffSummary(
-      _newCount: number,
-      _modifiedCount: number,
-      _unchangedCount: number,
-      _deletedCount?: number
+      newCount: number,
+      modifiedCount: number,
+      unchangedCount: number,
+      deletedCount?: number
     ): void {
-      // No-op
+      diffSummaries.push({
+        newCount,
+        modifiedCount,
+        unchangedCount,
+        deletedCount,
+      });
     },
     setTotal(_total: number): void {
       // No-op
@@ -53,9 +67,11 @@ export function createMockLogger(): LoggerMockResult {
     mock,
     messages,
     diffStatuses,
+    diffSummaries,
     reset: () => {
       messages.length = 0;
       diffStatuses.length = 0;
+      diffSummaries.length = 0;
     },
   };
 }
