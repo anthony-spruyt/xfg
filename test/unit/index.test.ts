@@ -66,7 +66,7 @@ describe("CLI", () => {
 
   describe("argument parsing", () => {
     test("shows help with --help", () => {
-      const result = runCLI(["--help"]);
+      const result = runCLI(["sync", "--help"]);
       assert.ok(result.stdout.includes("xfg"));
       assert.ok(result.stdout.includes("-c, --config"));
       assert.ok(result.stdout.includes("-d, --dry-run"));
@@ -76,7 +76,7 @@ describe("CLI", () => {
     });
 
     test("requires --config option", () => {
-      const result = runCLI([]);
+      const result = runCLI(["sync"]);
       assert.equal(result.success, false);
       assert.ok(
         result.stderr.includes("required") || result.stderr.includes("--config")
@@ -84,7 +84,7 @@ describe("CLI", () => {
     });
 
     test("fails with non-existent config file", () => {
-      const result = runCLI(["-c", "/nonexistent/config.yaml"]);
+      const result = runCLI(["sync", "-c", "/nonexistent/config.yaml"]);
       assert.equal(result.success, false);
       const output = result.stdout + result.stderr;
       assert.ok(output.includes("Config file not found"));
@@ -107,6 +107,7 @@ repos:
 
       // Should fail on clone (invalid repo) but should show dry run message
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -136,6 +137,7 @@ repos:
 
       // Should parse --retries without error
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -167,6 +169,7 @@ repos:
 
       // Should parse --retries 0 without error
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -197,6 +200,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -227,6 +231,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -257,6 +262,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -288,6 +294,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -319,6 +326,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -353,6 +361,7 @@ repos:
       // Test each valid merge mode
       for (const mode of ["manual", "auto", "force", "direct"]) {
         const result = runCLI([
+          "sync",
           "-c",
           testConfigPath,
           "--dry-run",
@@ -384,6 +393,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -418,6 +428,7 @@ repos:
       // Test each valid merge strategy
       for (const strategy of ["merge", "squash", "rebase"]) {
         const result = runCLI([
+          "sync",
           "-c",
           testConfigPath,
           "--dry-run",
@@ -449,6 +460,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -555,7 +567,7 @@ repos:
     test("fails with invalid YAML", () => {
       writeFileSync(testConfigPath, "invalid: yaml: content: [");
 
-      const result = runCLI(["-c", testConfigPath, "--dry-run"]);
+      const result = runCLI(["sync", "-c", testConfigPath, "--dry-run"]);
       assert.equal(result.success, false);
     });
 
@@ -568,7 +580,7 @@ repos:
 `
       );
 
-      const result = runCLI(["-c", testConfigPath, "--dry-run"]);
+      const result = runCLI(["sync", "-c", testConfigPath, "--dry-run"]);
       assert.equal(result.success, false);
       const output = result.stdout + result.stderr;
       assert.ok(
@@ -589,7 +601,7 @@ files:
 `
       );
 
-      const result = runCLI(["-c", testConfigPath, "--dry-run"]);
+      const result = runCLI(["sync", "-c", testConfigPath, "--dry-run"]);
       assert.equal(result.success, false);
       const output = result.stdout + result.stderr;
       assert.ok(
@@ -616,6 +628,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -644,6 +657,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -672,6 +686,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -704,6 +719,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -742,6 +758,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -774,6 +791,7 @@ repos:
       );
 
       const result = runCLI([
+        "sync",
         "-c",
         testConfigPath,
         "--dry-run",
@@ -806,9 +824,12 @@ repos:
       );
 
       // Run CLI with GITHUB_STEP_SUMMARY set
-      runCLI(["-c", testConfigPath, "--dry-run", "-w", `${testDir}/work`], {
-        env: { GITHUB_STEP_SUMMARY: summaryPath },
-      });
+      runCLI(
+        ["sync", "-c", testConfigPath, "--dry-run", "-w", `${testDir}/work`],
+        {
+          env: { GITHUB_STEP_SUMMARY: summaryPath },
+        }
+      );
 
       // Verify summary file was created
       assert.ok(existsSync(summaryPath), "Summary file should be created");
@@ -839,7 +860,14 @@ repos:
       );
 
       // Run CLI without GITHUB_STEP_SUMMARY
-      runCLI(["-c", testConfigPath, "--dry-run", "-w", `${testDir}/work`]);
+      runCLI([
+        "sync",
+        "-c",
+        testConfigPath,
+        "--dry-run",
+        "-w",
+        `${testDir}/work`,
+      ]);
 
       // Verify summary file was NOT created
       assert.ok(

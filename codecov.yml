@@ -11,6 +11,15 @@ coverage:
         threshold: 1%
 
 ignore:
+  # Entry point (just calls parse)
+  - "src/cli.ts"
+
+  # Re-export only
+  - "src/index.ts"
+
+  # CLI configuration (declarative, tested via integration)
+  - "src/cli/program.ts"
+
   # Type-only files (no executable code)
   - "src/cli/types.ts"
   - "src/config/types.ts"
