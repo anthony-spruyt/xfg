@@ -4,6 +4,7 @@ export { BranchManager } from "./branch-manager.js";
 export { AuthOptionsBuilder } from "./auth-options-builder.js";
 export { RepositorySession } from "./repository-session.js";
 export { CommitPushManager } from "./commit-push-manager.js";
+export { formatCommitMessage } from "./commit-message.js";
 export type {
   IFileWriter,
   FileWriteContext,
