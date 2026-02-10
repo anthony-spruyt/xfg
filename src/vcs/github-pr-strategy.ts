@@ -53,10 +53,11 @@ function buildPRUrlRegex(host: string): RegExp {
 }
 
 /**
- * Build the GH_TOKEN environment prefix for commands if a token is provided.
+ * Build environment variables for gh CLI commands.
+ * Uses env vars instead of command string interpolation to avoid shell injection.
  */
-function buildTokenPrefix(token?: string): string {
-  return token ? `GH_TOKEN=${token} ` : "";
+function buildTokenEnv(token?: string): Record<string, string> | undefined {
+  return token ? { GH_TOKEN: token } : undefined;
 }
 
 export class GitHubPRStrategy extends BasePRStrategy {
@@ -68,12 +69,12 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
 
     const repoFlag = getRepoFlag(repoInfo);
-    const tokenPrefix = buildTokenPrefix(token);
-    const command = `${tokenPrefix}gh pr list --repo ${escapeShellArg(repoFlag)} --head ${escapeShellArg(branchName)} --json url --jq '.[0].url'`;
+    const tokenEnv = buildTokenEnv(token);
+    const command = `gh pr list --repo ${escapeShellArg(repoFlag)} --head ${escapeShellArg(branchName)} --json url --jq '.[0].url'`;
 
     try {
       const existingPR = await withRetry(
-        () => this.executor.exec(command, workDir),
+        () => this.executor.exec(command, workDir, { env: tokenEnv }),
         { retries }
       );
 
@@ -133,13 +134,16 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
 
     // Close the PR and delete the branch
-    // Token is passed via GH_TOKEN env prefix for gh CLI authentication
+    // Token is passed via env var to avoid shell injection
     const repoFlag = getRepoFlag(repoInfo);
-    const tokenPrefix = buildTokenPrefix(token);
-    const command = `${tokenPrefix}gh pr close ${escapeShellArg(prNumber)} --repo ${escapeShellArg(repoFlag)} --delete-branch`;
+    const tokenEnv = buildTokenEnv(token);
+    const command = `gh pr close ${escapeShellArg(prNumber)} --repo ${escapeShellArg(repoFlag)} --delete-branch`;
 
     try {
-      await withRetry(() => this.executor.exec(command, workDir), { retries });
+      await withRetry(
+        () => this.executor.exec(command, workDir, { env: tokenEnv }),
+        { retries }
+      );
       return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -170,13 +174,13 @@ export class GitHubPRStrategy extends BasePRStrategy {
     const bodyFile = join(workDir, this.bodyFilePath);
     writeFileSync(bodyFile, body, "utf-8");
 
-    // Token is passed via GH_TOKEN env prefix for gh CLI authentication
-    const tokenPrefix = buildTokenPrefix(token);
-    const command = `${tokenPrefix}gh pr create --title ${escapeShellArg(title)} --body-file ${escapeShellArg(bodyFile)} --base ${escapeShellArg(baseBranch)} --head ${escapeShellArg(branchName)}`;
+    // Token is passed via env var to avoid shell injection
+    const tokenEnv = buildTokenEnv(token);
+    const command = `gh pr create --title ${escapeShellArg(title)} --body-file ${escapeShellArg(bodyFile)} --base ${escapeShellArg(baseBranch)} --head ${escapeShellArg(branchName)}`;
 
     try {
       const result = await withRetry(
-        () => this.executor.exec(command, workDir),
+        () => this.executor.exec(command, workDir, { env: tokenEnv }),
         { retries }
       );
 
@@ -219,13 +223,13 @@ export class GitHubPRStrategy extends BasePRStrategy {
   ): Promise<boolean> {
     const hostnameFlag = getHostnameFlag(repoInfo);
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
-    // Token is passed via GH_TOKEN env prefix for gh CLI authentication
-    const tokenPrefix = buildTokenPrefix(token);
-    const command = `${tokenPrefix}gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --jq '.allow_auto_merge // false'`;
+    // Token is passed via env var to avoid shell injection
+    const tokenEnv = buildTokenEnv(token);
+    const command = `gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --jq '.allow_auto_merge // false'`;
 
     try {
       const result = await withRetry(
-        () => this.executor.exec(command, workDir),
+        () => this.executor.exec(command, workDir, { env: tokenEnv }),
         { retries }
       );
       return result.trim() === "true";
@@ -267,8 +271,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     const strategyFlag = this.getMergeStrategyFlag(config.strategy);
     const deleteBranchFlag = config.deleteBranch ? "--delete-branch" : "";
-    // Token is passed via GH_TOKEN env prefix for gh CLI authentication
-    const tokenPrefix = buildTokenPrefix(token);
+    // Token is passed via env var to avoid shell injection
+    const tokenEnv = buildTokenEnv(token);
 
     if (config.mode === "auto") {
       // Check if auto-merge is enabled on the repo
@@ -307,12 +311,13 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
       // Enable auto-merge
       const command =
-        `${tokenPrefix}gh pr merge ${escapeShellArg(prUrl)} --auto ${strategyFlag} ${deleteBranchFlag}`.trim();
+        `gh pr merge ${escapeShellArg(prUrl)} --auto ${strategyFlag} ${deleteBranchFlag}`.trim();
 
       try {
-        await withRetry(() => this.executor.exec(command, workDir), {
-          retries,
-        });
+        await withRetry(
+          () => this.executor.exec(command, workDir, { env: tokenEnv }),
+          { retries }
+        );
 
         return {
           success: true,
@@ -333,12 +338,13 @@ export class GitHubPRStrategy extends BasePRStrategy {
     if (config.mode === "force") {
       // Force merge using admin privileges
       const command =
-        `${tokenPrefix}gh pr merge ${escapeShellArg(prUrl)} --admin ${strategyFlag} ${deleteBranchFlag}`.trim();
+        `gh pr merge ${escapeShellArg(prUrl)} --admin ${strategyFlag} ${deleteBranchFlag}`.trim();
 
       try {
-        await withRetry(() => this.executor.exec(command, workDir), {
-          retries,
-        });
+        await withRetry(
+          () => this.executor.exec(command, workDir, { env: tokenEnv }),
+          { retries }
+        );
 
         return {
           success: true,

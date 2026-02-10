@@ -5,24 +5,32 @@ import { join } from "node:path";
 import { GitHubPRStrategy } from "../../../src/vcs/github-pr-strategy.js";
 import { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import { PRStrategyOptions } from "../../../src/vcs/pr-strategy.js";
-import { ICommandExecutor } from "../../../src/shared/command-executor.js";
+import {
+  ICommandExecutor,
+  ExecOptions,
+} from "../../../src/shared/command-executor.js";
 
 const testDir = join(process.cwd(), "test-github-strategy-tmp");
 
 // Mock executor for testing - implements ICommandExecutor interface
 function createMockExecutor(): ICommandExecutor & {
-  calls: Array<{ command: string; cwd: string }>;
+  calls: Array<{ command: string; cwd: string; options?: ExecOptions }>;
   responses: Map<string, string | Error>;
   reset: () => void;
 } {
-  const calls: Array<{ command: string; cwd: string }> = [];
+  const calls: Array<{ command: string; cwd: string; options?: ExecOptions }> =
+    [];
   const responses = new Map<string, string | Error>();
 
   return {
     calls,
     responses,
-    async exec(command: string, cwd: string): Promise<string> {
-      calls.push({ command, cwd });
+    async exec(
+      command: string,
+      cwd: string,
+      options?: ExecOptions
+    ): Promise<string> {
+      calls.push({ command, cwd, options });
 
       // Check for matching response
       for (const [pattern, response] of responses) {
@@ -1128,10 +1136,11 @@ describe("GitHubPRStrategy with token parameter", () => {
 
     await strategy.checkExistingPR(options);
 
-    assert.ok(mockExecutor.calls[0].command.startsWith("GH_TOKEN="));
-    assert.ok(
-      mockExecutor.calls[0].command.includes("ghs_test_token_12345"),
-      "Command should include the token"
+    assert.ok(mockExecutor.calls[0].command.startsWith("gh pr list"));
+    assert.equal(
+      mockExecutor.calls[0].options?.env?.GH_TOKEN,
+      "ghs_test_token_12345",
+      "Token should be passed via env var"
     );
   });
 
@@ -1160,12 +1169,13 @@ describe("GitHubPRStrategy with token parameter", () => {
     );
     assert.ok(createCall, "Should have called gh pr create");
     assert.ok(
-      createCall.command.startsWith("GH_TOKEN="),
-      "Command should start with GH_TOKEN="
+      createCall.command.startsWith("gh pr create"),
+      "Command should start with gh pr create"
     );
-    assert.ok(
-      createCall.command.includes("ghs_test_token_12345"),
-      "Command should include the token"
+    assert.equal(
+      createCall.options?.env?.GH_TOKEN,
+      "ghs_test_token_12345",
+      "Token should be passed via env var"
     );
   });
 
@@ -1186,7 +1196,7 @@ describe("GitHubPRStrategy with token parameter", () => {
       token: "ghs_test_token_12345",
     });
 
-    // Both list and close should use the token
+    // Both list and close should use the token via env var
     const listCall = mockExecutor.calls.find((c) =>
       c.command.includes("gh pr list")
     );
@@ -1194,8 +1204,8 @@ describe("GitHubPRStrategy with token parameter", () => {
       c.command.includes("gh pr close")
     );
 
-    assert.ok(listCall?.command.startsWith("GH_TOKEN="));
-    assert.ok(closeCall?.command.startsWith("GH_TOKEN="));
+    assert.equal(listCall?.options?.env?.GH_TOKEN, "ghs_test_token_12345");
+    assert.equal(closeCall?.options?.env?.GH_TOKEN, "ghs_test_token_12345");
   });
 
   test("merge uses GH_TOKEN env prefix when token is provided", async () => {
@@ -1211,7 +1221,7 @@ describe("GitHubPRStrategy with token parameter", () => {
       token: "ghs_test_token_12345",
     });
 
-    // Both api and merge should use the token
+    // Both api and merge should use the token via env var
     const apiCall = mockExecutor.calls.find((c) =>
       c.command.includes("gh api")
     );
@@ -1219,13 +1229,15 @@ describe("GitHubPRStrategy with token parameter", () => {
       c.command.includes("gh pr merge")
     );
 
-    assert.ok(
-      apiCall?.command.startsWith("GH_TOKEN="),
-      "gh api call should use token"
+    assert.equal(
+      apiCall?.options?.env?.GH_TOKEN,
+      "ghs_test_token_12345",
+      "gh api call should use token via env"
     );
-    assert.ok(
-      mergeCall?.command.startsWith("GH_TOKEN="),
-      "gh pr merge call should use token"
+    assert.equal(
+      mergeCall?.options?.env?.GH_TOKEN,
+      "ghs_test_token_12345",
+      "gh pr merge call should use token via env"
     );
   });
 
@@ -1250,12 +1262,13 @@ describe("GitHubPRStrategy with token parameter", () => {
     await strategy.checkExistingPR(options);
 
     assert.ok(
-      !mockExecutor.calls[0].command.startsWith("GH_TOKEN="),
-      "Command should not have GH_TOKEN prefix when no token is provided"
-    );
-    assert.ok(
       mockExecutor.calls[0].command.startsWith("gh pr list"),
       "Command should start with gh pr list"
+    );
+    assert.equal(
+      mockExecutor.calls[0].options?.env,
+      undefined,
+      "No env should be set when no token is provided"
     );
   });
 });
