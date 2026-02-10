@@ -1,8 +1,8 @@
 import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { GitHubRepoSettingsStrategy } from "../../../src/settings/repo-settings/github-repo-settings-strategy.js";
-import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
-import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
+import { GitHubRepoSettingsStrategy } from "../../../../src/settings/repo-settings/github-repo-settings-strategy.js";
+import type { GitHubRepoInfo } from "../../../../src/shared/repo-detector.js";
+import type { ICommandExecutor } from "../../../../src/shared/command-executor.js";
 
 // Mock executor that records commands and returns configured responses
 // Note: This follows the existing test pattern from github-ruleset-strategy.test.ts

@@ -2295,7 +2295,7 @@ describe("RepositoryProcessor", () => {
     test("hasGitHubAppCredentials returns true when both env vars are set", async () => {
       // Import the function directly for testing
       const { hasGitHubAppCredentials } =
-        await import("../../src/strategies/commit-strategy-selector.js");
+        await import("../../src/vcs/commit-strategy-selector.js");
 
       // Initially should be false (env vars cleared in beforeEach)
       assert.equal(
