@@ -6,6 +6,7 @@ export { RepositorySession } from "./repository-session.js";
 export { CommitPushManager } from "./commit-push-manager.js";
 export { formatCommitMessage } from "./commit-message.js";
 export { FileSyncOrchestrator } from "./file-sync-orchestrator.js";
+export { PRMergeHandler } from "./pr-merge-handler.js";
 export type {
   IFileWriter,
   FileWriteContext,
