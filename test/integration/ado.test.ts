@@ -137,7 +137,7 @@ describe("Azure DevOps Integration Test", () => {
 
     // Run the sync tool
     console.log("Running xfg...");
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -205,7 +205,7 @@ describe("Azure DevOps Integration Test", () => {
     // Arrange — create initial PR by running xfg
     const configPath = join(fixturesDir, "integration-test-config-ado.yaml");
     console.log("Creating initial PR...");
-    exec(`node dist/cli.js --config ${configPath}`, { cwd: projectRoot });
+    exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
 
     // Get the current PR ID before re-sync
     console.log("Getting current PR ID...");
@@ -218,7 +218,7 @@ describe("Azure DevOps Integration Test", () => {
 
     // Run the sync tool again
     console.log("\nRunning xfg again (re-sync)...");
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -282,7 +282,7 @@ describe("Azure DevOps Integration Test", () => {
       fixturesDir,
       "integration-test-createonly-ado.yaml"
     );
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -349,7 +349,7 @@ describe("Azure DevOps Integration Test", () => {
     // Run sync with the test config
     console.log("\nRunning xfg with unchanged files config...");
     const configPath = join(fixturesDir, "integration-test-unchanged-ado.yaml");
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -385,7 +385,7 @@ describe("Azure DevOps Integration Test", () => {
     // Run sync with direct mode config
     console.log("\nRunning xfg with direct mode config...");
     const configPath = join(fixturesDir, "integration-test-direct-ado.yaml");
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);

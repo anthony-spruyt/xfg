@@ -39,7 +39,7 @@ describe("GitHub Integration Test", () => {
 
     // Run the sync tool
     console.log("Running xfg...");
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -107,7 +107,7 @@ describe("GitHub Integration Test", () => {
     // Arrange — create initial PR by running xfg
     const configPath = join(fixturesDir, "integration-test-config-github.yaml");
     console.log("Creating initial PR...");
-    exec(`node dist/cli.js --config ${configPath}`, { cwd: projectRoot });
+    exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
 
     // Get the PR number
     console.log("Getting current PR number...");
@@ -120,7 +120,7 @@ describe("GitHub Integration Test", () => {
 
     // Run the sync tool again
     console.log("\nRunning xfg again (re-sync)...");
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -182,7 +182,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-createonly-github.yaml"
     );
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -260,7 +260,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-unchanged-github.yaml"
     );
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -306,7 +306,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-template-github.yaml"
     );
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -425,7 +425,7 @@ describe("GitHub Integration Test", () => {
     // Run sync with direct mode config
     console.log("\nRunning xfg with direct mode config...");
     const configPath = join(fixturesDir, "integration-test-direct-github.yaml");
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -479,7 +479,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-delete-orphaned-github.yaml"
     );
-    const output1 = exec(`node dist/cli.js --config ${configPath1}`, {
+    const output1 = exec(`node dist/cli.js sync --config ${configPath1}`, {
       cwd: projectRoot,
     });
     console.log(output1);
@@ -515,7 +515,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-delete-orphaned-phase2-github.yaml"
     );
-    const output2 = exec(`node dist/cli.js --config ${configPath2}`, {
+    const output2 = exec(`node dist/cli.js sync --config ${configPath2}`, {
       cwd: projectRoot,
     });
     console.log(output2);
@@ -568,7 +568,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-divergent-github.yaml"
     );
-    const output1 = exec(`node dist/cli.js --config ${configPath}`, {
+    const output1 = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output1);
@@ -596,7 +596,7 @@ describe("GitHub Integration Test", () => {
     console.log(
       "\n--- Phase 3: Run xfg again (should handle divergent history) ---\n"
     );
-    const output2 = exec(`node dist/cli.js --config ${configPath}`, {
+    const output2 = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output2);
@@ -681,7 +681,7 @@ describe("GitHub Integration Test", () => {
       fixturesDir,
       "integration-test-orphan-branch-github.yaml"
     );
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);

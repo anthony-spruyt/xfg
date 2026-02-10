@@ -142,7 +142,7 @@ describe("GitLab Integration Test", () => {
 
     // Run the sync tool
     console.log("Running xfg...");
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -205,7 +205,7 @@ describe("GitLab Integration Test", () => {
     // Arrange — create initial MR by running xfg
     const configPath = join(fixturesDir, "integration-test-config-gitlab.yaml");
     console.log("Creating initial MR...");
-    exec(`node dist/cli.js --config ${configPath}`, { cwd: projectRoot });
+    exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
 
     // Get the current MR IID before re-sync
     console.log("Getting current MR IID...");
@@ -217,7 +217,7 @@ describe("GitLab Integration Test", () => {
 
     // Run the sync tool again
     console.log("\nRunning xfg again (re-sync)...");
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -277,7 +277,7 @@ describe("GitLab Integration Test", () => {
       fixturesDir,
       "integration-test-createonly-gitlab.yaml"
     );
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -345,7 +345,7 @@ describe("GitLab Integration Test", () => {
       fixturesDir,
       "integration-test-unchanged-gitlab.yaml"
     );
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -378,7 +378,7 @@ describe("GitLab Integration Test", () => {
     // Run sync with direct mode config
     console.log("\nRunning xfg with direct mode config...");
     const configPath = join(fixturesDir, "integration-test-direct-gitlab.yaml");
-    const output = exec(`node dist/cli.js --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);

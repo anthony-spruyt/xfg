@@ -60,7 +60,7 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
   test("sync creates PR via GraphQL API with GitHub App credentials", () => {
     const configPath = join(fixturesDir, "integration-test-github-app.yaml");
     console.log("Running xfg sync with GitHub App credentials...");
-    const output = exec(`node dist/cli.js --config ${configPath}`, xfgEnv);
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
     console.log(output);
   });
 
@@ -70,7 +70,7 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
       "integration-test-github-app-direct.yaml"
     );
     console.log("Running xfg sync with direct mode + GitHub App...");
-    const output = exec(`node dist/cli.js --config ${configPath}`, xfgEnv);
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
     console.log(output);
   });
 
@@ -109,7 +109,10 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
 
     // Phase 1: Create files with deleteOrphaned config
     console.log("Phase 1: Creating files with deleteOrphaned: true...");
-    const output1 = exec(`node dist/cli.js --config ${configPath1}`, xfgEnv);
+    const output1 = exec(
+      `node dist/cli.js sync --config ${configPath1}`,
+      xfgEnv
+    );
     console.log(output1);
 
     // Small delay for GitHub API eventual consistency
@@ -119,7 +122,10 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
     console.log(
       "\nPhase 2: Removing file from config (should delete orphan)..."
     );
-    const output2 = exec(`node dist/cli.js --config ${configPath2}`, xfgEnv);
+    const output2 = exec(
+      `node dist/cli.js sync --config ${configPath2}`,
+      xfgEnv
+    );
     console.log(output2);
   });
 });
