@@ -9,6 +9,9 @@ import {
   createMockLogger,
 } from "../../mocks/index.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import type { GitOpsFactory } from "../../../src/sync/types.js";
+import type { GitAuthOptions } from "../../../src/vcs/authenticated-git-ops.js";
+import type { IAuthenticatedGitOps } from "../../../src/vcs/authenticated-git-ops.js";
 
 const testDir = join(tmpdir(), "repository-session-test-" + Date.now());
 
@@ -63,8 +66,8 @@ describe("RepositorySession", () => {
       const { mock: mockGitOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
 
-      let receivedAuth: any;
-      const gitOpsFactory = (_opts: any, auth: any) => {
+      let receivedAuth: GitAuthOptions | undefined;
+      const gitOpsFactory: GitOpsFactory = (_opts, auth) => {
         receivedAuth = auth;
         return mockGitOps;
       };
@@ -124,7 +127,7 @@ describe("RepositorySession", () => {
       };
 
       const session = new RepositorySession(
-        () => mockGitOps as any,
+        () => mockGitOps as IAuthenticatedGitOps,
         mockLogger
       );
       const context = await session.setup(mockRepoInfo, {

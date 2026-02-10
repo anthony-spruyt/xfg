@@ -6,6 +6,9 @@ import { tmpdir } from "node:os";
 import {
   RepositoryProcessor,
   GitOpsFactory,
+  type IRepositorySession,
+  type ICommitPushManager,
+  type IAuthOptionsBuilder,
 } from "../../src/sync/repository-processor.js";
 import { RepoConfig } from "../../src/config/index.js";
 import { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
@@ -1065,7 +1068,7 @@ describe("RepositoryProcessor", () => {
       });
 
       // Create mock repositorySession that tracks cleanup calls
-      const mockRepositorySession = {
+      const mockRepositorySession: IRepositorySession = {
         async setup() {
           return {
             gitOps: mockGitOps,
@@ -1081,15 +1084,15 @@ describe("RepositoryProcessor", () => {
       };
 
       // Create mock commitPushManager that throws
-      const mockCommitPushManager = {
+      const mockCommitPushManager: ICommitPushManager = {
         async commitAndPush() {
           throw new Error("Commit failed");
         },
       };
 
       const processor = new RepositoryProcessor(undefined, mockLogger, {
-        repositorySession: mockRepositorySession as any,
-        commitPushManager: mockCommitPushManager as any,
+        repositorySession: mockRepositorySession,
+        commitPushManager: mockCommitPushManager,
       });
 
       // The processor throws errors from commit, not cleanup errors
@@ -2539,7 +2542,7 @@ describe("RepositoryProcessor", () => {
       };
 
       // Create mock authOptionsBuilder that returns a specific token
-      const mockAuthOptionsBuilder = {
+      const mockAuthOptionsBuilder: IAuthOptionsBuilder = {
         async resolve() {
           return {
             token: "ghs_test_installation_token_abc123",
@@ -2554,7 +2557,7 @@ describe("RepositoryProcessor", () => {
       };
 
       const processor = new RepositoryProcessor(mockGitOpsFactory, mockLogger, {
-        authOptionsBuilder: mockAuthOptionsBuilder as any,
+        authOptionsBuilder: mockAuthOptionsBuilder,
       });
 
       await processor.process(
@@ -2627,7 +2630,7 @@ describe("RepositoryProcessor", () => {
       };
 
       // Create mock authOptionsBuilder that returns a specific token for GHE
-      const mockAuthOptionsBuilder = {
+      const mockAuthOptionsBuilder: IAuthOptionsBuilder = {
         async resolve() {
           return {
             token: "ghs_enterprise_token_xyz789",
@@ -2642,7 +2645,7 @@ describe("RepositoryProcessor", () => {
       };
 
       const processor = new RepositoryProcessor(mockGitOpsFactory, mockLogger, {
-        authOptionsBuilder: mockAuthOptionsBuilder as any,
+        authOptionsBuilder: mockAuthOptionsBuilder,
       });
 
       await processor.process(

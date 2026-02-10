@@ -3,6 +3,10 @@ import { strict as assert } from "node:assert";
 import { AuthOptionsBuilder } from "../../../src/sync/auth-options-builder.js";
 import { createMockLogger } from "../../mocks/index.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import type { GitHubAppTokenManager } from "../../../src/vcs/github-app-token-manager.js";
+
+/** Mock token manager - only needs getTokenForRepo method */
+type MockTokenManager = Pick<GitHubAppTokenManager, "getTokenForRepo">;
 
 describe("AuthOptionsBuilder", () => {
   const mockRepoInfo: GitHubRepoInfo = {
@@ -16,14 +20,11 @@ describe("AuthOptionsBuilder", () => {
   describe("resolve", () => {
     test("returns token and auth options when token manager provides token", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const mockTokenManager = {
+      const mockTokenManager: MockTokenManager = {
         getTokenForRepo: async () => "installation-token-123",
       };
 
-      const builder = new AuthOptionsBuilder(
-        mockTokenManager as any,
-        mockLogger
-      );
+      const builder = new AuthOptionsBuilder(mockTokenManager, mockLogger);
       const result = await builder.resolve(mockRepoInfo, "test/repo");
 
       assert.equal(result.token, "installation-token-123");
@@ -37,14 +38,11 @@ describe("AuthOptionsBuilder", () => {
 
     test("returns skip result when no installation found (null token)", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const mockTokenManager = {
+      const mockTokenManager: MockTokenManager = {
         getTokenForRepo: async () => null,
       };
 
-      const builder = new AuthOptionsBuilder(
-        mockTokenManager as any,
-        mockLogger
-      );
+      const builder = new AuthOptionsBuilder(mockTokenManager, mockLogger);
       const result = await builder.resolve(mockRepoInfo, "test/repo");
 
       assert.ok(result.skipResult);
@@ -78,16 +76,13 @@ describe("AuthOptionsBuilder", () => {
 
     test("logs warning and returns undefined on token fetch error", async () => {
       const { mock: mockLogger, messages } = createMockLogger();
-      const mockTokenManager = {
+      const mockTokenManager: MockTokenManager = {
         getTokenForRepo: async () => {
           throw new Error("API error");
         },
       };
 
-      const builder = new AuthOptionsBuilder(
-        mockTokenManager as any,
-        mockLogger
-      );
+      const builder = new AuthOptionsBuilder(mockTokenManager, mockLogger);
       const result = await builder.resolve(mockRepoInfo, "test/repo");
 
       // Should log warning
