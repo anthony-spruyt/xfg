@@ -8,7 +8,7 @@ import {
   RepoInfo,
 } from "../shared/repo-detector.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
-import type { Ruleset, RulesetRule } from "../config.js";
+import type { Ruleset, RulesetRule } from "../config/index.js";
 import type { IRulesetStrategy } from "./ruleset-strategy.js";
 
 // =============================================================================

@@ -1,8 +1,8 @@
 import { resolve, join } from "node:path";
 import { existsSync } from "node:fs";
 import chalk from "chalk";
-import { loadRawConfig, normalizeConfig } from "../config.js";
-import { validateForSettings } from "../config-validator.js";
+import { loadRawConfig, normalizeConfig } from "../config/index.js";
+import { validateForSettings } from "../config/validator.js";
 import {
   parseGitUrl,
   getRepoDisplayName,

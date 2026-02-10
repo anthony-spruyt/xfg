@@ -1,4 +1,4 @@
-import type { ArrayMergeStrategy } from "../merge.js";
+import type { ArrayMergeStrategy } from "./merge.js";
 
 // =============================================================================
 // PR Merge Options Types

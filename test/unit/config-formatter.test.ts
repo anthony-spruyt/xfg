@@ -3,7 +3,7 @@ import { strict as assert } from "node:assert";
 import {
   detectOutputFormat,
   convertContentToString,
-} from "../../src/config-formatter.js";
+} from "../../src/config/formatter.js";
 
 describe("detectOutputFormat", () => {
   test("returns json for .json extension", () => {

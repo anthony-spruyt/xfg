@@ -8,7 +8,7 @@ import {
   RepoInfo,
 } from "../shared/repo-detector.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
-import type { GitHubRepoSettings } from "../config.js";
+import type { GitHubRepoSettings } from "../config/index.js";
 import type {
   IRepoSettingsStrategy,
   RepoSettingsStrategyOptions,

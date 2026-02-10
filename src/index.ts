@@ -4,7 +4,7 @@ import { program, Command } from "commander";
 import { dirname, join } from "node:path";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { MergeMode, MergeStrategy } from "./config.js";
+import { MergeMode, MergeStrategy } from "./config/index.js";
 import { runSync } from "./cli/sync-command.js";
 import { runSettings } from "./cli/settings-command.js";
 import type { SyncOptions } from "./cli/sync-command.js";

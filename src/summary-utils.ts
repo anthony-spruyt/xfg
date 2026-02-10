@@ -1,5 +1,5 @@
 import { ProcessorResult } from "./repository-processor.js";
-import { RepoConfig } from "./config.js";
+import { RepoConfig } from "./config/index.js";
 import { MergeOutcome, FileChanges, RepoResult } from "./github-summary.js";
 import { DiffStats } from "./diff-utils.js";
 

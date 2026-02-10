@@ -6,7 +6,7 @@ import {
   type RulesetChange,
   type RulesetAction,
 } from "./ruleset-diff.js";
-import type { Ruleset } from "./config.js";
+import type { Ruleset } from "./config/index.js";
 import {
   computePropertyDiffs,
   isObject,

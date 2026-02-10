@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve, isAbsolute, normalize, extname, relative } from "node:path";
 import JSON5 from "json5";
 import { parse as parseYaml } from "yaml";
-import type { ContentValue, RawConfig } from "./config.js";
+import type { ContentValue, RawConfig } from "./types.js";
 
 export interface FileReferenceOptions {
   configDir: string;

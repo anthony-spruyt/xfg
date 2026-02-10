@@ -5,7 +5,7 @@
  */
 
 import type { RepoInfo } from "./shared/repo-detector.js";
-import type { ContentValue } from "./config.js";
+import type { ContentValue } from "./config/index.js";
 
 export interface XfgTemplateContext {
   /** Repository information from URL parsing */

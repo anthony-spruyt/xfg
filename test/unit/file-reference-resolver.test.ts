@@ -8,8 +8,8 @@ import {
   isFileReference,
   resolveFileReference,
   resolveFileReferencesInConfig,
-} from "../../src/file-reference-resolver.js";
-import type { RawConfig } from "../../src/config.js";
+} from "../../src/config/file-reference-resolver.js";
+import type { RawConfig } from "../../src/config/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

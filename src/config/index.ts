@@ -82,5 +82,39 @@ export { RULESET_FIELD_MAP, RULESET_COMPARABLE_FIELDS } from "./types.js";
 // Re-export loading functions
 export { loadRawConfig, loadConfig, normalizeConfig } from "./loader.js";
 
-// Re-export formatter for backwards compatibility
-export { convertContentToString } from "../config-formatter.js";
+// Config formatting
+export {
+  convertContentToString,
+  detectOutputFormat,
+  type OutputFormat,
+  type ConvertOptions,
+} from "./formatter.js";
+
+// File reference resolution
+export {
+  isFileReference,
+  resolveFileReference,
+  type FileReferenceOptions,
+} from "./file-reference-resolver.js";
+
+// Deep merge utilities
+export {
+  arrayMergeStrategies,
+  deepMerge,
+  stripMergeDirectives,
+  createMergeContext,
+  isTextContent,
+  mergeTextContent,
+  type ArrayMergeStrategy,
+  type ArrayMergeHandler,
+  type MergeContext,
+} from "./merge.js";
+
+// Validation
+export {
+  validateRawConfig,
+  validateSettings,
+  validateForSync,
+  validateForSettings,
+  hasActionableSettings,
+} from "./validator.js";

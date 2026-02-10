@@ -5,7 +5,7 @@ import {
   isTextContent,
   mergeTextContent,
 } from "./merge.js";
-import { interpolateContent } from "./shared/env.js";
+import { interpolateContent } from "../shared/env.js";
 import type {
   RawConfig,
   Config,
@@ -17,7 +17,7 @@ import type {
   RawRepoSettings,
   Ruleset,
   GitHubRepoSettings,
-} from "./config.js";
+} from "./types.js";
 
 /**
  * Normalizes header to array format.

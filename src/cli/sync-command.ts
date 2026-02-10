@@ -6,8 +6,8 @@ import {
   MergeMode,
   MergeStrategy,
   RepoConfig,
-} from "../config.js";
-import { validateForSync } from "../config-validator.js";
+} from "../config/index.js";
+import { validateForSync } from "../config/validator.js";
 import { parseGitUrl, getRepoDisplayName } from "../shared/repo-detector.js";
 import { sanitizeBranchName, validateBranchName } from "../git/git-ops.js";
 import { logger } from "../shared/logger.js";

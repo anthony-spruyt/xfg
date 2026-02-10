@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { parse } from "yaml";
-import { validateRawConfig } from "../config-validator.js";
-import { normalizeConfig as normalizeConfigInternal } from "../config-normalizer.js";
-import { resolveFileReferencesInConfig } from "../file-reference-resolver.js";
+import { validateRawConfig } from "./validator.js";
+import { normalizeConfig as normalizeConfigInternal } from "./normalizer.js";
+import { resolveFileReferencesInConfig } from "./file-reference-resolver.js";
 import type { RawConfig, Config } from "./types.js";
 
 export { normalizeConfigInternal as normalizeConfig };

@@ -4,7 +4,7 @@ import {
   ICommandExecutor,
   defaultExecutor,
 } from "../shared/command-executor.js";
-import type { MergeMode, MergeStrategy } from "../config.js";
+import type { MergeMode, MergeStrategy } from "../config/index.js";
 
 export interface PRMergeConfig {
   mode: MergeMode;

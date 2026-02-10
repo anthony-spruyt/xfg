@@ -18,7 +18,7 @@ import {
   type StatusCheckConfig,
   type CodeScanningTool,
   type GitHubRepoSettings,
-} from "../../src/config.js";
+} from "../../src/config/index.js";
 import { parse } from "yaml";
 
 // Create a temporary directory for test fixtures

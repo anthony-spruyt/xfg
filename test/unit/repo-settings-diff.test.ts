@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
 import { diffRepoSettings, hasChanges } from "../../src/repo-settings-diff.js";
-import type { GitHubRepoSettings } from "../../src/config.js";
+import type { GitHubRepoSettings } from "../../src/config/index.js";
 import type { CurrentRepoSettings } from "../../src/strategies/repo-settings-strategy.js";
 
 describe("diffRepoSettings", () => {

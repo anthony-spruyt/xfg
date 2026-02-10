@@ -13,7 +13,7 @@ import {
 import { logger } from "../shared/logger.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
-import type { MergeStrategy } from "../config.js";
+import type { MergeStrategy } from "../config/index.js";
 
 /**
  * Get the repo flag value for gh CLI commands.

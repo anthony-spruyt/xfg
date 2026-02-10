@@ -7,7 +7,7 @@ import {
   mergeTextContent,
   type ArrayMergeStrategy,
   type MergeContext,
-} from "../../src/merge.js";
+} from "../../src/config/merge.js";
 
 function createContext(
   defaultStrategy: ArrayMergeStrategy = "replace"

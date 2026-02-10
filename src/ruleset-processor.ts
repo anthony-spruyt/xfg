@@ -1,4 +1,4 @@
-import type { RepoConfig, Ruleset } from "./config.js";
+import type { RepoConfig, Ruleset } from "./config/index.js";
 import type { RepoInfo, GitHubRepoInfo } from "./shared/repo-detector.js";
 import { isGitHubRepo, getRepoDisplayName } from "./shared/repo-detector.js";
 import {

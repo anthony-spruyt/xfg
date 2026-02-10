@@ -5,8 +5,8 @@ import {
   validateForSync,
   validateForSettings,
   hasActionableSettings,
-} from "../../src/config-validator.js";
-import type { RawConfig } from "../../src/config.js";
+} from "../../src/config/validator.js";
+import type { RawConfig } from "../../src/config/index.js";
 
 describe("validateRawConfig", () => {
   // Helper to create a minimal valid config

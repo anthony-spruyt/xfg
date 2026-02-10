@@ -1,14 +1,14 @@
 import { describe, test, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { RepoSettingsProcessor } from "../../src/repo-settings-processor.js";
-import type { GitHubRepoInfo } from "../../src/repo-detector.js";
-import type { RepoConfig } from "../../src/config.js";
+import type { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
+import type { RepoConfig } from "../../src/config/index.js";
 import type {
   IRepoSettingsStrategy,
   CurrentRepoSettings,
   RepoSettingsStrategyOptions,
 } from "../../src/strategies/repo-settings-strategy.js";
-import type { GitHubRepoSettings, RepoInfo } from "../../src/config.js";
+import type { GitHubRepoSettings, RepoInfo } from "../../src/config/index.js";
 
 // Mock strategy for testing
 class MockStrategy implements IRepoSettingsStrategy {

@@ -1,7 +1,10 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { normalizeConfig, mergeSettings } from "../../src/config-normalizer.js";
-import type { RawConfig, PullRequestRuleParameters } from "../../src/config.js";
+import { normalizeConfig, mergeSettings } from "../../src/config/normalizer.js";
+import type {
+  RawConfig,
+  PullRequestRuleParameters,
+} from "../../src/config/index.js";
 
 describe("normalizeConfig", () => {
   beforeEach(() => {

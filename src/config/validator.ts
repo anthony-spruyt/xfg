@@ -1,13 +1,13 @@
-import type { RawConfig, RawRepoSettings } from "./config.js";
+import type { RawConfig, RawRepoSettings } from "./types.js";
 import {
   isTextContent,
   isObjectContent,
   isStructuredFileExtension,
   validateFileName,
   VALID_STRATEGIES,
-} from "./config/validators/file-validator.js";
-import { validateRepoSettings } from "./config/validators/repo-settings-validator.js";
-import { validateRuleset } from "./config/validators/ruleset-validator.js";
+} from "./validators/file-validator.js";
+import { validateRepoSettings } from "./validators/repo-settings-validator.js";
+import { validateRuleset } from "./validators/ruleset-validator.js";
 
 // Pattern for valid config ID: alphanumeric, hyphens, underscores
 const CONFIG_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;

@@ -1,4 +1,4 @@
-import { RepoConfig } from "../config.js";
+import { RepoConfig } from "../config/index.js";
 import { RepoInfo } from "../shared/repo-detector.js";
 import {
   ProcessorResult,
