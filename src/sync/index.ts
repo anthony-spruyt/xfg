@@ -1,6 +1,7 @@
 export { FileWriter, shouldBeExecutable } from "./file-writer.js";
 export { ManifestManager } from "./manifest-manager.js";
 export { BranchManager } from "./branch-manager.js";
+export { AuthOptionsBuilder } from "./auth-options-builder.js";
 export type {
   IFileWriter,
   FileWriteContext,
@@ -13,6 +14,14 @@ export type {
   OrphanDeleteDeps,
   IBranchManager,
   BranchSetupOptions,
+  IAuthOptionsBuilder,
+  AuthResult,
+  IRepositorySession,
+  SessionOptions,
+  SessionContext,
+  ICommitPushManager,
+  CommitPushOptions,
+  CommitPushResult,
 } from "./types.js";
 
 // Repository processor
