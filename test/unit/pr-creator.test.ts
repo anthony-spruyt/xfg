@@ -10,8 +10,8 @@ import {
   createPR,
   mergePR,
   FileAction,
-} from "../../src/pr-creator.js";
-import type { GitHubRepoInfo } from "../../src/repo-detector.js";
+} from "../../src/git/pr-creator.js";
+import type { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
 
 // Helper to create a mock repo info for tests
 function createMockRepoInfo(

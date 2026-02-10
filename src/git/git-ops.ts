@@ -7,13 +7,13 @@ import {
   chmodSync,
 } from "node:fs";
 import { join, resolve, relative, isAbsolute, dirname } from "node:path";
-import { escapeShellArg } from "./shared/shell-utils.js";
+import { escapeShellArg } from "../shared/shell-utils.js";
 import {
   ICommandExecutor,
   defaultExecutor,
-} from "./shared/command-executor.js";
-import { withRetry } from "./shared/retry-utils.js";
-import { logger } from "./shared/logger.js";
+} from "../shared/command-executor.js";
+import { withRetry } from "../shared/retry-utils.js";
+import { logger } from "../shared/logger.js";
 
 export interface IGitOps {
   cleanWorkspace(): void;

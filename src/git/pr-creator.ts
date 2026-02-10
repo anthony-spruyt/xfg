@@ -1,17 +1,17 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { RepoInfo } from "./shared/repo-detector.js";
+import { RepoInfo } from "../shared/repo-detector.js";
 import {
   getPRStrategy,
   MergeResult,
   PRMergeConfig,
-} from "./strategies/index.js";
-import { interpolateXfgContent } from "./xfg-template.js";
-import { ICommandExecutor } from "./shared/command-executor.js";
+} from "../strategies/index.js";
+import { interpolateXfgContent } from "../xfg-template.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
 
 // Re-export for backwards compatibility and testing
-export { escapeShellArg } from "./shared/shell-utils.js";
+export { escapeShellArg } from "../shared/shell-utils.js";
 
 export interface FileAction {
   fileName: string;

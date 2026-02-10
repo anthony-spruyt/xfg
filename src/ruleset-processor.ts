@@ -11,7 +11,7 @@ import {
   RulesetPlanResult,
 } from "./ruleset-plan-formatter.js";
 import { hasGitHubAppCredentials } from "./strategies/index.js";
-import { GitHubAppTokenManager } from "./github-app-token-manager.js";
+import { GitHubAppTokenManager } from "./git/github-app-token-manager.js";
 
 // =============================================================================
 // Interfaces

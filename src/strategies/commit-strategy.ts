@@ -1,5 +1,5 @@
 import { RepoInfo } from "../shared/repo-detector.js";
-import { IAuthenticatedGitOps } from "../authenticated-git-ops.js";
+import { IAuthenticatedGitOps } from "../git/authenticated-git-ops.js";
 
 export interface FileChange {
   path: string;

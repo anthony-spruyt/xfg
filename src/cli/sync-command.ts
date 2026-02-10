@@ -9,7 +9,7 @@ import {
 } from "../config.js";
 import { validateForSync } from "../config-validator.js";
 import { parseGitUrl, getRepoDisplayName } from "../shared/repo-detector.js";
-import { sanitizeBranchName, validateBranchName } from "../git-ops.js";
+import { sanitizeBranchName, validateBranchName } from "../git/git-ops.js";
 import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoInfo } from "../shared/repo-detector.js";

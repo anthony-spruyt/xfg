@@ -5,7 +5,7 @@ import {
   AzureDevOpsRepoInfo,
   isAzureDevOpsRepo,
 } from "../shared/repo-detector.js";
-import { PRResult } from "../pr-creator.js";
+import { PRResult } from "../git/pr-creator.js";
 import {
   BasePRStrategy,
   PRStrategyOptions,

@@ -8,10 +8,10 @@ import {
   GitOpsFactory,
 } from "../../src/repository-processor.js";
 import { RepoConfig } from "../../src/config.js";
-import { GitHubRepoInfo } from "../../src/repo-detector.js";
-import { GitOps } from "../../src/git-ops.js";
-import { AuthenticatedGitOps } from "../../src/authenticated-git-ops.js";
-import { ICommandExecutor } from "../../src/command-executor.js";
+import { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
+import { GitOps } from "../../src/git/git-ops.js";
+import { AuthenticatedGitOps } from "../../src/git/authenticated-git-ops.js";
+import { ICommandExecutor } from "../../src/shared/command-executor.js";
 import {
   createMockLogger,
   createMockAuthenticatedGitOps,
