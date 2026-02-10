@@ -29,16 +29,16 @@ export type {
   CommitOptions,
   CommitResult,
   FileChange,
-} from "./commit-strategy.js";
-export { GitCommitStrategy } from "./git-commit-strategy.js";
+} from "../vcs/commit-strategy.js";
+export { GitCommitStrategy } from "../vcs/git-commit-strategy.js";
 export {
   GraphQLCommitStrategy,
   MAX_PAYLOAD_SIZE,
-} from "./graphql-commit-strategy.js";
+} from "../vcs/graphql-commit-strategy.js";
 export {
   getCommitStrategy,
   hasGitHubAppCredentials,
-} from "./commit-strategy-selector.js";
+} from "../vcs/commit-strategy-selector.js";
 
 /**
  * Factory function to get the appropriate PR strategy for a repository.
