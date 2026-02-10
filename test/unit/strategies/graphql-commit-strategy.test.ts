@@ -7,14 +7,14 @@ import {
   MAX_PAYLOAD_SIZE,
   SAFE_BRANCH_NAME_PATTERN,
   validateBranchName,
-} from "../../../src/strategies/graphql-commit-strategy.js";
+} from "../../../src/vcs/graphql-commit-strategy.js";
 import {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
-} from "../../../src/repo-detector.js";
-import { CommitOptions } from "../../../src/strategies/commit-strategy.js";
-import { ICommandExecutor } from "../../../src/command-executor.js";
-import { AuthenticatedGitOps } from "../../../src/authenticated-git-ops.js";
+} from "../../../src/shared/repo-detector.js";
+import { CommitOptions } from "../../../src/vcs/commit-strategy.js";
+import { ICommandExecutor } from "../../../src/shared/command-executor.js";
+import { AuthenticatedGitOps } from "../../../src/vcs/authenticated-git-ops.js";
 
 // Create a mock AuthenticatedGitOps for testing
 function createMockGitOps(): AuthenticatedGitOps & {

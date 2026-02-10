@@ -5,7 +5,7 @@ import {
   hasChanges,
 } from "../../src/settings/repo-settings/diff.js";
 import type { GitHubRepoSettings } from "../../src/config/index.js";
-import type { CurrentRepoSettings } from "../../src/strategies/repo-settings-strategy.js";
+import type { CurrentRepoSettings } from "../../src/settings/repo-settings/types.js";
 
 describe("diffRepoSettings", () => {
   test("should detect changed boolean property", () => {

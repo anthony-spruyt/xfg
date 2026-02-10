@@ -1,20 +1,19 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
-import { getPRStrategy } from "../../../src/strategies/index.js";
-import { GitHubPRStrategy } from "../../../src/strategies/github-pr-strategy.js";
-import { AzurePRStrategy } from "../../../src/strategies/azure-pr-strategy.js";
-import { GitLabPRStrategy } from "../../../src/strategies/gitlab-pr-strategy.js";
+import { getPRStrategy } from "../../../src/vcs/index.js";
+import { GitHubPRStrategy } from "../../../src/vcs/github-pr-strategy.js";
+import { AzurePRStrategy } from "../../../src/vcs/azure-pr-strategy.js";
+import { GitLabPRStrategy } from "../../../src/vcs/gitlab-pr-strategy.js";
 import {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
   GitLabRepoInfo,
-} from "../../../src/repo-detector.js";
+} from "../../../src/shared/repo-detector.js";
 import {
   PRStrategyOptions,
-  PRStrategy,
   PRWorkflowExecutor,
-} from "../../../src/strategies/pr-strategy.js";
-import { PRResult } from "../../../src/pr-creator.js";
+} from "../../../src/vcs/pr-strategy.js";
+import { PRResult } from "../../../src/vcs/pr-creator.js";
 
 describe("getPRStrategy", () => {
   test("returns GitHubPRStrategy for GitHub repos", () => {

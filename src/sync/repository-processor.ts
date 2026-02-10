@@ -13,11 +13,8 @@ import {
 } from "../vcs/authenticated-git-ops.js";
 import { createPR, mergePR, PRResult, FileAction } from "../vcs/pr-creator.js";
 import { logger, ILogger } from "../shared/logger.js";
-import {
-  getCommitStrategy,
-  hasGitHubAppCredentials,
-} from "../strategies/index.js";
-import type { PRMergeConfig, FileChange } from "../strategies/index.js";
+import { getCommitStrategy, hasGitHubAppCredentials } from "../vcs/index.js";
+import type { PRMergeConfig, FileChange } from "../vcs/index.js";
 import {
   ICommandExecutor,
   defaultExecutor,

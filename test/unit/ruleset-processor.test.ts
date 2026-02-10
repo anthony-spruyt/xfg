@@ -9,7 +9,7 @@ import type {
 import type {
   GitHubRuleset,
   GitHubRulesetStrategy,
-} from "../../src/strategies/github-ruleset-strategy.js";
+} from "../../src/settings/rulesets/github-ruleset-strategy.js";
 
 // Mock strategy that tracks calls and returns configured responses
 class MockRulesetStrategy {

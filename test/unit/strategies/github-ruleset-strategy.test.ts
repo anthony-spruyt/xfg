@@ -4,13 +4,13 @@ import {
   GitHubRulesetStrategy,
   configToGitHub,
   GitHubRuleset,
-} from "../../../src/strategies/github-ruleset-strategy.js";
-import type { Ruleset } from "../../../src/config.js";
+} from "../../../src/settings/rulesets/github-ruleset-strategy.js";
+import type { Ruleset } from "../../../src/config/index.js";
 import type {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
-} from "../../../src/repo-detector.js";
-import type { ICommandExecutor } from "../../../src/command-executor.js";
+} from "../../../src/shared/repo-detector.js";
+import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
 
 // Mock executor that records commands and returns configured responses
 class MockExecutor implements ICommandExecutor {

@@ -1,4 +1,4 @@
-import { getPRStrategy } from "../strategies/index.js";
+import { getPRStrategy } from "../vcs/index.js";
 import type { IBranchManager, BranchSetupOptions } from "./types.js";
 
 /**

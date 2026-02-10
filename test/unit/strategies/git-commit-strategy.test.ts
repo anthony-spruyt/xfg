@@ -2,11 +2,11 @@ import { describe, test, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { GitCommitStrategy } from "../../../src/strategies/git-commit-strategy.js";
-import { GitHubRepoInfo } from "../../../src/repo-detector.js";
-import { CommitOptions } from "../../../src/strategies/commit-strategy.js";
-import { ICommandExecutor } from "../../../src/command-executor.js";
-import { IAuthenticatedGitOps } from "../../../src/authenticated-git-ops.js";
+import { GitCommitStrategy } from "../../../src/vcs/git-commit-strategy.js";
+import { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import { CommitOptions } from "../../../src/vcs/commit-strategy.js";
+import { ICommandExecutor } from "../../../src/shared/command-executor.js";
+import { IAuthenticatedGitOps } from "../../../src/vcs/authenticated-git-ops.js";
 
 const testDir = join(process.cwd(), "test-git-commit-strategy-tmp");
 

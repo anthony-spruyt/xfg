@@ -2,13 +2,13 @@ import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { GitLabPRStrategy } from "../../../src/strategies/gitlab-pr-strategy.js";
+import { GitLabPRStrategy } from "../../../src/vcs/gitlab-pr-strategy.js";
 import {
   GitLabRepoInfo,
   AzureDevOpsRepoInfo,
-} from "../../../src/repo-detector.js";
-import { PRStrategyOptions } from "../../../src/strategies/pr-strategy.js";
-import { ICommandExecutor } from "../../../src/command-executor.js";
+} from "../../../src/shared/repo-detector.js";
+import { PRStrategyOptions } from "../../../src/vcs/pr-strategy.js";
+import { ICommandExecutor } from "../../../src/shared/command-executor.js";
 
 const testDir = join(process.cwd(), "test-gitlab-strategy-tmp");
 

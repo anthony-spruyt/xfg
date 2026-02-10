@@ -8,7 +8,7 @@ import { GitHubRepoSettingsStrategy } from "./github-repo-settings-strategy.js";
 import type { IRepoSettingsStrategy } from "./types.js";
 import { diffRepoSettings, hasChanges } from "./diff.js";
 import { formatRepoSettingsPlan, RepoSettingsPlanResult } from "./formatter.js";
-import { hasGitHubAppCredentials } from "../../strategies/index.js";
+import { hasGitHubAppCredentials } from "../../vcs/index.js";
 import { GitHubAppTokenManager } from "../../vcs/github-app-token-manager.js";
 
 export interface IRepoSettingsProcessor {

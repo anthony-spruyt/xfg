@@ -3,7 +3,7 @@ import { strict as assert } from "node:assert";
 import {
   isRepoSettingsStrategy,
   type IRepoSettingsStrategy,
-} from "../../../src/strategies/repo-settings-strategy.js";
+} from "../../../src/settings/repo-settings/types.js";
 
 describe("IRepoSettingsStrategy interface", () => {
   test("should define required methods", () => {

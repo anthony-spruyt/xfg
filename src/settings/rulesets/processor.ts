@@ -10,7 +10,7 @@ import {
 } from "./github-ruleset-strategy.js";
 import { diffRulesets } from "./diff.js";
 import { formatRulesetPlan, RulesetPlanResult } from "./formatter.js";
-import { hasGitHubAppCredentials } from "../../strategies/index.js";
+import { hasGitHubAppCredentials } from "../../vcs/index.js";
 import { GitHubAppTokenManager } from "../../vcs/github-app-token-manager.js";
 
 // =============================================================================

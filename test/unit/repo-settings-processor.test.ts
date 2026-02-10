@@ -7,7 +7,7 @@ import type {
   IRepoSettingsStrategy,
   CurrentRepoSettings,
   RepoSettingsStrategyOptions,
-} from "../../src/strategies/repo-settings-strategy.js";
+} from "../../src/settings/repo-settings/types.js";
 import type { GitHubRepoSettings, RepoInfo } from "../../src/config/index.js";
 
 // Mock strategy for testing

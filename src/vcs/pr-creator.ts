@@ -2,11 +2,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { RepoInfo } from "../shared/repo-detector.js";
-import {
-  getPRStrategy,
-  MergeResult,
-  PRMergeConfig,
-} from "../strategies/index.js";
+import { getPRStrategy } from "./index.js";
+import type { MergeResult, PRMergeConfig } from "./types.js";
 import { interpolateXfgContent } from "../sync/xfg-template.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 

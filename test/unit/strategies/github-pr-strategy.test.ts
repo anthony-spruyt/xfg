@@ -2,10 +2,10 @@ import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { GitHubPRStrategy } from "../../../src/strategies/github-pr-strategy.js";
-import { GitHubRepoInfo } from "../../../src/repo-detector.js";
-import { PRStrategyOptions } from "../../../src/strategies/pr-strategy.js";
-import { ICommandExecutor } from "../../../src/command-executor.js";
+import { GitHubPRStrategy } from "../../../src/vcs/github-pr-strategy.js";
+import { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import { PRStrategyOptions } from "../../../src/vcs/pr-strategy.js";
+import { ICommandExecutor } from "../../../src/shared/command-executor.js";
 
 const testDir = join(process.cwd(), "test-github-strategy-tmp");
 

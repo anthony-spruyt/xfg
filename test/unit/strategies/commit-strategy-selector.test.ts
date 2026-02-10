@@ -3,14 +3,14 @@ import assert from "node:assert";
 import {
   getCommitStrategy,
   hasGitHubAppCredentials,
-} from "../../../src/strategies/commit-strategy-selector.js";
-import { GitCommitStrategy } from "../../../src/strategies/git-commit-strategy.js";
-import { GraphQLCommitStrategy } from "../../../src/strategies/graphql-commit-strategy.js";
+} from "../../../src/vcs/commit-strategy-selector.js";
+import { GitCommitStrategy } from "../../../src/vcs/git-commit-strategy.js";
+import { GraphQLCommitStrategy } from "../../../src/vcs/graphql-commit-strategy.js";
 import {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
   GitLabRepoInfo,
-} from "../../../src/repo-detector.js";
+} from "../../../src/shared/repo-detector.js";
 
 describe("hasGitHubAppCredentials", () => {
   let originalAppId: string | undefined;
