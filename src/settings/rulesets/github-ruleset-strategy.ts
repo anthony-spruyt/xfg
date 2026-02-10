@@ -1,15 +1,15 @@
 import {
   ICommandExecutor,
   defaultExecutor,
-} from "../shared/command-executor.js";
+} from "../../shared/command-executor.js";
 import {
   isGitHubRepo,
   GitHubRepoInfo,
   RepoInfo,
-} from "../shared/repo-detector.js";
-import { escapeShellArg } from "../shared/shell-utils.js";
-import type { Ruleset, RulesetRule } from "../config/index.js";
-import type { IRulesetStrategy } from "./ruleset-strategy.js";
+} from "../../shared/repo-detector.js";
+import { escapeShellArg } from "../../shared/shell-utils.js";
+import type { Ruleset, RulesetRule } from "../../config/index.js";
+import type { IRulesetStrategy } from "./types.js";
 
 // =============================================================================
 // GitHub API Types

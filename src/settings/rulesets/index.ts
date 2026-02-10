@@ -1,3 +1,6 @@
+// Types
+export type { IRulesetStrategy } from "./types.js";
+
 // Diff algorithm - property-level diffing for ruleset comparisons
 export {
   computePropertyDiffs,
@@ -32,3 +35,14 @@ export {
   type RulesetPlanResult,
   type RulesetPlanEntry,
 } from "./formatter.js";
+
+// Ruleset strategies
+export {
+  GitHubRulesetStrategy,
+  configToGitHub,
+  type GitHubRuleset,
+  type GitHubBypassActor,
+  type GitHubRulesetConditions,
+  type GitHubRule,
+  type RulesetStrategyOptions,
+} from "./github-ruleset-strategy.js";
