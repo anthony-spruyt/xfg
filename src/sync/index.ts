@@ -29,6 +29,8 @@ export type {
   IRepositoryProcessor,
   ProcessorOptions,
   ProcessorResult,
+  IFileSyncOrchestrator,
+  FileSyncResult,
 } from "./types.js";
 
 // Repository processor

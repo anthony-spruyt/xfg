@@ -9,6 +9,7 @@ import type { DiffStats } from "./diff-utils.js";
 import type { ILogger } from "../shared/logger.js";
 import type { XfgManifest } from "./manifest.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
+import type { FileAction } from "../vcs/pr-creator.js";
 
 /**
  * Factory function type for creating IAuthenticatedGitOps instances.
@@ -310,4 +311,29 @@ export interface IRepositoryProcessor {
     options: ProcessorOptions,
     manifestUpdate: { rulesets: string[] }
   ): Promise<ProcessorResult>;
+}
+
+/**
+ * Result of file synchronization
+ */
+export interface FileSyncResult {
+  fileChanges: Map<string, FileWriteResult>;
+  diffStats: DiffStats;
+  changedFiles: FileAction[];
+  hasChanges: boolean;
+}
+
+/**
+ * Interface for file synchronization orchestration
+ */
+export interface IFileSyncOrchestrator {
+  /**
+   * Write files, handle orphans, update manifest, return change summary.
+   */
+  sync(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    session: SessionContext,
+    options: ProcessorOptions
+  ): Promise<FileSyncResult>;
 }
