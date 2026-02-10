@@ -7,7 +7,7 @@ import {
   formatPlanMarkdown,
   writePlanSummary,
   Plan,
-} from "../../src/plan-summary.js";
+} from "../../src/output/plan-summary.js";
 
 describe("plan-summary", () => {
   describe("formatPlanMarkdown", () => {

@@ -1,4 +1,4 @@
-import type { Resource, ResourceAction } from "./plan-formatter.js";
+import type { Resource, ResourceAction } from "./output/plan-formatter.js";
 import type { RulesetProcessorResult } from "./ruleset-processor.js";
 import type { ProcessorResult } from "./repository-processor.js";
 import type { RepoConfig } from "./config/index.js";

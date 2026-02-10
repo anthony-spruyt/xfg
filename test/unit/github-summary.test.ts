@@ -9,7 +9,7 @@ import {
   isGitHubActions,
   SummaryData,
   RepoResult,
-} from "../../src/github-summary.js";
+} from "../../src/output/github-summary.js";
 
 describe("formatSummary", () => {
   describe("title", () => {

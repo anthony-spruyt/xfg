@@ -10,7 +10,7 @@ import {
   printPlan,
   PlanCounts,
   Plan,
-} from "../../src/plan-formatter.js";
+} from "../../src/output/plan-formatter.js";
 
 describe("plan-formatter", () => {
   describe("formatResourceId", () => {

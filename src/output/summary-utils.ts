@@ -1,7 +1,7 @@
-import { ProcessorResult } from "./repository-processor.js";
-import { RepoConfig } from "./config/index.js";
+import { ProcessorResult } from "../repository-processor.js";
+import { RepoConfig } from "../config/index.js";
 import { MergeOutcome, FileChanges, RepoResult } from "./github-summary.js";
-import { DiffStats } from "./diff-utils.js";
+import { DiffStats } from "../diff-utils.js";
 
 /**
  * Determine merge outcome from repo config and processor result

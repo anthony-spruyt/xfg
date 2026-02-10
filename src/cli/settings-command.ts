@@ -10,11 +10,11 @@ import {
 } from "../shared/repo-detector.js";
 import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
-import { RepoResult } from "../github-summary.js";
-import { buildErrorResult } from "../summary-utils.js";
+import { RepoResult } from "../output/github-summary.js";
+import { buildErrorResult } from "../output/summary-utils.js";
 import { getManagedRulesets } from "../manifest.js";
-import { Plan, printPlan } from "../plan-formatter.js";
-import { writePlanSummary } from "../plan-summary.js";
+import { Plan, printPlan } from "../output/plan-formatter.js";
+import { writePlanSummary } from "../output/plan-summary.js";
 import {
   rulesetResultToResources,
   repoSettingsResultToResources,

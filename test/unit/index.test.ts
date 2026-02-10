@@ -856,7 +856,7 @@ import {
   toFileChanges,
   buildRepoResult,
   buildErrorResult,
-} from "../../src/summary-utils.js";
+} from "../../src/output/summary-utils.js";
 import { ProcessorResult } from "../../src/repository-processor.js";
 import { RepoConfig } from "../../src/config/index.js";
 
