@@ -11,14 +11,26 @@ coverage:
         threshold: 1%
 
 ignore:
-  # Types
+  # Type-only files (no executable code)
   - "src/cli/types.ts"
   - "src/config/types.ts"
   - "src/sync/types.ts"
-  # Interface-only files with no executable code
-  - "src/strategies/commit-strategy.ts"
-  - "src/strategies/ruleset-strategy.ts"
-  # Test utilities (mock implementations for testing, not production code)
+  - "src/vcs/types.ts"
+  - "src/settings/rulesets/types.ts"
+  - "src/settings/repo-settings/types.ts"
+
+  # Re-export index files (no logic, just exports)
+  - "src/cli/index.ts"
+  - "src/config/index.ts"
+  - "src/sync/index.ts"
+  - "src/vcs/index.ts"
+  - "src/shared/index.ts"
+  - "src/output/index.ts"
+  - "src/settings/index.ts"
+  - "src/settings/rulesets/index.ts"
+  - "src/settings/repo-settings/index.ts"
+
+  # Test utilities
   - "test/mocks/**"
 
 comment:
