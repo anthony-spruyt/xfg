@@ -2,6 +2,7 @@ export { FileWriter, shouldBeExecutable } from "./file-writer.js";
 export { ManifestManager } from "./manifest-manager.js";
 export { BranchManager } from "./branch-manager.js";
 export { AuthOptionsBuilder } from "./auth-options-builder.js";
+export { RepositorySession } from "./repository-session.js";
 export type {
   IFileWriter,
   FileWriteContext,
