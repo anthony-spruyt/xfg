@@ -1,6 +1,6 @@
 import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { RulesetProcessor } from "../../src/ruleset-processor.js";
+import { RulesetProcessor } from "../../src/settings/rulesets/processor.js";
 import type { RepoConfig, Ruleset } from "../../src/config/index.js";
 import type {
   GitHubRepoInfo,

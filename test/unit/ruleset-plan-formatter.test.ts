@@ -1,13 +1,13 @@
 // test/unit/ruleset-plan-formatter.test.ts
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import type { RulesetChange } from "../../src/ruleset-diff.js";
+import type { RulesetChange } from "../../src/settings/rulesets/diff.js";
 import {
   computePropertyDiffs,
   formatPropertyTree,
   formatRulesetPlan,
   PropertyDiff,
-} from "../../src/ruleset-plan-formatter.js";
+} from "../../src/settings/rulesets/formatter.js";
 
 describe("computePropertyDiffs", () => {
   describe("scalar changes", () => {

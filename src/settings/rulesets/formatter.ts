@@ -1,25 +1,24 @@
-// src/ruleset-plan-formatter.ts
 import chalk from "chalk";
 import {
   projectToDesiredShape,
   normalizeRuleset,
   type RulesetChange,
   type RulesetAction,
-} from "./ruleset-diff.js";
-import type { Ruleset } from "./config/index.js";
+} from "./diff.js";
+import type { Ruleset } from "../../config/index.js";
 import {
   computePropertyDiffs,
   isObject,
   type DiffAction,
   type PropertyDiff,
-} from "./settings/rulesets/index.js";
+} from "./index.js";
 
 // =============================================================================
 // Types
 // =============================================================================
 
-export type { DiffAction, PropertyDiff } from "./settings/rulesets/index.js";
-export { computePropertyDiffs } from "./settings/rulesets/index.js";
+export type { DiffAction, PropertyDiff } from "./index.js";
+export { computePropertyDiffs } from "./index.js";
 
 export interface RulesetPlanEntry {
   name: string;

@@ -3,8 +3,8 @@ import { strict as assert } from "node:assert";
 import {
   formatRepoSettingsPlan,
   formatWarnings,
-} from "../../src/repo-settings-plan-formatter.js";
-import type { RepoSettingsChange } from "../../src/repo-settings-diff.js";
+} from "../../src/settings/repo-settings/formatter.js";
+import type { RepoSettingsChange } from "../../src/settings/repo-settings/diff.js";
 
 describe("formatRepoSettingsPlan", () => {
   test("should format changed property", () => {

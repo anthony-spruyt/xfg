@@ -18,7 +18,7 @@ import { writePlanSummary } from "../output/plan-summary.js";
 import {
   rulesetResultToResources,
   repoSettingsResultToResources,
-} from "../resource-converters.js";
+} from "../settings/resource-converters.js";
 import { SharedOptions } from "./sync-command.js";
 import {
   ProcessorFactory,

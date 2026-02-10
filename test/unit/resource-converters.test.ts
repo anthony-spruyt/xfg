@@ -4,7 +4,7 @@ import {
   rulesetResultToResources,
   syncResultToResources,
   repoSettingsResultToResources,
-} from "../../src/resource-converters.js";
+} from "../../src/settings/resource-converters.js";
 
 describe("resource-converters", () => {
   describe("rulesetResultToResources", () => {

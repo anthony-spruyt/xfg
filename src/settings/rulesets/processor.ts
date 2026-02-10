@@ -1,17 +1,17 @@
-import type { RepoConfig, Ruleset } from "./config/index.js";
-import type { RepoInfo, GitHubRepoInfo } from "./shared/repo-detector.js";
-import { isGitHubRepo, getRepoDisplayName } from "./shared/repo-detector.js";
+import type { RepoConfig, Ruleset } from "../../config/index.js";
+import type { RepoInfo, GitHubRepoInfo } from "../../shared/repo-detector.js";
+import {
+  isGitHubRepo,
+  getRepoDisplayName,
+} from "../../shared/repo-detector.js";
 import {
   GitHubRulesetStrategy,
   type GitHubRuleset,
-} from "./strategies/github-ruleset-strategy.js";
-import { diffRulesets } from "./ruleset-diff.js";
-import {
-  formatRulesetPlan,
-  RulesetPlanResult,
-} from "./ruleset-plan-formatter.js";
-import { hasGitHubAppCredentials } from "./strategies/index.js";
-import { GitHubAppTokenManager } from "./git/github-app-token-manager.js";
+} from "../../strategies/github-ruleset-strategy.js";
+import { diffRulesets } from "./diff.js";
+import { formatRulesetPlan, RulesetPlanResult } from "./formatter.js";
+import { hasGitHubAppCredentials } from "../../strategies/index.js";
+import { GitHubAppTokenManager } from "../../git/github-app-token-manager.js";
 
 // =============================================================================
 // Interfaces

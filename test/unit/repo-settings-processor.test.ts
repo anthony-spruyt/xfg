@@ -1,6 +1,6 @@
 import { describe, test, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { RepoSettingsProcessor } from "../../src/repo-settings-processor.js";
+import { RepoSettingsProcessor } from "../../src/settings/repo-settings/processor.js";
 import type { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
 import type { RepoConfig } from "../../src/config/index.js";
 import type {

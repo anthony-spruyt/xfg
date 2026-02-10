@@ -17,7 +17,7 @@ import { RepoResult } from "../output/github-summary.js";
 import { buildRepoResult, buildErrorResult } from "../output/summary-utils.js";
 import { Plan, printPlan } from "../output/plan-formatter.js";
 import { writePlanSummary } from "../output/plan-summary.js";
-import { syncResultToResources } from "../resource-converters.js";
+import { syncResultToResources } from "../settings/resource-converters.js";
 import { ProcessorFactory, defaultProcessorFactory } from "./types.js";
 
 /**

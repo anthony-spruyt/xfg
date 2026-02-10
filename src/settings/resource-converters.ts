@@ -1,7 +1,7 @@
-import type { Resource, ResourceAction } from "./output/plan-formatter.js";
-import type { RulesetProcessorResult } from "./ruleset-processor.js";
-import type { ProcessorResult } from "./sync/repository-processor.js";
-import type { RepoConfig } from "./config/index.js";
+import type { Resource, ResourceAction } from "../output/plan-formatter.js";
+import type { RulesetProcessorResult } from "./rulesets/processor.js";
+import type { ProcessorResult } from "../sync/repository-processor.js";
+import type { RepoConfig } from "../config/index.js";
 
 /**
  * Convert RulesetProcessorResult planOutput entries to Resource objects.

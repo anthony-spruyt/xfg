@@ -1,15 +1,15 @@
-import type { RepoConfig, GitHubRepoSettings } from "./config/index.js";
-import type { RepoInfo, GitHubRepoInfo } from "./shared/repo-detector.js";
-import { isGitHubRepo, getRepoDisplayName } from "./shared/repo-detector.js";
-import { GitHubRepoSettingsStrategy } from "./strategies/github-repo-settings-strategy.js";
-import type { IRepoSettingsStrategy } from "./strategies/repo-settings-strategy.js";
-import { diffRepoSettings, hasChanges } from "./repo-settings-diff.js";
+import type { RepoConfig, GitHubRepoSettings } from "../../config/index.js";
+import type { RepoInfo, GitHubRepoInfo } from "../../shared/repo-detector.js";
 import {
-  formatRepoSettingsPlan,
-  RepoSettingsPlanResult,
-} from "./repo-settings-plan-formatter.js";
-import { hasGitHubAppCredentials } from "./strategies/index.js";
-import { GitHubAppTokenManager } from "./git/github-app-token-manager.js";
+  isGitHubRepo,
+  getRepoDisplayName,
+} from "../../shared/repo-detector.js";
+import { GitHubRepoSettingsStrategy } from "../../strategies/github-repo-settings-strategy.js";
+import type { IRepoSettingsStrategy } from "../../strategies/repo-settings-strategy.js";
+import { diffRepoSettings, hasChanges } from "./diff.js";
+import { formatRepoSettingsPlan, RepoSettingsPlanResult } from "./formatter.js";
+import { hasGitHubAppCredentials } from "../../strategies/index.js";
+import { GitHubAppTokenManager } from "../../git/github-app-token-manager.js";
 
 export interface IRepoSettingsProcessor {
   process(

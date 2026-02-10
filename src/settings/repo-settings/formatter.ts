@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import type { RepoSettingsChange } from "./repo-settings-diff.js";
+import type { RepoSettingsChange } from "./diff.js";
 
 export interface RepoSettingsPlanEntry {
   property: string;
