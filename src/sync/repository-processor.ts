@@ -2,15 +2,9 @@ import { RepoConfig } from "../config/index.js";
 import { RepoInfo, getRepoDisplayName } from "../shared/repo-detector.js";
 import { GitOps } from "../vcs/git-ops.js";
 import { AuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
-import { createPR, mergePR, PRResult, FileAction } from "../vcs/pr-creator.js";
 import { logger, ILogger } from "../shared/logger.js";
 import { hasGitHubAppCredentials } from "../vcs/index.js";
-import type { PRMergeConfig } from "../vcs/index.js";
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../shared/command-executor.js";
-import { incrementDiffStats, DiffStats } from "./diff-utils.js";
+import { defaultExecutor } from "../shared/command-executor.js";
 import {
   loadManifest,
   saveManifest,
@@ -18,6 +12,7 @@ import {
   MANIFEST_FILENAME,
 } from "./manifest.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
+import { formatCommitMessage } from "./commit-message.js";
 import {
   FileWriter,
   ManifestManager,
@@ -25,12 +20,16 @@ import {
   AuthOptionsBuilder,
   RepositorySession,
   CommitPushManager,
+  FileSyncOrchestrator,
+  PRMergeHandler,
   type IFileWriter,
   type IManifestManager,
   type IBranchManager,
   type IAuthOptionsBuilder,
   type IRepositorySession,
   type ICommitPushManager,
+  type IFileSyncOrchestrator,
+  type IPRMergeHandler,
   type IRepositoryProcessor,
   type FileWriteResult,
   type SessionContext,
@@ -48,6 +47,8 @@ export class RepositoryProcessor implements IRepositoryProcessor {
   private readonly fileWriter: IFileWriter;
   private readonly manifestManager: IManifestManager;
   private readonly branchManager: IBranchManager;
+  private readonly fileSyncOrchestrator: IFileSyncOrchestrator;
+  private readonly prMergeHandler: IPRMergeHandler;
 
   constructor(
     gitOpsFactory?: GitOpsFactory,
@@ -59,6 +60,8 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       authOptionsBuilder?: IAuthOptionsBuilder;
       repositorySession?: IRepositorySession;
       commitPushManager?: ICommitPushManager;
+      fileSyncOrchestrator?: IFileSyncOrchestrator;
+      prMergeHandler?: IPRMergeHandler;
     }
   ) {
     const factory =
@@ -88,6 +91,15 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       new RepositorySession(factory, logInstance);
     this.commitPushManager =
       components?.commitPushManager ?? new CommitPushManager(logInstance);
+    this.fileSyncOrchestrator =
+      components?.fileSyncOrchestrator ??
+      new FileSyncOrchestrator(
+        this.fileWriter,
+        this.manifestManager,
+        logInstance
+      );
+    this.prMergeHandler =
+      components?.prMergeHandler ?? new PRMergeHandler(logInstance);
   }
 
   async process(
@@ -146,7 +158,12 @@ export class RepositoryProcessor implements IRepositoryProcessor {
 
       // Process files and manifest
       const { fileChanges, diffStats, changedFiles, hasChanges } =
-        await this.processFiles(repoConfig, repoInfo, session, options);
+        await this.fileSyncOrchestrator.sync(
+          repoConfig,
+          repoInfo,
+          session,
+          options
+        );
 
       if (!hasChanges) {
         return {
@@ -159,7 +176,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       }
 
       // Commit and push
-      const commitMessage = this.formatCommitMessage(changedFiles);
+      const commitMessage = formatCommitMessage(changedFiles);
       const pushBranch = isDirectMode ? session.baseBranch : branchName;
 
       const commitResult = await this.commitPushManager.commitAndPush(
@@ -205,7 +222,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       }
 
       // Create and merge PR
-      return await this.createAndMergePR(
+      return await this.prMergeHandler.createAndMerge(
         repoInfo,
         repoConfig,
         {
@@ -365,7 +382,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       }
 
       // Create and merge PR
-      return await this.createAndMergePR(
+      return await this.prMergeHandler.createAndMerge(
         repoInfo,
         repoConfig,
         {
@@ -387,201 +404,5 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         // Ignore cleanup errors - best effort
       }
     }
-  }
-
-  private async processFiles(
-    repoConfig: RepoConfig,
-    repoInfo: RepoInfo,
-    session: SessionContext,
-    options: ProcessorOptions
-  ): Promise<{
-    fileChanges: Map<string, FileWriteResult>;
-    diffStats: DiffStats;
-    changedFiles: FileAction[];
-    hasChanges: boolean;
-  }> {
-    const { workDir, dryRun, noDelete, configId } = options;
-
-    // Write files
-    const { fileChanges, diffStats } = await this.fileWriter.writeFiles(
-      repoConfig.files,
-      {
-        repoInfo,
-        baseBranch: session.baseBranch,
-        workDir,
-        dryRun: dryRun ?? false,
-        noDelete: noDelete ?? false,
-        configId,
-      },
-      { gitOps: session.gitOps, log: this.log }
-    );
-
-    // Handle orphans
-    const existingManifest = loadManifest(workDir);
-    const filesWithDeleteOrphaned = new Map<string, boolean | undefined>(
-      repoConfig.files.map((f) => [f.fileName, f.deleteOrphaned])
-    );
-
-    const { manifest: newManifest, filesToDelete } =
-      this.manifestManager.processOrphans(
-        workDir,
-        configId,
-        filesWithDeleteOrphaned
-      );
-
-    await this.manifestManager.deleteOrphans(
-      filesToDelete,
-      { dryRun: dryRun ?? false, noDelete: noDelete ?? false },
-      { gitOps: session.gitOps, log: this.log, fileChanges }
-    );
-
-    // Update diff stats for deletions in dry-run
-    if (dryRun && filesToDelete.length > 0 && !noDelete) {
-      for (const fileName of filesToDelete) {
-        if (session.gitOps.fileExists(fileName)) {
-          incrementDiffStats(diffStats, "DELETED");
-        }
-      }
-    }
-
-    // Save manifest
-    this.manifestManager.saveUpdatedManifest(
-      workDir,
-      newManifest,
-      existingManifest,
-      dryRun ?? false,
-      fileChanges
-    );
-
-    // Show diff summary in dry-run
-    if (dryRun) {
-      this.log.diffSummary(
-        diffStats.newCount,
-        diffStats.modifiedCount,
-        diffStats.unchangedCount,
-        diffStats.deletedCount
-      );
-    }
-
-    // Build changed files list
-    const changedFiles: FileAction[] = Array.from(fileChanges.entries()).map(
-      ([fileName, info]) => ({ fileName, action: info.action })
-    );
-
-    // Calculate diff stats for non-dry-run
-    if (!dryRun) {
-      for (const [, info] of fileChanges) {
-        if (info.action === "create") incrementDiffStats(diffStats, "NEW");
-        else if (info.action === "update")
-          incrementDiffStats(diffStats, "MODIFIED");
-        else if (info.action === "delete")
-          incrementDiffStats(diffStats, "DELETED");
-      }
-    }
-
-    const hasChanges = changedFiles.some((f) => f.action !== "skip");
-
-    return { fileChanges, diffStats, changedFiles, hasChanges };
-  }
-
-  private async createAndMergePR(
-    repoInfo: RepoInfo,
-    repoConfig: RepoConfig,
-    options: {
-      branchName: string;
-      baseBranch: string;
-      workDir: string;
-      dryRun: boolean;
-      retries: number;
-      prTemplate?: string;
-      token?: string;
-      executor: ICommandExecutor;
-    },
-    changedFiles: FileAction[],
-    repoName: string,
-    diffStats?: DiffStats
-  ): Promise<ProcessorResult> {
-    this.log.info("Creating pull request...");
-    const prResult: PRResult = await createPR({
-      repoInfo,
-      branchName: options.branchName,
-      baseBranch: options.baseBranch,
-      files: changedFiles,
-      workDir: options.workDir,
-      dryRun: options.dryRun,
-      retries: options.retries,
-      prTemplate: options.prTemplate,
-      executor: options.executor,
-      token: options.token,
-    });
-
-    const mergeMode = repoConfig.prOptions?.merge ?? "auto";
-    let mergeResult: ProcessorResult["mergeResult"];
-
-    if (prResult.success && prResult.url && mergeMode !== "manual") {
-      this.log.info(`Handling merge (mode: ${mergeMode})...`);
-
-      const mergeConfig: PRMergeConfig = {
-        mode: mergeMode,
-        strategy: repoConfig.prOptions?.mergeStrategy ?? "squash",
-        deleteBranch: repoConfig.prOptions?.deleteBranch ?? true,
-        bypassReason: repoConfig.prOptions?.bypassReason,
-      };
-
-      const result = await mergePR({
-        repoInfo,
-        prUrl: prResult.url,
-        mergeConfig,
-        workDir: options.workDir,
-        dryRun: options.dryRun,
-        retries: options.retries,
-        executor: options.executor,
-        token: options.token,
-      });
-
-      mergeResult = {
-        merged: result.merged ?? false,
-        autoMergeEnabled: result.autoMergeEnabled,
-        message: result.message,
-      };
-
-      if (!result.success) {
-        this.log.info(`Warning: Merge operation failed - ${result.message}`);
-      } else {
-        this.log.info(result.message);
-      }
-    }
-
-    return {
-      success: prResult.success,
-      repoName,
-      message: prResult.message,
-      prUrl: prResult.url,
-      mergeResult,
-      diffStats,
-    };
-  }
-
-  private formatCommitMessage(files: FileAction[]): string {
-    const changedFiles = files.filter((f) => f.action !== "skip");
-    const deletedFiles = changedFiles.filter((f) => f.action === "delete");
-    const syncedFiles = changedFiles.filter((f) => f.action !== "delete");
-
-    if (syncedFiles.length === 0 && deletedFiles.length > 0) {
-      if (deletedFiles.length === 1) {
-        return `chore: remove ${deletedFiles[0].fileName}`;
-      }
-      return `chore: remove ${deletedFiles.length} orphaned config files`;
-    }
-
-    if (changedFiles.length === 1) {
-      return `chore: sync ${changedFiles[0].fileName}`;
-    }
-
-    if (changedFiles.length <= 3) {
-      return `chore: sync ${changedFiles.map((f) => f.fileName).join(", ")}`;
-    }
-
-    return `chore: sync ${changedFiles.length} config files`;
   }
 }
