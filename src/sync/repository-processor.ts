@@ -1,27 +1,27 @@
-import { RepoConfig } from "./config/index.js";
+import { RepoConfig } from "../config/index.js";
 import {
   RepoInfo,
   getRepoDisplayName,
   isGitHubRepo,
   GitHubRepoInfo,
-} from "./shared/repo-detector.js";
-import { GitOps, GitOpsOptions } from "./git/git-ops.js";
+} from "../shared/repo-detector.js";
+import { GitOps, GitOpsOptions } from "../git/git-ops.js";
 import {
   AuthenticatedGitOps,
   IAuthenticatedGitOps,
   GitAuthOptions,
-} from "./git/authenticated-git-ops.js";
-import { createPR, mergePR, PRResult, FileAction } from "./git/pr-creator.js";
-import { logger, ILogger } from "./shared/logger.js";
+} from "../git/authenticated-git-ops.js";
+import { createPR, mergePR, PRResult, FileAction } from "../git/pr-creator.js";
+import { logger, ILogger } from "../shared/logger.js";
 import {
   getCommitStrategy,
   hasGitHubAppCredentials,
-} from "./strategies/index.js";
-import type { PRMergeConfig, FileChange } from "./strategies/index.js";
+} from "../strategies/index.js";
+import type { PRMergeConfig, FileChange } from "../strategies/index.js";
 import {
   ICommandExecutor,
   defaultExecutor,
-} from "./shared/command-executor.js";
+} from "../shared/command-executor.js";
 import { incrementDiffStats, DiffStats } from "./diff-utils.js";
 import {
   loadManifest,
@@ -29,7 +29,7 @@ import {
   updateManifestRulesets,
   MANIFEST_FILENAME,
 } from "./manifest.js";
-import { GitHubAppTokenManager } from "./git/github-app-token-manager.js";
+import { GitHubAppTokenManager } from "../git/github-app-token-manager.js";
 import {
   FileWriter,
   ManifestManager,
@@ -37,7 +37,7 @@ import {
   type IFileWriter,
   type IManifestManager,
   type IBranchManager,
-} from "./sync/index.js";
+} from "./index.js";
 
 export interface IRepositoryProcessor {
   process(

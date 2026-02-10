@@ -4,8 +4,8 @@
  * Use $${xfg:variable} to escape and output literal ${xfg:variable}.
  */
 
-import type { RepoInfo } from "./shared/repo-detector.js";
-import type { ContentValue } from "./config/index.js";
+import type { RepoInfo } from "../shared/repo-detector.js";
+import type { ContentValue } from "../config/index.js";
 
 export interface XfgTemplateContext {
   /** Repository information from URL parsing */

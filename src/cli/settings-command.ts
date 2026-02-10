@@ -12,7 +12,7 @@ import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoResult } from "../output/github-summary.js";
 import { buildErrorResult } from "../output/summary-utils.js";
-import { getManagedRulesets } from "../manifest.js";
+import { getManagedRulesets } from "../sync/manifest.js";
 import { Plan, printPlan } from "../output/plan-formatter.js";
 import { writePlanSummary } from "../output/plan-summary.js";
 import {

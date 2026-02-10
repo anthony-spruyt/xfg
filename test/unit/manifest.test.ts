@@ -12,7 +12,7 @@ import {
   getManagedRulesets,
   updateManifest,
   updateManifestRulesets,
-} from "../../src/manifest.js";
+} from "../../src/sync/manifest.js";
 
 describe("manifest", () => {
   const testDir = join(process.cwd(), "tmp-manifest-test");

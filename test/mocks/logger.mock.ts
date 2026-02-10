@@ -1,5 +1,5 @@
-import type { ILogger } from "../../src/logger.js";
-import type { FileStatus } from "../../src/diff-utils.js";
+import type { ILogger } from "../../src/shared/logger.js";
+import type { FileStatus } from "../../src/sync/diff-utils.js";
 
 export interface DiffStatusEntry {
   fileName: string;

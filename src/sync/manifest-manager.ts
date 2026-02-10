@@ -6,7 +6,7 @@ import {
   updateManifest,
   MANIFEST_FILENAME,
   type XfgManifest,
-} from "../manifest.js";
+} from "./manifest.js";
 import type {
   IManifestManager,
   OrphanProcessResult,

@@ -3,12 +3,12 @@ import { strict as assert } from "node:assert";
 import {
   interpolateXfgContent,
   type XfgTemplateContext,
-} from "../../src/xfg-template.js";
+} from "../../src/sync/xfg-template.js";
 import type {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
   GitLabRepoInfo,
-} from "../../src/repo-detector.js";
+} from "../../src/shared/repo-detector.js";
 
 // Helper to create a GitHub repo context
 function createGitHubContext(

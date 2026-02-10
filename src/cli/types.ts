@@ -4,7 +4,7 @@ import {
   ProcessorResult,
   ProcessorOptions,
   RepositoryProcessor,
-} from "../repository-processor.js";
+} from "../sync/repository-processor.js";
 import {
   RulesetProcessor,
   RulesetProcessorOptions,

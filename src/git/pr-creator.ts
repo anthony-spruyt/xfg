@@ -7,7 +7,7 @@ import {
   MergeResult,
   PRMergeConfig,
 } from "../strategies/index.js";
-import { interpolateXfgContent } from "../xfg-template.js";
+import { interpolateXfgContent } from "../sync/xfg-template.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 
 // Re-export for backwards compatibility and testing

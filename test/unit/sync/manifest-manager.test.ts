@@ -9,7 +9,7 @@ import {
   createMockLogger,
 } from "../../mocks/index.js";
 import type { FileWriteResult } from "../../../src/sync/types.js";
-import { MANIFEST_FILENAME } from "../../../src/manifest.js";
+import { MANIFEST_FILENAME } from "../../../src/sync/manifest.js";
 
 const testDir = join(tmpdir(), "manifest-manager-test-" + Date.now());
 

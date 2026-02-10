@@ -7,7 +7,7 @@ import {
   incrementDiffStats,
   formatStatusBadge,
   formatDiffLine,
-} from "../../src/diff-utils.js";
+} from "../../src/sync/diff-utils.js";
 
 describe("getFileStatus", () => {
   test("returns NEW when file does not exist", () => {

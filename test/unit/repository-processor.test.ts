@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import {
   RepositoryProcessor,
   GitOpsFactory,
-} from "../../src/repository-processor.js";
+} from "../../src/sync/repository-processor.js";
 import { RepoConfig } from "../../src/config/index.js";
 import { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
 import { GitOps } from "../../src/git/git-ops.js";
