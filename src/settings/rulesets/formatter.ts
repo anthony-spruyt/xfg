@@ -29,6 +29,8 @@ export interface RulesetPlanEntry {
     changed: number;
     removed: number;
   };
+  propertyDiffs?: PropertyDiff[];
+  config?: Ruleset;
 }
 
 export interface RulesetPlanResult {
@@ -371,7 +373,12 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
       const propertyCount = change.desired
         ? Object.keys(change.desired).length
         : 0;
-      entries.push({ name: change.name, action: "create", propertyCount });
+      entries.push({
+        name: change.name,
+        action: "create",
+        propertyCount,
+        config: change.desired,
+      });
       lines.push(""); // Blank line between rulesets
     }
   }
@@ -401,6 +408,7 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
           name: change.name,
           action: "update",
           propertyChanges: { added, changed, removed },
+          propertyDiffs: diffs,
         });
       } else {
         entries.push({ name: change.name, action: "update" });
