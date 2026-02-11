@@ -41,6 +41,10 @@ export function buildSettingsReport(
     // Convert settings processor output
     if (result.settingsResult?.planOutput?.entries) {
       for (const entry of result.settingsResult.planOutput.entries) {
+        // Skip settings where both values are undefined (no actual change)
+        if (entry.oldValue === undefined && entry.newValue === undefined) {
+          continue;
+        }
         const settingChange: SettingChange = {
           name: entry.property,
           action: entry.action,

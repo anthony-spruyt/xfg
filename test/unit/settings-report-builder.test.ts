@@ -120,4 +120,38 @@ describe("buildSettingsReport", () => {
     assert.equal(report.totals.rulesets.create, 1);
     assert.equal(report.totals.rulesets.delete, 1);
   });
+
+  test("skips settings where both oldValue and newValue are undefined", () => {
+    const results = [
+      {
+        repoName: "org/repo",
+        settingsResult: {
+          planOutput: {
+            entries: [
+              {
+                property: "has_issues",
+                action: "change" as const,
+                oldValue: undefined,
+                newValue: undefined,
+              },
+              {
+                property: "deleteBranchOnMerge",
+                action: "change" as const,
+                oldValue: false,
+                newValue: true,
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+    const report = buildSettingsReport(results);
+
+    // Should only include the valid setting, not the undefined one
+    assert.equal(report.repos[0].settings.length, 1);
+    assert.equal(report.repos[0].settings[0].name, "deleteBranchOnMerge");
+    // Totals should only count the valid setting
+    assert.equal(report.totals.settings.change, 1);
+  });
 });
