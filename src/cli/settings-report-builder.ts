@@ -7,7 +7,11 @@ import type {
 import type { RepoSettingsPlanEntry } from "../settings/repo-settings/formatter.js";
 import type { RulesetPlanEntry } from "../settings/rulesets/formatter.js";
 
-interface ProcessorResults {
+/**
+ * Result from processing a repository's settings and rulesets.
+ * Used to collect results during settings command execution.
+ */
+export interface ProcessorResults {
   repoName: string;
   settingsResult?: {
     planOutput?: {

@@ -17,9 +17,10 @@ import {
   formatSettingsReportCLI,
   writeSettingsReportSummary,
 } from "../output/settings-report.js";
-import { buildSettingsReport } from "./settings-report-builder.js";
-import type { RepoSettingsPlanEntry } from "../settings/repo-settings/formatter.js";
-import type { RulesetPlanEntry } from "../settings/rulesets/formatter.js";
+import {
+  buildSettingsReport,
+  ProcessorResults,
+} from "./settings-report-builder.js";
 import { SharedOptions } from "./sync-command.js";
 import {
   ProcessorFactory,
@@ -28,7 +29,11 @@ import {
   defaultRulesetProcessorFactory,
   RepoSettingsProcessorFactory,
   defaultRepoSettingsProcessorFactory,
+  IRulesetProcessor,
+  IRepositoryProcessor,
 } from "./types.js";
+import type { Config, RepoConfig } from "../config/types.js";
+import type { RepoInfo } from "../shared/repo-detector.js";
 
 /**
  * Options for the settings command.
@@ -36,89 +41,52 @@ import {
 export type SettingsOptions = SharedOptions;
 
 /**
- * Run the settings command - manages GitHub Rulesets and repo settings.
+ * Collects processing results for the SettingsReport.
+ * Provides a centralized way to track results across rulesets and repo settings.
  */
-export async function runSettings(
-  options: SettingsOptions,
-  processorFactory: RulesetProcessorFactory = defaultRulesetProcessorFactory,
-  repoProcessorFactory: ProcessorFactory = defaultProcessorFactory,
-  repoSettingsProcessorFactory: RepoSettingsProcessorFactory = defaultRepoSettingsProcessorFactory
-): Promise<void> {
-  const configPath = resolve(options.config);
+class ResultsCollector {
+  private readonly results: ProcessorResults[] = [];
 
-  if (!existsSync(configPath)) {
-    console.error(`Config file not found: ${configPath}`);
-    process.exit(1);
-  }
-
-  console.log(`Loading config from: ${configPath}`);
-  if (options.dryRun) {
-    console.log("Running in DRY RUN mode - no changes will be made\n");
-  }
-
-  const rawConfig = loadRawConfig(configPath);
-
-  try {
-    validateForSettings(rawConfig);
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exit(1);
-  }
-
-  const config = normalizeConfig(rawConfig);
-
-  const reposWithRulesets = config.repos.filter(
-    (r) => r.settings?.rulesets && Object.keys(r.settings.rulesets).length > 0
-  );
-
-  const reposWithRepoSettings = config.repos.filter(
-    (r) => r.settings?.repo && Object.keys(r.settings.repo).length > 0
-  );
-
-  if (reposWithRulesets.length === 0 && reposWithRepoSettings.length === 0) {
-    console.log(
-      "No settings configured. Add settings.rulesets or settings.repo to your config."
-    );
-    return;
-  }
-
-  if (reposWithRulesets.length > 0) {
-    console.log(`Found ${reposWithRulesets.length} repositories with rulesets`);
-  }
-  if (reposWithRepoSettings.length > 0) {
-    console.log(
-      `Found ${reposWithRepoSettings.length} repositories with repo settings`
-    );
-  }
-  console.log("");
-  logger.setTotal(reposWithRulesets.length + reposWithRepoSettings.length);
-
-  const processor = processorFactory();
-  const repoProcessor = repoProcessorFactory();
-  const results: RepoResult[] = [];
-
-  // Result collection for the new SettingsReport
-  interface RepoProcessingResult {
-    repoName: string;
-    settingsResult?: { planOutput?: { entries?: RepoSettingsPlanEntry[] } };
-    rulesetResult?: { planOutput?: { entries?: RulesetPlanEntry[] } };
-    error?: string;
-  }
-  const processingResults: RepoProcessingResult[] = [];
-
-  function getOrCreateResult(repoName: string): RepoProcessingResult {
-    let result = processingResults.find((r) => r.repoName === repoName);
+  getOrCreate(repoName: string): ProcessorResults {
+    let result = this.results.find((r) => r.repoName === repoName);
     if (!result) {
       result = { repoName };
-      processingResults.push(result);
+      this.results.push(result);
     }
     return result;
   }
 
-  for (let i = 0; i < reposWithRulesets.length; i++) {
-    const repoConfig = reposWithRulesets[i];
+  appendError(repoName: string, error: unknown): void {
+    const existing = this.getOrCreate(repoName);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (existing.error) {
+      existing.error += `; ${errorMsg}`;
+    } else {
+      existing.error = errorMsg;
+    }
+  }
 
-    let repoInfo;
+  getAll(): ProcessorResults[] {
+    return this.results;
+  }
+}
+
+/**
+ * Process rulesets for all configured repositories.
+ */
+async function processRulesets(
+  repos: RepoConfig[],
+  config: Config,
+  options: SettingsOptions,
+  processor: IRulesetProcessor,
+  repoProcessor: IRepositoryProcessor,
+  results: RepoResult[],
+  collector: ResultsCollector
+): Promise<void> {
+  for (let i = 0; i < repos.length; i++) {
+    const repoConfig = repos[i];
+
+    let repoInfo: RepoInfo;
     try {
       repoInfo = parseGitUrl(repoConfig.git, {
         githubHosts: config.githubHosts,
@@ -126,8 +94,7 @@ export async function runSettings(
     } catch (error) {
       logger.error(i + 1, repoConfig.git, String(error));
       results.push(buildErrorResult(repoConfig.git, error));
-      getOrCreateResult(repoConfig.git).error =
-        error instanceof Error ? error.message : String(error);
+      collector.appendError(repoConfig.git, error);
       continue;
     }
 
@@ -139,7 +106,6 @@ export async function runSettings(
         repoName,
         "GitHub Rulesets only supported for GitHub repos"
       );
-      // Skipped repos don't appear in the report
       continue;
     }
 
@@ -209,109 +175,185 @@ export async function runSettings(
         rulesetPlanDetails: result.planOutput?.entries,
       });
 
-      // Collect result for SettingsReport
       if (!result.skipped) {
-        getOrCreateResult(repoName).rulesetResult = result;
+        collector.getOrCreate(repoName).rulesetResult = result;
       }
     } catch (error) {
       logger.error(i + 1, repoName, String(error));
       results.push(buildErrorResult(repoName, error));
-      const existingResult = getOrCreateResult(repoName);
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      if (existingResult.error) {
-        existingResult.error += `; ${errorMsg}`;
+      collector.appendError(repoName, error);
+    }
+  }
+}
+
+/**
+ * Process repo settings for all configured repositories.
+ */
+async function processRepoSettings(
+  repos: RepoConfig[],
+  config: Config,
+  options: SettingsOptions,
+  processorFactory: RepoSettingsProcessorFactory,
+  results: RepoResult[],
+  collector: ResultsCollector
+): Promise<void> {
+  if (repos.length === 0) {
+    return;
+  }
+
+  const processor = processorFactory();
+
+  console.log(`\nProcessing repo settings for ${repos.length} repositories\n`);
+
+  for (let i = 0; i < repos.length; i++) {
+    const repoConfig = repos[i];
+    let repoInfo: RepoInfo;
+    try {
+      repoInfo = parseGitUrl(repoConfig.git, {
+        githubHosts: config.githubHosts,
+      });
+    } catch (error) {
+      console.error(`Failed to parse ${repoConfig.git}: ${error}`);
+      collector.appendError(repoConfig.git, error);
+      continue;
+    }
+
+    const repoName = getRepoDisplayName(repoInfo);
+
+    try {
+      const result = await processor.process(repoConfig, repoInfo, {
+        dryRun: options.dryRun,
+      });
+
+      if (result.planOutput && result.planOutput.lines.length > 0) {
+        console.log(`\n  ${chalk.bold(repoName)}:`);
+        console.log("  Repo Settings:");
+        for (const line of result.planOutput.lines) {
+          console.log(line);
+        }
+        if (result.warnings && result.warnings.length > 0) {
+          for (const warning of result.warnings) {
+            console.log(chalk.yellow(`  ⚠️  Warning: ${warning}`));
+          }
+        }
+      }
+
+      if (result.skipped) {
+        // Silent skip
+      } else if (result.success) {
+        console.log(chalk.green(`  ✓ ${repoName}: ${result.message}`));
       } else {
-        existingResult.error = errorMsg;
+        console.log(chalk.red(`  ✗ ${repoName}: ${result.message}`));
       }
+
+      if (!result.skipped) {
+        const existing = results.find((r) => r.repoName === repoName);
+        if (existing) {
+          existing.repoSettingsPlanDetails = result.planOutput?.entries;
+        } else {
+          results.push({
+            repoName,
+            status: result.success ? "succeeded" : "failed",
+            message: result.message,
+            repoSettingsPlanDetails: result.planOutput?.entries,
+          });
+        }
+      }
+
+      if (!result.skipped) {
+        collector.getOrCreate(repoName).settingsResult = result;
+      }
+    } catch (error) {
+      console.error(`  ✗ ${repoName}: ${error}`);
+      collector.appendError(repoName, error);
     }
   }
+}
 
-  if (reposWithRepoSettings.length > 0) {
-    const repoSettingsProcessor = repoSettingsProcessorFactory();
+/**
+ * Run the settings command - manages GitHub Rulesets and repo settings.
+ */
+export async function runSettings(
+  options: SettingsOptions,
+  processorFactory: RulesetProcessorFactory = defaultRulesetProcessorFactory,
+  repoProcessorFactory: ProcessorFactory = defaultProcessorFactory,
+  repoSettingsProcessorFactory: RepoSettingsProcessorFactory = defaultRepoSettingsProcessorFactory
+): Promise<void> {
+  const configPath = resolve(options.config);
 
+  if (!existsSync(configPath)) {
+    console.error(`Config file not found: ${configPath}`);
+    process.exit(1);
+  }
+
+  console.log(`Loading config from: ${configPath}`);
+  if (options.dryRun) {
+    console.log("Running in DRY RUN mode - no changes will be made\n");
+  }
+
+  const rawConfig = loadRawConfig(configPath);
+
+  try {
+    validateForSettings(rawConfig);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+
+  const config = normalizeConfig(rawConfig);
+
+  const reposWithRulesets = config.repos.filter(
+    (r) => r.settings?.rulesets && Object.keys(r.settings.rulesets).length > 0
+  );
+
+  const reposWithRepoSettings = config.repos.filter(
+    (r) => r.settings?.repo && Object.keys(r.settings.repo).length > 0
+  );
+
+  if (reposWithRulesets.length === 0 && reposWithRepoSettings.length === 0) {
     console.log(
-      `\nProcessing repo settings for ${reposWithRepoSettings.length} repositories\n`
+      "No settings configured. Add settings.rulesets or settings.repo to your config."
     );
-
-    for (let i = 0; i < reposWithRepoSettings.length; i++) {
-      const repoConfig = reposWithRepoSettings[i];
-      let repoInfo;
-      try {
-        repoInfo = parseGitUrl(repoConfig.git, {
-          githubHosts: config.githubHosts,
-        });
-      } catch (error) {
-        console.error(`Failed to parse ${repoConfig.git}: ${error}`);
-        getOrCreateResult(repoConfig.git).error =
-          error instanceof Error ? error.message : String(error);
-        continue;
-      }
-
-      const repoName = getRepoDisplayName(repoInfo);
-
-      try {
-        const result = await repoSettingsProcessor.process(
-          repoConfig,
-          repoInfo,
-          {
-            dryRun: options.dryRun,
-          }
-        );
-
-        if (result.planOutput && result.planOutput.lines.length > 0) {
-          console.log(`\n  ${chalk.bold(repoName)}:`);
-          console.log("  Repo Settings:");
-          for (const line of result.planOutput.lines) {
-            console.log(line);
-          }
-          if (result.warnings && result.warnings.length > 0) {
-            for (const warning of result.warnings) {
-              console.log(chalk.yellow(`  ⚠️  Warning: ${warning}`));
-            }
-          }
-        }
-
-        if (result.skipped) {
-          // Silent skip
-        } else if (result.success) {
-          console.log(chalk.green(`  ✓ ${repoName}: ${result.message}`));
-        } else {
-          console.log(chalk.red(`  ✗ ${repoName}: ${result.message}`));
-        }
-
-        if (!result.skipped) {
-          const existing = results.find((r) => r.repoName === repoName);
-          if (existing) {
-            existing.repoSettingsPlanDetails = result.planOutput?.entries;
-          } else {
-            results.push({
-              repoName,
-              status: result.success ? "succeeded" : "failed",
-              message: result.message,
-              repoSettingsPlanDetails: result.planOutput?.entries,
-            });
-          }
-        }
-
-        // Collect result for SettingsReport
-        if (!result.skipped) {
-          getOrCreateResult(repoName).settingsResult = result;
-        }
-      } catch (error) {
-        console.error(`  ✗ ${repoName}: ${error}`);
-        const existingResult = getOrCreateResult(repoName);
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        if (existingResult.error) {
-          existingResult.error += `; ${errorMsg}`;
-        } else {
-          existingResult.error = errorMsg;
-        }
-      }
-    }
+    return;
   }
+
+  if (reposWithRulesets.length > 0) {
+    console.log(`Found ${reposWithRulesets.length} repositories with rulesets`);
+  }
+  if (reposWithRepoSettings.length > 0) {
+    console.log(
+      `Found ${reposWithRepoSettings.length} repositories with repo settings`
+    );
+  }
+  console.log("");
+  logger.setTotal(reposWithRulesets.length + reposWithRepoSettings.length);
+
+  const processor = processorFactory();
+  const repoProcessor = repoProcessorFactory();
+  const results: RepoResult[] = [];
+  const collector = new ResultsCollector();
+
+  await processRulesets(
+    reposWithRulesets,
+    config,
+    options,
+    processor,
+    repoProcessor,
+    results,
+    collector
+  );
+
+  await processRepoSettings(
+    reposWithRepoSettings,
+    config,
+    options,
+    repoSettingsProcessorFactory,
+    results,
+    collector
+  );
 
   console.log("");
-  const report = buildSettingsReport(processingResults);
+  const report = buildSettingsReport(collector.getAll());
   const lines = formatSettingsReportCLI(report);
   for (const line of lines) {
     console.log(line);
