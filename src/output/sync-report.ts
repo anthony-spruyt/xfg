@@ -1,4 +1,5 @@
 // src/output/sync-report.ts
+import chalk from "chalk";
 
 export interface SyncReport {
   repos: RepoFileChanges[];
@@ -38,6 +39,31 @@ function formatSummary(totals: SyncReport["totals"]): string {
 
 export function formatSyncReportCLI(report: SyncReport): string[] {
   const lines: string[] = [];
+
+  for (const repo of report.repos) {
+    if (repo.files.length === 0 && !repo.error) {
+      continue;
+    }
+
+    // Repo header
+    lines.push(chalk.yellow(`~ ${repo.repoName}`));
+
+    // Files
+    for (const file of repo.files) {
+      if (file.action === "create") {
+        lines.push(chalk.green(`    + ${file.path}`));
+      } else if (file.action === "update") {
+        lines.push(chalk.yellow(`    ~ ${file.path}`));
+      } else if (file.action === "delete") {
+        lines.push(chalk.red(`    - ${file.path}`));
+      }
+    }
+
+    lines.push(""); // Blank line between repos
+  }
+
+  // Summary
   lines.push(formatSummary(report.totals));
+
   return lines;
 }

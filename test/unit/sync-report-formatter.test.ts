@@ -50,4 +50,34 @@ describe("formatSyncReportCLI", () => {
 
     assert.ok(output.includes("No changes"), "should show no changes message");
   });
+
+  test("renders repo with file changes", () => {
+    const report: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [
+            { path: ".github/workflows/ci.yml", action: "create" },
+            { path: ".github/CODEOWNERS", action: "update" },
+            { path: ".github/old-workflow.yml", action: "delete" },
+          ],
+        },
+      ],
+      totals: {
+        files: { create: 1, update: 1, delete: 1 },
+      },
+    };
+
+    const lines = formatSyncReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(output.includes("org/repo"), "should include repo name");
+    assert.ok(output.includes("ci.yml"), "should include created file");
+    assert.ok(output.includes("CODEOWNERS"), "should include updated file");
+    assert.ok(
+      output.includes("old-workflow.yml"),
+      "should include deleted file"
+    );
+    assert.ok(output.includes("3 files"), "should include summary");
+  });
 });
