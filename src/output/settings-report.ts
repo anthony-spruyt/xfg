@@ -1,5 +1,8 @@
 import chalk from "chalk";
-import type { PropertyDiff } from "../settings/rulesets/formatter.js";
+import {
+  formatPropertyTree,
+  type PropertyDiff,
+} from "../settings/rulesets/formatter.js";
 import type { Ruleset } from "../config/index.js";
 
 export interface SettingsReport {
@@ -41,6 +44,54 @@ function formatValue(val: unknown): string {
   if (typeof val === "string") return `"${val}"`;
   if (typeof val === "boolean") return val ? "true" : "false";
   return String(val);
+}
+
+function formatRulesetConfig(config: Ruleset, indent: number): string[] {
+  const lines: string[] = [];
+
+  function renderValue(
+    key: string,
+    value: unknown,
+    currentIndent: number
+  ): void {
+    const pad = "    ".repeat(currentIndent);
+    if (value === null || value === undefined) return;
+
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        lines.push(chalk.green(`${pad}+ ${key}: []`));
+      } else if (value.every((v) => typeof v !== "object")) {
+        lines.push(
+          chalk.green(
+            `${pad}+ ${key}: [${value.map((v) => (typeof v === "string" ? `"${v}"` : String(v))).join(", ")}]`
+          )
+        );
+      } else {
+        lines.push(chalk.green(`${pad}+ ${key}:`));
+        for (const item of value) {
+          if (typeof item === "object" && item !== null) {
+            lines.push(chalk.green(`${pad}    + ${JSON.stringify(item)}`));
+          } else {
+            lines.push(chalk.green(`${pad}    + ${formatValue(item)}`));
+          }
+        }
+      }
+    } else if (typeof value === "object") {
+      lines.push(chalk.green(`${pad}+ ${key}:`));
+      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+        renderValue(k, v, currentIndent + 1);
+      }
+    } else {
+      lines.push(chalk.green(`${pad}+ ${key}: ${formatValue(value)}`));
+    }
+  }
+
+  for (const [key, value] of Object.entries(config)) {
+    if (key === "name") continue; // Name is in the header
+    renderValue(key, value, indent);
+  }
+
+  return lines;
 }
 
 function formatSummary(totals: SettingsReport["totals"]): string {
@@ -108,6 +159,26 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
             `    ~ ${setting.name}: ${formatValue(setting.oldValue)} → ${formatValue(setting.newValue)}`
           )
         );
+      }
+    }
+
+    // Rulesets
+    for (const ruleset of repo.rulesets) {
+      if (ruleset.action === "create") {
+        lines.push(chalk.green(`    + ruleset "${ruleset.name}"`));
+        if (ruleset.config) {
+          lines.push(...formatRulesetConfig(ruleset.config, 2));
+        }
+      } else if (ruleset.action === "update") {
+        lines.push(chalk.yellow(`    ~ ruleset "${ruleset.name}"`));
+        if (ruleset.propertyDiffs && ruleset.propertyDiffs.length > 0) {
+          const treeLines = formatPropertyTree(ruleset.propertyDiffs);
+          for (const line of treeLines) {
+            lines.push(`        ${line}`);
+          }
+        }
+      } else if (ruleset.action === "delete") {
+        lines.push(chalk.red(`    - ruleset "${ruleset.name}"`));
       }
     }
 

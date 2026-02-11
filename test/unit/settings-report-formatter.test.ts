@@ -195,4 +195,167 @@ describe("formatSettingsReportCLI", () => {
       "should show error message"
     );
   });
+
+  test("renders ruleset create with full config tree", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [
+            {
+              name: "ci-bypass",
+              action: "create",
+              config: {
+                name: "ci-bypass",
+                target: "branch",
+                enforcement: "active",
+                conditions: {
+                  ref_name: {
+                    include: ["refs/heads/main"],
+                    exclude: [],
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(
+      output.includes('ruleset "ci-bypass"'),
+      "should include ruleset name in header"
+    );
+    assert.ok(output.includes("enforcement"), "should include properties");
+    assert.ok(output.includes("active"), "should include property values");
+    // Verify "name" is NOT in tree output (it's in the header, not duplicated in tree)
+    const treeLines = lines.filter((l) => l.includes("+ name:"));
+    assert.equal(
+      treeLines.length,
+      0,
+      "should not include 'name' property in tree (it's in header)"
+    );
+  });
+
+  test("renders ruleset update with property diffs", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [
+            {
+              name: "branch-protection",
+              action: "update",
+              propertyDiffs: [
+                {
+                  path: ["enforcement"],
+                  action: "change",
+                  oldValue: "active",
+                  newValue: "evaluate",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(
+      output.includes('ruleset "branch-protection"'),
+      "should include ruleset name"
+    );
+    assert.ok(
+      output.includes("enforcement"),
+      "should include changed property"
+    );
+    assert.ok(output.includes("active"), "should include old value");
+    assert.ok(output.includes("evaluate"), "should include new value");
+  });
+
+  test("renders ruleset delete", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [
+            {
+              name: "old-ruleset",
+              action: "delete",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 1 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(
+      output.includes('ruleset "old-ruleset"'),
+      "should include ruleset name"
+    );
+  });
+
+  test("renders mixed settings and rulesets", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [
+            {
+              name: "deleteBranchOnMerge",
+              action: "change",
+              oldValue: false,
+              newValue: true,
+            },
+          ],
+          rulesets: [
+            {
+              name: "branch-protection",
+              action: "update",
+              propertyDiffs: [
+                {
+                  path: ["enforcement"],
+                  action: "change",
+                  oldValue: "active",
+                  newValue: "evaluate",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 1 },
+        rulesets: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(output.includes("deleteBranchOnMerge"), "should include setting");
+    assert.ok(output.includes("branch-protection"), "should include ruleset");
+  });
 });
