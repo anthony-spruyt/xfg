@@ -195,3 +195,152 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
 
   return lines;
 }
+
+// =============================================================================
+// Markdown Formatter
+// =============================================================================
+
+function formatValuePlain(val: unknown): string {
+  if (val === null) return "null";
+  if (val === undefined) return "undefined";
+  if (typeof val === "string") return `"${val}"`;
+  if (typeof val === "boolean") return val ? "true" : "false";
+  return String(val);
+}
+
+function formatRulesetConfigPlain(config: Ruleset, indent: number): string[] {
+  const lines: string[] = [];
+
+  function renderValue(
+    key: string,
+    value: unknown,
+    currentIndent: number
+  ): void {
+    const pad = "    ".repeat(currentIndent);
+    if (value === null || value === undefined) return;
+
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        lines.push(`${pad}+ ${key}: []`);
+      } else if (value.every((v) => typeof v !== "object")) {
+        lines.push(
+          `${pad}+ ${key}: [${value.map((v) => (typeof v === "string" ? `"${v}"` : String(v))).join(", ")}]`
+        );
+      } else {
+        lines.push(`${pad}+ ${key}:`);
+        for (const item of value) {
+          if (typeof item === "object" && item !== null) {
+            lines.push(`${pad}    + ${JSON.stringify(item)}`);
+          } else {
+            lines.push(`${pad}    + ${formatValuePlain(item)}`);
+          }
+        }
+      }
+    } else if (typeof value === "object") {
+      lines.push(`${pad}+ ${key}:`);
+      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+        renderValue(k, v, currentIndent + 1);
+      }
+    } else {
+      lines.push(`${pad}+ ${key}: ${formatValuePlain(value)}`);
+    }
+  }
+
+  for (const [key, value] of Object.entries(config)) {
+    if (key === "name") continue;
+    renderValue(key, value, indent);
+  }
+
+  return lines;
+}
+
+export function formatSettingsReportMarkdown(
+  report: SettingsReport,
+  dryRun: boolean
+): string {
+  const lines: string[] = [];
+
+  // Title
+  const titleSuffix = dryRun ? " (Dry Run)" : "";
+  lines.push(`## Repository Settings Summary${titleSuffix}`);
+  lines.push("");
+
+  // Dry-run warning
+  if (dryRun) {
+    lines.push("> [!WARNING]");
+    lines.push("> This was a dry run — no changes were applied");
+    lines.push("");
+  }
+
+  // Diff block
+  const diffLines: string[] = [];
+
+  for (const repo of report.repos) {
+    if (
+      repo.settings.length === 0 &&
+      repo.rulesets.length === 0 &&
+      !repo.error
+    ) {
+      continue;
+    }
+
+    diffLines.push(`~ ${repo.repoName}`);
+
+    for (const setting of repo.settings) {
+      if (setting.action === "add") {
+        diffLines.push(
+          `    + ${setting.name}: ${formatValuePlain(setting.newValue)}`
+        );
+      } else {
+        diffLines.push(
+          `    ~ ${setting.name}: ${formatValuePlain(setting.oldValue)} → ${formatValuePlain(setting.newValue)}`
+        );
+      }
+    }
+
+    for (const ruleset of repo.rulesets) {
+      if (ruleset.action === "create") {
+        diffLines.push(`    + ruleset "${ruleset.name}"`);
+        if (ruleset.config) {
+          diffLines.push(...formatRulesetConfigPlain(ruleset.config, 2));
+        }
+      } else if (ruleset.action === "update") {
+        diffLines.push(`    ~ ruleset "${ruleset.name}"`);
+        if (ruleset.propertyDiffs && ruleset.propertyDiffs.length > 0) {
+          for (const diff of ruleset.propertyDiffs) {
+            const path = diff.path.join(".");
+            if (diff.action === "add") {
+              diffLines.push(
+                `        + ${path}: ${formatValuePlain(diff.newValue)}`
+              );
+            } else if (diff.action === "change") {
+              diffLines.push(
+                `        ~ ${path}: ${formatValuePlain(diff.oldValue)} → ${formatValuePlain(diff.newValue)}`
+              );
+            } else if (diff.action === "remove") {
+              diffLines.push(`        - ${path}`);
+            }
+          }
+        }
+      } else if (ruleset.action === "delete") {
+        diffLines.push(`    - ruleset "${ruleset.name}"`);
+      }
+    }
+
+    if (repo.error) {
+      diffLines.push(`    ! Error: ${repo.error}`);
+    }
+  }
+
+  if (diffLines.length > 0) {
+    lines.push("```diff");
+    lines.push(...diffLines);
+    lines.push("```");
+    lines.push("");
+  }
+
+  // Summary
+  lines.push(`**${formatSummary(report.totals)}**`);
+
+  return lines.join("\n");
+}

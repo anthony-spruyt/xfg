@@ -2,6 +2,7 @@ import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   formatSettingsReportCLI,
+  formatSettingsReportMarkdown,
   type SettingsReport,
   type RepoChanges,
   type SettingChange,
@@ -357,5 +358,119 @@ describe("formatSettingsReportCLI", () => {
 
     assert.ok(output.includes("deleteBranchOnMerge"), "should include setting");
     assert.ok(output.includes("branch-protection"), "should include ruleset");
+  });
+});
+
+describe("formatSettingsReportMarkdown", () => {
+  test("includes dry run warning when dryRun=true", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [
+            {
+              name: "deleteBranchOnMerge",
+              action: "change",
+              oldValue: false,
+              newValue: true,
+            },
+          ],
+          rulesets: [],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 1 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, true);
+
+    assert.ok(
+      markdown.includes("(Dry Run)"),
+      "should include dry run in title"
+    );
+    assert.ok(
+      markdown.includes("[!WARNING]"),
+      "should include warning callout"
+    );
+    assert.ok(
+      markdown.includes("no changes were applied"),
+      "should explain dry run"
+    );
+  });
+
+  test("wraps output in diff code block", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [
+            {
+              name: "deleteBranchOnMerge",
+              action: "change",
+              oldValue: false,
+              newValue: true,
+            },
+          ],
+          rulesets: [],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 1 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(markdown.includes("```diff"), "should have diff code block");
+    assert.ok(markdown.includes("org/repo"), "should include repo name");
+    assert.ok(
+      markdown.includes("deleteBranchOnMerge"),
+      "should include setting"
+    );
+  });
+
+  test("includes plan summary as bold text", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [
+            {
+              name: "deleteBranchOnMerge",
+              action: "change",
+              oldValue: false,
+              newValue: true,
+            },
+          ],
+          rulesets: [],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 1 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(markdown.includes("**Plan:"), "should have bold plan summary");
+  });
+
+  test("no dry run warning when dryRun=false", () => {
+    const report: SettingsReport = {
+      repos: [],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(!markdown.includes("[!WARNING]"), "should not include warning");
+    assert.ok(!markdown.includes("Dry Run"), "should not mention dry run");
   });
 });
