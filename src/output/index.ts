@@ -1,26 +1,23 @@
-// Plan formatting (console output with chalk)
+// Sync report (repo-grouped file changes)
 export {
-  formatResourceId,
-  formatResourceLine,
-  formatPlanSummary,
-  formatPlan,
-  printPlan,
-  type ResourceType,
-  type ResourceAction,
-  type Resource,
-  type ResourceDetails,
-  type PropertyChange,
-  type PlanCounts,
-  type Plan,
-  type RepoError,
-} from "./plan-formatter.js";
+  formatSyncReportCLI,
+  formatSyncReportMarkdown,
+  writeSyncReportSummary,
+  type SyncReport,
+  type RepoFileChanges,
+  type FileChange,
+} from "./sync-report.js";
 
-// Plan summary (markdown output for GitHub)
+// Settings report (repo-grouped settings changes)
 export {
-  formatPlanMarkdown,
-  writePlanSummary,
-  type PlanMarkdownOptions,
-} from "./plan-summary.js";
+  formatSettingsReportCLI,
+  formatSettingsReportMarkdown,
+  writeSettingsReportSummary,
+  type SettingsReport,
+  type RepoChanges,
+  type RulesetChange,
+  type SettingChange,
+} from "./settings-report.js";
 
 // GitHub Actions summary
 export {
