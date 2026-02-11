@@ -13,6 +13,7 @@ import type {
   ProcessorResult,
   PRHandlerOptions,
   IPRMergeHandler,
+  FileChangeDetail,
 } from "./types.js";
 
 export class PRMergeHandler implements IPRMergeHandler {
@@ -24,7 +25,8 @@ export class PRMergeHandler implements IPRMergeHandler {
     options: PRHandlerOptions,
     changedFiles: FileAction[],
     repoName: string,
-    diffStats?: DiffStats
+    diffStats?: DiffStats,
+    fileChanges?: FileChangeDetail[]
   ): Promise<ProcessorResult> {
     this.log.info("Creating pull request...");
     const prResult: PRResult = await createPR({
@@ -84,6 +86,7 @@ export class PRMergeHandler implements IPRMergeHandler {
       prUrl: prResult.url,
       mergeResult,
       diffStats,
+      fileChanges,
     };
   }
 }

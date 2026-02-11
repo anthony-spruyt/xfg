@@ -375,6 +375,7 @@ export interface IPRMergeHandler {
     options: PRHandlerOptions,
     changedFiles: FileAction[],
     repoName: string,
-    diffStats?: DiffStats
+    diffStats?: DiffStats,
+    fileChanges?: FileChangeDetail[]
   ): Promise<ProcessorResult>;
 }

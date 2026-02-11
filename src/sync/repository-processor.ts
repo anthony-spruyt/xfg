@@ -36,7 +36,20 @@ import {
   type GitOpsFactory,
   type ProcessorOptions,
   type ProcessorResult,
+  type FileChangeDetail,
 } from "./index.js";
+import { FileAction } from "../vcs/pr-creator.js";
+
+function mapToFileChangeDetails(
+  changedFiles: FileAction[]
+): FileChangeDetail[] {
+  return changedFiles
+    .filter((f) => f.action !== "skip")
+    .map((f) => ({
+      path: f.fileName,
+      action: f.action as "create" | "update" | "delete",
+    }));
+}
 
 export class RepositoryProcessor implements IRepositoryProcessor {
   private readonly gitOpsFactory: GitOpsFactory;
@@ -165,6 +178,9 @@ export class RepositoryProcessor implements IRepositoryProcessor {
           options
         );
 
+      // Map file changes for reporting
+      const fileChangeDetails = mapToFileChangeDetails(changedFiles);
+
       if (!hasChanges) {
         return {
           success: true,
@@ -172,6 +188,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
           message: "No changes detected",
           skipped: true,
           diffStats,
+          fileChanges: fileChangeDetails,
         };
       }
 
@@ -207,6 +224,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
           message: "No changes detected after staging",
           skipped: true,
           diffStats,
+          fileChanges: fileChangeDetails,
         };
       }
 
@@ -218,6 +236,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
           repoName,
           message: `Pushed directly to ${session.baseBranch}`,
           diffStats,
+          fileChanges: fileChangeDetails,
         };
       }
 
@@ -237,7 +256,8 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         },
         changedFiles,
         repoName,
-        diffStats
+        diffStats,
+        fileChangeDetails
       );
     } finally {
       try {
@@ -305,12 +325,18 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         };
       }
 
+      // Prepare manifest file change details for reporting
+      const manifestFileChange: FileChangeDetail[] = [
+        { path: MANIFEST_FILENAME, action: "update" },
+      ];
+
       if (dryRun) {
         this.log.info(`Would update ${MANIFEST_FILENAME} with rulesets`);
         return {
           success: true,
           repoName,
           message: "Would update manifest (dry-run)",
+          fileChanges: manifestFileChange,
         };
       }
 
@@ -370,6 +396,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
           repoName,
           message: "No changes detected after staging",
           skipped: true,
+          fileChanges: manifestFileChange,
         };
       }
 
@@ -378,6 +405,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
           success: true,
           repoName,
           message: `Manifest updated directly on ${session.baseBranch}`,
+          fileChanges: manifestFileChange,
         };
       }
 
@@ -395,7 +423,9 @@ export class RepositoryProcessor implements IRepositoryProcessor {
           executor,
         },
         [{ fileName: MANIFEST_FILENAME, action: "update" as const }],
-        repoName
+        repoName,
+        undefined,
+        manifestFileChange
       );
     } finally {
       try {

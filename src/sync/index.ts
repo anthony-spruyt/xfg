@@ -31,6 +31,7 @@ export type {
   IRepositoryProcessor,
   ProcessorOptions,
   ProcessorResult,
+  FileChangeDetail,
   IFileSyncOrchestrator,
   FileSyncResult,
   IPRMergeHandler,
