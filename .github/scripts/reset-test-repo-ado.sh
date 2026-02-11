@@ -38,8 +38,18 @@ ado_api() {
 
 # Step 1 — Auto-detect default branch
 echo "Step 1: Detecting default branch..."
-REPO_INFO=$(ado_api GET "${ORG_URL}/${PROJECT}/_apis/git/repositories/${REPO}?api-version=7.0")
-DEFAULT_BRANCH=$(printf '%s' "${REPO_INFO}" | jq -r '.defaultBranch // empty' | sed 's|refs/heads/||')
+DEFAULT_BRANCH=""
+for attempt in 1 2 3; do
+  REPO_INFO=$(ado_api GET "${ORG_URL}/${PROJECT}/_apis/git/repositories/${REPO}?api-version=7.0")
+  # Validate JSON response before parsing
+  if printf '%s' "${REPO_INFO}" | jq -e . >/dev/null 2>&1; then
+    DEFAULT_BRANCH=$(printf '%s' "${REPO_INFO}" | jq -r '.defaultBranch // empty' | sed 's|refs/heads/||')
+    break
+  else
+    echo "  Attempt ${attempt}/3: API returned non-JSON response, retrying..."
+    sleep 2
+  fi
+done
 if [ -z "${DEFAULT_BRANCH}" ]; then
   echo "  Could not detect default branch, assuming 'main'"
   DEFAULT_BRANCH="main"
@@ -66,8 +76,17 @@ fi
 
 # Step 3 — Delete all branches except default
 echo "Step 3: Deleting all branches except ${DEFAULT_BRANCH}..."
-REFS_JSON=$(ado_api GET "${ORG_URL}/${PROJECT}/_apis/git/repositories/${REPO}/refs?filter=heads/&api-version=7.0")
-REFS=$(printf '%s' "${REFS_JSON}" | jq -r '.value[]? | "\(.name) \(.objectId)"')
+REFS=""
+for attempt in 1 2 3; do
+  REFS_JSON=$(ado_api GET "${ORG_URL}/${PROJECT}/_apis/git/repositories/${REPO}/refs?filter=heads/&api-version=7.0")
+  if printf '%s' "${REFS_JSON}" | jq -e . >/dev/null 2>&1; then
+    REFS=$(printf '%s' "${REFS_JSON}" | jq -r '.value[]? | "\(.name) \(.objectId)"')
+    break
+  else
+    echo "  Attempt ${attempt}/3: API returned non-JSON response, retrying..."
+    sleep 2
+  fi
+done
 
 while IFS=' ' read -r ref_name object_id; do
   [ -z "${ref_name}" ] && continue
@@ -87,8 +106,17 @@ done <<<"${REFS}"
 echo "Step 4: Resetting ${DEFAULT_BRANCH} to README-only..."
 
 # Get latest commit on default branch
-LATEST_COMMIT=$(printf '%s' "$(ado_api GET "${ORG_URL}/${PROJECT}/_apis/git/repositories/${REPO}/refs?filter=heads/${DEFAULT_BRANCH}&api-version=7.0")" |
-  jq -r '.value[0].objectId // empty')
+LATEST_COMMIT=""
+for attempt in 1 2 3; do
+  REFS_RESPONSE=$(ado_api GET "${ORG_URL}/${PROJECT}/_apis/git/repositories/${REPO}/refs?filter=heads/${DEFAULT_BRANCH}&api-version=7.0")
+  if printf '%s' "${REFS_RESPONSE}" | jq -e . >/dev/null 2>&1; then
+    LATEST_COMMIT=$(printf '%s' "${REFS_RESPONSE}" | jq -r '.value[0].objectId // empty')
+    break
+  else
+    echo "  Attempt ${attempt}/3: API returned non-JSON response, retrying..."
+    sleep 2
+  fi
+done
 
 if [ -z "${LATEST_COMMIT}" ]; then
   echo "  No commits on default branch, skipping reset"
@@ -97,7 +125,23 @@ if [ -z "${LATEST_COMMIT}" ]; then
 fi
 
 # Get current tree items
-ITEMS_JSON=$(ado_api GET "${ORG_URL}/${PROJECT}/_apis/git/repositories/${REPO}/items?recursionLevel=full&api-version=7.0")
+ITEMS_JSON=""
+for attempt in 1 2 3; do
+  ITEMS_RESPONSE=$(ado_api GET "${ORG_URL}/${PROJECT}/_apis/git/repositories/${REPO}/items?recursionLevel=full&api-version=7.0")
+  if printf '%s' "${ITEMS_RESPONSE}" | jq -e . >/dev/null 2>&1; then
+    ITEMS_JSON="${ITEMS_RESPONSE}"
+    break
+  else
+    echo "  Attempt ${attempt}/3: API returned non-JSON response, retrying..."
+    sleep 2
+  fi
+done
+
+if [ -z "${ITEMS_JSON}" ]; then
+  echo "  Failed to get items after 3 attempts, skipping file cleanup"
+  echo "=== Reset complete ==="
+  exit 0
+fi
 
 # Build changes array: delete everything except README.md, then add/edit README.md
 README_CONTENT=$(printf '# %s\n\nIntegration test repository for xfg.\n' "${REPO}" | base64 -w 0)
