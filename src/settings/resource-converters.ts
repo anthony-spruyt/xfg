@@ -1,53 +1,6 @@
 import type { Resource, ResourceAction } from "../output/plan-formatter.js";
-import type { RulesetProcessorResult } from "./rulesets/processor.js";
 import type { ProcessorResult } from "../sync/index.js";
 import type { RepoConfig } from "../config/index.js";
-
-/**
- * Convert RulesetProcessorResult planOutput entries to Resource objects.
- * Includes the detailed plan lines in the first resource's details for display.
- */
-export function rulesetResultToResources(
-  repoName: string,
-  result: RulesetProcessorResult
-): Resource[] {
-  const resources: Resource[] = [];
-  const planLines = result.planOutput?.lines ?? [];
-
-  if (result.planOutput?.entries) {
-    for (let i = 0; i < result.planOutput.entries.length; i++) {
-      const entry = result.planOutput.entries[i];
-      let action: ResourceAction;
-      switch (entry.action) {
-        case "create":
-          action = "create";
-          break;
-        case "update":
-          action = "update";
-          break;
-        case "delete":
-          action = "delete";
-          break;
-        default:
-          action = "unchanged";
-      }
-
-      // Attach all plan lines to first resource for GitHub summary display
-      const details =
-        i === 0 && planLines.length > 0 ? { diff: planLines } : undefined;
-
-      resources.push({
-        type: "ruleset",
-        repo: repoName,
-        name: entry.name,
-        action,
-        details,
-      });
-    }
-  }
-
-  return resources;
-}
 
 /**
  * Convert sync ProcessorResult diffStats to Resource objects.
@@ -100,43 +53,6 @@ export function syncResultToResources(
       name: file.fileName,
       action,
     });
-  }
-
-  return resources;
-}
-
-/**
- * Convert repo settings processor planOutput entries to Resource objects.
- * Includes the detailed plan lines in the first resource's details for display.
- */
-export function repoSettingsResultToResources(
-  repoName: string,
-  result: {
-    planOutput?: {
-      entries?: Array<{ property: string; action: string }>;
-      lines?: string[];
-    };
-  }
-): Resource[] {
-  const resources: Resource[] = [];
-  const planLines = result.planOutput?.lines ?? [];
-
-  if (result.planOutput?.entries) {
-    for (let i = 0; i < result.planOutput.entries.length; i++) {
-      const entry = result.planOutput.entries[i];
-
-      // Attach all plan lines to first resource for GitHub summary display
-      const details =
-        i === 0 && planLines.length > 0 ? { diff: planLines } : undefined;
-
-      resources.push({
-        type: "setting",
-        repo: repoName,
-        name: entry.property,
-        action: entry.action === "add" ? "create" : "update",
-        details,
-      });
-    }
   }
 
   return resources;

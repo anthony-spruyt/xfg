@@ -5,8 +5,4 @@ export * from "./rulesets/index.js";
 export * from "./repo-settings/index.js";
 
 // Resource converters
-export {
-  rulesetResultToResources,
-  syncResultToResources,
-  repoSettingsResultToResources,
-} from "./resource-converters.js";
+export { syncResultToResources } from "./resource-converters.js";
