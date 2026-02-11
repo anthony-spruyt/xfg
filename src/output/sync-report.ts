@@ -59,6 +59,11 @@ export function formatSyncReportCLI(report: SyncReport): string[] {
       }
     }
 
+    // Error
+    if (repo.error) {
+      lines.push(chalk.red(`    Error: ${repo.error}`));
+    }
+
     lines.push(""); // Blank line between repos
   }
 
