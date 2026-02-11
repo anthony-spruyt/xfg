@@ -13,12 +13,13 @@ import { sanitizeBranchName, validateBranchName } from "../vcs/git-ops.js";
 import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoInfo } from "../shared/repo-detector.js";
-import { RepoResult } from "../output/github-summary.js";
-import { buildRepoResult, buildErrorResult } from "../output/summary-utils.js";
-import { Plan, printPlan } from "../output/plan-formatter.js";
-import { writePlanSummary } from "../output/plan-summary.js";
-import { syncResultToResources } from "../settings/resource-converters.js";
 import { ProcessorFactory, defaultProcessorFactory } from "./types.js";
+import { buildSyncReport } from "./sync-report-builder.js";
+import {
+  formatSyncReportCLI,
+  writeSyncReportSummary,
+} from "../output/sync-report.js";
+import type { ProcessorResult } from "../sync/index.js";
 
 /**
  * Shared options common to all commands.
@@ -78,6 +79,31 @@ function formatFileNames(fileNames: string[]): string {
 }
 
 /**
+ * Entry for collecting sync results
+ */
+interface SyncResultEntry {
+  repoName: string;
+  success: boolean;
+  fileChanges: Array<{ path: string; action: "create" | "update" | "delete" }>;
+  prUrl?: string;
+  mergeOutcome?: "manual" | "auto" | "force" | "direct";
+  error?: string;
+}
+
+/**
+ * Determine merge outcome from processor result
+ */
+function determineMergeOutcome(
+  result: ProcessorResult
+): "manual" | "auto" | "force" | "direct" | undefined {
+  if (!result.success) return undefined;
+  if (!result.prUrl) return "direct";
+  if (result.mergeResult?.merged) return "force";
+  if (result.mergeResult?.autoMergeEnabled) return "auto";
+  return "manual";
+}
+
+/**
  * Run the sync command - synchronizes files across repositories.
  */
 export async function runSync(
@@ -122,8 +148,7 @@ export async function runSync(
   console.log(`Branch: ${branchName}\n`);
 
   const processor = processorFactory();
-  const results: RepoResult[] = [];
-  const plan: Plan = { resources: [], errors: [] };
+  const reportResults: SyncResultEntry[] = [];
 
   for (let i = 0; i < config.repos.length; i++) {
     const repoConfig = config.repos[i];
@@ -148,10 +173,11 @@ export async function runSync(
       });
     } catch (error) {
       logger.error(current, repoConfig.git, String(error));
-      results.push(buildErrorResult(repoConfig.git, error));
-      plan.errors!.push({
-        repo: repoConfig.git,
-        message: error instanceof Error ? error.message : String(error),
+      reportResults.push({
+        repoName: repoConfig.git,
+        success: false,
+        fileChanges: [],
+        error: error instanceof Error ? error.message : String(error),
       });
       continue;
     }
@@ -174,39 +200,49 @@ export async function runSync(
         noDelete: options.noDelete,
       });
 
-      const repoResult = buildRepoResult(repoName, repoConfig, result);
-      results.push(repoResult);
+      const mergeOutcome = determineMergeOutcome(result);
+
+      reportResults.push({
+        repoName,
+        success: result.success,
+        fileChanges: (result.fileChanges ?? []).map((f) => ({
+          path: f.path,
+          action: f.action,
+        })),
+        prUrl: result.prUrl,
+        mergeOutcome,
+        error: result.success ? undefined : result.message,
+      });
 
       if (result.skipped) {
         logger.skip(current, repoName, result.message);
       } else if (result.success) {
-        logger.success(current, repoName, repoResult.message);
+        logger.success(current, repoName, result.message);
       } else {
         logger.error(current, repoName, result.message);
       }
-
-      plan.resources.push(
-        ...syncResultToResources(repoName, repoConfig, result)
-      );
     } catch (error) {
       logger.error(current, repoName, String(error));
-      results.push(buildErrorResult(repoName, error));
-      plan.errors!.push({
-        repo: repoName,
-        message: error instanceof Error ? error.message : String(error),
+      reportResults.push({
+        repoName,
+        success: false,
+        fileChanges: [],
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
 
+  // Build and display report
+  const report = buildSyncReport(reportResults);
   console.log("");
-  printPlan(plan);
+  for (const line of formatSyncReportCLI(report)) {
+    console.log(line);
+  }
+  writeSyncReportSummary(report, options.dryRun ?? false);
 
-  writePlanSummary(plan, {
-    title: "Config Sync Summary",
-    dryRun: options.dryRun ?? false,
-  });
-
-  if (plan.errors && plan.errors.length > 0) {
+  // Exit with error if any failures
+  const hasErrors = reportResults.some((r) => r.error);
+  if (hasErrors) {
     process.exit(1);
   }
 }
