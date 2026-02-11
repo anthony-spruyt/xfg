@@ -836,12 +836,16 @@ repos:
 
       const summary = readFileSync(summaryPath, "utf-8");
 
-      // Verify summary content - new Terraform-style format
+      // Verify summary content - new repo-grouped format
       assert.ok(
         summary.includes("## Config Sync Summary"),
         "Should have summary header"
       );
-      assert.ok(summary.includes("### Plan:"), "Should have plan summary line");
+      // The summary uses **Plan: or **No changes**
+      assert.ok(
+        summary.includes("**Plan:") || summary.includes("**No changes**"),
+        "Should have plan summary line"
+      );
     });
 
     test("does not write summary when GITHUB_STEP_SUMMARY not set", () => {
