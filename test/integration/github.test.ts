@@ -613,8 +613,9 @@ describe("GitHub Integration Test", () => {
     console.log(`  New PR created: #${pr2.number} - ${pr2.title}`);
 
     // The key assertion: xfg should have succeeded even with divergent history
+    // Look for success indicator (✓) or PR URL (github.com) in output
     assert.ok(
-      output2.includes("PR:") || output2.includes("Succeeded: 1"),
+      output2.includes("✓") || output2.includes("github.com"),
       "Output should indicate PR creation succeeded"
     );
 
