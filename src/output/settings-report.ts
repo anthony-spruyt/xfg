@@ -50,6 +50,15 @@ function formatValue(val: unknown): string {
 function formatRulesetConfig(config: Ruleset, indent: number): string[] {
   const lines: string[] = [];
 
+  function renderObject(
+    obj: Record<string, unknown>,
+    currentIndent: number
+  ): void {
+    for (const [k, v] of Object.entries(obj)) {
+      renderValue(k, v, currentIndent);
+    }
+  }
+
   function renderValue(
     key: string,
     value: unknown,
@@ -69,9 +78,13 @@ function formatRulesetConfig(config: Ruleset, indent: number): string[] {
         );
       } else {
         lines.push(chalk.green(`${pad}+ ${key}:`));
-        for (const item of value) {
+        for (let i = 0; i < value.length; i++) {
+          const item = value[i];
           if (typeof item === "object" && item !== null) {
-            lines.push(chalk.green(`${pad}    + ${JSON.stringify(item)}`));
+            const obj = item as Record<string, unknown>;
+            const typeLabel = "type" in obj ? ` (${obj.type})` : "";
+            lines.push(chalk.green(`${pad}    + [${i}]${typeLabel}:`));
+            renderObject(obj, currentIndent + 2);
           } else {
             lines.push(chalk.green(`${pad}    + ${formatValue(item)}`));
           }
@@ -79,9 +92,7 @@ function formatRulesetConfig(config: Ruleset, indent: number): string[] {
       }
     } else if (typeof value === "object") {
       lines.push(chalk.green(`${pad}+ ${key}:`));
-      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-        renderValue(k, v, currentIndent + 1);
-      }
+      renderObject(value as Record<string, unknown>, currentIndent + 1);
     } else {
       lines.push(chalk.green(`${pad}+ ${key}: ${formatValue(value)}`));
     }
@@ -150,6 +161,10 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
 
     // Settings
     for (const setting of repo.settings) {
+      // Skip settings where both values are undefined
+      if (setting.oldValue === undefined && setting.newValue === undefined) {
+        continue;
+      }
       if (setting.action === "add") {
         lines.push(
           chalk.green(`    + ${setting.name}: ${formatValue(setting.newValue)}`)
@@ -212,6 +227,15 @@ function formatValuePlain(val: unknown): string {
 function formatRulesetConfigPlain(config: Ruleset, indent: number): string[] {
   const lines: string[] = [];
 
+  function renderObject(
+    obj: Record<string, unknown>,
+    currentIndent: number
+  ): void {
+    for (const [k, v] of Object.entries(obj)) {
+      renderValue(k, v, currentIndent);
+    }
+  }
+
   function renderValue(
     key: string,
     value: unknown,
@@ -229,9 +253,13 @@ function formatRulesetConfigPlain(config: Ruleset, indent: number): string[] {
         );
       } else {
         lines.push(`${pad}+ ${key}:`);
-        for (const item of value) {
+        for (let i = 0; i < value.length; i++) {
+          const item = value[i];
           if (typeof item === "object" && item !== null) {
-            lines.push(`${pad}    + ${JSON.stringify(item)}`);
+            const obj = item as Record<string, unknown>;
+            const typeLabel = "type" in obj ? ` (${obj.type})` : "";
+            lines.push(`${pad}    + [${i}]${typeLabel}:`);
+            renderObject(obj, currentIndent + 2);
           } else {
             lines.push(`${pad}    + ${formatValuePlain(item)}`);
           }
@@ -239,9 +267,7 @@ function formatRulesetConfigPlain(config: Ruleset, indent: number): string[] {
       }
     } else if (typeof value === "object") {
       lines.push(`${pad}+ ${key}:`);
-      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-        renderValue(k, v, currentIndent + 1);
-      }
+      renderObject(value as Record<string, unknown>, currentIndent + 1);
     } else {
       lines.push(`${pad}+ ${key}: ${formatValuePlain(value)}`);
     }
@@ -288,6 +314,10 @@ export function formatSettingsReportMarkdown(
     diffLines.push(`~ ${repo.repoName}`);
 
     for (const setting of repo.settings) {
+      // Skip settings where both values are undefined
+      if (setting.oldValue === undefined && setting.newValue === undefined) {
+        continue;
+      }
       if (setting.action === "add") {
         diffLines.push(
           `    + ${setting.name}: ${formatValuePlain(setting.newValue)}`

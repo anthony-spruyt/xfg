@@ -363,6 +363,101 @@ describe("formatSettingsReportCLI", () => {
     assert.ok(output.includes("deleteBranchOnMerge"), "should include setting");
     assert.ok(output.includes("branch-protection"), "should include ruleset");
   });
+
+  test("skips settings where both oldValue and newValue are undefined", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [
+            {
+              name: "has_issues",
+              action: "change",
+              oldValue: undefined,
+              newValue: undefined,
+            },
+            {
+              name: "deleteBranchOnMerge",
+              action: "change",
+              oldValue: false,
+              newValue: true,
+            },
+          ],
+          rulesets: [],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 2 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(
+      !output.includes("has_issues"),
+      "should NOT include setting with both values undefined"
+    );
+    assert.ok(
+      output.includes("deleteBranchOnMerge"),
+      "should include valid setting"
+    );
+  });
+
+  test("renders rules array items as broken down properties", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [
+            {
+              name: "branch-protection",
+              action: "create",
+              config: {
+                name: "branch-protection",
+                target: "branch",
+                enforcement: "active",
+                rules: [
+                  {
+                    type: "pull_request",
+                    parameters: {
+                      requiredApprovingReviewCount: 1,
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    // Should NOT contain JSON blob format
+    assert.ok(
+      !output.includes('{"type":"pull_request"'),
+      "should NOT show rules as JSON blob"
+    );
+    // Should contain broken down properties
+    assert.ok(output.includes("type:"), "should show type property");
+    assert.ok(
+      output.includes("pull_request") || output.includes('"pull_request"'),
+      "should show type value"
+    );
+    assert.ok(
+      output.includes("parameters:") ||
+        output.includes("requiredApprovingReviewCount"),
+      "should show parameters"
+    );
+  });
 });
 
 describe("formatSettingsReportMarkdown", () => {
@@ -476,6 +571,94 @@ describe("formatSettingsReportMarkdown", () => {
 
     assert.ok(!markdown.includes("[!WARNING]"), "should not include warning");
     assert.ok(!markdown.includes("Dry Run"), "should not mention dry run");
+  });
+
+  test("skips settings where both oldValue and newValue are undefined", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [
+            {
+              name: "has_issues",
+              action: "change",
+              oldValue: undefined,
+              newValue: undefined,
+            },
+            {
+              name: "deleteBranchOnMerge",
+              action: "change",
+              oldValue: false,
+              newValue: true,
+            },
+          ],
+          rulesets: [],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 2 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      !markdown.includes("has_issues"),
+      "should NOT include setting with both values undefined"
+    );
+    assert.ok(
+      markdown.includes("deleteBranchOnMerge"),
+      "should include valid setting"
+    );
+  });
+
+  test("renders rules array items as broken down properties", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [
+            {
+              name: "branch-protection",
+              action: "create",
+              config: {
+                name: "branch-protection",
+                target: "branch",
+                enforcement: "active",
+                rules: [
+                  {
+                    type: "pull_request",
+                    parameters: {
+                      requiredApprovingReviewCount: 1,
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    // Should NOT contain JSON blob format
+    assert.ok(
+      !markdown.includes('{"type":"pull_request"'),
+      "should NOT show rules as JSON blob"
+    );
+    // Should contain broken down properties
+    assert.ok(markdown.includes("type:"), "should show type property");
+    assert.ok(
+      markdown.includes("pull_request") || markdown.includes('"pull_request"'),
+      "should show type value"
+    );
   });
 });
 
