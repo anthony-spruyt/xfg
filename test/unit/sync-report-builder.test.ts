@@ -2,7 +2,6 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import { buildSyncReport } from "../../src/cli/sync-report-builder.js";
-import type { SyncReport } from "../../src/output/sync-report.js";
 
 describe("buildSyncReport", () => {
   test("builds report from empty results", () => {
