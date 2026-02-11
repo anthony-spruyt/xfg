@@ -1,3 +1,4 @@
+import { appendFileSync } from "node:fs";
 import chalk from "chalk";
 import {
   formatPropertyTree,
@@ -343,4 +344,19 @@ export function formatSettingsReportMarkdown(
   lines.push(`**${formatSummary(report.totals)}**`);
 
   return lines.join("\n");
+}
+
+// =============================================================================
+// File Writer
+// =============================================================================
+
+export function writeSettingsReportSummary(
+  report: SettingsReport,
+  dryRun: boolean
+): void {
+  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+  if (!summaryPath) return;
+
+  const markdown = formatSettingsReportMarkdown(report, dryRun);
+  appendFileSync(summaryPath, "\n" + markdown + "\n");
 }
