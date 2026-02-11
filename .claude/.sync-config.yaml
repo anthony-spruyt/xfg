@@ -1,0 +1,3 @@
+exclude_files:
+  - "hookify.common-block-base64-decode.local.md"
+  - "hookify.common-block-read-secrets-generic.local.md"
