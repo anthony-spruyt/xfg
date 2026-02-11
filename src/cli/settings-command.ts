@@ -13,12 +13,13 @@ import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoResult } from "../output/github-summary.js";
 import { buildErrorResult } from "../output/summary-utils.js";
 import { getManagedRulesets } from "../sync/manifest.js";
-import { Plan, printPlan } from "../output/plan-formatter.js";
-import { writePlanSummary } from "../output/plan-summary.js";
 import {
-  rulesetResultToResources,
-  repoSettingsResultToResources,
-} from "../settings/resource-converters.js";
+  formatSettingsReportCLI,
+  writeSettingsReportSummary,
+} from "../output/settings-report.js";
+import { buildSettingsReport } from "./settings-report-builder.js";
+import type { RepoSettingsPlanEntry } from "../settings/repo-settings/formatter.js";
+import type { RulesetPlanEntry } from "../settings/rulesets/formatter.js";
 import { SharedOptions } from "./sync-command.js";
 import {
   ProcessorFactory,
@@ -95,7 +96,24 @@ export async function runSettings(
   const processor = processorFactory();
   const repoProcessor = repoProcessorFactory();
   const results: RepoResult[] = [];
-  const plan: Plan = { resources: [], errors: [] };
+
+  // Result collection for the new SettingsReport
+  interface RepoProcessingResult {
+    repoName: string;
+    settingsResult?: { planOutput?: { entries?: RepoSettingsPlanEntry[] } };
+    rulesetResult?: { planOutput?: { entries?: RulesetPlanEntry[] } };
+    error?: string;
+  }
+  const processingResults: RepoProcessingResult[] = [];
+
+  function getOrCreateResult(repoName: string): RepoProcessingResult {
+    let result = processingResults.find((r) => r.repoName === repoName);
+    if (!result) {
+      result = { repoName };
+      processingResults.push(result);
+    }
+    return result;
+  }
 
   for (let i = 0; i < reposWithRulesets.length; i++) {
     const repoConfig = reposWithRulesets[i];
@@ -108,10 +126,8 @@ export async function runSettings(
     } catch (error) {
       logger.error(i + 1, repoConfig.git, String(error));
       results.push(buildErrorResult(repoConfig.git, error));
-      plan.errors!.push({
-        repo: repoConfig.git,
-        message: error instanceof Error ? error.message : String(error),
-      });
+      getOrCreateResult(repoConfig.git).error =
+        error instanceof Error ? error.message : String(error);
       continue;
     }
 
@@ -123,17 +139,7 @@ export async function runSettings(
         repoName,
         "GitHub Rulesets only supported for GitHub repos"
       );
-      if (repoConfig.settings?.rulesets) {
-        for (const rulesetName of Object.keys(repoConfig.settings.rulesets)) {
-          plan.resources.push({
-            type: "ruleset",
-            repo: repoName,
-            name: rulesetName,
-            action: "skipped",
-            skipReason: "GitHub Rulesets only supported for GitHub repos",
-          });
-        }
-      }
+      // Skipped repos don't appear in the report
       continue;
     }
 
@@ -203,14 +209,20 @@ export async function runSettings(
         rulesetPlanDetails: result.planOutput?.entries,
       });
 
-      plan.resources.push(...rulesetResultToResources(repoName, result));
+      // Collect result for SettingsReport
+      if (!result.skipped) {
+        getOrCreateResult(repoName).rulesetResult = result;
+      }
     } catch (error) {
       logger.error(i + 1, repoName, String(error));
       results.push(buildErrorResult(repoName, error));
-      plan.errors!.push({
-        repo: repoName,
-        message: error instanceof Error ? error.message : String(error),
-      });
+      const existingResult = getOrCreateResult(repoName);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      if (existingResult.error) {
+        existingResult.error += `; ${errorMsg}`;
+      } else {
+        existingResult.error = errorMsg;
+      }
     }
   }
 
@@ -230,10 +242,8 @@ export async function runSettings(
         });
       } catch (error) {
         console.error(`Failed to parse ${repoConfig.git}: ${error}`);
-        plan.errors!.push({
-          repo: repoConfig.git,
-          message: error instanceof Error ? error.message : String(error),
-        });
+        getOrCreateResult(repoConfig.git).error =
+          error instanceof Error ? error.message : String(error);
         continue;
       }
 
@@ -283,26 +293,33 @@ export async function runSettings(
           }
         }
 
-        plan.resources.push(...repoSettingsResultToResources(repoName, result));
+        // Collect result for SettingsReport
+        if (!result.skipped) {
+          getOrCreateResult(repoName).settingsResult = result;
+        }
       } catch (error) {
         console.error(`  ✗ ${repoName}: ${error}`);
-        plan.errors!.push({
-          repo: repoName,
-          message: error instanceof Error ? error.message : String(error),
-        });
+        const existingResult = getOrCreateResult(repoName);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        if (existingResult.error) {
+          existingResult.error += `; ${errorMsg}`;
+        } else {
+          existingResult.error = errorMsg;
+        }
       }
     }
   }
 
   console.log("");
-  printPlan(plan);
+  const report = buildSettingsReport(processingResults);
+  const lines = formatSettingsReportCLI(report);
+  for (const line of lines) {
+    console.log(line);
+  }
+  writeSettingsReportSummary(report, options.dryRun ?? false);
 
-  writePlanSummary(plan, {
-    title: "Repository Settings Summary",
-    dryRun: options.dryRun ?? false,
-  });
-
-  if (plan.errors && plan.errors.length > 0) {
+  const hasErrors = report.repos.some((r) => r.error);
+  if (hasErrors) {
     process.exit(1);
   }
 }
