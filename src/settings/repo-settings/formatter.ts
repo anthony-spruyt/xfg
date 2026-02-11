@@ -4,6 +4,8 @@ import type { RepoSettingsChange } from "./diff.js";
 export interface RepoSettingsPlanEntry {
   property: string;
   action: "add" | "change";
+  oldValue?: unknown;
+  newValue?: unknown;
 }
 
 export interface RepoSettingsPlanResult {
@@ -76,7 +78,11 @@ export function formatRepoSettingsPlan(
         chalk.green(`    + ${change.property}: ${formatValue(change.newValue)}`)
       );
       adds++;
-      entries.push({ property: change.property, action: "add" });
+      entries.push({
+        property: change.property,
+        action: "add",
+        newValue: change.newValue,
+      });
     } else if (change.action === "change") {
       lines.push(
         chalk.yellow(
@@ -84,7 +90,12 @@ export function formatRepoSettingsPlan(
         )
       );
       changesCount++;
-      entries.push({ property: change.property, action: "change" });
+      entries.push({
+        property: change.property,
+        action: "change",
+        oldValue: change.oldValue,
+        newValue: change.newValue,
+      });
     }
   }
 
