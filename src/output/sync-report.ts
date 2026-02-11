@@ -1,4 +1,5 @@
 // src/output/sync-report.ts
+import { appendFileSync } from "node:fs";
 import chalk from "chalk";
 
 export interface SyncReport {
@@ -127,4 +128,15 @@ export function formatSyncReportMarkdown(
   lines.push(`**${formatSummary(report.totals)}**`);
 
   return lines.join("\n");
+}
+
+export function writeSyncReportSummary(
+  report: SyncReport,
+  dryRun: boolean
+): void {
+  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+  if (!summaryPath) return;
+
+  const markdown = formatSyncReportMarkdown(report, dryRun);
+  appendFileSync(summaryPath, "\n" + markdown + "\n");
 }
