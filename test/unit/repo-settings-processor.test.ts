@@ -305,6 +305,49 @@ describe("RepoSettingsProcessor", () => {
     );
   });
 
+  test("should only send changed settings to updateSettings, not the entire config", async () => {
+    // Regression test: when some settings match and others differ,
+    // only the differing settings should be sent to the API.
+    // This prevents errors like "allow_forking can only be changed on org-owned repos"
+    // when allowForking is in the config but unchanged.
+    mockStrategy.getSettingsResult = {
+      has_wiki: true,
+      allow_forking: true, // Already matches desired value
+      delete_branch_on_merge: false, // Different from desired
+    };
+
+    const processor = new RepoSettingsProcessor(mockStrategy);
+    const repoConfig: RepoConfig = {
+      git: githubRepo.gitUrl,
+      files: [],
+      settings: {
+        repo: {
+          hasWiki: true, // Matches - should NOT be sent
+          allowForking: true, // Matches - should NOT be sent
+          deleteBranchOnMerge: true, // Changed - should be sent
+        },
+      },
+    };
+
+    await processor.process(repoConfig, githubRepo, { dryRun: false });
+
+    assert.equal(mockStrategy.updateSettingsCalls.length, 1);
+    const sentSettings = mockStrategy.updateSettingsCalls[0].settings;
+
+    // Only deleteBranchOnMerge should be sent (the only changed setting)
+    assert.equal(sentSettings.deleteBranchOnMerge, true);
+    assert.equal(
+      sentSettings.hasWiki,
+      undefined,
+      "hasWiki matches current - should not be sent"
+    );
+    assert.equal(
+      sentSettings.allowForking,
+      undefined,
+      "allowForking matches current - should not be sent"
+    );
+  });
+
   test("should handle errors gracefully", async () => {
     const errorStrategy: IRepoSettingsStrategy = {
       getSettings: async () => {
