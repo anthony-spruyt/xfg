@@ -72,3 +72,59 @@ export function formatSyncReportCLI(report: SyncReport): string[] {
 
   return lines;
 }
+
+export function formatSyncReportMarkdown(
+  report: SyncReport,
+  dryRun: boolean
+): string {
+  const lines: string[] = [];
+
+  // Title
+  const titleSuffix = dryRun ? " (Dry Run)" : "";
+  lines.push(`## Config Sync Summary${titleSuffix}`);
+  lines.push("");
+
+  // Dry-run warning
+  if (dryRun) {
+    lines.push("> [!WARNING]");
+    lines.push("> This was a dry run — no changes were applied");
+    lines.push("");
+  }
+
+  // Diff block
+  const diffLines: string[] = [];
+
+  for (const repo of report.repos) {
+    if (repo.files.length === 0 && !repo.error) {
+      continue;
+    }
+
+    diffLines.push(`~ ${repo.repoName}`);
+
+    for (const file of repo.files) {
+      if (file.action === "create") {
+        diffLines.push(`    + ${file.path}`);
+      } else if (file.action === "update") {
+        diffLines.push(`    ~ ${file.path}`);
+      } else if (file.action === "delete") {
+        diffLines.push(`    - ${file.path}`);
+      }
+    }
+
+    if (repo.error) {
+      diffLines.push(`    ! Error: ${repo.error}`);
+    }
+  }
+
+  if (diffLines.length > 0) {
+    lines.push("```diff");
+    lines.push(...diffLines);
+    lines.push("```");
+    lines.push("");
+  }
+
+  // Summary
+  lines.push(`**${formatSummary(report.totals)}**`);
+
+  return lines.join("\n");
+}

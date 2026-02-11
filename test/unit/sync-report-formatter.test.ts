@@ -3,6 +3,7 @@ import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   formatSyncReportCLI,
+  formatSyncReportMarkdown,
   type SyncReport,
   type RepoFileChanges,
   type FileChange,
@@ -157,5 +158,100 @@ describe("formatSyncReportCLI", () => {
     assert.ok(output.includes("org/repo"), "should include repo name");
     // PR info is optional in CLI output - just verify no crash
     assert.ok(output.includes("README.md"), "should include file");
+  });
+});
+
+describe("formatSyncReportMarkdown", () => {
+  test("includes dry run warning when dryRun=true", () => {
+    const report: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [{ path: "README.md", action: "update" }],
+        },
+      ],
+      totals: {
+        files: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const markdown = formatSyncReportMarkdown(report, true);
+
+    assert.ok(
+      markdown.includes("(Dry Run)"),
+      "should include dry run in title"
+    );
+    assert.ok(
+      markdown.includes("[!WARNING]"),
+      "should include warning callout"
+    );
+    assert.ok(
+      markdown.includes("no changes were applied"),
+      "should explain dry run"
+    );
+  });
+
+  test("wraps output in diff code block", () => {
+    const report: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [
+            { path: ".github/ci.yml", action: "create" },
+            { path: "README.md", action: "update" },
+          ],
+        },
+      ],
+      totals: {
+        files: { create: 1, update: 1, delete: 0 },
+      },
+    };
+
+    const markdown = formatSyncReportMarkdown(report, false);
+
+    assert.ok(markdown.includes("```diff"), "should have diff code block");
+    assert.ok(markdown.includes("org/repo"), "should include repo name");
+    assert.ok(markdown.includes("ci.yml"), "should include file");
+  });
+
+  test("includes plan summary as bold text", () => {
+    const report: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [{ path: "README.md", action: "update" }],
+        },
+      ],
+      totals: {
+        files: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const markdown = formatSyncReportMarkdown(report, false);
+
+    assert.ok(markdown.includes("**Plan:"), "should have bold plan summary");
+  });
+
+  test("renders error in markdown", () => {
+    const report: SyncReport = {
+      repos: [
+        {
+          repoName: "org/failed-repo",
+          files: [],
+          error: "Connection refused",
+        },
+      ],
+      totals: {
+        files: { create: 0, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSyncReportMarkdown(report, false);
+
+    assert.ok(markdown.includes("org/failed-repo"), "should include repo name");
+    assert.ok(
+      markdown.includes("Error:") || markdown.includes("!"),
+      "should indicate error"
+    );
   });
 });
