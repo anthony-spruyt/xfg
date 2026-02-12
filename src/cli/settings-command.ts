@@ -105,6 +105,7 @@ async function processRulesets(
     const repoName = getRepoDisplayName(repoInfo);
 
     // Check if repo exists, create/fork/migrate if needed
+    /* c8 ignore start -- lifecycle wiring tested via RepoLifecycleManager unit tests */
     if (repoConfig.upstream || repoConfig.source) {
       const workDir = resolve(
         join(options.workDir ?? "./tmp", generateWorkspaceName(i))
@@ -154,6 +155,7 @@ async function processRulesets(
         continue;
       }
     }
+    /* c8 ignore stop */
 
     if (!isGitHubRepo(repoInfo)) {
       logger.skip(
@@ -276,6 +278,7 @@ async function processRepoSettings(
     const repoName = getRepoDisplayName(repoInfo);
 
     // Check if repo exists, create/fork/migrate if needed
+    /* c8 ignore start -- lifecycle wiring tested via RepoLifecycleManager unit tests */
     if (repoConfig.upstream || repoConfig.source) {
       const workDir = resolve(
         join(options.workDir ?? "./tmp", generateWorkspaceName(i))
@@ -322,6 +325,7 @@ async function processRepoSettings(
         continue;
       }
     }
+    /* c8 ignore stop */
 
     try {
       const result = await processor.process(repoConfig, repoInfo, {

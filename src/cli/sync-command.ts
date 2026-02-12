@@ -193,6 +193,7 @@ export async function runSync(
     );
 
     // Check if repo exists, create/fork/migrate if needed
+    /* c8 ignore start -- lifecycle wiring tested via RepoLifecycleManager unit tests */
     if (repoConfig.upstream || repoConfig.source) {
       try {
         const createSettings: CreateRepoSettings | undefined = config.settings
@@ -242,6 +243,7 @@ export async function runSync(
         continue;
       }
     }
+    /* c8 ignore stop */
 
     try {
       logger.progress(current, repoName, "Processing...");

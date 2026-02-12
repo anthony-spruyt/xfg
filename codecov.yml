@@ -23,6 +23,7 @@ ignore:
   # Type-only files (no executable code)
   - "src/cli/types.ts"
   - "src/config/types.ts"
+  - "src/lifecycle/types.ts"
   - "src/sync/types.ts"
   - "src/vcs/types.ts"
   - "src/settings/rulesets/types.ts"
@@ -31,6 +32,7 @@ ignore:
   # Re-export index files (no logic, just exports)
   - "src/cli/index.ts"
   - "src/config/index.ts"
+  - "src/lifecycle/index.ts"
   - "src/sync/index.ts"
   - "src/vcs/index.ts"
   - "src/shared/index.ts"

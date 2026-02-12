@@ -46,12 +46,13 @@ describe("formatLifecycleAction", () => {
       action: "migrated",
     };
 
+    const sourceUrl = "dev.azure.com/org/project/repo";
     const lines = formatLifecycleAction(result, {
-      source: "dev.azure.com/org/project/repo",
+      source: sourceUrl,
     });
 
     assert.ok(lines.some((l) => l.includes("MIGRATE")));
-    assert.ok(lines.some((l) => l.includes("dev.azure.com/")));
+    assert.ok(lines.some((l) => l.includes(sourceUrl)));
     assert.ok(lines.some((l) => l.includes("my-org/my-repo")));
   });
 
