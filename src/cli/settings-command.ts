@@ -34,6 +34,10 @@ import {
 } from "./types.js";
 import type { Config, RepoConfig } from "../config/types.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
+import {
+  RepoLifecycleManager,
+  type CreateRepoSettings,
+} from "../lifecycle/index.js";
 
 /**
  * Options for the settings command.
@@ -99,6 +103,57 @@ async function processRulesets(
     }
 
     const repoName = getRepoDisplayName(repoInfo);
+
+    // Check if repo exists, create/fork/migrate if needed
+    if (repoConfig.upstream || repoConfig.source) {
+      const workDir = resolve(
+        join(options.workDir ?? "./tmp", generateWorkspaceName(i))
+      );
+      const lifecycleManager = new RepoLifecycleManager();
+      try {
+        const createSettings: CreateRepoSettings | undefined = config.settings
+          ?.repo
+          ? {
+              visibility: config.settings.repo.visibility,
+              hasIssues: config.settings.repo.hasIssues,
+              hasWiki: config.settings.repo.hasWiki,
+              hasProjects: config.settings.repo.hasProjects,
+            }
+          : undefined;
+
+        const lifecycleResult = await lifecycleManager.ensureRepo(
+          repoConfig,
+          repoInfo,
+          {
+            dryRun: options.dryRun ?? false,
+            workDir,
+            retries: options.retries,
+          },
+          createSettings
+        );
+
+        if (lifecycleResult.action !== "existed") {
+          const actionVerb = lifecycleResult.skipped ? "Would" : "Successfully";
+          const actionMap = {
+            created: "created",
+            forked: "forked",
+            migrated: "migrated",
+          };
+          logger.info(
+            `${actionVerb} ${actionMap[lifecycleResult.action]} repository: ${repoName}`
+          );
+        }
+      } catch (error) {
+        logger.error(
+          i + 1,
+          repoName,
+          `Lifecycle error: ${error instanceof Error ? error.message : String(error)}`
+        );
+        results.push(buildErrorResult(repoName, error));
+        collector.appendError(repoName, error);
+        continue;
+      }
+    }
 
     if (!isGitHubRepo(repoInfo)) {
       logger.skip(
@@ -219,6 +274,54 @@ async function processRepoSettings(
     }
 
     const repoName = getRepoDisplayName(repoInfo);
+
+    // Check if repo exists, create/fork/migrate if needed
+    if (repoConfig.upstream || repoConfig.source) {
+      const workDir = resolve(
+        join(options.workDir ?? "./tmp", generateWorkspaceName(i))
+      );
+      const lifecycleManager = new RepoLifecycleManager();
+      try {
+        const createSettings: CreateRepoSettings | undefined = config.settings
+          ?.repo
+          ? {
+              visibility: config.settings.repo.visibility,
+              hasIssues: config.settings.repo.hasIssues,
+              hasWiki: config.settings.repo.hasWiki,
+              hasProjects: config.settings.repo.hasProjects,
+            }
+          : undefined;
+
+        const lifecycleResult = await lifecycleManager.ensureRepo(
+          repoConfig,
+          repoInfo,
+          {
+            dryRun: options.dryRun ?? false,
+            workDir,
+            retries: options.retries,
+          },
+          createSettings
+        );
+
+        if (lifecycleResult.action !== "existed") {
+          const actionVerb = lifecycleResult.skipped ? "Would" : "Successfully";
+          const actionMap = {
+            created: "created",
+            forked: "forked",
+            migrated: "migrated",
+          };
+          console.log(
+            `  ${actionVerb} ${actionMap[lifecycleResult.action]} repository: ${repoName}`
+          );
+        }
+      } catch (error) {
+        console.error(
+          `  Lifecycle error for ${repoName}: ${error instanceof Error ? error.message : String(error)}`
+        );
+        collector.appendError(repoName, error);
+        continue;
+      }
+    }
 
     try {
       const result = await processor.process(repoConfig, repoInfo, {
