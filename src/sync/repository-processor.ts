@@ -1,18 +1,10 @@
-import { RepoConfig } from "../config/index.js";
-import { RepoInfo, getRepoDisplayName } from "../shared/repo-detector.js";
+import type { RepoConfig } from "../config/index.js";
+import type { RepoInfo } from "../shared/repo-detector.js";
 import { GitOps } from "../vcs/git-ops.js";
 import { AuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
 import { logger, ILogger } from "../shared/logger.js";
 import { hasGitHubAppCredentials } from "../vcs/index.js";
-import { defaultExecutor } from "../shared/command-executor.js";
-import {
-  loadManifest,
-  saveManifest,
-  updateManifestRulesets,
-  MANIFEST_FILENAME,
-} from "./manifest.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
-import { formatCommitMessage } from "./commit-message.js";
 import {
   FileWriter,
   ManifestManager,
@@ -22,6 +14,12 @@ import {
   CommitPushManager,
   FileSyncOrchestrator,
   PRMergeHandler,
+  FileSyncStrategy,
+  ManifestStrategy,
+  SyncWorkflow,
+  loadManifest,
+  updateManifestRulesets,
+  MANIFEST_FILENAME,
   type IFileWriter,
   type IManifestManager,
   type IBranchManager,
@@ -30,38 +28,23 @@ import {
   type ICommitPushManager,
   type IFileSyncOrchestrator,
   type IPRMergeHandler,
+  type ISyncWorkflow,
   type IRepositoryProcessor,
-  type FileWriteResult,
-  type SessionContext,
   type GitOpsFactory,
   type ProcessorOptions,
   type ProcessorResult,
   type FileChangeDetail,
 } from "./index.js";
-import { FileAction } from "../vcs/pr-creator.js";
+import { getRepoDisplayName } from "../shared/repo-detector.js";
 
-function mapToFileChangeDetails(
-  changedFiles: FileAction[]
-): FileChangeDetail[] {
-  return changedFiles
-    .filter((f) => f.action !== "skip")
-    .map((f) => ({
-      path: f.fileName,
-      action: f.action as "create" | "update" | "delete",
-    }));
-}
-
+/**
+ * Thin facade that delegates to SyncWorkflow with appropriate strategy.
+ * process() uses FileSyncStrategy, updateManifestOnly() uses ManifestStrategy.
+ */
 export class RepositoryProcessor implements IRepositoryProcessor {
-  private readonly gitOpsFactory: GitOpsFactory;
-  private readonly log: ILogger;
-  private readonly authOptionsBuilder: IAuthOptionsBuilder;
-  private readonly repositorySession: IRepositorySession;
-  private readonly commitPushManager: ICommitPushManager;
-  private readonly fileWriter: IFileWriter;
-  private readonly manifestManager: IManifestManager;
-  private readonly branchManager: IBranchManager;
+  private readonly syncWorkflow: ISyncWorkflow;
   private readonly fileSyncOrchestrator: IFileSyncOrchestrator;
-  private readonly prMergeHandler: IPRMergeHandler;
+  private readonly log: ILogger;
 
   constructor(
     gitOpsFactory?: GitOpsFactory,
@@ -75,18 +58,14 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       commitPushManager?: ICommitPushManager;
       fileSyncOrchestrator?: IFileSyncOrchestrator;
       prMergeHandler?: IPRMergeHandler;
+      syncWorkflow?: ISyncWorkflow;
     }
   ) {
     const factory =
       gitOpsFactory ??
       ((opts, auth) => new AuthenticatedGitOps(new GitOps(opts), auth));
     const logInstance = log ?? logger;
-
-    this.gitOpsFactory = factory;
     this.log = logInstance;
-    this.fileWriter = components?.fileWriter ?? new FileWriter();
-    this.manifestManager = components?.manifestManager ?? new ManifestManager();
-    this.branchManager = components?.branchManager ?? new BranchManager();
 
     // Initialize token manager for auth builder
     const tokenManager = hasGitHubAppCredentials()
@@ -96,23 +75,35 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         )
       : null;
 
-    this.authOptionsBuilder =
+    const fileWriter = components?.fileWriter ?? new FileWriter();
+    const manifestManager =
+      components?.manifestManager ?? new ManifestManager();
+    const branchManager = components?.branchManager ?? new BranchManager();
+    const authOptionsBuilder =
       components?.authOptionsBuilder ??
       new AuthOptionsBuilder(tokenManager, logInstance);
-    this.repositorySession =
+    const repositorySession =
       components?.repositorySession ??
       new RepositorySession(factory, logInstance);
-    this.commitPushManager =
+    const commitPushManager =
       components?.commitPushManager ?? new CommitPushManager(logInstance);
+    const prMergeHandler =
+      components?.prMergeHandler ?? new PRMergeHandler(logInstance);
+
     this.fileSyncOrchestrator =
       components?.fileSyncOrchestrator ??
-      new FileSyncOrchestrator(
-        this.fileWriter,
-        this.manifestManager,
+      new FileSyncOrchestrator(fileWriter, manifestManager, logInstance);
+
+    this.syncWorkflow =
+      components?.syncWorkflow ??
+      new SyncWorkflow(
+        authOptionsBuilder,
+        repositorySession,
+        branchManager,
+        commitPushManager,
+        prMergeHandler,
         logInstance
       );
-    this.prMergeHandler =
-      components?.prMergeHandler ?? new PRMergeHandler(logInstance);
   }
 
   async process(
@@ -120,152 +111,8 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     repoInfo: RepoInfo,
     options: ProcessorOptions
   ): Promise<ProcessorResult> {
-    const repoName = getRepoDisplayName(repoInfo);
-    const { branchName, workDir, dryRun, prTemplate } = options;
-    const retries = options.retries ?? 3;
-    const executor = options.executor ?? defaultExecutor;
-
-    // Resolve auth
-    const authResult = await this.authOptionsBuilder.resolve(
-      repoInfo,
-      repoName
-    );
-    if (authResult.skipResult) {
-      return authResult.skipResult;
-    }
-
-    // Determine merge mode
-    const mergeMode = repoConfig.prOptions?.merge ?? "auto";
-    const isDirectMode = mergeMode === "direct";
-
-    if (isDirectMode && repoConfig.prOptions?.mergeStrategy) {
-      this.log.info(
-        `Warning: mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode`
-      );
-    }
-
-    let session: SessionContext | null = null;
-    try {
-      // Setup workspace
-      session = await this.repositorySession.setup(repoInfo, {
-        workDir,
-        dryRun: dryRun ?? false,
-        retries,
-        authOptions: authResult.authOptions,
-      });
-
-      // Setup branch
-      await this.branchManager.setupBranch({
-        repoInfo,
-        branchName,
-        baseBranch: session.baseBranch,
-        workDir,
-        isDirectMode,
-        dryRun: dryRun ?? false,
-        retries,
-        token: authResult.token,
-        gitOps: session.gitOps,
-        log: this.log,
-        executor,
-      });
-
-      // Process files and manifest
-      const { fileChanges, diffStats, changedFiles, hasChanges } =
-        await this.fileSyncOrchestrator.sync(
-          repoConfig,
-          repoInfo,
-          session,
-          options
-        );
-
-      // Map file changes for reporting
-      const fileChangeDetails = mapToFileChangeDetails(changedFiles);
-
-      if (!hasChanges) {
-        return {
-          success: true,
-          repoName,
-          message: "No changes detected",
-          skipped: true,
-          diffStats,
-          fileChanges: fileChangeDetails,
-        };
-      }
-
-      // Commit and push
-      const commitMessage = formatCommitMessage(changedFiles);
-      const pushBranch = isDirectMode ? session.baseBranch : branchName;
-
-      const commitResult = await this.commitPushManager.commitAndPush(
-        {
-          repoInfo,
-          gitOps: session.gitOps,
-          workDir,
-          fileChanges,
-          commitMessage,
-          pushBranch,
-          isDirectMode,
-          dryRun: dryRun ?? false,
-          retries,
-          token: authResult.token,
-          executor,
-        },
-        repoName
-      );
-
-      if (!commitResult.success && commitResult.errorResult) {
-        return commitResult.errorResult;
-      }
-
-      if (commitResult.skipped) {
-        return {
-          success: true,
-          repoName,
-          message: "No changes detected after staging",
-          skipped: true,
-          diffStats,
-          fileChanges: fileChangeDetails,
-        };
-      }
-
-      // Direct mode: no PR
-      if (isDirectMode) {
-        this.log.info(`Changes pushed directly to ${session.baseBranch}`);
-        return {
-          success: true,
-          repoName,
-          message: `Pushed directly to ${session.baseBranch}`,
-          diffStats,
-          fileChanges: fileChangeDetails,
-        };
-      }
-
-      // Create and merge PR
-      return await this.prMergeHandler.createAndMerge(
-        repoInfo,
-        repoConfig,
-        {
-          branchName,
-          baseBranch: session.baseBranch,
-          workDir,
-          dryRun: dryRun ?? false,
-          retries,
-          prTemplate,
-          token: authResult.token,
-          executor,
-        },
-        changedFiles,
-        repoName,
-        diffStats,
-        fileChangeDetails
-      );
-    } finally {
-      try {
-        session?.cleanup();
-      } catch {
-        // Ignore cleanup errors - best effort
-      }
-    }
+    const strategy = new FileSyncStrategy(this.fileSyncOrchestrator);
+    return this.syncWorkflow.execute(repoConfig, repoInfo, options, strategy);
   }
 
   async updateManifestOnly(
@@ -275,164 +122,47 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     manifestUpdate: { rulesets: string[] }
   ): Promise<ProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
-    const { branchName, workDir, dryRun } = options;
-    const retries = options.retries ?? 3;
-    const executor = options.executor ?? defaultExecutor;
+    const { workDir, dryRun } = options;
 
-    // Resolve auth
-    const authResult = await this.authOptionsBuilder.resolve(
-      repoInfo,
-      repoName
+    // Pre-check manifest changes (preserves original early-return behavior)
+    const existingManifest = loadManifest(workDir);
+    const rulesetsWithDeleteOrphaned = new Map<string, boolean | undefined>(
+      manifestUpdate.rulesets.map((name) => [name, true])
     );
-    if (authResult.skipResult) {
-      return authResult.skipResult;
-    }
+    const { manifest: newManifest } = updateManifestRulesets(
+      existingManifest,
+      options.configId,
+      rulesetsWithDeleteOrphaned
+    );
 
-    const mergeMode = repoConfig.prOptions?.merge ?? "auto";
-    const isDirectMode = mergeMode === "direct";
-
-    let session: SessionContext | null = null;
-    try {
-      // Setup workspace
-      session = await this.repositorySession.setup(repoInfo, {
-        workDir,
-        dryRun: dryRun ?? false,
-        retries,
-        authOptions: authResult.authOptions,
-      });
-
-      // Load and update manifest
-      const existingManifest = loadManifest(workDir);
-      const rulesetsWithDeleteOrphaned = new Map<string, boolean | undefined>(
-        manifestUpdate.rulesets.map((name) => [name, true])
-      );
-      const { manifest: newManifest } = updateManifestRulesets(
-        existingManifest,
-        options.configId,
-        rulesetsWithDeleteOrphaned
-      );
-
-      // Check if changed
-      const existingConfigs = existingManifest?.configs ?? {};
-      if (
-        JSON.stringify(existingConfigs) === JSON.stringify(newManifest.configs)
-      ) {
-        return {
-          success: true,
-          repoName,
-          message: "No manifest changes detected",
-          skipped: true,
-        };
-      }
-
-      // Prepare manifest file change details for reporting
-      const manifestFileChange: FileChangeDetail[] = [
-        { path: MANIFEST_FILENAME, action: "update" },
-      ];
-
-      if (dryRun) {
-        this.log.info(`Would update ${MANIFEST_FILENAME} with rulesets`);
-        return {
-          success: true,
-          repoName,
-          message: "Would update manifest (dry-run)",
-          fileChanges: manifestFileChange,
-        };
-      }
-
-      // Setup branch and commit
-      await this.branchManager.setupBranch({
-        repoInfo,
-        branchName,
-        baseBranch: session.baseBranch,
-        workDir,
-        isDirectMode,
-        dryRun: false,
-        retries,
-        token: authResult.token,
-        gitOps: session.gitOps,
-        log: this.log,
-        executor,
-      });
-
-      saveManifest(workDir, newManifest);
-
-      const fileChanges = new Map<string, FileWriteResult>([
-        [
-          MANIFEST_FILENAME,
-          {
-            fileName: MANIFEST_FILENAME,
-            content: JSON.stringify(newManifest, null, 2) + "\n",
-            action: "update",
-          },
-        ],
-      ]);
-
-      const pushBranch = isDirectMode ? session.baseBranch : branchName;
-      const commitResult = await this.commitPushManager.commitAndPush(
-        {
-          repoInfo,
-          gitOps: session.gitOps,
-          workDir,
-          fileChanges,
-          commitMessage: "chore: update manifest with ruleset tracking",
-          pushBranch,
-          isDirectMode,
-          dryRun: false,
-          retries,
-          token: authResult.token,
-          executor,
-        },
-        repoName
-      );
-
-      if (!commitResult.success && commitResult.errorResult) {
-        return commitResult.errorResult;
-      }
-
-      if (commitResult.skipped) {
-        return {
-          success: true,
-          repoName,
-          message: "No changes detected after staging",
-          skipped: true,
-          fileChanges: manifestFileChange,
-        };
-      }
-
-      if (isDirectMode) {
-        return {
-          success: true,
-          repoName,
-          message: `Manifest updated directly on ${session.baseBranch}`,
-          fileChanges: manifestFileChange,
-        };
-      }
-
-      // Create and merge PR
-      return await this.prMergeHandler.createAndMerge(
-        repoInfo,
-        repoConfig,
-        {
-          branchName,
-          baseBranch: session.baseBranch,
-          workDir,
-          dryRun: false,
-          retries,
-          token: authResult.token,
-          executor,
-        },
-        [{ fileName: MANIFEST_FILENAME, action: "update" as const }],
+    const existingConfigs = existingManifest?.configs ?? {};
+    if (
+      JSON.stringify(existingConfigs) === JSON.stringify(newManifest.configs)
+    ) {
+      return {
+        success: true,
         repoName,
-        undefined,
-        manifestFileChange
-      );
-    } finally {
-      try {
-        session?.cleanup();
-      } catch {
-        // Ignore cleanup errors - best effort
-      }
+        message: "No manifest changes detected",
+        skipped: true,
+      };
     }
+
+    const manifestFileChange: FileChangeDetail[] = [
+      { path: MANIFEST_FILENAME, action: "update" },
+    ];
+
+    if (dryRun) {
+      this.log.info(`Would update ${MANIFEST_FILENAME} with rulesets`);
+      return {
+        success: true,
+        repoName,
+        message: "Would update manifest (dry-run)",
+        fileChanges: manifestFileChange,
+      };
+    }
+
+    // Delegate to workflow for actual commit/push/PR
+    const strategy = new ManifestStrategy(manifestUpdate, this.log);
+    return this.syncWorkflow.execute(repoConfig, repoInfo, options, strategy);
   }
 }

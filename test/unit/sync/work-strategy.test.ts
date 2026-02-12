@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import type { WorkResult, IWorkStrategy } from "../../../src/sync/types.js";
+import type { WorkResult } from "../../../src/sync/types.js";
 import type { FileWriteResult } from "../../../src/sync/types.js";
 
 describe("IWorkStrategy interface", () => {

@@ -12,7 +12,6 @@ import type {
   IPRMergeHandler,
   IWorkStrategy,
   WorkResult,
-  SessionContext,
 } from "../../../src/sync/index.js";
 import type { RepoConfig } from "../../../src/config/index.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
