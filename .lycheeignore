@@ -7,6 +7,7 @@ https://gitlab.com/anthony-spruyt1/xfg-test.git
 # Example/placeholder URLs in documentation and schema
 https://github.com/owner/repo.git
 https://github.com/anthony-spruyt/xfg/config-schema.json
+https://host/owner/repo.git
 
 # Example URLs in lifecycle documentation
 https://dev.azure.com/myorg/myproject/_git/legacy-app
