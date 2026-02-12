@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+# Integration test config - tests source field is ignored when repo exists
+id: integration-test-lifecycle-source-github
+files:
+  lifecycle-source-test.json:
+    content:
+      lifecycleTest: true
+      sourceConfigured: true
+
+repos:
+  - git: https://github.com/anthony-spruyt/xfg-test.git
+    source: https://dev.azure.com/someorg/someproject/_git/somerepo

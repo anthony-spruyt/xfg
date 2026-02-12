@@ -716,4 +716,130 @@ describe("GitHub Integration Test", () => {
 
     console.log("\n=== Orphan branch test (issue #183 variant) passed ===\n");
   });
+
+  test("lifecycle: upstream field is ignored when repo already exists", async () => {
+    // This test verifies the lifecycle feature:
+    // When a repo already exists, the upstream field should be ignored and
+    // sync should proceed normally without attempting to fork.
+
+    const testFile = "lifecycle-upstream-test.json";
+    const testBranch = "chore/sync-lifecycle-upstream-test";
+
+    console.log("\n=== Setting up lifecycle upstream test ===\n");
+
+    // Run sync with upstream configured - should succeed since repo exists
+    console.log("\nRunning xfg with upstream config on existing repo...");
+    const configPath = join(
+      fixturesDir,
+      "integration-test-lifecycle-upstream-github.yaml"
+    );
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    // Verify PR was created (sync proceeded normally)
+    console.log("\nVerifying PR was created...");
+    const prInfo = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number,title --jq '.[0]'`
+    );
+
+    assert.ok(prInfo, "Expected a PR to be created");
+    const pr = JSON.parse(prInfo);
+    console.log(`  PR #${pr.number}: ${pr.title}`);
+
+    // Verify the file exists in the PR branch
+    console.log("\nVerifying file exists in PR branch...");
+    const fileContent = exec(
+      `gh api repos/${TEST_REPO}/contents/${testFile}?ref=${testBranch} --jq '.content' | base64 -d`
+    );
+
+    assert.ok(fileContent, "File should exist in PR branch");
+    const json = JSON.parse(fileContent);
+    console.log("  File content:", JSON.stringify(json, null, 2));
+
+    assert.equal(
+      json.lifecycleTest,
+      true,
+      "File should have lifecycleTest: true"
+    );
+    assert.equal(
+      json.upstreamConfigured,
+      true,
+      "File should have upstreamConfigured: true"
+    );
+
+    // Output should NOT mention forking (repo exists, so lifecycle was skipped)
+    assert.ok(
+      !output.toLowerCase().includes("forked"),
+      "Output should NOT mention forking when repo exists"
+    );
+
+    console.log(
+      "  Lifecycle upstream test passed - repo exists, upstream ignored"
+    );
+    console.log("\n=== Lifecycle upstream test passed ===\n");
+  });
+
+  test("lifecycle: source field is ignored when repo already exists", async () => {
+    // This test verifies the lifecycle feature:
+    // When a repo already exists, the source field should be ignored and
+    // sync should proceed normally without attempting to migrate.
+
+    const testFile = "lifecycle-source-test.json";
+    const testBranch = "chore/sync-lifecycle-source-test";
+
+    console.log("\n=== Setting up lifecycle source test ===\n");
+
+    // Run sync with source configured - should succeed since repo exists
+    console.log("\nRunning xfg with source config on existing repo...");
+    const configPath = join(
+      fixturesDir,
+      "integration-test-lifecycle-source-github.yaml"
+    );
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    // Verify PR was created (sync proceeded normally)
+    console.log("\nVerifying PR was created...");
+    const prInfo = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${testBranch} --json number,title --jq '.[0]'`
+    );
+
+    assert.ok(prInfo, "Expected a PR to be created");
+    const pr = JSON.parse(prInfo);
+    console.log(`  PR #${pr.number}: ${pr.title}`);
+
+    // Verify the file exists in the PR branch
+    console.log("\nVerifying file exists in PR branch...");
+    const fileContent = exec(
+      `gh api repos/${TEST_REPO}/contents/${testFile}?ref=${testBranch} --jq '.content' | base64 -d`
+    );
+
+    assert.ok(fileContent, "File should exist in PR branch");
+    const json = JSON.parse(fileContent);
+    console.log("  File content:", JSON.stringify(json, null, 2));
+
+    assert.equal(
+      json.lifecycleTest,
+      true,
+      "File should have lifecycleTest: true"
+    );
+    assert.equal(
+      json.sourceConfigured,
+      true,
+      "File should have sourceConfigured: true"
+    );
+
+    // Output should NOT mention migration (repo exists, so lifecycle was skipped)
+    assert.ok(
+      !output.toLowerCase().includes("migrated"),
+      "Output should NOT mention migration when repo exists"
+    );
+
+    console.log("  Lifecycle source test passed - repo exists, source ignored");
+    console.log("\n=== Lifecycle source test passed ===\n");
+  });
 });

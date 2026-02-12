@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+# Integration test config - tests upstream field is ignored when repo exists
+id: integration-test-lifecycle-upstream-github
+files:
+  lifecycle-upstream-test.json:
+    content:
+      lifecycleTest: true
+      upstreamConfigured: true
+
+repos:
+  - git: https://github.com/anthony-spruyt/xfg-test.git
+    upstream: git@github.com:some-org/some-repo.git
