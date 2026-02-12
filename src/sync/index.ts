@@ -36,6 +36,9 @@ export type {
   FileSyncResult,
   IPRMergeHandler,
   PRHandlerOptions,
+  WorkResult,
+  IWorkStrategy,
+  ISyncWorkflow,
 } from "./types.js";
 
 // Repository processor
