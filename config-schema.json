@@ -385,6 +385,10 @@
       "type": "object",
       "description": "GitHub repository settings for features, merge options, and security",
       "properties": {
+        "description": {
+          "type": "string",
+          "description": "Repository description. Used when creating new repositories via lifecycle management (upstream/source fields)."
+        },
         "hasIssues": {
           "type": "boolean",
           "description": "Enable or disable GitHub Issues. Warning: Disabling may hide existing issues."

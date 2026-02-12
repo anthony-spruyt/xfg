@@ -58,6 +58,31 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     private readonly retries: number = 3
   ) {}
 
+  /**
+   * Check if a GitHub owner is an organization (vs user).
+   * Uses gh api to query the user/org endpoint.
+   */
+  private async isOrganization(
+    owner: string,
+    repoInfo: GitHubRepoInfo
+  ): Promise<boolean> {
+    const hostnameFlag = getHostnameFlag(repoInfo);
+    const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
+    const command = `gh api ${hostnamePart}users/${escapeShellArg(owner)}`;
+
+    try {
+      const stdout = await withRetry(
+        () => this.executor.exec(command, process.cwd()),
+        { retries: this.retries }
+      );
+      const data = JSON.parse(stdout);
+      return data.type === "Organization";
+    } catch {
+      // If we can't determine, assume it's an org (safer - uses --org flag)
+      return true;
+    }
+  }
+
   private assertGitHub(repoInfo: RepoInfo): asserts repoInfo is GitHubRepoInfo {
     if (!isGitHubRepo(repoInfo)) {
       throw new Error(
@@ -137,16 +162,24 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     this.assertGitHub(upstream);
     this.assertGitHub(target);
 
-    // gh repo fork <upstream> --org <target-org> --fork-name <name> --clone=false
-    const command = [
+    // Determine if target owner is an organization or user
+    const isOrg = await this.isOrganization(target.owner, target);
+
+    // Build fork command
+    // For orgs: gh repo fork <upstream> --org <target-org> --fork-name <name> --clone=false
+    // For users: gh repo fork <upstream> --fork-name <name> --clone=false
+    const parts = [
       "gh repo fork",
       escapeShellArg(`${upstream.owner}/${upstream.repo}`),
-      "--org",
-      escapeShellArg(target.owner),
-      "--fork-name",
-      escapeShellArg(target.repo),
-      "--clone=false",
-    ].join(" ");
+    ];
+
+    if (isOrg) {
+      parts.push("--org", escapeShellArg(target.owner));
+    }
+
+    parts.push("--fork-name", escapeShellArg(target.repo), "--clone=false");
+
+    const command = parts.join(" ");
 
     await withRetry(() => this.executor.exec(command, process.cwd()), {
       retries: this.retries,

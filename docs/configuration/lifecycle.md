@@ -26,18 +26,24 @@ Before processing each repo, xfg checks if the target repository exists:
 
 ## Forking (`upstream`)
 
-Fork an existing repo into your organization:
+Fork an existing repo into your organization or personal account:
 
 ```yaml
 repos:
+  # Fork into an organization
   - git: git@github.com:my-org/forked-tool.git
+    upstream: git@github.com:opensource/cool-tool.git
+
+  # Fork into a personal account
+  - git: git@github.com:myusername/my-fork.git
     upstream: git@github.com:opensource/cool-tool.git
 ```
 
-When `my-org/forked-tool` doesn't exist, xfg will:
+When the target repo doesn't exist, xfg will:
 
-1. Fork `opensource/cool-tool` into `my-org` as `forked-tool`
-2. Continue with normal sync/settings
+1. Detect whether the target owner is an organization or user
+2. Fork the upstream repo accordingly
+3. Continue with normal sync/settings
 
 If the repo already exists, the `upstream` field is ignored.
 
@@ -76,6 +82,7 @@ Repos are created as **private** by default. Set `visibility: public` explicitly
 ```yaml
 settings:
   repo:
+    description: "My new repository"
     visibility: private
     hasIssues: true
     hasWiki: false
@@ -84,6 +91,15 @@ repos:
   - git: git@github.com:my-org/new-repo.git
     # No upstream or source = create empty repo with above settings
 ```
+
+The following settings apply during repo creation:
+
+| Setting       | Description                                      |
+| ------------- | ------------------------------------------------ |
+| `description` | Repository description                           |
+| `visibility`  | `public`, `private`, or `internal`               |
+| `hasIssues`   | Enable/disable Issues (default: enabled)         |
+| `hasWiki`     | Enable/disable Wiki (default: enabled)           |
 
 ## Dry Run
 

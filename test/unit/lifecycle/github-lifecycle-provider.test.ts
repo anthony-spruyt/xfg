@@ -298,32 +298,92 @@ describe("GitHubLifecycleProvider", () => {
       host: "github.com",
     };
 
-    test("forks repo with gh repo fork", async () => {
+    test("forks repo to organization with --org flag", async () => {
       const { mock: executor, calls } = createMockExecutor({
+        // Use 'users/' pattern to match the owner type check API call
+        responses: new Map([
+          ["users/", '{"type": "Organization"}'],
+          ["gh repo fork", ""],
+        ]),
         defaultResponse: "",
       });
 
       const provider = new GitHubLifecycleProvider(executor, 0);
       await provider.fork!(upstreamRepoInfo, mockRepoInfo);
 
-      assert.equal(calls.length, 1);
-      assert.ok(calls[0].command.includes("gh repo fork"));
-      assert.ok(calls[0].command.includes("'opensource/cool-tool'"));
-      assert.ok(calls[0].command.includes("--org"));
-      assert.ok(calls[0].command.includes("'test-org'"));
-      assert.ok(calls[0].command.includes("--fork-name"));
-      assert.ok(calls[0].command.includes("'test-repo'"));
+      // Find the fork command (not the API check)
+      const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
+      assert.ok(forkCall);
+      assert.ok(forkCall.command.includes("'opensource/cool-tool'"));
+      assert.ok(forkCall.command.includes("--org"));
+      assert.ok(forkCall.command.includes("'test-org'"));
+      assert.ok(forkCall.command.includes("--fork-name"));
+      assert.ok(forkCall.command.includes("'test-repo'"));
+    });
+
+    test("forks repo to personal account without --org flag", async () => {
+      const personalRepoInfo: GitHubRepoInfo = {
+        type: "github",
+        gitUrl: "git@github.com:myusername/my-fork.git",
+        owner: "myusername",
+        repo: "my-fork",
+        host: "github.com",
+      };
+
+      const { mock: executor, calls } = createMockExecutor({
+        // Use 'users/' pattern to match the owner type check API call
+        responses: new Map([
+          ["users/", '{"type": "User"}'],
+          ["gh repo fork", ""],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+      await provider.fork!(upstreamRepoInfo, personalRepoInfo);
+
+      // Find the fork command (not the API check)
+      const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
+      assert.ok(forkCall);
+      assert.ok(forkCall.command.includes("'opensource/cool-tool'"));
+      assert.ok(!forkCall.command.includes("--org")); // Should NOT have --org
+      assert.ok(forkCall.command.includes("--fork-name"));
+      assert.ok(forkCall.command.includes("'my-fork'"));
     });
 
     test("includes --clone=false flag", async () => {
       const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["users/", '{"type": "Organization"}'],
+          ["gh repo fork", ""],
+        ]),
         defaultResponse: "",
       });
 
       const provider = new GitHubLifecycleProvider(executor, 0);
       await provider.fork!(upstreamRepoInfo, mockRepoInfo);
 
-      assert.ok(calls[0].command.includes("--clone=false"));
+      const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
+      assert.ok(forkCall);
+      assert.ok(forkCall.command.includes("--clone=false"));
+    });
+
+    test("defaults to org behavior when API check fails", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["users/", new Error("API error")],
+          ["gh repo fork", ""],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+      await provider.fork!(upstreamRepoInfo, mockRepoInfo);
+
+      // Should default to --org when we can't determine owner type
+      const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
+      assert.ok(forkCall);
+      assert.ok(forkCall.command.includes("--org"));
     });
 
     test("rejects non-GitHub upstream repo", async () => {
@@ -370,9 +430,10 @@ describe("GitHubLifecycleProvider", () => {
       );
     });
 
-    test("throws on failure", async () => {
+    test("throws on fork failure", async () => {
       const { mock: executor } = createMockExecutor({
         responses: new Map([
+          ["users/", '{"type": "Organization"}'],
           ["gh repo fork", new Error("Cannot fork private repo")],
         ]),
       });

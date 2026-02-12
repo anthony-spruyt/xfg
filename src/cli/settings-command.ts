@@ -77,6 +77,74 @@ class ResultsCollector {
 }
 
 /**
+ * Options for lifecycle check helper.
+ */
+interface LifecycleCheckOptions {
+  repoConfig: RepoConfig;
+  repoInfo: RepoInfo;
+  repoName: string;
+  index: number;
+  dryRun: boolean;
+  workDir?: string;
+  githubHosts?: string[];
+  repoSettings?: Config["settings"];
+  lifecycleManager: IRepoLifecycleManager;
+  lifecycleChecked: Set<string>;
+}
+
+/**
+ * Result of lifecycle check.
+ */
+interface LifecycleCheckResult {
+  success: boolean;
+  error?: unknown;
+}
+
+/**
+ * Run lifecycle check for a repo if not already checked.
+ * Returns { success: true } if check passed or was already done.
+ * Returns { success: false, error } if check failed.
+ */
+async function runLifecycleCheckIfNeeded(
+  opts: LifecycleCheckOptions
+): Promise<LifecycleCheckResult> {
+  const {
+    repoConfig,
+    repoInfo,
+    index,
+    dryRun,
+    workDir,
+    githubHosts,
+    repoSettings,
+    lifecycleManager,
+    lifecycleChecked,
+  } = opts;
+
+  if (lifecycleChecked.has(repoConfig.git)) {
+    return { success: true };
+  }
+
+  try {
+    const { outputLines } = await runLifecycleCheck(
+      repoConfig,
+      repoInfo,
+      index,
+      { dryRun, workDir, githubHosts },
+      lifecycleManager,
+      repoSettings?.repo
+    );
+
+    for (const line of outputLines) {
+      logger.info(line);
+    }
+    lifecycleChecked.add(repoConfig.git);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error };
+  }
+}
+
+/**
  * Process rulesets for all configured repositories.
  */
 async function processRulesets(
@@ -108,35 +176,28 @@ async function processRulesets(
     const repoName = getRepoDisplayName(repoInfo);
 
     // Check if repo exists, create/fork/migrate if needed (skip if already checked)
-    if (!lifecycleChecked.has(repoConfig.git)) {
-      try {
-        const { outputLines } = await runLifecycleCheck(
-          repoConfig,
-          repoInfo,
-          i,
-          {
-            dryRun: options.dryRun ?? false,
-            workDir: options.workDir,
-            githubHosts: config.githubHosts,
-          },
-          lifecycleManager,
-          config.settings?.repo
-        );
+    const lifecycleResult = await runLifecycleCheckIfNeeded({
+      repoConfig,
+      repoInfo,
+      repoName,
+      index: i,
+      dryRun: options.dryRun ?? false,
+      workDir: options.workDir,
+      githubHosts: config.githubHosts,
+      repoSettings: config.settings,
+      lifecycleManager,
+      lifecycleChecked,
+    });
 
-        for (const line of outputLines) {
-          logger.info(line);
-        }
-        lifecycleChecked.add(repoConfig.git);
-      } catch (error) {
-        logger.error(
-          i + 1,
-          repoName,
-          `Lifecycle error: ${error instanceof Error ? error.message : String(error)}`
-        );
-        results.push(buildErrorResult(repoName, error));
-        collector.appendError(repoName, error);
-        continue;
-      }
+    if (!lifecycleResult.success) {
+      logger.error(
+        i + 1,
+        repoName,
+        `Lifecycle error: ${lifecycleResult.error instanceof Error ? lifecycleResult.error.message : String(lifecycleResult.error)}`
+      );
+      results.push(buildErrorResult(repoName, lifecycleResult.error));
+      collector.appendError(repoName, lifecycleResult.error);
+      continue;
     }
 
     if (!isGitHubRepo(repoInfo)) {
@@ -254,7 +315,7 @@ async function processRepoSettings(
         githubHosts: config.githubHosts,
       });
     } catch (error) {
-      console.error(`Failed to parse ${repoConfig.git}: ${error}`);
+      logger.error(i + 1, repoConfig.git, String(error));
       collector.appendError(repoConfig.git, error);
       continue;
     }
@@ -262,32 +323,27 @@ async function processRepoSettings(
     const repoName = getRepoDisplayName(repoInfo);
 
     // Check if repo exists, create/fork/migrate if needed (skip if already checked)
-    if (!lifecycleChecked.has(repoConfig.git)) {
-      try {
-        const { outputLines } = await runLifecycleCheck(
-          repoConfig,
-          repoInfo,
-          i,
-          {
-            dryRun: options.dryRun ?? false,
-            workDir: options.workDir,
-            githubHosts: config.githubHosts,
-          },
-          lifecycleManager,
-          config.settings?.repo
-        );
+    const lifecycleResult = await runLifecycleCheckIfNeeded({
+      repoConfig,
+      repoInfo,
+      repoName,
+      index: i,
+      dryRun: options.dryRun ?? false,
+      workDir: options.workDir,
+      githubHosts: config.githubHosts,
+      repoSettings: config.settings,
+      lifecycleManager,
+      lifecycleChecked,
+    });
 
-        for (const line of outputLines) {
-          logger.info(line);
-        }
-        lifecycleChecked.add(repoConfig.git);
-      } catch (error) {
-        console.error(
-          `  Lifecycle error for ${repoName}: ${error instanceof Error ? error.message : String(error)}`
-        );
-        collector.appendError(repoName, error);
-        continue;
-      }
+    if (!lifecycleResult.success) {
+      logger.error(
+        i + 1,
+        repoName,
+        `Lifecycle error: ${lifecycleResult.error instanceof Error ? lifecycleResult.error.message : String(lifecycleResult.error)}`
+      );
+      collector.appendError(repoName, lifecycleResult.error);
+      continue;
     }
 
     try {
@@ -334,7 +390,7 @@ async function processRepoSettings(
         collector.getOrCreate(repoName).settingsResult = result;
       }
     } catch (error) {
-      console.error(`  ✗ ${repoName}: ${error}`);
+      logger.error(i + 1, repoName, String(error));
       collector.appendError(repoName, error);
     }
   }
