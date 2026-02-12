@@ -1,7 +1,7 @@
 {
   "name": "@aspruyt/xfg",
   "version": "3.8.1",
-  "description": "CLI tool for repository-as-code",
+  "description": "CLI tool for repository-as-code: sync files and manage settings across GitHub, Azure DevOps, and GitLab",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

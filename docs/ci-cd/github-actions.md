@@ -31,6 +31,7 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 | `github-app-private-key` | No       | -                     | GitHub App private key (PEM) for JWT signing               |
 | `azure-devops-token`     | No       | -                     | Azure DevOps Personal Access Token                         |
 | `gitlab-token`           | No       | -                     | GitLab token for authentication                            |
+| `no-delete`              | No       | `false`               | Skip deletion of orphaned resources                        |
 
 ### Multi-Platform Example
 

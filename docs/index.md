@@ -38,6 +38,7 @@ settings:
       conditions:
         refName:
           include: [refs/heads/main]
+          exclude: []
       rules:
         - type: pull_request
           parameters:

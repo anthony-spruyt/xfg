@@ -1,13 +1,13 @@
 # CLI Options Reference
 
-xfg uses subcommands to separate file sync (`sync`) from ruleset management (`settings`).
+xfg uses subcommands to separate file sync (`sync`) from repository settings management (`settings`).
 
 ## Subcommands
 
-| Command        | Description                                  |
-| -------------- | -------------------------------------------- |
-| `xfg sync`     | Sync configuration files across repositories |
-| `xfg settings` | Manage GitHub Rulesets for repositories      |
+| Command        | Description                                      |
+| -------------- | ------------------------------------------------ |
+| `xfg sync`     | Sync configuration files across repositories     |
+| `xfg settings` | Manage GitHub repository settings and rulesets   |
 
 ## Sync Command
 
@@ -57,7 +57,7 @@ xfg sync --config ./config.yaml --no-delete
 
 ## Settings Command
 
-Manage GitHub Rulesets for repositories. Creates, updates, or deletes rulesets to match your config.
+Manage GitHub repository settings and rulesets. Updates repository configuration and creates, updates, or deletes rulesets to match your config.
 
 ```bash
 xfg settings --config <path> [options]

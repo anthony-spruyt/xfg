@@ -76,7 +76,7 @@ settings:
       enforcement: active
       conditions:
         refName:
-          include: ["refs/heads/main"]
+          include: [refs/heads/main]
           exclude: []
       rules:
         - type: pull_request

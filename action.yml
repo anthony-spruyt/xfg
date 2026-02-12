@@ -1,5 +1,5 @@
 name: "xfg - Repo as Code"
-description: "Sync files and manage repositories as code"
+description: "Sync files and manage settings across GitHub, Azure DevOps, and GitLab"
 author: "Anthony Spruyt"
 
 branding:
@@ -55,6 +55,10 @@ inputs:
   github-app-private-key:
     description: "GitHub App private key (PEM format) for JWT signing"
     required: false
+  no-delete:
+    description: "Skip deletion of orphaned resources even if deleteOrphaned is configured"
+    required: false
+    default: "false"
   xfg-package:
     description: "Override xfg package to install (npm package name, local .tgz path, or 'skip' to use pre-installed). Defaults to the version matching this action release."
     required: false
@@ -140,6 +144,10 @@ runs:
         # Add optional flags (shared)
         if [ "${{ inputs.dry-run }}" = "true" ]; then
           CMD="$CMD --dry-run"
+        fi
+
+        if [ "${{ inputs.no-delete }}" = "true" ]; then
+          CMD="$CMD --no-delete"
         fi
 
         # Add sync-only flags

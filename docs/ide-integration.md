@@ -36,7 +36,11 @@ Add to `.vscode/settings.json`:
 
 This enables:
 
-- Autocomplete for `files`, `repos`, `content`, `mergeStrategy`, `git`, `override`
-- Enum suggestions for `mergeStrategy` values (`replace`, `append`, `prepend`)
-- Validation of required fields
+- Autocomplete for all config fields:
+  - Root level: `id`, `files`, `repos`, `settings`, `prOptions`, `prTemplate`, `githubHosts`, `deleteOrphaned`
+  - File config: `content`, `mergeStrategy`, `createOnly`, `executable`, `header`, `schemaUrl`, `template`, `vars`, `deleteOrphaned`
+  - Repo config: `git`, `files`, `settings`, `prOptions`
+  - Settings: `repo`, `rulesets` with full ruleset configuration
+- Enum suggestions for `mergeStrategy` (`replace`, `append`, `prepend`), `merge` mode (`manual`, `auto`, `force`, `direct`), etc.
+- Validation of required fields (`id`, `repos`)
 - Hover documentation for each field

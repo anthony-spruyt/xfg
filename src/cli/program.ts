@@ -92,9 +92,9 @@ const syncCommand = new Command("sync")
 addSharedOptions(syncCommand);
 program.addCommand(syncCommand);
 
-// Settings command (ruleset management)
+// Settings command (repository settings and rulesets)
 const settingsCommand = new Command("settings")
-  .description("Manage GitHub Rulesets for repositories")
+  .description("Manage GitHub repository settings and rulesets")
   .action((opts) => {
     runSettings(opts as SettingsOptions).catch((error) => {
       console.error("Fatal error:", error);

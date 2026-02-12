@@ -1,13 +1,13 @@
 # Usage
 
-xfg uses subcommands to separate file sync from ruleset management.
+xfg uses subcommands to separate file sync from repository settings management.
 
 ## Commands
 
-| Command        | Description                                  |
-| -------------- | -------------------------------------------- |
-| `xfg sync`     | Sync configuration files across repositories |
-| `xfg settings` | Manage GitHub Rulesets for repositories      |
+| Command        | Description                                      |
+| -------------- | ------------------------------------------------ |
+| `xfg sync`     | Sync configuration files across repositories     |
+| `xfg settings` | Manage GitHub repository settings and rulesets   |
 
 ## Basic Usage
 
