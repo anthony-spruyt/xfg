@@ -386,5 +386,73 @@ describe("RepoLifecycleManager", () => {
       const sourceDir = join(workDir, "migration-source");
       assert.equal(existsSync(sourceDir), false);
     });
+
+    test("returns existed for unsupported platform without lifecycle fields", async () => {
+      const factory: IRepoLifecycleFactory = {
+        getProvider() {
+          throw new Error("Platform not supported");
+        },
+        getMigrationSource() {
+          throw new Error("Platform not supported");
+        },
+      };
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: "https://dev.azure.com/org/project/_git/repo",
+        files: [],
+      };
+
+      const adoRepoInfo = {
+        type: "azure-devops" as const,
+        gitUrl: "https://dev.azure.com/org/project/_git/repo",
+        org: "org",
+        project: "project",
+        repo: "repo",
+      };
+
+      const result = await manager.ensureRepo(
+        repoConfig,
+        adoRepoInfo as never,
+        { dryRun: false, workDir }
+      );
+
+      assert.equal(result.action, "existed");
+    });
+
+    test("throws for unsupported platform when upstream is set", async () => {
+      const factory: IRepoLifecycleFactory = {
+        getProvider() {
+          throw new Error("Platform not supported as target");
+        },
+        getMigrationSource() {
+          throw new Error("Platform not supported");
+        },
+      };
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: "https://dev.azure.com/org/project/_git/repo",
+        files: [],
+        upstream: "https://dev.azure.com/org/project/_git/other",
+      };
+
+      const adoRepoInfo = {
+        type: "azure-devops" as const,
+        gitUrl: "https://dev.azure.com/org/project/_git/repo",
+        org: "org",
+        project: "project",
+        repo: "repo",
+      };
+
+      await assert.rejects(
+        () =>
+          manager.ensureRepo(repoConfig, adoRepoInfo as never, {
+            dryRun: false,
+            workDir,
+          }),
+        /Platform not supported as target/
+      );
+    });
   });
 });

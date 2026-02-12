@@ -22,6 +22,8 @@ import {
 import type { ProcessorResult } from "../sync/index.js";
 import {
   RepoLifecycleManager,
+  formatLifecycleAction,
+  type IRepoLifecycleManager,
   type CreateRepoSettings,
 } from "../lifecycle/index.js";
 
@@ -112,7 +114,8 @@ function determineMergeOutcome(
  */
 export async function runSync(
   options: SyncOptions,
-  processorFactory: ProcessorFactory = defaultProcessorFactory
+  processorFactory: ProcessorFactory = defaultProcessorFactory,
+  lifecycleManager?: IRepoLifecycleManager
 ): Promise<void> {
   const configPath = resolve(options.config);
 
@@ -152,7 +155,8 @@ export async function runSync(
   console.log(`Branch: ${branchName}\n`);
 
   const processor = processorFactory();
-  const lifecycleManager = new RepoLifecycleManager();
+  const lm =
+    lifecycleManager ?? new RepoLifecycleManager(undefined, options.retries);
   const reportResults: SyncResultEntry[] = [];
 
   for (let i = 0; i < config.repos.length; i++) {
@@ -194,54 +198,53 @@ export async function runSync(
 
     // Check if repo exists, create/fork/migrate if needed
     /* c8 ignore start -- lifecycle wiring tested via RepoLifecycleManager unit tests */
-    if (repoConfig.upstream || repoConfig.source) {
-      try {
-        const createSettings: CreateRepoSettings | undefined = config.settings
-          ?.repo
+    try {
+      const createSettings: CreateRepoSettings | undefined = config.settings
+        ?.repo
+        ? {
+            visibility: config.settings.repo.visibility,
+            description: config.settings.repo.description,
+            hasIssues: config.settings.repo.hasIssues,
+            hasWiki: config.settings.repo.hasWiki,
+            hasProjects: config.settings.repo.hasProjects,
+          }
+        : undefined;
+
+      const lifecycleResult = await lm.ensureRepo(
+        repoConfig,
+        repoInfo,
+        {
+          dryRun: options.dryRun ?? false,
+          workDir,
+        },
+        createSettings
+      );
+
+      for (const line of formatLifecycleAction(lifecycleResult, {
+        upstream: repoConfig.upstream,
+        source: repoConfig.source,
+        settings: createSettings
           ? {
-              visibility: config.settings.repo.visibility,
-              hasIssues: config.settings.repo.hasIssues,
-              hasWiki: config.settings.repo.hasWiki,
-              hasProjects: config.settings.repo.hasProjects,
+              visibility: createSettings.visibility,
+              description: createSettings.description,
             }
-          : undefined;
-
-        const lifecycleResult = await lifecycleManager.ensureRepo(
-          repoConfig,
-          repoInfo,
-          {
-            dryRun: options.dryRun ?? false,
-            workDir,
-            retries: options.retries,
-          },
-          createSettings
-        );
-
-        if (lifecycleResult.action !== "existed") {
-          const actionVerb = lifecycleResult.skipped ? "Would" : "Successfully";
-          const actionMap = {
-            created: "created",
-            forked: "forked",
-            migrated: "migrated",
-          };
-          logger.info(
-            `${actionVerb} ${actionMap[lifecycleResult.action]} repository: ${repoName}`
-          );
-        }
-      } catch (error) {
-        logger.error(
-          current,
-          repoName,
-          `Lifecycle error: ${error instanceof Error ? error.message : String(error)}`
-        );
-        reportResults.push({
-          repoName,
-          success: false,
-          fileChanges: [],
-          error: error instanceof Error ? error.message : String(error),
-        });
-        continue;
+          : undefined,
+      })) {
+        logger.info(line);
       }
+    } catch (error) {
+      logger.error(
+        current,
+        repoName,
+        `Lifecycle error: ${error instanceof Error ? error.message : String(error)}`
+      );
+      reportResults.push({
+        repoName,
+        success: false,
+        fileChanges: [],
+        error: error instanceof Error ? error.message : String(error),
+      });
+      continue;
     }
     /* c8 ignore stop */
 

@@ -28,8 +28,6 @@ export interface LifecycleOptions {
   dryRun: boolean;
   /** Working directory for git operations */
   workDir: string;
-  /** Number of retries for network operations */
-  retries?: number;
 }
 
 /**
@@ -39,7 +37,6 @@ export interface LifecycleOptions {
 export interface CreateRepoSettings {
   visibility?: "public" | "private" | "internal";
   description?: string;
-  deleteBranchOnMerge?: boolean;
   hasIssues?: boolean;
   hasProjects?: boolean;
   hasWiki?: boolean;

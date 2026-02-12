@@ -7,7 +7,7 @@ xfg can automatically create, fork, or migrate repositories before syncing files
 Before processing each repo, xfg checks if the target repository exists:
 
 1. **Exists** - Proceed normally with sync/settings
-2. **Missing + no lifecycle fields** - Create an empty repo
+2. **Missing** - Create an empty repo
 3. **Missing + `upstream`** - Fork from the upstream repo
 4. **Missing + `source`** - Clone source with `--mirror` and push to new target
 
@@ -81,10 +81,10 @@ repos:
 
 In dry-run mode (`--dry-run`), lifecycle operations are reported but not executed:
 
-```
-Would created repository: my-org/new-repo
-Would forked repository: my-org/forked-tool
-Would migrated repository: my-org/migrated-app
+```text
++ CREATE my-org/new-repo
++ FORK github.com/opensource/tool -> my-org/forked-tool
++ MIGRATE dev.azure.com/myorg/legacy/old-api -> my-org/migrated-app
 ```
 
 ## Supported Platforms

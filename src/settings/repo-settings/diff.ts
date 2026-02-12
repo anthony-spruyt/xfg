@@ -14,6 +14,7 @@ export interface RepoSettingsChange {
  * Maps config property names (camelCase) to GitHub API property names (snake_case).
  */
 const PROPERTY_MAPPING: Record<keyof GitHubRepoSettings, string> = {
+  description: "description",
   hasIssues: "has_issues",
   hasProjects: "has_projects",
   hasWiki: "has_wiki",

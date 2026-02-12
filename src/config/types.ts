@@ -366,6 +366,7 @@ export type RepoVisibility = "public" | "private" | "internal";
  */
 export interface GitHubRepoSettings {
   // Features
+  description?: string;
   hasIssues?: boolean;
   hasProjects?: boolean;
   hasWiki?: boolean;

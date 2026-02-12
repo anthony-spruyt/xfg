@@ -20,10 +20,13 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
   private readonly sources: Map<LifecyclePlatform, IMigrationSource> =
     new Map();
 
-  constructor(
-    private readonly executor: ICommandExecutor = defaultExecutor,
-    private readonly retries: number = 3
-  ) {}
+  private readonly executor: ICommandExecutor;
+  private readonly retries: number;
+
+  constructor(executor?: ICommandExecutor, retries?: number) {
+    this.executor = executor ?? defaultExecutor;
+    this.retries = retries ?? 3;
+  }
 
   getProvider(platform: LifecyclePlatform): IRepoLifecycleProvider {
     // Check cache first

@@ -36,6 +36,8 @@ import type { Config, RepoConfig } from "../config/types.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import {
   RepoLifecycleManager,
+  formatLifecycleAction,
+  type IRepoLifecycleManager,
   type CreateRepoSettings,
 } from "../lifecycle/index.js";
 
@@ -85,7 +87,8 @@ async function processRulesets(
   processor: IRulesetProcessor,
   repoProcessor: IRepositoryProcessor,
   results: RepoResult[],
-  collector: ResultsCollector
+  collector: ResultsCollector,
+  lifecycleManager: IRepoLifecycleManager
 ): Promise<void> {
   for (let i = 0; i < repos.length; i++) {
     const repoConfig = repos[i];
@@ -106,16 +109,16 @@ async function processRulesets(
 
     // Check if repo exists, create/fork/migrate if needed
     /* c8 ignore start -- lifecycle wiring tested via RepoLifecycleManager unit tests */
-    if (repoConfig.upstream || repoConfig.source) {
+    {
       const workDir = resolve(
         join(options.workDir ?? "./tmp", generateWorkspaceName(i))
       );
-      const lifecycleManager = new RepoLifecycleManager();
       try {
         const createSettings: CreateRepoSettings | undefined = config.settings
           ?.repo
           ? {
               visibility: config.settings.repo.visibility,
+              description: config.settings.repo.description,
               hasIssues: config.settings.repo.hasIssues,
               hasWiki: config.settings.repo.hasWiki,
               hasProjects: config.settings.repo.hasProjects,
@@ -128,21 +131,21 @@ async function processRulesets(
           {
             dryRun: options.dryRun ?? false,
             workDir,
-            retries: options.retries,
           },
           createSettings
         );
 
-        if (lifecycleResult.action !== "existed") {
-          const actionVerb = lifecycleResult.skipped ? "Would" : "Successfully";
-          const actionMap = {
-            created: "created",
-            forked: "forked",
-            migrated: "migrated",
-          };
-          logger.info(
-            `${actionVerb} ${actionMap[lifecycleResult.action]} repository: ${repoName}`
-          );
+        for (const line of formatLifecycleAction(lifecycleResult, {
+          upstream: repoConfig.upstream,
+          source: repoConfig.source,
+          settings: createSettings
+            ? {
+                visibility: createSettings.visibility,
+                description: createSettings.description,
+              }
+            : undefined,
+        })) {
+          logger.info(line);
         }
       } catch (error) {
         logger.error(
@@ -252,7 +255,8 @@ async function processRepoSettings(
   options: SettingsOptions,
   processorFactory: RepoSettingsProcessorFactory,
   results: RepoResult[],
-  collector: ResultsCollector
+  collector: ResultsCollector,
+  lifecycleManager: IRepoLifecycleManager
 ): Promise<void> {
   if (repos.length === 0) {
     return;
@@ -279,16 +283,16 @@ async function processRepoSettings(
 
     // Check if repo exists, create/fork/migrate if needed
     /* c8 ignore start -- lifecycle wiring tested via RepoLifecycleManager unit tests */
-    if (repoConfig.upstream || repoConfig.source) {
+    {
       const workDir = resolve(
         join(options.workDir ?? "./tmp", generateWorkspaceName(i))
       );
-      const lifecycleManager = new RepoLifecycleManager();
       try {
         const createSettings: CreateRepoSettings | undefined = config.settings
           ?.repo
           ? {
               visibility: config.settings.repo.visibility,
+              description: config.settings.repo.description,
               hasIssues: config.settings.repo.hasIssues,
               hasWiki: config.settings.repo.hasWiki,
               hasProjects: config.settings.repo.hasProjects,
@@ -301,21 +305,21 @@ async function processRepoSettings(
           {
             dryRun: options.dryRun ?? false,
             workDir,
-            retries: options.retries,
           },
           createSettings
         );
 
-        if (lifecycleResult.action !== "existed") {
-          const actionVerb = lifecycleResult.skipped ? "Would" : "Successfully";
-          const actionMap = {
-            created: "created",
-            forked: "forked",
-            migrated: "migrated",
-          };
-          console.log(
-            `  ${actionVerb} ${actionMap[lifecycleResult.action]} repository: ${repoName}`
-          );
+        for (const line of formatLifecycleAction(lifecycleResult, {
+          upstream: repoConfig.upstream,
+          source: repoConfig.source,
+          settings: createSettings
+            ? {
+                visibility: createSettings.visibility,
+                description: createSettings.description,
+              }
+            : undefined,
+        })) {
+          console.log(`  ${line}`);
         }
       } catch (error) {
         console.error(
@@ -384,7 +388,8 @@ export async function runSettings(
   options: SettingsOptions,
   processorFactory: RulesetProcessorFactory = defaultRulesetProcessorFactory,
   repoProcessorFactory: ProcessorFactory = defaultProcessorFactory,
-  repoSettingsProcessorFactory: RepoSettingsProcessorFactory = defaultRepoSettingsProcessorFactory
+  repoSettingsProcessorFactory: RepoSettingsProcessorFactory = defaultRepoSettingsProcessorFactory,
+  lifecycleManager?: IRepoLifecycleManager
 ): Promise<void> {
   const configPath = resolve(options.config);
 
@@ -437,6 +442,8 @@ export async function runSettings(
 
   const processor = processorFactory();
   const repoProcessor = repoProcessorFactory();
+  const lm =
+    lifecycleManager ?? new RepoLifecycleManager(undefined, options.retries);
   const results: RepoResult[] = [];
   const collector = new ResultsCollector();
 
@@ -447,7 +454,8 @@ export async function runSettings(
     processor,
     repoProcessor,
     results,
-    collector
+    collector,
+    lm
   );
 
   await processRepoSettings(
@@ -456,7 +464,8 @@ export async function runSettings(
     options,
     repoSettingsProcessorFactory,
     results,
-    collector
+    collector,
+    lm
   );
 
   console.log("");

@@ -4,6 +4,7 @@ import { parseGitUrl, type RepoInfo } from "../shared/repo-detector.js";
 import type { RepoConfig } from "../config/types.js";
 import type {
   IRepoLifecycleManager,
+  IRepoLifecycleProvider,
   IRepoLifecycleFactory,
   LifecycleResult,
   LifecycleOptions,
@@ -15,9 +16,11 @@ import { RepoLifecycleFactory } from "./repo-lifecycle-factory.js";
  * Orchestrates repo lifecycle operations before sync.
  */
 export class RepoLifecycleManager implements IRepoLifecycleManager {
-  constructor(
-    private readonly factory: IRepoLifecycleFactory = new RepoLifecycleFactory()
-  ) {}
+  private readonly factory: IRepoLifecycleFactory;
+
+  constructor(factory?: IRepoLifecycleFactory, retries?: number) {
+    this.factory = factory ?? new RepoLifecycleFactory(undefined, retries);
+  }
 
   async ensureRepo(
     repoConfig: RepoConfig,
@@ -25,7 +28,17 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
     options: LifecycleOptions,
     settings?: CreateRepoSettings
   ): Promise<LifecycleResult> {
-    const provider = this.factory.getProvider(repoInfo.type);
+    let provider: IRepoLifecycleProvider;
+    try {
+      provider = this.factory.getProvider(repoInfo.type);
+    } catch (error) {
+      // If user explicitly configured lifecycle (upstream/source), propagate the error
+      if (repoConfig.upstream || repoConfig.source) {
+        throw error;
+      }
+      // Platform doesn't support lifecycle operations yet - skip silently
+      return { repoInfo, action: "existed" };
+    }
 
     // Check if repo exists
     const exists = await provider.exists(repoInfo);

@@ -1277,6 +1277,16 @@ import {
   RulesetProcessorFactory,
 } from "../../src/index.js";
 import type { RulesetProcessorResult } from "../../src/ruleset-processor.js";
+import type { IRepoLifecycleManager } from "../../src/lifecycle/types.js";
+
+/**
+ * Noop lifecycle manager for tests - always returns "existed".
+ */
+const noopLifecycleManager: IRepoLifecycleManager = {
+  async ensureRepo(_repoConfig, repoInfo) {
+    return { repoInfo, action: "existed" };
+  },
+};
 
 // Mock for repository processor used by settings command for manifest updates
 class MockSettingsRepoProcessor implements IRepositoryProcessor {
@@ -1396,7 +1406,13 @@ repos:
 `
     );
 
-    await runSettings({ config: unitTestConfigPath }, mockFactory);
+    await runSettings(
+      { config: unitTestConfigPath },
+      mockFactory,
+      undefined,
+      undefined,
+      noopLifecycleManager
+    );
 
     assert.equal(mockProcessor.calls.length, 1);
     assert.equal(
@@ -1425,7 +1441,13 @@ repos:
 `
     );
 
-    await runSettings({ config: unitTestConfigPath }, mockFactory);
+    await runSettings(
+      { config: unitTestConfigPath },
+      mockFactory,
+      undefined,
+      undefined,
+      noopLifecycleManager
+    );
 
     // Processor should not be called for non-GitHub repos
     assert.equal(mockProcessor.calls.length, 0);
@@ -1453,7 +1475,10 @@ repos:
 
     await runSettings(
       { config: unitTestConfigPath, dryRun: true },
-      mockFactory
+      mockFactory,
+      undefined,
+      undefined,
+      noopLifecycleManager
     );
 
     assert.equal(mockProcessor.calls.length, 1);
@@ -1483,7 +1508,10 @@ repos:
 
     await runSettings(
       { config: unitTestConfigPath, noDelete: true },
-      mockFactory
+      mockFactory,
+      undefined,
+      undefined,
+      noopLifecycleManager
     );
 
     assert.equal(mockProcessor.calls.length, 1);
@@ -1522,7 +1550,13 @@ repos:
 `
     );
 
-    await runSettings({ config: unitTestConfigPath }, mockFactory);
+    await runSettings(
+      { config: unitTestConfigPath },
+      mockFactory,
+      undefined,
+      undefined,
+      noopLifecycleManager
+    );
 
     assert.equal(mockProcessor.calls.length, 2);
     assert.equal(
@@ -1556,7 +1590,13 @@ repos:
 `
     );
 
-    await runSettings({ config: unitTestConfigPath }, mockFactory);
+    await runSettings(
+      { config: unitTestConfigPath },
+      mockFactory,
+      undefined,
+      undefined,
+      noopLifecycleManager
+    );
 
     // Only the repo with rulesets should be processed
     assert.equal(mockProcessor.calls.length, 1);
@@ -1604,7 +1644,9 @@ repos:
     await runSettings(
       { config: unitTestConfigPath },
       mockFactory,
-      mockRepoProcessorFactory
+      mockRepoProcessorFactory,
+      undefined,
+      noopLifecycleManager
     );
 
     // Verify updateManifestOnly was called with the manifest update
@@ -1717,7 +1759,11 @@ repos:
 `
     );
 
-    await runSync({ config: syncUnitTestConfigPath }, mockFactory);
+    await runSync(
+      { config: syncUnitTestConfigPath },
+      mockFactory,
+      noopLifecycleManager
+    );
 
     assert.equal(mockProcessor.calls.length, 1);
     assert.equal(
@@ -1742,7 +1788,8 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath, dryRun: true },
-      mockFactory
+      mockFactory,
+      noopLifecycleManager
     );
 
     assert.equal(mockProcessor.calls.length, 1);
@@ -1766,7 +1813,8 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath, branch: "feature/custom-branch" },
-      mockFactory
+      mockFactory,
+      noopLifecycleManager
     );
 
     assert.equal(mockProcessor.calls.length, 1);
@@ -1789,7 +1837,11 @@ repos:
 `
     );
 
-    await runSync({ config: syncUnitTestConfigPath }, mockFactory);
+    await runSync(
+      { config: syncUnitTestConfigPath },
+      mockFactory,
+      noopLifecycleManager
+    );
 
     assert.equal(mockProcessor.calls.length, 2);
     assert.equal(
@@ -1818,7 +1870,8 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath, noDelete: true },
-      mockFactory
+      mockFactory,
+      noopLifecycleManager
     );
 
     assert.equal(mockProcessor.calls.length, 1);
