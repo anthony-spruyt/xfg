@@ -59,12 +59,14 @@ repos: # List of repositories
 
 ## Per-Repo Fields
 
-| Field       | Description                                                   | Required |
-| ----------- | ------------------------------------------------------------- | -------- |
-| `git`       | Git URL (string) or array of URLs                             | Yes      |
-| `files`     | Per-repo file overrides (optional)                            | No       |
-| `settings`  | Per-repo settings like `rulesets` (merged with root settings) | No       |
-| `prOptions` | Per-repo PR merge options (overrides global)                  | No       |
+| Field       | Description                                                                           | Required |
+| ----------- | ------------------------------------------------------------------------------------- | -------- |
+| `git`       | Git URL (string) or array of URLs                                                     | Yes      |
+| `files`     | Per-repo file overrides (optional)                                                    | No       |
+| `settings`  | Per-repo settings like `rulesets` (merged with root settings)                         | No       |
+| `prOptions` | Per-repo PR merge options (overrides global)                                          | No       |
+| `upstream`  | Fork from this repo if target doesn't exist. See [Lifecycle](lifecycle.md).           | No       |
+| `source`    | Migrate from this repo if target doesn't exist. See [Lifecycle](lifecycle.md).        | No       |
 
 ## Per-Repo File Override Fields
 

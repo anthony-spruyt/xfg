@@ -207,7 +207,21 @@
         "settings": {
           "$ref": "#/definitions/repoSettings",
           "description": "Per-repo settings including GitHub Rulesets. Merged with global settings: per-repo rulesets override root rulesets with same name."
+        },
+        "upstream": {
+          "type": "string",
+          "description": "Fork upstream repo if target doesn't exist. When the target repo is missing, xfg forks from this URL instead of creating an empty repo. Mutually exclusive with 'source'. Supports SSH (git@host:owner/repo.git) and HTTPS (https://host/owner/repo.git) formats."
+        },
+        "source": {
+          "type": "string",
+          "description": "Migrate from source repo if target doesn't exist. When the target repo is missing, xfg clones this repo with --mirror and pushes to the new target. Use for cross-platform migration (e.g., Azure DevOps to GitHub). Mutually exclusive with 'upstream'. Supports SSH and HTTPS formats."
         }
+      },
+      "not": {
+        "required": [
+          "upstream",
+          "source"
+        ]
       }
     },
     "prOptions": {

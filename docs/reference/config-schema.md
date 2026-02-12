@@ -67,11 +67,16 @@ Or configure in `.vscode/settings.json`:
 
 ### Repo Config
 
-| Field       | Type           | Required | Description             |
-| ----------- | -------------- | -------- | ----------------------- |
-| `git`       | `string/array` | Yes      | Git URL(s)              |
-| `files`     | `object`       | No       | Per-repo file overrides |
-| `prOptions` | `PROptions`    | No       | Per-repo PR options     |
+| Field       | Type           | Required | Description                                                 |
+| ----------- | -------------- | -------- | ----------------------------------------------------------- |
+| `git`       | `string/array` | Yes      | Git URL(s)                                                  |
+| `files`     | `object`       | No       | Per-repo file overrides                                     |
+| `prOptions` | `PROptions`    | No       | Per-repo PR options                                         |
+| `upstream`  | `string`       | No       | Fork from this URL if target doesn't exist                  |
+| `source`    | `string`       | No       | Migrate from this URL if target doesn't exist               |
+
+!!! note "`upstream` and `source` are mutually exclusive"
+    See [Repo Lifecycle](../configuration/lifecycle.md) for details.
 
 ### Per-Repo File Override
 
