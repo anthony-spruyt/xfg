@@ -379,3 +379,51 @@ export interface IPRMergeHandler {
     fileChanges?: FileChangeDetail[]
   ): Promise<ProcessorResult>;
 }
+
+/**
+ * Result of executing work within a sync workflow
+ */
+export interface WorkResult {
+  /** File changes to commit */
+  fileChanges: Map<string, FileWriteResult>;
+  /** Changed files for PR body */
+  changedFiles: FileAction[];
+  /** Diff statistics for reporting */
+  diffStats?: DiffStats;
+  /** Human-readable commit message */
+  commitMessage: string;
+  /** File change details for result reporting */
+  fileChangeDetails: FileChangeDetail[];
+}
+
+/**
+ * Strategy for executing work within the sync workflow.
+ * Implementations define what changes to make (files vs manifest).
+ */
+export interface IWorkStrategy {
+  /**
+   * Execute work and return changes to commit.
+   * Return null if no changes detected (workflow will skip).
+   */
+  execute(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    session: SessionContext,
+    options: ProcessorOptions
+  ): Promise<WorkResult | null>;
+}
+
+/**
+ * Orchestrates the common sync workflow steps.
+ */
+export interface ISyncWorkflow {
+  /**
+   * Execute workflow: auth → session → branch → work → commit → PR
+   */
+  execute(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: ProcessorOptions,
+    workStrategy: IWorkStrategy
+  ): Promise<ProcessorResult>;
+}
