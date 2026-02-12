@@ -20,6 +20,10 @@ import {
   writeSyncReportSummary,
 } from "../output/sync-report.js";
 import type { ProcessorResult } from "../sync/index.js";
+import {
+  RepoLifecycleManager,
+  type CreateRepoSettings,
+} from "../lifecycle/index.js";
 
 /**
  * Shared options common to all commands.
@@ -148,6 +152,7 @@ export async function runSync(
   console.log(`Branch: ${branchName}\n`);
 
   const processor = processorFactory();
+  const lifecycleManager = new RepoLifecycleManager();
   const reportResults: SyncResultEntry[] = [];
 
   for (let i = 0; i < config.repos.length; i++) {
@@ -186,6 +191,57 @@ export async function runSync(
     const workDir = resolve(
       join(options.workDir ?? "./tmp", generateWorkspaceName(i))
     );
+
+    // Check if repo exists, create/fork/migrate if needed
+    if (repoConfig.upstream || repoConfig.source) {
+      try {
+        const createSettings: CreateRepoSettings | undefined = config.settings
+          ?.repo
+          ? {
+              visibility: config.settings.repo.visibility,
+              hasIssues: config.settings.repo.hasIssues,
+              hasWiki: config.settings.repo.hasWiki,
+              hasProjects: config.settings.repo.hasProjects,
+            }
+          : undefined;
+
+        const lifecycleResult = await lifecycleManager.ensureRepo(
+          repoConfig,
+          repoInfo,
+          {
+            dryRun: options.dryRun ?? false,
+            workDir,
+            retries: options.retries,
+          },
+          createSettings
+        );
+
+        if (lifecycleResult.action !== "existed") {
+          const actionVerb = lifecycleResult.skipped ? "Would" : "Successfully";
+          const actionMap = {
+            created: "created",
+            forked: "forked",
+            migrated: "migrated",
+          };
+          logger.info(
+            `${actionVerb} ${actionMap[lifecycleResult.action]} repository: ${repoName}`
+          );
+        }
+      } catch (error) {
+        logger.error(
+          current,
+          repoName,
+          `Lifecycle error: ${error instanceof Error ? error.message : String(error)}`
+        );
+        reportResults.push({
+          repoName,
+          success: false,
+          fileChanges: [],
+          error: error instanceof Error ? error.message : String(error),
+        });
+        continue;
+      }
+    }
 
     try {
       logger.progress(current, repoName, "Processing...");
