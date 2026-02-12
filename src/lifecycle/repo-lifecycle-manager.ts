@@ -1,0 +1,149 @@
+import { join } from "node:path";
+import { rm } from "node:fs/promises";
+import { parseGitUrl, type RepoInfo } from "../shared/repo-detector.js";
+import type { RepoConfig } from "../config/types.js";
+import type {
+  IRepoLifecycleManager,
+  IRepoLifecycleFactory,
+  LifecycleResult,
+  LifecycleOptions,
+  CreateRepoSettings,
+} from "./types.js";
+import { RepoLifecycleFactory } from "./repo-lifecycle-factory.js";
+
+/**
+ * Orchestrates repo lifecycle operations before sync.
+ */
+export class RepoLifecycleManager implements IRepoLifecycleManager {
+  constructor(
+    private readonly factory: IRepoLifecycleFactory = new RepoLifecycleFactory()
+  ) {}
+
+  async ensureRepo(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: LifecycleOptions,
+    settings?: CreateRepoSettings
+  ): Promise<LifecycleResult> {
+    const provider = this.factory.getProvider(repoInfo.type);
+
+    // Check if repo exists
+    const exists = await provider.exists(repoInfo);
+
+    if (exists) {
+      // Repo exists - nothing to do (ignore upstream/source)
+      return {
+        repoInfo,
+        action: "existed",
+      };
+    }
+
+    // Repo doesn't exist - determine what action to take
+    if (repoConfig.source) {
+      // Migration mode
+      return this.migrate(repoConfig, repoInfo, options, settings);
+    }
+
+    if (repoConfig.upstream) {
+      // Fork mode
+      return this.fork(repoConfig, repoInfo, options, settings);
+    }
+
+    // Create mode (no upstream or source)
+    return this.create(repoInfo, options, settings);
+  }
+
+  private async create(
+    repoInfo: RepoInfo,
+    options: LifecycleOptions,
+    settings?: CreateRepoSettings
+  ): Promise<LifecycleResult> {
+    if (options.dryRun) {
+      return {
+        repoInfo,
+        action: "created",
+        skipped: true,
+      };
+    }
+
+    const provider = this.factory.getProvider(repoInfo.type);
+    await provider.create(repoInfo, settings);
+
+    return {
+      repoInfo,
+      action: "created",
+    };
+  }
+
+  private async fork(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: LifecycleOptions,
+    settings?: CreateRepoSettings
+  ): Promise<LifecycleResult> {
+    if (options.dryRun) {
+      return {
+        repoInfo,
+        action: "forked",
+        skipped: true,
+      };
+    }
+
+    const provider = this.factory.getProvider(repoInfo.type);
+
+    if (!provider.fork) {
+      throw new Error(`Platform '${repoInfo.type}' does not support forking`);
+    }
+
+    // Parse upstream URL to get repo info
+    const upstreamInfo = parseGitUrl(repoConfig.upstream!);
+    await provider.fork(upstreamInfo, repoInfo, settings);
+
+    return {
+      repoInfo,
+      action: "forked",
+    };
+  }
+
+  private async migrate(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: LifecycleOptions,
+    settings?: CreateRepoSettings
+  ): Promise<LifecycleResult> {
+    if (options.dryRun) {
+      return {
+        repoInfo,
+        action: "migrated",
+        skipped: true,
+      };
+    }
+
+    // Parse source URL to get platform and repo info
+    const sourceInfo = parseGitUrl(repoConfig.source!);
+    const source = this.factory.getMigrationSource(sourceInfo.type);
+
+    // Clone source repo to temp directory
+    const sourceDir = join(options.workDir, "migration-source");
+
+    try {
+      await source.cloneForMigration(sourceInfo, sourceDir);
+
+      // Create target and push content
+      const provider = this.factory.getProvider(repoInfo.type);
+      await provider.receiveMigration(repoInfo, sourceDir, settings);
+
+      return {
+        repoInfo,
+        action: "migrated",
+      };
+    } finally {
+      // Clean up migration source directory
+      try {
+        await rm(sourceDir, { recursive: true, force: true });
+      } catch {
+        // Ignore cleanup errors
+      }
+    }
+  }
+}

@@ -1,0 +1,243 @@
+import { test, describe, beforeEach, afterEach } from "node:test";
+import { strict as assert } from "node:assert";
+import { mkdirSync, rmSync, existsSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { RepoLifecycleManager } from "../../../src/lifecycle/repo-lifecycle-manager.js";
+import type {
+  IRepoLifecycleFactory,
+  IRepoLifecycleProvider,
+  IMigrationSource,
+} from "../../../src/lifecycle/types.js";
+import type { RepoConfig } from "../../../src/config/types.js";
+import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+
+describe("RepoLifecycleManager", () => {
+  const testDir = join(tmpdir(), `lifecycle-manager-test-${Date.now()}`);
+  let workDir: string;
+
+  const mockGitHubRepoInfo: GitHubRepoInfo = {
+    type: "github",
+    gitUrl: "git@github.com:test-org/test-repo.git",
+    owner: "test-org",
+    repo: "test-repo",
+    host: "github.com",
+  };
+
+  beforeEach(() => {
+    workDir = join(testDir, `workspace-${Date.now()}`);
+    mkdirSync(workDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(testDir, { recursive: true, force: true });
+  });
+
+  function createMockFactory(options: {
+    exists?: boolean;
+    createCalled?: () => void;
+    forkCalled?: () => void;
+    migrateCalled?: () => void;
+    cloneCalled?: () => void;
+  }): IRepoLifecycleFactory {
+    const provider: IRepoLifecycleProvider = {
+      platform: "github",
+      async exists() {
+        return options.exists ?? false;
+      },
+      async create() {
+        options.createCalled?.();
+      },
+      async fork() {
+        options.forkCalled?.();
+      },
+      async receiveMigration() {
+        options.migrateCalled?.();
+      },
+    };
+
+    const source: IMigrationSource = {
+      platform: "azure-devops",
+      async cloneForMigration(_repoInfo, cloneDir) {
+        // Create the directory to simulate clone
+        mkdirSync(cloneDir, { recursive: true });
+        options.cloneCalled?.();
+      },
+    };
+
+    return {
+      getProvider: () => provider,
+      getMigrationSource: () => source,
+    };
+  }
+
+  describe("ensureRepo()", () => {
+    test("returns existed when repo exists", async () => {
+      const factory = createMockFactory({ exists: true });
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+      };
+
+      const result = await manager.ensureRepo(repoConfig, mockGitHubRepoInfo, {
+        dryRun: false,
+        workDir,
+      });
+
+      assert.equal(result.action, "existed");
+    });
+
+    test("creates repo when missing and no upstream/source", async () => {
+      let createCalled = false;
+      const factory = createMockFactory({
+        exists: false,
+        createCalled: () => {
+          createCalled = true;
+        },
+      });
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+      };
+
+      const result = await manager.ensureRepo(repoConfig, mockGitHubRepoInfo, {
+        dryRun: false,
+        workDir,
+      });
+
+      assert.equal(result.action, "created");
+      assert.equal(createCalled, true);
+    });
+
+    test("forks when upstream present and missing", async () => {
+      let forkCalled = false;
+      const factory = createMockFactory({
+        exists: false,
+        forkCalled: () => {
+          forkCalled = true;
+        },
+      });
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+        upstream: "git@github.com:opensource/tool.git",
+      };
+
+      const result = await manager.ensureRepo(repoConfig, mockGitHubRepoInfo, {
+        dryRun: false,
+        workDir,
+      });
+
+      assert.equal(result.action, "forked");
+      assert.equal(forkCalled, true);
+    });
+
+    test("migrates when source present and missing", async () => {
+      let migrateCalled = false;
+      let cloneCalled = false;
+      const factory = createMockFactory({
+        exists: false,
+        migrateCalled: () => {
+          migrateCalled = true;
+        },
+        cloneCalled: () => {
+          cloneCalled = true;
+        },
+      });
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+        source: "https://dev.azure.com/myorg/myproject/_git/myrepo",
+      };
+
+      const result = await manager.ensureRepo(repoConfig, mockGitHubRepoInfo, {
+        dryRun: false,
+        workDir,
+      });
+
+      assert.equal(result.action, "migrated");
+      assert.equal(cloneCalled, true);
+      assert.equal(migrateCalled, true);
+    });
+
+    test("cleans up migration source directory after success", async () => {
+      const factory = createMockFactory({
+        exists: false,
+      });
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+        source: "https://dev.azure.com/myorg/myproject/_git/myrepo",
+      };
+
+      await manager.ensureRepo(repoConfig, mockGitHubRepoInfo, {
+        dryRun: false,
+        workDir,
+      });
+
+      // Migration source dir should be cleaned up
+      const sourceDir = join(workDir, "migration-source");
+      assert.equal(existsSync(sourceDir), false);
+    });
+
+    test("skips action in dry-run mode", async () => {
+      let createCalled = false;
+      const factory = createMockFactory({
+        exists: false,
+        createCalled: () => {
+          createCalled = true;
+        },
+      });
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+      };
+
+      const result = await manager.ensureRepo(repoConfig, mockGitHubRepoInfo, {
+        dryRun: true,
+        workDir,
+      });
+
+      assert.equal(result.action, "created");
+      assert.equal(result.skipped, true);
+      assert.equal(createCalled, false);
+    });
+
+    test("ignores upstream when repo exists", async () => {
+      let forkCalled = false;
+      const factory = createMockFactory({
+        exists: true,
+        forkCalled: () => {
+          forkCalled = true;
+        },
+      });
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+        upstream: "git@github.com:opensource/tool.git",
+      };
+
+      const result = await manager.ensureRepo(repoConfig, mockGitHubRepoInfo, {
+        dryRun: false,
+        workDir,
+      });
+
+      assert.equal(result.action, "existed");
+      assert.equal(forkCalled, false);
+    });
+  });
+});
