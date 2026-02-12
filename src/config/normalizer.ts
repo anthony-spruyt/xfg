@@ -302,6 +302,8 @@ export function normalizeConfig(raw: RawConfig): Config {
         files,
         prOptions,
         settings,
+        upstream: rawRepo.upstream,
+        source: rawRepo.source,
       });
     }
   }

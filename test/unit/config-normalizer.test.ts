@@ -2155,6 +2155,76 @@ describe("normalizeConfig", () => {
   });
 });
 
+describe("normalizeConfig - lifecycle fields", () => {
+  test("preserves upstream field", () => {
+    const rawConfig: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/forked-tool.git",
+          upstream: "git@github.com:opensource/cool-tool.git",
+        },
+      ],
+    };
+
+    const config = normalizeConfig(rawConfig);
+
+    assert.equal(
+      config.repos[0].upstream,
+      "git@github.com:opensource/cool-tool.git"
+    );
+  });
+
+  test("preserves source field", () => {
+    const rawConfig: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/migrated-app.git",
+          source: "https://dev.azure.com/org/project/_git/legacy-app",
+        },
+      ],
+    };
+
+    const config = normalizeConfig(rawConfig);
+
+    assert.equal(
+      config.repos[0].source,
+      "https://dev.azure.com/org/project/_git/legacy-app"
+    );
+  });
+
+  test("expands git array with upstream on each", () => {
+    const rawConfig: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: [
+            "git@github.com:my-org/fork1.git",
+            "git@github.com:my-org/fork2.git",
+          ],
+          upstream: "git@github.com:opensource/tool.git",
+        },
+      ],
+    };
+
+    const config = normalizeConfig(rawConfig);
+
+    assert.equal(config.repos.length, 2);
+    assert.equal(
+      config.repos[0].upstream,
+      "git@github.com:opensource/tool.git"
+    );
+    assert.equal(
+      config.repos[1].upstream,
+      "git@github.com:opensource/tool.git"
+    );
+  });
+});
+
 describe("mergeSettings with repo", () => {
   test("should merge root and per-repo repo settings", () => {
     const root = {
