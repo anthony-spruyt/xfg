@@ -7,6 +7,14 @@ export { CommitPushManager } from "./commit-push-manager.js";
 export { formatCommitMessage } from "./commit-message.js";
 export { FileSyncOrchestrator } from "./file-sync-orchestrator.js";
 export { PRMergeHandler } from "./pr-merge-handler.js";
+
+// Strategy pattern components
+export { FileSyncStrategy } from "./file-sync-strategy.js";
+export {
+  ManifestStrategy,
+  type ManifestUpdateParams,
+} from "./manifest-strategy.js";
+export { SyncWorkflow } from "./sync-workflow.js";
 export type {
   IFileWriter,
   FileWriteContext,
