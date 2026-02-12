@@ -420,6 +420,42 @@ describe("RepoLifecycleManager", () => {
       assert.equal(result.action, "existed");
     });
 
+    test("throws for unsupported migration source (e.g., GitHub-to-GitHub)", async () => {
+      const factory: IRepoLifecycleFactory = {
+        getProvider: () => ({
+          platform: "github" as const,
+          async exists() {
+            return false;
+          },
+          async create() {},
+          async fork() {},
+          async receiveMigration() {},
+        }),
+        getMigrationSource(platform) {
+          throw new Error(
+            `Platform '${platform}' not supported as migration source. ` +
+              `Currently supported: azure-devops`
+          );
+        },
+      };
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+        source: "git@github.com:other-org/source-repo.git",
+      };
+
+      await assert.rejects(
+        () =>
+          manager.ensureRepo(repoConfig, mockGitHubRepoInfo, {
+            dryRun: false,
+            workDir,
+          }),
+        /not supported as migration source.*Currently supported: azure-devops/
+      );
+    });
+
     test("throws for unsupported platform when upstream is set", async () => {
       const factory: IRepoLifecycleFactory = {
         getProvider() {

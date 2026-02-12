@@ -41,6 +41,13 @@ When `my-org/forked-tool` doesn't exist, xfg will:
 
 If the repo already exists, the `upstream` field is ignored.
 
+<!-- markdownlint-disable MD046 -->
+!!! note "Fork visibility"
+    Forked repos inherit visibility from the upstream repo. The `settings.repo.visibility` option
+    does not apply to forks - to change visibility after forking, update the repo settings manually
+    or via xfg settings after the fork is created.
+<!-- markdownlint-enable MD046 -->
+
 ## Migration (`source`)
 
 Migrate a repo from another platform (e.g., Azure DevOps to GitHub):

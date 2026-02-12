@@ -278,7 +278,7 @@ async function processRepoSettings(
         );
 
         for (const line of outputLines) {
-          console.log(`  ${line}`);
+          logger.info(line);
         }
         lifecycleChecked.add(repoConfig.git);
       } catch (error) {
