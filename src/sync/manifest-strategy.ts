@@ -61,9 +61,9 @@ export class ManifestStrategy implements IWorkStrategy {
 
     if (dryRun) {
       this.log.info(`Would update ${MANIFEST_FILENAME} with rulesets`);
+    } else {
+      saveManifest(workDir, newManifest);
     }
-
-    saveManifest(workDir, newManifest);
 
     const fileChanges = new Map<string, FileWriteResult>([
       [
