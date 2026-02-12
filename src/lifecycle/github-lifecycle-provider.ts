@@ -100,13 +100,13 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       escapeShellArg(`${repoInfo.owner}/${repoInfo.repo}`),
     ];
 
-    // Visibility flag
-    if (settings?.visibility === "private") {
-      parts.push("--private");
+    // Visibility flag (default to private for safety)
+    if (settings?.visibility === "public") {
+      parts.push("--public");
     } else if (settings?.visibility === "internal") {
       parts.push("--internal");
     } else {
-      parts.push("--public");
+      parts.push("--private");
     }
 
     // Description

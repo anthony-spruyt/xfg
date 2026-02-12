@@ -28,6 +28,8 @@ export interface LifecycleOptions {
   dryRun: boolean;
   /** Working directory for git operations */
   workDir: string;
+  /** GitHub Enterprise hostnames for URL detection */
+  githubHosts?: string[];
 }
 
 /**
@@ -38,7 +40,6 @@ export interface CreateRepoSettings {
   visibility?: "public" | "private" | "internal";
   description?: string;
   hasIssues?: boolean;
-  hasProjects?: boolean;
   hasWiki?: boolean;
 }
 

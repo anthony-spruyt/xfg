@@ -36,9 +36,8 @@ import type { Config, RepoConfig } from "../config/types.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import {
   RepoLifecycleManager,
-  formatLifecycleAction,
+  runLifecycleCheck,
   type IRepoLifecycleManager,
-  type CreateRepoSettings,
 } from "../lifecycle/index.js";
 
 /**
@@ -88,7 +87,8 @@ async function processRulesets(
   repoProcessor: IRepositoryProcessor,
   results: RepoResult[],
   collector: ResultsCollector,
-  lifecycleManager: IRepoLifecycleManager
+  lifecycleManager: IRepoLifecycleManager,
+  lifecycleChecked: Set<string>
 ): Promise<void> {
   for (let i = 0; i < repos.length; i++) {
     const repoConfig = repos[i];
@@ -107,46 +107,26 @@ async function processRulesets(
 
     const repoName = getRepoDisplayName(repoInfo);
 
-    // Check if repo exists, create/fork/migrate if needed
-    /* c8 ignore start -- lifecycle wiring tested via RepoLifecycleManager unit tests */
-    {
-      const workDir = resolve(
-        join(options.workDir ?? "./tmp", generateWorkspaceName(i))
-      );
+    // Check if repo exists, create/fork/migrate if needed (skip if already checked)
+    if (!lifecycleChecked.has(repoConfig.git)) {
       try {
-        const createSettings: CreateRepoSettings | undefined = config.settings
-          ?.repo
-          ? {
-              visibility: config.settings.repo.visibility,
-              description: config.settings.repo.description,
-              hasIssues: config.settings.repo.hasIssues,
-              hasWiki: config.settings.repo.hasWiki,
-              hasProjects: config.settings.repo.hasProjects,
-            }
-          : undefined;
-
-        const lifecycleResult = await lifecycleManager.ensureRepo(
+        const { outputLines } = await runLifecycleCheck(
           repoConfig,
           repoInfo,
+          i,
           {
             dryRun: options.dryRun ?? false,
-            workDir,
+            workDir: options.workDir,
+            githubHosts: config.githubHosts,
           },
-          createSettings
+          lifecycleManager,
+          config.settings?.repo
         );
 
-        for (const line of formatLifecycleAction(lifecycleResult, {
-          upstream: repoConfig.upstream,
-          source: repoConfig.source,
-          settings: createSettings
-            ? {
-                visibility: createSettings.visibility,
-                description: createSettings.description,
-              }
-            : undefined,
-        })) {
+        for (const line of outputLines) {
           logger.info(line);
         }
+        lifecycleChecked.add(repoConfig.git);
       } catch (error) {
         logger.error(
           i + 1,
@@ -158,7 +138,6 @@ async function processRulesets(
         continue;
       }
     }
-    /* c8 ignore stop */
 
     if (!isGitHubRepo(repoInfo)) {
       logger.skip(
@@ -256,7 +235,8 @@ async function processRepoSettings(
   processorFactory: RepoSettingsProcessorFactory,
   results: RepoResult[],
   collector: ResultsCollector,
-  lifecycleManager: IRepoLifecycleManager
+  lifecycleManager: IRepoLifecycleManager,
+  lifecycleChecked: Set<string>
 ): Promise<void> {
   if (repos.length === 0) {
     return;
@@ -281,46 +261,26 @@ async function processRepoSettings(
 
     const repoName = getRepoDisplayName(repoInfo);
 
-    // Check if repo exists, create/fork/migrate if needed
-    /* c8 ignore start -- lifecycle wiring tested via RepoLifecycleManager unit tests */
-    {
-      const workDir = resolve(
-        join(options.workDir ?? "./tmp", generateWorkspaceName(i))
-      );
+    // Check if repo exists, create/fork/migrate if needed (skip if already checked)
+    if (!lifecycleChecked.has(repoConfig.git)) {
       try {
-        const createSettings: CreateRepoSettings | undefined = config.settings
-          ?.repo
-          ? {
-              visibility: config.settings.repo.visibility,
-              description: config.settings.repo.description,
-              hasIssues: config.settings.repo.hasIssues,
-              hasWiki: config.settings.repo.hasWiki,
-              hasProjects: config.settings.repo.hasProjects,
-            }
-          : undefined;
-
-        const lifecycleResult = await lifecycleManager.ensureRepo(
+        const { outputLines } = await runLifecycleCheck(
           repoConfig,
           repoInfo,
+          i,
           {
             dryRun: options.dryRun ?? false,
-            workDir,
+            workDir: options.workDir,
+            githubHosts: config.githubHosts,
           },
-          createSettings
+          lifecycleManager,
+          config.settings?.repo
         );
 
-        for (const line of formatLifecycleAction(lifecycleResult, {
-          upstream: repoConfig.upstream,
-          source: repoConfig.source,
-          settings: createSettings
-            ? {
-                visibility: createSettings.visibility,
-                description: createSettings.description,
-              }
-            : undefined,
-        })) {
+        for (const line of outputLines) {
           console.log(`  ${line}`);
         }
+        lifecycleChecked.add(repoConfig.git);
       } catch (error) {
         console.error(
           `  Lifecycle error for ${repoName}: ${error instanceof Error ? error.message : String(error)}`
@@ -329,7 +289,6 @@ async function processRepoSettings(
         continue;
       }
     }
-    /* c8 ignore stop */
 
     try {
       const result = await processor.process(repoConfig, repoInfo, {
@@ -446,6 +405,7 @@ export async function runSettings(
     lifecycleManager ?? new RepoLifecycleManager(undefined, options.retries);
   const results: RepoResult[] = [];
   const collector = new ResultsCollector();
+  const lifecycleChecked = new Set<string>();
 
   await processRulesets(
     reposWithRulesets,
@@ -455,7 +415,8 @@ export async function runSettings(
     repoProcessor,
     results,
     collector,
-    lm
+    lm,
+    lifecycleChecked
   );
 
   await processRepoSettings(
@@ -465,7 +426,8 @@ export async function runSettings(
     repoSettingsProcessorFactory,
     results,
     collector,
-    lm
+    lm,
+    lifecycleChecked
   );
 
   console.log("");

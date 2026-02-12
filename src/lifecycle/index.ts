@@ -17,3 +17,9 @@ export {
   formatLifecycleAction,
   type FormatOptions,
 } from "./lifecycle-formatter.js";
+export {
+  runLifecycleCheck,
+  toCreateRepoSettings,
+  type LifecycleCheckOptions,
+  type LifecycleCheckResult,
+} from "./lifecycle-helpers.js";

@@ -22,9 +22,8 @@ import {
 import type { ProcessorResult } from "../sync/index.js";
 import {
   RepoLifecycleManager,
-  formatLifecycleAction,
+  runLifecycleCheck,
   type IRepoLifecycleManager,
-  type CreateRepoSettings,
 } from "../lifecycle/index.js";
 
 /**
@@ -197,39 +196,21 @@ export async function runSync(
     );
 
     // Check if repo exists, create/fork/migrate if needed
-    /* c8 ignore start -- lifecycle wiring tested via RepoLifecycleManager unit tests */
     try {
-      const createSettings: CreateRepoSettings | undefined = config.settings
-        ?.repo
-        ? {
-            visibility: config.settings.repo.visibility,
-            description: config.settings.repo.description,
-            hasIssues: config.settings.repo.hasIssues,
-            hasWiki: config.settings.repo.hasWiki,
-            hasProjects: config.settings.repo.hasProjects,
-          }
-        : undefined;
-
-      const lifecycleResult = await lm.ensureRepo(
+      const { outputLines } = await runLifecycleCheck(
         repoConfig,
         repoInfo,
+        i,
         {
           dryRun: options.dryRun ?? false,
-          workDir,
+          workDir: options.workDir,
+          githubHosts: config.githubHosts,
         },
-        createSettings
+        lm,
+        config.settings?.repo
       );
 
-      for (const line of formatLifecycleAction(lifecycleResult, {
-        upstream: repoConfig.upstream,
-        source: repoConfig.source,
-        settings: createSettings
-          ? {
-              visibility: createSettings.visibility,
-              description: createSettings.description,
-            }
-          : undefined,
-      })) {
+      for (const line of outputLines) {
         logger.info(line);
       }
     } catch (error) {
@@ -246,7 +227,6 @@ export async function runSync(
       });
       continue;
     }
-    /* c8 ignore stop */
 
     try {
       logger.progress(current, repoName, "Processing...");

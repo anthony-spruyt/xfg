@@ -109,7 +109,9 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
     }
 
     // Parse upstream URL to get repo info
-    const upstreamInfo = parseGitUrl(repoConfig.upstream!);
+    const upstreamInfo = parseGitUrl(repoConfig.upstream!, {
+      githubHosts: options.githubHosts,
+    });
     await provider.fork(upstreamInfo, repoInfo, settings);
 
     return {
@@ -133,7 +135,9 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
     }
 
     // Parse source URL to get platform and repo info
-    const sourceInfo = parseGitUrl(repoConfig.source!);
+    const sourceInfo = parseGitUrl(repoConfig.source!, {
+      githubHosts: options.githubHosts,
+    });
     const source = this.factory.getMigrationSource(sourceInfo.type);
 
     // Clone source repo to temp directory

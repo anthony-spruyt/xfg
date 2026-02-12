@@ -184,13 +184,24 @@ describe("GitHubLifecycleProvider", () => {
       assert.ok(calls[0].command.includes("--internal"));
     });
 
-    test("defaults to public visibility", async () => {
+    test("defaults to private visibility", async () => {
       const { mock: executor, calls } = createMockExecutor({
         defaultResponse: "",
       });
 
       const provider = new GitHubLifecycleProvider(executor, 0);
       await provider.create(mockRepoInfo);
+
+      assert.ok(calls[0].command.includes("--private"));
+    });
+
+    test("applies visibility setting - public", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+      await provider.create(mockRepoInfo, { visibility: "public" });
 
       assert.ok(calls[0].command.includes("--public"));
     });
