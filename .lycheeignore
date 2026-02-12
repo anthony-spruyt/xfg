@@ -8,6 +8,10 @@ https://gitlab.com/anthony-spruyt1/xfg-test.git
 https://github.com/owner/repo.git
 https://github.com/anthony-spruyt/xfg/config-schema.json
 
+# Example URLs in lifecycle documentation
+https://dev.azure.com/myorg/myproject/_git/legacy-app
+https://dev.azure.com/myorg/legacy/_git/old-api
+
 # Git URL prefixes (not valid HTTP URLs)
 git+https://github.com/anthony-spruyt/xfg.git
 
