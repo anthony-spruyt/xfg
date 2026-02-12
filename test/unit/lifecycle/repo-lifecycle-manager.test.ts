@@ -239,5 +239,152 @@ describe("RepoLifecycleManager", () => {
       assert.equal(result.action, "existed");
       assert.equal(forkCalled, false);
     });
+
+    test("dry-run fork returns skipped", async () => {
+      const factory = createMockFactory({ exists: false });
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+        upstream: "git@github.com:opensource/tool.git",
+      };
+
+      const result = await manager.ensureRepo(repoConfig, mockGitHubRepoInfo, {
+        dryRun: true,
+        workDir,
+      });
+
+      assert.equal(result.action, "forked");
+      assert.equal(result.skipped, true);
+    });
+
+    test("dry-run migrate returns skipped", async () => {
+      const factory = createMockFactory({ exists: false });
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+        source: "https://dev.azure.com/myorg/myproject/_git/myrepo",
+      };
+
+      const result = await manager.ensureRepo(repoConfig, mockGitHubRepoInfo, {
+        dryRun: true,
+        workDir,
+      });
+
+      assert.equal(result.action, "migrated");
+      assert.equal(result.skipped, true);
+    });
+
+    test("passes settings to create", async () => {
+      let createCalled = false;
+      const factory = createMockFactory({
+        exists: false,
+        createCalled: () => {
+          createCalled = true;
+        },
+      });
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+      };
+
+      await manager.ensureRepo(
+        repoConfig,
+        mockGitHubRepoInfo,
+        { dryRun: false, workDir },
+        { visibility: "private" }
+      );
+
+      assert.equal(createCalled, true);
+    });
+
+    test("throws when platform does not support forking", async () => {
+      const provider = {
+        platform: "github" as const,
+        async exists() {
+          return false;
+        },
+        async create() {},
+        // fork is undefined
+        async receiveMigration() {},
+      };
+
+      const factory = {
+        getProvider: () => provider,
+        getMigrationSource: () => ({
+          platform: "azure-devops" as const,
+          async cloneForMigration() {},
+        }),
+      };
+
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+        upstream: "git@github.com:opensource/tool.git",
+      };
+
+      await assert.rejects(
+        () =>
+          manager.ensureRepo(repoConfig, mockGitHubRepoInfo, {
+            dryRun: false,
+            workDir,
+          }),
+        /does not support forking/
+      );
+    });
+
+    test("cleans up migration source on error", async () => {
+      const provider = {
+        platform: "github" as const,
+        async exists() {
+          return false;
+        },
+        async create() {},
+        async fork() {},
+        async receiveMigration() {
+          throw new Error("Push failed");
+        },
+      };
+
+      const source = {
+        platform: "azure-devops" as const,
+        async cloneForMigration(_repoInfo: unknown, cloneDir: string) {
+          mkdirSync(cloneDir, { recursive: true });
+        },
+      };
+
+      const factory = {
+        getProvider: () => provider,
+        getMigrationSource: () => source,
+      };
+
+      const manager = new RepoLifecycleManager(factory);
+
+      const repoConfig: RepoConfig = {
+        git: mockGitHubRepoInfo.gitUrl,
+        files: [],
+        source: "https://dev.azure.com/myorg/myproject/_git/myrepo",
+      };
+
+      await assert.rejects(
+        () =>
+          manager.ensureRepo(repoConfig, mockGitHubRepoInfo, {
+            dryRun: false,
+            workDir,
+          }),
+        /Push failed/
+      );
+
+      // Migration source dir should still be cleaned up even on error
+      const sourceDir = join(workDir, "migration-source");
+      assert.equal(existsSync(sourceDir), false);
+    });
   });
 });

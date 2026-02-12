@@ -2,7 +2,10 @@ import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import { GitHubLifecycleProvider } from "../../../src/lifecycle/github-lifecycle-provider.js";
 import { createMockExecutor } from "../../mocks/index.js";
-import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import type {
+  GitHubRepoInfo,
+  AzureDevOpsRepoInfo,
+} from "../../../src/shared/repo-detector.js";
 
 describe("GitHubLifecycleProvider", () => {
   const mockRepoInfo: GitHubRepoInfo = {
@@ -64,6 +67,65 @@ describe("GitHubLifecycleProvider", () => {
       assert.ok(calls[0].command.includes("repos/'test-org'/'test-repo'"));
     });
 
+    test("rejects non-GitHub repo", async () => {
+      const adoRepo: AzureDevOpsRepoInfo = {
+        type: "azure-devops",
+        gitUrl: "https://dev.azure.com/org/project/_git/repo",
+        owner: "org",
+        repo: "repo",
+        organization: "org",
+        project: "project",
+      };
+
+      const { mock: executor } = createMockExecutor({
+        defaultResponse: '{"id": 123}',
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+
+      await assert.rejects(
+        () => provider.exists(adoRepo),
+        /requires GitHub repo/
+      );
+    });
+
+    test("returns false for Not Found pattern", async () => {
+      const notFoundError = new Error("Not Found");
+      (notFoundError as Error & { stderr?: string }).stderr = "";
+      const { mock: executor } = createMockExecutor({
+        responses: new Map([["gh api", notFoundError]]),
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+      const result = await provider.exists(mockRepoInfo);
+
+      assert.equal(result, false);
+    });
+
+    test("returns false for 404 pattern", async () => {
+      const notFoundError = new Error("HTTP 404");
+      (notFoundError as Error & { stderr?: string }).stderr = "";
+      const { mock: executor } = createMockExecutor({
+        responses: new Map([["gh api", notFoundError]]),
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+      const result = await provider.exists(mockRepoInfo);
+
+      assert.equal(result, false);
+    });
+
+    test("does not include --hostname for github.com", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        defaultResponse: '{"id": 123}',
+      });
+
+      const provider = new GitHubLifecycleProvider(executor);
+      await provider.exists(mockRepoInfo);
+
+      assert.ok(!calls[0].command.includes("--hostname"));
+    });
+
     test("handles GHE hostname", async () => {
       const gheRepoInfo: GitHubRepoInfo = {
         type: "github",
@@ -82,7 +144,7 @@ describe("GitHubLifecycleProvider", () => {
 
       assert.equal(calls.length, 1);
       assert.ok(calls[0].command.includes("--hostname"));
-      assert.ok(calls[0].command.includes("github.mycompany.com"));
+      assert.ok(calls[0].command.includes("'github.mycompany.com'"));
     });
   });
 
@@ -145,6 +207,61 @@ describe("GitHubLifecycleProvider", () => {
       assert.ok(calls[0].command.includes("Test repo"));
     });
 
+    test("adds --disable-issues when hasIssues is false", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+      await provider.create(mockRepoInfo, { hasIssues: false });
+
+      assert.ok(calls[0].command.includes("--disable-issues"));
+    });
+
+    test("adds --disable-wiki when hasWiki is false", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+      await provider.create(mockRepoInfo, { hasWiki: false });
+
+      assert.ok(calls[0].command.includes("--disable-wiki"));
+    });
+
+    test("does not add --disable-issues when hasIssues is true", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+      await provider.create(mockRepoInfo, { hasIssues: true });
+
+      assert.ok(!calls[0].command.includes("--disable-issues"));
+    });
+
+    test("rejects non-GitHub repo for create", async () => {
+      const adoRepo: AzureDevOpsRepoInfo = {
+        type: "azure-devops",
+        gitUrl: "https://dev.azure.com/org/project/_git/repo",
+        owner: "org",
+        repo: "repo",
+        organization: "org",
+        project: "project",
+      };
+
+      const { mock: executor } = createMockExecutor({
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+
+      await assert.rejects(
+        () => provider.create(adoRepo),
+        /requires GitHub repo/
+      );
+    });
+
     test("throws on failure", async () => {
       const { mock: executor } = createMockExecutor({
         responses: new Map([
@@ -196,6 +313,50 @@ describe("GitHubLifecycleProvider", () => {
       await provider.fork!(upstreamRepoInfo, mockRepoInfo);
 
       assert.ok(calls[0].command.includes("--clone=false"));
+    });
+
+    test("rejects non-GitHub upstream repo", async () => {
+      const adoRepo: AzureDevOpsRepoInfo = {
+        type: "azure-devops",
+        gitUrl: "https://dev.azure.com/org/project/_git/repo",
+        owner: "org",
+        repo: "repo",
+        organization: "org",
+        project: "project",
+      };
+
+      const { mock: executor } = createMockExecutor({
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+
+      await assert.rejects(
+        () => provider.fork!(adoRepo, mockRepoInfo),
+        /requires GitHub repo/
+      );
+    });
+
+    test("rejects non-GitHub target repo", async () => {
+      const adoRepo: AzureDevOpsRepoInfo = {
+        type: "azure-devops",
+        gitUrl: "https://dev.azure.com/org/project/_git/repo",
+        owner: "org",
+        repo: "repo",
+        organization: "org",
+        project: "project",
+      };
+
+      const { mock: executor } = createMockExecutor({
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+
+      await assert.rejects(
+        () => provider.fork!(upstreamRepoInfo, adoRepo),
+        /requires GitHub repo/
+      );
     });
 
     test("throws on failure", async () => {
@@ -253,6 +414,41 @@ describe("GitHubLifecycleProvider", () => {
       const pushCall = calls.find((c) => c.command.includes("git push"));
       assert.ok(pushCall);
       assert.equal(pushCall.cwd, "/tmp/source-mirror");
+    });
+
+    test("rejects non-GitHub repo", async () => {
+      const adoRepo: AzureDevOpsRepoInfo = {
+        type: "azure-devops",
+        gitUrl: "https://dev.azure.com/org/project/_git/repo",
+        owner: "org",
+        repo: "repo",
+        organization: "org",
+        project: "project",
+      };
+
+      const { mock: executor } = createMockExecutor({
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+
+      await assert.rejects(
+        () => provider.receiveMigration(adoRepo, "/tmp/source"),
+        /requires GitHub repo/
+      );
+    });
+
+    test("passes settings to create", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+      await provider.receiveMigration(mockRepoInfo, "/tmp/source", {
+        visibility: "private",
+      });
+
+      assert.ok(calls[0].command.includes("--private"));
     });
   });
 });

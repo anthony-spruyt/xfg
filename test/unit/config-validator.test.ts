@@ -2623,6 +2623,81 @@ describe("validateRawConfig - lifecycle fields", () => {
     };
     assert.throws(() => validateRawConfig(config), /source.*valid git URL/i);
   });
+
+  test("rejects non-string upstream", () => {
+    const config = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/repo.git",
+          upstream: 123,
+        },
+      ],
+    };
+    assert.throws(
+      () => validateRawConfig(config as unknown as RawConfig),
+      /upstream.*must be a string/i
+    );
+  });
+
+  test("rejects non-string source", () => {
+    const config = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/repo.git",
+          source: { url: "foo" },
+        },
+      ],
+    };
+    assert.throws(
+      () => validateRawConfig(config as unknown as RawConfig),
+      /source.*must be a string/i
+    );
+  });
+
+  test("accepts HTTPS upstream URL", () => {
+    const config: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/repo.git",
+          upstream: "https://github.com/opensource/tool.git",
+        },
+      ],
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("accepts SSH source URL", () => {
+    const config: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/repo.git",
+          source: "git@ssh.dev.azure.com:v3/org/project/repo",
+        },
+      ],
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("accepts repo without upstream or source", () => {
+    const config: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/repo.git",
+        },
+      ],
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
 });
 
 describe("validateRepoSettings", () => {

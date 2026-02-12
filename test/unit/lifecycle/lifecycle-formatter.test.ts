@@ -51,7 +51,7 @@ describe("formatLifecycleAction", () => {
     });
 
     assert.ok(lines.some((l) => l.includes("MIGRATE")));
-    assert.ok(lines.some((l) => l.includes("dev.azure.com")));
+    assert.ok(lines.some((l) => l.includes("dev.azure.com/")));
     assert.ok(lines.some((l) => l.includes("my-org/my-repo")));
   });
 
@@ -70,6 +70,56 @@ describe("formatLifecycleAction", () => {
 
     assert.ok(lines.some((l) => l.includes("visibility: private")));
     assert.ok(lines.some((l) => l.includes('description: "Test repo"')));
+  });
+
+  test("includes only visibility when no description", () => {
+    const result: LifecycleResult = {
+      repoInfo: mockRepoInfo,
+      action: "created",
+    };
+
+    const lines = formatLifecycleAction(result, {
+      settings: { visibility: "internal" },
+    });
+
+    assert.ok(lines.some((l) => l.includes("visibility: internal")));
+    assert.ok(!lines.some((l) => l.includes("description")));
+  });
+
+  test("includes only description when no visibility", () => {
+    const result: LifecycleResult = {
+      repoInfo: mockRepoInfo,
+      action: "created",
+    };
+
+    const lines = formatLifecycleAction(result, {
+      settings: { description: "My repo" },
+    });
+
+    assert.ok(!lines.some((l) => l.includes("visibility")));
+    assert.ok(lines.some((l) => l.includes('description: "My repo"')));
+  });
+
+  test("uses default upstream text when not provided", () => {
+    const result: LifecycleResult = {
+      repoInfo: mockRepoInfo,
+      action: "forked",
+    };
+
+    const lines = formatLifecycleAction(result);
+
+    assert.ok(lines.some((l) => l.includes("upstream")));
+  });
+
+  test("uses default source text when not provided", () => {
+    const result: LifecycleResult = {
+      repoInfo: mockRepoInfo,
+      action: "migrated",
+    };
+
+    const lines = formatLifecycleAction(result);
+
+    assert.ok(lines.some((l) => l.includes("source")));
   });
 
   test("returns empty for existed action", () => {
