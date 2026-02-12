@@ -2549,6 +2549,82 @@ describe("hasActionableSettings", () => {
   });
 });
 
+describe("validateRawConfig - lifecycle fields", () => {
+  test("accepts upstream field on repo", () => {
+    const config: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/forked-tool.git",
+          upstream: "git@github.com:opensource/cool-tool.git",
+        },
+      ],
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("accepts source field on repo", () => {
+    const config: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/migrated-app.git",
+          source: "https://dev.azure.com/org/project/_git/legacy-app",
+        },
+      ],
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("rejects upstream and source together", () => {
+    const config: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/repo.git",
+          upstream: "git@github.com:other/repo.git",
+          source: "https://dev.azure.com/org/project/_git/repo",
+        },
+      ],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /upstream.*source.*mutually exclusive/i
+    );
+  });
+
+  test("rejects invalid upstream URL", () => {
+    const config: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/repo.git",
+          upstream: "not-a-valid-url",
+        },
+      ],
+    };
+    assert.throws(() => validateRawConfig(config), /upstream.*valid git URL/i);
+  });
+
+  test("rejects invalid source URL", () => {
+    const config: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/repo.git",
+          source: "not-a-valid-url",
+        },
+      ],
+    };
+    assert.throws(() => validateRawConfig(config), /source.*valid git URL/i);
+  });
+});
+
 describe("validateRepoSettings", () => {
   // Helper to create a minimal valid config with settings
   const createSettingsConfig = (

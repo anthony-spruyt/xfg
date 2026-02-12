@@ -457,6 +457,10 @@ export interface RawRepoConfig {
   files?: Record<string, RawRepoFileOverride | false> & { inherit?: boolean };
   prOptions?: PRMergeOptions;
   settings?: RawRepoSettings;
+  /** Fork upstream repo if target doesn't exist */
+  upstream?: string;
+  /** Migrate from source repo if target doesn't exist */
+  source?: string;
 }
 
 // Root config structure
@@ -494,6 +498,10 @@ export interface RepoConfig {
   files: FileContent[];
   prOptions?: PRMergeOptions;
   settings?: RepoSettings;
+  /** Fork upstream repo if target doesn't exist */
+  upstream?: string;
+  /** Migrate from source repo if target doesn't exist */
+  source?: string;
 }
 
 // Normalized config
