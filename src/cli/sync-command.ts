@@ -8,8 +8,17 @@ import {
   RepoConfig,
 } from "../config/index.js";
 import { validateForSync } from "../config/validator.js";
-import { parseGitUrl, getRepoDisplayName } from "../shared/repo-detector.js";
+import {
+  parseGitUrl,
+  getRepoDisplayName,
+  isGitHubRepo,
+} from "../shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 import { sanitizeBranchName, validateBranchName } from "../vcs/git-ops.js";
+import {
+  hasGitHubAppCredentials,
+  GitHubAppTokenManager,
+} from "../vcs/index.js";
 import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoInfo } from "../shared/repo-detector.js";
@@ -156,6 +165,12 @@ export async function runSync(
   const processor = processorFactory();
   const lm =
     lifecycleManager ?? new RepoLifecycleManager(undefined, options.retries);
+  const tokenManager = hasGitHubAppCredentials()
+    ? new GitHubAppTokenManager(
+        process.env.XFG_GITHUB_APP_ID!,
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY!
+      )
+    : null;
   const reportResults: SyncResultEntry[] = [];
 
   for (let i = 0; i < config.repos.length; i++) {
@@ -195,6 +210,18 @@ export async function runSync(
       join(options.workDir ?? "./tmp", generateWorkspaceName(i))
     );
 
+    // Resolve auth token for lifecycle gh commands
+    let lifecycleToken: string | undefined;
+    if (isGitHubRepo(repoInfo)) {
+      try {
+        lifecycleToken =
+          (await tokenManager?.getTokenForRepo(repoInfo as GitHubRepoInfo)) ??
+          process.env.GH_TOKEN;
+      } catch {
+        lifecycleToken = process.env.GH_TOKEN;
+      }
+    }
+
     // Check if repo exists, create/fork/migrate if needed
     try {
       const { outputLines } = await runLifecycleCheck(
@@ -205,6 +232,7 @@ export async function runSync(
           dryRun: options.dryRun ?? false,
           resolvedWorkDir: workDir,
           githubHosts: config.githubHosts,
+          token: lifecycleToken,
         },
         lm,
         config.settings?.repo

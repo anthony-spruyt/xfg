@@ -39,7 +39,10 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
     let provider: IRepoLifecycleProvider;
     switch (platform) {
       case "github":
-        provider = new GitHubLifecycleProvider(this.executor, this.retries);
+        provider = new GitHubLifecycleProvider({
+          executor: this.executor,
+          retries: this.retries,
+        });
         break;
       default:
         throw new Error(

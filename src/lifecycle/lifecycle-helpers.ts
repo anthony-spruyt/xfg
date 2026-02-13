@@ -16,6 +16,8 @@ export interface LifecycleCheckOptions {
   githubHosts?: string[];
   /** Pre-resolved work directory. If provided, used directly instead of computing from workDir + repoIndex. */
   resolvedWorkDir?: string;
+  /** Auth token (GitHub App installation token or PAT) for gh CLI commands */
+  token?: string;
 }
 
 /**
@@ -66,6 +68,7 @@ export async function runLifecycleCheck(
       dryRun: options.dryRun,
       workDir,
       githubHosts: options.githubHosts,
+      token: options.token,
     },
     createSettings
   );

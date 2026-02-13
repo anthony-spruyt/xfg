@@ -41,8 +41,10 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       return { repoInfo, action: "existed" };
     }
 
+    const { token } = options;
+
     // Check if repo exists
-    const exists = await provider.exists(repoInfo);
+    const exists = await provider.exists(repoInfo, token);
 
     if (exists) {
       // Repo exists - nothing to do (ignore upstream/source)
@@ -81,7 +83,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       };
     }
 
-    await provider.create(repoInfo, settings);
+    await provider.create(repoInfo, settings, options.token);
 
     return {
       repoInfo,
@@ -112,7 +114,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
     const upstreamInfo = parseGitUrl(repoConfig.upstream!, {
       githubHosts: options.githubHosts,
     });
-    await provider.fork(upstreamInfo, repoInfo, settings);
+    await provider.fork(upstreamInfo, repoInfo, settings, options.token);
 
     return {
       repoInfo,
@@ -148,7 +150,12 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
 
       // Create target and push content
       const provider = this.factory.getProvider(repoInfo.type);
-      await provider.receiveMigration(repoInfo, sourceDir, settings);
+      await provider.receiveMigration(
+        repoInfo,
+        sourceDir,
+        settings,
+        options.token
+      );
 
       return {
         repoInfo,

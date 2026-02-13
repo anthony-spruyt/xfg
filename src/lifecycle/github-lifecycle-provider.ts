@@ -79,34 +79,13 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   private readonly forkReadyTimeoutMs: number;
   private readonly forkPollIntervalMs: number;
 
-  constructor(
-    executorOrOptions?: ICommandExecutor | GitHubLifecycleProviderOptions,
-    retries?: number,
-    cwd?: string
-  ) {
-    if (
-      executorOrOptions &&
-      typeof executorOrOptions === "object" &&
-      !("exec" in executorOrOptions)
-    ) {
-      // Options object form
-      const opts = executorOrOptions;
-      this.executor = opts.executor ?? defaultExecutor;
-      this.retries = opts.retries ?? 3;
-      this.cwd = opts.cwd ?? process.cwd();
-      this.forkReadyTimeoutMs =
-        opts.forkReadyTimeoutMs ?? FORK_READY_TIMEOUT_MS;
-      this.forkPollIntervalMs =
-        opts.forkPollIntervalMs ?? FORK_POLL_INTERVAL_MS;
-    } else {
-      // Positional args form (backward compatible)
-      this.executor =
-        (executorOrOptions as ICommandExecutor) ?? defaultExecutor;
-      this.retries = retries ?? 3;
-      this.cwd = cwd ?? process.cwd();
-      this.forkReadyTimeoutMs = FORK_READY_TIMEOUT_MS;
-      this.forkPollIntervalMs = FORK_POLL_INTERVAL_MS;
-    }
+  constructor(options?: GitHubLifecycleProviderOptions) {
+    const opts = options ?? {};
+    this.executor = opts.executor ?? defaultExecutor;
+    this.retries = opts.retries ?? 3;
+    this.cwd = opts.cwd ?? process.cwd();
+    this.forkReadyTimeoutMs = opts.forkReadyTimeoutMs ?? FORK_READY_TIMEOUT_MS;
+    this.forkPollIntervalMs = opts.forkPollIntervalMs ?? FORK_POLL_INTERVAL_MS;
   }
 
   /**
@@ -115,11 +94,13 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
    */
   private async isOrganization(
     owner: string,
-    repoInfo: GitHubRepoInfo
+    repoInfo: GitHubRepoInfo,
+    token?: string
   ): Promise<boolean> {
+    const tokenPrefix = this.buildTokenPrefix(token);
     const hostnameFlag = getHostnameFlag(repoInfo);
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
-    const command = `gh api ${hostnamePart}users/${escapeShellArg(owner)}`;
+    const command = `${tokenPrefix}gh api ${hostnamePart}users/${escapeShellArg(owner)}`;
 
     try {
       const stdout = await withRetry(
@@ -152,12 +133,22 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     }
   }
 
-  async exists(repoInfo: RepoInfo): Promise<boolean> {
+  /**
+   * Build GH_TOKEN prefix for gh CLI commands.
+   * Returns "GH_TOKEN=<escaped_token> " when token is provided, "" otherwise.
+   * Token is escaped via escapeShellArg to prevent injection.
+   */
+  private buildTokenPrefix(token?: string): string {
+    return token ? `GH_TOKEN=${escapeShellArg(token)} ` : "";
+  }
+
+  async exists(repoInfo: RepoInfo, token?: string): Promise<boolean> {
     this.assertGitHub(repoInfo);
 
+    const tokenPrefix = this.buildTokenPrefix(token);
     const hostnameFlag = getHostnameFlag(repoInfo);
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
-    const command = `gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+    const command = `${tokenPrefix}gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
 
     try {
       // Note: withRetry already classifies 404/not-found as permanent errors,
@@ -178,12 +169,14 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
   async create(
     repoInfo: RepoInfo,
-    settings?: CreateRepoSettings
+    settings?: CreateRepoSettings,
+    token?: string
   ): Promise<void> {
     this.assertGitHub(repoInfo);
 
+    const tokenPrefix = this.buildTokenPrefix(token);
     const parts: string[] = [
-      "gh repo create",
+      `${tokenPrefix}gh repo create`,
       escapeShellArg(`${repoInfo.owner}/${repoInfo.repo}`),
     ];
 
@@ -219,7 +212,8 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   async fork(
     upstream: RepoInfo,
     target: RepoInfo,
-    settings?: CreateRepoSettings
+    settings?: CreateRepoSettings,
+    token?: string
   ): Promise<void> {
     this.assertGitHub(upstream);
     this.assertGitHub(target);
@@ -233,13 +227,15 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     }
 
     // Determine if target owner is an organization or user
-    const isOrg = await this.isOrganization(target.owner, target);
+    const isOrg = await this.isOrganization(target.owner, target, token);
+
+    const tokenPrefix = this.buildTokenPrefix(token);
 
     // Build fork command
     // For orgs: gh repo fork <upstream> --org <target-org> --fork-name <name> --clone=false
     // For users: gh repo fork <upstream> --fork-name <name> --clone=false
     const parts = [
-      "gh repo fork",
+      `${tokenPrefix}gh repo fork`,
       escapeShellArg(`${upstream.owner}/${upstream.repo}`),
     ];
 
@@ -259,12 +255,13 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     await this.waitForForkReady(
       target,
       this.forkReadyTimeoutMs,
-      this.forkPollIntervalMs
+      this.forkPollIntervalMs,
+      token
     );
 
     // Apply settings after fork (visibility, description, etc.)
     if (settings?.visibility || settings?.description) {
-      await this.applyRepoSettings(target, settings);
+      await this.applyRepoSettings(target, settings, token);
     }
   }
 
@@ -275,13 +272,14 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   private async waitForForkReady(
     repoInfo: GitHubRepoInfo,
     timeoutMs: number = FORK_READY_TIMEOUT_MS,
-    intervalMs: number = FORK_POLL_INTERVAL_MS
+    intervalMs: number = FORK_POLL_INTERVAL_MS,
+    token?: string
   ): Promise<void> {
     const deadline = Date.now() + timeoutMs;
 
     while (Date.now() < deadline) {
       try {
-        const ready = await this.exists(repoInfo);
+        const ready = await this.exists(repoInfo, token);
         if (ready) {
           return;
         }
@@ -306,10 +304,12 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
    */
   private async applyRepoSettings(
     repoInfo: GitHubRepoInfo,
-    settings: CreateRepoSettings
+    settings: CreateRepoSettings,
+    token?: string
   ): Promise<void> {
+    const tokenPrefix = this.buildTokenPrefix(token);
     const parts = [
-      "gh repo edit",
+      `${tokenPrefix}gh repo edit`,
       escapeShellArg(`${repoInfo.owner}/${repoInfo.repo}`),
     ];
 
@@ -335,17 +335,49 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   async receiveMigration(
     repoInfo: RepoInfo,
     sourceDir: string,
-    settings?: CreateRepoSettings
+    settings?: CreateRepoSettings,
+    token?: string
   ): Promise<void> {
     this.assertGitHub(repoInfo);
 
-    // Step 1: Create the target repo
-    await this.create(repoInfo, settings);
+    const tokenPrefix = this.buildTokenPrefix(token);
 
-    // Step 2: Push mirror from source directory
-    const pushCommand = `git push --mirror ${escapeShellArg(repoInfo.gitUrl)}`;
+    // Use gh repo create --source --push to create and mirror in one step.
+    // For bare repos (from git clone --mirror), --push mirrors all refs.
+    // This uses gh CLI authentication, avoiding raw git auth issues with GHE.
+    const parts: string[] = [
+      `${tokenPrefix}gh repo create`,
+      escapeShellArg(`${repoInfo.owner}/${repoInfo.repo}`),
+      "--source",
+      escapeShellArg(sourceDir),
+      "--push",
+    ];
 
-    await withRetry(() => this.executor.exec(pushCommand, sourceDir), {
+    // Visibility flag (default to private for safety)
+    if (settings?.visibility === "public") {
+      parts.push("--public");
+    } else if (settings?.visibility === "internal") {
+      parts.push("--internal");
+    } else {
+      parts.push("--private");
+    }
+
+    // Description
+    if (settings?.description) {
+      parts.push("--description", escapeShellArg(settings.description));
+    }
+
+    // Disable features if specified
+    if (settings?.hasIssues === false) {
+      parts.push("--disable-issues");
+    }
+    if (settings?.hasWiki === false) {
+      parts.push("--disable-wiki");
+    }
+
+    const command = parts.join(" ");
+
+    await withRetry(() => this.executor.exec(command, this.cwd), {
       retries: this.retries,
     });
   }

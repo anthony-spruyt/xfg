@@ -8,6 +8,11 @@ import {
   getRepoDisplayName,
   isGitHubRepo,
 } from "../shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../shared/repo-detector.js";
+import {
+  hasGitHubAppCredentials,
+  GitHubAppTokenManager,
+} from "../vcs/index.js";
 import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoResult } from "../output/github-summary.js";
@@ -86,7 +91,8 @@ async function runLifecycleChecks(
   options: SettingsOptions,
   lifecycleManager: IRepoLifecycleManager,
   results: RepoResult[],
-  collector: ResultsCollector
+  collector: ResultsCollector,
+  tokenManager: GitHubAppTokenManager | null
 ): Promise<Set<string>> {
   const checked = new Set<string>();
   const failed = new Set<string>();
@@ -111,6 +117,18 @@ async function runLifecycleChecks(
 
     const repoName = getRepoDisplayName(repoInfo);
 
+    // Resolve auth token for lifecycle gh commands
+    let lifecycleToken: string | undefined;
+    if (isGitHubRepo(repoInfo)) {
+      try {
+        lifecycleToken =
+          (await tokenManager?.getTokenForRepo(repoInfo as GitHubRepoInfo)) ??
+          process.env.GH_TOKEN;
+      } catch {
+        lifecycleToken = process.env.GH_TOKEN;
+      }
+    }
+
     try {
       const { outputLines } = await runLifecycleCheck(
         repoConfig,
@@ -120,6 +138,7 @@ async function runLifecycleChecks(
           dryRun: options.dryRun ?? false,
           workDir: options.workDir,
           githubHosts: config.githubHosts,
+          token: lifecycleToken,
         },
         lifecycleManager,
         config.settings?.repo
@@ -416,6 +435,12 @@ export async function runSettings(
   const repoProcessor = repoProcessorFactory();
   const lm =
     lifecycleManager ?? new RepoLifecycleManager(undefined, options.retries);
+  const tokenManager = hasGitHubAppCredentials()
+    ? new GitHubAppTokenManager(
+        process.env.XFG_GITHUB_APP_ID!,
+        process.env.XFG_GITHUB_APP_PRIVATE_KEY!
+      )
+    : null;
   const results: RepoResult[] = [];
   const collector = new ResultsCollector();
 
@@ -427,7 +452,8 @@ export async function runSettings(
     options,
     lm,
     results,
-    collector
+    collector,
+    tokenManager
   );
 
   await processRulesets(

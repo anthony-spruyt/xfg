@@ -28,6 +28,8 @@ export interface LifecycleOptions {
   workDir: string;
   /** GitHub Enterprise hostnames for URL detection */
   githubHosts?: string[];
+  /** Auth token (GitHub App installation token or PAT) for gh CLI commands */
+  token?: string;
 }
 
 /**
@@ -53,12 +55,16 @@ export interface IRepoLifecycleProvider {
    * Check if a repository exists on this platform.
    * @throws Error on network/auth failures (NOT for "repo not found")
    */
-  exists(repoInfo: RepoInfo): Promise<boolean>;
+  exists(repoInfo: RepoInfo, token?: string): Promise<boolean>;
 
   /**
    * Create an empty repository.
    */
-  create(repoInfo: RepoInfo, settings?: CreateRepoSettings): Promise<void>;
+  create(
+    repoInfo: RepoInfo,
+    settings?: CreateRepoSettings,
+    token?: string
+  ): Promise<void>;
 
   /**
    * Fork from an upstream repository.
@@ -67,7 +73,8 @@ export interface IRepoLifecycleProvider {
   fork?(
     upstream: RepoInfo,
     target: RepoInfo,
-    settings?: CreateRepoSettings
+    settings?: CreateRepoSettings,
+    token?: string
   ): Promise<void>;
 
   /**
@@ -76,7 +83,8 @@ export interface IRepoLifecycleProvider {
   receiveMigration(
     repoInfo: RepoInfo,
     sourceDir: string,
-    settings?: CreateRepoSettings
+    settings?: CreateRepoSettings,
+    token?: string
   ): Promise<void>;
 }
 
