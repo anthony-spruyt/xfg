@@ -153,19 +153,16 @@ describe("GitHubLifecycleProvider", () => {
     test("creates repo with gh repo create and initializes default branch", async () => {
       const { mock: executor, calls } = createMockExecutor({
         defaultResponse: "",
-        responses: new Map<string, string | Error>([
-          ["git/commits", '{"sha": "abc123"}'],
-          ["git/refs", '{"ref": "refs/heads/main"}'],
-        ]),
       });
 
       const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
       await provider.create(mockRepoInfo);
 
-      // calls[0] = gh repo create, calls[1] = git/commits, calls[2] = git/refs
-      assert.equal(calls.length, 3);
+      // calls[0] = gh repo create, calls[1] = contents API (initialize branch)
+      assert.equal(calls.length, 2);
       assert.ok(calls[0].command.includes("gh repo create"));
       assert.ok(calls[0].command.includes("'test-org/test-repo'"));
+      assert.ok(calls[1].command.includes("contents/.gitkeep"));
     });
 
     test("applies visibility setting - private", async () => {
@@ -257,31 +254,23 @@ describe("GitHubLifecycleProvider", () => {
       assert.ok(!calls[0].command.includes("--disable-issues"));
     });
 
-    test("initializes default branch with empty commit after create", async () => {
+    test("initializes default branch via Contents API after create", async () => {
       const { mock: executor, calls } = createMockExecutor({
         defaultResponse: "",
-        responses: new Map<string, string | Error>([
-          ["git/commits", '{"sha": "abc123"}'],
-          ["git/refs", '{"ref": "refs/heads/main"}'],
-        ]),
       });
 
       const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
       await provider.create(mockRepoInfo);
 
-      // calls[0] = gh repo create, calls[1] = git/commits API, calls[2] = git/refs API
-      assert.equal(calls.length, 3);
+      // calls[0] = gh repo create, calls[1] = contents API
+      assert.equal(calls.length, 2);
       assert.ok(
-        calls[1].command.includes("git/commits"),
-        "Should create empty commit via API"
+        calls[1].command.includes("contents/.gitkeep"),
+        "Should create .gitkeep via Contents API"
       );
       assert.ok(
-        calls[2].command.includes("git/refs"),
-        "Should create default branch ref via API"
-      );
-      assert.ok(
-        calls[2].command.includes("refs/heads/main"),
-        "Should create main branch"
+        calls[1].command.includes("--method PUT"),
+        "Should use PUT method"
       );
     });
 
@@ -653,14 +642,15 @@ describe("GitHubLifecycleProvider", () => {
       const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
       await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
 
-      // First call removes existing origin remote, second is gh repo create
-      assert.equal(calls.length, 2);
+      // calls[0] = remote remove origin, calls[1] = for-each-ref, calls[2] = gh repo create
+      assert.equal(calls.length, 3);
       assert.ok(calls[0].command.includes("git -C"));
       assert.ok(calls[0].command.includes("remote remove origin"));
-      assert.ok(calls[1].command.includes("gh repo create"));
-      assert.ok(calls[1].command.includes("--source"));
-      assert.ok(calls[1].command.includes("'/tmp/source-mirror'"));
-      assert.ok(calls[1].command.includes("--push"));
+      assert.ok(calls[1].command.includes("for-each-ref"));
+      assert.ok(calls[2].command.includes("gh repo create"));
+      assert.ok(calls[2].command.includes("--source"));
+      assert.ok(calls[2].command.includes("'/tmp/source-mirror'"));
+      assert.ok(calls[2].command.includes("--push"));
     });
 
     test("rejects non-GitHub repo", async () => {
@@ -695,8 +685,8 @@ describe("GitHubLifecycleProvider", () => {
         visibility: "private",
       });
 
-      // calls[0] is git remote remove origin, calls[1] is gh repo create
-      assert.ok(calls[1].command.includes("--private"));
+      // calls[0] = git remote remove origin, calls[1] = git for-each-ref, calls[2] = gh repo create
+      assert.ok(calls[2].command.includes("--private"));
     });
   });
 
@@ -730,23 +720,18 @@ describe("GitHubLifecycleProvider", () => {
     test("create() prefixes command with GH_TOKEN when token provided", async () => {
       const { mock: executor, calls } = createMockExecutor({
         defaultResponse: "",
-        responses: new Map<string, string | Error>([
-          ["git/commits", '{"sha": "abc123"}'],
-          ["git/refs", '{"ref": "refs/heads/main"}'],
-        ]),
       });
 
       const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
       await provider.create(mockRepoInfo, undefined, "ghs_test_token");
 
-      // calls[0] = gh repo create, calls[1] = git/commits, calls[2] = git/refs
-      assert.equal(calls.length, 3);
+      // calls[0] = gh repo create, calls[1] = gh api contents/.gitkeep
+      assert.equal(calls.length, 2);
       assert.ok(
         calls[0].command.startsWith("GH_TOKEN='ghs_test_token' gh repo create")
       );
-      // Token should also be used for the initialization API calls
+      // Token should also be used for the initialization API call
       assert.ok(calls[1].command.includes("GH_TOKEN='ghs_test_token'"));
-      assert.ok(calls[2].command.includes("GH_TOKEN='ghs_test_token'"));
     });
 
     test("receiveMigration() prefixes command with GH_TOKEN when token provided", async () => {
@@ -762,10 +747,10 @@ describe("GitHubLifecycleProvider", () => {
         "ghs_test_token"
       );
 
-      // calls[0] is git remote remove origin, calls[1] is gh repo create
-      assert.equal(calls.length, 2);
+      // calls[0] = git remote remove origin, calls[1] = git for-each-ref, calls[2] = gh repo create
+      assert.equal(calls.length, 3);
       assert.ok(
-        calls[1].command.startsWith("GH_TOKEN='ghs_test_token' gh repo create")
+        calls[2].command.startsWith("GH_TOKEN='ghs_test_token' gh repo create")
       );
     });
 

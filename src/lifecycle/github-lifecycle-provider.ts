@@ -358,6 +358,24 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       // No origin remote — nothing to remove
     }
 
+    // Remove hidden refs (e.g., refs/pull/*) that GitHub rejects on push.
+    // Mirror clones include ALL refs from the source, but GitHub only
+    // accepts branches and tags, not pull request merge refs.
+    try {
+      const refs = await this.executor.exec(
+        `git -C ${escapeShellArg(sourceDir)} for-each-ref --format='%(refname)' refs/pull/`,
+        this.cwd
+      );
+      for (const ref of refs.split("\n").filter((r) => r.trim())) {
+        await this.executor.exec(
+          `git -C ${escapeShellArg(sourceDir)} update-ref -d ${escapeShellArg(ref.trim())}`,
+          this.cwd
+        );
+      }
+    } catch {
+      // No pull refs to remove — ignore
+    }
+
     // Use gh repo create --source --push to create and mirror in one step.
     // For bare repos (from git clone --mirror), --push mirrors all refs.
     // This uses gh CLI authentication, avoiding raw git auth issues with GHE.
@@ -399,9 +417,12 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   }
 
   /**
-   * Create an empty initial commit on the default branch via the GitHub API.
+   * Create an initial commit on the default branch via the GitHub Contents API.
    * This establishes the default branch so subsequent clone→push workflows work
    * (empty repos have no branches, causing HEAD to be unresolvable).
+   *
+   * Note: GitHub's Git Data API returns 409 on truly empty repos, so we use
+   * the Contents API which handles empty repos correctly.
    */
   private async initializeDefaultBranch(
     repoInfo: GitHubRepoInfo,
@@ -412,28 +433,14 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
     const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
 
-    // Well-known SHA of git's empty tree object
-    const emptyTreeSha = "4b825dc642cb6eb9a060e54bf899d15006eb9aa9";
-
-    // Create an empty commit (no files) pointing to the empty tree
-    const commitSha = (
-      await withRetry(
-        () =>
-          this.executor.exec(
-            `printf '${JSON.stringify({ message: "Initial commit", tree: emptyTreeSha, parents: [] })}' | ` +
-              `${tokenPrefix}gh api ${hostnamePart}${apiPath}/git/commits --input - --jq '.sha'`,
-            this.cwd
-          ),
-        { retries: this.retries }
-      )
-    ).trim();
-
-    // Create the default branch ref pointing to the empty commit
+    // Create an empty .gitkeep file to establish the default branch.
+    // The Contents API handles empty repos (unlike the Git Data API which returns 409).
+    // content="" is base64 for empty file.
     await withRetry(
       () =>
         this.executor.exec(
-          `${tokenPrefix}gh api ${hostnamePart}${apiPath}/git/refs ` +
-            `-f ref=refs/heads/main -f sha=${escapeShellArg(commitSha)}`,
+          `${tokenPrefix}gh api ${hostnamePart}${apiPath}/contents/.gitkeep ` +
+            `--method PUT -f message='Initial commit' -f content=''`,
           this.cwd
         ),
       { retries: this.retries }
