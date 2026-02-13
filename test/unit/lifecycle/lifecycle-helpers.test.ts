@@ -38,14 +38,11 @@ describe("lifecycle-helpers", () => {
       assert.equal(result, undefined);
     });
 
-    test("returns settings when at least one field is defined", () => {
+    test("returns settings with only defined fields", () => {
       const result = toCreateRepoSettings({ visibility: "private" });
 
       assert.deepEqual(result, {
         visibility: "private",
-        description: undefined,
-        hasIssues: undefined,
-        hasWiki: undefined,
       });
     });
   });
@@ -162,8 +159,6 @@ describe("lifecycle-helpers", () => {
       assert.deepEqual(receivedSettings, {
         visibility: "private",
         description: "test",
-        hasIssues: undefined,
-        hasWiki: undefined,
       });
     });
   });

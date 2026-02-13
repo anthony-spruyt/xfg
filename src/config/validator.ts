@@ -29,6 +29,23 @@ function isValidGitUrl(url: string): boolean {
   return false;
 }
 
+/**
+ * Check if a git URL points to GitHub (github.com).
+ * Used to reject GitHub URLs as migration sources (not supported).
+ */
+function isGitHubUrl(url: string, githubHosts?: string[]): boolean {
+  const hosts = ["github.com", ...(githubHosts ?? [])];
+  for (const host of hosts) {
+    if (
+      url.startsWith(`git@${host}:`) ||
+      url.match(new RegExp(`^https?://${host.replace(/\./g, "\\.")}/`))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function getGitDisplayName(git: string | string[]): string {
   if (Array.isArray(git)) {
     return git[0] || "unknown";
@@ -356,6 +373,12 @@ export function validateRawConfig(config: RawConfig): void {
         throw new Error(
           `Repo ${getGitDisplayName(repo.git)}: 'source' must be a valid git URL ` +
             `(SSH: git@host:path or HTTPS: https://host/path)`
+        );
+      }
+      if (isGitHubUrl(repo.source, config.githubHosts)) {
+        throw new Error(
+          `Repo ${getGitDisplayName(repo.git)}: 'source' cannot be a GitHub URL. ` +
+            `Migration from GitHub is not supported. Currently supported sources: Azure DevOps`
         );
       }
     }

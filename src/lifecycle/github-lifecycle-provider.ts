@@ -48,16 +48,66 @@ function getHostnameFlag(repoInfo: GitHubRepoInfo): string {
 }
 
 /**
+ * Default timeout for waiting for fork readiness (60 seconds).
+ */
+const FORK_READY_TIMEOUT_MS = 60_000;
+
+/**
+ * Interval between fork readiness checks (2 seconds).
+ */
+const FORK_POLL_INTERVAL_MS = 2_000;
+
+/**
  * GitHub implementation of IRepoLifecycleProvider.
  * Uses gh CLI for all operations.
  */
+export interface GitHubLifecycleProviderOptions {
+  executor?: ICommandExecutor;
+  retries?: number;
+  cwd?: string;
+  /** Timeout in ms for waiting for fork readiness (default: 60000) */
+  forkReadyTimeoutMs?: number;
+  /** Poll interval in ms for fork readiness checks (default: 2000) */
+  forkPollIntervalMs?: number;
+}
+
 export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   readonly platform: LifecyclePlatform = "github";
+  private readonly executor: ICommandExecutor;
+  private readonly retries: number;
+  private readonly cwd: string;
+  private readonly forkReadyTimeoutMs: number;
+  private readonly forkPollIntervalMs: number;
 
   constructor(
-    private readonly executor: ICommandExecutor = defaultExecutor,
-    private readonly retries: number = 3
-  ) {}
+    executorOrOptions?: ICommandExecutor | GitHubLifecycleProviderOptions,
+    retries?: number,
+    cwd?: string
+  ) {
+    if (
+      executorOrOptions &&
+      typeof executorOrOptions === "object" &&
+      !("exec" in executorOrOptions)
+    ) {
+      // Options object form
+      const opts = executorOrOptions;
+      this.executor = opts.executor ?? defaultExecutor;
+      this.retries = opts.retries ?? 3;
+      this.cwd = opts.cwd ?? process.cwd();
+      this.forkReadyTimeoutMs =
+        opts.forkReadyTimeoutMs ?? FORK_READY_TIMEOUT_MS;
+      this.forkPollIntervalMs =
+        opts.forkPollIntervalMs ?? FORK_POLL_INTERVAL_MS;
+    } else {
+      // Positional args form (backward compatible)
+      this.executor =
+        (executorOrOptions as ICommandExecutor) ?? defaultExecutor;
+      this.retries = retries ?? 3;
+      this.cwd = cwd ?? process.cwd();
+      this.forkReadyTimeoutMs = FORK_READY_TIMEOUT_MS;
+      this.forkPollIntervalMs = FORK_POLL_INTERVAL_MS;
+    }
+  }
 
   /**
    * Check if a GitHub owner is an organization (vs user).
@@ -73,7 +123,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     try {
       const stdout = await withRetry(
-        () => this.executor.exec(command, process.cwd()),
+        () => this.executor.exec(command, this.cwd),
         { retries: this.retries }
       );
       const data = JSON.parse(stdout);
@@ -112,7 +162,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     try {
       // Note: withRetry already classifies 404/not-found as permanent errors,
       // so retries are aborted immediately for non-existent repos.
-      await withRetry(() => this.executor.exec(command, process.cwd()), {
+      await withRetry(() => this.executor.exec(command, this.cwd), {
         retries: this.retries,
       });
       return true;
@@ -161,7 +211,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     const command = parts.join(" ");
 
-    await withRetry(() => this.executor.exec(command, process.cwd()), {
+    await withRetry(() => this.executor.exec(command, this.cwd), {
       retries: this.retries,
     });
   }
@@ -201,14 +251,54 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     const forkCommand = parts.join(" ");
 
-    await withRetry(() => this.executor.exec(forkCommand, process.cwd()), {
+    await withRetry(() => this.executor.exec(forkCommand, this.cwd), {
       retries: this.retries,
     });
+
+    // GitHub forks are async - wait for the fork to be ready for git operations
+    await this.waitForForkReady(
+      target,
+      this.forkReadyTimeoutMs,
+      this.forkPollIntervalMs
+    );
 
     // Apply settings after fork (visibility, description, etc.)
     if (settings?.visibility || settings?.description) {
       await this.applyRepoSettings(target, settings);
     }
+  }
+
+  /**
+   * Wait for a forked repo to become available via the GitHub API.
+   * GitHub forks are created asynchronously; polls exists() with a timeout.
+   */
+  private async waitForForkReady(
+    repoInfo: GitHubRepoInfo,
+    timeoutMs: number = FORK_READY_TIMEOUT_MS,
+    intervalMs: number = FORK_POLL_INTERVAL_MS
+  ): Promise<void> {
+    const deadline = Date.now() + timeoutMs;
+
+    while (Date.now() < deadline) {
+      try {
+        const ready = await this.exists(repoInfo);
+        if (ready) {
+          return;
+        }
+      } catch {
+        // Ignore transient errors during polling
+      }
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) break;
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.min(intervalMs, remaining))
+      );
+    }
+
+    throw new Error(
+      `Timed out waiting for fork ${repoInfo.owner}/${repoInfo.repo} to become available ` +
+        `after ${timeoutMs / 1000}s. The fork may still be processing on GitHub.`
+    );
   }
 
   /**
@@ -237,7 +327,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     const command = parts.join(" ");
 
-    await withRetry(() => this.executor.exec(command, process.cwd()), {
+    await withRetry(() => this.executor.exec(command, this.cwd), {
       retries: this.retries,
     });
   }

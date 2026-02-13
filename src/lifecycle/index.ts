@@ -9,7 +9,10 @@ export type {
   IRepoLifecycleManager,
 } from "./types.js";
 
-export { GitHubLifecycleProvider } from "./github-lifecycle-provider.js";
+export {
+  GitHubLifecycleProvider,
+  type GitHubLifecycleProviderOptions,
+} from "./github-lifecycle-provider.js";
 export { AdoMigrationSource } from "./ado-migration-source.js";
 export { RepoLifecycleFactory } from "./repo-lifecycle-factory.js";
 export { RepoLifecycleManager } from "./repo-lifecycle-manager.js";

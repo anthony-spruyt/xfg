@@ -2686,6 +2686,58 @@ describe("validateRawConfig - lifecycle fields", () => {
     assert.doesNotThrow(() => validateRawConfig(config));
   });
 
+  test("rejects GitHub SSH URL as migration source", () => {
+    const config: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/repo.git",
+          source: "git@github.com:other-org/source-repo.git",
+        },
+      ],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /source.*cannot be a GitHub URL.*not supported/i
+    );
+  });
+
+  test("rejects GitHub HTTPS URL as migration source", () => {
+    const config: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      repos: [
+        {
+          git: "git@github.com:my-org/repo.git",
+          source: "https://github.com/other-org/source-repo.git",
+        },
+      ],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /source.*cannot be a GitHub URL.*not supported/i
+    );
+  });
+
+  test("rejects GHE URL as migration source when githubHosts configured", () => {
+    const config: RawConfig = {
+      id: "test",
+      files: { "test.txt": { content: "test" } },
+      githubHosts: ["github.mycompany.com"],
+      repos: [
+        {
+          git: "git@github.com:my-org/repo.git",
+          source: "git@github.mycompany.com:other-org/source-repo.git",
+        },
+      ],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /source.*cannot be a GitHub URL.*not supported/i
+    );
+  });
+
   test("accepts repo without upstream or source", () => {
     const config: RawConfig = {
       id: "test",

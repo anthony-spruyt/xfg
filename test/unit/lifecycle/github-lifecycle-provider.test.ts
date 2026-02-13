@@ -2,6 +2,7 @@ import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import { GitHubLifecycleProvider } from "../../../src/lifecycle/github-lifecycle-provider.js";
 import { createMockExecutor } from "../../mocks/index.js";
+import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
 import type {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
@@ -528,6 +529,84 @@ describe("GitHubLifecycleProvider", () => {
       await assert.rejects(
         () => provider.fork!(sameOwnerUpstream, mockRepoInfo),
         /Cannot fork test-org\/original-repo to the same owner/
+      );
+    });
+  });
+
+  describe("waitForForkReady (via fork())", () => {
+    const upstreamRepoInfo2: GitHubRepoInfo = {
+      type: "github",
+      gitUrl: "git@github.com:upstream-org/tool.git",
+      owner: "upstream-org",
+      repo: "tool",
+      host: "github.com",
+    };
+
+    test("polls exists() until fork is ready", async () => {
+      let apiCallCount = 0;
+      const executor: ICommandExecutor = {
+        async exec(command: string) {
+          if (command.includes("users/")) {
+            return '{"type": "Organization"}';
+          }
+          if (command.includes("gh repo fork")) {
+            return "";
+          }
+          if (command.includes("repos/")) {
+            apiCallCount++;
+            if (apiCallCount <= 2) {
+              const err = new Error("Not Found");
+              (err as Error & { stderr?: string }).stderr = "";
+              throw err;
+            }
+            return '{"id": 123}';
+          }
+          return "";
+        },
+      };
+
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        forkReadyTimeoutMs: 5000,
+        forkPollIntervalMs: 10,
+      });
+
+      await provider.fork!(upstreamRepoInfo2, mockRepoInfo);
+
+      // Should have polled exists() 3 times (2 not-found + 1 success)
+      assert.equal(apiCallCount, 3);
+    });
+
+    test("throws timeout error when fork never becomes ready", async () => {
+      const notFoundError = new Error("Not Found");
+      (notFoundError as Error & { stderr?: string }).stderr = "";
+
+      const executor: ICommandExecutor = {
+        async exec(command: string) {
+          if (command.includes("users/")) {
+            return '{"type": "Organization"}';
+          }
+          if (command.includes("gh repo fork")) {
+            return "";
+          }
+          if (command.includes("repos/")) {
+            throw notFoundError;
+          }
+          return "";
+        },
+      };
+
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        forkReadyTimeoutMs: 50,
+        forkPollIntervalMs: 10,
+      });
+
+      await assert.rejects(
+        () => provider.fork!(upstreamRepoInfo2, mockRepoInfo),
+        /Timed out waiting for fork.*to become available/
       );
     });
   });

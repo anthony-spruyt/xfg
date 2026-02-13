@@ -60,15 +60,16 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
 
     if (repoConfig.upstream) {
       // Fork mode
-      return this.fork(repoConfig, repoInfo, options, settings);
+      return this.fork(repoConfig, repoInfo, provider, options, settings);
     }
 
     // Create mode (no upstream or source)
-    return this.create(repoInfo, options, settings);
+    return this.create(repoInfo, provider, options, settings);
   }
 
   private async create(
     repoInfo: RepoInfo,
+    provider: IRepoLifecycleProvider,
     options: LifecycleOptions,
     settings?: CreateRepoSettings
   ): Promise<LifecycleResult> {
@@ -80,7 +81,6 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       };
     }
 
-    const provider = this.factory.getProvider(repoInfo.type);
     await provider.create(repoInfo, settings);
 
     return {
@@ -92,6 +92,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
   private async fork(
     repoConfig: RepoConfig,
     repoInfo: RepoInfo,
+    provider: IRepoLifecycleProvider,
     options: LifecycleOptions,
     settings?: CreateRepoSettings
   ): Promise<LifecycleResult> {
@@ -102,8 +103,6 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
         skipped: true,
       };
     }
-
-    const provider = this.factory.getProvider(repoInfo.type);
 
     if (!provider.fork) {
       throw new Error(`Platform '${repoInfo.type}' does not support forking`);

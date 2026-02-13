@@ -26,16 +26,14 @@ export function toCreateRepoSettings(
   repo: GitHubRepoSettings | undefined
 ): CreateRepoSettings | undefined {
   if (!repo) return undefined;
-  const { visibility, description, hasIssues, hasWiki } = repo;
-  if (
-    visibility === undefined &&
-    description === undefined &&
-    hasIssues === undefined &&
-    hasWiki === undefined
-  ) {
-    return undefined;
-  }
-  return { visibility, description, hasIssues, hasWiki };
+
+  const result: CreateRepoSettings = {};
+  if (repo.visibility !== undefined) result.visibility = repo.visibility;
+  if (repo.description !== undefined) result.description = repo.description;
+  if (repo.hasIssues !== undefined) result.hasIssues = repo.hasIssues;
+  if (repo.hasWiki !== undefined) result.hasWiki = repo.hasWiki;
+
+  return Object.keys(result).length > 0 ? result : undefined;
 }
 
 export interface LifecycleCheckResult {
