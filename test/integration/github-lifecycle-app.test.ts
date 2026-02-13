@@ -13,7 +13,7 @@ import {
   writeConfig,
 } from "./test-helpers.js";
 
-const OWNER = "anthony-spruyt";
+const OWNER = "spruyt-labs";
 const FORK_SOURCE = "octocat/Spoon-Knife";
 const ADO_MIGRATE_SOURCE = "https://dev.azure.com/aspruyt/fxg/_git/fxg-test";
 const HAS_ADO_CREDS = !!process.env.AZURE_DEVOPS_EXT_PAT;
