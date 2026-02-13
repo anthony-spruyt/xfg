@@ -2,6 +2,13 @@
 import { appendFileSync } from "node:fs";
 import chalk from "chalk";
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 export interface LifecycleReport {
   actions: LifecycleAction[];
   totals: {
@@ -166,7 +173,7 @@ export function formatLifecycleReportMarkdown(
     lines.push("");
   }
 
-  // Diff block
+  // Colored diff output using HTML <pre> with inline styles
   const diffLines: string[] = [];
 
   for (const action of report.actions) {
@@ -174,36 +181,42 @@ export function formatLifecycleReportMarkdown(
 
     switch (action.action) {
       case "created":
-        diffLines.push(`+ CREATE ${action.repoName}`);
+        diffLines.push(
+          `<span style="color:#3fb950">+ CREATE ${escapeHtml(action.repoName)}</span>`
+        );
         break;
 
       case "forked":
         diffLines.push(
-          `+ FORK ${action.upstream ?? "upstream"} -> ${action.repoName}`
+          `<span style="color:#3fb950">+ FORK ${escapeHtml(action.upstream ?? "upstream")} -&gt; ${escapeHtml(action.repoName)}</span>`
         );
         break;
 
       case "migrated":
         diffLines.push(
-          `+ MIGRATE ${action.source ?? "source"} -> ${action.repoName}`
+          `<span style="color:#3fb950">+ MIGRATE ${escapeHtml(action.source ?? "source")} -&gt; ${escapeHtml(action.repoName)}</span>`
         );
         break;
     }
 
     if (action.settings) {
       if (action.settings.visibility) {
-        diffLines.push(`    visibility: ${action.settings.visibility}`);
+        diffLines.push(
+          `<span style="color:#3fb950">    visibility: ${escapeHtml(action.settings.visibility)}</span>`
+        );
       }
       if (action.settings.description) {
-        diffLines.push(`    description: "${action.settings.description}"`);
+        diffLines.push(
+          `<span style="color:#3fb950">    description: "${escapeHtml(action.settings.description)}"</span>`
+        );
       }
     }
   }
 
   if (diffLines.length > 0) {
-    lines.push("```diff");
+    lines.push("<pre>");
     lines.push(...diffLines);
-    lines.push("```");
+    lines.push("</pre>");
     lines.push("");
   }
 

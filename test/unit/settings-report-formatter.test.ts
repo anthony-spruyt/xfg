@@ -499,7 +499,7 @@ describe("formatSettingsReportMarkdown", () => {
     );
   });
 
-  test("wraps output in diff code block", () => {
+  test("wraps output in HTML pre block with colored spans", () => {
     const report: SettingsReport = {
       repos: [
         {
@@ -523,7 +523,7 @@ describe("formatSettingsReportMarkdown", () => {
 
     const markdown = formatSettingsReportMarkdown(report, false);
 
-    assert.ok(markdown.includes("```diff"), "should have diff code block");
+    assert.ok(markdown.includes("<pre>"), "should have HTML pre block");
     assert.ok(markdown.includes("org/repo"), "should include repo name");
     assert.ok(
       markdown.includes("deleteBranchOnMerge"),
