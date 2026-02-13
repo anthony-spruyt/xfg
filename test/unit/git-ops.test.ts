@@ -964,6 +964,33 @@ describe("GitOps", () => {
       assert.equal(result.method, "origin/master exists");
     });
 
+    test("falls back to main when remote HEAD is (unknown) for empty repo", async () => {
+      const mockExecutor: ICommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          if (command.includes("git remote show origin")) {
+            return "HEAD branch: (unknown)\n  Remote branches:";
+          }
+          if (command.includes("git rev-parse --verify origin/main")) {
+            throw new Error("main does not exist");
+          }
+          if (command.includes("git rev-parse --verify origin/master")) {
+            throw new Error("master does not exist");
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      const result = await gitOps.getDefaultBranch();
+
+      assert.equal(result.branch, "main");
+      assert.equal(result.method, "fallback default");
+    });
+
     test("falls back to main as default when nothing works", async () => {
       const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {

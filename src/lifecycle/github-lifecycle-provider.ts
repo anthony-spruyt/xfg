@@ -342,6 +342,17 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     const tokenPrefix = this.buildTokenPrefix(token);
 
+    // Remove existing "origin" remote if present (e.g., from git clone --mirror).
+    // gh repo create --source --push needs to set its own origin remote.
+    try {
+      await this.executor.exec(
+        `git -C ${escapeShellArg(sourceDir)} remote remove origin`,
+        this.cwd
+      );
+    } catch {
+      // No origin remote — nothing to remove
+    }
+
     // Use gh repo create --source --push to create and mirror in one step.
     // For bare repos (from git clone --mirror), --push mirrors all refs.
     // This uses gh CLI authentication, avoiding raw git auth issues with GHE.

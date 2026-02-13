@@ -324,7 +324,7 @@ export class GitOps implements IGitOps {
         this.workDir
       );
       const match = remoteInfo.match(/HEAD branch: (\S+)/);
-      if (match) {
+      if (match && match[1] !== "(unknown)") {
         return { branch: match[1], method: "remote HEAD" };
       }
     } catch (error) {

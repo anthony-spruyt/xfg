@@ -620,12 +620,14 @@ describe("GitHubLifecycleProvider", () => {
       const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
       await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
 
-      // Single gh repo create command with --source and --push
-      assert.equal(calls.length, 1);
-      assert.ok(calls[0].command.includes("gh repo create"));
-      assert.ok(calls[0].command.includes("--source"));
-      assert.ok(calls[0].command.includes("'/tmp/source-mirror'"));
-      assert.ok(calls[0].command.includes("--push"));
+      // First call removes existing origin remote, second is gh repo create
+      assert.equal(calls.length, 2);
+      assert.ok(calls[0].command.includes("git -C"));
+      assert.ok(calls[0].command.includes("remote remove origin"));
+      assert.ok(calls[1].command.includes("gh repo create"));
+      assert.ok(calls[1].command.includes("--source"));
+      assert.ok(calls[1].command.includes("'/tmp/source-mirror'"));
+      assert.ok(calls[1].command.includes("--push"));
     });
 
     test("rejects non-GitHub repo", async () => {
@@ -660,7 +662,8 @@ describe("GitHubLifecycleProvider", () => {
         visibility: "private",
       });
 
-      assert.ok(calls[0].command.includes("--private"));
+      // calls[0] is git remote remove origin, calls[1] is gh repo create
+      assert.ok(calls[1].command.includes("--private"));
     });
   });
 
@@ -718,9 +721,10 @@ describe("GitHubLifecycleProvider", () => {
         "ghs_test_token"
       );
 
-      assert.equal(calls.length, 1);
+      // calls[0] is git remote remove origin, calls[1] is gh repo create
+      assert.equal(calls.length, 2);
       assert.ok(
-        calls[0].command.startsWith("GH_TOKEN='ghs_test_token' gh repo create")
+        calls[1].command.startsWith("GH_TOKEN='ghs_test_token' gh repo create")
       );
     });
 
