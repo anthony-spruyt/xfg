@@ -83,7 +83,7 @@ class ResultsCollector {
 
 /**
  * Run lifecycle checks for all unique repos before processing.
- * Returns a Set of git URLs that failed lifecycle checks.
+ * Returns a Set of git URLs to skip (lifecycle errors or repos that would be created in dry-run).
  */
 async function runLifecycleChecks(
   allRepos: RepoConfig[],
@@ -95,7 +95,7 @@ async function runLifecycleChecks(
   tokenManager: GitHubAppTokenManager | null
 ): Promise<Set<string>> {
   const checked = new Set<string>();
-  const failed = new Set<string>();
+  const skippedRepos = new Set<string>();
 
   for (let i = 0; i < allRepos.length; i++) {
     const repoConfig = allRepos[i];
@@ -150,7 +150,7 @@ async function runLifecycleChecks(
 
       // In dry-run, skip processing repos that don't exist yet
       if (options.dryRun && lifecycleResult.action !== "existed") {
-        failed.add(repoConfig.git);
+        skippedRepos.add(repoConfig.git);
       }
     } catch (error) {
       logger.error(
@@ -160,11 +160,11 @@ async function runLifecycleChecks(
       );
       results.push(buildErrorResult(repoName, error));
       collector.appendError(repoName, error);
-      failed.add(repoConfig.git);
+      skippedRepos.add(repoConfig.git);
     }
   }
 
-  return failed;
+  return skippedRepos;
 }
 
 /**
@@ -451,7 +451,7 @@ export async function runSettings(
 
   // Pre-check lifecycle for all unique repos before processing
   const allRepos = [...reposWithRulesets, ...reposWithRepoSettings];
-  const lifecycleFailed = await runLifecycleChecks(
+  const lifecycleSkipped = await runLifecycleChecks(
     allRepos,
     config,
     options,
@@ -469,7 +469,7 @@ export async function runSettings(
     repoProcessor,
     results,
     collector,
-    lifecycleFailed
+    lifecycleSkipped
   );
 
   await processRepoSettings(
@@ -479,7 +479,7 @@ export async function runSettings(
     repoSettingsProcessorFactory,
     results,
     collector,
-    lifecycleFailed
+    lifecycleSkipped
   );
 
   console.log("");

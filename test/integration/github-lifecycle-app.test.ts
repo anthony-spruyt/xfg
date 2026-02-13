@@ -1,4 +1,4 @@
-import { test, describe, afterEach, after } from "node:test";
+import { test, describe, before, afterEach, after } from "node:test";
 import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
@@ -43,7 +43,9 @@ describe(
     const reposToDelete: string[] = [];
     const tmpDir = join(tmpdir(), `xfg-lifecycle-app-${Date.now()}`);
 
-    mkdirSync(tmpDir, { recursive: true });
+    before(() => {
+      mkdirSync(tmpDir, { recursive: true });
+    });
 
     afterEach(() => {
       for (const repoName of reposToDelete) {

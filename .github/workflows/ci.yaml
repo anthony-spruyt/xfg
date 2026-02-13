@@ -631,10 +631,14 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          chmod +x .github/scripts/git-credential-ado.sh
+          git config --global credential."https://dev.azure.com".helper "$(pwd)/.github/scripts/git-credential-ado.sh"
+          git config --global credential."https://dev.azure.com".useHttpPath true
 
       - name: Run lifecycle integration tests (PAT)
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         run: npm run test:integration:github-lifecycle
 
   integration-test-cli-lifecycle-github-app:
@@ -669,12 +673,16 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          chmod +x .github/scripts/git-credential-ado.sh
+          git config --global credential."https://dev.azure.com".helper "$(pwd)/.github/scripts/git-credential-ado.sh"
+          git config --global credential."https://dev.azure.com".useHttpPath true
 
       - name: Run lifecycle integration tests (GitHub App)
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           XFG_GITHUB_APP_ID: ${{ vars.TEST_APP_ID }}
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         run: npm run test:integration:github-lifecycle-app
 
   integration-test-action-lifecycle-pat:
