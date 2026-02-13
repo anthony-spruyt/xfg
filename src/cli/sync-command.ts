@@ -349,7 +349,11 @@ export async function runSync(
   }
 
   // Write unified summary to GITHUB_STEP_SUMMARY
-  writeUnifiedSummary(lifecycleReport, report, options.dryRun ?? false);
+  writeUnifiedSummary({
+    lifecycle: lifecycleReport,
+    sync: report,
+    dryRun: options.dryRun ?? false,
+  });
 
   // Exit with error if any failures
   const hasErrors = reportResults.some((r) => r.error);

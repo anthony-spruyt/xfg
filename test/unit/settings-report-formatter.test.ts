@@ -486,8 +486,8 @@ describe("formatSettingsReportMarkdown", () => {
     const markdown = formatSettingsReportMarkdown(report, true);
 
     assert.ok(
-      markdown.includes("(Dry Run)"),
-      "should include dry run in title"
+      markdown.includes("## xfg Plan"),
+      "should include xfg Plan title for dry run"
     );
     assert.ok(
       markdown.includes("[!WARNING]"),
@@ -570,7 +570,7 @@ describe("formatSettingsReportMarkdown", () => {
     const markdown = formatSettingsReportMarkdown(report, false);
 
     assert.ok(!markdown.includes("[!WARNING]"), "should not include warning");
-    assert.ok(!markdown.includes("Dry Run"), "should not mention dry run");
+    assert.ok(!markdown.includes("xfg Plan"), "should not have Plan title");
   });
 
   test("skips settings where both oldValue and newValue are undefined", () => {
@@ -709,7 +709,7 @@ describe("writeSettingsReportSummary", () => {
 
     assert.ok(existsSync(tempFile));
     const content = readFileSync(tempFile, "utf-8");
-    assert.ok(content.includes("Repository Settings Summary"));
+    assert.ok(content.includes("xfg Apply"));
   });
 
   test("no-ops when env var not set", () => {

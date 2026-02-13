@@ -837,10 +837,7 @@ repos:
       const summary = readFileSync(summaryPath, "utf-8");
 
       // Verify summary content - unified summary format
-      assert.ok(
-        summary.includes("## xfg Sync Summary"),
-        "Should have summary header"
-      );
+      assert.ok(summary.includes("## xfg Plan"), "Should have summary header");
       // The summary uses **Plan: or **No changes**
       assert.ok(
         summary.includes("**Plan:") || summary.includes("**No changes**"),

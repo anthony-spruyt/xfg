@@ -13,11 +13,20 @@ export {
   formatSettingsReportCLI,
   formatSettingsReportMarkdown,
   writeSettingsReportSummary,
+  formatValuePlain,
+  formatRulesetConfigPlain,
   type SettingsReport,
   type RepoChanges,
   type RulesetChange,
   type SettingChange,
 } from "./settings-report.js";
+
+// Unified summary (lifecycle + sync + settings in one diff block)
+export {
+  formatUnifiedSummaryMarkdown,
+  writeUnifiedSummary,
+  type UnifiedSummaryInput,
+} from "./unified-summary.js";
 
 // GitHub Actions summary
 export {

@@ -182,8 +182,8 @@ describe("formatSyncReportMarkdown", () => {
     const markdown = formatSyncReportMarkdown(report, true);
 
     assert.ok(
-      markdown.includes("(Dry Run)"),
-      "should include dry run in title"
+      markdown.includes("## xfg Plan"),
+      "should include xfg Plan title for dry run"
     );
     assert.ok(
       markdown.includes("[!WARNING]"),
@@ -298,7 +298,7 @@ describe("writeSyncReportSummary", () => {
 
     assert.ok(existsSync(tempFile));
     const content = readFileSync(tempFile, "utf-8");
-    assert.ok(content.includes("Config Sync Summary"));
+    assert.ok(content.includes("xfg Apply"));
   });
 
   test("no-ops when env var not set", () => {

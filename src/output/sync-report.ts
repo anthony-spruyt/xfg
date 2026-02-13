@@ -81,8 +81,8 @@ export function formatSyncReportMarkdown(
   const lines: string[] = [];
 
   // Title
-  const titleSuffix = dryRun ? " (Dry Run)" : "";
-  lines.push(`## Config Sync Summary${titleSuffix}`);
+  const title = dryRun ? "## xfg Plan" : "## xfg Apply";
+  lines.push(title);
   lines.push("");
 
   // Dry-run warning

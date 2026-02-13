@@ -216,7 +216,7 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
 // Markdown Formatter
 // =============================================================================
 
-function formatValuePlain(val: unknown): string {
+export function formatValuePlain(val: unknown): string {
   if (val === null) return "null";
   if (val === undefined) return "undefined";
   if (typeof val === "string") return `"${val}"`;
@@ -224,7 +224,7 @@ function formatValuePlain(val: unknown): string {
   return String(val);
 }
 
-function formatRulesetConfigPlain(config: Ruleset): string[] {
+export function formatRulesetConfigPlain(config: Ruleset): string[] {
   const lines: string[] = [];
 
   function renderObject(obj: Record<string, unknown>, depth: number): void {
@@ -281,8 +281,8 @@ export function formatSettingsReportMarkdown(
   const lines: string[] = [];
 
   // Title
-  const titleSuffix = dryRun ? " (Dry Run)" : "";
-  lines.push(`## Repository Settings Summary${titleSuffix}`);
+  const title = dryRun ? "## xfg Plan" : "## xfg Apply";
+  lines.push(title);
   lines.push("");
 
   // Dry-run warning

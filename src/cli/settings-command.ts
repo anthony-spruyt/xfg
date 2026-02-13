@@ -18,10 +18,8 @@ import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoResult } from "../output/github-summary.js";
 import { buildErrorResult } from "../output/summary-utils.js";
 import { getManagedRulesets } from "../sync/manifest.js";
-import {
-  formatSettingsReportCLI,
-  writeSettingsReportSummary,
-} from "../output/settings-report.js";
+import { formatSettingsReportCLI } from "../output/settings-report.js";
+import { writeUnifiedSummary } from "../output/unified-summary.js";
 import {
   buildSettingsReport,
   ProcessorResults,
@@ -488,7 +486,7 @@ export async function runSettings(
   for (const line of lines) {
     console.log(line);
   }
-  writeSettingsReportSummary(report, options.dryRun ?? false);
+  writeUnifiedSummary({ settings: report, dryRun: options.dryRun ?? false });
 
   const hasErrors = report.repos.some((r) => r.error);
   if (hasErrors) {
