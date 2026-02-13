@@ -26,6 +26,7 @@ export interface UnifiedSummaryInput {
 
 function formatCombinedSummary(input: UnifiedSummaryInput): string {
   const parts: string[] = [];
+  const dry = input.dryRun;
 
   // Lifecycle totals
   if (input.lifecycle) {
@@ -33,9 +34,12 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
     const repoTotal = t.created + t.forked + t.migrated;
     if (repoTotal > 0) {
       const repoParts: string[] = [];
-      if (t.created > 0) repoParts.push(`${t.created} to create`);
-      if (t.forked > 0) repoParts.push(`${t.forked} to fork`);
-      if (t.migrated > 0) repoParts.push(`${t.migrated} to migrate`);
+      if (t.created > 0)
+        repoParts.push(`${t.created} ${dry ? "to create" : "created"}`);
+      if (t.forked > 0)
+        repoParts.push(`${t.forked} ${dry ? "to fork" : "forked"}`);
+      if (t.migrated > 0)
+        repoParts.push(`${t.migrated} ${dry ? "to migrate" : "migrated"}`);
       const repoWord = repoTotal === 1 ? "repo" : "repos";
       parts.push(`${repoTotal} ${repoWord} (${repoParts.join(", ")})`);
     }
@@ -47,9 +51,12 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
     const fileTotal = t.files.create + t.files.update + t.files.delete;
     if (fileTotal > 0) {
       const fileParts: string[] = [];
-      if (t.files.create > 0) fileParts.push(`${t.files.create} to create`);
-      if (t.files.update > 0) fileParts.push(`${t.files.update} to update`);
-      if (t.files.delete > 0) fileParts.push(`${t.files.delete} to delete`);
+      if (t.files.create > 0)
+        fileParts.push(`${t.files.create} ${dry ? "to create" : "created"}`);
+      if (t.files.update > 0)
+        fileParts.push(`${t.files.update} ${dry ? "to update" : "updated"}`);
+      if (t.files.delete > 0)
+        fileParts.push(`${t.files.delete} ${dry ? "to delete" : "deleted"}`);
       const fileWord = fileTotal === 1 ? "file" : "files";
       parts.push(`${fileTotal} ${fileWord} (${fileParts.join(", ")})`);
     }
@@ -62,8 +69,10 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
     if (settingsTotal > 0) {
       const settingWord = settingsTotal === 1 ? "setting" : "settings";
       const actions: string[] = [];
-      if (t.settings.add > 0) actions.push(`${t.settings.add} to add`);
-      if (t.settings.change > 0) actions.push(`${t.settings.change} to change`);
+      if (t.settings.add > 0)
+        actions.push(`${t.settings.add} ${dry ? "to add" : "added"}`);
+      if (t.settings.change > 0)
+        actions.push(`${t.settings.change} ${dry ? "to change" : "changed"}`);
       parts.push(`${settingsTotal} ${settingWord} (${actions.join(", ")})`);
     }
 
@@ -72,9 +81,12 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
     if (rulesetsTotal > 0) {
       const rulesetWord = rulesetsTotal === 1 ? "ruleset" : "rulesets";
       const actions: string[] = [];
-      if (t.rulesets.create > 0) actions.push(`${t.rulesets.create} to create`);
-      if (t.rulesets.update > 0) actions.push(`${t.rulesets.update} to update`);
-      if (t.rulesets.delete > 0) actions.push(`${t.rulesets.delete} to delete`);
+      if (t.rulesets.create > 0)
+        actions.push(`${t.rulesets.create} ${dry ? "to create" : "created"}`);
+      if (t.rulesets.update > 0)
+        actions.push(`${t.rulesets.update} ${dry ? "to update" : "updated"}`);
+      if (t.rulesets.delete > 0)
+        actions.push(`${t.rulesets.delete} ${dry ? "to delete" : "deleted"}`);
       parts.push(`${rulesetsTotal} ${rulesetWord} (${actions.join(", ")})`);
     }
   }
@@ -83,7 +95,8 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
     return "No changes";
   }
 
-  return `Plan: ${parts.join(", ")}`;
+  const prefix = dry ? "Plan" : "Applied";
+  return `${prefix}: ${parts.join(", ")}`;
 }
 
 function hasAnyChanges(input: UnifiedSummaryInput): boolean {

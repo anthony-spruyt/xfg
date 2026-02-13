@@ -81,7 +81,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(markdown.includes("@@ org/new-repo @@"));
     assert.ok(markdown.includes("+ CREATE"));
     assert.ok(markdown.includes("+   visibility: private"));
-    assert.ok(markdown.includes("**Plan: 1 repo (1 to create)**"));
+    assert.ok(markdown.includes("**Applied: 1 repo (1 created)**"));
   });
 
   test("renders sync-only changes (no lifecycle)", () => {
@@ -106,9 +106,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(markdown.includes("@@ org/repo @@"));
     assert.ok(markdown.includes("+ .github/ci.yml"));
     assert.ok(markdown.includes("! README.md"));
-    assert.ok(
-      markdown.includes("**Plan: 2 files (1 to create, 1 to update)**")
-    );
+    assert.ok(markdown.includes("**Applied: 2 files (1 created, 1 updated)**"));
   });
 
   test("renders combined lifecycle + sync for same repo", () => {
@@ -145,7 +143,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(markdown.includes("+   visibility: private"));
     assert.ok(markdown.includes("+ .github/ci.yml"));
     assert.ok(
-      markdown.includes("**Plan: 1 repo (1 to create), 1 file (1 to create)**")
+      markdown.includes("**Applied: 1 repo (1 created), 1 file (1 created)**")
     );
   });
 
@@ -388,7 +386,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(markdown.includes("## xfg Apply"));
     assert.ok(markdown.includes("@@ org/repo @@"));
     assert.ok(markdown.includes('+ visibility: "private"'));
-    assert.ok(markdown.includes("**Plan: 1 setting (1 to add)**"));
+    assert.ok(markdown.includes("**Applied: 1 setting (1 added)**"));
   });
 
   test("renders settings change with old and new values", () => {
@@ -419,7 +417,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
 
     assert.ok(markdown.includes("@@ org/repo @@"));
     assert.ok(markdown.includes('! description: "old desc" → "new desc"'));
-    assert.ok(markdown.includes("**Plan: 1 setting (1 to change)**"));
+    assert.ok(markdown.includes("**Applied: 1 setting (1 changed)**"));
   });
 
   test("renders ruleset create in settings", () => {
@@ -452,7 +450,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     });
 
     assert.ok(markdown.includes('+ ruleset "branch-protection"'));
-    assert.ok(markdown.includes("**Plan: 1 ruleset (1 to create)**"));
+    assert.ok(markdown.includes("**Applied: 1 ruleset (1 created)**"));
   });
 
   test("renders ruleset update with property diffs", () => {
@@ -511,7 +509,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     });
 
     assert.ok(markdown.includes('- ruleset "old-ruleset"'));
-    assert.ok(markdown.includes("**Plan: 1 ruleset (1 to delete)**"));
+    assert.ok(markdown.includes("**Applied: 1 ruleset (1 deleted)**"));
   });
 
   test("renders settings error", () => {
@@ -600,15 +598,15 @@ describe("formatUnifiedSummaryMarkdown", () => {
 
     // Combined summary
     assert.ok(
-      markdown.includes("1 repo (1 to create)"),
+      markdown.includes("1 repo (1 created)"),
       "should include repo count"
     );
     assert.ok(
-      markdown.includes("1 file (1 to create)"),
+      markdown.includes("1 file (1 created)"),
       "should include file count"
     );
     assert.ok(
-      markdown.includes("1 setting (1 to add)"),
+      markdown.includes("1 setting (1 added)"),
       "should include setting count"
     );
   });
@@ -668,7 +666,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(markdown.includes('+ ruleset "protect-main"'));
     assert.ok(markdown.includes('- ruleset "old-rule"'));
     assert.ok(
-      markdown.includes("**Plan: 2 rulesets (1 to create, 1 to delete)**")
+      markdown.includes("**Applied: 2 rulesets (1 created, 1 deleted)**")
     );
   });
 
