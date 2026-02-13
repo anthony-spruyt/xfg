@@ -178,12 +178,12 @@ async function processRulesets(
   repoProcessor: IRepositoryProcessor,
   results: RepoResult[],
   collector: ResultsCollector,
-  lifecycleFailed: Set<string>
+  lifecycleSkipped: Set<string>
 ): Promise<void> {
   for (let i = 0; i < repos.length; i++) {
     const repoConfig = repos[i];
 
-    if (lifecycleFailed.has(repoConfig.git)) {
+    if (lifecycleSkipped.has(repoConfig.git)) {
       continue;
     }
 
@@ -297,7 +297,7 @@ async function processRepoSettings(
   processorFactory: RepoSettingsProcessorFactory,
   results: RepoResult[],
   collector: ResultsCollector,
-  lifecycleFailed: Set<string>
+  lifecycleSkipped: Set<string>
 ): Promise<void> {
   if (repos.length === 0) {
     return;
@@ -310,7 +310,7 @@ async function processRepoSettings(
   for (let i = 0; i < repos.length; i++) {
     const repoConfig = repos[i];
 
-    if (lifecycleFailed.has(repoConfig.git)) {
+    if (lifecycleSkipped.has(repoConfig.git)) {
       continue;
     }
 
