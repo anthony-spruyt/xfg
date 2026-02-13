@@ -30,6 +30,13 @@ function isValidGitUrl(url: string): boolean {
 }
 
 /**
+ * Escape special regex characters in a string.
+ */
+function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
  * Check if a git URL points to GitHub (github.com).
  * Used to reject GitHub URLs as migration sources (not supported).
  */
@@ -38,7 +45,7 @@ function isGitHubUrl(url: string, githubHosts?: string[]): boolean {
   for (const host of hosts) {
     if (
       url.startsWith(`git@${host}:`) ||
-      url.match(new RegExp(`^https?://${host.replace(/\./g, "\\.")}/`))
+      url.match(new RegExp(`^https?://${escapeRegExp(host)}/`))
     ) {
       return true;
     }
