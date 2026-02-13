@@ -28,10 +28,18 @@ import {
   formatSyncReportCLI,
   writeSyncReportSummary,
 } from "../output/sync-report.js";
+import {
+  buildLifecycleReport,
+  formatLifecycleReportCLI,
+  writeLifecycleReportSummary,
+  hasLifecycleChanges,
+  type LifecycleReportInput,
+} from "../output/lifecycle-report.js";
 import type { ProcessorResult } from "../sync/index.js";
 import {
   RepoLifecycleManager,
   runLifecycleCheck,
+  toCreateRepoSettings,
   type IRepoLifecycleManager,
 } from "../lifecycle/index.js";
 
@@ -172,6 +180,7 @@ export async function runSync(
       )
     : null;
   const reportResults: SyncResultEntry[] = [];
+  const lifecycleReportInputs: LifecycleReportInput[] = [];
 
   for (let i = 0; i < config.repos.length; i++) {
     const repoConfig = config.repos[i];
@@ -242,6 +251,21 @@ export async function runSync(
         logger.info(line);
       }
 
+      // Collect lifecycle result for report
+      const createSettings = toCreateRepoSettings(config.settings?.repo);
+      lifecycleReportInputs.push({
+        repoName,
+        action: lifecycleResult.action,
+        upstream: repoConfig.upstream,
+        source: repoConfig.source,
+        settings: createSettings
+          ? {
+              visibility: createSettings.visibility,
+              description: createSettings.description,
+            }
+          : undefined,
+      });
+
       // In dry-run, skip processing repos that don't exist yet
       if (options.dryRun && lifecycleResult.action !== "existed") {
         reportResults.push({
@@ -311,7 +335,17 @@ export async function runSync(
     }
   }
 
-  // Build and display report
+  // Build and display lifecycle report (before sync report)
+  const lifecycleReport = buildLifecycleReport(lifecycleReportInputs);
+  if (hasLifecycleChanges(lifecycleReport)) {
+    console.log("");
+    for (const line of formatLifecycleReportCLI(lifecycleReport)) {
+      console.log(line);
+    }
+  }
+  writeLifecycleReportSummary(lifecycleReport, options.dryRun ?? false);
+
+  // Build and display sync report
   const report = buildSyncReport(reportResults);
   console.log("");
   for (const line of formatSyncReportCLI(report)) {

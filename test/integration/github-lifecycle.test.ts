@@ -205,4 +205,188 @@ repos:
       console.log("  Migrate lifecycle test passed");
     }
   );
+
+  test("create with settings: description is applied", async () => {
+    const repoName = generateRepoName();
+    reposToDelete.push(repoName);
+
+    const configPath = writeConfig(
+      tmpDir,
+      `id: lifecycle-create-settings-test
+settings:
+  repo:
+    description: "Created by xfg lifecycle test"
+files:
+  lifecycle-test.json:
+    content:
+      created: true
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+`
+    );
+
+    console.log(
+      `\nCreating repo ${OWNER}/${repoName} with settings via xfg sync...`
+    );
+    const output = exec(
+      `node dist/cli.js sync --config ${configPath} --merge direct`,
+      { cwd: projectRoot }
+    );
+    console.log(output);
+
+    // Verify repo was created
+    assert.ok(
+      repoExists(OWNER, repoName),
+      `Repo ${repoName} should exist after sync`
+    );
+
+    // Verify description was applied
+    const description = exec(
+      `gh api repos/${OWNER}/${repoName} --jq '.description'`
+    );
+    assert.equal(
+      description,
+      "Created by xfg lifecycle test",
+      "Repo description should match config"
+    );
+
+    console.log("  Create with settings test passed");
+  });
+
+  test("already-existing repo: second sync shows existed", async () => {
+    const repoName = generateRepoName();
+    reposToDelete.push(repoName);
+
+    const configPath = writeConfig(
+      tmpDir,
+      `id: lifecycle-existed-test
+files:
+  lifecycle-test.json:
+    content:
+      round: 1
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+`
+    );
+
+    console.log(`\nFirst sync: creating ${OWNER}/${repoName}...`);
+    const firstOutput = exec(
+      `node dist/cli.js sync --config ${configPath} --merge direct`,
+      { cwd: projectRoot }
+    );
+    console.log(firstOutput);
+
+    // First run should show CREATE
+    assert.ok(
+      firstOutput.includes("CREATE"),
+      "First sync should include CREATE"
+    );
+
+    // Second run - update file content to trigger a change
+    const configPath2 = writeConfig(
+      tmpDir,
+      `id: lifecycle-existed-test
+files:
+  lifecycle-test.json:
+    content:
+      round: 2
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+`
+    );
+
+    console.log(`\nSecond sync: ${OWNER}/${repoName} should already exist...`);
+    const secondOutput = exec(
+      `node dist/cli.js sync --config ${configPath2} --merge direct`,
+      { cwd: projectRoot }
+    );
+    console.log(secondOutput);
+
+    // Second run should NOT show CREATE (repo already exists)
+    assert.ok(
+      !secondOutput.includes("CREATE"),
+      "Second sync should NOT include CREATE (repo already existed)"
+    );
+
+    console.log("  Already-existing repo test passed");
+  });
+
+  test("fork dry-run: shows FORK but doesn't create repo", async () => {
+    const repoName = generateRepoName();
+    // Do NOT add to reposToDelete — repo should not exist
+
+    const configPath = writeConfig(
+      tmpDir,
+      `id: lifecycle-fork-dryrun-test
+files:
+  lifecycle-fork-test.json:
+    content:
+      forked: true
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+    upstream: https://github.com/${FORK_SOURCE}.git
+`
+    );
+
+    console.log(`\nDry-run fork for ${OWNER}/${repoName} via xfg sync...`);
+    const output = exec(
+      `node dist/cli.js sync --config ${configPath} --dry-run`,
+      { cwd: projectRoot }
+    );
+    console.log(output);
+
+    // Verify output shows FORK
+    assert.ok(output.includes("FORK"), "Dry-run output should include FORK");
+
+    // Verify repo was NOT actually created
+    assert.ok(
+      !repoExists(OWNER, repoName),
+      `Repo ${repoName} should NOT exist after dry-run`
+    );
+
+    console.log("  Fork dry-run test passed");
+  });
+
+  test(
+    "migrate dry-run: shows MIGRATE but doesn't create repo",
+    { skip: !HAS_ADO_CREDS },
+    async () => {
+      const repoName = generateRepoName();
+      // Do NOT add to reposToDelete — repo should not exist
+
+      const configPath = writeConfig(
+        tmpDir,
+        `id: lifecycle-migrate-dryrun-test
+files:
+  lifecycle-migrate-test.json:
+    content:
+      migrated: true
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+    source: ${ADO_MIGRATE_SOURCE}
+`
+      );
+
+      console.log(`\nDry-run migrate for ${OWNER}/${repoName} via xfg sync...`);
+      const output = exec(
+        `node dist/cli.js sync --config ${configPath} --dry-run`,
+        { cwd: projectRoot }
+      );
+      console.log(output);
+
+      // Verify output shows MIGRATE
+      assert.ok(
+        output.includes("MIGRATE"),
+        "Dry-run output should include MIGRATE"
+      );
+
+      // Verify repo was NOT actually created
+      assert.ok(
+        !repoExists(OWNER, repoName),
+        `Repo ${repoName} should NOT exist after dry-run`
+      );
+
+      console.log("  Migrate dry-run test passed");
+    }
+  );
 });
