@@ -121,6 +121,14 @@ The following settings apply during repo creation:
 | `hasIssues`   | Enable/disable Issues (default: enabled)         |
 | `hasWiki`     | Enable/disable Wiki (default: enabled)           |
 
+### Empty Repository Initialization
+
+When creating a new repository, xfg uses `--add-readme` to establish the default branch with an initial commit, then immediately deletes the README to leave the repo in a clean state. This ensures subsequent clone and push operations work correctly, since empty repositories without any commits have no resolvable `HEAD`.
+
+### Mirror Clone Cleanup
+
+When migrating with `source`, the mirror clone may include platform-specific refs that GitHub rejects on push (such as `refs/pull/*` from GitHub, `refs/merge-requests/*` from GitLab, or other internal refs). xfg automatically strips all refs except branches (`refs/heads/*`) and tags (`refs/tags/*`) before pushing to the target repository.
+
 ## Dry Run
 
 In dry-run mode (`--dry-run`), lifecycle operations are reported but not executed:

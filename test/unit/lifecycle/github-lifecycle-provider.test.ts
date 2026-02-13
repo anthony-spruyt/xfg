@@ -150,19 +150,24 @@ describe("GitHubLifecycleProvider", () => {
   });
 
   describe("create()", () => {
-    test("creates repo with gh repo create and initializes default branch", async () => {
+    test("creates repo with gh repo create --add-readme and deletes README", async () => {
       const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([["contents/README.md --jq", "abc123def"]]),
         defaultResponse: "",
       });
 
       const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
       await provider.create(mockRepoInfo);
 
-      // calls[0] = gh repo create, calls[1] = contents API (initialize branch)
-      assert.equal(calls.length, 2);
+      // calls[0] = gh repo create, calls[1] = GET README sha, calls[2] = DELETE README
+      assert.equal(calls.length, 3);
       assert.ok(calls[0].command.includes("gh repo create"));
       assert.ok(calls[0].command.includes("'test-org/test-repo'"));
-      assert.ok(calls[1].command.includes("contents/.gitkeep"));
+      assert.ok(calls[0].command.includes("--add-readme"));
+      assert.ok(calls[1].command.includes("contents/README.md"));
+      assert.ok(calls[1].command.includes("--jq"));
+      assert.ok(calls[2].command.includes("contents/README.md"));
+      assert.ok(calls[2].command.includes("--method DELETE"));
     });
 
     test("applies visibility setting - private", async () => {
@@ -254,23 +259,32 @@ describe("GitHubLifecycleProvider", () => {
       assert.ok(!calls[0].command.includes("--disable-issues"));
     });
 
-    test("initializes default branch via Contents API after create", async () => {
+    test("initializes default branch with --add-readme then deletes README", async () => {
       const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([["contents/README.md --jq", "abc123def"]]),
         defaultResponse: "",
       });
 
       const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
       await provider.create(mockRepoInfo);
 
-      // calls[0] = gh repo create, calls[1] = contents API
-      assert.equal(calls.length, 2);
+      // calls[0] = gh repo create with --add-readme
+      // calls[1] = gh api .../contents/README.md --jq '.sha' (GET sha)
+      // calls[2] = gh api .../contents/README.md --method DELETE
+      assert.equal(calls.length, 3);
       assert.ok(
-        calls[1].command.includes("contents/.gitkeep"),
-        "Should create .gitkeep via Contents API"
+        calls[0].command.includes("--add-readme"),
+        "Should include --add-readme flag"
       );
       assert.ok(
-        calls[1].command.includes("--method PUT"),
-        "Should use PUT method"
+        calls[1].command.includes("contents/README.md") &&
+          calls[1].command.includes("--jq"),
+        "Should GET README.md sha via Contents API"
+      );
+      assert.ok(
+        calls[2].command.includes("contents/README.md") &&
+          calls[2].command.includes("--method DELETE"),
+        "Should DELETE README.md via Contents API"
       );
     });
 
@@ -553,6 +567,30 @@ describe("GitHubLifecycleProvider", () => {
         /Cannot fork test-org\/original-repo to the same owner/
       );
     });
+
+    test("rejects fork when owners match case-insensitively", async () => {
+      const upstream: GitHubRepoInfo = {
+        type: "github",
+        gitUrl: "git@github.com:TestOrg/upstream.git",
+        owner: "TestOrg",
+        repo: "upstream",
+        host: "github.com",
+      };
+      const target: GitHubRepoInfo = {
+        type: "github",
+        gitUrl: "git@github.com:testorg/fork.git",
+        owner: "testorg",
+        repo: "fork",
+        host: "github.com",
+      };
+      const { mock: executor } = createMockExecutor({ defaultResponse: "" });
+      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+
+      await assert.rejects(
+        () => provider.fork!(upstream, target),
+        /Cannot fork.*same owner/
+      );
+    });
   });
 
   describe("waitForForkReady (via fork())", () => {
@@ -636,21 +674,40 @@ describe("GitHubLifecycleProvider", () => {
   describe("receiveMigration()", () => {
     test("uses gh repo create --source --push in single command", async () => {
       const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          [
+            "for-each-ref",
+            "refs/heads/main\nrefs/tags/v1.0\nrefs/pull/1/head\nrefs/merge-requests/1/head",
+          ],
+        ]),
         defaultResponse: "",
       });
 
       const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
       await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
 
-      // calls[0] = remote remove origin, calls[1] = for-each-ref, calls[2] = gh repo create
-      assert.equal(calls.length, 3);
+      // calls[0] = remote remove origin
+      // calls[1] = for-each-ref (all refs)
+      // calls[2] = update-ref -d refs/pull/1/head
+      // calls[3] = update-ref -d refs/merge-requests/1/head
+      // calls[4] = gh repo create
+      assert.equal(calls.length, 5);
       assert.ok(calls[0].command.includes("git -C"));
       assert.ok(calls[0].command.includes("remote remove origin"));
-      assert.ok(calls[1].command.includes("for-each-ref"));
-      assert.ok(calls[2].command.includes("gh repo create"));
-      assert.ok(calls[2].command.includes("--source"));
-      assert.ok(calls[2].command.includes("'/tmp/source-mirror'"));
-      assert.ok(calls[2].command.includes("--push"));
+      assert.ok(
+        calls[1].command.includes("for-each-ref --format='%(refname)'")
+      );
+      assert.ok(!calls[1].command.includes("refs/pull/"));
+      // Should delete non-heads/non-tags refs
+      assert.ok(calls[2].command.includes("update-ref -d"));
+      assert.ok(calls[2].command.includes("refs/pull/1/head"));
+      assert.ok(calls[3].command.includes("update-ref -d"));
+      assert.ok(calls[3].command.includes("refs/merge-requests/1/head"));
+      // Final call is gh repo create
+      assert.ok(calls[4].command.includes("gh repo create"));
+      assert.ok(calls[4].command.includes("--source"));
+      assert.ok(calls[4].command.includes("'/tmp/source-mirror'"));
+      assert.ok(calls[4].command.includes("--push"));
     });
 
     test("rejects non-GitHub repo", async () => {
@@ -677,6 +734,9 @@ describe("GitHubLifecycleProvider", () => {
 
     test("passes settings to create", async () => {
       const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["for-each-ref", "refs/heads/main\nrefs/tags/v1.0\nrefs/pull/1/head"],
+        ]),
         defaultResponse: "",
       });
 
@@ -685,8 +745,13 @@ describe("GitHubLifecycleProvider", () => {
         visibility: "private",
       });
 
-      // calls[0] = git remote remove origin, calls[1] = git for-each-ref, calls[2] = gh repo create
-      assert.ok(calls[2].command.includes("--private"));
+      // calls[0] = git remote remove origin, calls[1] = git for-each-ref,
+      // calls[2] = update-ref -d refs/pull/1/head, calls[3] = gh repo create
+      const createCall = calls.find((c) =>
+        c.command.includes("gh repo create")
+      );
+      assert.ok(createCall);
+      assert.ok(createCall.command.includes("--private"));
     });
   });
 
@@ -719,19 +784,21 @@ describe("GitHubLifecycleProvider", () => {
 
     test("create() prefixes command with GH_TOKEN when token provided", async () => {
       const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([["contents/README.md --jq", "abc123def"]]),
         defaultResponse: "",
       });
 
       const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
       await provider.create(mockRepoInfo, undefined, "ghs_test_token");
 
-      // calls[0] = gh repo create, calls[1] = gh api contents/.gitkeep
-      assert.equal(calls.length, 2);
+      // calls[0] = gh repo create, calls[1] = GET README sha, calls[2] = DELETE README
+      assert.equal(calls.length, 3);
       assert.ok(
         calls[0].command.startsWith("GH_TOKEN='ghs_test_token' gh repo create")
       );
-      // Token should also be used for the initialization API call
+      // Token should also be used for the deleteReadme API calls
       assert.ok(calls[1].command.includes("GH_TOKEN='ghs_test_token'"));
+      assert.ok(calls[2].command.includes("GH_TOKEN='ghs_test_token'"));
     });
 
     test("receiveMigration() prefixes command with GH_TOKEN when token provided", async () => {

@@ -202,16 +202,18 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       parts.push("--disable-wiki");
     }
 
+    // Add --add-readme to establish the default branch via an initial commit.
+    // This avoids empty repos where HEAD doesn't resolve.
+    parts.push("--add-readme");
+
     const command = parts.join(" ");
 
     await withRetry(() => this.executor.exec(command, this.cwd), {
       retries: this.retries,
     });
 
-    // Push an empty initial commit to establish the default branch.
-    // Empty repos (no commits/branches) break clone→push workflows
-    // because HEAD doesn't resolve.
-    await this.initializeDefaultBranch(repoInfo, token);
+    // Delete the README so xfg sync starts from a clean state.
+    await this.deleteReadme(repoInfo, token);
   }
 
   async fork(
@@ -224,7 +226,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     this.assertGitHub(target);
 
     // Guard: cannot fork a repo to the same owner
-    if (upstream.owner === target.owner) {
+    if (upstream.owner.toLowerCase() === target.owner.toLowerCase()) {
       throw new Error(
         `Cannot fork ${upstream.owner}/${upstream.repo} to the same owner '${target.owner}'. ` +
           `The upstream and target owners must be different.`
@@ -358,22 +360,30 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       // No origin remote — nothing to remove
     }
 
-    // Remove hidden refs (e.g., refs/pull/*) that GitHub rejects on push.
+    // Remove all non-standard refs that GitHub rejects on push.
     // Mirror clones include ALL refs from the source, but GitHub only
-    // accepts branches and tags, not pull request merge refs.
+    // accepts branches (refs/heads/*) and tags (refs/tags/*).
+    // Other refs like refs/pull/* (GitHub), refs/merge-requests/* (GitLab),
+    // refs/keep-around/* etc. must be removed.
     try {
-      const refs = await this.executor.exec(
-        `git -C ${escapeShellArg(sourceDir)} for-each-ref --format='%(refname)' refs/pull/`,
+      const allRefs = await this.executor.exec(
+        `git -C ${escapeShellArg(sourceDir)} for-each-ref --format='%(refname)'`,
         this.cwd
       );
-      for (const ref of refs.split("\n").filter((r) => r.trim())) {
-        await this.executor.exec(
-          `git -C ${escapeShellArg(sourceDir)} update-ref -d ${escapeShellArg(ref.trim())}`,
-          this.cwd
-        );
+      for (const ref of allRefs.split("\n").filter((r) => r.trim())) {
+        const trimmed = ref.trim();
+        if (
+          !trimmed.startsWith("refs/heads/") &&
+          !trimmed.startsWith("refs/tags/")
+        ) {
+          await this.executor.exec(
+            `git -C ${escapeShellArg(sourceDir)} update-ref -d ${escapeShellArg(trimmed)}`,
+            this.cwd
+          );
+        }
       }
     } catch {
-      // No pull refs to remove — ignore
+      // No refs to remove — ignore
     }
 
     // Use gh repo create --source --push to create and mirror in one step.
@@ -417,14 +427,11 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   }
 
   /**
-   * Create an initial commit on the default branch via the GitHub Contents API.
-   * This establishes the default branch so subsequent clone→push workflows work
-   * (empty repos have no branches, causing HEAD to be unresolvable).
-   *
-   * Note: GitHub's Git Data API returns 409 on truly empty repos, so we use
-   * the Contents API which handles empty repos correctly.
+   * Delete the README.md that --add-readme creates.
+   * This leaves the repo with a default branch established (from the initial
+   * commit) but no files, so xfg sync starts from a clean state.
    */
-  private async initializeDefaultBranch(
+  private async deleteReadme(
     repoInfo: GitHubRepoInfo,
     token?: string
   ): Promise<void> {
@@ -433,14 +440,24 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
     const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
 
-    // Create an empty .gitkeep file to establish the default branch.
-    // The Contents API handles empty repos (unlike the Git Data API which returns 409).
-    // content="" is base64 for empty file.
+    // Get the SHA of the README.md created by --add-readme
+    const fileInfo = await withRetry(
+      () =>
+        this.executor.exec(
+          `${tokenPrefix}gh api ${hostnamePart}${apiPath}/contents/README.md --jq '.sha'`,
+          this.cwd
+        ),
+      { retries: this.retries }
+    );
+
+    const sha = fileInfo.trim();
+
+    // Delete the README.md to leave the repo clean
     await withRetry(
       () =>
         this.executor.exec(
-          `${tokenPrefix}gh api ${hostnamePart}${apiPath}/contents/.gitkeep ` +
-            `--method PUT -f message='Initial commit' -f content=''`,
+          `${tokenPrefix}gh api ${hostnamePart}${apiPath}/contents/README.md ` +
+            `--method DELETE -f message='Remove initialization file' -f sha=${escapeShellArg(sha)}`,
           this.cwd
         ),
       { retries: this.retries }

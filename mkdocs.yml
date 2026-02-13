@@ -71,6 +71,7 @@ nav:
       - PR Options: configuration/pr-options.md
       - PR Templates: configuration/pr-templates.md
       - Repo Lifecycle: configuration/lifecycle.md
+      - Repository Settings: configuration/repo-settings.md
       - GitHub Rulesets: configuration/rulesets.md
   - Examples:
       - Overview: examples/index.md
