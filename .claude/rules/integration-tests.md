@@ -33,11 +33,20 @@ Tests MUST be self-contained: reset state in `beforeEach`, never rely on prior t
 
 ## Persistent Repos
 
-All test repos are **pre-created and permanent**:
+Most test repos are **pre-created and permanent**:
 
 - Created manually by the maintainer, not by test code
-- Tests must not call `gh repo create` or `gh repo delete`
+- Most tests must not call `gh repo create` or `gh repo delete`
 - The GitHub App and PAT must have access to all test repos
+
+### Ephemeral repos (lifecycle tests only)
+
+Tests that verify repo creation/forking/migration may create and delete repos:
+
+- Use **unique names per run** (`xfg-lifecycle-test-<timestamp>-<random>`) — never reuse a deleted name
+- Register cleanup (`gh repo delete --yes`) in `afterEach` / `after`, wrapped in try/catch
+- Never delete then recreate the same repo name — this causes ghost-repo race conditions
+- Lifecycle tests use concurrency groups `integration-github-8` through `integration-github-11`
 
 ## Fixture Files
 
