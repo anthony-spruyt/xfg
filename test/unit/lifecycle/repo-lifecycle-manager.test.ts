@@ -40,19 +40,26 @@ describe("RepoLifecycleManager", () => {
     migrateCalled?: () => void;
     cloneCalled?: () => void;
   }): IRepoLifecycleFactory {
+    // Track whether a lifecycle operation has been performed so
+    // waitForRepoReady() sees the repo as ready immediately.
+    let repoCreated = false;
+
     const provider: IRepoLifecycleProvider = {
       platform: "github",
       async exists() {
-        return options.exists ?? false;
+        return repoCreated || (options.exists ?? false);
       },
       async create() {
         options.createCalled?.();
+        repoCreated = true;
       },
       async fork() {
         options.forkCalled?.();
+        repoCreated = true;
       },
       async receiveMigration() {
         options.migrateCalled?.();
+        repoCreated = true;
       },
     };
 

@@ -604,8 +604,6 @@ jobs:
       - "build"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
-    # TODO: remove continue-on-error once GH_PAT has repo scope for newly-created repos
-    continue-on-error: true
 
     concurrency:
       group: integration-github-8
@@ -648,8 +646,6 @@ jobs:
       - "build"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
-    # TODO: remove continue-on-error once GitHub App has administration:write permission
-    continue-on-error: true
 
     concurrency:
       group: integration-github-9
@@ -694,8 +690,6 @@ jobs:
       - "build"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
-    # TODO: remove continue-on-error once GH_PAT has repo scope for newly-created repos
-    continue-on-error: true
 
     concurrency:
       group: integration-github-10
@@ -770,8 +764,6 @@ jobs:
       - "build"
     if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
     runs-on: ubuntu-latest
-    # TODO: remove continue-on-error once GitHub App has administration:write permission
-    continue-on-error: true
 
     concurrency:
       group: integration-github-11

@@ -84,6 +84,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
     }
 
     await provider.create(repoInfo, settings, options.token);
+    await this.waitForRepoReady(provider, repoInfo, options.token);
 
     return {
       repoInfo,
@@ -115,6 +116,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       githubHosts: options.githubHosts,
     });
     await provider.fork(upstreamInfo, repoInfo, settings, options.token);
+    await this.waitForRepoReady(provider, repoInfo, options.token);
 
     return {
       repoInfo,
@@ -156,6 +158,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
         settings,
         options.token
       );
+      await this.waitForRepoReady(provider, repoInfo, options.token);
 
       return {
         repoInfo,
@@ -172,5 +175,30 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
         );
       }
     }
+  }
+
+  /**
+   * Polls provider.exists() until the repo is visible, with timeout.
+   * GitHub's API may return success from create/fork before the git
+   * backend has fully propagated, causing subsequent clone to 403.
+   */
+  private async waitForRepoReady(
+    provider: IRepoLifecycleProvider,
+    repoInfo: RepoInfo,
+    token?: string,
+    timeoutMs = 15000,
+    pollMs = 1000
+  ): Promise<void> {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      if (await provider.exists(repoInfo, token)) {
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, pollMs));
+    }
+    // Timed out — proceed anyway and let downstream operations handle it
+    logger.info(
+      `Repo ${repoInfo.owner}/${repoInfo.repo} not yet visible after ${timeoutMs}ms, proceeding`
+    );
   }
 }
