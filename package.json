@@ -34,6 +34,8 @@
     "test:integration:github-app": "npm run build && node --import tsx --test test/integration/github-app.test.ts",
     "test:integration:github-rulesets": "npm run build && node --import tsx --test test/integration/github-rulesets.test.ts",
     "test:integration:github-repo-settings": "npm run build && node --import tsx --test test/integration/github-repo-settings.test.ts",
+    "test:integration:github-lifecycle": "npm run build && node --import tsx --test test/integration/github-lifecycle.test.ts",
+    "test:integration:github-lifecycle-app": "npm run build && node --import tsx --test test/integration/github-lifecycle-app.test.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
