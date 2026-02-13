@@ -602,10 +602,9 @@ jobs:
   integration-test-cli-lifecycle-github-pat:
     needs:
       - "build"
-    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
+    # Requires ENABLE_LIFECYCLE_TESTS=true repo variable + GH_PAT with repo scope for new repos
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' && vars.ENABLE_LIFECYCLE_TESTS == 'true' }}
     runs-on: ubuntu-latest
-    # TODO: remove continue-on-error once GH_PAT has repo scope for newly-created repos
-    continue-on-error: true
 
     concurrency:
       group: integration-github-8
@@ -646,10 +645,9 @@ jobs:
   integration-test-cli-lifecycle-github-app:
     needs:
       - "build"
-    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
+    # Requires ENABLE_LIFECYCLE_TESTS=true repo variable + GitHub App with administration:write
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' && vars.ENABLE_LIFECYCLE_TESTS == 'true' }}
     runs-on: ubuntu-latest
-    # TODO: remove continue-on-error once GitHub App has administration:write permission
-    continue-on-error: true
 
     concurrency:
       group: integration-github-9
@@ -692,10 +690,9 @@ jobs:
   integration-test-action-lifecycle-pat:
     needs:
       - "build"
-    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
+    # Requires ENABLE_LIFECYCLE_TESTS=true repo variable + GH_PAT with repo scope for new repos
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' && vars.ENABLE_LIFECYCLE_TESTS == 'true' }}
     runs-on: ubuntu-latest
-    # TODO: remove continue-on-error once GH_PAT has repo scope for newly-created repos
-    continue-on-error: true
 
     concurrency:
       group: integration-github-10
@@ -768,10 +765,9 @@ jobs:
   integration-test-action-lifecycle-app:
     needs:
       - "build"
-    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
+    # Requires ENABLE_LIFECYCLE_TESTS=true repo variable + GitHub App with administration:write
+    if: ${{ !failure() && !cancelled() && github.event_name == 'push' && vars.ENABLE_LIFECYCLE_TESTS == 'true' }}
     runs-on: ubuntu-latest
-    # TODO: remove continue-on-error once GitHub App has administration:write permission
-    continue-on-error: true
 
     concurrency:
       group: integration-github-11
