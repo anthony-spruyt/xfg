@@ -130,7 +130,7 @@ async function runLifecycleChecks(
     }
 
     try {
-      const { outputLines } = await runLifecycleCheck(
+      const { outputLines, lifecycleResult } = await runLifecycleCheck(
         repoConfig,
         repoInfo,
         i,
@@ -146,6 +146,11 @@ async function runLifecycleChecks(
 
       for (const line of outputLines) {
         logger.info(line);
+      }
+
+      // In dry-run, skip processing repos that don't exist yet
+      if (options.dryRun && lifecycleResult.action !== "existed") {
+        failed.add(repoConfig.git);
       }
     } catch (error) {
       logger.error(
