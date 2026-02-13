@@ -836,9 +836,9 @@ repos:
 
       const summary = readFileSync(summaryPath, "utf-8");
 
-      // Verify summary content - new repo-grouped format
+      // Verify summary content - unified summary format
       assert.ok(
-        summary.includes("## Config Sync Summary"),
+        summary.includes("## xfg Sync Summary"),
         "Should have summary header"
       );
       // The summary uses **Plan: or **No changes**

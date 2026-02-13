@@ -24,17 +24,14 @@ import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoInfo } from "../shared/repo-detector.js";
 import { ProcessorFactory, defaultProcessorFactory } from "./types.js";
 import { buildSyncReport } from "./sync-report-builder.js";
-import {
-  formatSyncReportCLI,
-  writeSyncReportSummary,
-} from "../output/sync-report.js";
+import { formatSyncReportCLI } from "../output/sync-report.js";
 import {
   buildLifecycleReport,
   formatLifecycleReportCLI,
-  writeLifecycleReportSummary,
   hasLifecycleChanges,
   type LifecycleReportInput,
 } from "../output/lifecycle-report.js";
+import { writeUnifiedSummary } from "../output/unified-summary.js";
 import type { ProcessorResult } from "../sync/index.js";
 import {
   RepoLifecycleManager,
@@ -343,7 +340,6 @@ export async function runSync(
       console.log(line);
     }
   }
-  writeLifecycleReportSummary(lifecycleReport, options.dryRun ?? false);
 
   // Build and display sync report
   const report = buildSyncReport(reportResults);
@@ -351,7 +347,9 @@ export async function runSync(
   for (const line of formatSyncReportCLI(report)) {
     console.log(line);
   }
-  writeSyncReportSummary(report, options.dryRun ?? false);
+
+  // Write unified summary to GITHUB_STEP_SUMMARY
+  writeUnifiedSummary(lifecycleReport, report, options.dryRun ?? false);
 
   // Exit with error if any failures
   const hasErrors = reportResults.some((r) => r.error);
