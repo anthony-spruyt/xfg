@@ -1,6 +1,8 @@
 import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
+import { writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import {
   exec,
   projectRoot,
@@ -841,5 +843,56 @@ describe("GitHub Integration Test", () => {
 
     console.log("  Lifecycle source test passed - repo exists, source ignored");
     console.log("\n=== Lifecycle source test passed ===\n");
+  });
+
+  test("lifecycle: dry-run outputs CREATE for non-existent repo", async () => {
+    // This test exercises the lifecycle dry-run formatting for the CREATE path.
+    // Uses a deliberately non-existent repo so exists() returns false,
+    // then dry-run skips actual creation and outputs the formatted action.
+    // Safe: dry-run makes no actual changes.
+
+    console.log("\n=== Setting up lifecycle dry-run CREATE test ===\n");
+
+    const testTmpDir = join(
+      tmpdir(),
+      `xfg-lifecycle-dryrun-test-${Date.now()}`
+    );
+    mkdirSync(testTmpDir, { recursive: true });
+    const configPath = join(testTmpDir, "lifecycle-dryrun-config.yaml");
+
+    try {
+      writeFileSync(
+        configPath,
+        `id: lifecycle-dryrun-test
+files:
+  test.txt:
+    content: "test"
+repos:
+  - git: https://github.com/anthony-spruyt/xfg-nonexistent-lifecycle-dryrun-test
+`
+      );
+
+      console.log("Running xfg sync --dry-run with non-existent repo...");
+      // exec() is safe here: configPath is a controlled test path, not user input
+      const output = exec(
+        `node dist/cli.js sync --config ${configPath} --dry-run`,
+        { cwd: projectRoot }
+      );
+      console.log(output);
+
+      // Verify lifecycle CREATE action is shown in output
+      assert.ok(
+        output.includes("CREATE"),
+        "Dry-run output should include CREATE lifecycle action"
+      );
+
+      console.log(
+        "  Lifecycle dry-run CREATE test passed - output shows CREATE action"
+      );
+    } finally {
+      rmSync(testTmpDir, { recursive: true, force: true });
+    }
+
+    console.log("\n=== Lifecycle dry-run CREATE test passed ===\n");
   });
 });

@@ -203,7 +203,7 @@ export async function runSync(
         i,
         {
           dryRun: options.dryRun ?? false,
-          workDir: options.workDir,
+          resolvedWorkDir: workDir,
           githubHosts: config.githubHosts,
         },
         lm,

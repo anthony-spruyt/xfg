@@ -79,9 +79,16 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       const data = JSON.parse(stdout);
       return data.type === "Organization";
     } catch (error) {
-      // If we can't determine, assume it's an org (safer - uses --org flag)
+      // If we can't determine, assume it's an org (safer - uses --org flag).
+      // This may cause fork to fail with a misleading error for personal accounts.
+      const errMsg = error instanceof Error ? error.message : String(error);
       logger.debug(
-        `Could not determine if '${owner}' is an organization, defaulting to org behavior: ${error instanceof Error ? error.message : String(error)}`
+        `Could not determine if '${owner}' is an organization, defaulting to org behavior: ${errMsg}`
+      );
+      logger.info(
+        `Warning: Could not verify if '${owner}' is an organization or user account. ` +
+          `If fork fails, check your authentication (gh auth status) and ensure the ` +
+          `target owner is correct.`
       );
       return true;
     }

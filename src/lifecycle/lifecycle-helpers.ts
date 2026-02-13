@@ -11,8 +11,11 @@ import type {
 
 export interface LifecycleCheckOptions {
   dryRun: boolean;
+  /** Base work directory (combined with repoIndex to compute full path). */
   workDir?: string;
   githubHosts?: string[];
+  /** Pre-resolved work directory. If provided, used directly instead of computing from workDir + repoIndex. */
+  resolvedWorkDir?: string;
 }
 
 /**
@@ -23,12 +26,16 @@ export function toCreateRepoSettings(
   repo: GitHubRepoSettings | undefined
 ): CreateRepoSettings | undefined {
   if (!repo) return undefined;
-  return {
-    visibility: repo.visibility,
-    description: repo.description,
-    hasIssues: repo.hasIssues,
-    hasWiki: repo.hasWiki,
-  };
+  const { visibility, description, hasIssues, hasWiki } = repo;
+  if (
+    visibility === undefined &&
+    description === undefined &&
+    hasIssues === undefined &&
+    hasWiki === undefined
+  ) {
+    return undefined;
+  }
+  return { visibility, description, hasIssues, hasWiki };
 }
 
 export interface LifecycleCheckResult {
@@ -48,9 +55,9 @@ export async function runLifecycleCheck(
   lifecycleManager: IRepoLifecycleManager,
   repoSettings?: GitHubRepoSettings
 ): Promise<LifecycleCheckResult> {
-  const workDir = resolve(
-    join(options.workDir ?? "./tmp", generateWorkspaceName(repoIndex))
-  );
+  const workDir =
+    options.resolvedWorkDir ??
+    resolve(join(options.workDir ?? "./tmp", generateWorkspaceName(repoIndex)));
 
   const createSettings = toCreateRepoSettings(repoSettings);
 

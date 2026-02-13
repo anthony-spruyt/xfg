@@ -16,8 +16,6 @@ export interface LifecycleResult {
   action: "existed" | "created" | "forked" | "migrated";
   /** True if skipped due to dry-run */
   skipped?: boolean;
-  /** Error message if operation failed */
-  error?: string;
 }
 
 /**

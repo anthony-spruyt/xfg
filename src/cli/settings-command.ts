@@ -77,70 +77,70 @@ class ResultsCollector {
 }
 
 /**
- * Options for lifecycle check helper.
+ * Run lifecycle checks for all unique repos before processing.
+ * Returns a Set of git URLs that failed lifecycle checks.
  */
-interface LifecycleCheckOptions {
-  repoConfig: RepoConfig;
-  repoInfo: RepoInfo;
-  index: number;
-  dryRun: boolean;
-  workDir?: string;
-  githubHosts?: string[];
-  repoSettings?: Config["settings"];
-  lifecycleManager: IRepoLifecycleManager;
-  lifecycleChecked: Set<string>;
-}
+async function runLifecycleChecks(
+  allRepos: RepoConfig[],
+  config: Config,
+  options: SettingsOptions,
+  lifecycleManager: IRepoLifecycleManager,
+  results: RepoResult[],
+  collector: ResultsCollector
+): Promise<Set<string>> {
+  const checked = new Set<string>();
+  const failed = new Set<string>();
 
-/**
- * Result of lifecycle check.
- */
-interface LifecycleCheckResult {
-  success: boolean;
-  error?: unknown;
-}
+  for (let i = 0; i < allRepos.length; i++) {
+    const repoConfig = allRepos[i];
 
-/**
- * Run lifecycle check for a repo if not already checked.
- * Returns { success: true } if check passed or was already done.
- * Returns { success: false, error } if check failed.
- */
-async function runLifecycleCheckIfNeeded(
-  opts: LifecycleCheckOptions
-): Promise<LifecycleCheckResult> {
-  const {
-    repoConfig,
-    repoInfo,
-    index,
-    dryRun,
-    workDir,
-    githubHosts,
-    repoSettings,
-    lifecycleManager,
-    lifecycleChecked,
-  } = opts;
-
-  if (lifecycleChecked.has(repoConfig.git)) {
-    return { success: true };
-  }
-
-  try {
-    const { outputLines } = await runLifecycleCheck(
-      repoConfig,
-      repoInfo,
-      index,
-      { dryRun, workDir, githubHosts },
-      lifecycleManager,
-      repoSettings?.repo
-    );
-
-    for (const line of outputLines) {
-      logger.info(line);
+    if (checked.has(repoConfig.git)) {
+      continue;
     }
-    lifecycleChecked.add(repoConfig.git);
-    return { success: true };
-  } catch (error) {
-    return { success: false, error };
+    checked.add(repoConfig.git);
+
+    let repoInfo: RepoInfo;
+    try {
+      repoInfo = parseGitUrl(repoConfig.git, {
+        githubHosts: config.githubHosts,
+      });
+    } catch {
+      // URL parsing errors are handled in individual processors
+      continue;
+    }
+
+    const repoName = getRepoDisplayName(repoInfo);
+
+    try {
+      const { outputLines } = await runLifecycleCheck(
+        repoConfig,
+        repoInfo,
+        i,
+        {
+          dryRun: options.dryRun ?? false,
+          workDir: options.workDir,
+          githubHosts: config.githubHosts,
+        },
+        lifecycleManager,
+        config.settings?.repo
+      );
+
+      for (const line of outputLines) {
+        logger.info(line);
+      }
+    } catch (error) {
+      logger.error(
+        i + 1,
+        repoName,
+        `Lifecycle error: ${error instanceof Error ? error.message : String(error)}`
+      );
+      results.push(buildErrorResult(repoName, error));
+      collector.appendError(repoName, error);
+      failed.add(repoConfig.git);
+    }
   }
+
+  return failed;
 }
 
 /**
@@ -154,11 +154,14 @@ async function processRulesets(
   repoProcessor: IRepositoryProcessor,
   results: RepoResult[],
   collector: ResultsCollector,
-  lifecycleManager: IRepoLifecycleManager,
-  lifecycleChecked: Set<string>
+  lifecycleFailed: Set<string>
 ): Promise<void> {
   for (let i = 0; i < repos.length; i++) {
     const repoConfig = repos[i];
+
+    if (lifecycleFailed.has(repoConfig.git)) {
+      continue;
+    }
 
     let repoInfo: RepoInfo;
     try {
@@ -173,30 +176,6 @@ async function processRulesets(
     }
 
     const repoName = getRepoDisplayName(repoInfo);
-
-    // Check if repo exists, create/fork/migrate if needed (skip if already checked)
-    const lifecycleResult = await runLifecycleCheckIfNeeded({
-      repoConfig,
-      repoInfo,
-      index: i,
-      dryRun: options.dryRun ?? false,
-      workDir: options.workDir,
-      githubHosts: config.githubHosts,
-      repoSettings: config.settings,
-      lifecycleManager,
-      lifecycleChecked,
-    });
-
-    if (!lifecycleResult.success) {
-      logger.error(
-        i + 1,
-        repoName,
-        `Lifecycle error: ${lifecycleResult.error instanceof Error ? lifecycleResult.error.message : String(lifecycleResult.error)}`
-      );
-      results.push(buildErrorResult(repoName, lifecycleResult.error));
-      collector.appendError(repoName, lifecycleResult.error);
-      continue;
-    }
 
     if (!isGitHubRepo(repoInfo)) {
       logger.skip(
@@ -294,8 +273,7 @@ async function processRepoSettings(
   processorFactory: RepoSettingsProcessorFactory,
   results: RepoResult[],
   collector: ResultsCollector,
-  lifecycleManager: IRepoLifecycleManager,
-  lifecycleChecked: Set<string>
+  lifecycleFailed: Set<string>
 ): Promise<void> {
   if (repos.length === 0) {
     return;
@@ -307,6 +285,11 @@ async function processRepoSettings(
 
   for (let i = 0; i < repos.length; i++) {
     const repoConfig = repos[i];
+
+    if (lifecycleFailed.has(repoConfig.git)) {
+      continue;
+    }
+
     let repoInfo: RepoInfo;
     try {
       repoInfo = parseGitUrl(repoConfig.git, {
@@ -319,30 +302,6 @@ async function processRepoSettings(
     }
 
     const repoName = getRepoDisplayName(repoInfo);
-
-    // Check if repo exists, create/fork/migrate if needed (skip if already checked)
-    const lifecycleResult = await runLifecycleCheckIfNeeded({
-      repoConfig,
-      repoInfo,
-      index: i,
-      dryRun: options.dryRun ?? false,
-      workDir: options.workDir,
-      githubHosts: config.githubHosts,
-      repoSettings: config.settings,
-      lifecycleManager,
-      lifecycleChecked,
-    });
-
-    if (!lifecycleResult.success) {
-      logger.error(
-        i + 1,
-        repoName,
-        `Lifecycle error: ${lifecycleResult.error instanceof Error ? lifecycleResult.error.message : String(lifecycleResult.error)}`
-      );
-      results.push(buildErrorResult(repoName, lifecycleResult.error));
-      collector.appendError(repoName, lifecycleResult.error);
-      continue;
-    }
 
     try {
       const result = await processor.process(repoConfig, repoInfo, {
@@ -459,7 +418,17 @@ export async function runSettings(
     lifecycleManager ?? new RepoLifecycleManager(undefined, options.retries);
   const results: RepoResult[] = [];
   const collector = new ResultsCollector();
-  const lifecycleChecked = new Set<string>();
+
+  // Pre-check lifecycle for all unique repos before processing
+  const allRepos = [...reposWithRulesets, ...reposWithRepoSettings];
+  const lifecycleFailed = await runLifecycleChecks(
+    allRepos,
+    config,
+    options,
+    lm,
+    results,
+    collector
+  );
 
   await processRulesets(
     reposWithRulesets,
@@ -469,8 +438,7 @@ export async function runSettings(
     repoProcessor,
     results,
     collector,
-    lm,
-    lifecycleChecked
+    lifecycleFailed
   );
 
   await processRepoSettings(
@@ -480,8 +448,7 @@ export async function runSettings(
     repoSettingsProcessorFactory,
     results,
     collector,
-    lm,
-    lifecycleChecked
+    lifecycleFailed
   );
 
   console.log("");

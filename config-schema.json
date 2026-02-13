@@ -217,11 +217,18 @@
           "description": "Migrate from source repo if target doesn't exist. When the target repo is missing, xfg clones this repo with --mirror and pushes to the new target. Use for cross-platform migration (e.g., Azure DevOps to GitHub). Mutually exclusive with 'upstream'. Supports SSH and HTTPS formats."
         }
       },
-      "not": {
+      "if": {
         "required": [
-          "upstream",
-          "source"
+          "upstream"
         ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "source"
+          ]
+        },
+        "errorMessage": "A repo cannot have both 'upstream' and 'source' — they are mutually exclusive. Use 'upstream' for forking or 'source' for migration, not both."
       }
     },
     "prOptions": {

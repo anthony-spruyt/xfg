@@ -32,11 +32,17 @@ describe("lifecycle-helpers", () => {
       });
     });
 
-    test("handles empty settings object", () => {
+    test("returns undefined for empty settings object", () => {
       const result = toCreateRepoSettings({});
 
+      assert.equal(result, undefined);
+    });
+
+    test("returns settings when at least one field is defined", () => {
+      const result = toCreateRepoSettings({ visibility: "private" });
+
       assert.deepEqual(result, {
-        visibility: undefined,
+        visibility: "private",
         description: undefined,
         hasIssues: undefined,
         hasWiki: undefined,
