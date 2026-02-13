@@ -7,7 +7,7 @@ set -euo pipefail
 # Usage: delete-ephemeral-repo.sh <owner/repo>
 # Requires: GH_TOKEN environment variable
 
-REPO="${1:?Usage: delete-ephemeral-repo.sh <owner/repo>}"
+REPO="${1:-}"
 
 if [ -z "${REPO}" ]; then
   echo "No repo to delete"

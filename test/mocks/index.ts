@@ -23,3 +23,9 @@ export type {
 } from "./authenticated-git-ops.mock.js";
 
 export type { MockCallTracker } from "./types.js";
+
+export {
+  noopLifecycleManager,
+  failingLifecycleManager,
+  creatingLifecycleManager,
+} from "./lifecycle.mock.js";

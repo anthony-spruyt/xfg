@@ -12,26 +12,12 @@ import { writeFileSync, rmSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { runSync, type SyncOptions } from "../../src/cli/sync-command.js";
 import type { ProcessorResult } from "../../src/sync/repository-processor.js";
-import type { IRepoLifecycleManager } from "../../src/lifecycle/types.js";
 import type { IRepositoryProcessor } from "../../src/cli/types.js";
-
-const noopLifecycleManager: IRepoLifecycleManager = {
-  async ensureRepo(_repoConfig, repoInfo) {
-    return { repoInfo, action: "existed" };
-  },
-};
-
-const failingLifecycleManager: IRepoLifecycleManager = {
-  async ensureRepo() {
-    throw new Error("Lifecycle check failed: repo creation error");
-  },
-};
-
-const creatingLifecycleManager: IRepoLifecycleManager = {
-  async ensureRepo(_repoConfig, repoInfo) {
-    return { repoInfo, action: "created" };
-  },
-};
+import {
+  noopLifecycleManager,
+  failingLifecycleManager,
+  creatingLifecycleManager,
+} from "../mocks/index.js";
 
 const testDir = join(process.cwd(), "test-sync-cmd-tmp");
 const testConfigPath = join(testDir, "test-config.yaml");

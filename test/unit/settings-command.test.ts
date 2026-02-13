@@ -23,25 +23,11 @@ import type { RepoSettingsProcessorResult } from "../../src/settings/repo-settin
 import type { RulesetProcessorResult } from "../../src/settings/rulesets/processor.js";
 import type { ProcessorResult } from "../../src/sync/repository-processor.js";
 import type { RulesetPlanResult } from "../../src/settings/rulesets/formatter.js";
-import type { IRepoLifecycleManager } from "../../src/lifecycle/types.js";
-
-const noopLifecycleManager: IRepoLifecycleManager = {
-  async ensureRepo(_repoConfig, repoInfo) {
-    return { repoInfo, action: "existed" };
-  },
-};
-
-const failingLifecycleManager: IRepoLifecycleManager = {
-  async ensureRepo() {
-    throw new Error("Lifecycle check failed: repo creation error");
-  },
-};
-
-const creatingLifecycleManager: IRepoLifecycleManager = {
-  async ensureRepo(_repoConfig, repoInfo) {
-    return { repoInfo, action: "created" };
-  },
-};
+import {
+  noopLifecycleManager,
+  failingLifecycleManager,
+  creatingLifecycleManager,
+} from "../mocks/index.js";
 import type { RepoSettingsPlanResult } from "../../src/settings/repo-settings/formatter.js";
 
 const testDir = join(process.cwd(), "test-settings-cmd-tmp");

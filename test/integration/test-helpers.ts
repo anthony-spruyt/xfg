@@ -214,7 +214,10 @@ export function isForkedFrom(
  * Write a YAML config file and return its path.
  */
 export function writeConfig(tmpDir: string, configYaml: string): string {
-  const configPath = join(tmpDir, "lifecycle-test-config.yaml");
+  const configPath = join(
+    tmpDir,
+    `lifecycle-test-config-${Date.now()}-${randomBytes(3).toString("hex")}.yaml`
+  );
   writeFileSync(configPath, configYaml);
   return configPath;
 }

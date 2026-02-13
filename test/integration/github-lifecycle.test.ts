@@ -15,6 +15,8 @@ import {
 
 const OWNER = "anthony-spruyt";
 const FORK_SOURCE = "anthony-spruyt/xfg-fork-source";
+const ADO_MIGRATE_SOURCE = "https://dev.azure.com/aspruyt/fxg/_git/fxg-test";
+const HAS_ADO_CREDS = !!process.env.AZURE_DEVOPS_EXT_PAT;
 
 describe("Lifecycle Integration Test (PAT)", () => {
   const reposToDelete: string[] = [];
@@ -154,4 +156,51 @@ repos:
 
     console.log("  Dry-run lifecycle test passed");
   });
+
+  test(
+    "migrate: sync migrates from ADO source when repo doesn't exist",
+    { skip: !HAS_ADO_CREDS },
+    async () => {
+      const repoName = generateRepoName();
+      reposToDelete.push(repoName);
+
+      const configPath = writeConfig(
+        tmpDir,
+        `id: lifecycle-migrate-test
+files:
+  lifecycle-migrate-test.json:
+    content:
+      migrated: true
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+    source: ${ADO_MIGRATE_SOURCE}
+`
+      );
+
+      console.log(
+        `\nMigrating from ADO to ${OWNER}/${repoName} via xfg sync...`
+      );
+      // Note: exec() here uses controlled test constants (repoName from randomBytes,
+      // configPath from tmpDir), not user input. This is the standard integration test pattern.
+      const output = exec(
+        `node dist/cli.js sync --config ${configPath} --merge direct`,
+        { cwd: projectRoot }
+      );
+      console.log(output);
+
+      // Verify repo was created
+      assert.ok(
+        repoExists(OWNER, repoName),
+        `Repo ${repoName} should exist after migrate`
+      );
+
+      // Verify it's NOT a fork (migrated repos are standalone)
+      assert.ok(
+        !isForkedFrom(OWNER, repoName, "aspruyt/fxg-test"),
+        `Repo ${repoName} should not be a fork`
+      );
+
+      console.log("  Migrate lifecycle test passed");
+    }
+  );
 });
