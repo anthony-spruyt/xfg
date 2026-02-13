@@ -1,6 +1,7 @@
 import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
+import { randomUUID } from "node:crypto";
 import { writeFileSync } from "node:fs";
 import { exec, projectRoot } from "./test-helpers.js";
 
@@ -270,6 +271,7 @@ describe("GitHub Repo Settings Integration Test", () => {
   test("settings reports no changes when already in desired state", async () => {
     // Apply settings first so repo is in desired state
     console.log("Applying settings to reach desired state...");
+    // Note: exec is the test helper from test-helpers.js, not child_process.exec
     exec(`node dist/cli.js settings --config ${configPath}`, {
       cwd: projectRoot,
     });
@@ -289,5 +291,53 @@ describe("GitHub Repo Settings Integration Test", () => {
     );
 
     console.log("\n=== No-changes test passed ===\n");
+  });
+
+  test("settings applies description to repository", async () => {
+    // Generate a random description to ensure we detect the change
+    const randomDescription = `xfg integration test - ${randomUUID()}`;
+
+    console.log(
+      `\n=== Setting up description test (description: "${randomDescription}") ===\n`
+    );
+
+    // Create a config with the random description
+    const descConfigPath = join(
+      projectRoot,
+      "test",
+      "fixtures",
+      "integration-test-config-repo-settings-description.yaml"
+    );
+    const descConfig = `id: integration-test-repo-settings-description
+
+settings:
+  repo:
+    description: "${randomDescription}"
+
+repos:
+  - git: https://github.com/${TEST_REPO}.git
+`;
+    writeFileSync(descConfigPath, descConfig);
+
+    // Note: exec is the test helper from test-helpers.js, not child_process.exec
+    // Run settings (apply)
+    console.log("Running xfg settings to apply description...");
+    const output = exec(
+      `node dist/cli.js settings --config ${descConfigPath}`,
+      { cwd: projectRoot }
+    );
+    console.log(output);
+
+    // Verify description was applied
+    console.log("\nVerifying description was applied...");
+    const settingsAfter = getRepoSettings();
+    assert.equal(
+      settingsAfter.description,
+      randomDescription,
+      `Description should be "${randomDescription}"`
+    );
+    console.log(`  Description verified: "${settingsAfter.description}"`);
+
+    console.log("\n=== Description test passed ===\n");
   });
 });

@@ -24,6 +24,12 @@ Before processing each repo, xfg checks if the target repository exists:
     Use `upstream` for forking within GitHub, or `source` for cross-platform migration.
 <!-- markdownlint-enable MD046 -->
 
+<!-- markdownlint-disable MD046 -->
+!!! note "Forking is GitHub-only"
+    Both the `upstream` and target repos must be on GitHub (or GitHub Enterprise).
+    Cross-platform forking is not supported. For cross-platform transfers, use `source` (migration) instead.
+<!-- markdownlint-enable MD046 -->
+
 ## Forking (`upstream`)
 
 Fork an existing repo into your organization or personal account:
@@ -46,6 +52,21 @@ When the target repo doesn't exist, xfg will:
 3. Continue with normal sync/settings
 
 If the repo already exists, the `upstream` field is ignored.
+
+<!-- markdownlint-disable MD046 -->
+!!! note "Git array expansion"
+    When using a `git` array with `upstream`, the same upstream is applied to all expanded repos:
+
+    ```yaml
+    repos:
+      - git:
+          - git@github.com:my-org/fork-a.git
+          - git@github.com:my-org/fork-b.git
+        upstream: git@github.com:opensource/tool.git
+    ```
+
+    This creates two forks of `opensource/tool` with different names (`fork-a` and `fork-b`).
+<!-- markdownlint-enable MD046 -->
 
 <!-- markdownlint-disable MD046 -->
 !!! note "Fork settings"

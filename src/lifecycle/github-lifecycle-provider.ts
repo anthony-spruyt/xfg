@@ -9,6 +9,7 @@ import {
   type RepoInfo,
   type GitHubRepoInfo,
 } from "../shared/repo-detector.js";
+import { logger } from "../shared/logger.js";
 import type {
   IRepoLifecycleProvider,
   LifecyclePlatform,
@@ -77,8 +78,11 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       );
       const data = JSON.parse(stdout);
       return data.type === "Organization";
-    } catch {
+    } catch (error) {
       // If we can't determine, assume it's an org (safer - uses --org flag)
+      logger.debug(
+        `Could not determine if '${owner}' is an organization, defaulting to org behavior: ${error instanceof Error ? error.message : String(error)}`
+      );
       return true;
     }
   }
@@ -99,7 +103,8 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     const command = `gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
 
     try {
-      // Use cwd of current directory (doesn't matter for gh api)
+      // Note: withRetry already classifies 404/not-found as permanent errors,
+      // so retries are aborted immediately for non-existent repos.
       await withRetry(() => this.executor.exec(command, process.cwd()), {
         retries: this.retries,
       });
@@ -161,6 +166,14 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   ): Promise<void> {
     this.assertGitHub(upstream);
     this.assertGitHub(target);
+
+    // Guard: cannot fork a repo to the same owner
+    if (upstream.owner === target.owner) {
+      throw new Error(
+        `Cannot fork ${upstream.owner}/${upstream.repo} to the same owner '${target.owner}'. ` +
+          `The upstream and target owners must be different.`
+      );
+    }
 
     // Determine if target owner is an organization or user
     const isOrg = await this.isOrganization(target.owner, target);

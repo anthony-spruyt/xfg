@@ -82,7 +82,6 @@ class ResultsCollector {
 interface LifecycleCheckOptions {
   repoConfig: RepoConfig;
   repoInfo: RepoInfo;
-  repoName: string;
   index: number;
   dryRun: boolean;
   workDir?: string;
@@ -179,7 +178,6 @@ async function processRulesets(
     const lifecycleResult = await runLifecycleCheckIfNeeded({
       repoConfig,
       repoInfo,
-      repoName,
       index: i,
       dryRun: options.dryRun ?? false,
       workDir: options.workDir,
@@ -326,7 +324,6 @@ async function processRepoSettings(
     const lifecycleResult = await runLifecycleCheckIfNeeded({
       repoConfig,
       repoInfo,
-      repoName,
       index: i,
       dryRun: options.dryRun ?? false,
       workDir: options.workDir,
@@ -342,6 +339,7 @@ async function processRepoSettings(
         repoName,
         `Lifecycle error: ${lifecycleResult.error instanceof Error ? lifecycleResult.error.message : String(lifecycleResult.error)}`
       );
+      results.push(buildErrorResult(repoName, lifecycleResult.error));
       collector.appendError(repoName, lifecycleResult.error);
       continue;
     }

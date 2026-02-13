@@ -509,6 +509,27 @@ describe("GitHubLifecycleProvider", () => {
         /Cannot fork private repo/
       );
     });
+
+    test("rejects fork when upstream and target have same owner", async () => {
+      const sameOwnerUpstream: GitHubRepoInfo = {
+        type: "github",
+        gitUrl: "git@github.com:test-org/original-repo.git",
+        owner: "test-org",
+        repo: "original-repo",
+        host: "github.com",
+      };
+
+      const { mock: executor } = createMockExecutor({
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+
+      await assert.rejects(
+        () => provider.fork!(sameOwnerUpstream, mockRepoInfo),
+        /Cannot fork test-org\/original-repo to the same owner/
+      );
+    });
   });
 
   describe("receiveMigration()", () => {

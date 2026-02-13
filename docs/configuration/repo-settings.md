@@ -39,6 +39,7 @@ xfg settings -c config.yaml
 
 | Setting | Type | Description |
 | ------- | ---- | ----------- |
+| `description` | string | Repository description |
 | `hasIssues` | boolean | Enable/disable GitHub Issues |
 | `hasProjects` | boolean | Enable/disable GitHub Projects |
 | `hasWiki` | boolean | Enable/disable the repository wiki |

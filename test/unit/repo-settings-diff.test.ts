@@ -140,6 +140,48 @@ describe("diffRepoSettings", () => {
     });
   });
 
+  test("should detect changed description", () => {
+    const current: CurrentRepoSettings = { description: "Old description" };
+    const desired: GitHubRepoSettings = {
+      description: "New description",
+    };
+
+    const changes = diffRepoSettings(current, desired);
+
+    assert.equal(changes.length, 1);
+    assert.deepEqual(changes[0], {
+      property: "description",
+      action: "change",
+      oldValue: "Old description",
+      newValue: "New description",
+    });
+  });
+
+  test("should detect added description", () => {
+    const current: CurrentRepoSettings = {};
+    const desired: GitHubRepoSettings = {
+      description: "My repo description",
+    };
+
+    const changes = diffRepoSettings(current, desired);
+
+    assert.equal(changes.length, 1);
+    assert.deepEqual(changes[0], {
+      property: "description",
+      action: "add",
+      newValue: "My repo description",
+    });
+  });
+
+  test("should not report unchanged description", () => {
+    const current: CurrentRepoSettings = { description: "Same description" };
+    const desired: GitHubRepoSettings = { description: "Same description" };
+
+    const changes = diffRepoSettings(current, desired);
+
+    assert.equal(changes.length, 0);
+  });
+
   test("should ignore undefined desired values", () => {
     const current: CurrentRepoSettings = { has_wiki: true };
     const desired: GitHubRepoSettings = { hasWiki: undefined };

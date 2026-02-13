@@ -36,11 +36,19 @@ export class AdoMigrationSource implements IMigrationSource {
   async cloneForMigration(repoInfo: RepoInfo, workDir: string): Promise<void> {
     this.assertAdo(repoInfo);
 
-    // Clone with --mirror to get all branches, tags, and refs
     const command = `git clone --mirror ${escapeShellArg(repoInfo.gitUrl)} ${escapeShellArg(workDir)}`;
 
-    await withRetry(() => this.executor.exec(command, process.cwd()), {
-      retries: this.retries,
-    });
+    try {
+      await withRetry(() => this.executor.exec(command, process.cwd()), {
+        retries: this.retries,
+      });
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Failed to clone migration source ${repoInfo.gitUrl}: ${msg}. ` +
+          `Ensure you have authentication configured for Azure DevOps ` +
+          `(e.g., AZURE_DEVOPS_EXT_PAT or git credential helper).`
+      );
+    }
   }
 }
