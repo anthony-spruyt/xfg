@@ -718,18 +718,13 @@ jobs:
 
       - name: Arrange — generate unique repo name and config
         id: arrange
-        run: |
-          REPO_NAME="xfg-lifecycle-action-pat-$(date +%s)-$(openssl rand -hex 3)"
-          echo "repo_name=${REPO_NAME}" >> "$GITHUB_OUTPUT"
-          cat > /tmp/lifecycle-action-pat-config.yaml <<ENDCONFIG
-          id: lifecycle-action-pat-test
-          files:
-            lifecycle-action-test.json:
-              content:
-                createdByAction: true
-          repos:
-            - git: https://github.com/${OWNER}/${REPO_NAME}.git
-          ENDCONFIG
+        run: >-
+          .github/scripts/create-ephemeral-repo-config.sh
+          "action-pat" "${{ env.OWNER }}"
+          "/tmp/lifecycle-action-pat-config.yaml"
+          "lifecycle-action-pat-test"
+          "lifecycle-action-test.json"
+          '{"createdByAction": true}'
 
       - name: Act — run xfg action (create repo via lifecycle)
         uses: ./
@@ -743,33 +738,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           REPO_NAME: ${{ steps.arrange.outputs.repo_name }}
-        run: |
-          REPO="${OWNER}/${REPO_NAME}"
-          echo "Verifying repo ${REPO} exists..."
-          FULL_NAME=$(gh api "repos/${REPO}" --jq '.full_name' 2>/dev/null || true)
-          if [ -z "$FULL_NAME" ]; then
-            echo "ERROR: Repo ${REPO} was not created"
-            exit 1
-          fi
-          echo "Repo ${REPO} created successfully"
-
-          echo "Verifying file exists..."
-          FILE_CONTENT=$(gh api "repos/${REPO}/contents/lifecycle-action-test.json" --jq '.content' | base64 -d)
-          echo "File content: ${FILE_CONTENT}"
-          echo "$FILE_CONTENT" | jq -e '.createdByAction == true'
-          echo "File verified successfully"
+        run: >-
+          .github/scripts/assert-ephemeral-repo.sh
+          "${OWNER}/${REPO_NAME}"
+          "lifecycle-action-test.json"
+          '.createdByAction == true'
 
       - name: Cleanup — delete ephemeral repo
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           REPO_NAME: ${{ steps.arrange.outputs.repo_name }}
-        run: |
-          if [ -n "$REPO_NAME" ]; then
-            REPO="${OWNER}/${REPO_NAME}"
-            echo "Cleaning up ${REPO}..."
-            gh repo delete --yes "${REPO}" 2>/dev/null || echo "Repo already deleted or not found"
-          fi
+        run: .github/scripts/delete-ephemeral-repo.sh "${OWNER}/${REPO_NAME}"
 
   integration-test-action-lifecycle-app:
     needs:
@@ -812,18 +792,13 @@ jobs:
 
       - name: Arrange — generate unique repo name and config
         id: arrange
-        run: |
-          REPO_NAME="xfg-lifecycle-action-app-$(date +%s)-$(openssl rand -hex 3)"
-          echo "repo_name=${REPO_NAME}" >> "$GITHUB_OUTPUT"
-          cat > /tmp/lifecycle-action-app-config.yaml <<ENDCONFIG
-          id: lifecycle-action-app-test
-          files:
-            lifecycle-action-test.json:
-              content:
-                createdByAction: true
-          repos:
-            - git: https://github.com/${OWNER}/${REPO_NAME}.git
-          ENDCONFIG
+        run: >-
+          .github/scripts/create-ephemeral-repo-config.sh
+          "action-app" "${{ env.OWNER }}"
+          "/tmp/lifecycle-action-app-config.yaml"
+          "lifecycle-action-app-test"
+          "lifecycle-action-test.json"
+          '{"createdByAction": true}'
 
       - name: Act — run xfg action (create repo via lifecycle, App auth)
         uses: ./
@@ -839,33 +814,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           REPO_NAME: ${{ steps.arrange.outputs.repo_name }}
-        run: |
-          REPO="${OWNER}/${REPO_NAME}"
-          echo "Verifying repo ${REPO} exists..."
-          FULL_NAME=$(gh api "repos/${REPO}" --jq '.full_name' 2>/dev/null || true)
-          if [ -z "$FULL_NAME" ]; then
-            echo "ERROR: Repo ${REPO} was not created"
-            exit 1
-          fi
-          echo "Repo ${REPO} created successfully"
-
-          echo "Verifying file exists..."
-          FILE_CONTENT=$(gh api "repos/${REPO}/contents/lifecycle-action-test.json" --jq '.content' | base64 -d)
-          echo "File content: ${FILE_CONTENT}"
-          echo "$FILE_CONTENT" | jq -e '.createdByAction == true'
-          echo "File verified successfully"
+        run: >-
+          .github/scripts/assert-ephemeral-repo.sh
+          "${OWNER}/${REPO_NAME}"
+          "lifecycle-action-test.json"
+          '.createdByAction == true'
 
       - name: Cleanup — delete ephemeral repo
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           REPO_NAME: ${{ steps.arrange.outputs.repo_name }}
-        run: |
-          if [ -n "$REPO_NAME" ]; then
-            REPO="${OWNER}/${REPO_NAME}"
-            echo "Cleaning up ${REPO}..."
-            gh repo delete --yes "${REPO}" 2>/dev/null || echo "Repo already deleted or not found"
-          fi
+        run: .github/scripts/delete-ephemeral-repo.sh "${OWNER}/${REPO_NAME}"
 
   # Summary job for branch protection - add jobs to 'needs' array
   summary:

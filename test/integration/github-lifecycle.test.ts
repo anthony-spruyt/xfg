@@ -1,59 +1,20 @@
 import { test, describe, afterEach, after } from "node:test";
 import { strict as assert } from "node:assert";
-import { randomBytes } from "node:crypto";
-import { writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { exec, projectRoot } from "./test-helpers.js";
+import {
+  exec,
+  projectRoot,
+  generateRepoName,
+  deleteRepo,
+  repoExists,
+  isForkedFrom,
+  writeConfig,
+} from "./test-helpers.js";
 
 const OWNER = "anthony-spruyt";
 const FORK_SOURCE = "anthony-spruyt/xfg-fork-source";
-
-function generateRepoName(): string {
-  return `xfg-lifecycle-test-${Date.now()}-${randomBytes(3).toString("hex")}`;
-}
-
-function deleteRepo(repoName: string): void {
-  try {
-    exec(`gh repo delete --yes ${OWNER}/${repoName}`);
-    console.log(`  Cleaned up ${OWNER}/${repoName}`);
-  } catch {
-    console.log(
-      `  Cleanup: ${OWNER}/${repoName} (already deleted or not found)`
-    );
-  }
-}
-
-function repoExists(repoName: string): boolean {
-  try {
-    exec(`gh api repos/${OWNER}/${repoName} --jq '.full_name'`);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function isForkedFrom(repoName: string, upstreamFullName: string): boolean {
-  try {
-    const parentName = exec(
-      `gh api repos/${OWNER}/${repoName} --jq '.parent.full_name'`
-    );
-    return parentName === upstreamFullName;
-  } catch {
-    return false;
-  }
-}
-
-function writeConfig(tmpDir: string, configYaml: string): string {
-  const configPath = join(tmpDir, "lifecycle-test-config.yaml");
-  writeFileSync(configPath, configYaml);
-  return configPath;
-}
-
-// Note: This file uses the exec() helper from test-helpers.ts which wraps
-// execSync. All inputs are controlled test constants (repo names generated
-// from randomBytes, not user input). This is the same pattern used by all
-// existing integration tests in this codebase.
 
 describe("Lifecycle Integration Test (PAT)", () => {
   const reposToDelete: string[] = [];
@@ -63,7 +24,7 @@ describe("Lifecycle Integration Test (PAT)", () => {
 
   afterEach(() => {
     for (const repoName of reposToDelete) {
-      deleteRepo(repoName);
+      deleteRepo(OWNER, repoName);
     }
     reposToDelete.length = 0;
   });
@@ -96,7 +57,10 @@ repos:
     console.log(output);
 
     // Verify repo was created
-    assert.ok(repoExists(repoName), `Repo ${repoName} should exist after sync`);
+    assert.ok(
+      repoExists(OWNER, repoName),
+      `Repo ${repoName} should exist after sync`
+    );
 
     // Verify file was pushed
     const fileContent = exec(
@@ -139,11 +103,14 @@ repos:
     console.log(output);
 
     // Verify repo was created
-    assert.ok(repoExists(repoName), `Repo ${repoName} should exist after sync`);
+    assert.ok(
+      repoExists(OWNER, repoName),
+      `Repo ${repoName} should exist after sync`
+    );
 
     // Verify it's a fork of the source
     assert.ok(
-      isForkedFrom(repoName, FORK_SOURCE),
+      isForkedFrom(OWNER, repoName, FORK_SOURCE),
       `Repo ${repoName} should be a fork of ${FORK_SOURCE}`
     );
 
@@ -181,7 +148,7 @@ repos:
 
     // Verify repo was NOT actually created
     assert.ok(
-      !repoExists(repoName),
+      !repoExists(OWNER, repoName),
       `Repo ${repoName} should NOT exist after dry-run`
     );
 

@@ -1,4 +1,6 @@
 import { execSync } from "node:child_process";
+import { randomBytes } from "node:crypto";
+import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -140,4 +142,79 @@ export async function waitForFileDeleted(
   throw new Error(
     `File ${filePath} still exists in ${repo} after ${timeoutMs}ms`
   );
+}
+
+// --- Lifecycle test helpers ---
+// Shared helpers for ephemeral repo tests (create/fork/migrate).
+// All inputs are controlled test constants (owner, repoName from
+// randomBytes), not user input. Uses the same exec() wrapper above.
+
+/**
+ * Generate a unique ephemeral repo name for lifecycle tests.
+ */
+export function generateRepoName(): string {
+  return `xfg-lifecycle-test-${Date.now()}-${randomBytes(3).toString("hex")}`;
+}
+
+/**
+ * Delete an ephemeral repo. Silently ignores errors (already deleted / not found).
+ */
+export function deleteRepo(
+  owner: string,
+  repoName: string,
+  envOptions?: { env: Record<string, string | undefined> }
+): void {
+  try {
+    exec(`gh repo delete --yes ${owner}/${repoName}`, envOptions);
+    console.log(`  Cleaned up ${owner}/${repoName}`);
+  } catch {
+    console.log(
+      `  Cleanup: ${owner}/${repoName} (already deleted or not found)`
+    );
+  }
+}
+
+/**
+ * Check whether a repo exists via the GitHub API.
+ */
+export function repoExists(
+  owner: string,
+  repoName: string,
+  envOptions?: { env: Record<string, string | undefined> }
+): boolean {
+  try {
+    exec(`gh api repos/${owner}/${repoName} --jq '.full_name'`, envOptions);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check whether a repo is a fork of a given upstream.
+ */
+export function isForkedFrom(
+  owner: string,
+  repoName: string,
+  upstreamFullName: string,
+  envOptions?: { env: Record<string, string | undefined> }
+): boolean {
+  try {
+    const parentName = exec(
+      `gh api repos/${owner}/${repoName} --jq '.parent.full_name'`,
+      envOptions
+    );
+    return parentName === upstreamFullName;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Write a YAML config file and return its path.
+ */
+export function writeConfig(tmpDir: string, configYaml: string): string {
+  const configPath = join(tmpDir, "lifecycle-test-config.yaml");
+  writeFileSync(configPath, configYaml);
+  return configPath;
 }

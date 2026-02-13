@@ -1,10 +1,17 @@
 import { test, describe, afterEach, after } from "node:test";
 import { strict as assert } from "node:assert";
-import { randomBytes } from "node:crypto";
-import { writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { exec, projectRoot } from "./test-helpers.js";
+import {
+  exec,
+  projectRoot,
+  generateRepoName,
+  deleteRepo,
+  repoExists,
+  isForkedFrom,
+  writeConfig,
+} from "./test-helpers.js";
 
 const OWNER = "anthony-spruyt";
 const FORK_SOURCE = "anthony-spruyt/xfg-fork-source";
@@ -22,53 +29,10 @@ if (SKIP_TESTS) {
 // xfg commands must NOT see GH_TOKEN — only App credentials
 const xfgEnv = { cwd: projectRoot, env: { GH_TOKEN: undefined } };
 
-// Note: This file uses the exec() helper from test-helpers.ts which wraps
-// execSync. All inputs are controlled test constants (repo names generated
+// Note: This file uses shared helpers from test-helpers.ts.
+// All inputs are controlled test constants (repo names generated
 // from randomBytes, not user input). This is the same pattern used by all
 // existing integration tests in this codebase.
-
-function generateRepoName(): string {
-  return `xfg-lifecycle-test-${Date.now()}-${randomBytes(3).toString("hex")}`;
-}
-
-function deleteRepo(repoName: string): void {
-  try {
-    // Use GH_TOKEN (from process.env) for cleanup, not App credentials
-    exec(`gh repo delete --yes ${OWNER}/${repoName}`);
-    console.log(`  Cleaned up ${OWNER}/${repoName}`);
-  } catch {
-    console.log(
-      `  Cleanup: ${OWNER}/${repoName} (already deleted or not found)`
-    );
-  }
-}
-
-function repoExists(repoName: string): boolean {
-  try {
-    // Use GH_TOKEN for verification
-    exec(`gh api repos/${OWNER}/${repoName} --jq '.full_name'`);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function isForkedFrom(repoName: string, upstreamFullName: string): boolean {
-  try {
-    const parentName = exec(
-      `gh api repos/${OWNER}/${repoName} --jq '.parent.full_name'`
-    );
-    return parentName === upstreamFullName;
-  } catch {
-    return false;
-  }
-}
-
-function writeConfig(tmpDir: string, configYaml: string): string {
-  const configPath = join(tmpDir, "lifecycle-test-config.yaml");
-  writeFileSync(configPath, configYaml);
-  return configPath;
-}
 
 describe(
   "Lifecycle Integration Test (GitHub App)",
@@ -81,7 +45,7 @@ describe(
 
     afterEach(() => {
       for (const repoName of reposToDelete) {
-        deleteRepo(repoName);
+        deleteRepo(OWNER, repoName);
       }
       reposToDelete.length = 0;
     });
@@ -115,7 +79,7 @@ repos:
 
       // Verify repo was created (using GH_TOKEN for verification)
       assert.ok(
-        repoExists(repoName),
+        repoExists(OWNER, repoName),
         `Repo ${repoName} should exist after sync`
       );
 
@@ -161,13 +125,13 @@ repos:
 
       // Verify repo was created
       assert.ok(
-        repoExists(repoName),
+        repoExists(OWNER, repoName),
         `Repo ${repoName} should exist after sync`
       );
 
       // Verify it's a fork of the source
       assert.ok(
-        isForkedFrom(repoName, FORK_SOURCE),
+        isForkedFrom(OWNER, repoName, FORK_SOURCE),
         `Repo ${repoName} should be a fork of ${FORK_SOURCE}`
       );
 
@@ -207,7 +171,7 @@ repos:
 
       // Verify repo was NOT actually created
       assert.ok(
-        !repoExists(repoName),
+        !repoExists(OWNER, repoName),
         `Repo ${repoName} should NOT exist after dry-run`
       );
 
