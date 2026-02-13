@@ -224,7 +224,7 @@ export async function runSync(
 
     // Check if repo exists, create/fork/migrate if needed
     try {
-      const { outputLines } = await runLifecycleCheck(
+      const { outputLines, lifecycleResult } = await runLifecycleCheck(
         repoConfig,
         repoInfo,
         i,
@@ -240,6 +240,16 @@ export async function runSync(
 
       for (const line of outputLines) {
         logger.info(line);
+      }
+
+      // In dry-run, skip processing repos that don't exist yet
+      if (options.dryRun && lifecycleResult.action !== "existed") {
+        reportResults.push({
+          repoName,
+          success: true,
+          fileChanges: [],
+        });
+        continue;
       }
     } catch (error) {
       logger.error(

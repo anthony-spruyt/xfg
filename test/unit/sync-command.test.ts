@@ -1,5 +1,13 @@
-import { test, describe, beforeEach, afterEach, mock } from "node:test";
+import {
+  test,
+  describe,
+  beforeEach,
+  afterEach,
+  mock,
+  type Mock,
+} from "node:test";
 import { strict as assert } from "node:assert";
+type MockFn = Mock<(...args: unknown[]) => unknown>;
 import { writeFileSync, rmSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { runSync, type SyncOptions } from "../../src/cli/sync-command.js";
@@ -16,6 +24,12 @@ const noopLifecycleManager: IRepoLifecycleManager = {
 const failingLifecycleManager: IRepoLifecycleManager = {
   async ensureRepo() {
     throw new Error("Lifecycle check failed: repo creation error");
+  },
+};
+
+const creatingLifecycleManager: IRepoLifecycleManager = {
+  async ensureRepo(_repoConfig, repoInfo) {
+    return { repoInfo, action: "created" };
   },
 };
 
@@ -199,6 +213,35 @@ repos:
       const output = consoleOutput.join("\n");
       assert.ok(output.includes("Clone failed"));
       assert.equal(exitCode, 1);
+    });
+
+    test("skips repo processing in dry-run when lifecycle would create repo", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+`
+      );
+
+      const mockProcessor = createMockProcessor();
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        () => mockProcessor,
+        creatingLifecycleManager
+      );
+
+      // Processor should NOT be called — repo doesn't exist in dry-run
+      assert.equal(
+        (mockProcessor.process as MockFn).mock.calls.length,
+        0,
+        "processor.process should not be called for non-existent repo in dry-run"
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(output.includes("CREATE"));
     });
 
     test("handles processor exception", async () => {
