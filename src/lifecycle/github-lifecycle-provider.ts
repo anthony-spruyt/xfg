@@ -157,7 +157,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   async fork(
     upstream: RepoInfo,
     target: RepoInfo,
-    _settings?: CreateRepoSettings
+    settings?: CreateRepoSettings
   ): Promise<void> {
     this.assertGitHub(upstream);
     this.assertGitHub(target);
@@ -178,6 +178,42 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     }
 
     parts.push("--fork-name", escapeShellArg(target.repo), "--clone=false");
+
+    const forkCommand = parts.join(" ");
+
+    await withRetry(() => this.executor.exec(forkCommand, process.cwd()), {
+      retries: this.retries,
+    });
+
+    // Apply settings after fork (visibility, description, etc.)
+    if (settings?.visibility || settings?.description) {
+      await this.applyRepoSettings(target, settings);
+    }
+  }
+
+  /**
+   * Apply settings to an existing repo using gh repo edit.
+   */
+  private async applyRepoSettings(
+    repoInfo: GitHubRepoInfo,
+    settings: CreateRepoSettings
+  ): Promise<void> {
+    const parts = [
+      "gh repo edit",
+      escapeShellArg(`${repoInfo.owner}/${repoInfo.repo}`),
+    ];
+
+    if (settings.visibility) {
+      parts.push(
+        "--visibility",
+        settings.visibility,
+        "--accept-visibility-change-consequences"
+      );
+    }
+
+    if (settings.description) {
+      parts.push("--description", escapeShellArg(settings.description));
+    }
 
     const command = parts.join(" ");
 

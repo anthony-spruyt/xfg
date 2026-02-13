@@ -48,10 +48,9 @@ When the target repo doesn't exist, xfg will:
 If the repo already exists, the `upstream` field is ignored.
 
 <!-- markdownlint-disable MD046 -->
-!!! note "Fork visibility"
-    Forked repos inherit visibility from the upstream repo. The `settings.repo.visibility` option
-    does not apply to forks - to change visibility after forking, update the repo settings manually
-    or via xfg settings after the fork is created.
+!!! note "Fork settings"
+    After forking, xfg will apply `settings.repo.visibility` and `settings.repo.description`
+    if configured. This allows you to fork a public repo and make it private, or vice versa.
 <!-- markdownlint-enable MD046 -->
 
 ## Migration (`source`)

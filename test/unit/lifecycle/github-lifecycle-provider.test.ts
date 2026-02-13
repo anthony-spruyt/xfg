@@ -386,6 +386,70 @@ describe("GitHubLifecycleProvider", () => {
       assert.ok(forkCall.command.includes("--org"));
     });
 
+    test("applies visibility settings after fork", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["users/", '{"type": "Organization"}'],
+          ["gh repo fork", ""],
+          ["gh repo edit", ""],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+      await provider.fork!(upstreamRepoInfo, mockRepoInfo, {
+        visibility: "private",
+      });
+
+      // Should call gh repo edit after fork
+      const editCall = calls.find((c) => c.command.includes("gh repo edit"));
+      assert.ok(editCall);
+      assert.ok(editCall.command.includes("--visibility"));
+      assert.ok(editCall.command.includes("private"));
+      assert.ok(
+        editCall.command.includes("--accept-visibility-change-consequences")
+      );
+    });
+
+    test("applies description settings after fork", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["users/", '{"type": "Organization"}'],
+          ["gh repo fork", ""],
+          ["gh repo edit", ""],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+      await provider.fork!(upstreamRepoInfo, mockRepoInfo, {
+        description: "My custom fork",
+      });
+
+      // Should call gh repo edit after fork
+      const editCall = calls.find((c) => c.command.includes("gh repo edit"));
+      assert.ok(editCall);
+      assert.ok(editCall.command.includes("--description"));
+      assert.ok(editCall.command.includes("My custom fork"));
+    });
+
+    test("does not call gh repo edit when no settings provided", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["users/", '{"type": "Organization"}'],
+          ["gh repo fork", ""],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider(executor, 0);
+      await provider.fork!(upstreamRepoInfo, mockRepoInfo);
+
+      // Should NOT call gh repo edit
+      const editCall = calls.find((c) => c.command.includes("gh repo edit"));
+      assert.equal(editCall, undefined);
+    });
+
     test("rejects non-GitHub upstream repo", async () => {
       const adoRepo: AzureDevOpsRepoInfo = {
         type: "azure-devops",
