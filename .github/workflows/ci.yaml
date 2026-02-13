@@ -637,7 +637,7 @@ jobs:
 
       - name: Run lifecycle integration tests (PAT)
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         run: npm run test:integration:github-lifecycle
 
@@ -679,7 +679,7 @@ jobs:
 
       - name: Run lifecycle integration tests (GitHub App)
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           XFG_GITHUB_APP_ID: ${{ vars.TEST_APP_ID }}
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
@@ -739,12 +739,12 @@ jobs:
         with:
           config: /tmp/lifecycle-action-pat-config.yaml
           merge: direct
-          github-token: ${{ secrets.GH_PAT }}
+          github-token: ${{ secrets.GH_PAT_ORG }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
       - name: Assert — verify repo was created
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           REPO_NAME: ${{ steps.arrange.outputs.repo_name }}
         run: >-
           .github/scripts/assert-ephemeral-repo.sh
@@ -755,7 +755,7 @@ jobs:
       - name: Cleanup — delete ephemeral repo
         if: always()
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           REPO_NAME: ${{ steps.arrange.outputs.repo_name }}
         run: .github/scripts/delete-ephemeral-repo.sh "${OWNER}/${REPO_NAME}"
 
@@ -820,7 +820,7 @@ jobs:
 
       - name: Assert — verify repo was created
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           REPO_NAME: ${{ steps.arrange.outputs.repo_name }}
         run: >-
           .github/scripts/assert-ephemeral-repo.sh
@@ -831,7 +831,7 @@ jobs:
       - name: Cleanup — delete ephemeral repo
         if: always()
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           REPO_NAME: ${{ steps.arrange.outputs.repo_name }}
         run: .github/scripts/delete-ephemeral-repo.sh "${OWNER}/${REPO_NAME}"
 
