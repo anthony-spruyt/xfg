@@ -32,6 +32,7 @@ function configToGitHubPayload(
 
   // Map config properties to API properties
   const directMappings: (keyof GitHubRepoSettings)[] = [
+    "description",
     "hasIssues",
     "hasProjects",
     "hasWiki",

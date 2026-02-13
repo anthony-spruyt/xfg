@@ -305,6 +305,20 @@ describe("GitHubRepoSettingsStrategy", () => {
       assert.ok(mockExecutor.commands[0].includes("default_branch"));
     });
 
+    test("should include description in payload", async () => {
+      mockExecutor.setResponse("/repos/test-org/test-repo", "{}");
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      await strategy.updateSettings(githubRepo, {
+        description: "My repo description",
+      });
+
+      assert.equal(mockExecutor.commands.length, 1);
+      assert.ok(mockExecutor.commands[0].includes("-X PATCH"));
+      assert.ok(mockExecutor.commands[0].includes("description"));
+      assert.ok(mockExecutor.commands[0].includes("My repo description"));
+    });
+
     test("should skip update when no settings provided", async () => {
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
       await strategy.updateSettings(githubRepo, {});
