@@ -15,8 +15,11 @@ import {
 
 const OWNER = "anthony-spruyt";
 const FORK_SOURCE = "anthony-spruyt/xfg-fork-source";
+const FORK_SOURCE_OWNER = FORK_SOURCE.split("/")[0];
 const ADO_MIGRATE_SOURCE = "https://dev.azure.com/aspruyt/fxg/_git/fxg-test";
 const HAS_ADO_CREDS = !!process.env.AZURE_DEVOPS_EXT_PAT;
+// Fork requires different owner — skip if upstream and target share the same owner
+const CAN_FORK = FORK_SOURCE_OWNER !== OWNER;
 
 // Skip all tests if GitHub App credentials are not set
 const SKIP_TESTS =
@@ -101,13 +104,16 @@ repos:
       console.log("  Create lifecycle test (App) passed");
     });
 
-    test("fork: sync forks upstream when repo doesn't exist (App auth)", async () => {
-      const repoName = generateRepoName();
-      reposToDelete.push(repoName);
+    test(
+      "fork: sync forks upstream when repo doesn't exist (App auth)",
+      { skip: !CAN_FORK },
+      async () => {
+        const repoName = generateRepoName();
+        reposToDelete.push(repoName);
 
-      const configPath = writeConfig(
-        tmpDir,
-        `id: lifecycle-fork-app-test
+        const configPath = writeConfig(
+          tmpDir,
+          `id: lifecycle-fork-app-test
 files:
   lifecycle-fork-test.json:
     content:
@@ -116,31 +122,32 @@ repos:
   - git: https://github.com/${OWNER}/${repoName}.git
     upstream: https://github.com/${FORK_SOURCE}.git
 `
-      );
+        );
 
-      console.log(
-        `\nForking ${FORK_SOURCE} as ${OWNER}/${repoName} via xfg sync (App)...`
-      );
-      const output = exec(
-        `node dist/cli.js sync --config ${configPath} --merge direct`,
-        xfgEnv
-      );
-      console.log(output);
+        console.log(
+          `\nForking ${FORK_SOURCE} as ${OWNER}/${repoName} via xfg sync (App)...`
+        );
+        const output = exec(
+          `node dist/cli.js sync --config ${configPath} --merge direct`,
+          xfgEnv
+        );
+        console.log(output);
 
-      // Verify repo was created
-      assert.ok(
-        repoExists(OWNER, repoName),
-        `Repo ${repoName} should exist after sync`
-      );
+        // Verify repo was created
+        assert.ok(
+          repoExists(OWNER, repoName),
+          `Repo ${repoName} should exist after sync`
+        );
 
-      // Verify it's a fork of the source
-      assert.ok(
-        isForkedFrom(OWNER, repoName, FORK_SOURCE),
-        `Repo ${repoName} should be a fork of ${FORK_SOURCE}`
-      );
+        // Verify it's a fork of the source
+        assert.ok(
+          isForkedFrom(OWNER, repoName, FORK_SOURCE),
+          `Repo ${repoName} should be a fork of ${FORK_SOURCE}`
+        );
 
-      console.log("  Fork lifecycle test (App) passed");
-    });
+        console.log("  Fork lifecycle test (App) passed");
+      }
+    );
 
     test("create dry-run: shows CREATE but doesn't actually create repo (App auth)", async () => {
       const repoName = generateRepoName();
