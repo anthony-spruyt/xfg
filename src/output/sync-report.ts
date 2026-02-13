@@ -100,20 +100,20 @@ export function formatSyncReportMarkdown(
       continue;
     }
 
-    diffLines.push(`~ ${repo.repoName}`);
+    diffLines.push(`@@ ${repo.repoName} @@`);
 
     for (const file of repo.files) {
       if (file.action === "create") {
-        diffLines.push(`    + ${file.path}`);
+        diffLines.push(`+ ${file.path}`);
       } else if (file.action === "update") {
-        diffLines.push(`    ~ ${file.path}`);
+        diffLines.push(`! ${file.path}`);
       } else if (file.action === "delete") {
-        diffLines.push(`    - ${file.path}`);
+        diffLines.push(`- ${file.path}`);
       }
     }
 
     if (repo.error) {
-      diffLines.push(`    ! Error: ${repo.error}`);
+      diffLines.push(`- Error: ${repo.error}`);
     }
   }
 

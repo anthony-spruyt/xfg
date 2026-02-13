@@ -224,58 +224,51 @@ function formatValuePlain(val: unknown): string {
   return String(val);
 }
 
-function formatRulesetConfigPlain(config: Ruleset, indent: number): string[] {
+function formatRulesetConfigPlain(config: Ruleset): string[] {
   const lines: string[] = [];
 
-  function renderObject(
-    obj: Record<string, unknown>,
-    currentIndent: number
-  ): void {
+  function renderObject(obj: Record<string, unknown>, depth: number): void {
     for (const [k, v] of Object.entries(obj)) {
-      renderValue(k, v, currentIndent);
+      renderValue(k, v, depth);
     }
   }
 
-  function renderValue(
-    key: string,
-    value: unknown,
-    currentIndent: number
-  ): void {
-    const pad = "    ".repeat(currentIndent);
+  function renderValue(key: string, value: unknown, depth: number): void {
+    const indent = "  ".repeat(depth);
     if (value === null || value === undefined) return;
 
     if (Array.isArray(value)) {
       if (value.length === 0) {
-        lines.push(`${pad}+ ${key}: []`);
+        lines.push(`+${indent} ${key}: []`);
       } else if (value.every((v) => typeof v !== "object")) {
         lines.push(
-          `${pad}+ ${key}: [${value.map((v) => (typeof v === "string" ? `"${v}"` : String(v))).join(", ")}]`
+          `+${indent} ${key}: [${value.map((v) => (typeof v === "string" ? `"${v}"` : String(v))).join(", ")}]`
         );
       } else {
-        lines.push(`${pad}+ ${key}:`);
+        lines.push(`+${indent} ${key}:`);
         for (let i = 0; i < value.length; i++) {
           const item = value[i];
           if (typeof item === "object" && item !== null) {
             const obj = item as Record<string, unknown>;
             const typeLabel = "type" in obj ? ` (${obj.type})` : "";
-            lines.push(`${pad}    + [${i}]${typeLabel}:`);
-            renderObject(obj, currentIndent + 2);
+            lines.push(`+${indent}   [${i}]${typeLabel}:`);
+            renderObject(obj, depth + 2);
           } else {
-            lines.push(`${pad}    + ${formatValuePlain(item)}`);
+            lines.push(`+${indent}   ${formatValuePlain(item)}`);
           }
         }
       }
     } else if (typeof value === "object") {
-      lines.push(`${pad}+ ${key}:`);
-      renderObject(value as Record<string, unknown>, currentIndent + 1);
+      lines.push(`+${indent} ${key}:`);
+      renderObject(value as Record<string, unknown>, depth + 1);
     } else {
-      lines.push(`${pad}+ ${key}: ${formatValuePlain(value)}`);
+      lines.push(`+${indent} ${key}: ${formatValuePlain(value)}`);
     }
   }
 
   for (const [key, value] of Object.entries(config)) {
     if (key === "name") continue;
-    renderValue(key, value, indent);
+    renderValue(key, value, 1);
   }
 
   return lines;
@@ -311,7 +304,7 @@ export function formatSettingsReportMarkdown(
       continue;
     }
 
-    diffLines.push(`~ ${repo.repoName}`);
+    diffLines.push(`@@ ${repo.repoName} @@`);
 
     for (const setting of repo.settings) {
       // Skip settings where both values are undefined
@@ -320,46 +313,44 @@ export function formatSettingsReportMarkdown(
       }
       if (setting.action === "add") {
         diffLines.push(
-          `    + ${setting.name}: ${formatValuePlain(setting.newValue)}`
+          `+ ${setting.name}: ${formatValuePlain(setting.newValue)}`
         );
       } else {
         diffLines.push(
-          `    ~ ${setting.name}: ${formatValuePlain(setting.oldValue)} → ${formatValuePlain(setting.newValue)}`
+          `! ${setting.name}: ${formatValuePlain(setting.oldValue)} → ${formatValuePlain(setting.newValue)}`
         );
       }
     }
 
     for (const ruleset of repo.rulesets) {
       if (ruleset.action === "create") {
-        diffLines.push(`    + ruleset "${ruleset.name}"`);
+        diffLines.push(`+ ruleset "${ruleset.name}"`);
         if (ruleset.config) {
-          diffLines.push(...formatRulesetConfigPlain(ruleset.config, 2));
+          diffLines.push(...formatRulesetConfigPlain(ruleset.config));
         }
       } else if (ruleset.action === "update") {
-        diffLines.push(`    ~ ruleset "${ruleset.name}"`);
+        diffLines.push(`! ruleset "${ruleset.name}"`);
         if (ruleset.propertyDiffs && ruleset.propertyDiffs.length > 0) {
           for (const diff of ruleset.propertyDiffs) {
             const path = diff.path.join(".");
             if (diff.action === "add") {
-              diffLines.push(
-                `        + ${path}: ${formatValuePlain(diff.newValue)}`
-              );
+              diffLines.push(`+   ${path}: ${formatValuePlain(diff.newValue)}`);
             } else if (diff.action === "change") {
               diffLines.push(
-                `        ~ ${path}: ${formatValuePlain(diff.oldValue)} → ${formatValuePlain(diff.newValue)}`
+                `!   ${path}: ${formatValuePlain(diff.oldValue)} → ${formatValuePlain(diff.newValue)}`
               );
             } else if (diff.action === "remove") {
-              diffLines.push(`        - ${path}`);
+              diffLines.push(`-   ${path}`);
             }
           }
         }
       } else if (ruleset.action === "delete") {
-        diffLines.push(`    - ruleset "${ruleset.name}"`);
+        diffLines.push(`- ruleset "${ruleset.name}"`);
       }
     }
 
     if (repo.error) {
-      diffLines.push(`    ! Error: ${repo.error}`);
+      diffLines.push(`- Error: ${repo.error}`);
     }
   }
 
