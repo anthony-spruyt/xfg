@@ -207,6 +207,11 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     await withRetry(() => this.executor.exec(command, this.cwd), {
       retries: this.retries,
     });
+
+    // Push an empty initial commit to establish the default branch.
+    // Empty repos (no commits/branches) break clone→push workflows
+    // because HEAD doesn't resolve.
+    await this.initializeDefaultBranch(repoInfo, token);
   }
 
   async fork(
@@ -391,5 +396,47 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     await withRetry(() => this.executor.exec(command, this.cwd), {
       retries: this.retries,
     });
+  }
+
+  /**
+   * Create an empty initial commit on the default branch via the GitHub API.
+   * This establishes the default branch so subsequent clone→push workflows work
+   * (empty repos have no branches, causing HEAD to be unresolvable).
+   */
+  private async initializeDefaultBranch(
+    repoInfo: GitHubRepoInfo,
+    token?: string
+  ): Promise<void> {
+    const tokenPrefix = this.buildTokenPrefix(token);
+    const hostnameFlag = getHostnameFlag(repoInfo);
+    const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
+    const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+
+    // Well-known SHA of git's empty tree object
+    const emptyTreeSha = "4b825dc642cb6eb9a060e54bf899d15006eb9aa9";
+
+    // Create an empty commit (no files) pointing to the empty tree
+    const commitSha = (
+      await withRetry(
+        () =>
+          this.executor.exec(
+            `printf '${JSON.stringify({ message: "Initial commit", tree: emptyTreeSha, parents: [] })}' | ` +
+              `${tokenPrefix}gh api ${hostnamePart}${apiPath}/git/commits --input - --jq '.sha'`,
+            this.cwd
+          ),
+        { retries: this.retries }
+      )
+    ).trim();
+
+    // Create the default branch ref pointing to the empty commit
+    await withRetry(
+      () =>
+        this.executor.exec(
+          `${tokenPrefix}gh api ${hostnamePart}${apiPath}/git/refs ` +
+            `-f ref=refs/heads/main -f sha=${escapeShellArg(commitSha)}`,
+          this.cwd
+        ),
+      { retries: this.retries }
+    );
   }
 }

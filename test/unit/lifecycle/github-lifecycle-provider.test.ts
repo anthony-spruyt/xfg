@@ -150,15 +150,20 @@ describe("GitHubLifecycleProvider", () => {
   });
 
   describe("create()", () => {
-    test("creates repo with gh repo create", async () => {
+    test("creates repo with gh repo create and initializes default branch", async () => {
       const { mock: executor, calls } = createMockExecutor({
         defaultResponse: "",
+        responses: new Map<string, string | Error>([
+          ["git/commits", '{"sha": "abc123"}'],
+          ["git/refs", '{"ref": "refs/heads/main"}'],
+        ]),
       });
 
       const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
       await provider.create(mockRepoInfo);
 
-      assert.equal(calls.length, 1);
+      // calls[0] = gh repo create, calls[1] = git/commits, calls[2] = git/refs
+      assert.equal(calls.length, 3);
       assert.ok(calls[0].command.includes("gh repo create"));
       assert.ok(calls[0].command.includes("'test-org/test-repo'"));
     });
@@ -250,6 +255,34 @@ describe("GitHubLifecycleProvider", () => {
       await provider.create(mockRepoInfo, { hasIssues: true });
 
       assert.ok(!calls[0].command.includes("--disable-issues"));
+    });
+
+    test("initializes default branch with empty commit after create", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        defaultResponse: "",
+        responses: new Map<string, string | Error>([
+          ["git/commits", '{"sha": "abc123"}'],
+          ["git/refs", '{"ref": "refs/heads/main"}'],
+        ]),
+      });
+
+      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      await provider.create(mockRepoInfo);
+
+      // calls[0] = gh repo create, calls[1] = git/commits API, calls[2] = git/refs API
+      assert.equal(calls.length, 3);
+      assert.ok(
+        calls[1].command.includes("git/commits"),
+        "Should create empty commit via API"
+      );
+      assert.ok(
+        calls[2].command.includes("git/refs"),
+        "Should create default branch ref via API"
+      );
+      assert.ok(
+        calls[2].command.includes("refs/heads/main"),
+        "Should create main branch"
+      );
     });
 
     test("rejects non-GitHub repo for create", async () => {
@@ -697,15 +730,23 @@ describe("GitHubLifecycleProvider", () => {
     test("create() prefixes command with GH_TOKEN when token provided", async () => {
       const { mock: executor, calls } = createMockExecutor({
         defaultResponse: "",
+        responses: new Map<string, string | Error>([
+          ["git/commits", '{"sha": "abc123"}'],
+          ["git/refs", '{"ref": "refs/heads/main"}'],
+        ]),
       });
 
       const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
       await provider.create(mockRepoInfo, undefined, "ghs_test_token");
 
-      assert.equal(calls.length, 1);
+      // calls[0] = gh repo create, calls[1] = git/commits, calls[2] = git/refs
+      assert.equal(calls.length, 3);
       assert.ok(
         calls[0].command.startsWith("GH_TOKEN='ghs_test_token' gh repo create")
       );
+      // Token should also be used for the initialization API calls
+      assert.ok(calls[1].command.includes("GH_TOKEN='ghs_test_token'"));
+      assert.ok(calls[2].command.includes("GH_TOKEN='ghs_test_token'"));
     });
 
     test("receiveMigration() prefixes command with GH_TOKEN when token provided", async () => {
