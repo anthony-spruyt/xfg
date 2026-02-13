@@ -658,6 +658,38 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(!commands[0].includes("insteadOf"), "Should not have -c flag");
     });
 
+    it("getDefaultBranch falls back to main when remote HEAD is (unknown) for empty repo", async () => {
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          if (cmd.includes("remote show origin")) {
+            return "* remote origin\n  HEAD branch: (unknown)\n";
+          }
+          if (cmd.includes("rev-parse --verify origin/main")) {
+            throw new Error("not found");
+          }
+          if (cmd.includes("rev-parse --verify origin/master")) {
+            throw new Error("not found");
+          }
+          return "";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps, {
+        token: "test-token",
+        host: "github.com",
+        owner: "owner",
+        repo: "repo",
+      });
+
+      const result = await authOps.getDefaultBranch();
+
+      assert.equal(result.branch, "main");
+      assert.equal(result.method, "fallback default");
+    });
+
     it("getDefaultBranch falls back to origin/main when remote show fails", async () => {
       let _callCount = 0;
       const mockExecutor = {

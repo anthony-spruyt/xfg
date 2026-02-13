@@ -142,7 +142,7 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
     try {
       const remoteInfo = await this.execWithRetry(`git remote show origin`);
       const match = remoteInfo.match(/HEAD branch: (\S+)/);
-      if (match) {
+      if (match && match[1] !== "(unknown)") {
         return { branch: match[1], method: "remote HEAD" };
       }
     } catch {
