@@ -195,7 +195,7 @@ describe("formatSyncReportMarkdown", () => {
     );
   });
 
-  test("wraps output in HTML pre block with colored spans", () => {
+  test("wraps output in diff code block", () => {
     const report: SyncReport = {
       repos: [
         {
@@ -213,7 +213,7 @@ describe("formatSyncReportMarkdown", () => {
 
     const markdown = formatSyncReportMarkdown(report, false);
 
-    assert.ok(markdown.includes("<pre>"), "should have HTML pre block");
+    assert.ok(markdown.includes("```diff"), "should have diff code block");
     assert.ok(markdown.includes("org/repo"), "should include repo name");
     assert.ok(markdown.includes("ci.yml"), "should include file");
   });

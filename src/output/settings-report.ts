@@ -6,13 +6,6 @@ import {
 } from "../settings/rulesets/formatter.js";
 import type { Ruleset } from "../config/index.js";
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
 export interface SettingsReport {
   repos: RepoChanges[];
   totals: {
@@ -311,9 +304,7 @@ export function formatSettingsReportMarkdown(
       continue;
     }
 
-    diffLines.push(
-      `<span style="color:#d29922">~ ${escapeHtml(repo.repoName)}</span>`
-    );
+    diffLines.push(`@@ ${repo.repoName} @@`);
 
     for (const setting of repo.settings) {
       // Skip settings where both values are undefined
@@ -322,67 +313,51 @@ export function formatSettingsReportMarkdown(
       }
       if (setting.action === "add") {
         diffLines.push(
-          `<span style="color:#3fb950">    + ${escapeHtml(setting.name)}: ${escapeHtml(formatValuePlain(setting.newValue))}</span>`
+          `+ ${setting.name}: ${formatValuePlain(setting.newValue)}`
         );
       } else {
         diffLines.push(
-          `<span style="color:#d29922">    ~ ${escapeHtml(setting.name)}: ${escapeHtml(formatValuePlain(setting.oldValue))} → ${escapeHtml(formatValuePlain(setting.newValue))}</span>`
+          `! ${setting.name}: ${formatValuePlain(setting.oldValue)} → ${formatValuePlain(setting.newValue)}`
         );
       }
     }
 
     for (const ruleset of repo.rulesets) {
       if (ruleset.action === "create") {
-        diffLines.push(
-          `<span style="color:#3fb950">    + ruleset "${escapeHtml(ruleset.name)}"</span>`
-        );
+        diffLines.push(`+ ruleset "${ruleset.name}"`);
         if (ruleset.config) {
-          for (const line of formatRulesetConfigPlain(ruleset.config)) {
-            diffLines.push(
-              `<span style="color:#3fb950">${escapeHtml(line)}</span>`
-            );
-          }
+          diffLines.push(...formatRulesetConfigPlain(ruleset.config));
         }
       } else if (ruleset.action === "update") {
-        diffLines.push(
-          `<span style="color:#d29922">    ~ ruleset "${escapeHtml(ruleset.name)}"</span>`
-        );
+        diffLines.push(`! ruleset "${ruleset.name}"`);
         if (ruleset.propertyDiffs && ruleset.propertyDiffs.length > 0) {
           for (const diff of ruleset.propertyDiffs) {
             const path = diff.path.join(".");
             if (diff.action === "add") {
-              diffLines.push(
-                `<span style="color:#3fb950">        + ${escapeHtml(path)}: ${escapeHtml(formatValuePlain(diff.newValue))}</span>`
-              );
+              diffLines.push(`+   ${path}: ${formatValuePlain(diff.newValue)}`);
             } else if (diff.action === "change") {
               diffLines.push(
-                `<span style="color:#d29922">        ~ ${escapeHtml(path)}: ${escapeHtml(formatValuePlain(diff.oldValue))} → ${escapeHtml(formatValuePlain(diff.newValue))}</span>`
+                `!   ${path}: ${formatValuePlain(diff.oldValue)} → ${formatValuePlain(diff.newValue)}`
               );
             } else if (diff.action === "remove") {
-              diffLines.push(
-                `<span style="color:#f85149">        - ${escapeHtml(path)}</span>`
-              );
+              diffLines.push(`-   ${path}`);
             }
           }
         }
       } else if (ruleset.action === "delete") {
-        diffLines.push(
-          `<span style="color:#f85149">    - ruleset "${escapeHtml(ruleset.name)}"</span>`
-        );
+        diffLines.push(`- ruleset "${ruleset.name}"`);
       }
     }
 
     if (repo.error) {
-      diffLines.push(
-        `<span style="color:#f85149">    ! Error: ${escapeHtml(repo.error)}</span>`
-      );
+      diffLines.push(`- Error: ${repo.error}`);
     }
   }
 
   if (diffLines.length > 0) {
-    lines.push("<pre>");
+    lines.push("```diff");
     lines.push(...diffLines);
-    lines.push("</pre>");
+    lines.push("```");
     lines.push("");
   }
 

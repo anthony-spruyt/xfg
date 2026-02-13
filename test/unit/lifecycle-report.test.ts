@@ -333,7 +333,7 @@ describe("formatLifecycleReportMarkdown", () => {
     assert.ok(!markdown.includes("Dry Run"), "should not mention dry run");
   });
 
-  test("wraps output in HTML pre block with colored spans", () => {
+  test("wraps output in diff code block", () => {
     const report: LifecycleReport = {
       actions: [
         { repoName: "org/new-repo", action: "created" },
@@ -348,14 +348,14 @@ describe("formatLifecycleReportMarkdown", () => {
 
     const markdown = formatLifecycleReportMarkdown(report, false);
 
-    assert.ok(markdown.includes("<pre>"), "should have HTML pre block");
+    assert.ok(markdown.includes("```diff"), "should have diff code block");
     assert.ok(
       markdown.includes("+ CREATE org/new-repo"),
       "should include created repo"
     );
     assert.ok(
-      markdown.includes("+ FORK octocat/Spoon-Knife -&gt; org/my-fork"),
-      "should include forked repo with HTML entity arrow"
+      markdown.includes("+ FORK octocat/Spoon-Knife -> org/my-fork"),
+      "should include forked repo"
     );
   });
 
@@ -402,9 +402,9 @@ describe("formatLifecycleReportMarkdown", () => {
 
     assert.ok(
       markdown.includes(
-        "+ MIGRATE https://dev.azure.com/org/proj/_git/repo -&gt; org/migrated"
+        "+ MIGRATE https://dev.azure.com/org/proj/_git/repo -> org/migrated"
       ),
-      "should include migrate line with source and target (HTML entity arrow)"
+      "should include migrate line with source and target"
     );
   });
 
@@ -480,19 +480,17 @@ describe("formatLifecycleReportMarkdown", () => {
 
     assert.ok(markdown.includes("## Lifecycle Summary (Dry Run)"));
     assert.ok(markdown.includes("[!WARNING]"));
-    assert.ok(markdown.includes("<pre>"));
+    assert.ok(markdown.includes("```diff"));
     assert.ok(markdown.includes("+ CREATE org/new-repo"));
     assert.ok(markdown.includes("    visibility: private"));
-    assert.ok(
-      markdown.includes("+ FORK octocat/Spoon-Knife -&gt; org/my-fork")
-    );
+    assert.ok(markdown.includes("+ FORK octocat/Spoon-Knife -> org/my-fork"));
     assert.ok(
       !markdown.includes("org/existing"),
       "should not include existed entry"
     );
     assert.ok(
       markdown.includes(
-        "+ MIGRATE https://dev.azure.com/org/proj/_git/repo -&gt; org/migrated"
+        "+ MIGRATE https://dev.azure.com/org/proj/_git/repo -> org/migrated"
       )
     );
     assert.ok(markdown.includes("**Plan: 3 repos"));

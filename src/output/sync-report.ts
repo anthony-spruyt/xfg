@@ -2,13 +2,6 @@
 import { appendFileSync } from "node:fs";
 import chalk from "chalk";
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
 export interface SyncReport {
   repos: RepoFileChanges[];
   totals: {
@@ -99,8 +92,7 @@ export function formatSyncReportMarkdown(
     lines.push("");
   }
 
-  // Colored diff output using HTML <pre> with inline styles
-  // Colors: green (#3fb950) for creates, yellow (#d29922) for changes, red (#f85149) for deletes
+  // Diff block
   const diffLines: string[] = [];
 
   for (const repo of report.repos) {
@@ -108,37 +100,27 @@ export function formatSyncReportMarkdown(
       continue;
     }
 
-    diffLines.push(
-      `<span style="color:#d29922">~ ${escapeHtml(repo.repoName)}</span>`
-    );
+    diffLines.push(`@@ ${repo.repoName} @@`);
 
     for (const file of repo.files) {
       if (file.action === "create") {
-        diffLines.push(
-          `<span style="color:#3fb950">    + ${escapeHtml(file.path)}</span>`
-        );
+        diffLines.push(`+ ${file.path}`);
       } else if (file.action === "update") {
-        diffLines.push(
-          `<span style="color:#d29922">    ~ ${escapeHtml(file.path)}</span>`
-        );
+        diffLines.push(`! ${file.path}`);
       } else if (file.action === "delete") {
-        diffLines.push(
-          `<span style="color:#f85149">    - ${escapeHtml(file.path)}</span>`
-        );
+        diffLines.push(`- ${file.path}`);
       }
     }
 
     if (repo.error) {
-      diffLines.push(
-        `<span style="color:#f85149">    ! Error: ${escapeHtml(repo.error)}</span>`
-      );
+      diffLines.push(`- Error: ${repo.error}`);
     }
   }
 
   if (diffLines.length > 0) {
-    lines.push("<pre>");
+    lines.push("```diff");
     lines.push(...diffLines);
-    lines.push("</pre>");
+    lines.push("```");
     lines.push("");
   }
 
