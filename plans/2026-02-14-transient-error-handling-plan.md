@@ -102,7 +102,7 @@ Add to the `describe("commit")` block. The existing mock executor already suppor
 
 - Test 1: "should retry GraphQL API call on transient network error" — GraphQL call throws `"Connection timed out"` on first attempt, succeeds on second. Assert `graphqlCallCount >= 2` and result SHA is correct.
 - Test 2: "should not retry GraphQL API call on permanent error" — GraphQL call always throws `"gh: Authentication failed (HTTP 401)"`. Assert `graphqlCallCount === 1`.
-- Test 3: "should not waste retries on OID mismatch errors" — GraphQL call always throws `"Expected branch to point to abc123 but it points to xyz789"`. Assert `graphqlCallCount === 1` (inner `withRetry` treats OID mismatch as permanent, letting the outer retry loop handle it with a fresh OID).
+- Test 3: "should not waste inner retries on OID mismatch errors" — GraphQL call throws `"Expected branch to point to abc123 but it points to xyz789"` on first call, succeeds on second call. Use `retries: 1` in commit options (1 outer retry). Assert `graphqlCallCount === 2` (1 failed OID mismatch + 1 success = no inner retry waste). Without the custom permanent patterns, the inner `withRetry` would retry 3 times with the stale OID, resulting in 4+ total calls.
 
 **Step 2: Run test to verify it fails**
 
