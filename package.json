@@ -1,6 +1,6 @@
 {
   "name": "@aspruyt/xfg",
-  "version": "3.9.5",
+  "version": "3.9.6",
   "description": "Manage files, settings, and repositories across GitHub, Azure DevOps, and GitLab — declaratively, from a single YAML config",
   "type": "module",
   "main": "dist/index.js",
