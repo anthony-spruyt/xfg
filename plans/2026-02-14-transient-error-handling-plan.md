@@ -19,7 +19,7 @@
 
 **Step 1: Write failing test for transient error retry**
 
-Add a `describe("retry behavior")` block at the end of the top-level `describe("GitHubRepoSettingsStrategy")` block. Tests use inline `ICommandExecutor` implementations for precise call-count tracking:
+Add a `describe("retry behavior")` block at the end of the top-level `describe("GitHubRepoSettingsStrategy")` block. Tests use inline `ICommandExecutor` implementations for precise call-count tracking. Note: the `ICommandExecutor` interface requires the signature `exec(command: string, cwd: string, options?: ExecOptions): Promise<string>` — include the optional third parameter for type correctness:
 
 - Test 1: "should retry on transient error and succeed" — executor throws `"Connection timed out"` on first PATCH call, succeeds on second. Assert `callCount >= 2`.
 - Test 2: "should not retry on permanent error" — executor always throws `"gh: Not Found (HTTP 404)"` on PATCH. Assert `callCount === 1`.
@@ -33,7 +33,7 @@ Expected: FAIL — "should retry on transient error and succeed" fails because `
 **Step 3: Add withRetry to ghApi()**
 
 - Add import: `import { withRetry } from "../../shared/retry-utils.js";`
-- In `ghApi()`, wrap both `return await this.executor...` calls with `withRetry(() => this.executor...)`
+- In `ghApi()`, wrap both `return await this.executor.exec(command, process.cwd())` calls with `withRetry(() => this.executor.exec(command, process.cwd()))`. Note: the existing code uses `process.cwd()` (not `workDir`) as the cwd argument.
 
 **Step 4: Run test to verify it passes**
 
@@ -60,7 +60,7 @@ git commit -m "feat: add transient error retry to GitHubRepoSettingsStrategy (#4
 
 **Step 1: Write failing test for transient error retry**
 
-Add a `describe("retry behavior")` block at the end of the `describe("GitHubRulesetStrategy")` block. Tests use inline `ICommandExecutor` implementations:
+Add a `describe("retry behavior")` block at the end of the `describe("GitHubRulesetStrategy")` block. Tests use inline `ICommandExecutor` implementations (same signature note as Task 1 — include optional `options?: ExecOptions` parameter):
 
 - Test 1: "should retry on transient error and succeed" — executor throws `"Connection timed out"` on first `/rulesets` call, returns `"[]"` on second. Assert `callCount >= 2`.
 - Test 2: "should not retry on permanent error" — executor always throws `"gh: Not Found (HTTP 404)"` for `/rulesets`. Assert `callCount === 1`.
@@ -73,7 +73,7 @@ Expected: FAIL
 **Step 3: Add withRetry to ghApi()**
 
 - Add import: `import { withRetry } from "../../shared/retry-utils.js";`
-- In `ghApi()`, wrap both `return await this.executor...` calls with `withRetry(() => this.executor...)`
+- In `ghApi()`, wrap both `return await this.executor.exec(command, process.cwd())` calls with `withRetry(() => this.executor.exec(command, process.cwd()))`. Note: the existing code uses `process.cwd()` (not `workDir`) as the cwd argument.
 
 **Step 4: Run test to verify it passes**
 
