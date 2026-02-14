@@ -1,11 +1,8 @@
 # xfg
 
-A CLI tool for repository-as-code. Sync files and manage settings across GitHub, Azure DevOps, and GitLab.
+Manage files, settings, and repositories across GitHub, Azure DevOps, and GitLab — declaratively, from a single YAML config.
 
-**Two commands, one config:**
-
-- **`xfg sync`** - Sync JSON, YAML, or text files across repos via PRs
-- **`xfg settings`** - Manage GitHub repository settings and rulesets declaratively
+Define your organization's standards once. xfg creates PRs to sync config files, applies repository settings and rulesets via API, and can even create, fork, or migrate repositories — all from one config file.
 
 ## Quick Start
 
@@ -16,8 +13,18 @@ npm install -g @aspruyt/xfg
 # Authenticate (GitHub)
 gh auth login
 
-# Create config.yaml
-cat > config.yaml << 'EOF'
+# Sync files across repos
+xfg sync --config ./config.yaml
+
+# Apply repository settings and rulesets
+xfg settings --config ./config.yaml
+```
+
+### Example Config
+
+```yaml
+id: my-org-standards
+
 files:
   .prettierrc.json:
     content:
@@ -25,11 +32,23 @@ files:
       singleQuote: true
       tabWidth: 2
 
+  ".github/workflows/ci.yaml":
+    content:
+      name: CI
+      on: [push, pull_request]
+      jobs:
+        build:
+          runs-on: ubuntu-latest
+          steps:
+            - uses: actions/checkout@v4
+            - run: npm ci && npm test
+
 settings:
   repo:
     allowSquashMerge: true
     deleteBranchOnMerge: true
     vulnerabilityAlerts: true
+    secretScanning: true
 
   rulesets:
     main-protection:
@@ -43,71 +62,160 @@ settings:
         - type: pull_request
           parameters:
             requiredApprovingReviewCount: 1
+        - type: required_status_checks
+          parameters:
+            requiredStatusChecks:
+              - context: "ci/build"
 
 repos:
   - git:
       - git@github.com:your-org/frontend-app.git
       - git@github.com:your-org/backend-api.git
       - git@github.com:your-org/shared-lib.git
-EOF
-
-# Sync files
-xfg sync --config ./config.yaml
-
-# Apply rulesets
-xfg settings --config ./config.yaml
 ```
 
-**Result:** PRs are created with `.prettierrc.json` files, and all repos get standardized merge options, security settings, and branch protection rules.
+**Result:** PRs are created with `.prettierrc.json` and CI workflow files, repos get standardized merge options, security settings, and branch protection rulesets.
 
 ## Features
 
 ### File Sync (`xfg sync`)
 
-- **Multi-File Sync** - Sync multiple config files in a single run
-- **Multi-Format Output** - JSON, YAML, or plain text based on filename extension
+- **Multi-Format Output** - JSON, JSON5, YAML, or plain text based on filename extension
 - **Subdirectory Support** - Sync files to any path (e.g., `.github/workflows/ci.yaml`)
-- **Text Files** - Sync `.gitignore`, `.markdownlintignore`, etc. with string or lines array
+- **Text Files** - Sync `.gitignore`, `.editorconfig`, shell scripts, etc.
 - **File References** - Use `@path/to/file` to load content from external template files
-- **Content Inheritance** - Define base config once, override per-repo as needed
-- **Multi-Repo Targeting** - Apply same config to multiple repos with array syntax
-- **Environment Variables** - Use `${VAR}` syntax for dynamic values
-- **Merge Strategies** - Control how arrays merge (replace, append, prepend)
-- **Override Mode** - Skip merging entirely for specific repos
+- **Content Inheritance** - Define base config once, [override per-repo](configuration/inheritance.md) as needed
+- **Flexible Opt-Out** - Exclude specific files per-repo, or use [`inherit: false`](configuration/inheritance.md#skipping-all-inherited-files) to skip all inherited files
+- **Environment Variables** - Use `${VAR}`, `${VAR:-default}`, or `${VAR:?error}` for dynamic values
+- **Merge Strategies** - Control how arrays merge ([replace, append, prepend](configuration/merge-strategies.md))
+- **Orphan Deletion** - Remove files from repos when [removed from config](configuration/index.md#delete-orphaned-files)
+- **YAML Comments** - Add [header comments and schema directives](configuration/content-types.md#yaml-comments) to YAML files
 - **Empty Files** - Create files with no content (e.g., `.prettierignore`)
-- **YAML Comments** - Add header comments and schema directives to YAML files
+- **Create-Only Mode** - Only create files if they don't exist, never overwrite
 
-### GitHub Settings (`xfg settings`)
+### Templating (`${xfg:...}`)
 
-#### Repository Settings
+Generate repo-specific content from a single template using [xfg template variables](configuration/templating.md):
 
-- **Merge Options** - Control squash, rebase, and merge commit strategies; auto-delete branches
-- **Security Settings** - Enable Dependabot alerts, automated security fixes, secret scanning
-- **Feature Toggles** - Enable/disable Issues, Wiki, Projects, Discussions
-- **Visibility Control** - Manage public/private/internal visibility
+```yaml
+files:
+  README.md:
+    template: true
+    vars:
+      team: platform
+    content: |
+      # ${xfg:repo.name}
+      Owned by ${xfg:team} | Platform: ${xfg:repo.platform}
+```
+
+**Built-in variables:** `repo.name`, `repo.owner`, `repo.fullName`, `repo.url`, `repo.platform`, `repo.host`, `file.name`, `date`
+
+**Custom variables:** Define with `vars`, override per-repo.
+
+### Repository Settings (`xfg settings`)
+
+Manage [GitHub repository settings](configuration/repo-settings.md) declaratively:
+
+- **Merge Options** - Squash, rebase, merge commit strategies; auto-delete branches; commit title/message format
+- **Security** - Dependabot alerts, automated security fixes, secret scanning, push protection, private vulnerability reporting
+- **Feature Toggles** - Issues, Wiki, Projects, Discussions, template repos, forking
+- **Visibility** - Public, private, or internal
 - **Terraform-Style Diff** - Preview changes with `+`/`~`/`-` indicators in dry-run mode
+- **Opt-Out** - Use `repo: false` per-repo to skip settings for specific repos
 
-#### GitHub Rulesets
+### GitHub Rulesets
 
-- **Declarative Rulesets** - Define GitHub Rulesets in YAML, apply with a single command
-- **Full API Coverage** - All rule types: pull_request, status_checks, signatures, code_scanning, and more
-- **Bypass Actors** - Configure which teams, users, or apps can bypass rules
+Manage [GitHub Rulesets](configuration/rulesets.md) as code:
+
+- **20+ Rule Types** - pull_request, status_checks, signatures, code_scanning, workflows, pattern rules, file restrictions, and more
+- **Bypass Actors** - Fine-grained control over which teams, users, or apps can bypass rules
 - **Pattern Conditions** - Apply rules to branches/tags matching glob patterns
 - **Evaluate Mode** - Test rules without enforcement
-- **Orphan Deletion** - Automatically remove rulesets not in config
+- **Inheritance** - Define defaults at root, override or [opt out](configuration/rulesets.md#single-ruleset-opt-out) per-repo
+- **Orphan Deletion** - Automatically remove rulesets no longer in config
 
-### Platform & Operations
+### Repo Lifecycle Management
 
-- **Multi-Platform** - Works with GitHub, Azure DevOps, and GitLab (including self-hosted)
-- **Auto-Merge PRs** - Automatically merge PRs when checks pass, or force merge with admin privileges
-- **Direct Push Mode** - Push directly to default branch without creating PRs
-- **Dry-Run Mode** - Preview changes without making them
+Automatically [create, fork, or migrate](configuration/lifecycle.md) repositories before syncing:
+
+```yaml
+repos:
+  # Create a new repo (if it doesn't exist)
+  - git: git@github.com:my-org/new-service.git
+
+  # Fork an open-source project
+  - git: git@github.com:my-org/our-eslint-config.git
+    upstream: git@github.com:airbnb/javascript.git
+
+  # Migrate from Azure DevOps to GitHub
+  - git: git@github.com:my-org/migrated-api.git
+    source: https://dev.azure.com/myorg/legacy/_git/old-api
+```
+
+- **Auto-Create** - New repos created with configured settings (visibility, description, features)
+- **Fork** - Fork upstream repos into your org or personal account (GitHub only)
+- **Migrate** - Mirror-clone from Azure DevOps or GitLab to GitHub with all branches and tags
+- **Dry-Run Support** - Preview lifecycle operations without executing them
+
+### PR & Merge Options
+
+Control how changes are delivered with [PR options](configuration/pr-options.md):
+
+| Mode | Behavior |
+| ---- | -------- |
+| `auto` | Enable auto-merge — merge when checks pass (default) |
+| `manual` | Leave PR open for manual review |
+| `force` | Merge immediately, bypassing checks |
+| `direct` | Push directly to default branch, no PR |
+
+Merge strategies: `squash` (default), `merge`, `rebase`. Set globally, override per-repo, or override via CLI.
+
+Customize PR descriptions with [PR templates](configuration/pr-templates.md) using `${xfg:pr.fileChanges}`, `${xfg:pr.fileCount}`, and other variables.
+
+### Platform Support
+
+| Feature | GitHub | Azure DevOps | GitLab |
+| ------- | ------ | ------------ | ------ |
+| File sync | Yes | Yes | Yes |
+| Self-hosted | Yes (GHE) | Yes | Yes |
+| Repo settings | Yes | - | - |
+| Rulesets | Yes | - | - |
+| Repo lifecycle | Yes | Source only | - |
+| Auto-merge PRs | Yes | Yes | Yes |
+| Direct push | Yes | Yes | Yes |
+
+### Enterprise & CI/CD
+
+- **[GitHub App Authentication](platforms/github-app.md)** - No user-tied credentials, fine-grained permissions, and verified commits with the "Verified" badge
+- **GitHub Enterprise Server** - Configure custom hostnames via `githubHosts` in config
+- **[GitHub Actions](ci-cd/github-actions.md)** - Official action (`anthony-spruyt/xfg@v3`) with all options as inputs
+- **[Azure Pipelines](ci-cd/azure-pipelines.md)** - Run xfg in Azure DevOps pipelines
+- **CI Summary Output** - Rich `GITHUB_STEP_SUMMARY` with diff-style change reports:
+
+```text
+## xfg Apply
+
+  @@ your-org/frontend @@
+  + .prettierrc.json
+  ! .github/workflows/ci.yaml
+  + ruleset "main-protection"
+
+  @@ your-org/backend @@
+  + .prettierrc.json
+  + allowAutoMerge: true
+  ! deleteBranchOnMerge: false → true
+
+**Applied: 4 files (2 created, 2 updated), 1 ruleset (1 created), 2 settings (1 added, 1 changed)**
+```
+
+- **Dry-Run Mode** - Preview all changes without applying them (`--dry-run`)
 - **Error Resilience** - Continues processing if individual repos fail
 - **Automatic Retries** - Retries transient network errors with exponential backoff
-
-**See [Use Cases](use-cases.md)** for real-world scenarios: platform engineering, CI/CD standardization, security governance, and more.
+- **[IDE Integration](ide-integration.md)** - JSON Schema for VS Code autocomplete and validation
 
 ## How It Works
+
+### Sync Workflow (`xfg sync`)
 
 ```mermaid
 flowchart TB
@@ -118,6 +226,17 @@ flowchart TB
     subgraph Normalization
         EXPAND[Expand git arrays] --> MERGE[Merge base + overlay content<br/>for each file]
         MERGE --> ENV[Interpolate env vars]
+    end
+
+    subgraph Lifecycle["Repo Lifecycle"]
+        EXIST{Repo Exists?}
+        EXIST -->|Yes| CLONE
+        EXIST -->|No + upstream| FORK[Fork from Upstream]
+        EXIST -->|No + source| MIGRATE[Mirror-Clone & Push]
+        EXIST -->|No| CREATE[Create Empty Repo]
+        FORK --> CLONE
+        MIGRATE --> CLONE
+        CREATE --> CLONE
     end
 
     subgraph Processing["For Each Repository"]
@@ -154,22 +273,8 @@ flowchart TB
     end
 
     YAML --> EXPAND
-    ENV --> CLONE
+    ENV --> EXIST
 ```
-
-For each repository in the config, the tool:
-
-1. Expands git URL arrays into individual entries
-2. For each file, merges base content with per-repo overlay
-3. Interpolates environment variables
-4. Cleans the temporary workspace
-5. Clones the repository
-6. Detects the default branch (main/master)
-7. **PR modes:** Closes any existing PR on the branch and creates a fresh branch | **Direct mode:** Stays on default branch
-8. Writes all config files (JSON, JSON5, YAML, or text based on filename extension)
-9. Checks for changes (skips if no changes)
-10. Commits and pushes changes
-11. **PR modes:** Creates a pull request and handles auto-merge | **Direct mode:** Done (changes are on default branch)
 
 ### Settings Workflow (`xfg settings`)
 
@@ -183,8 +288,15 @@ flowchart TB
         PARSE[Parse config] --> MERGE[Merge base + per-repo<br/>settings overrides]
     end
 
+    subgraph Lifecycle["Repo Lifecycle"]
+        EXIST{Repo Exists?}
+        EXIST -->|Yes| FETCH
+        EXIST -->|No| CREATE[Create Repo with Settings]
+        CREATE --> FETCH
+    end
+
     subgraph Processing["For Each GitHub Repository"]
-        FETCH[Fetch Current Settings<br/>via GitHub API] --> DIFF{Compare<br/>Current vs Desired}
+        FETCH[Fetch Current State<br/>via GitHub API] --> DIFF{Compare<br/>Current vs Desired}
         DIFF -->|No Changes| SKIP[Skip - Already Matches]
         DIFF -->|Changes Needed| PLAN[Generate Change Plan]
         PLAN --> DRY{Dry Run?}
@@ -198,13 +310,7 @@ flowchart TB
     end
 
     YAML --> PARSE
-    MERGE --> FETCH
+    MERGE --> EXIST
 ```
 
-For each GitHub repository:
-
-1. Fetches current repository settings and rulesets via GitHub API
-2. Merges global settings with per-repo overrides
-3. Computes diff between current state and desired state
-4. **Dry-run mode:** Shows planned changes with `+`/`~`/`-` indicators
-5. **Apply mode:** Updates repository settings and rulesets via GitHub API
+**See [Use Cases](use-cases.md)** for real-world scenarios: platform engineering, CI/CD standardization, security governance, repo migration, and more.

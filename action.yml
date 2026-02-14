@@ -1,5 +1,5 @@
 name: "xfg - Repo as Code"
-description: "Sync files and manage settings across GitHub, Azure DevOps, and GitLab"
+description: "Manage files, settings, and repositories across GitHub, Azure DevOps, and GitLab — declaratively, from a single YAML config"
 author: "Anthony Spruyt"
 
 branding:

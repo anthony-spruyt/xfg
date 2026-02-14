@@ -45,7 +45,9 @@ function addSharedOptions(cmd: Command): Command {
 
 program
   .name("xfg")
-  .description("Sync files and manage settings across repositories")
+  .description(
+    "Manage files, settings, and repositories across GitHub, Azure DevOps, and GitLab"
+  )
   .version(packageJson.version);
 
 // Sync command (file synchronization)

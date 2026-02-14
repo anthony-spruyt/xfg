@@ -94,6 +94,12 @@ settings:
     allowedMergeMethods:
       - squash
       - rebase
+    requiredReviewers: # (beta) file-pattern-based reviewers
+      - filePatterns: ["src/auth/**"]
+        minimumApprovals: 2
+        reviewer:
+          id: 123456
+          type: Team
 ```
 
 ### Status Checks
@@ -148,7 +154,38 @@ settings:
         securityAlertsThreshold: critical # none, critical, high_or_higher, medium_or_higher, all
 ```
 
+### Code Quality
+
+```yaml
+- type: code_quality
+  parameters:
+    severity: errors # errors, errors_and_warnings, all
+```
+
+### Workflows
+
+Require specific GitHub Actions workflows to pass:
+
+```yaml
+- type: workflows
+  parameters:
+    doNotEnforceOnCreate: false
+    workflows:
+      - path: .github/workflows/ci.yml
+        repositoryId: 123456789
+        ref: refs/heads/main
+```
+
 ### Pattern Rules
+
+All pattern rules support the same parameters:
+
+| Parameter  | Type    | Description                                                |
+| ---------- | ------- | ---------------------------------------------------------- |
+| `name`     | string  | Display name for the rule (optional)                       |
+| `operator` | string  | `starts_with`, `ends_with`, `contains`, or `regex`         |
+| `pattern`  | string  | The pattern to match                                       |
+| `negate`   | boolean | If true, the rule applies when the pattern does NOT match  |
 
 ```yaml
 - type: commit_message_pattern
@@ -158,10 +195,27 @@ settings:
     pattern: "^(feat|fix|docs|style|refactor|test|chore)(\\(.+\\))?: .+"
     negate: false
 
+- type: commit_author_email_pattern
+  parameters:
+    name: "Corporate email only"
+    operator: ends_with
+    pattern: "@your-company.com"
+
+- type: committer_email_pattern
+  parameters:
+    operator: ends_with
+    pattern: "@your-company.com"
+
 - type: branch_name_pattern
   parameters:
     operator: regex
     pattern: "^(feature|bugfix|hotfix)/.+"
+
+- type: tag_name_pattern
+  parameters:
+    name: "Semantic versioning"
+    operator: regex
+    pattern: "^v[0-9]+\\.[0-9]+\\.[0-9]+"
 ```
 
 ### File Restrictions
@@ -172,6 +226,17 @@ settings:
     restrictedFilePaths:
       - ".github/workflows/*"
       - "package-lock.json"
+
+- type: file_extension_restriction
+  parameters:
+    restrictedFileExtensions:
+      - ".exe"
+      - ".dll"
+      - ".jar"
+
+- type: max_file_path_length
+  parameters:
+    maxFilePathLength: 255
 
 - type: max_file_size
   parameters:

@@ -8,7 +8,9 @@
 [![docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://anthony-spruyt.github.io/xfg/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A CLI tool for repository-as-code. Sync files and manage settings across GitHub, Azure DevOps, and GitLab.
+Manage files, settings, and repositories across GitHub, Azure DevOps, and GitLab — declaratively, from a single YAML config.
+
+Define your organization's standards once. xfg creates PRs to sync config files, applies repository settings and rulesets via API, and can even create, fork, or migrate repositories — all from one config file.
 
 **[Full Documentation](https://anthony-spruyt.github.io/xfg/)**
 
@@ -48,7 +50,7 @@ gh auth login
 # Sync files across repos
 xfg sync --config ./config.yaml
 
-# Apply repository settings
+# Apply repository settings and rulesets
 xfg settings --config ./config.yaml
 ```
 
@@ -56,7 +58,8 @@ xfg settings --config ./config.yaml
 
 ```yaml
 # sync-config.yaml
-id: my-org-config
+id: my-org-standards
+
 files:
   .prettierrc.json:
     content:
@@ -69,6 +72,7 @@ settings:
     allowSquashMerge: true
     deleteBranchOnMerge: true
     vulnerabilityAlerts: true
+    secretScanning: true
 
   rulesets:
     main-protection:
@@ -82,6 +86,10 @@ settings:
         - type: pull_request
           parameters:
             requiredApprovingReviewCount: 1
+        - type: required_status_checks
+          parameters:
+            requiredStatusChecks:
+              - context: "ci/build"
 
 repos:
   - git:
@@ -89,8 +97,8 @@ repos:
       - git@github.com:your-org/backend-api.git
 ```
 
-**Result:** PRs are created with `.prettierrc.json` files, and repos get standardized merge options, security settings, and branch protection rules.
+**Result:** PRs are created with `.prettierrc.json` files, and repos get standardized merge options, security settings, and branch protection rulesets.
 
 ## Documentation
 
-See **[anthony-spruyt.github.io/xfg](https://anthony-spruyt.github.io/xfg/)** for configuration reference, examples, platform setup, and troubleshooting.
+See **[anthony-spruyt.github.io/xfg](https://anthony-spruyt.github.io/xfg/)** for the full feature list, configuration reference, examples, platform setup, and troubleshooting.
