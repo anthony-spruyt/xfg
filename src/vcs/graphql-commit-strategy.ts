@@ -5,6 +5,10 @@ import {
 } from "../shared/command-executor.js";
 import { isGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
+import {
+  withRetry,
+  DEFAULT_PERMANENT_ERROR_PATTERNS,
+} from "../shared/retry-utils.js";
 import { IAuthenticatedGitOps } from "./authenticated-git-ops.js";
 
 /**
@@ -39,6 +43,17 @@ export function validateBranchName(branchName: string): void {
     );
   }
 }
+
+/**
+ * OID mismatch error patterns that should NOT be retried by the inner withRetry.
+ * The outer retry loop in commit() handles these by fetching a fresh HEAD OID.
+ */
+const OID_MISMATCH_PATTERNS: RegExp[] = [
+  /expected branch to point to/i,
+  /expectedheadoid/i,
+  /head oid/i,
+  /was provided invalid value/i,
+];
 
 /**
  * GraphQL-based commit strategy using GitHub's createCommitOnBranch mutation.
@@ -245,7 +260,15 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
 
     const command = `echo ${escapeShellArg(requestBody)} | ${tokenPrefix}gh api graphql ${hostnameArg} --input -`;
 
-    const response = await this.executor.exec(command, workDir);
+    const response = await withRetry(
+      () => this.executor.exec(command, workDir),
+      {
+        permanentErrorPatterns: [
+          ...DEFAULT_PERMANENT_ERROR_PATTERNS,
+          ...OID_MISMATCH_PATTERNS,
+        ],
+      }
+    );
 
     // Parse the response
     const parsed = JSON.parse(response);

@@ -1068,6 +1068,115 @@ describe("GraphQLCommitStrategy", () => {
       );
     });
 
+    test("should retry GraphQL API call on transient network error", async () => {
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) {
+          throw new Error("Connection timed out");
+        }
+        return JSON.stringify({
+          data: {
+            createCommitOnBranch: {
+              commit: { oid: "retrysha123" },
+            },
+          },
+        });
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Test retry",
+        fileChanges: [{ path: "test.txt", content: "content" }],
+        workDir: testDir,
+      };
+
+      const result = await strategy.commit(options);
+
+      assert.equal(result.sha, "retrysha123");
+      assert.ok(
+        graphqlCallCount >= 2,
+        `Expected at least 2 GraphQL calls, got ${graphqlCallCount}`
+      );
+    });
+
+    test("should not retry GraphQL API call on permanent error", async () => {
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        throw new Error("gh: Authentication failed (HTTP 401)");
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Test no retry",
+        fileChanges: [{ path: "test.txt", content: "content" }],
+        workDir: testDir,
+      };
+
+      await assert.rejects(() => strategy.commit(options), /401/);
+
+      assert.equal(
+        graphqlCallCount,
+        1,
+        `Expected exactly 1 GraphQL call, got ${graphqlCallCount}`
+      );
+    });
+
+    test("should not waste inner retries on OID mismatch errors", async () => {
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) {
+          throw new Error(
+            "Expected branch to point to abc123 but it points to xyz789"
+          );
+        }
+        return JSON.stringify({
+          data: {
+            createCommitOnBranch: {
+              commit: { oid: "successsha" },
+            },
+          },
+        });
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Test OID mismatch",
+        fileChanges: [{ path: "test.txt", content: "content" }],
+        workDir: testDir,
+        retries: 1,
+      };
+
+      const result = await strategy.commit(options);
+
+      assert.equal(result.sha, "successsha");
+      assert.equal(
+        graphqlCallCount,
+        2,
+        `Expected exactly 2 GraphQL calls (1 OID mismatch + 1 success), got ${graphqlCallCount}`
+      );
+    });
+
     test("does not include GH_TOKEN prefix when no token is provided", async () => {
       // When no token is provided, rely on gh CLI's default authentication
       mockExecutor.responses.set(
