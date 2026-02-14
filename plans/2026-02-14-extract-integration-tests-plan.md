@@ -603,6 +603,8 @@ git commit -m "ci: add reusable workflow for integration tests (#473)"
 
 Remove everything from `integration-test-cli-sync-ado-pat:` (line 81) through end of file and replace with:
 
+Note: the YAML below is indented 2 spaces because it sits under the existing `jobs:` key.
+
 ```yaml
 integration-tests:
   needs:
