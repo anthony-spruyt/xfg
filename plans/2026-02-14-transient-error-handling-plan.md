@@ -114,19 +114,28 @@ Expected: FAIL — "should retry GraphQL API call on transient network error" fa
 - Add import: `import { withRetry, DEFAULT_PERMANENT_ERROR_PATTERNS } from "../shared/retry-utils.js";`
 - Replace `const response = await this.executor...` (line 248) with a `withRetry()` call that includes OID mismatch patterns as permanent errors:
 
+First, add a module-level constant (after imports, before the class definition):
+
 ```typescript
-// OID mismatch errors should NOT be retried here — the outer retry loop
-// in commit() handles them by fetching a fresh HEAD OID first.
-const oidMismatchPatterns = [
+/**
+ * OID mismatch error patterns that should NOT be retried by the inner withRetry.
+ * The outer retry loop in commit() handles these by fetching a fresh HEAD OID.
+ */
+const OID_MISMATCH_PATTERNS: RegExp[] = [
   /expected branch to point to/i,
   /expectedheadoid/i,
   /head oid/i,
   /was provided invalid value/i,
 ];
+```
+
+Then in `executeGraphQLMutation()`, replace the executor call (line 248):
+
+```typescript
 const response = await withRetry(() => this.executor.exec(command, workDir), {
   permanentErrorPatterns: [
     ...DEFAULT_PERMANENT_ERROR_PATTERNS,
-    ...oidMismatchPatterns,
+    ...OID_MISMATCH_PATTERNS,
   ],
 });
 ```
