@@ -96,12 +96,13 @@ git commit -m "feat: add transient error retry to GitHubRulesetStrategy (#422)"
 - Modify: `src/vcs/graphql-commit-strategy.ts` (import + executeGraphQLMutation)
 - Test: `test/unit/vcs/graphql-commit-strategy.test.ts`
 
-**Step 1: Write failing test for transient error retry on GraphQL call**
+**Step 1: Write failing tests for transient error retry on GraphQL call**
 
 Add to the `describe("commit")` block. The existing mock executor already supports function-based responses for call-count tracking:
 
 - Test 1: "should retry GraphQL API call on transient network error" — GraphQL call throws `"Connection timed out"` on first attempt, succeeds on second. Assert `graphqlCallCount >= 2` and result SHA is correct.
 - Test 2: "should not retry GraphQL API call on permanent error" — GraphQL call always throws `"gh: Authentication failed (HTTP 401)"`. Assert `graphqlCallCount === 1`.
+- Test 3: "should not waste retries on OID mismatch errors" — GraphQL call always throws `"Expected branch to point to abc123 but it points to xyz789"`. Assert `graphqlCallCount === 1` (inner `withRetry` treats OID mismatch as permanent, letting the outer retry loop handle it with a fresh OID).
 
 **Step 2: Run test to verify it fails**
 
@@ -110,10 +111,27 @@ Expected: FAIL — "should retry GraphQL API call on transient network error" fa
 
 **Step 3: Add withRetry to executeGraphQLMutation()**
 
-- Add import: `import { withRetry } from "../shared/retry-utils.js";`
-- Replace `const response = await this.executor...` (line 248) with `const response = await withRetry(() => this.executor...)`
+- Add import: `import { withRetry, DEFAULT_PERMANENT_ERROR_PATTERNS } from "../shared/retry-utils.js";`
+- Replace `const response = await this.executor...` (line 248) with a `withRetry()` call that includes OID mismatch patterns as permanent errors:
 
-The existing OID-mismatch retry loop in `commit()` is unchanged — it handles optimistic locking, not network errors.
+```typescript
+// OID mismatch errors should NOT be retried here — the outer retry loop
+// in commit() handles them by fetching a fresh HEAD OID first.
+const oidMismatchPatterns = [
+  /expected branch to point to/i,
+  /expectedheadoid/i,
+  /head oid/i,
+  /was provided invalid value/i,
+];
+const response = await withRetry(() => this.executor.exec(command, workDir), {
+  permanentErrorPatterns: [
+    ...DEFAULT_PERMANENT_ERROR_PATTERNS,
+    ...oidMismatchPatterns,
+  ],
+});
+```
+
+The existing OID-mismatch retry loop in `commit()` is unchanged — it handles optimistic locking by fetching a fresh OID before retrying. The inner `withRetry()` only retries transient network errors.
 
 **Step 4: Run test to verify it passes**
 

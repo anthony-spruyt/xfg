@@ -54,9 +54,9 @@ Alternatives considered:
 
 `src/vcs/graphql-commit-strategy.ts`
 
-- Import `withRetry` from `../shared/retry-utils.js`
-- Wrap the single command execution call in `withRetry()`
-- The existing OID-mismatch retry loop in `commit()` is unchanged — it handles a different concern (optimistic locking vs network errors)
+- Import `withRetry` and `DEFAULT_PERMANENT_ERROR_PATTERNS` from `../shared/retry-utils.js`
+- Wrap the single command execution call in `withRetry()` with custom permanent error patterns that include OID mismatch patterns
+- **OID mismatch handling:** The existing retry loop in `commit()` handles OID mismatch by fetching a fresh HEAD OID before retrying. The inner `withRetry()` must treat OID mismatch as a permanent error (abort immediately) so the outer loop can handle it properly. Without this, `withRetry()` would waste 3 API calls retrying with a stale OID before the outer loop gets to fix it.
 
 ## Error Flow
 
@@ -75,3 +75,4 @@ For each modified strategy:
 - Transient errors are retried (mock executor to fail then succeed)
 - Permanent errors fail immediately without retry
 - The 404-as-boolean pattern in settings strategy works through retry
+- OID mismatch errors in GraphQLCommitStrategy are not wasted on inner retry (outer loop handles them)
