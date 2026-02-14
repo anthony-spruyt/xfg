@@ -217,7 +217,7 @@ repos:
       );
 
       const output = consoleOutput.join("\n");
-      assert.ok(output.includes("Processing repo settings"));
+      assert.ok(output.includes("Settings applied"));
     });
 
     test("handles repo settings with warnings", async () => {

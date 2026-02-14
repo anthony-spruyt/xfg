@@ -295,7 +295,8 @@ async function processRepoSettings(
   processorFactory: RepoSettingsProcessorFactory,
   results: RepoResult[],
   collector: ResultsCollector,
-  lifecycleSkipped: Set<string>
+  lifecycleSkipped: Set<string>,
+  indexOffset: number
 ): Promise<void> {
   if (repos.length === 0) {
     return;
@@ -307,6 +308,7 @@ async function processRepoSettings(
 
   for (let i = 0; i < repos.length; i++) {
     const repoConfig = repos[i];
+    const current = indexOffset + i + 1;
 
     if (lifecycleSkipped.has(repoConfig.git)) {
       continue;
@@ -318,7 +320,7 @@ async function processRepoSettings(
         githubHosts: config.githubHosts,
       });
     } catch (error) {
-      logger.error(i + 1, repoConfig.git, String(error));
+      logger.error(current, repoConfig.git, String(error));
       collector.appendError(repoConfig.git, error);
       continue;
     }
@@ -331,14 +333,14 @@ async function processRepoSettings(
       });
 
       if (result.planOutput && result.planOutput.lines.length > 0) {
-        console.log(`\n  ${chalk.bold(repoName)}:`);
-        console.log("  Repo Settings:");
+        logger.info("");
+        logger.info(chalk.bold(`${repoName} - Repo Settings:`));
         for (const line of result.planOutput.lines) {
-          console.log(line);
+          logger.info(line);
         }
         if (result.warnings && result.warnings.length > 0) {
           for (const warning of result.warnings) {
-            console.log(chalk.yellow(`  ⚠️  Warning: ${warning}`));
+            logger.info(chalk.yellow(`Warning: ${warning}`));
           }
         }
       }
@@ -346,9 +348,9 @@ async function processRepoSettings(
       if (result.skipped) {
         // Silent skip
       } else if (result.success) {
-        console.log(chalk.green(`  ✓ ${repoName}: ${result.message}`));
+        logger.success(current, repoName, result.message);
       } else {
-        console.log(chalk.red(`  ✗ ${repoName}: ${result.message}`));
+        logger.error(current, repoName, result.message);
       }
 
       if (!result.skipped) {
@@ -369,7 +371,7 @@ async function processRepoSettings(
         collector.getOrCreate(repoName).settingsResult = result;
       }
     } catch (error) {
-      logger.error(i + 1, repoName, String(error));
+      logger.error(current, repoName, String(error));
       collector.appendError(repoName, error);
     }
   }
@@ -477,7 +479,8 @@ export async function runSettings(
     repoSettingsProcessorFactory,
     results,
     collector,
-    lifecycleSkipped
+    lifecycleSkipped,
+    reposWithRulesets.length
   );
 
   console.log("");
