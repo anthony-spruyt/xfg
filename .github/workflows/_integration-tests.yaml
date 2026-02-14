@@ -5,6 +5,9 @@ name: Integration Tests
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   integration-test-cli-sync-ado-pat:
     runs-on: ubuntu-latest
