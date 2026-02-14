@@ -10,7 +10,10 @@ import type {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
 } from "../../../../src/shared/repo-detector.js";
-import type { ICommandExecutor } from "../../../../src/shared/command-executor.js";
+import type {
+  ICommandExecutor,
+  ExecOptions,
+} from "../../../../src/shared/command-executor.js";
 
 // Mock executor that records commands and returns configured responses
 class MockExecutor implements ICommandExecutor {
@@ -277,6 +280,59 @@ describe("GitHubRulesetStrategy", () => {
         () => strategy.delete(mockAzureRepo, 123),
         /GitHub Ruleset strategy requires GitHub repositories/
       );
+    });
+  });
+
+  describe("retry behavior", () => {
+    test("should retry on transient error and succeed", async () => {
+      let callCount = 0;
+      const executor: ICommandExecutor = {
+        async exec(
+          command: string,
+          _cwd: string,
+          _options?: ExecOptions
+        ): Promise<string> {
+          if (command.includes("/rulesets")) {
+            callCount++;
+            if (callCount === 1) {
+              throw new Error("Connection timed out");
+            }
+            return "[]";
+          }
+          return "{}";
+        },
+      };
+
+      const retryStrategy = new GitHubRulesetStrategy(executor);
+      const result = await retryStrategy.list(mockGitHubRepo);
+
+      assert.deepEqual(result, []);
+      assert.ok(callCount >= 2, `Expected at least 2 calls, got ${callCount}`);
+    });
+
+    test("should not retry on permanent error", async () => {
+      let callCount = 0;
+      const executor: ICommandExecutor = {
+        async exec(
+          command: string,
+          _cwd: string,
+          _options?: ExecOptions
+        ): Promise<string> {
+          if (command.includes("/rulesets")) {
+            callCount++;
+            throw new Error("gh: Not Found (HTTP 404)");
+          }
+          return "{}";
+        },
+      };
+
+      const retryStrategy = new GitHubRulesetStrategy(executor);
+      await assert.rejects(
+        async () => retryStrategy.list(mockGitHubRepo),
+        /404/
+      );
+
+      assert.equal(callCount, 1, `Expected exactly 1 call, got ${callCount}`);
     });
   });
 });

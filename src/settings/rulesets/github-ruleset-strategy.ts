@@ -8,6 +8,7 @@ import {
   RepoInfo,
 } from "../../shared/repo-detector.js";
 import { escapeShellArg } from "../../shared/shell-utils.js";
+import { withRetry } from "../../shared/retry-utils.js";
 import type { Ruleset, RulesetRule } from "../../config/index.js";
 import type { IRulesetStrategy } from "./types.js";
 
@@ -343,11 +344,11 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     if (payload && (method === "POST" || method === "PUT")) {
       const payloadJson = JSON.stringify(payload);
       const command = `echo ${escapeShellArg(payloadJson)} | ${tokenPrefix}${baseCommand} --input -`;
-      return await this.executor.exec(command, process.cwd());
+      return await withRetry(() => this.executor.exec(command, process.cwd()));
     }
 
     // For GET/DELETE, run command directly
     const command = `${tokenPrefix}${baseCommand}`;
-    return await this.executor.exec(command, process.cwd());
+    return await withRetry(() => this.executor.exec(command, process.cwd()));
   }
 }
