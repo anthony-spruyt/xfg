@@ -1,0 +1,41 @@
+---
+name: Integration Test Setup
+description: Common setup steps for integration test jobs
+
+inputs:
+  download-package:
+    description: "Download the package artifact and set XFG_PACKAGE env var"
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v6
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: "24"
+        cache: "npm"
+
+    - name: Install dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Download build artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: dist
+        path: dist/
+
+    - name: Download package artifact
+      if: inputs.download-package == 'true'
+      uses: actions/download-artifact@v7
+      with:
+        name: package
+
+    - name: Set package path
+      if: inputs.download-package == 'true'
+      shell: bash
+      run: echo "XFG_PACKAGE=$(ls aspruyt-xfg-*.tgz)" >> "$GITHUB_ENV"
