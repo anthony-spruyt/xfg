@@ -17,6 +17,7 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
 
       - name: Install Azure CLI DevOps Extension
@@ -44,6 +45,7 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
 
       - name: Install GitLab CLI
@@ -72,6 +74,7 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
@@ -92,6 +95,7 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
@@ -122,6 +126,7 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
@@ -142,6 +147,7 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
@@ -166,6 +172,7 @@ jobs:
       PAT_BRANCH: chore/sync-my-config
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
         with:
           download-package: "true"
@@ -242,6 +249,7 @@ jobs:
       APP_BRANCH: chore/sync-app-test
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
         with:
           download-package: "true"
@@ -319,6 +327,7 @@ jobs:
       TEST_REPO: anthony-spruyt/xfg-test-6
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
         with:
           download-package: "true"
@@ -358,6 +367,7 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
@@ -382,6 +392,7 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
@@ -411,6 +422,7 @@ jobs:
       OWNER: spruyt-labs
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
         with:
           download-package: "true"
@@ -461,6 +473,7 @@ jobs:
       OWNER: spruyt-labs
 
     steps:
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
         with:
           download-package: "true"
