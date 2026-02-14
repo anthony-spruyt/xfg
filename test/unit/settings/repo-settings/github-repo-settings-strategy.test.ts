@@ -2,7 +2,10 @@ import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { GitHubRepoSettingsStrategy } from "../../../../src/settings/repo-settings/github-repo-settings-strategy.js";
 import type { GitHubRepoInfo } from "../../../../src/shared/repo-detector.js";
-import type { ICommandExecutor } from "../../../../src/shared/command-executor.js";
+import type {
+  ICommandExecutor,
+  ExecOptions,
+} from "../../../../src/shared/command-executor.js";
 
 // Mock executor that records commands and returns configured responses
 // Note: This follows the existing test pattern from github-ruleset-strategy.test.ts
@@ -443,6 +446,98 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       assert.ok(mockExecutor.commands[0].includes("--hostname"));
       assert.ok(mockExecutor.commands[0].includes("github.example.com"));
+    });
+  });
+
+  describe("retry behavior", () => {
+    test("should retry on transient error and succeed", async () => {
+      let callCount = 0;
+      const executor: ICommandExecutor = {
+        async exec(
+          command: string,
+          _cwd: string,
+          _options?: ExecOptions
+        ): Promise<string> {
+          if (command.includes("-X PATCH")) {
+            callCount++;
+            if (callCount === 1) {
+              throw new Error("Connection timed out");
+            }
+            return "{}";
+          }
+          return "{}";
+        },
+      };
+
+      const strategy = new GitHubRepoSettingsStrategy(executor);
+      await strategy.updateSettings(githubRepo, { hasIssues: true });
+
+      assert.ok(
+        callCount >= 2,
+        `Expected at least 2 PATCH calls, got ${callCount}`
+      );
+    });
+
+    test("should not retry on permanent error", async () => {
+      let callCount = 0;
+      const executor: ICommandExecutor = {
+        async exec(
+          command: string,
+          _cwd: string,
+          _options?: ExecOptions
+        ): Promise<string> {
+          if (command.includes("-X PATCH")) {
+            callCount++;
+            throw new Error("gh: Not Found (HTTP 404)");
+          }
+          return "{}";
+        },
+      };
+
+      const strategy = new GitHubRepoSettingsStrategy(executor);
+      await assert.rejects(
+        async () => strategy.updateSettings(githubRepo, { hasIssues: true }),
+        /404/
+      );
+
+      assert.equal(
+        callCount,
+        1,
+        `Expected exactly 1 PATCH call, got ${callCount}`
+      );
+    });
+
+    test("should still return false for 404 on vulnerability-alerts with retry enabled", async () => {
+      let callCount = 0;
+      const executor: ICommandExecutor = {
+        async exec(
+          command: string,
+          _cwd: string,
+          _options?: ExecOptions
+        ): Promise<string> {
+          if (command.includes("vulnerability-alerts")) {
+            callCount++;
+            throw new Error("gh: Not Found (HTTP 404)");
+          }
+          if (command.includes("automated-security-fixes")) {
+            return "";
+          }
+          if (command.includes("private-vulnerability-reporting")) {
+            return JSON.stringify({ enabled: false });
+          }
+          return JSON.stringify({ has_issues: true });
+        },
+      };
+
+      const strategy = new GitHubRepoSettingsStrategy(executor);
+      const result = await strategy.getSettings(githubRepo);
+
+      assert.equal(result.vulnerability_alerts, false);
+      assert.equal(
+        callCount,
+        1,
+        `Expected exactly 1 vulnerability-alerts call, got ${callCount}`
+      );
     });
   });
 });

@@ -8,6 +8,7 @@ import {
   RepoInfo,
 } from "../../shared/repo-detector.js";
 import { escapeShellArg } from "../../shared/shell-utils.js";
+import { withRetry } from "../../shared/retry-utils.js";
 import type { GitHubRepoSettings } from "../../config/index.js";
 import type {
   IRepoSettingsStrategy,
@@ -274,10 +275,10 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     ) {
       const payloadJson = JSON.stringify(payload);
       const command = `echo ${escapeShellArg(payloadJson)} | ${tokenPrefix}${baseCommand} --input -`;
-      return await this.executor.exec(command, process.cwd());
+      return await withRetry(() => this.executor.exec(command, process.cwd()));
     }
 
     const command = `${tokenPrefix}${baseCommand}`;
-    return await this.executor.exec(command, process.cwd());
+    return await withRetry(() => this.executor.exec(command, process.cwd()));
   }
 }
