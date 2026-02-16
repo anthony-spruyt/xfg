@@ -8,6 +8,7 @@ rules:
     allowed-values:
       - "true"
       - "false"
+    check-keys: false
   comments:
     require-starting-space: false
     min-spaces-from-content: 1
