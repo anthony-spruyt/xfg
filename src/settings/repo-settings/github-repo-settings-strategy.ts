@@ -108,7 +108,11 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
 
     const endpoint = `/repos/${github.owner}/${github.repo}`;
     const result = await this.ghApi("GET", endpoint, undefined, options);
-    const settings = JSON.parse(result) as CurrentRepoSettings;
+    const parsed = JSON.parse(result);
+    const settings = parsed as CurrentRepoSettings;
+
+    // Extract owner type from nested API response
+    settings.owner_type = parsed.owner?.type;
 
     // Fetch security settings from separate endpoints
     settings.vulnerability_alerts = await this.getVulnerabilityAlerts(

@@ -93,6 +93,70 @@ describe("GitHubRepoSettingsStrategy", () => {
     });
   });
 
+  describe("getSettings owner_type extraction", () => {
+    test("should extract owner_type from API response", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({
+          has_issues: true,
+          owner: { type: "Organization", login: "test-org" },
+        })
+      );
+      mockExecutor.setResponse("vulnerability-alerts", "");
+      mockExecutor.setResponse("automated-security-fixes", "");
+      mockExecutor.setResponse(
+        "private-vulnerability-reporting",
+        JSON.stringify({ enabled: false })
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      const result = await strategy.getSettings(githubRepo);
+
+      assert.equal(result.owner_type, "Organization");
+    });
+
+    test("should extract owner_type User from API response", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({
+          has_issues: true,
+          owner: { type: "User", login: "test-org" },
+        })
+      );
+      mockExecutor.setResponse("vulnerability-alerts", "");
+      mockExecutor.setResponse("automated-security-fixes", "");
+      mockExecutor.setResponse(
+        "private-vulnerability-reporting",
+        JSON.stringify({ enabled: false })
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      const result = await strategy.getSettings(githubRepo);
+
+      assert.equal(result.owner_type, "User");
+    });
+
+    test("should return undefined owner_type when API response lacks owner field", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({
+          has_issues: true,
+        })
+      );
+      mockExecutor.setResponse("vulnerability-alerts", "");
+      mockExecutor.setResponse("automated-security-fixes", "");
+      mockExecutor.setResponse(
+        "private-vulnerability-reporting",
+        JSON.stringify({ enabled: false })
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      const result = await strategy.getSettings(githubRepo);
+
+      assert.equal(result.owner_type, undefined);
+    });
+  });
+
   describe("getSettings security endpoints", () => {
     test("should return vulnerability_alerts true when endpoint returns 204", async () => {
       mockExecutor.setResponse(

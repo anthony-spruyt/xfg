@@ -35,6 +35,8 @@ export interface CurrentRepoSettings {
     secret_scanning_push_protection?: { status: string };
     secret_scanning_validity_checks?: { status: string };
   };
+  // Owner metadata (extracted from API response)
+  owner_type?: "User" | "Organization";
   // Security settings (fetched from separate endpoints)
   vulnerability_alerts?: boolean;
   automated_security_fixes?: boolean;
