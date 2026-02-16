@@ -4,9 +4,16 @@
 
 **Goal:** Split the monolithic release workflow into two phases for resilience, idempotency, and self-deadlock elimination.
 
-**Architecture:** Phase 1 (`release.yaml`, manual dispatch) creates the verified version-bump commit. Phase 2 (`release-publish.yaml`, auto on push to main) detects release commits, waits for CI, then tags/publishes with idempotency at each step.
+**Architecture:** Phase 1 (`release.yaml`, manual dispatch) creates the verified version-bump commit. Phase 2 (`release-publish.yaml`, auto on push to main with `workflow_dispatch` fallback) detects release commits, waits for CI, then tags/publishes with idempotency at each step.
 
 **Tech Stack:** GitHub Actions YAML, GitHub CLI, npm
+
+**Important constraints:**
+
+- The `npm` environment MUST NOT have required reviewers configured, otherwise Phase 2 will silently block on approval when auto-triggered
+- The commit message format `"chore: release vX.Y.Z"` is critical — Phase 2 depends on it to detect release commits
+- Do not push unrelated commits to main while a release is in progress (between Phase 1 and Phase 2 completing)
+- Check run names for direct (non-reusable) jobs use the job name only (e.g., `publish`), not `Workflow / Job` format — this is how the self-deadlock filter works
 
 ---
 
@@ -144,6 +151,13 @@ on:
   push:
     branches:
       - main
+  # Manual fallback: if Phase 2 fails or doesn't trigger, re-run manually
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g., 3.9.10)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -151,24 +165,43 @@ permissions:
 
 jobs:
   publish:
-    # Only run for release commits created by Phase 1
-    if: startsWith(github.event.head_commit.message, 'chore: release v')
+    # For push events: only run for release commits created by Phase 1
+    # For workflow_dispatch: always run (manual fallback)
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.event.head_commit.message, 'chore: release v')
     runs-on: ubuntu-latest
     environment: npm
     steps:
       - uses: actions/checkout@v6
 
-      - name: Extract version from commit message
+      - name: Extract version
         id: version
         run: |
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
-          VERSION="${COMMIT_MSG#chore: release v}"
-          if [ -z "$VERSION" ]; then
-            echo "::error::Could not extract version from: $COMMIT_MSG"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            COMMIT_MSG="${{ github.event.head_commit.message }}"
+            VERSION="${COMMIT_MSG#chore: release v}"
+          fi
+
+          # Validate semver format (X.Y.Z)
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Invalid version format: '$VERSION' (expected X.Y.Z)"
             exit 1
           fi
+
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Detected release version: $VERSION"
+
+      - name: Validate version matches package.json
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PKG_VERSION" != "${{ steps.version.outputs.version }}" ]; then
+            echo "::error::Version mismatch: commit says v${{ steps.version.outputs.version }} but package.json has v${PKG_VERSION}"
+            exit 1
+          fi
+          echo "Version matches package.json: $PKG_VERSION"
 
       - name: Generate app token
         id: app-token
@@ -188,7 +221,9 @@ jobs:
           TIMEOUT=600
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Exclude this workflow's own check run ("publish")
+            # Exclude this workflow's own check run.
+            # Direct (non-reusable) job check-run names use the job name only,
+            # not "Workflow Name / Job Name" format.
             CHECK_RUNS=$(gh api "repos/$REPO/commits/$COMMIT_SHA/check-runs" \
               --jq '[.check_runs[] | select(.name != "publish")]')
 
@@ -252,7 +287,7 @@ jobs:
           if [ "$CURRENT_SHA" = "${{ github.sha }}" ]; then
             echo "v${MAJOR} already points to ${{ github.sha }}, skipping"
           else
-            # Use git/ref (singular) for exact match
+            # Use git/ref (singular) for exact match — git/refs (plural) does prefix matching
             if [ -n "$CURRENT_SHA" ]; then
               gh api --method DELETE "repos/$REPO/git/refs/tags/v${MAJOR}"
               echo "Deleted existing v${MAJOR} tag"
@@ -282,7 +317,7 @@ jobs:
           PACKAGE_NAME=$(node -p "require('./package.json').name")
 
           # Idempotency: skip if already published
-          if npm view "${PACKAGE_NAME}@${VERSION}" version &>/dev/null 2>&1; then
+          if npm view "${PACKAGE_NAME}@${VERSION}" version &>/dev/null; then
             echo "${PACKAGE_NAME}@${VERSION} already published, skipping"
           else
             npm publish --provenance --access public
@@ -295,7 +330,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           # Idempotency: skip if release already exists
-          if gh release view "v${VERSION}" --repo "${{ github.repository }}" &>/dev/null 2>&1; then
+          if gh release view "v${VERSION}" --repo "${{ github.repository }}" &>/dev/null; then
             echo "Release v${VERSION} already exists, skipping"
           else
             gh release create "v${VERSION}" \
@@ -309,10 +344,13 @@ jobs:
 **Key design decisions:**
 
 - `if: startsWith(...)` on the job means the entire workflow is skipped for non-release commits (no wasted runner time)
-- CI wait excludes `publish` (this job's own check run) to prevent self-deadlock
+- `workflow_dispatch` with version input provides a manual fallback if the auto-trigger doesn't fire
+- Version is validated as semver (X.Y.Z) and cross-checked against package.json
+- CI wait excludes `publish` (this job's own check run name) to prevent self-deadlock
 - Every mutating step (tag, publish, release) checks for prior completion before acting
 - `environment: npm` is on this job (needed for OIDC provenance)
 - Build is repeated here (simpler than artifact passing between workflows)
+- App token is used for tag/release creation (has its own permissions independent of workflow-level `contents: read`)
 
 **Step 2: Verify YAML is valid**
 
