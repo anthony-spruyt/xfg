@@ -203,7 +203,10 @@ jobs:
           EXPECTED_VERSION: ${{ steps.version.outputs.version }}
         run: |
           # Use jq instead of node — this runs before Node.js setup
-          PKG_VERSION=$(jq -r '.version' package.json)
+          PKG_VERSION=$(jq -r '.version' package.json) || {
+            echo "::error::Failed to parse package.json"
+            exit 1
+          }
           if [ "$PKG_VERSION" != "$EXPECTED_VERSION" ]; then
             echo "::error::Version mismatch: expected v${EXPECTED_VERSION} but package.json has v${PKG_VERSION}"
             exit 1
