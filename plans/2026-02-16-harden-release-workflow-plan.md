@@ -14,6 +14,7 @@
 - The commit message format `"chore: release vX.Y.Z"` is critical — Phase 2 depends on it to detect release commits
 - Do not push unrelated commits to main while a release is in progress (between Phase 1 and Phase 2 completing)
 - Check run names for direct (non-reusable) jobs use the job name only (e.g., `publish`), not `Workflow / Job` format — this is how the self-deadlock filter works
+- The `workflow_dispatch` trigger on Phase 2 is a manual escape hatch — it bypasses commit message detection and uses `github.sha` (branch tip). The version cross-check against package.json ensures consistency, but use with care
 
 ---
 
@@ -177,11 +178,14 @@ jobs:
 
       - name: Extract version
         id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ inputs.version }}"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            VERSION="$INPUT_VERSION"
           else
-            COMMIT_MSG="${{ github.event.head_commit.message }}"
             VERSION="${COMMIT_MSG#chore: release v}"
           fi
 
@@ -195,10 +199,13 @@ jobs:
           echo "Detected release version: $VERSION"
 
       - name: Validate version matches package.json
+        env:
+          EXPECTED_VERSION: ${{ steps.version.outputs.version }}
         run: |
-          PKG_VERSION=$(node -p "require('./package.json').version")
-          if [ "$PKG_VERSION" != "${{ steps.version.outputs.version }}" ]; then
-            echo "::error::Version mismatch: commit says v${{ steps.version.outputs.version }} but package.json has v${PKG_VERSION}"
+          # Use jq instead of node — this runs before Node.js setup
+          PKG_VERSION=$(jq -r '.version' package.json)
+          if [ "$PKG_VERSION" != "$EXPECTED_VERSION" ]; then
+            echo "::error::Version mismatch: expected v${EXPECTED_VERSION} but package.json has v${PKG_VERSION}"
             exit 1
           fi
           echo "Version matches package.json: $PKG_VERSION"
