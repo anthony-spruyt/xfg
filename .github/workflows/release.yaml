@@ -25,6 +25,41 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Verify CI passed on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
+          echo "Checking CI status on main ($COMMIT_SHA)..."
+
+          # Exclude release workflow's own check runs
+          CHECK_RUNS=$(gh api "repos/$REPO/commits/$COMMIT_SHA/check-runs" --jq \
+            '[.check_runs[] | select(.name != "release")]')
+
+          TOTAL=$(echo "$CHECK_RUNS" | jq 'length')
+          FAILED=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out"))] | length')
+          PENDING=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status != "completed")] | length')
+
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "::error::No CI check runs found on main HEAD"
+            exit 1
+          fi
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::error::CI has failures on main — fix before releasing"
+            echo "$CHECK_RUNS" | jq -r '.[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out")) | "  - \(.name): \(.conclusion)"'
+            exit 1
+          fi
+
+          if [ "$PENDING" -gt 0 ]; then
+            echo "::error::CI is still running on main — wait for it to finish before releasing"
+            echo "$CHECK_RUNS" | jq -r '.[] | select(.status != "completed") | "  - \(.name): \(.status)"'
+            exit 1
+          fi
+
+          echo "All $TOTAL CI checks passed on main"
+
       - name: Generate app token
         id: app-token
         uses: actions/create-github-app-token@v2
@@ -71,8 +106,8 @@ jobs:
           TIMEOUT=600
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Get all check runs for this commit
-            CHECK_RUNS=$(gh api "repos/$REPO/commits/$COMMIT_SHA/check-runs" --jq '.check_runs')
+            # Get all check runs for this commit, excluding the release workflow's own run
+            CHECK_RUNS=$(gh api "repos/$REPO/commits/$COMMIT_SHA/check-runs" --jq '[.check_runs[] | select(.name != "release")]')
 
             # Count total, completed, successful/skipped, and failed
             TOTAL=$(echo "$CHECK_RUNS" | jq 'length')
