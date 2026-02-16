@@ -21,6 +21,8 @@ EXCLUDED_DIRECTORIES:
   - "coverage"
   - "dist"
   - "site"
+  - "test-cli-tmp"
+  - "test-settings-cmd-tmp"
   - "tmp"
 
 # Exclude intentionally invalid test fixtures from JSON linting
