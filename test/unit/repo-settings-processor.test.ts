@@ -285,7 +285,10 @@ describe("RepoSettingsProcessor", () => {
   });
 
   test("should call setPrivateVulnerabilityReporting for privateVulnerabilityReporting setting", async () => {
-    mockStrategy.getSettingsResult = {};
+    mockStrategy.getSettingsResult = {
+      visibility: "public",
+      owner_type: "User",
+    };
 
     const processor = new RepoSettingsProcessor(mockStrategy);
     const repoConfig: RepoConfig = {
@@ -526,6 +529,381 @@ describe("RepoSettingsProcessor", () => {
       } else {
         delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
       }
+    });
+  });
+
+  describe("security settings validation", () => {
+    test("should fail when privateVulnerabilityReporting is true on a private repo", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "private",
+        owner_type: "User",
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { privateVulnerabilityReporting: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false);
+      assert.ok(
+        result.message.includes("privateVulnerabilityReporting"),
+        `Expected message to mention privateVulnerabilityReporting, got: ${result.message}`
+      );
+      assert.ok(
+        result.message.includes("public"),
+        `Expected message to mention public repos, got: ${result.message}`
+      );
+    });
+
+    test("should fail when privateVulnerabilityReporting is true on a private repo in dry-run mode", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "private",
+        owner_type: "Organization",
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { privateVulnerabilityReporting: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: true,
+      });
+
+      assert.equal(result.success, false);
+      assert.ok(result.message.includes("privateVulnerabilityReporting"));
+    });
+
+    test("should fail when privateVulnerabilityReporting is true on an internal repo", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "internal",
+        owner_type: "Organization",
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { privateVulnerabilityReporting: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false);
+      assert.ok(result.message.includes("privateVulnerabilityReporting"));
+    });
+
+    test("should allow privateVulnerabilityReporting on public repos", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "public",
+        owner_type: "User",
+        private_vulnerability_reporting: false,
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { privateVulnerabilityReporting: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: true,
+      });
+
+      assert.equal(result.success, true);
+    });
+
+    test("should fail when secretScanning is true on a user-owned private repo", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "private",
+        owner_type: "User",
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { secretScanning: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false);
+      assert.ok(result.message.includes("secretScanning"));
+    });
+
+    test("should fail when secretScanningPushProtection is true on a user-owned private repo", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "private",
+        owner_type: "User",
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { secretScanningPushProtection: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false);
+      assert.ok(result.message.includes("secretScanningPushProtection"));
+    });
+
+    test("should fail when secretScanning is true on org-owned private repo without GHAS (security_and_analysis undefined)", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "private",
+        owner_type: "Organization",
+        security_and_analysis: undefined,
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { secretScanning: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false);
+      assert.ok(result.message.includes("secretScanning"));
+    });
+
+    test("should fail when secretScanning is true on org-owned private repo without GHAS (security_and_analysis null)", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "private",
+        owner_type: "Organization",
+        security_and_analysis: null as unknown as undefined,
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { secretScanning: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false);
+      assert.ok(result.message.includes("secretScanning"));
+    });
+
+    test("should fail when secretScanningPushProtection is true on org-owned private repo without GHAS", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "private",
+        owner_type: "Organization",
+        security_and_analysis: undefined,
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { secretScanningPushProtection: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false);
+      assert.ok(result.message.includes("secretScanningPushProtection"));
+    });
+
+    test("should fail when secretScanning is true on internal repo without GHAS", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "internal",
+        owner_type: "Organization",
+        security_and_analysis: undefined,
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { secretScanning: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false);
+      assert.ok(result.message.includes("secretScanning"));
+    });
+
+    test("should allow secretScanning on internal org-owned repo with GHAS enabled", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "internal",
+        owner_type: "Organization",
+        security_and_analysis: {
+          secret_scanning: { status: "disabled" },
+        },
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { secretScanning: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: true,
+      });
+
+      assert.equal(result.success, true);
+    });
+
+    test("should allow secretScanning on org-owned private repo with GHAS enabled", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "private",
+        owner_type: "Organization",
+        security_and_analysis: {
+          secret_scanning: { status: "disabled" },
+        },
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { secretScanning: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: true,
+      });
+
+      assert.equal(result.success, true);
+    });
+
+    test("should allow secretScanning on public repos", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "public",
+        owner_type: "User",
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { secretScanning: true } },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: true,
+      });
+
+      assert.equal(result.success, true);
+    });
+
+    test("should not fail when setting these to false on private repos", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "private",
+        owner_type: "User",
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: {
+            secretScanning: false,
+            secretScanningPushProtection: false,
+            privateVulnerabilityReporting: false,
+          },
+        },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: true,
+      });
+
+      assert.equal(result.success, true);
+    });
+
+    test("should only error on true settings when mixed with false settings on private repo", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "private",
+        owner_type: "User",
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: {
+            secretScanning: true,
+            secretScanningPushProtection: false,
+            privateVulnerabilityReporting: false,
+          },
+        },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false);
+      assert.ok(result.message.includes("secretScanning"));
+      assert.ok(
+        !result.message.includes("privateVulnerabilityReporting"),
+        "Should not mention privateVulnerabilityReporting since it is false"
+      );
+    });
+
+    test("should collect all incompatible settings into one error message", async () => {
+      mockStrategy.getSettingsResult = {
+        visibility: "private",
+        owner_type: "User",
+      };
+
+      const processor = new RepoSettingsProcessor(mockStrategy);
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: {
+            secretScanning: true,
+            secretScanningPushProtection: true,
+            privateVulnerabilityReporting: true,
+          },
+        },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false);
+      assert.ok(result.message.includes("secretScanning"));
+      assert.ok(result.message.includes("secretScanningPushProtection"));
+      assert.ok(result.message.includes("privateVulnerabilityReporting"));
     });
   });
 });

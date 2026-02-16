@@ -5,7 +5,7 @@ import {
   getRepoDisplayName,
 } from "../../shared/repo-detector.js";
 import { GitHubRepoSettingsStrategy } from "./github-repo-settings-strategy.js";
-import type { IRepoSettingsStrategy } from "./types.js";
+import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
 import { diffRepoSettings, hasChanges } from "./diff.js";
 import { formatRepoSettingsPlan, RepoSettingsPlanResult } from "./formatter.js";
 import { hasGitHubAppCredentials } from "../../vcs/index.js";
@@ -97,6 +97,19 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
         githubRepo,
         strategyOptions
       );
+
+      // Validate security settings compatibility
+      const securityErrors = this.validateSecuritySettings(
+        desiredSettings,
+        currentSettings
+      );
+      if (securityErrors.length > 0) {
+        return {
+          success: false,
+          repoName,
+          message: `Failed: ${securityErrors.join("; ")}`,
+        };
+      }
 
       // Compute diff
       const changes = diffRepoSettings(currentSettings, desiredSettings);
@@ -203,6 +216,54 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
         options
       );
     }
+  }
+
+  /**
+   * Validates that desired security settings are compatible with the repo's
+   * visibility and owner type. Returns error messages for incompatible settings.
+   */
+  private validateSecuritySettings(
+    desiredSettings: GitHubRepoSettings,
+    currentSettings: CurrentRepoSettings
+  ): string[] {
+    const errors: string[] = [];
+    const isPublic = currentSettings.visibility === "public";
+
+    // privateVulnerabilityReporting is only available on public repos
+    if (desiredSettings.privateVulnerabilityReporting === true && !isPublic) {
+      errors.push(
+        "privateVulnerabilityReporting is only available for public repositories"
+      );
+    }
+
+    // secretScanning and secretScanningPushProtection:
+    // - Available on public repos (free)
+    // - Available on org private/internal repos with GHAS (security_and_analysis is populated)
+    // - NOT available on user private repos or org private/internal repos without GHAS
+    if (!isPublic) {
+      const isUserOwned = currentSettings.owner_type === "User";
+      const hasGHAS = currentSettings.security_and_analysis != null;
+
+      if (
+        desiredSettings.secretScanning === true &&
+        (isUserOwned || !hasGHAS)
+      ) {
+        errors.push(
+          "secretScanning requires GitHub Advanced Security (not available for this repository)"
+        );
+      }
+
+      if (
+        desiredSettings.secretScanningPushProtection === true &&
+        (isUserOwned || !hasGHAS)
+      ) {
+        errors.push(
+          "secretScanningPushProtection requires GitHub Advanced Security (not available for this repository)"
+        );
+      }
+    }
+
+    return errors;
   }
 
   /**
