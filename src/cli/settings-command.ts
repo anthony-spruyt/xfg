@@ -261,6 +261,7 @@ async function processRulesets(
         }
       } else {
         logger.error(i + 1, repoName, result.message);
+        collector.appendError(repoName, result.message);
       }
 
       results.push({
@@ -351,6 +352,7 @@ async function processRepoSettings(
         logger.success(current, repoName, result.message);
       } else {
         logger.error(current, repoName, result.message);
+        collector.appendError(repoName, result.message);
       }
 
       if (!result.skipped) {

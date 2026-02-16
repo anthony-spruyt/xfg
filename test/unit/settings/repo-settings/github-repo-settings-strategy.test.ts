@@ -263,6 +263,44 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       assert.equal(result.private_vulnerability_reporting, false);
     });
+
+    test("should return private_vulnerability_reporting false when endpoint returns 404", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({ has_issues: true })
+      );
+      mockExecutor.setResponse("vulnerability-alerts", "");
+      mockExecutor.setResponse("automated-security-fixes", "");
+      mockExecutor.setError(
+        "private-vulnerability-reporting",
+        "gh: Not Found (HTTP 404)"
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+      const result = await strategy.getSettings(githubRepo);
+
+      assert.equal(result.private_vulnerability_reporting, false);
+    });
+
+    test("should throw on non-404 errors for private_vulnerability_reporting", async () => {
+      mockExecutor.setResponse(
+        "/repos/test-org/test-repo'",
+        JSON.stringify({ has_issues: true })
+      );
+      mockExecutor.setResponse("vulnerability-alerts", "");
+      mockExecutor.setResponse("automated-security-fixes", "");
+      mockExecutor.setError(
+        "private-vulnerability-reporting",
+        "gh: Server Error (HTTP 500)"
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor);
+
+      await assert.rejects(
+        async () => strategy.getSettings(githubRepo),
+        /HTTP 500/
+      );
+    });
   });
 
   describe("updateSettings", () => {

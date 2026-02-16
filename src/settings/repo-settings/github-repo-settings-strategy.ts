@@ -232,9 +232,17 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     options?: RepoSettingsStrategyOptions
   ): Promise<boolean> {
     const endpoint = `/repos/${github.owner}/${github.repo}/private-vulnerability-reporting`;
-    const result = await this.ghApi("GET", endpoint, undefined, options);
-    const data = JSON.parse(result);
-    return data.enabled === true;
+    try {
+      const result = await this.ghApi("GET", endpoint, undefined, options);
+      const data = JSON.parse(result);
+      return data.enabled === true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("HTTP 404")) {
+        return false; // 404 = not available (e.g. private repos)
+      }
+      throw error; // Re-throw other errors
+    }
   }
 
   private validateGitHub(repoInfo: RepoInfo): void {

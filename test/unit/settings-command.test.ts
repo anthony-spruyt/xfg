@@ -260,7 +260,7 @@ repos:
       assert.ok(output.includes("Warning"));
     });
 
-    test("handles failed repo settings processing", async () => {
+    test("exits with code 1 when repo settings processor returns failure", async () => {
       writeFileSync(
         testConfigPath,
         `id: test-config
@@ -278,16 +278,21 @@ repos:
         message: "Failed to apply settings",
       });
 
-      await runSettings(
-        { config: testConfigPath, dryRun: true },
-        () => createMockRulesetProcessor(),
-        () => createMockRepoProcessor(),
-        () => mockRepoSettingsProcessor,
-        noopLifecycleManager
+      await assert.rejects(
+        async () =>
+          runSettings(
+            { config: testConfigPath, dryRun: true },
+            () => createMockRulesetProcessor(),
+            () => createMockRepoProcessor(),
+            () => mockRepoSettingsProcessor,
+            noopLifecycleManager
+          ),
+        /process\.exit\(1\)/
       );
 
       const output = consoleOutput.join("\n");
       assert.ok(output.includes("Failed to apply settings"));
+      assert.equal(exitCode, 1);
     });
 
     test("handles exception in repo settings processing", async () => {
@@ -515,7 +520,7 @@ repos:
       assert.equal(exitCode, 1);
     });
 
-    test("handles failed ruleset processing", async () => {
+    test("exits with code 1 when ruleset processor returns failure", async () => {
       writeFileSync(
         testConfigPath,
         `id: test-config
@@ -532,16 +537,21 @@ repos:
         message: "Failed to sync rulesets",
       });
 
-      await runSettings(
-        { config: testConfigPath, dryRun: true },
-        () => mockRulesetProcessor,
-        () => createMockRepoProcessor(),
-        () => createMockRepoSettingsProcessor(),
-        noopLifecycleManager
+      await assert.rejects(
+        async () =>
+          runSettings(
+            { config: testConfigPath, dryRun: true },
+            () => mockRulesetProcessor,
+            () => createMockRepoProcessor(),
+            () => createMockRepoSettingsProcessor(),
+            noopLifecycleManager
+          ),
+        /process\.exit\(1\)/
       );
 
       const output = consoleOutput.join("\n");
       assert.ok(output.includes("Failed to sync rulesets"));
+      assert.equal(exitCode, 1);
     });
 
     test("updates manifest when ruleset processing has manifest updates", async () => {
