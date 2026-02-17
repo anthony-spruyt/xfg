@@ -5,6 +5,6 @@
   "private": true,
   "description": "Global tools for devcontainer",
   "dependencies": {
-    "@aikidosec/safe-chain": "1.4.3"
+    "@aikidosec/safe-chain": "1.4.4"
   }
 }
