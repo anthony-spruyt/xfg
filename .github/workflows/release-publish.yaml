@@ -1,0 +1,205 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
+name: Release Publish
+
+on:
+  push:
+    branches:
+      - main
+  # Manual fallback: if Phase 2 fails or doesn't trigger, re-run manually
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g., 3.9.10)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    # For push events: only run for release commits created by Phase 1
+    # For workflow_dispatch: always run (manual fallback)
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.event.head_commit.message, 'chore: release v')
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Extract version
+        id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION="${COMMIT_MSG#chore: release v}"
+          fi
+
+          # Validate semver format (X.Y.Z)
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Invalid version format: '$VERSION' (expected X.Y.Z)"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Detected release version: $VERSION"
+
+      - name: Validate version matches package.json
+        env:
+          EXPECTED_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Use jq instead of node — this runs before Node.js setup
+          PKG_VERSION=$(jq -r '.version' package.json) || {
+            echo "::error::Failed to parse package.json"
+            exit 1
+          }
+          if [ "$PKG_VERSION" != "$EXPECTED_VERSION" ]; then
+            echo "::error::Version mismatch: expected v${EXPECTED_VERSION} but package.json has v${PKG_VERSION}"
+            exit 1
+          fi
+          echo "Version matches package.json: $PKG_VERSION"
+
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - name: Wait for CI to pass
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          echo "Waiting for CI on commit $COMMIT_SHA..."
+
+          TIMEOUT=600
+          ELAPSED=0
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            # Exclude this workflow's own check run.
+            # Direct (non-reusable) job check-run names use the job name only,
+            # not "Workflow Name / Job Name" format.
+            CHECK_RUNS=$(gh api "repos/$REPO/commits/$COMMIT_SHA/check-runs" \
+              --jq '[.check_runs[] | select(.name != "publish")]')
+
+            TOTAL=$(echo "$CHECK_RUNS" | jq 'length')
+            COMPLETED=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status == "completed")] | length')
+            SUCCESSFUL=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status == "completed" and (.conclusion == "success" or .conclusion == "skipped" or .conclusion == "neutral"))] | length')
+            FAILED=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out"))] | length')
+
+            echo "Check runs: $COMPLETED/$TOTAL completed, $SUCCESSFUL successful, $FAILED failed (${ELAPSED}s)"
+
+            if [ "$FAILED" -gt 0 ]; then
+              echo "::error::CI failed on release commit"
+              echo "$CHECK_RUNS" | jq -r '.[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out")) | "  - \(.name): \(.conclusion)"'
+              exit 1
+            fi
+
+            if [ "$TOTAL" -gt 0 ] && [ "$COMPLETED" -eq "$TOTAL" ]; then
+              echo "All $TOTAL check runs passed"
+              break
+            fi
+
+            if [ $ELAPSED -gt 0 ]; then
+              echo "Pending:"
+              echo "$CHECK_RUNS" | jq -r '.[] | select(.status != "completed") | "  - \(.name): \(.status)"'
+            fi
+
+            sleep 15
+            ELAPSED=$((ELAPSED + 15))
+          done
+
+          if [ $ELAPSED -ge $TIMEOUT ]; then
+            echo "::error::Timeout waiting for CI after ${TIMEOUT}s"
+            exit 1
+          fi
+
+      - name: Create lightweight tag
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Idempotency: skip if tag already exists
+          if gh api "repos/$REPO/git/ref/tags/v${VERSION}" &>/dev/null; then
+            echo "Tag v${VERSION} already exists, skipping"
+          else
+            gh api "repos/$REPO/git/refs" \
+              -f ref="refs/tags/v${VERSION}" \
+              -f sha="${{ github.sha }}"
+            echo "Created tag v${VERSION}"
+          fi
+
+      - name: Update floating major version tag
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          MAJOR=$(echo "${VERSION}" | cut -d. -f1)
+          CURRENT_SHA=$(gh api "repos/$REPO/git/ref/tags/v${MAJOR}" --jq '.object.sha' 2>/dev/null || echo "")
+
+          if [ "$CURRENT_SHA" = "${{ github.sha }}" ]; then
+            echo "v${MAJOR} already points to ${{ github.sha }}, skipping"
+          else
+            # Use git/ref (singular) for exact match — git/refs (plural) does prefix matching
+            if [ -n "$CURRENT_SHA" ]; then
+              gh api --method DELETE "repos/$REPO/git/refs/tags/v${MAJOR}"
+              echo "Deleted existing v${MAJOR} tag"
+            fi
+            gh api "repos/$REPO/git/refs" \
+              -f ref="refs/tags/v${MAJOR}" \
+              -f sha="${{ github.sha }}"
+            echo "Updated v${MAJOR} tag to ${{ github.sha }}"
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish to npm
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+
+          # Idempotency: skip if already published
+          if npm view "${PACKAGE_NAME}@${VERSION}" version &>/dev/null; then
+            echo "${PACKAGE_NAME}@${VERSION} already published, skipping"
+          else
+            npm publish --provenance --access public
+            echo "Published ${PACKAGE_NAME}@${VERSION}"
+          fi
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Idempotency: skip if release already exists
+          if gh release view "v${VERSION}" --repo "${{ github.repository }}" &>/dev/null; then
+            echo "Release v${VERSION} already exists, skipping"
+          else
+            gh release create "v${VERSION}" \
+              --repo "${{ github.repository }}" \
+              --generate-notes \
+              --title "v${VERSION}"
+            echo "Created GitHub Release v${VERSION}"
+          fi
