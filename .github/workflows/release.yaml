@@ -16,49 +16,12 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    environment: npm
     steps:
       - uses: actions/checkout@v6
-
-      - name: Verify CI passed on main
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-        run: |
-          COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
-          echo "Checking CI status on main ($COMMIT_SHA)..."
-
-          # Exclude release workflow's own check runs
-          CHECK_RUNS=$(gh api "repos/$REPO/commits/$COMMIT_SHA/check-runs" --jq \
-            '[.check_runs[] | select(.name != "release")]')
-
-          TOTAL=$(echo "$CHECK_RUNS" | jq 'length')
-          FAILED=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out"))] | length')
-          PENDING=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status != "completed")] | length')
-
-          if [ "$TOTAL" -eq 0 ]; then
-            echo "::error::No CI check runs found on main HEAD"
-            exit 1
-          fi
-
-          if [ "$FAILED" -gt 0 ]; then
-            echo "::error::CI has failures on main — fix before releasing"
-            echo "$CHECK_RUNS" | jq -r '.[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out")) | "  - \(.name): \(.conclusion)"'
-            exit 1
-          fi
-
-          if [ "$PENDING" -gt 0 ]; then
-            echo "::error::CI is still running on main — wait for it to finish before releasing"
-            echo "$CHECK_RUNS" | jq -r '.[] | select(.status != "completed") | "  - \(.name): \(.status)"'
-            exit 1
-          fi
-
-          echo "All $TOTAL CI checks passed on main"
 
       - name: Generate app token
         id: app-token
@@ -66,6 +29,20 @@ jobs:
         with:
           app-id: ${{ vars.RELEASE_APP_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - name: Idempotency guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          COMMIT_MSG=$(gh api "repos/$REPO/commits/main" --jq '.commit.message')
+          if [[ "$COMMIT_MSG" == chore:\ release\ v* ]]; then
+            echo "::error::HEAD on main is already a release commit: $COMMIT_MSG"
+            echo "::error::If release-publish failed, re-run it from the Actions tab."
+            echo "::error::If you need a new release, push a commit to main first."
+            exit 1
+          fi
+          echo "HEAD is not a release commit, proceeding"
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -94,94 +71,3 @@ jobs:
           files: |
             package.json
             package-lock.json
-
-      - name: Wait for CI to pass
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          REPO: ${{ github.repository }}
-        run: |
-          COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
-          echo "Waiting for CI on commit $COMMIT_SHA..."
-
-          TIMEOUT=600
-          ELAPSED=0
-          while [ $ELAPSED -lt $TIMEOUT ]; do
-            # Get all check runs for this commit, excluding the release workflow's own run
-            CHECK_RUNS=$(gh api "repos/$REPO/commits/$COMMIT_SHA/check-runs" --jq '[.check_runs[] | select(.name != "release")]')
-
-            # Count total, completed, successful/skipped, and failed
-            TOTAL=$(echo "$CHECK_RUNS" | jq 'length')
-            COMPLETED=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status == "completed")] | length')
-            SUCCESSFUL=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status == "completed" and (.conclusion == "success" or .conclusion == "skipped" or .conclusion == "neutral"))] | length')
-            FAILED=$(echo "$CHECK_RUNS" | jq '[.[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out"))] | length')
-
-            echo "Check runs: $COMPLETED/$TOTAL completed, $SUCCESSFUL successful, $FAILED failed ($ELAPSED seconds)"
-
-            # If any check failed, exit immediately
-            if [ "$FAILED" -gt 0 ]; then
-              echo "CI failed - check runs with failures:"
-              echo "$CHECK_RUNS" | jq -r '.[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out")) | "  - \(.name): \(.conclusion)"'
-              exit 1
-            fi
-
-            # If all checks completed successfully, we're done
-            if [ "$TOTAL" -gt 0 ] && [ "$COMPLETED" -eq "$TOTAL" ]; then
-              echo "All $TOTAL check runs passed"
-              exit 0
-            fi
-
-            # Show pending checks
-            echo "Pending checks:"
-            echo "$CHECK_RUNS" | jq -r '.[] | select(.status != "completed") | "  - \(.name): \(.status)"'
-
-            sleep 15
-            ELAPSED=$((ELAPSED + 15))
-          done
-
-          echo "Timeout waiting for CI"
-          exit 1
-
-      - name: Create lightweight tag
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          REPO="${{ github.repository }}"
-          COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
-          echo "Verified commit: $COMMIT_SHA"
-
-          gh api "repos/$REPO/git/refs" \
-            -f ref="refs/tags/v${VERSION}" \
-            -f sha="$COMMIT_SHA"
-          echo "Created tag v${VERSION}"
-
-      - name: Update floating major version tag
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          VERSION: ${{ steps.version.outputs.version }}
-          REPO: ${{ github.repository }}
-        run: |
-          MAJOR=$(echo "${VERSION}" | cut -d. -f1)
-          COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
-
-          # Delete and recreate the major version tag (e.g., v3)
-          # Use git/ref (singular) for exact match — git/refs (plural) does prefix matching
-          if gh api "repos/$REPO/git/ref/tags/v${MAJOR}" &>/dev/null; then
-            gh api --method DELETE "repos/$REPO/git/refs/tags/v${MAJOR}"
-            echo "Deleted existing v${MAJOR} tag"
-          fi
-          gh api "repos/$REPO/git/refs" \
-            -f ref="refs/tags/v${MAJOR}" \
-            -f sha="$COMMIT_SHA"
-          echo "Updated v${MAJOR} tag to ${COMMIT_SHA}"
-
-      - name: Publish to npm
-        run: npm publish --provenance --access public
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.version.outputs.version }}
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
