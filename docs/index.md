@@ -219,98 +219,186 @@ Customize PR descriptions with [PR templates](configuration/pr-templates.md) usi
 
 ```mermaid
 flowchart TB
-    subgraph Input
-        YAML[/"YAML Config File<br/>files{} + repos[]"/]
+    subgraph Loading["Config Loading"]
+        YAML[/"YAML Config File"/] --> REFS["Resolve @file references"]
+        REFS --> VALIDATE["Validate structure"]
     end
 
     subgraph Normalization
-        EXPAND[Expand git arrays] --> MERGE[Merge base + overlay content<br/>for each file]
-        MERGE --> ENV[Interpolate env vars]
+        EXPAND["Expand git arrays"] --> MERGE["Merge base + overlay content"]
+        MERGE --> ENV["Interpolate env vars<br/><code>${VAR}</code>, <code>${VAR:-default}</code>"]
+        ENV --> OPTS["Resolve PR options &<br/>settings per-repo"]
     end
 
-    subgraph Lifecycle["Repo Lifecycle"]
-        EXIST{Repo Exists?}
-        EXIST -->|Yes| CLONE
-        EXIST -->|No + upstream| FORK[Fork from Upstream]
-        EXIST -->|No + source| MIGRATE[Mirror-Clone & Push]
-        EXIST -->|No| CREATE[Create Empty Repo]
-        FORK --> CLONE
-        MIGRATE --> CLONE
-        CREATE --> CLONE
+    subgraph ForEach["For Each Repository"]
+        LIFECYCLE{"Repo exists?"} -->|Yes| SYNC
+        LIFECYCLE -->|"No + upstream"| FORK["Fork from upstream"] --> SYNC
+        LIFECYCLE -->|"No + source"| MIGRATE["Mirror-clone & push"] --> SYNC
+        LIFECYCLE -->|No| CREATE["Create empty repo"] --> SYNC
+        SYNC["Per-Repo Sync Workflow<br/><i>(see detail below)</i>"]
     end
 
-    subgraph Processing["For Each Repository"]
-        CLONE[Clone Repo] --> DETECT_BRANCH[Detect Default Branch]
-        DETECT_BRANCH --> MODE_CHECK{Direct Mode?}
-        MODE_CHECK -->|No| CLOSE_PR[Close Existing PR<br/>if exists]
-        CLOSE_PR --> BRANCH[Create Fresh Branch]
-        MODE_CHECK -->|Yes| STAY[Stay on Default Branch]
-        BRANCH --> WRITE[Write Config Files]
-        STAY --> WRITE
-        WRITE --> CHECK{Changes?}
-        CHECK -->|No| SKIP[Skip - No Changes]
-        CHECK -->|Yes| COMMIT[Commit & Push]
+    SUMMARY["Generate CI Summary Report"]
+
+    VALIDATE --> EXPAND
+    OPTS --> ForEach
+    ForEach --> SUMMARY
+```
+
+#### Per-Repository Detail
+
+```mermaid
+flowchart TB
+    AUTH["Resolve auth<br/>(GitHub App token / PAT)"] --> AUTH_CHECK{Auth available?}
+    AUTH_CHECK -->|No| SKIP_AUTH["Skip repo"]
+    AUTH_CHECK -->|Yes| MODE["Determine merge mode"]
+
+    MODE --> SESSION["Clean workspace → Clone repo"]
+    SESSION --> DETECT["Detect default branch"]
+
+    DETECT --> MODE_CHECK{Direct mode?}
+    MODE_CHECK -->|No| CLOSE["Close existing PR<br/>+ delete branch + prune"]
+    CLOSE --> BRANCH["Create fresh branch"]
+    MODE_CHECK -->|Yes| STAY["Stay on default branch"]
+
+    BRANCH --> WRITE
+    STAY --> WRITE
+
+    subgraph FileSync["File Sync"]
+        WRITE["Write config files<br/>(xfg template interpolation)"]
+        WRITE --> ORPHANS["Detect & delete<br/>orphaned files"]
+        ORPHANS --> MANIFEST["Update manifest<br/>(.xfg.json)"]
     end
 
-    subgraph Platform["PR/Direct Push"]
-        COMMIT --> DIRECT_CHECK{Direct Mode?}
-        DIRECT_CHECK -->|Yes| DIRECT_PUSH[Push to Default Branch]
-        DIRECT_CHECK -->|No| PR_DETECT{Platform?}
-        PR_DETECT -->|GitHub| GH_PR[Create PR via gh CLI]
-        PR_DETECT -->|Azure DevOps| AZ_PR[Create PR via az CLI]
-        PR_DETECT -->|GitLab| GL_PR[Create MR via glab CLI]
-        GH_PR --> PR_CREATED[PR/MR Created]
-        AZ_PR --> PR_CREATED
-        GL_PR --> PR_CREATED
-        DIRECT_PUSH --> DONE[Done]
-    end
+    MANIFEST --> STAGE["git add -A"]
+    STAGE --> STAGED{Staged changes?}
+    STAGED -->|No| SKIP_NC["Skip — no changes"]
+    STAGED -->|Yes| COMMIT_SELECT{Auth type?}
+    COMMIT_SELECT -->|"GitHub App"| GQL["GraphQL commit<br/>(verified badge)"]
+    COMMIT_SELECT -->|"PAT / CLI"| GIT["Git commit & push"]
 
-    subgraph AutoMerge["Auto-Merge (default)"]
-        PR_CREATED --> MERGE_MODE{Merge Mode?}
-        MERGE_MODE -->|manual| OPEN[Leave PR Open]
-        MERGE_MODE -->|auto| AUTO[Enable Auto-Merge]
-        MERGE_MODE -->|force| FORCE[Bypass & Merge]
-    end
+    GQL --> DIRECT_CHECK
+    GIT --> DIRECT_CHECK
 
-    YAML --> EXPAND
-    ENV --> EXIST
+    DIRECT_CHECK{Direct mode?}
+    DIRECT_CHECK -->|Yes| DONE["Push to default branch ✓"]
+    DIRECT_CHECK -->|No| PR_CREATE
+
+    subgraph PR["PR Creation & Merge"]
+        PR_CREATE["Create PR<br/>(gh / az / glab)"]
+        PR_CREATE --> MERGE_MODE{Merge mode?}
+        MERGE_MODE -->|auto| AUTO_CHECK{"auto-merge<br/>enabled on repo?"}
+        AUTO_CHECK -->|Yes| AUTO["Enable auto-merge"]
+        AUTO_CHECK -->|No| WARN["Warn & leave open"]
+        MERGE_MODE -->|force| FORCE["Bypass & merge"]
+        MERGE_MODE -->|manual| OPEN["Leave PR open"]
+    end
 ```
 
 ### Settings Workflow (`xfg settings`)
 
 ```mermaid
 flowchart TB
-    subgraph Input
-        YAML[/"YAML Config File<br/>settings{} + repos[]"/]
+    subgraph Loading["Config Loading"]
+        YAML[/"YAML Config File"/] --> REFS["Resolve @file references"]
+        REFS --> VALIDATE["Validate structure"]
+        VALIDATE --> VALIDATE_CMD["Validate for settings<br/>(require actionable settings)"]
     end
 
     subgraph Normalization
-        PARSE[Parse config] --> MERGE[Merge base + per-repo<br/>settings overrides]
+        EXPAND["Expand git arrays"] --> MERGE_S["Merge base + per-repo<br/>settings & rulesets"]
     end
 
-    subgraph Lifecycle["Repo Lifecycle"]
-        EXIST{Repo Exists?}
-        EXIST -->|Yes| FETCH
-        EXIST -->|No| CREATE[Create Repo with Settings]
-        CREATE --> FETCH
+    subgraph Lifecycle["Lifecycle Pre-Check (all unique repos)"]
+        EXIST{"Repo exists?"} -->|Yes| READY["Ready"]
+        EXIST -->|"No + upstream"| FORK["Fork"] --> READY
+        EXIST -->|"No + source"| MIGRATE["Migrate"] --> READY
+        EXIST -->|No| CREATE["Create with settings"] --> READY
     end
 
-    subgraph Processing["For Each GitHub Repository"]
-        FETCH[Fetch Current State<br/>via GitHub API] --> DIFF{Compare<br/>Current vs Desired}
-        DIFF -->|No Changes| SKIP[Skip - Already Matches]
-        DIFF -->|Changes Needed| PLAN[Generate Change Plan]
-        PLAN --> DRY{Dry Run?}
-        DRY -->|Yes| SHOW[Show Terraform-Style Diff<br/>+ additions  ~ changes  - removals]
-        DRY -->|No| APPLY[Apply via GitHub API]
+    subgraph Phase1["Phase 1: Rulesets"]
+        RS["For each repo with rulesets<br/><i>(see detail below)</i>"]
     end
 
-    subgraph Settings["What Gets Applied"]
-        APPLY --> REPO[Repository Settings<br/>merge options, security, features]
-        APPLY --> RULES[Rulesets<br/>branch/tag protection rules]
+    subgraph Phase2["Phase 2: Repo Settings"]
+        REPO["For each repo with repo settings<br/><i>(see detail below)</i>"]
     end
 
-    YAML --> PARSE
-    MERGE --> EXIST
+    REPORT["Generate Summary Report"]
+
+    VALIDATE_CMD --> EXPAND
+    MERGE_S --> Lifecycle
+    Lifecycle --> Phase1
+    Phase1 --> Phase2
+    Phase2 --> REPORT
+```
+
+#### Ruleset Processing (per repo)
+
+```mermaid
+flowchart TB
+    GUARD{GitHub repo?} -->|No| SKIP_P["Skip (GitHub only)"]
+    GUARD -->|Yes| TOKEN["Resolve auth token"]
+
+    TOKEN --> LIST["List current rulesets<br/>(summary only)"]
+    LIST --> HYDRATE["Hydrate matching rulesets<br/>(full detail per match)"]
+
+    HYDRATE --> DIFF["Diff: create / update /<br/>delete / unchanged"]
+    DIFF --> PLAN["Format terraform-style plan"]
+    PLAN --> DRY{Dry run?}
+    DRY -->|Yes| SHOW["Show plan ✓"]
+    DRY -->|No| APPLY
+
+    subgraph APPLY["Apply Changes"]
+        direction TB
+        C["POST — create new rulesets"]
+        U["PUT — update changed rulesets"]
+        D["DELETE — remove orphaned<br/>(if deleteOrphaned)"]
+    end
+
+    APPLY --> MANIFEST_CHECK{deleteOrphaned?}
+    MANIFEST_CHECK -->|No| DONE["Done ✓"]
+    MANIFEST_CHECK -->|Yes| MANIFEST["Update manifest via<br/>git clone + commit + PR<br/>(branch: chore/sync-rulesets)"]
+    MANIFEST --> DONE
+```
+
+#### Repo Settings Processing (per repo)
+
+```mermaid
+flowchart TB
+    GUARD{GitHub repo?} -->|No| SKIP_P["Skip (GitHub only)"]
+    GUARD -->|Yes| TOKEN["Resolve auth token"]
+
+    TOKEN --> FETCH
+
+    subgraph FETCH["Fetch Current State (4 API calls)"]
+        direction TB
+        F1["GET /repos — main settings"]
+        F2["GET vulnerability-alerts"]
+        F3["GET automated-security-fixes"]
+        F4["GET private-vulnerability-reporting"]
+    end
+
+    FETCH --> SEC_VAL{"Security settings<br/>valid for repo<br/>visibility/owner?"}
+    SEC_VAL -->|No| SEC_ERR["Error — abort repo"]
+    SEC_VAL -->|Yes| DIFF["Diff: add / change"]
+
+    DIFF --> CHANGES{Changes needed?}
+    CHANGES -->|No| SKIP_NC["Skip — already matches ✓"]
+    CHANGES -->|Yes| PLAN["Format terraform-style plan<br/>(warn on high-impact changes)"]
+    PLAN --> DRY{Dry run?}
+    DRY -->|Yes| SHOW["Show plan ✓"]
+    DRY -->|No| APPLY
+
+    subgraph APPLY["Apply (4 API calls, ordered)"]
+        direction TB
+        A1["PATCH /repos — main settings"]
+        A2["PUT/DELETE vulnerability-alerts"]
+        A3["PUT/DELETE private-vuln-reporting"]
+        A4["PUT/DELETE automated-security-fixes<br/>(last — depends on vuln-alerts)"]
+    end
+
+    APPLY --> DONE["Done ✓"]
 ```
 
 **See [Use Cases](use-cases.md)** for real-world scenarios: platform engineering, CI/CD standardization, security governance, repo migration, and more.
