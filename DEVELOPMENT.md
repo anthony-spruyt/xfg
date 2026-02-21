@@ -9,6 +9,64 @@ This repository uses a VS Code devcontainer for a consistent development experie
 - SSH agent running with keys loaded (see [SSH Agent Setup](#ssh-agent-setup))
 - GitHub token in `~/.secrets/.env` (for GitHub CLI operations)
 
+### Installing Prerequisites
+
+**macOS:**
+
+1. Install [Homebrew](https://brew.sh) if you don't have it:
+
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+
+2. Install VS Code and Docker Desktop:
+
+   ```bash
+   brew install --cask visual-studio-code docker
+   ```
+
+3. Open Docker Desktop and complete the setup wizard. Ensure it is running before opening the devcontainer.
+
+4. Install the Dev Containers extension: open VS Code, then `Cmd+Shift+X` and search for "Dev Containers" (`ms-vscode-remote.remote-containers`).
+
+5. Generate an SSH key if you don't have one:
+
+   ```bash
+   ssh-keygen -t ed25519
+   ```
+
+**Windows:**
+
+1. Install WSL2 from an elevated PowerShell:
+
+   ```powershell
+   wsl --install
+   ```
+
+   This installs WSL2 with Ubuntu by default. Restart when prompted.
+
+2. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) and enable the **WSL 2 backend** in Settings > General.
+
+3. Install [VS Code](https://code.visualstudio.com/) and the [WSL extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl) plus the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+
+4. All development happens inside WSL. Open a WSL terminal to clone the repo and generate your SSH key:
+
+   ```bash
+   ssh-keygen -t ed25519
+   ```
+
+**Linux:**
+
+1. Install [VS Code](https://code.visualstudio.com/) and [Docker Engine](https://docs.docker.com/engine/install/).
+
+2. Install `keychain` for SSH agent management:
+
+   ```bash
+   sudo apt install keychain
+   ```
+
+3. Install the Dev Containers extension: open VS Code, then `Ctrl+Shift+X` and search for "Dev Containers" (`ms-vscode-remote.remote-containers`).
+
 ## Host Directory Structure
 
 The devcontainer expects these directories on your host machine:
