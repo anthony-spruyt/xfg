@@ -23,7 +23,7 @@
     "ghcr.io/devcontainers/features/python": {},
     "ghcr.io/devcontainers/features/azure-cli": {}
   },
-  "initializeCommand": "bash -lc 'eval $(keychain --eval --agents ssh id_ed25519); flock -x ~/.ssh/agent.lock -c \"rm -rf $HOME/.ssh/agent.sock; ln -sf $SSH_AUTH_SOCK $HOME/.ssh/agent.sock\"'",
+  "initializeCommand": "bash ${localWorkspaceFolder}/.devcontainer/initialize.sh",
   "postCreateCommand": "bash -lc \"cd ${containerWorkspaceFolder} && ./.devcontainer/post-create.sh\"",
   "customizations": {
     "vscode": {
