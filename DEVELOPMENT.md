@@ -35,6 +35,8 @@ This repository uses a VS Code devcontainer for a consistent development experie
    ssh-keygen -t ed25519
    ```
 
+6. Add your public key to GitHub: copy the output of `cat ~/.ssh/id_ed25519.pub` and add it at [GitHub Settings > SSH and GPG keys](https://github.com/settings/keys).
+
 **Windows:**
 
 1. Install WSL2 from an elevated PowerShell:
@@ -55,6 +57,8 @@ This repository uses a VS Code devcontainer for a consistent development experie
    ssh-keygen -t ed25519
    ```
 
+5. Add your public key to GitHub: copy the output of `cat ~/.ssh/id_ed25519.pub` and add it at [GitHub Settings > SSH and GPG keys](https://github.com/settings/keys).
+
 **Linux:**
 
 1. Install [VS Code](https://code.visualstudio.com/) and [Docker Engine](https://docs.docker.com/engine/install/).
@@ -65,7 +69,16 @@ This repository uses a VS Code devcontainer for a consistent development experie
    sudo apt install keychain
    ```
 
-3. Install the Dev Containers extension: open VS Code, then `Ctrl+Shift+X` and search for "Dev Containers" (`ms-vscode-remote.remote-containers`).
+3. Generate an SSH key if you don't have one and add it to GitHub:
+
+   ```bash
+   ssh-keygen -t ed25519
+   cat ~/.ssh/id_ed25519.pub
+   ```
+
+   Copy the output and add it at [GitHub Settings > SSH and GPG keys](https://github.com/settings/keys).
+
+4. Install the Dev Containers extension: open VS Code, then `Ctrl+Shift+X` and search for "Dev Containers" (`ms-vscode-remote.remote-containers`).
 
 ## Host Directory Structure
 
@@ -100,15 +113,52 @@ the host and are never copied into the container.
 
 The devcontainer also mounts your `~/.gitconfig` (read-only) for git identity and commit signing.
 
-### SSH Commit Signing
+### Commit Signing
 
-To enable SSH commit signing on your host:
+GitHub requires signed commits for verified badges. You can use either SSH or GPG.
+
+**SSH signing (recommended):**
 
 ```bash
 git config --global gpg.format ssh
 git config --global user.signingkey "$(cat ~/.ssh/id_ed25519.pub)"
 git config --global commit.gpgsign true
 ```
+
+Then add the same public key as a **signing key** at [GitHub Settings > SSH and GPG keys](https://github.com/settings/keys) (this is separate from the authentication key added during setup).
+
+**GPG signing:**
+
+1. Generate a GPG key:
+
+   ```bash
+   gpg --full-generate-key
+   ```
+
+   Select RSA 4096-bit, and use the same email as your GitHub account.
+
+2. Get your key ID:
+
+   ```bash
+   gpg --list-secret-keys --keyid-format=long
+   ```
+
+   The key ID is the hex string after `sec rsa4096/` (e.g., `3AA5C34371567BD2`).
+
+3. Configure git:
+
+   ```bash
+   git config --global user.signingkey <key-id>
+   git config --global commit.gpgsign true
+   ```
+
+4. Export and add to GitHub:
+
+   ```bash
+   gpg --armor --export <key-id>
+   ```
+
+   Copy the output and add it at [GitHub Settings > SSH and GPG keys](https://github.com/settings/keys) under **GPG keys**.
 
 ### macOS
 
