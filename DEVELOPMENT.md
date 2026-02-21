@@ -112,16 +112,24 @@ Create the required structure:
 mkdir -p ~/.claude ~/.secrets ~/.ssh
 chmod 700 ~/.secrets
 touch ~/.secrets/.env ~/.ssh/known_hosts ~/.ssh/allowed_signers
+chmod 600 ~/.secrets/.env
+```
+
+Set your git identity (this also creates `~/.gitconfig`, which the devcontainer mounts):
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
 ```
 
 The `.env` file sets environment variables:
 
 ```bash
 GH_TOKEN=<github-token>
-CONTEXT7_API_KEY=<context7-key>  # Optional, for Context7 MCP plugin
+CONTEXT7_API_KEY=<context7-key>  # Optional, see https://context7.com
 ```
 
-Create a `GH_TOKEN` at [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens) with `repo` and `workflow` scopes.
+Create a classic `GH_TOKEN` at [GitHub Settings > Developer settings > Personal access tokens (classic)](https://github.com/settings/tokens) with `repo` and `workflow` scopes.
 
 ## SSH Agent Setup
 
