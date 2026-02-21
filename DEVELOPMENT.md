@@ -59,6 +59,12 @@ This repository uses a VS Code devcontainer for a consistent development experie
 
 5. Add your public key to GitHub: copy the output of `cat ~/.ssh/id_ed25519.pub` and add it at [GitHub Settings > SSH and GPG keys](https://github.com/settings/keys).
 
+6. Install `keychain` for SSH agent management (used by the devcontainer initialize script):
+
+   ```bash
+   sudo apt install keychain
+   ```
+
 **Linux:**
 
 1. Install [VS Code](https://code.visualstudio.com/) and [Docker Engine](https://docs.docker.com/engine/install/).
@@ -90,13 +96,22 @@ The devcontainer expects these directories on your host machine:
 └── ...                     # Other secrets as needed
 
 ~/.claude/                  # Claude Code settings and memory
+
+~/.ssh/
+├── id_ed25519              # SSH private key
+├── id_ed25519.pub          # SSH public key
+├── known_hosts             # Known host keys (required mount)
+└── allowed_signers         # SSH signing trust store (required mount)
+
+~/.gitconfig                # Git identity and signing config (mounted read-only)
 ```
 
 Create the required structure:
 
 ```bash
-mkdir -p ~/.claude
-touch ~/.secrets/.env
+mkdir -p ~/.claude ~/.secrets ~/.ssh
+chmod 700 ~/.secrets
+touch ~/.secrets/.env ~/.ssh/known_hosts ~/.ssh/allowed_signers
 ```
 
 The `.env` file sets environment variables:
@@ -105,6 +120,8 @@ The `.env` file sets environment variables:
 GH_TOKEN=<github-token>
 CONTEXT7_API_KEY=<context7-key>  # Optional, for Context7 MCP plugin
 ```
+
+Create a `GH_TOKEN` at [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens) with `repo` and `workflow` scopes.
 
 ## SSH Agent Setup
 
@@ -123,11 +140,15 @@ GitHub requires signed commits for verified badges. You can use either SSH or GP
 git config --global gpg.format ssh
 git config --global user.signingkey "$(cat ~/.ssh/id_ed25519.pub)"
 git config --global commit.gpgsign true
+git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
+echo "$(git config --global user.email) $(cat ~/.ssh/id_ed25519.pub)" >> ~/.ssh/allowed_signers
 ```
 
 Then add the same public key as a **signing key** at [GitHub Settings > SSH and GPG keys](https://github.com/settings/keys) (this is separate from the authentication key added during setup).
 
-**GPG signing:**
+**GPG signing (advanced):**
+
+> **Note:** The devcontainer only forwards the SSH agent, not the GPG agent. GPG signing requires additional host-side configuration to forward the GPG socket into the container. SSH signing is recommended for simplicity.
 
 1. Generate a GPG key:
 
@@ -183,16 +204,9 @@ eval "$(keychain --eval --agents ssh id_ed25519)"
 
 The initialize script (`.devcontainer/initialize.sh`) uses `keychain` to start the agent and creates the `~/.ssh/agent.sock` symlink automatically. You just need `keychain` installed and your keys available.
 
-### Windows (Git Bash)
+### Windows
 
-```bash
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
-```
-
-Or enable the OpenSSH Authentication Agent service in Windows Services.
-
-> **Note:** On Windows, you may need to manually create the socket symlink. See the initialize script for details.
+Windows users develop inside WSL, so follow the [Linux/WSL](#linuxwsl) instructions above for SSH agent setup.
 
 ## Troubleshooting
 
@@ -216,22 +230,14 @@ ssh-add --apple-use-keychain ~/.ssh/id_ed25519
 
 If the symlink is missing or broken after reboot on Linux, ensure `keychain` is installed and configured in `~/.bashrc` (not just set in the current terminal session).
 
-## GitHub CLI Setup
-
-The devcontainer loads environment variables from `~/.secrets/.env` on your host. Create this file with a GitHub token for CLI operations:
-
-```bash
-mkdir -p ~/.secrets
-chmod 700 ~/.secrets
-echo "GH_TOKEN=ghp_your_token_here" > ~/.secrets/.env
-chmod 600 ~/.secrets/.env
-```
-
-Create a token at [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens) with `repo` and `workflow` scopes.
-
 ## Opening the Devcontainer
 
-1. Clone the repository
+1. Clone the repository:
+
+   ```bash
+   git clone git@github.com:anthony-spruyt/xfg.git
+   ```
+
 2. Open the folder in VS Code
 3. When prompted, click "Reopen in Container" (or run `Dev Containers: Reopen in Container` from the command palette)
 
