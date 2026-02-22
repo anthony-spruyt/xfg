@@ -260,15 +260,17 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
 
     const command = `echo ${escapeShellArg(requestBody)} | ${tokenPrefix}gh api graphql ${hostnameArg} --input -`;
 
-    const response = await withRetry(
-      () => this.executor.exec(command, workDir),
-      {
+    let response: string;
+    try {
+      response = await withRetry(() => this.executor.exec(command, workDir), {
         permanentErrorPatterns: [
           ...DEFAULT_PERMANENT_ERROR_PATTERNS,
           ...OID_MISMATCH_PATTERNS,
         ],
-      }
-    );
+      });
+    } catch (error) {
+      throw this.sanitizeCommandError(error, repositoryNameWithOwner);
+    }
 
     // Parse the response
     const parsed = JSON.parse(response);
@@ -350,6 +352,37 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
         );
       }
     }
+  }
+
+  /**
+   * Sanitize command execution errors to remove the GraphQL payload.
+   * Node.js execSync errors include "Command failed: <full command>\n<stderr>".
+   * The command contains the entire GraphQL mutation payload (potentially megabytes
+   * of base64-encoded file contents). This extracts just the meaningful stderr.
+   */
+  private sanitizeCommandError(error: unknown, repo: string): Error {
+    const originalMessage =
+      error instanceof Error ? error.message : String(error);
+
+    let cleanMessage: string;
+
+    if (originalMessage.startsWith("Command failed:")) {
+      // Extract stderr: everything after the first newline
+      const newlineIndex = originalMessage.indexOf("\n");
+      cleanMessage =
+        newlineIndex >= 0
+          ? originalMessage.substring(newlineIndex + 1).trim()
+          : "unknown error";
+    } else {
+      cleanMessage = originalMessage;
+    }
+
+    // Safety truncation for any remaining oversized messages
+    if (cleanMessage.length > 2000) {
+      cleanMessage = cleanMessage.substring(0, 2000) + "... (truncated)";
+    }
+
+    return new Error(`GraphQL commit failed for ${repo}: ${cleanMessage}`);
   }
 
   /**

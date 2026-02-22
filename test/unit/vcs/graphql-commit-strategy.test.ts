@@ -1177,6 +1177,100 @@ describe("GraphQLCommitStrategy", () => {
       );
     });
 
+    test("sanitizes error messages to exclude GraphQL payload", async () => {
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
+
+      // Simulate the real error from execSync: "Command failed: echo '<huge JSON>' | gh api graphql --input -\n<stderr>"
+      // In production, the JSON contains all files' base64-encoded contents (megabytes)
+      const hugePayload = "x".repeat(100_000);
+      const errorMessage = `Command failed: echo '${hugePayload}' | gh api graphql --input -\ngh: Resource not accessible by integration (createCommitOnBranch)`;
+      mockExecutor.responses.set("gh api graphql", new Error(errorMessage));
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Test",
+        fileChanges: [{ path: "test.txt", content: "content" }],
+        workDir: testDir,
+      };
+
+      try {
+        await strategy.commit(options);
+        assert.fail("Should have thrown");
+      } catch (error) {
+        const err = error as Error;
+        // Error should NOT contain the huge payload
+        assert.ok(
+          err.message.length < 1000,
+          `Error message should be concise, got ${err.message.length} chars`
+        );
+        // Error should contain the meaningful stderr
+        assert.ok(
+          err.message.includes("Resource not accessible by integration"),
+          `Should include meaningful error. Got: ${err.message}`
+        );
+        // Error should identify the repo
+        assert.ok(
+          err.message.includes("owner/repo"),
+          `Should identify the repo. Got: ${err.message}`
+        );
+      }
+    });
+
+    test("sanitized OID mismatch errors are still retryable by outer loop", async () => {
+      let revParseCallCount = 0;
+
+      mockExecutor.responses.set("git ls-remote", "abc123\trefs/heads/main");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", () => {
+        revParseCallCount++;
+        if (revParseCallCount <= 1) {
+          return "oldsha123";
+        }
+        return "newsha456";
+      });
+
+      // First call fails with OID mismatch embedded in a Command failed error (with huge payload)
+      let graphqlCallCount = 0;
+      const hugePayload = "y".repeat(50_000);
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) {
+          throw new Error(
+            `Command failed: echo '${hugePayload}' | gh api graphql --input -\nExpected branch to point to abc123 but it points to xyz789`
+          );
+        }
+        return JSON.stringify({
+          data: {
+            createCommitOnBranch: {
+              commit: { oid: "successsha" },
+            },
+          },
+        });
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const options: CommitOptions = {
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Test OID retry with sanitization",
+        fileChanges: [{ path: "test.txt", content: "content" }],
+        workDir: testDir,
+        retries: 3,
+      };
+
+      const result = await strategy.commit(options);
+
+      assert.equal(result.sha, "successsha");
+      assert.ok(
+        graphqlCallCount >= 2,
+        "Should have retried after sanitized OID mismatch error"
+      );
+    });
+
     test("does not include GH_TOKEN prefix when no token is provided", async () => {
       // When no token is provided, rely on gh CLI's default authentication
       mockExecutor.responses.set(
