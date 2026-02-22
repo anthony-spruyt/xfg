@@ -124,9 +124,10 @@ git config --global user.email "you@example.com"
 
 The `.env` file sets environment variables:
 
-```bash
+```text
 GH_TOKEN=<github-token>
-CONTEXT7_API_KEY=<context7-key>  # Optional, see https://context7.com
+# Optional, see https://context7.com
+# CONTEXT7_API_KEY=<context7-key>
 ```
 
 Create a classic `GH_TOKEN` at [GitHub Settings > Developer settings > Personal access tokens (classic)](https://github.com/settings/tokens) with `repo` and `workflow` scopes.
