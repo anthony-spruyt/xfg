@@ -319,8 +319,13 @@ Rotate credentials regularly to limit the blast radius of a compromise.
 3. Update the allowed signers file:
 
    ```bash
+   # macOS
+   sed -i '' "s|$(cat ~/.ssh/id_ed25519.pub)|$(cat ~/.ssh/id_ed25519_new.pub)|" ~/.ssh/allowed_signers
+   # Linux/WSL
    sed -i "s|$(cat ~/.ssh/id_ed25519.pub)|$(cat ~/.ssh/id_ed25519_new.pub)|" ~/.ssh/allowed_signers
    ```
+
+   If this fails due to special characters in the key, replace the line manually in `~/.ssh/allowed_signers`.
 
 4. Update git signing config (if signing commits):
 
