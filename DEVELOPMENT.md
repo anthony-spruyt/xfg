@@ -151,14 +151,22 @@ Keys added with `--apple-use-keychain` persist across restarts. The initialize s
 
 For passphrase-protected keys, use `keychain` to persist the agent across sessions:
 
+Add the following to `~/.bashrc` or `~/.zshrc`:
+
 ```bash
-# Install: sudo apt install keychain
-# Add to ~/.bashrc or ~/.zshrc:
 # SSH agent setup
 eval "$(keychain --eval --agents ssh id_ed25519)"
+
+# Create stable symlink for devcontainer (only if not already correct)
+export SSH_AUTH_SOCK_LINK="$HOME/.ssh/agent.sock"
+if [ -S "$SSH_AUTH_SOCK" ] && [ -n "$SSH_AUTH_SOCK" ]; then
+  [ -e "$SSH_AUTH_SOCK_LINK" ] && rm -f "$SSH_AUTH_SOCK_LINK"
+  ln -sf "$SSH_AUTH_SOCK" "$SSH_AUTH_SOCK_LINK"
+  export SSH_AUTH_SOCK="$SSH_AUTH_SOCK_LINK"
+fi
 ```
 
-The initialize script (`.devcontainer/initialize.sh`) uses `keychain` to start the agent and creates the `~/.ssh/agent.sock` symlink automatically. You just need `keychain` installed and your keys available.
+`keychain` prompts for your passphrase once per reboot and reuses the agent across terminals. The symlink ensures the devcontainer can mount a consistent SSH agent path (`~/.ssh/agent.sock`) across reboots.
 
 ### Windows
 
