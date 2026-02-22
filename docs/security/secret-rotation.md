@@ -40,7 +40,7 @@ See [GitHub App Authentication](../platforms/github-app.md) for full setup detai
 
 ## Azure DevOps
 
-### Personal Access Token
+### Azure DevOps PAT
 
 1. Generate a new PAT in Azure DevOps > User Settings > Personal access tokens.
 
@@ -56,7 +56,7 @@ See [GitHub App Authentication](../platforms/github-app.md) for full setup detai
 
 ## GitLab
 
-### Personal Access Token
+### GitLab PAT
 
 1. Generate a new PAT in GitLab > User Settings > Access Tokens.
 
