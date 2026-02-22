@@ -294,6 +294,112 @@ glab auth login
 
 Follow the interactive prompts to authenticate with your GitLab instance.
 
+## Secret Rotation
+
+Rotate credentials regularly to limit the blast radius of a compromise.
+
+| Credential                  | Recommended Schedule                  |
+| --------------------------- | ------------------------------------- |
+| GH_TOKEN (GitHub PAT)       | Every 90 days                         |
+| SSH keys                    | Annually                              |
+| Azure DevOps session        | Every 90 days                         |
+| GitLab session              | Every 90 days                         |
+| CONTEXT7_API_KEY / MCP keys | Per provider policy (check dashboard) |
+
+### SSH Keys
+
+1. Generate a new key:
+
+   ```bash
+   ssh-keygen -t ed25519 -C "you@example.com" -f ~/.ssh/id_ed25519_new
+   ```
+
+2. Add the new public key to GitHub at [SSH and GPG keys](https://github.com/settings/keys) (both as an **authentication key** and, if you sign commits, a **signing key**).
+
+3. Update the allowed signers file:
+
+   ```bash
+   sed -i "s|$(cat ~/.ssh/id_ed25519.pub)|$(cat ~/.ssh/id_ed25519_new.pub)|" ~/.ssh/allowed_signers
+   ```
+
+4. Update git signing config (if signing commits):
+
+   ```bash
+   git config --global user.signingkey "$(cat ~/.ssh/id_ed25519_new.pub)"
+   ```
+
+5. Replace the old key:
+
+   ```bash
+   mv ~/.ssh/id_ed25519_new ~/.ssh/id_ed25519
+   mv ~/.ssh/id_ed25519_new.pub ~/.ssh/id_ed25519.pub
+   ```
+
+6. Re-add the key to your SSH agent:
+
+   ```bash
+   # macOS
+   ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+   # Linux/WSL
+   ssh-add ~/.ssh/id_ed25519
+   ```
+
+7. Remove the old public key from GitHub after confirming the new key works:
+
+   ```bash
+   ssh -T git@github.com
+   ```
+
+### GH_TOKEN (GitHub PAT)
+
+1. Generate a new classic token at [GitHub Settings > Personal access tokens (classic)](https://github.com/settings/tokens) with `repo` and `workflow` scopes.
+
+2. Update `~/.secrets/.env`:
+
+   ```text
+   GH_TOKEN=<new-token>
+   ```
+
+3. Rebuild the devcontainer to pick up the new token (Command Palette > "Dev Containers: Rebuild Container").
+
+4. Verify:
+
+   ```bash
+   gh auth status
+   ```
+
+### Azure DevOps
+
+Azure CLI uses browser-based login. Re-authenticate when your session expires:
+
+```bash
+az login
+```
+
+### GitLab
+
+Re-authenticate when your session or token expires:
+
+```bash
+glab auth login
+```
+
+If using a personal access token, generate a new one in GitLab > User Settings > Access Tokens, then re-run `glab auth login` with the new token.
+
+### Dev Environment API Keys
+
+For CONTEXT7_API_KEY and other MCP server API keys:
+
+1. Regenerate the key from the provider's dashboard (e.g., [context7.com](https://context7.com) for CONTEXT7_API_KEY).
+
+2. Update `~/.secrets/.env`:
+
+   ```text
+   CONTEXT7_API_KEY=<new-key>
+   ```
+
+3. Rebuild the devcontainer to pick up the new value.
+
 ## Development Commands
 
 ```bash
