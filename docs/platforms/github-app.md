@@ -18,8 +18,10 @@ For enterprises that prefer GitHub Apps over personal access tokens (PATs).
 2. Click "New GitHub App"
 3. Configure permissions:
    - **Repository permissions:**
+     - Administration: Read and write _(required for repo lifecycle: create, archive, fork, etc.)_
      - Contents: Read and write
      - Pull requests: Read and write
+     - Workflows: Read and write _(required if syncing `.github/workflows/` files)_
    - **Where can this GitHub App be installed?** Any account
 4. Create the app and note the **App ID**
 5. Generate a **private key** (downloads a .pem file)
@@ -102,7 +104,10 @@ The app lacks required permissions. Check that:
 
 - Contents permission is set to "Read and write"
 - Pull requests permission is set to "Read and write"
+- Workflows permission is set to "Read and write" (if syncing `.github/workflows/` files)
 - The app is installed on the target repository
+
+> **Note:** The Workflows permission is required when syncing workflow files (`.github/workflows/`) because the `createCommitOnBranch` GraphQL mutation enforces this separately from the Contents permission. Without it, git push may succeed but the GraphQL commit will fail.
 
 ### Commits not showing as verified
 
