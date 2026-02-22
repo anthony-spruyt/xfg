@@ -100,4 +100,6 @@ nav:
       - CLI Options: reference/cli-options.md
       - Config Schema: reference/config-schema.md
   - Troubleshooting: troubleshooting.md
+  - Security:
+      - Secret Rotation: security/secret-rotation.md
   - IDE Integration: ide-integration.md
