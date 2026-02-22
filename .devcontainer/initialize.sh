@@ -12,7 +12,7 @@ mkdir -p "$HOME/.ssh"
 case "$(uname -s)" in
 Darwin)
   # macOS: SSH agent is managed by launchd. Find the socket.
-  SOCK="${SSH_AUTH_SOCK:-$(launchctl getenv SSH_AUTH_SOCK 2>/dev/null || true)}"
+  SOCK="$(launchctl getenv SSH_AUTH_SOCK 2>/dev/null || true)"
   if [ -z "$SOCK" ] || [ ! -S "$SOCK" ]; then
     echo "ERROR: No SSH agent socket found on macOS."
     echo "Run: ssh-add --apple-use-keychain ~/.ssh/id_ed25519"
