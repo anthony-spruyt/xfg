@@ -4,6 +4,7 @@
     "repo-operator": {
       "files": [
         ".devcontainer/devcontainer.json",
+        ".devcontainer/initialize.sh",
         ".devcontainer/package.json",
         ".devcontainer/post-create.sh",
         ".devcontainer/setup-devcontainer.sh",

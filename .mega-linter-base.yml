@@ -17,7 +17,6 @@ ENABLE_LINTERS:
 EXCLUDED_DIRECTORIES:
   - ".claude"
   - ".git"
-  - "docs/plans"
   - "plans"
 FILTER_REGEX_EXCLUDE: "(CLAUDE\\.md$)"
 DEFAULT_BRANCH: "main"
