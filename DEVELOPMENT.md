@@ -135,13 +135,38 @@ Create a classic `GH_TOKEN` at [GitHub Settings > Developer settings > Personal 
 ## SSH Agent Setup
 
 The devcontainer uses SSH agent forwarding via socket mount. Your private keys stay on
-the host and are never copied into the container.
+the host and are never copied into the container. Follow the instructions for your platform below.
 
-The devcontainer also mounts your `~/.gitconfig` (read-only) for git identity and commit signing.
+### macOS
+
+macOS manages the SSH agent via launchd -- no extra tooling is needed. Add your key to the system keychain:
+
+```bash
+ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+```
+
+Keys added with `--apple-use-keychain` persist across restarts. The initialize script (`.devcontainer/initialize.sh`) automatically finds the macOS agent socket and creates the `~/.ssh/agent.sock` symlink that the devcontainer mounts.
+
+### Linux/WSL
+
+For passphrase-protected keys, use `keychain` to persist the agent across sessions:
+
+```bash
+# Install: sudo apt install keychain
+# Add to ~/.bashrc or ~/.zshrc:
+# SSH agent setup
+eval "$(keychain --eval --agents ssh id_ed25519)"
+```
+
+The initialize script (`.devcontainer/initialize.sh`) uses `keychain` to start the agent and creates the `~/.ssh/agent.sock` symlink automatically. You just need `keychain` installed and your keys available.
+
+### Windows
+
+Windows users develop inside WSL, so follow the [Linux/WSL](#linuxwsl) instructions above for SSH agent setup.
 
 ### Commit Signing
 
-GitHub requires signed commits for verified badges. You can use either SSH or GPG.
+GitHub supports signed commits for verified badges. This is optional but recommended.
 
 **SSH signing (recommended):**
 
@@ -189,33 +214,6 @@ Then add the same public key as a **signing key** at [GitHub Settings > SSH and 
    ```
 
    Copy the output and add it at [GitHub Settings > SSH and GPG keys](https://github.com/settings/keys) under **GPG keys**.
-
-### macOS
-
-macOS manages the SSH agent via launchd -- no extra tooling is needed. Add your key to the system keychain:
-
-```bash
-ssh-add --apple-use-keychain ~/.ssh/id_ed25519
-```
-
-Keys added with `--apple-use-keychain` persist across restarts. The initialize script (`.devcontainer/initialize.sh`) automatically finds the macOS agent socket and creates the `~/.ssh/agent.sock` symlink that the devcontainer mounts.
-
-### Linux/WSL
-
-For passphrase-protected keys, use `keychain` to persist the agent across sessions:
-
-```bash
-# Install: sudo apt install keychain
-# Add to ~/.bashrc or ~/.zshrc:
-# SSH agent setup
-eval "$(keychain --eval --agents ssh id_ed25519)"
-```
-
-The initialize script (`.devcontainer/initialize.sh`) uses `keychain` to start the agent and creates the `~/.ssh/agent.sock` symlink automatically. You just need `keychain` installed and your keys available.
-
-### Windows
-
-Windows users develop inside WSL, so follow the [Linux/WSL](#linuxwsl) instructions above for SSH agent setup.
 
 ## Troubleshooting
 
