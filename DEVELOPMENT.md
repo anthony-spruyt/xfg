@@ -22,7 +22,7 @@ This repository uses a VS Code devcontainer for a consistent development experie
 2. Install VS Code and Docker Desktop:
 
    ```bash
-   brew install --cask visual-studio-code docker
+   brew install --cask visual-studio-code docker-desktop
    ```
 
 3. Open Docker Desktop and complete the setup wizard. Ensure it is running before opening the devcontainer.
@@ -32,7 +32,7 @@ This repository uses a VS Code devcontainer for a consistent development experie
 5. Generate an SSH key if you don't have one:
 
    ```bash
-   ssh-keygen -t ed25519
+   ssh-keygen -t ed25519 -C "you@example.com"
    ```
 
 6. Add your public key to GitHub: copy the output of `cat ~/.ssh/id_ed25519.pub` and add it at [GitHub Settings > SSH and GPG keys](https://github.com/settings/keys).
@@ -54,7 +54,7 @@ This repository uses a VS Code devcontainer for a consistent development experie
 4. All development happens inside WSL. Open a WSL terminal to clone the repo and generate your SSH key:
 
    ```bash
-   ssh-keygen -t ed25519
+   ssh-keygen -t ed25519 -C "you@example.com"
    ```
 
 5. Add your public key to GitHub: copy the output of `cat ~/.ssh/id_ed25519.pub` and add it at [GitHub Settings > SSH and GPG keys](https://github.com/settings/keys).
@@ -78,7 +78,7 @@ This repository uses a VS Code devcontainer for a consistent development experie
 3. Generate an SSH key if you don't have one and add it to GitHub:
 
    ```bash
-   ssh-keygen -t ed25519
+   ssh-keygen -t ed25519 -C "you@example.com"
    cat ~/.ssh/id_ed25519.pub
    ```
 
