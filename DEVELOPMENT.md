@@ -225,11 +225,47 @@ Then add the same public key as a **signing key** at [GitHub Settings > SSH and 
 
 ## Troubleshooting
 
-### Devcontainer fails to start after reboot with mount error
+### Devcontainer fails to start with SSH agent mount error
+
+The SSH agent socket mount can fail after a reboot, sleep/wake cycle, or agent restart. The symptoms differ by platform but the root cause is the same: Docker tries to mount a socket path that no longer exists.
+
+#### macOS
+
+**Error**: `bind source path does not exist: /socket_mnt/private/tmp/com.apple.launchd.…/Listeners`
+
+**Cause**: macOS launchd creates a new SSH agent socket path on each reboot (under `/private/tmp/com.apple.launchd.<random>/Listeners`). The `~/.ssh/agent.sock` symlink still points to the old path. Docker Desktop resolves the symlink through its Linux VM (the `/socket_mnt/` prefix), and the old target no longer exists.
+
+**Solution** (run in a host terminal, not inside the container):
+
+1. Ensure the agent has your key:
+
+   ```bash
+   ssh-add --apple-use-keychain ~/.ssh/id_ed25519
+   ```
+
+2. Refresh the symlink to the current socket:
+
+   ```bash
+   ln -sf "$SSH_AUTH_SOCK" ~/.ssh/agent.sock
+   ```
+
+3. Verify the symlink target is a live socket:
+
+   ```bash
+   ls -la ~/.ssh/agent.sock
+   ```
+
+4. **Rebuild the devcontainer** (not just Reopen): Command Palette > "Dev Containers: Rebuild Container"
+
+> **Note:** "Reopen in Container" reuses the old container configuration with the stale mount path. You must **Rebuild** so Docker re-resolves the symlink target.
+
+The `initialize.sh` script runs this symlink refresh automatically, but if the script's environment doesn't have `SSH_AUTH_SOCK` set (e.g., when VS Code launches from Spotlight rather than a terminal), it may pick up a stale value from `launchctl getenv`. Opening a fresh terminal and running the steps above ensures the correct socket path is used.
+
+#### Linux / WSL
 
 **Error**: `error mounting "..." to rootfs at "/ssh-agent": not a directory`
 
-**Cause**: The SSH agent socket path changed after reboot, but your devcontainer was created with the old path.
+**Cause**: The SSH agent socket path changed after reboot, but the `~/.ssh/agent.sock` symlink still points to the old path.
 
 **Solution**:
 
@@ -237,13 +273,7 @@ Then add the same public key as a **signing key** at [GitHub Settings > SSH and 
 2. Verify the symlink exists: `ls -la ~/.ssh/agent.sock`
 3. **Rebuild the devcontainer**: Command Palette > "Dev Containers: Rebuild Container"
 
-On macOS, the initialize script handles the socket path automatically. If the agent is not running or keys are missing, re-add them:
-
-```bash
-ssh-add --apple-use-keychain ~/.ssh/id_ed25519
-```
-
-If the symlink is missing or broken after reboot on Linux, ensure `keychain` is installed and configured in `~/.bashrc` (not just set in the current terminal session).
+If the symlink is missing or broken after reboot, ensure `keychain` is installed and configured in `~/.bashrc` (not just set in the current terminal session). The `keychain` approach creates a stable socket path that survives reboots, unlike the macOS launchd socket which changes each time.
 
 ## Opening the Devcontainer
 
