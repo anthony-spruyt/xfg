@@ -117,8 +117,6 @@
       "Read(./**/.netrc)",
       "Read(./**/.vault-token)",
       "Read(./**/.ssh/config)",
-      "Read(./**/*token*)",
-      "Read(./**/*secret*)",
       "Read(~/.ssh/*)",
       "Read(~/.ssh/**/*)",
       "Read(~/.aws/credentials)",
