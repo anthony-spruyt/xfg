@@ -372,9 +372,10 @@ interface LabelsPlanResult {
 ### Settings Command (`settings-command.ts`)
 
 - Add `reposWithLabels` filter
-- Add `processLabels()` function (same shape as `processRulesets()`)
+- Add `processLabels()` function — same shape as `processRulesets()`, requires both `ILabelsProcessor` and `repoProcessor` (for `updateManifestOnly()`)
 - Update `runSettings()` — add `labelsProcessorFactory` parameter
 - Update "no settings" check and total counter
+- `processLabels()` must use the find-and-merge pattern from `processRepoSettings()` (not push-new like `processRulesets()`) when adding to the `results` array, since a repo may already have rulesets/settings entries
 
 ### Report Builder (`settings-report-builder.ts`)
 
@@ -386,6 +387,16 @@ interface LabelsPlanResult {
 - Add `LabelChange` type
 - Add labels to `SettingsReport.totals`
 - Update CLI and markdown formatters
+
+### GitHub Summary (`output/github-summary.ts`)
+
+- Add `LabelsPlanDetail` type and `labelsPlanDetails` field to `RepoResult`
+- Update `formatChangesColumn()` and plan details rendering to include labels
+
+### Unified Summary (`output/unified-summary.ts`)
+
+- Update `renderSettingsLines()` to render label changes alongside settings and rulesets
+- Update `formatCombinedSummary()` to include labels totals section
 
 ### Manifest (`sync/manifest.ts`)
 
@@ -413,6 +424,7 @@ interface LabelsPlanResult {
 
 ### Normalizer (`config/normalizer.ts`)
 
+- Update root settings normalization block (lines 311-334) — filter `inherit` and `false` entries from `raw.settings.labels` and populate `normalizedRootSettings.labels`. Without this, root-level labels would be silently dropped from `Config.settings.labels` and unavailable for per-repo inheritance.
 - Add labels merge logic within `mergeSettings()` — same pattern as rulesets merge (lines 91-130)
 - Extract `mergeLabels()` helper for testability, called from `mergeSettings()`
 - Strip `#` from color values during normalization
@@ -447,18 +459,20 @@ interface LabelsPlanResult {
 | `test/unit/labels-processor.test.ts`            | Processor tests                         |
 | `docs/configuration/labels.md`                  | Labels documentation page               |
 
-### Modified Files (20)
+### Modified Files (22)
 
 | File                                  | Change                                                                                                                                                                          |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/config/types.ts`                 | Add `Label`, add `labels` to `RawRepoSettings` and `RepoSettings`                                                                                                               |
-| `src/config/normalizer.ts`            | Add `mergeLabels()` helper, call from `mergeSettings()`                                                                                                                         |
+| `src/config/normalizer.ts`            | Update root settings normalization block, add `mergeLabels()` helper, call from `mergeSettings()`                                                                               |
 | `src/config/validator.ts`             | Add `validateLabels()`, update `validateSettings()`, `hasActionableSettings()`, error messages                                                                                  |
 | `config-schema.json`                  | Add `label` definition, add `labels` to `repoSettings` with inherit/false support                                                                                               |
-| `src/cli/settings-command.ts`         | Add `processLabels()`, update `runSettings()`, three-way emptiness check, total counter                                                                                         |
+| `src/cli/settings-command.ts`         | Add `processLabels()` (with find-and-merge pattern), update `runSettings()`, three-way emptiness check, total counter                                                           |
 | `src/cli/types.ts`                    | Add `LabelsProcessorFactory`                                                                                                                                                    |
 | `src/cli/settings-report-builder.ts`  | Add `labelsResult` to `ProcessorResults`, labels totals                                                                                                                         |
 | `src/output/settings-report.ts`       | Add `LabelChange` to `RepoChanges`, update CLI + markdown formatters, summary                                                                                                   |
+| `src/output/github-summary.ts`        | Add `LabelsPlanDetail` type and `labelsPlanDetails` to `RepoResult`, update `formatChangesColumn()` and plan details rendering                                                  |
+| `src/output/unified-summary.ts`       | Update `renderSettingsLines()` for labels, update `formatCombinedSummary()` for labels totals                                                                                   |
 | `src/sync/manifest.ts`                | Add `labels` to `XfgManifestConfigEntry`, `getManagedLabels()`, `updateManifestLabels()`, update `updateManifest()` and `updateManifestRulesets()` to preserve `labels` sibling |
 | `src/sync/manifest-strategy.ts`       | Update `ManifestUpdateParams` to `{ rulesets?: string[], labels?: string[] }`, call `updateManifestLabels()` in `execute()`, update commit message                              |
 | `src/sync/repository-processor.ts`    | Update `updateManifestOnly()` pre-check to handle both rulesets and labels                                                                                                      |
@@ -480,7 +494,7 @@ interface LabelsPlanResult {
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `labels-diff.test.ts`      | create, update, delete, unchanged, rename, case-insensitive, deleteOrphaned, noDelete, rename collision detection, rename chain detection, description null/undefined/empty equivalence |
 | `labels-formatter.test.ts` | Each action type, rename display, summary line                                                                                                                                          |
-| `labels-converter.test.ts` | normalizeColor (strip #, lowercase), configToGitHub payload, URL encoding of label names                                                                                                |
+| `labels-converter.test.ts` | normalizeColor (strip #, lowercase), labelConfigToPayload, URL encoding of label names                                                                                                  |
 | `labels-processor.test.ts` | Mocked strategy, dry-run, skip non-GitHub, auth token, manifest, apply ordering (deletes → updates → creates), pagination (100+ labels)                                                 |
 
 ### Updated Tests
