@@ -61,13 +61,44 @@ function getGitDisplayName(git: string | string[]): string {
 }
 
 /**
- * Validates settings object containing rulesets.
+ * Validates a single label configuration.
+ */
+function validateLabel(label: unknown, name: string, context: string): void {
+  if (typeof label !== "object" || label === null || Array.isArray(label)) {
+    throw new Error(`${context}: label '${name}' must be an object`);
+  }
+  const l = label as Record<string, unknown>;
+  if (typeof l.color !== "string" || !/^#?[0-9a-fA-F]{6}$/.test(l.color)) {
+    throw new Error(
+      `${context}: label '${name}' color must be a 6-character hex code (with or without #)`
+    );
+  }
+  if (l.description !== undefined) {
+    if (typeof l.description !== "string") {
+      throw new Error(
+        `${context}: label '${name}' description must be a string`
+      );
+    }
+    if (l.description.length > 100) {
+      throw new Error(
+        `${context}: label '${name}' description exceeds 100 characters (GitHub limit)`
+      );
+    }
+  }
+  if (l.new_name !== undefined && typeof l.new_name !== "string") {
+    throw new Error(`${context}: label '${name}' new_name must be a string`);
+  }
+}
+
+/**
+ * Validates settings object containing rulesets, labels, and repo settings.
  */
 export function validateSettings(
   settings: unknown,
   context: string,
   rootRulesetNames?: string[],
-  hasRootRepoSettings?: boolean
+  hasRootRepoSettings?: boolean,
+  rootLabelNames?: string[]
 ): void {
   if (
     typeof settings !== "object" ||
@@ -104,6 +135,30 @@ export function validateSettings(
       }
 
       validateRuleset(ruleset, name, context);
+    }
+  }
+
+  // Validate labels
+  if (s.labels !== undefined) {
+    if (
+      typeof s.labels !== "object" ||
+      s.labels === null ||
+      Array.isArray(s.labels)
+    ) {
+      throw new Error(`${context}: labels must be an object`);
+    }
+    const labels = s.labels as Record<string, unknown>;
+    for (const [name, label] of Object.entries(labels)) {
+      if (name === "inherit") continue;
+      if (label === false) {
+        if (rootLabelNames && !rootLabelNames.includes(name)) {
+          throw new Error(
+            `${context}: Cannot opt out of label '${name}' - not defined in root settings.labels`
+          );
+        }
+        continue;
+      }
+      validateLabel(label, name, context);
     }
   }
 
@@ -308,6 +363,13 @@ export function validateRawConfig(config: RawConfig): void {
     if (config.settings.rulesets && "inherit" in config.settings.rulesets) {
       throw new Error(
         "'inherit' is a reserved key and cannot be used as a ruleset name"
+      );
+    }
+
+    // Check for reserved key 'inherit' at root labels level
+    if (config.settings.labels && "inherit" in config.settings.labels) {
+      throw new Error(
+        "'inherit' is a reserved key and cannot be used as a label name"
       );
     }
   }
@@ -539,11 +601,15 @@ export function validateRawConfig(config: RawConfig): void {
         : [];
       const hasRootRepoSettings =
         config.settings?.repo !== undefined && config.settings.repo !== false;
+      const rootLabelNames = config.settings?.labels
+        ? Object.keys(config.settings.labels).filter((k) => k !== "inherit")
+        : [];
       validateSettings(
         repo.settings,
         `Repo ${getGitDisplayName(repo.git)}`,
         rootRulesetNames,
-        hasRootRepoSettings
+        hasRootRepoSettings,
+        rootLabelNames
       );
     }
   }
@@ -576,20 +642,30 @@ export function validateForSync(config: RawConfig): void {
 
 /**
  * Checks if settings contain actionable configuration.
- * Currently only rulesets, but extensible for future settings features.
  */
 export function hasActionableSettings(
   settings: RawRepoSettings | undefined
 ): boolean {
   if (!settings) return false;
 
-  // Check for rulesets
-  if (settings.rulesets && Object.keys(settings.rulesets).length > 0) {
+  // Check for rulesets (filter out inherit key)
+  if (
+    settings.rulesets &&
+    Object.keys(settings.rulesets).filter((k) => k !== "inherit").length > 0
+  ) {
     return true;
   }
 
   // Check for repo settings
   if (settings.repo && Object.keys(settings.repo).length > 0) {
+    return true;
+  }
+
+  // Check for labels (filter out inherit key)
+  if (
+    settings.labels &&
+    Object.keys(settings.labels).filter((k) => k !== "inherit").length > 0
+  ) {
     return true;
   }
 
@@ -622,7 +698,7 @@ export function validateForSettings(config: RawConfig): void {
 
   if (!rootActionable && !repoActionable) {
     throw new Error(
-      "No actionable settings configured. Currently supported: rulesets. " +
+      "No actionable settings configured. Currently supported: rulesets, repo, labels. " +
         "To sync files instead, use 'xfg sync'. " +
         "See docs: https://anthony-spruyt.github.io/xfg/settings"
     );
