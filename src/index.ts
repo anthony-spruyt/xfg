@@ -16,4 +16,7 @@ export {
   defaultRulesetProcessorFactory,
   type RepoSettingsProcessorFactory,
   defaultRepoSettingsProcessorFactory,
+  type ILabelsProcessor,
+  type LabelsProcessorFactory,
+  defaultLabelsProcessorFactory,
 } from "./cli/index.js";
