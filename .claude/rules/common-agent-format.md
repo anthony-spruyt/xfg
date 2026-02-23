@@ -1,5 +1,5 @@
 ---
-paths: .claude/agents/*.md
+paths: [.claude/agents/*.md]
 ---
 
 # Agent File Format
