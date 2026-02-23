@@ -10,8 +10,10 @@ import {
   saveManifest,
   getManagedFiles,
   getManagedRulesets,
+  getManagedLabels,
   updateManifest,
   updateManifestRulesets,
+  updateManifestLabels,
 } from "../../src/sync/manifest.js";
 
 describe("manifest", () => {
@@ -732,6 +734,119 @@ describe("manifest", () => {
         "middle-rules",
         "zebra-rules",
       ]);
+    });
+  });
+
+  describe("labels tracking", () => {
+    const configId = "test-config";
+
+    test("getManagedLabels returns labels from manifest", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: { labels: ["bug", "feature"] },
+        },
+      };
+      const labels = getManagedLabels(manifest, configId);
+      assert.deepEqual(labels, ["bug", "feature"]);
+    });
+
+    test("getManagedLabels returns empty array for null manifest", () => {
+      const labels = getManagedLabels(null, configId);
+      assert.deepEqual(labels, []);
+    });
+
+    test("updateManifestLabels adds labels to manifest, preserving files and rulesets", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: {
+            files: [".eslintrc.json"],
+            rulesets: ["branch-protection"],
+          },
+        },
+      };
+      const labelsMap = new Map<string, boolean | undefined>();
+      labelsMap.set("bug", true);
+      labelsMap.set("feature", true);
+
+      const { manifest: updated } = updateManifestLabels(
+        manifest,
+        configId,
+        labelsMap
+      );
+
+      assert.deepEqual(updated.configs[configId]?.files, [".eslintrc.json"]);
+      assert.deepEqual(updated.configs[configId]?.rulesets, [
+        "branch-protection",
+      ]);
+      assert.deepEqual(updated.configs[configId]?.labels, ["bug", "feature"]);
+    });
+
+    test("updateManifestLabels detects orphaned labels", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: { labels: ["bug", "stale", "feature"] },
+        },
+      };
+      const labelsMap = new Map<string, boolean | undefined>();
+      labelsMap.set("bug", true);
+      labelsMap.set("feature", true);
+
+      const { labelsToDelete } = updateManifestLabels(
+        manifest,
+        configId,
+        labelsMap
+      );
+
+      assert.deepEqual(labelsToDelete, ["stale"]);
+    });
+
+    test("updateManifest preserves labels sibling when updating files", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: {
+            files: ["old.json"],
+            labels: ["bug"],
+          },
+        },
+      };
+      const filesMap = new Map<string, boolean | undefined>();
+      filesMap.set("new.json", true);
+
+      const { manifest: updated } = updateManifest(
+        manifest,
+        configId,
+        filesMap
+      );
+
+      assert.deepEqual(updated.configs[configId]?.files, ["new.json"]);
+      assert.deepEqual(updated.configs[configId]?.labels, ["bug"]);
+    });
+
+    test("updateManifestRulesets preserves labels sibling when updating rulesets", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: {
+            rulesets: ["old-rule"],
+            labels: ["bug"],
+          },
+        },
+      };
+      const rulesetsMap = new Map<string, boolean | undefined>();
+      rulesetsMap.set("new-rule", true);
+
+      const { manifest: updated } = updateManifestRulesets(
+        manifest,
+        configId,
+        rulesetsMap
+      );
+
+      assert.deepEqual(updated.configs[configId]?.rulesets, ["new-rule"]);
+      assert.deepEqual(updated.configs[configId]?.labels, ["bug"]);
     });
   });
 });
