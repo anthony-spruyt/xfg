@@ -111,7 +111,42 @@ New `label` definition in `config-schema.json`:
 }
 ```
 
-`labels` added to `repoSettings` alongside `rulesets`, with `inherit` and `false` opt-out support.
+`labels` added to `repoSettings` alongside `rulesets`, with `inherit` and `false` opt-out support:
+
+```json
+"labels": {
+  "type": "object",
+  "description": "Map of label names to configurations. Set a label to false to opt out. Set inherit: false to skip all inherited labels.",
+  "properties": {
+    "inherit": {
+      "type": "boolean",
+      "description": "Set to false to skip all inherited root labels. Default: true"
+    }
+  },
+  "additionalProperties": {
+    "oneOf": [
+      {
+        "type": "boolean",
+        "const": false,
+        "description": "Set to false to opt out of this inherited label"
+      },
+      {
+        "$ref": "#/definitions/label"
+      }
+    ]
+  }
+}
+```
+
+### TypeScript Type Additions
+
+```typescript
+// In RawRepoSettings — add alongside rulesets:
+labels?: Record<string, Label | false> & { inherit?: boolean };
+
+// In RepoSettings (normalized) — add alongside rulesets:
+labels?: Record<string, Label>;
+```
 
 ## Architecture
 
@@ -177,12 +212,16 @@ interface ILabelsStrategy {
 
 ### GitHub API Mapping
 
-| Operation | Endpoint                                     | Notes                                       |
-| --------- | -------------------------------------------- | ------------------------------------------- |
-| List      | `GET /repos/{owner}/{repo}/labels`           | Paginated                                   |
-| Create    | `POST /repos/{owner}/{repo}/labels`          | Body: `{ name, color, description }`        |
-| Update    | `PATCH /repos/{owner}/{repo}/labels/{name}`  | Body: `{ new_name?, color?, description? }` |
-| Delete    | `DELETE /repos/{owner}/{repo}/labels/{name}` |                                             |
+| Operation | Endpoint                                     | Notes                                               |
+| --------- | -------------------------------------------- | --------------------------------------------------- |
+| List      | `GET /repos/{owner}/{repo}/labels`           | Use `gh api --paginate` (repos can have 30+ labels) |
+| Create    | `POST /repos/{owner}/{repo}/labels`          | Body: `{ name, color, description }`                |
+| Update    | `PATCH /repos/{owner}/{repo}/labels/{name}`  | Body: `{ new_name?, color?, description? }`         |
+| Delete    | `DELETE /repos/{owner}/{repo}/labels/{name}` |                                                     |
+
+**URL encoding:** Label names can contain spaces, emoji, and special characters. The `{name}` path parameter must be URL-encoded via `encodeURIComponent()` in PATCH and DELETE calls. Verify `gh api` auto-encoding behavior during implementation; if not handled, encode explicitly.
+
+**Pagination:** The list endpoint returns max 100 labels per page. Use `gh api --paginate` to fetch all pages. This is the first usage of `--paginate` in the codebase.
 
 ### Auth
 
@@ -196,9 +235,10 @@ Same pattern as rulesets/repo-settings:
 
 ```typescript
 interface LabelsProcessorOptions {
-  dryRun: boolean;
-  managedLabels?: string[];
-  noDelete: boolean;
+  configId: string;
+  dryRun?: boolean;
+  managedLabels: string[];
+  noDelete?: boolean;
   token?: string;
 }
 
@@ -224,14 +264,16 @@ interface LabelsProcessorResult {
 ### Processing Flow
 
 1. Skip if not GitHub repo
-2. Fetch current labels from API (`GET /repos/{owner}/{repo}/labels`)
+2. Fetch current labels from API (`GET /repos/{owner}/{repo}/labels` with `--paginate`)
 3. Normalize desired config (strip `#` from colors)
-4. `diffLabels()` — compare current vs desired
+4. `diffLabels()` — compare current vs desired, detect rename collisions
 5. Format plan via `formatLabelsPlan()`
 6. If dry-run: return plan only
-7. Apply changes: create/update/delete via strategy (renames use `new_name`)
+7. Apply changes in order: **deletes first, then renames/updates, then creates** (prevents rename collisions with existing labels that are being removed)
 8. Compute manifest update for `deleteOrphaned`
 9. Return result
+
+**Apply ordering rationale:** Deletes must run first so that renames targeting a name that was previously occupied succeed. Creates run last to avoid colliding with labels about to be renamed away.
 
 ## Diff Logic
 
@@ -248,12 +290,24 @@ Matching: case-insensitive by name (GitHub label names are case-insensitive).
 
 Color comparison: case-insensitive bare hex (strip `#`, lowercase both sides).
 
+**Description comparison:** `undefined` in config means "do not compare" (leave current value). An explicit empty string `""` means "set to empty." GitHub API returns `null` for labels without descriptions — treat `null` and `undefined` as equivalent when comparing (neither triggers an update).
+
 Change types:
 
 - **create** — desired name not in current
 - **update** — exists but color, description, or `new_name` differs
 - **delete** — in `managedLabels` but not in desired, `deleteOrphaned` enabled, `noDelete` false
 - **unchanged** — exists and all properties match
+
+### Rename Collision Detection
+
+When `new_name` is set on a desired label, `diffLabels()` must check:
+
+1. The target `new_name` does not collide with another current label (unless that label is being deleted or renamed away in the same diff)
+2. Two labels don't rename to the same target name
+3. No rename chains (A→B and B→C) — flag as error, require separate runs
+
+If a collision is detected, the diff should return an error result rather than attempting the operation.
 
 ## Formatter Output
 
@@ -297,19 +351,32 @@ Plan: 3 labels (1 to create, 1 to update, 1 to delete)
 
 ### Manifest (`sync/manifest.ts`)
 
+- Add `labels?: string[]` to `XfgManifestConfigEntry`
 - Add `getManagedLabels()` and `updateManifestLabels()`
-- Manifest config entry gets `labels?: string[]`
+- Update existing `updateManifest()` to preserve `labels` property (currently only preserves `rulesets`)
+- Update existing `updateManifestRulesets()` to preserve `labels` property (currently only preserves `files`)
+- Without these sibling preservation updates, a files-only or rulesets-only sync would drop the `labels` array from the manifest
+
+### Settings Command: Manifest Update Interface
+
+`IRepositoryProcessor.updateManifestOnly()` currently accepts `{ rulesets: string[] }`. Expand to accept `{ rulesets?: string[], labels?: string[] }` so labels can use the same manifest commit mechanism.
 
 ### Validator (`config/validator.ts`)
 
-- Add `validateLabels()` — color format, description length, reserved `inherit` key
+- Add `validateLabels()` — color format, description length, reserved `inherit` key at root, opt-out of non-existent root labels
+- Add labels validation block inside `validateSettings()` (parallel to rulesets block)
 - Update `validateForSettings()` — include labels in "has actionable config" check
+- Update `hasActionableSettings()` — labels-only configs must be considered actionable
+- Update error message text to mention labels alongside rulesets
 
 ### Normalizer (`config/normalizer.ts`)
 
-- Add `mergeLabels()` — same pattern as rulesets merge
-- Strip `#` from color values
+- Add labels merge logic within `mergeSettings()` — same pattern as rulesets merge (lines 91-130)
+- Extract `mergeLabels()` helper for testability, called from `mergeSettings()`
+- Strip `#` from color values during normalization
 - Support `inherit: false` and `label: false` opt-out
+
+**Color note:** GitHub API responses never include `#` in color values (e.g., `"f29513"` not `"#f29513"`), so normalization only applies to the config/desired side.
 
 ### CLI Types (`cli/types.ts`)
 
@@ -340,36 +407,36 @@ Plan: 3 labels (1 to create, 1 to update, 1 to delete)
 
 ### Modified Files (17)
 
-| File                                  | Change                                                 |
-| ------------------------------------- | ------------------------------------------------------ |
-| `src/config/types.ts`                 | Add `Label`, update `RawRepoSettings`/`RepoSettings`   |
-| `src/config/normalizer.ts`            | Add `mergeLabels()`                                    |
-| `src/config/validator.ts`             | Add `validateLabels()`, update `validateForSettings()` |
-| `config-schema.json`                  | Add `label` definition, `labels` to `repoSettings`     |
-| `src/cli/settings-command.ts`         | Add `processLabels()`, update `runSettings()`          |
-| `src/cli/types.ts`                    | Add `LabelsProcessorFactory`                           |
-| `src/cli/settings-report-builder.ts`  | Add labels to `ProcessorResults` and totals            |
-| `src/output/settings-report.ts`       | Add `LabelChange`, update formatters                   |
-| `src/sync/manifest.ts`                | Add `getManagedLabels()`, `updateManifestLabels()`     |
-| `package.json`                        | Exclude labels types.ts from coverage                  |
-| `mkdocs.yml`                          | Add Labels nav entry                                   |
-| `docs/configuration/index.md`         | Reference labels                                       |
-| `docs/configuration/inheritance.md`   | Add labels inheritance examples                        |
-| `docs/configuration/repo-settings.md` | Mention labels                                         |
-| `docs/platforms/github.md`            | Add labels to supported features                       |
-| `docs/reference/config-schema.md`     | Add Label Config table                                 |
-| Existing test files                   | Update report builder, validator, normalizer tests     |
+| File                                  | Change                                                                                                                                                                          |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/config/types.ts`                 | Add `Label`, add `labels` to `RawRepoSettings` and `RepoSettings`                                                                                                               |
+| `src/config/normalizer.ts`            | Add `mergeLabels()` helper, call from `mergeSettings()`                                                                                                                         |
+| `src/config/validator.ts`             | Add `validateLabels()`, update `validateSettings()`, `hasActionableSettings()`, error messages                                                                                  |
+| `config-schema.json`                  | Add `label` definition, add `labels` to `repoSettings` with inherit/false support                                                                                               |
+| `src/cli/settings-command.ts`         | Add `processLabels()`, update `runSettings()`, three-way emptiness check, total counter                                                                                         |
+| `src/cli/types.ts`                    | Add `LabelsProcessorFactory`, expand `updateManifestOnly` manifest type                                                                                                         |
+| `src/cli/settings-report-builder.ts`  | Add `labelsResult` to `ProcessorResults`, labels totals                                                                                                                         |
+| `src/output/settings-report.ts`       | Add `LabelChange` to `RepoChanges`, update CLI + markdown formatters, summary                                                                                                   |
+| `src/sync/manifest.ts`                | Add `labels` to `XfgManifestConfigEntry`, `getManagedLabels()`, `updateManifestLabels()`, update `updateManifest()` and `updateManifestRulesets()` to preserve `labels` sibling |
+| `package.json`                        | Exclude `src/settings/labels/types.ts` from c8 coverage                                                                                                                         |
+| `mkdocs.yml`                          | Add `Labels: configuration/labels.md` nav entry                                                                                                                                 |
+| `docs/configuration/index.md`         | Reference labels in settings section                                                                                                                                            |
+| `docs/configuration/inheritance.md`   | Add labels inheritance examples                                                                                                                                                 |
+| `docs/configuration/repo-settings.md` | Mention labels as sibling settings feature                                                                                                                                      |
+| `docs/platforms/github.md`            | Add labels to supported features list                                                                                                                                           |
+| `docs/reference/config-schema.md`     | Add Label Config table                                                                                                                                                          |
+| Existing test files                   | Update report builder, validator, normalizer tests                                                                                                                              |
 
 ## Testing
 
 ### New Unit Tests
 
-| Test                       | Coverage                                                                              |
-| -------------------------- | ------------------------------------------------------------------------------------- |
-| `labels-diff.test.ts`      | create, update, delete, unchanged, rename, case-insensitive, deleteOrphaned, noDelete |
-| `labels-formatter.test.ts` | Each action type, rename display, summary line                                        |
-| `labels-converter.test.ts` | normalizeColor (strip #, lowercase), configToGitHub payload                           |
-| `labels-processor.test.ts` | Mocked strategy, dry-run, skip non-GitHub, auth token, manifest                       |
+| Test                       | Coverage                                                                                                                                                                                |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `labels-diff.test.ts`      | create, update, delete, unchanged, rename, case-insensitive, deleteOrphaned, noDelete, rename collision detection, rename chain detection, description null/undefined/empty equivalence |
+| `labels-formatter.test.ts` | Each action type, rename display, summary line                                                                                                                                          |
+| `labels-converter.test.ts` | normalizeColor (strip #, lowercase), configToGitHub payload, URL encoding of label names                                                                                                |
+| `labels-processor.test.ts` | Mocked strategy, dry-run, skip non-GitHub, auth token, manifest, apply ordering (deletes → updates → creates), pagination (100+ labels)                                                 |
 
 ### Updated Tests
 
