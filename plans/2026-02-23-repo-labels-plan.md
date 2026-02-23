@@ -1146,6 +1146,7 @@ Expected: FAIL (module not found)
 
 Follow the same pattern as `src/settings/rulesets/processor.ts`:
 
+- Export `ILabelsProcessor` interface, `LabelsProcessorOptions` type, and `LabelsProcessorResult` type as named exports (required by Task 8 barrel and Task 14 CLI types)
 - Constructor takes optional `ILabelsStrategy` (defaults to `GitHubLabelsStrategy`)
 - Constructor checks `hasGitHubAppCredentials()` for `GitHubAppTokenManager`
 - `process()` method: skip non-GitHub, fetch current, diff, format plan, apply if not dry-run
@@ -1171,6 +1172,7 @@ git commit -m "feat(labels): add labels processor with strategy pattern and mani
 **Files:**
 
 - Create: `src/settings/labels/index.ts`
+- Modify: `src/settings/index.ts`
 
 **Step 1: Write the barrel exports**
 
@@ -1213,15 +1215,19 @@ export {
 export { GitHubLabelsStrategy } from "./github-labels-strategy.js";
 ```
 
-**Step 2: Run build to verify**
+**Step 2: Update `src/settings/index.ts` parent barrel**
+
+Add `export * from "./labels/index.js";` to `src/settings/index.ts` (matching the existing `export * from "./rulesets/index.js"` and `export * from "./repo-settings/index.js"` pattern).
+
+**Step 3: Run build to verify**
 
 Run: `npm run build`
 Expected: PASS
 
-**Step 3: Commit**
+**Step 4: Commit**
 
 ```bash
-git add src/settings/labels/index.ts
+git add src/settings/labels/index.ts src/settings/index.ts
 git commit -m "feat(labels): add barrel exports"
 ```
 
@@ -1415,15 +1421,18 @@ In `src/config/validator.ts`:
    }
    ```
 
-6. Update `hasActionableSettings()`:
+6. Update `hasActionableSettings()` — filter out the `inherit` key (matching the rulesets pattern) to avoid false positives when only `labels: { inherit: false }` is set:
 
    ```typescript
-   if (settings.labels && Object.keys(settings.labels).length > 0) {
+   if (
+     settings.labels &&
+     Object.keys(settings.labels).filter((k) => k !== "inherit").length > 0
+   ) {
      return true;
    }
    ```
 
-7. Update `validateForSettings()` error message to mention labels.
+7. Update `validateForSettings()` error message — change `"Currently supported: rulesets"` to `"Currently supported: rulesets, labels"` (and include `repo` if already listed).
 
 **Step 4: Run tests to verify they pass**
 
@@ -1811,9 +1820,9 @@ Add `processLabels()` function — follow `processRepoSettings()` pattern with f
 
 - Accept an `indexOffset` parameter for correct `[x/n]` logger position numbering (same pattern as `processRepoSettings()`) — the offset should be the sum of preceding repo counts (rulesets + repo-settings repos)
 - Skip non-GitHub repos with `logger.skip()`
-- Get `managedLabels` via `getManagedLabels(null, config.id)`
+- Get `managedLabels` via `getManagedLabels(null, config.id)` — note: this mirrors the rulesets pattern of passing `null` (manifest is written downstream by `updateManifestOnly` but not loaded here). This means orphan deletion via manifest tracking requires two runs: the first run writes the manifest, the second run would need to load it. This is a known limitation shared with rulesets and can be addressed in a follow-up.
 - Call `processor.process(...)`, log plan output with header `${repoName} - Labels:`
-- If `result.manifestUpdate?.labels?.length > 0`, call `repoProcessor.updateManifestOnly(...)` with `{ labels: result.manifestUpdate.labels }` (branch: `chore/sync-labels`)
+- If `result.manifestUpdate?.labels?.length > 0`, call `repoProcessor.updateManifestOnly(...)` with `{ labels: result.manifestUpdate.labels }` (branch: `chore/sync-labels`). Note: repos with both rulesets and labels will produce separate manifest PRs on different branches (`chore/sync-rulesets` vs `chore/sync-labels`). This mirrors the rulesets pattern; consolidation into a single manifest PR can be addressed in a follow-up.
 - Use find-and-merge pattern: check if repo already exists in `results` array
 - Set `collector.getOrCreate(repoName).labelsResult = result`
 
@@ -1846,7 +1855,61 @@ git commit -m "feat(labels): wire labels processing into settings command"
 
 ---
 
-### Task 16: Report builder — add labels support
+### Task 16: Settings report — add labels types and display
+
+> **Note:** This task MUST come before Task 17 (report builder) because Task 17 imports `LabelChange` from `settings-report.ts` and uses `labels` on `RepoChanges` and `SettingsReport.totals`.
+
+**Files:**
+
+- Modify: `src/output/settings-report.ts`
+
+**Step 1: Add LabelChange type and update interfaces**
+
+Import `Label` type. Add `LabelChange`:
+
+```typescript
+export interface LabelChange {
+  name: string;
+  action: "create" | "update" | "delete";
+  newName?: string;
+  propertyChanges?: {
+    property: string;
+    oldValue?: string;
+    newValue?: string;
+  }[];
+  config?: Label;
+}
+```
+
+Add `labels: LabelChange[]` to `RepoChanges`.
+
+Add `labels: { create: number; update: number; delete: number }` to `SettingsReport.totals`.
+
+**Step 2: Update formatSettingsReportCLI**
+
+Add labels rendering after rulesets section. Update empty-repo guard to include `repo.labels.length === 0`. Update `formatSummary()` to include labels totals.
+
+**Step 3: Update formatSettingsReportMarkdown**
+
+Add labels rendering in the markdown diff block. Update empty-repo guard.
+
+**Step 4: Run build and tests**
+
+Run: `npm run build && npm test`
+Expected: PASS
+
+**Step 5: Commit**
+
+```bash
+git add src/output/settings-report.ts
+git commit -m "feat(labels): add labels to settings report CLI and markdown formatters"
+```
+
+---
+
+### Task 17: Report builder — add labels support
+
+> **Note:** This task depends on Task 16 which defines `LabelChange` on `RepoChanges` and `labels` on `SettingsReport.totals`.
 
 **Files:**
 
@@ -1917,56 +1980,6 @@ Expected: PASS
 ```bash
 git add src/cli/settings-report-builder.ts
 git commit -m "feat(labels): add labels to settings report builder"
-```
-
----
-
-### Task 17: Settings report — add labels display
-
-**Files:**
-
-- Modify: `src/output/settings-report.ts`
-
-**Step 1: Add LabelChange type and update interfaces**
-
-Import `Label` type. Add `LabelChange`:
-
-```typescript
-export interface LabelChange {
-  name: string;
-  action: "create" | "update" | "delete";
-  newName?: string;
-  propertyChanges?: {
-    property: string;
-    oldValue?: string;
-    newValue?: string;
-  }[];
-  config?: Label;
-}
-```
-
-Add `labels: LabelChange[]` to `RepoChanges`.
-
-Add `labels: { create: number; update: number; delete: number }` to `SettingsReport.totals`.
-
-**Step 2: Update formatSettingsReportCLI**
-
-Add labels rendering after rulesets section. Update empty-repo guard to include `repo.labels.length === 0`. Update `formatSummary()` to include labels totals.
-
-**Step 3: Update formatSettingsReportMarkdown**
-
-Add labels rendering in the markdown diff block. Update empty-repo guard.
-
-**Step 4: Run build and tests**
-
-Run: `npm run build && npm test`
-Expected: PASS
-
-**Step 5: Commit**
-
-```bash
-git add src/output/settings-report.ts
-git commit -m "feat(labels): add labels to settings report CLI and markdown formatters"
 ```
 
 ---
