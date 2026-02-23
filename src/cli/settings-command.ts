@@ -17,7 +17,7 @@ import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoResult } from "../output/github-summary.js";
 import { buildErrorResult } from "../output/summary-utils.js";
-import { getManagedRulesets } from "../sync/manifest.js";
+import { getManagedRulesets, getManagedLabels } from "../sync/manifest.js";
 import { formatSettingsReportCLI } from "../output/settings-report.js";
 import { writeUnifiedSummary } from "../output/unified-summary.js";
 import {
@@ -32,8 +32,11 @@ import {
   defaultRulesetProcessorFactory,
   RepoSettingsProcessorFactory,
   defaultRepoSettingsProcessorFactory,
+  LabelsProcessorFactory,
+  defaultLabelsProcessorFactory,
   IRulesetProcessor,
   IRepositoryProcessor,
+  ILabelsProcessor,
 } from "./types.js";
 import type { Config, RepoConfig } from "../config/types.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
@@ -380,6 +383,135 @@ async function processRepoSettings(
 }
 
 /**
+ * Process labels for all configured repositories.
+ */
+async function processLabels(
+  repos: RepoConfig[],
+  config: Config,
+  options: SettingsOptions,
+  processor: ILabelsProcessor,
+  repoProcessor: IRepositoryProcessor,
+  results: RepoResult[],
+  collector: ResultsCollector,
+  lifecycleSkipped: Set<string>,
+  indexOffset: number
+): Promise<void> {
+  if (repos.length === 0) {
+    return;
+  }
+
+  console.log(`\nProcessing labels for ${repos.length} repositories\n`);
+
+  for (let i = 0; i < repos.length; i++) {
+    const repoConfig = repos[i];
+    const current = indexOffset + i + 1;
+
+    if (lifecycleSkipped.has(repoConfig.git)) {
+      continue;
+    }
+
+    let repoInfo: RepoInfo;
+    try {
+      repoInfo = parseGitUrl(repoConfig.git, {
+        githubHosts: config.githubHosts,
+      });
+    } catch (error) {
+      logger.error(current, repoConfig.git, String(error));
+      collector.appendError(repoConfig.git, error);
+      continue;
+    }
+
+    const repoName = getRepoDisplayName(repoInfo);
+
+    if (!isGitHubRepo(repoInfo)) {
+      logger.skip(
+        current,
+        repoName,
+        "GitHub Labels only supported for GitHub repos"
+      );
+      continue;
+    }
+
+    const managedLabels = getManagedLabels(null, config.id);
+
+    try {
+      logger.progress(current, repoName, "Processing labels...");
+
+      const result = await processor.process(repoConfig, repoInfo, {
+        configId: config.id,
+        dryRun: options.dryRun,
+        managedLabels,
+        noDelete: options.noDelete,
+      });
+
+      if (result.planOutput && result.planOutput.lines.length > 0) {
+        logger.info("");
+        logger.info(chalk.bold(`${repoName} - Labels:`));
+        for (const line of result.planOutput.lines) {
+          logger.info(line);
+        }
+      }
+
+      if (result.skipped) {
+        logger.skip(current, repoName, result.message);
+      } else if (result.success) {
+        logger.success(current, repoName, result.message);
+
+        if (result.manifestUpdate && result.manifestUpdate.labels.length > 0) {
+          const workDir = resolve(
+            join(options.workDir ?? "./tmp", generateWorkspaceName(i))
+          );
+          logger.progress(current, repoName, "Updating manifest...");
+          const manifestResult = await repoProcessor.updateManifestOnly(
+            repoInfo,
+            repoConfig,
+            {
+              branchName: "chore/sync-labels",
+              workDir,
+              configId: config.id,
+              dryRun: options.dryRun,
+              retries: options.retries,
+            },
+            { labels: result.manifestUpdate.labels }
+          );
+          if (!manifestResult.success && !manifestResult.skipped) {
+            logger.info(
+              `Warning: Failed to update manifest for ${repoName}: ${manifestResult.message}`
+            );
+          }
+        }
+      } else {
+        logger.error(current, repoName, result.message);
+        collector.appendError(repoName, result.message);
+      }
+
+      const existing = results.find((r) => r.repoName === repoName);
+      if (existing) {
+        existing.labelsPlanDetails = result.planOutput?.entries;
+      } else {
+        results.push({
+          repoName,
+          status: result.skipped
+            ? "skipped"
+            : result.success
+              ? "succeeded"
+              : "failed",
+          message: result.message,
+          labelsPlanDetails: result.planOutput?.entries,
+        });
+      }
+
+      if (!result.skipped) {
+        collector.getOrCreate(repoName).labelsResult = result;
+      }
+    } catch (error) {
+      logger.error(current, repoName, String(error));
+      collector.appendError(repoName, error);
+    }
+  }
+}
+
+/**
  * Run the settings command - manages GitHub Rulesets and repo settings.
  */
 export async function runSettings(
@@ -387,7 +519,8 @@ export async function runSettings(
   processorFactory: RulesetProcessorFactory = defaultRulesetProcessorFactory,
   repoProcessorFactory: ProcessorFactory = defaultProcessorFactory,
   repoSettingsProcessorFactory: RepoSettingsProcessorFactory = defaultRepoSettingsProcessorFactory,
-  lifecycleManager?: IRepoLifecycleManager
+  lifecycleManager?: IRepoLifecycleManager,
+  labelsProcessorFactory: LabelsProcessorFactory = defaultLabelsProcessorFactory
 ): Promise<void> {
   const configPath = resolve(options.config);
 
@@ -420,9 +553,17 @@ export async function runSettings(
     (r) => r.settings?.repo && Object.keys(r.settings.repo).length > 0
   );
 
-  if (reposWithRulesets.length === 0 && reposWithRepoSettings.length === 0) {
+  const reposWithLabels = config.repos.filter(
+    (r) => r.settings?.labels && Object.keys(r.settings.labels).length > 0
+  );
+
+  if (
+    reposWithRulesets.length === 0 &&
+    reposWithRepoSettings.length === 0 &&
+    reposWithLabels.length === 0
+  ) {
     console.log(
-      "No settings configured. Add settings.rulesets or settings.repo to your config."
+      "No settings configured. Add settings.rulesets, settings.repo, or settings.labels to your config."
     );
     return;
   }
@@ -435,8 +576,15 @@ export async function runSettings(
       `Found ${reposWithRepoSettings.length} repositories with repo settings`
     );
   }
+  if (reposWithLabels.length > 0) {
+    console.log(`Found ${reposWithLabels.length} repositories with labels`);
+  }
   console.log("");
-  logger.setTotal(reposWithRulesets.length + reposWithRepoSettings.length);
+  logger.setTotal(
+    reposWithRulesets.length +
+      reposWithRepoSettings.length +
+      reposWithLabels.length
+  );
 
   const processor = processorFactory();
   const repoProcessor = repoProcessorFactory();
@@ -452,7 +600,11 @@ export async function runSettings(
   const collector = new ResultsCollector();
 
   // Pre-check lifecycle for all unique repos before processing
-  const allRepos = [...reposWithRulesets, ...reposWithRepoSettings];
+  const allRepos = [
+    ...reposWithRulesets,
+    ...reposWithRepoSettings,
+    ...reposWithLabels,
+  ];
   const lifecycleSkipped = await runLifecycleChecks(
     allRepos,
     config,
@@ -483,6 +635,18 @@ export async function runSettings(
     collector,
     lifecycleSkipped,
     reposWithRulesets.length
+  );
+
+  await processLabels(
+    reposWithLabels,
+    config,
+    options,
+    labelsProcessorFactory(),
+    repoProcessor,
+    results,
+    collector,
+    lifecycleSkipped,
+    reposWithRulesets.length + reposWithRepoSettings.length
   );
 
   console.log("");

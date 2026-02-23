@@ -3,9 +3,11 @@ import type {
   RepoChanges,
   SettingChange,
   RulesetChange,
+  LabelChange,
 } from "../output/settings-report.js";
 import type { RepoSettingsPlanEntry } from "../settings/repo-settings/formatter.js";
 import type { RulesetPlanEntry } from "../settings/rulesets/formatter.js";
+import type { LabelsPlanEntry } from "../settings/labels/formatter.js";
 
 /**
  * Result from processing a repository's settings and rulesets.
@@ -23,6 +25,11 @@ export interface ProcessorResults {
       entries?: RulesetPlanEntry[];
     };
   };
+  labelsResult?: {
+    planOutput?: {
+      entries?: LabelsPlanEntry[];
+    };
+  };
   error?: string;
 }
 
@@ -33,6 +40,7 @@ export function buildSettingsReport(
   const totals = {
     settings: { add: 0, change: 0 },
     rulesets: { create: 0, update: 0, delete: 0 },
+    labels: { create: 0, update: 0, delete: 0 },
   };
 
   for (const result of results) {
@@ -40,6 +48,7 @@ export function buildSettingsReport(
       repoName: result.repoName,
       settings: [],
       rulesets: [],
+      labels: [],
     };
 
     // Convert settings processor output
@@ -85,6 +94,27 @@ export function buildSettingsReport(
         } else if (entry.action === "delete") {
           totals.rulesets.delete++;
         }
+      }
+    }
+
+    // Convert labels processor output
+    if (result.labelsResult?.planOutput?.entries) {
+      for (const entry of result.labelsResult.planOutput.entries) {
+        if (entry.action === "unchanged") continue;
+
+        const labelChange: LabelChange = {
+          name: entry.name,
+          action: entry.action as "create" | "update" | "delete",
+          newName: entry.newName,
+          propertyChanges: entry.propertyChanges,
+          config: entry.config,
+        };
+        if (!repoChanges.labels) repoChanges.labels = [];
+        repoChanges.labels.push(labelChange);
+
+        if (entry.action === "create") totals.labels.create++;
+        else if (entry.action === "update") totals.labels.update++;
+        else if (entry.action === "delete") totals.labels.delete++;
       }
     }
 
