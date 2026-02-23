@@ -577,6 +577,38 @@ describe("diffLabels", () => {
       const actions = changes.map((c) => c.action);
       assert.deepEqual(actions, ["delete", "update", "create"]);
     });
+
+    test("unchanged entries sort after create", () => {
+      const current = [makeGitHubLabel({ name: "unchanged", color: "d73a4a" })];
+      const desired: Record<string, Label> = {
+        unchanged: { color: "d73a4a" },
+        "new-one": { color: "000000" },
+      };
+
+      const changes = diffLabels(current, desired, [], false);
+
+      const actions = changes.map((c) => c.action);
+      assert.deepEqual(actions, ["create", "unchanged"]);
+    });
+  });
+
+  describe("chain rename", () => {
+    test("allows chain rename where target label is itself being renamed away", () => {
+      const current = [
+        makeGitHubLabel({ name: "a", color: "aaaaaa" }),
+        makeGitHubLabel({ id: 2, name: "b", color: "bbbbbb" }),
+      ];
+      const desired: Record<string, Label> = {
+        a: { color: "aaaaaa", new_name: "b" },
+        b: { color: "bbbbbb", new_name: "c" },
+      };
+
+      // Should not throw — "b" is being renamed to "c", so "a" can take "b"
+      const changes = diffLabels(current, desired, [], false);
+
+      const updates = changes.filter((c) => c.action === "update");
+      assert.equal(updates.length, 2);
+    });
   });
 });
 ```
@@ -1716,9 +1748,10 @@ export interface ManifestUpdateParams {
 
 Import `updateManifestLabels` from `./manifest.js`. Update `execute()`:
 
-- When only `this.params.rulesets` is present, call `updateManifestRulesets()` (current behavior)
-- When only `this.params.labels` is present, call `updateManifestLabels()`
-- When both are present, apply **sequentially**: call `updateManifestRulesets()` first, then pass the resulting manifest to `updateManifestLabels()`. Build the `Map<string, boolean | undefined>` for labels using the same pattern as rulesets: `new Map(this.params.labels.map((name) => [name, true]))`.
+- **IMPORTANT:** Since `rulesets` is now optional on `ManifestUpdateParams`, the existing `this.params.rulesets.map(...)` call in `execute()` will become a TypeScript error. Guard ALL existing `this.params.rulesets` accesses with `if (this.params.rulesets)` checks.
+- When only `this.params.rulesets` is present, call `updateManifestRulesets()` (current behavior, now inside guard)
+- When only `this.params.labels` is present, call `updateManifestLabels()`. Build the `Map<string, boolean | undefined>` for labels using the same pattern as rulesets: `new Map(this.params.labels.map((name) => [name, true]))`.
+- When both are present, apply **sequentially**: call `updateManifestRulesets()` first (guarded), then pass the resulting manifest to `updateManifestLabels()`.
 - Note: `rulesetsToDelete` and `labelsToDelete` from the return values are not used downstream (the current rulesets implementation already discards `rulesetsToDelete`) — discard them.
 - Make commit message dynamic: "chore: update manifest with labels tracking" or "chore: update manifest with ruleset/labels tracking"
 
@@ -2064,9 +2097,23 @@ git commit -m "feat(labels): add labels to unified summary output"
 
 **Files:**
 
+- Modify: `src/cli/index.ts`
 - Modify: `src/index.ts`
 
-**Step 1: Add labels exports**
+**Step 1: Update `src/cli/index.ts` — add labels re-exports**
+
+Add the following to the existing re-export block from `"./types.js"`:
+
+```typescript
+export {
+  // ... existing exports ...
+  type ILabelsProcessor,
+  type LabelsProcessorFactory,
+  defaultLabelsProcessorFactory,
+} from "./types.js";
+```
+
+**Step 2: Update `src/index.ts` — add labels exports**
 
 Export through `./cli/index.js` for consistency with rulesets. Export only interface and factory types (matching the rulesets pattern where `IRulesetProcessor` is exported but not the concrete `RulesetProcessor` class):
 
@@ -2076,17 +2123,15 @@ export type { ILabelsProcessor, LabelsProcessorFactory } from "./cli/index.js";
 export { defaultLabelsProcessorFactory } from "./cli/index.js";
 ```
 
-Ensure `src/cli/index.ts` re-exports these from `./types.js`.
-
-**Step 2: Run build**
+**Step 3: Run build**
 
 Run: `npm run build`
 Expected: PASS
 
-**Step 3: Commit**
+**Step 4: Commit**
 
 ```bash
-git add src/index.ts
+git add src/cli/index.ts src/index.ts
 git commit -m "feat(labels): add labels exports to public API"
 ```
 
