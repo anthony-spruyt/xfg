@@ -848,5 +848,104 @@ describe("manifest", () => {
       assert.deepEqual(updated.configs[configId]?.rulesets, ["new-rule"]);
       assert.deepEqual(updated.configs[configId]?.labels, ["bug"]);
     });
+
+    test("updateManifestLabels with null manifest creates new manifest", () => {
+      const labelsMap = new Map<string, boolean | undefined>();
+      labelsMap.set("bug", true);
+      labelsMap.set("feature", true);
+
+      const { manifest: updated, labelsToDelete } = updateManifestLabels(
+        null,
+        configId,
+        labelsMap
+      );
+
+      assert.deepEqual(updated.configs[configId]?.labels, ["bug", "feature"]);
+      assert.deepEqual(labelsToDelete, []);
+    });
+
+    test("updateManifestLabels removes config entry when no labels and no files or rulesets", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: { labels: ["bug"] },
+        },
+      };
+      // Pass empty map (no labels with deleteOrphaned)
+      const labelsMap = new Map<string, boolean | undefined>();
+
+      const { manifest: updated, labelsToDelete } = updateManifestLabels(
+        manifest,
+        configId,
+        labelsMap
+      );
+
+      assert.equal(updated.configs[configId], undefined);
+      assert.deepEqual(labelsToDelete, ["bug"]);
+    });
+
+    test("updateManifestLabels keeps config entry when labels empty but files exist", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: {
+            files: [".eslintrc.json"],
+            labels: ["bug"],
+          },
+        },
+      };
+      // No labels with deleteOrphaned=true
+      const labelsMap = new Map<string, boolean | undefined>();
+
+      const { manifest: updated } = updateManifestLabels(
+        manifest,
+        configId,
+        labelsMap
+      );
+
+      // Config entry preserved because files exist
+      assert.deepEqual(updated.configs[configId]?.files, [".eslintrc.json"]);
+      assert.equal(updated.configs[configId]?.labels, undefined);
+    });
+
+    test("updateManifestLabels keeps config entry when labels empty but rulesets exist", () => {
+      const manifest: XfgManifest = {
+        version: 3,
+        configs: {
+          [configId]: {
+            rulesets: ["branch-protection"],
+            labels: ["bug"],
+          },
+        },
+      };
+      const labelsMap = new Map<string, boolean | undefined>();
+
+      const { manifest: updated } = updateManifestLabels(
+        manifest,
+        configId,
+        labelsMap
+      );
+
+      assert.deepEqual(updated.configs[configId]?.rulesets, [
+        "branch-protection",
+      ]);
+      assert.equal(updated.configs[configId]?.labels, undefined);
+    });
+
+    test("updateManifestLabels skips labels with deleteOrphaned not true", () => {
+      const labelsMap = new Map<string, boolean | undefined>();
+      labelsMap.set("bug", true);
+      labelsMap.set("no-delete", undefined);
+      labelsMap.set("also-no-delete", false);
+
+      const { manifest: updated } = updateManifestLabels(
+        null,
+        configId,
+        labelsMap
+      );
+
+      // Only "bug" should be tracked (deleteOrphaned=true)
+      assert.deepEqual(updated.configs[configId]?.labels, ["bug"]);
+    });
   });
 });

@@ -1060,6 +1060,150 @@ describe("formatSettingsReportMarkdown", () => {
     );
   });
 
+  test("renders label update with only newValue (no oldValue) in markdown", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "enhancement",
+              action: "update",
+              propertyChanges: [
+                { property: "description", newValue: "New feature request" },
+              ],
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      markdown.includes('! label "enhancement"'),
+      "should include label update line"
+    );
+    assert.ok(
+      markdown.includes('!   description: "New feature request"'),
+      "should include description with newValue only (no arrow)"
+    );
+    assert.ok(
+      !markdown.includes("\u2192"),
+      "should NOT include arrow when oldValue is undefined"
+    );
+  });
+
+  test("renders label update without rename in markdown", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "update",
+              propertyChanges: [
+                { property: "color", oldValue: "d73a4a", newValue: "ff0000" },
+              ],
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      markdown.includes('! label "bug"'),
+      "should include label name without rename"
+    );
+    assert.ok(
+      markdown.includes('!   color: "d73a4a" \u2192 "ff0000"'),
+      "should include color change with arrow"
+    );
+  });
+
+  test("renders label create without config in markdown", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      markdown.includes('+ label "bug"'),
+      "should include label create line"
+    );
+    assert.ok(
+      !markdown.includes("color:"),
+      "should NOT include color when config is absent"
+    );
+  });
+
+  test("renders label create without config in CLI", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(output.includes('label "bug"'), "should include label name");
+    assert.ok(
+      !output.includes("color:"),
+      "should NOT include color when config is absent"
+    );
+  });
+
   test("renders labels summary in markdown", () => {
     const report: SettingsReport = {
       repos: [

@@ -141,4 +141,136 @@ describe("ManifestStrategy", () => {
       `Expected dry-run message, got: ${messages.join(", ")}`
     );
   });
+
+  test("returns WorkResult with labels tracking when labels-only update", async () => {
+    // No existing manifest
+    const { mock: mockLogger } = createMockLogger();
+    const strategy = new ManifestStrategy(
+      { labels: ["bug", "enhancement"] },
+      mockLogger
+    );
+
+    const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      hasChanges: true,
+    });
+    const session: SessionContext = {
+      gitOps: mockGitOps,
+      baseBranch: "main",
+      cleanup: () => {},
+    };
+
+    const result = await strategy.execute(
+      mockRepoConfig,
+      mockRepoInfo,
+      session,
+      { branchName: "test", workDir, configId: "test-config" }
+    );
+
+    assert.ok(result);
+    assert.ok(result.fileChanges.has(MANIFEST_FILENAME));
+    assert.equal(result.changedFiles.length, 1);
+    assert.equal(
+      result.commitMessage,
+      "chore: update manifest with labels tracking"
+    );
+  });
+
+  test("returns WorkResult with ruleset/labels tracking when combined", async () => {
+    // No existing manifest
+    const { mock: mockLogger } = createMockLogger();
+    const strategy = new ManifestStrategy(
+      { rulesets: ["pr-rules"], labels: ["bug", "enhancement"] },
+      mockLogger
+    );
+
+    const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      hasChanges: true,
+    });
+    const session: SessionContext = {
+      gitOps: mockGitOps,
+      baseBranch: "main",
+      cleanup: () => {},
+    };
+
+    const result = await strategy.execute(
+      mockRepoConfig,
+      mockRepoInfo,
+      session,
+      { branchName: "test", workDir, configId: "test-config" }
+    );
+
+    assert.ok(result);
+    assert.equal(
+      result.commitMessage,
+      "chore: update manifest with ruleset/labels tracking"
+    );
+  });
+
+  test("logs dry-run message with labels tracking when labels-only", async () => {
+    const { mock: mockLogger, messages } = createMockLogger();
+    const strategy = new ManifestStrategy({ labels: ["bug"] }, mockLogger);
+
+    const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      hasChanges: true,
+    });
+    const session: SessionContext = {
+      gitOps: mockGitOps,
+      baseBranch: "main",
+      cleanup: () => {},
+    };
+
+    await strategy.execute(mockRepoConfig, mockRepoInfo, session, {
+      branchName: "test",
+      workDir,
+      configId: "test-config",
+      dryRun: true,
+    });
+
+    assert.ok(
+      messages.some((m) =>
+        m.includes("Would update .xfg.json with labels tracking")
+      ),
+      `Expected labels dry-run message, got: ${messages.join(", ")}`
+    );
+  });
+
+  test("returns null when labels unchanged", async () => {
+    // Create existing manifest with same labels
+    const existingManifest = {
+      version: 3,
+      configs: {
+        "test-config": {
+          labels: ["bug", "enhancement"],
+        },
+      },
+    };
+    writeFileSync(
+      join(workDir, MANIFEST_FILENAME),
+      JSON.stringify(existingManifest, null, 2)
+    );
+
+    const { mock: mockLogger } = createMockLogger();
+    const strategy = new ManifestStrategy(
+      { labels: ["bug", "enhancement"] },
+      mockLogger
+    );
+
+    const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      hasChanges: false,
+    });
+    const session: SessionContext = {
+      gitOps: mockGitOps,
+      baseBranch: "main",
+      cleanup: () => {},
+    };
+
+    const result = await strategy.execute(
+      mockRepoConfig,
+      mockRepoInfo,
+      session,
+      { branchName: "test", workDir, configId: "test-config" }
+    );
+
+    assert.equal(result, null);
+  });
 });

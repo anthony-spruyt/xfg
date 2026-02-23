@@ -219,4 +219,191 @@ describe("LabelsProcessor", () => {
     assert.equal(result.success, false);
     assert.ok(result.message.includes("API rate limit exceeded"));
   });
+
+  test("handles non-Error thrown objects gracefully", async () => {
+    mockStrategy.shouldThrow = "string error" as unknown as Error;
+    const config = makeRepoConfig({ bug: { color: "d73a4a" } });
+
+    const result = await processor.process(config, mockGitHubRepo, {
+      configId: "test",
+      managedLabels: [],
+    });
+
+    assert.equal(result.success, false);
+    assert.ok(result.message.includes("string error"));
+  });
+
+  test("skips when no labels configured and no managed labels", async () => {
+    const config: RepoConfig = {
+      git: "git@github.com:test-org/test-repo.git",
+      files: [],
+      settings: {
+        labels: {},
+      },
+    };
+
+    const result = await processor.process(config, mockGitHubRepo, {
+      configId: "test",
+      managedLabels: [],
+    });
+
+    assert.equal(result.skipped, true);
+    assert.equal(result.message, "No labels configured");
+  });
+
+  test("noDelete prevents delete calls during apply", async () => {
+    mockStrategy.listResponse = [
+      {
+        id: 1,
+        name: "orphaned",
+        color: "cccccc",
+        description: null,
+        default: false,
+      },
+    ];
+    const config = makeRepoConfig(
+      { bug: { color: "d73a4a" } },
+      true // deleteOrphaned
+    );
+
+    const result = await processor.process(config, mockGitHubRepo, {
+      configId: "test",
+      managedLabels: ["orphaned"],
+      noDelete: true,
+    });
+
+    assert.equal(result.success, true);
+    const deleteCalls = mockStrategy.calls.filter((c) => c.method === "delete");
+    assert.equal(
+      deleteCalls.length,
+      0,
+      "should not call delete when noDelete is true"
+    );
+  });
+
+  test("applies update with new_name property change", async () => {
+    mockStrategy.listResponse = [
+      {
+        id: 1,
+        name: "bug",
+        color: "d73a4a",
+        description: null,
+        default: false,
+      },
+    ];
+    const config = makeRepoConfig({
+      bug: { color: "d73a4a", new_name: "defect" },
+    });
+
+    const result = await processor.process(config, mockGitHubRepo, {
+      configId: "test",
+      managedLabels: [],
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(result.changes?.update, 1);
+    const updateCalls = mockStrategy.calls.filter((c) => c.method === "update");
+    assert.equal(updateCalls.length, 1);
+    const updatePayload = updateCalls[0].args[1] as { new_name?: string };
+    assert.equal(updatePayload.new_name, "defect");
+  });
+
+  test("reports no changes needed when all labels are unchanged", async () => {
+    mockStrategy.listResponse = [
+      {
+        id: 1,
+        name: "bug",
+        color: "d73a4a",
+        description: null,
+        default: false,
+      },
+    ];
+    const config = makeRepoConfig({ bug: { color: "d73a4a" } });
+
+    const result = await processor.process(config, mockGitHubRepo, {
+      configId: "test",
+      managedLabels: [],
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(result.message, "No changes needed");
+    assert.equal(result.changes?.unchanged, 1);
+  });
+
+  test("includes planOutput in result", async () => {
+    mockStrategy.listResponse = [];
+    const config = makeRepoConfig({ bug: { color: "d73a4a" } });
+
+    const result = await processor.process(config, mockGitHubRepo, {
+      configId: "test",
+      managedLabels: [],
+    });
+
+    assert.ok(result.planOutput);
+    assert.equal(result.planOutput.creates, 1);
+  });
+
+  test("dry run includes manifest update when deleteOrphaned is true", async () => {
+    mockStrategy.listResponse = [];
+    const config = makeRepoConfig({ bug: { color: "d73a4a" } }, true);
+
+    const result = await processor.process(config, mockGitHubRepo, {
+      configId: "test",
+      managedLabels: [],
+      dryRun: true,
+    });
+
+    assert.ok(result.manifestUpdate);
+    assert.deepEqual(result.manifestUpdate.labels, ["bug"]);
+  });
+
+  test("creates label without description", async () => {
+    mockStrategy.listResponse = [];
+    const config = makeRepoConfig({
+      bug: { color: "d73a4a" },
+    });
+
+    const result = await processor.process(config, mockGitHubRepo, {
+      configId: "test",
+      managedLabels: [],
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(result.changes?.create, 1);
+    const createCalls = mockStrategy.calls.filter((c) => c.method === "create");
+    assert.equal(createCalls.length, 1);
+    const payload = createCalls[0].args[0] as {
+      name: string;
+      color: string;
+      description?: string;
+    };
+    assert.equal(payload.description, undefined);
+  });
+
+  test("updates label description property", async () => {
+    mockStrategy.listResponse = [
+      {
+        id: 1,
+        name: "bug",
+        color: "d73a4a",
+        description: "Old description",
+        default: false,
+      },
+    ];
+    const config = makeRepoConfig({
+      bug: { color: "d73a4a", description: "New description" },
+    });
+
+    const result = await processor.process(config, mockGitHubRepo, {
+      configId: "test",
+      managedLabels: [],
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(result.changes?.update, 1);
+    const updateCalls = mockStrategy.calls.filter((c) => c.method === "update");
+    assert.equal(updateCalls.length, 1);
+    const payload = updateCalls[0].args[1] as { description?: string };
+    assert.equal(payload.description, "New description");
+  });
 });

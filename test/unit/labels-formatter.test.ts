@@ -95,6 +95,102 @@ describe("formatLabelsPlan", () => {
     assert.equal(result.entries[0].action, "unchanged");
   });
 
+  test("formats update with property change where oldValue is undefined", () => {
+    const changes: LabelChange[] = [
+      {
+        action: "update",
+        name: "enhancement",
+        desired: { color: "0075ca", description: "New feature request" },
+        propertyChanges: [
+          { property: "description", newValue: "New feature request" },
+        ],
+      },
+    ];
+
+    const result = formatLabelsPlan(changes);
+
+    assert.equal(result.updates, 1);
+    // Should show property with only newValue (no arrow)
+    const descLine = result.lines.find((l) =>
+      stripAnsi(l).includes("description:")
+    );
+    assert.ok(descLine, "should have a description line");
+    assert.ok(
+      stripAnsi(descLine!).includes('"New feature request"'),
+      "should include newValue"
+    );
+    assert.ok(
+      !stripAnsi(descLine!).includes("\u2192"),
+      "should NOT include arrow when oldValue is undefined"
+    );
+  });
+
+  test("formats update without rename (no newName)", () => {
+    const changes: LabelChange[] = [
+      {
+        action: "update",
+        name: "bug",
+        desired: { color: "ff0000" },
+        propertyChanges: [
+          { property: "color", oldValue: "d73a4a", newValue: "ff0000" },
+        ],
+      },
+    ];
+
+    const result = formatLabelsPlan(changes);
+
+    assert.equal(result.updates, 1);
+    // Should show label name without arrow
+    const labelLine = result.lines.find((l) =>
+      stripAnsi(l).includes('label "bug"')
+    );
+    assert.ok(labelLine, "should have a label line");
+    assert.ok(
+      !stripAnsi(labelLine!).includes("\u2192"),
+      "should NOT include arrow when no rename"
+    );
+  });
+
+  test("formats create without description", () => {
+    const changes: LabelChange[] = [
+      {
+        action: "create",
+        name: "priority",
+        desired: { color: "ff0000" },
+      },
+    ];
+
+    const result = formatLabelsPlan(changes);
+
+    assert.equal(result.creates, 1);
+    assert.ok(
+      result.lines.some((l) => stripAnsi(l).includes('label "priority"'))
+    );
+    assert.ok(result.lines.some((l) => stripAnsi(l).includes("ff0000")));
+    assert.ok(
+      !result.lines.some((l) => stripAnsi(l).includes("description")),
+      "should NOT include description when not set"
+    );
+  });
+
+  test("no summary line when there are no actionable changes", () => {
+    const changes: LabelChange[] = [
+      {
+        action: "unchanged",
+        name: "bug",
+        desired: { color: "d73a4a" },
+      },
+    ];
+
+    const result = formatLabelsPlan(changes);
+
+    assert.equal(result.unchanged, 1);
+    assert.ok(
+      !result.lines.some((l) => stripAnsi(l).includes("Plan:")),
+      "should NOT have summary line when only unchanged"
+    );
+  });
+
   test("summary line includes counts", () => {
     const changes: LabelChange[] = [
       { action: "create", name: "a", desired: { color: "000000" } },
