@@ -466,7 +466,7 @@ describe("diffLabels", () => {
       assert.equal(changes[0].action, "unchanged");
     });
 
-    test("explicit empty string description triggers update from null", () => {
+    test("null and empty string description are treated as equivalent (no update)", () => {
       const current = [
         makeGitHubLabel({
           name: "bug",
@@ -1100,7 +1100,7 @@ git commit -m "feat(labels): add Terraform-style plan formatter"
 
 **Step 1: Write the strategy implementation**
 
-Follow the same pattern as `src/settings/rulesets/github-ruleset-strategy.ts`. Use `ICommandExecutor` from `../../shared/command-executor.js` for shell command execution (the project's safe executor pattern). Use `escapeShellArg` from `../../shared/shell-utils.js` for input sanitization. Use `encodeURIComponent()` for label names in PATCH/DELETE URL paths. Use `--paginate` on the list endpoint.
+Follow the same pattern as `src/settings/rulesets/github-ruleset-strategy.ts`. Use `ICommandExecutor` from `../../shared/command-executor.js` for shell command execution (the project's safe executor pattern). Use `escapeShellArg` from `../../shared/shell-utils.js` for input sanitization. Use `encodeURIComponent()` for label names in PATCH/DELETE URL paths. Use `--paginate` on the list endpoint. Wrap every API call in `withRetry` from `../../shared/retry-utils.js` (matching the rulesets strategy pattern for transient failure resilience).
 
 **Step 2: Run build to verify it compiles**
 
@@ -1697,9 +1697,9 @@ export interface ManifestUpdateParams {
 
 Import `updateManifestLabels` from `./manifest.js`. Update `execute()`:
 
-- When `this.params.rulesets` is present, call `updateManifestRulesets()`
-- When `this.params.labels` is present, call `updateManifestLabels()`
-- When both are present, call both and merge the manifest results
+- When only `this.params.rulesets` is present, call `updateManifestRulesets()` (current behavior)
+- When only `this.params.labels` is present, call `updateManifestLabels()`
+- When both are present, apply **sequentially**: call `updateManifestRulesets()` first, then pass the resulting manifest to `updateManifestLabels()`. Surface both `rulesetsToDelete` and `labelsToDelete` from the respective return values.
 - Make commit message dynamic: "chore: update manifest with labels tracking" or "chore: update manifest with ruleset/labels tracking"
 
 **Step 3: Update IRepositoryProcessor signature**
@@ -1710,15 +1710,18 @@ In `src/sync/types.ts` (line ~317-323) and `src/cli/types.ts` (line ~27-32), upd
 manifestUpdate: { rulesets?: string[]; labels?: string[] }
 ```
 
-**Step 4: Update RepositoryProcessor.updateManifestOnly()**
+**Step 4: Update RepositoryProcessor.updateManifestOnly() — method signature AND pre-check logic**
 
-In `src/sync/repository-processor.ts`, update the pre-check logic (lines ~118-148):
+In `src/sync/repository-processor.ts`:
 
-- Import `updateManifestLabels` alongside `updateManifestRulesets`
-- Check rulesets changes if `manifestUpdate.rulesets` is present
-- Check labels changes if `manifestUpdate.labels` is present
-- Only skip if neither has changes
-- Pass the full `manifestUpdate` to `ManifestStrategy`
+1. **Update the method signature** (line ~122) — change the `manifestUpdate` parameter type from `{ rulesets: string[] }` to `{ rulesets?: string[]; labels?: string[] }` to match the updated interface.
+
+2. **Update the pre-check logic** (lines ~118-148):
+   - Import `updateManifestLabels` alongside `updateManifestRulesets`
+   - Check rulesets changes if `manifestUpdate.rulesets` is present
+   - Check labels changes if `manifestUpdate.labels` is present
+   - Only skip if neither has changes
+   - Pass the full `manifestUpdate` to `ManifestStrategy`
 
 **Step 5: Run build and existing tests**
 
@@ -1793,6 +1796,7 @@ import {
 
 Add `processLabels()` function — follow `processRepoSettings()` pattern with find-and-merge for results. Key behaviors:
 
+- Accept an `indexOffset` parameter for correct `[x/n]` logger position numbering (same pattern as `processRepoSettings()`) — the offset should be the sum of preceding repo counts (rulesets + repo-settings repos)
 - Skip non-GitHub repos with `logger.skip()`
 - Get `managedLabels` via `getManagedLabels(null, config.id)`
 - Call `processor.process(...)`, log plan output with header `${repoName} - Labels:`
@@ -1802,7 +1806,7 @@ Add `processLabels()` function — follow `processRepoSettings()` pattern with f
 
 **Step 2: Update runSettings()**
 
-- Add `labelsProcessorFactory` parameter (default: `defaultLabelsProcessorFactory`)
+- Add `labelsProcessorFactory` parameter as the 4th parameter (before `lifecycleManager` which has no default), with default: `defaultLabelsProcessorFactory`
 - Add `reposWithLabels` filter:
   ```typescript
   const reposWithLabels = config.repos.filter(
@@ -2022,15 +2026,15 @@ git commit -m "feat(labels): add labels to unified summary output"
 
 **Step 1: Add labels exports**
 
+Export through `./cli/index.js` for consistency with rulesets. Export only interface and factory types (matching the rulesets pattern where `IRulesetProcessor` is exported but not the concrete `RulesetProcessor` class):
+
 ```typescript
-// Labels
-export {
-  LabelsProcessor,
-  type ILabelsProcessor,
-  type LabelsProcessorOptions,
-  type LabelsProcessorResult,
-} from "./settings/labels/index.js";
+// Labels (via cli barrel, matching rulesets pattern)
+export type { ILabelsProcessor, LabelsProcessorFactory } from "./cli/index.js";
+export { defaultLabelsProcessorFactory } from "./cli/index.js";
 ```
+
+Ensure `src/cli/index.ts` re-exports these from `./types.js`.
 
 **Step 2: Run build**
 
