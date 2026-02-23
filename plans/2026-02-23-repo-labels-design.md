@@ -372,9 +372,9 @@ interface LabelsPlanResult {
 ### Settings Command (`settings-command.ts`)
 
 - Add `reposWithLabels` filter
-- Add `processLabels()` function — same shape as `processRulesets()`, requires both `ILabelsProcessor` and `repoProcessor` (for `updateManifestOnly()`)
+- Add `processLabels()` function — same shape as `processRulesets()`, requires both `ILabelsProcessor` and `repoProcessor` (for `updateManifestOnly()`), plus `indexOffset` parameter for correct log numbering (like `processRepoSettings()`)
 - Update `runSettings()` — add `labelsProcessorFactory` parameter
-- Update "no settings" check and total counter
+- Update "no settings" check (three-way), `logger.setTotal()` must include `reposWithLabels.length`
 - `processLabels()` must use the find-and-merge pattern from `processRepoSettings()` (not push-new like `processRulesets()`) when adding to the `results` array, since a repo may already have rulesets/settings entries
 
 ### Report Builder (`settings-report-builder.ts`)
@@ -390,29 +390,42 @@ interface LabelsPlanResult {
 
 ### GitHub Summary (`output/github-summary.ts`)
 
-- Add `LabelsPlanDetail` type and `labelsPlanDetails` field to `RepoResult`
+- Add `LabelsPlanDetail` type to match the summary pattern:
+  ```typescript
+  interface LabelsPlanDetail {
+    name: string;
+    action: "create" | "update" | "delete" | "unchanged";
+    newName?: string;
+  }
+  ```
+- Add `labelsPlanDetails` field to `RepoResult`
 - Update `formatChangesColumn()` and plan details rendering to include labels
 
 ### Unified Summary (`output/unified-summary.ts`)
 
 - Update `renderSettingsLines()` to render label changes alongside settings and rulesets
 - Update `formatCombinedSummary()` to include labels totals section
+- Update `hasAnyChanges()` — must include `r.labels.length > 0` or repos with only label changes will be invisible in output
+
+### Settings Report (`settings-report.ts`) — Additional Notes
+
+- Update empty-repo guards in both `formatSettingsReportCLI()` and `formatSettingsReportMarkdown()` to include `repo.labels.length === 0` — without this, repos with only label changes will be skipped in output
 
 ### Manifest (`sync/manifest.ts`)
 
 - Add `labels?: string[]` to `XfgManifestConfigEntry`
-- Add `getManagedLabels()` and `updateManifestLabels()`
-- Update existing `updateManifest()` to preserve `labels` property (currently only preserves `rulesets`)
-- Update existing `updateManifestRulesets()` to preserve `labels` property (currently only preserves `files`)
-- Without these sibling preservation updates, a files-only or rulesets-only sync would drop the `labels` array from the manifest
+- Add `getManagedLabels()` and `updateManifestLabels()` — `updateManifestLabels()` must preserve both `files` AND `rulesets` siblings
+- Update existing `updateManifest()` to preserve `labels` property alongside its existing `rulesets` preservation
+- Update existing `updateManifestRulesets()` to preserve `labels` property alongside its existing `files` preservation
+- Three-way sibling preservation: each `updateManifest*()` function must preserve the other two arrays, or a sync of one type would drop the other two
 
 ### Settings Command: Manifest Update Interface
 
 `IRepositoryProcessor.updateManifestOnly()` currently accepts `{ rulesets: string[] }`. Expand to accept `{ rulesets?: string[], labels?: string[] }` so labels can use the same manifest commit mechanism. This requires changes to:
 
 - `src/sync/types.ts` — update `IRepositoryProcessor.updateManifestOnly()` signature
-- `src/sync/manifest-strategy.ts` — update `ManifestUpdateParams` to `{ rulesets?: string[], labels?: string[] }`, update `ManifestStrategy.execute()` to call both `updateManifestRulesets()` and `updateManifestLabels()` when present, update commit message
-- `src/sync/repository-processor.ts` — update `updateManifestOnly()` pre-check logic to handle both rulesets and labels
+- `src/sync/manifest-strategy.ts` — update `ManifestUpdateParams` to `{ rulesets?: string[], labels?: string[] }`, update `ManifestStrategy.execute()` to call both `updateManifestRulesets()` and `updateManifestLabels()` when present, make commit message dynamic (e.g., "chore: update manifest with labels tracking" or "chore: update manifest with ruleset/labels tracking" based on what's present)
+- `src/sync/repository-processor.ts` — update `updateManifestOnly()` pre-check logic to handle both rulesets and labels. **Important:** The pre-check at lines 129-136 is a separate code path from `ManifestStrategy.execute()` — it compares current manifest vs desired to detect no-op. This must check for changes from both rulesets and labels, or a labels-only update will short-circuit with "no changes" because the rulesets comparison sees nothing to do
 
 ### Validator (`config/validator.ts`)
 
