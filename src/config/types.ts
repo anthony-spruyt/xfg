@@ -399,6 +399,23 @@ export interface GitHubRepoSettings {
 }
 
 // =============================================================================
+// Labels
+// =============================================================================
+
+/**
+ * GitHub label configuration.
+ * @see https://docs.github.com/en/rest/issues/labels
+ */
+export interface Label {
+  /** Hex color code (with or without #). Stripped on normalization. */
+  color: string;
+  /** Label description (max 100 characters) */
+  description?: string;
+  /** Rename target. Maps to GitHub API's new_name field. */
+  new_name?: string;
+}
+
+// =============================================================================
 // Settings
 // =============================================================================
 
@@ -407,6 +424,8 @@ export interface RepoSettings {
   rulesets?: Record<string, Ruleset>;
   /** GitHub repository settings */
   repo?: GitHubRepoSettings;
+  /** GitHub labels keyed by name */
+  labels?: Record<string, Label>;
   deleteOrphaned?: boolean;
 }
 
@@ -447,6 +466,7 @@ export interface RawRepoFileOverride {
 export interface RawRepoSettings {
   rulesets?: Record<string, Ruleset | false> & { inherit?: boolean };
   repo?: GitHubRepoSettings | false;
+  labels?: Record<string, Label | false> & { inherit?: boolean };
   deleteOrphaned?: boolean;
 }
 
