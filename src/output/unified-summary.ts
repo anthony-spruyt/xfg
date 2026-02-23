@@ -89,6 +89,20 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
         actions.push(`${t.rulesets.delete} ${dry ? "to delete" : "deleted"}`);
       parts.push(`${rulesetsTotal} ${rulesetWord} (${actions.join(", ")})`);
     }
+
+    const lt = t.labels ?? { create: 0, update: 0, delete: 0 };
+    const labelsTotal = lt.create + lt.update + lt.delete;
+    if (labelsTotal > 0) {
+      const labelWord = labelsTotal === 1 ? "label" : "labels";
+      const actions: string[] = [];
+      if (lt.create > 0)
+        actions.push(`${lt.create} ${dry ? "to create" : "created"}`);
+      if (lt.update > 0)
+        actions.push(`${lt.update} ${dry ? "to update" : "updated"}`);
+      if (lt.delete > 0)
+        actions.push(`${lt.delete} ${dry ? "to delete" : "deleted"}`);
+      parts.push(`${labelsTotal} ${labelWord} (${actions.join(", ")})`);
+    }
   }
 
   if (parts.length === 0) {
@@ -104,7 +118,11 @@ function hasAnyChanges(input: UnifiedSummaryInput): boolean {
   if (input.sync?.repos.some((r) => r.files.length > 0 || r.error)) return true;
   if (
     input.settings?.repos.some(
-      (r) => r.settings.length > 0 || r.rulesets.length > 0 || r.error
+      (r) =>
+        r.settings.length > 0 ||
+        r.rulesets.length > 0 ||
+        (r.labels ?? []).length > 0 ||
+        r.error
     )
   )
     return true;
@@ -209,6 +227,26 @@ function renderSettingsLines(
     }
   }
 
+  for (const label of settingsRepo.labels ?? []) {
+    if (label.action === "create") {
+      diffLines.push(`+ label "${label.name}"`);
+      if (label.config) {
+        diffLines.push(`+   color: "${label.config.color}"`);
+        if (label.config.description !== undefined) {
+          diffLines.push(`+   description: "${label.config.description}"`);
+        }
+      }
+    } else if (label.action === "update") {
+      if (label.newName) {
+        diffLines.push(`! label "${label.name}" \u2192 "${label.newName}"`);
+      } else {
+        diffLines.push(`! label "${label.name}"`);
+      }
+    } else if (label.action === "delete") {
+      diffLines.push(`- label "${label.name}"`);
+    }
+  }
+
   if (settingsRepo.error) {
     diffLines.push(`- Error: ${settingsRepo.error}`);
   }
@@ -274,6 +312,7 @@ export function formatUnifiedSummaryMarkdown(
       settingsRepo &&
       (settingsRepo.settings.length > 0 ||
         settingsRepo.rulesets.length > 0 ||
+        (settingsRepo.labels ?? []).length > 0 ||
         settingsRepo.error);
 
     if (!hasLcChange && !hasSyncChanges && !hasSettingsChanges) continue;
