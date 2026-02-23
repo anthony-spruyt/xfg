@@ -160,7 +160,7 @@ src/settings/labels/
 ├── github-labels-strategy.ts     # GitHub implementation via gh api
 ├── diff.ts                       # diffLabels()
 ├── formatter.ts                  # formatLabelsPlan()
-└── converter.ts                  # normalizeColor(), configToGitHub()
+└── converter.ts                  # normalizeColor(), labelConfigToPayload()
 ```
 
 ### Strategy Interface (`types.ts`)
@@ -299,6 +299,19 @@ Change types:
 - **delete** — in `managedLabels` but not in desired, `deleteOrphaned` enabled, `noDelete` false
 - **unchanged** — exists and all properties match
 
+### `deleteOrphaned` and Manifest Bootstrapping
+
+**Important:** The settings command does not clone repos, so `getManagedLabels(null, configId)` always returns `[]` on first invocation (same behavior as rulesets — see `settings-command.ts` line 211). This means orphan deletion requires two runs:
+
+1. **First run:** Labels are created/updated, the manifest is committed with the current set of managed label names via `updateManifestOnly()`. No deletions occur because `managedLabels` is empty.
+2. **Subsequent runs:** The manifest now exists in the repo. However, since the settings command still passes `null` for the manifest, `managedLabels` remains `[]`. Orphan detection relies on the processor's `computeManifestUpdate()` which compares the desired set against the previously committed manifest during the `updateManifestOnly()` flow.
+
+This matches the existing rulesets pattern exactly — the `diffLabels()` delete path with `managedLabels` serves as the interface contract, while the actual deletion is driven by the manifest strategy's comparison logic during the update step.
+
+### `deleteOrphaned` Scope
+
+`deleteOrphaned` is a single flag on `RepoSettings` shared between rulesets and labels. Enabling it affects both. This is intentional for simplicity and consistency — the flag controls whether xfg tracks managed resources in the manifest and cleans up removed ones.
+
 ### Rename Collision Detection
 
 When `new_name` is set on a desired label, `diffLabels()` must check:
@@ -327,6 +340,31 @@ Terraform-style plan:
   - label "stale"
 
 Plan: 3 labels (1 to create, 1 to update, 1 to delete)
+```
+
+### Formatter Types
+
+```typescript
+interface LabelsPlanEntry {
+  name: string;
+  action: "create" | "update" | "delete" | "unchanged";
+  newName?: string; // for renames
+  propertyChanges?: {
+    property: string;
+    oldValue?: string;
+    newValue?: string;
+  }[];
+  config?: Label; // for creates (show full config)
+}
+
+interface LabelsPlanResult {
+  lines: string[];
+  creates: number;
+  updates: number;
+  deletes: number;
+  unchanged: number;
+  entries: LabelsPlanEntry[];
+}
 ```
 
 ## Integration Points
@@ -359,7 +397,11 @@ Plan: 3 labels (1 to create, 1 to update, 1 to delete)
 
 ### Settings Command: Manifest Update Interface
 
-`IRepositoryProcessor.updateManifestOnly()` currently accepts `{ rulesets: string[] }`. Expand to accept `{ rulesets?: string[], labels?: string[] }` so labels can use the same manifest commit mechanism.
+`IRepositoryProcessor.updateManifestOnly()` currently accepts `{ rulesets: string[] }`. Expand to accept `{ rulesets?: string[], labels?: string[] }` so labels can use the same manifest commit mechanism. This requires changes to:
+
+- `src/sync/types.ts` — update `IRepositoryProcessor.updateManifestOnly()` signature
+- `src/sync/manifest-strategy.ts` — update `ManifestUpdateParams` to `{ rulesets?: string[], labels?: string[] }`, update `ManifestStrategy.execute()` to call both `updateManifestRulesets()` and `updateManifestLabels()` when present, update commit message
+- `src/sync/repository-processor.ts` — update `updateManifestOnly()` pre-check logic to handle both rulesets and labels
 
 ### Validator (`config/validator.ts`)
 
@@ -405,7 +447,7 @@ Plan: 3 labels (1 to create, 1 to update, 1 to delete)
 | `test/unit/labels-processor.test.ts`            | Processor tests                         |
 | `docs/configuration/labels.md`                  | Labels documentation page               |
 
-### Modified Files (17)
+### Modified Files (20)
 
 | File                                  | Change                                                                                                                                                                          |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -414,10 +456,13 @@ Plan: 3 labels (1 to create, 1 to update, 1 to delete)
 | `src/config/validator.ts`             | Add `validateLabels()`, update `validateSettings()`, `hasActionableSettings()`, error messages                                                                                  |
 | `config-schema.json`                  | Add `label` definition, add `labels` to `repoSettings` with inherit/false support                                                                                               |
 | `src/cli/settings-command.ts`         | Add `processLabels()`, update `runSettings()`, three-way emptiness check, total counter                                                                                         |
-| `src/cli/types.ts`                    | Add `LabelsProcessorFactory`, expand `updateManifestOnly` manifest type                                                                                                         |
+| `src/cli/types.ts`                    | Add `LabelsProcessorFactory`                                                                                                                                                    |
 | `src/cli/settings-report-builder.ts`  | Add `labelsResult` to `ProcessorResults`, labels totals                                                                                                                         |
 | `src/output/settings-report.ts`       | Add `LabelChange` to `RepoChanges`, update CLI + markdown formatters, summary                                                                                                   |
 | `src/sync/manifest.ts`                | Add `labels` to `XfgManifestConfigEntry`, `getManagedLabels()`, `updateManifestLabels()`, update `updateManifest()` and `updateManifestRulesets()` to preserve `labels` sibling |
+| `src/sync/manifest-strategy.ts`       | Update `ManifestUpdateParams` to `{ rulesets?: string[], labels?: string[] }`, call `updateManifestLabels()` in `execute()`, update commit message                              |
+| `src/sync/repository-processor.ts`    | Update `updateManifestOnly()` pre-check to handle both rulesets and labels                                                                                                      |
+| `src/sync/types.ts`                   | Update `IRepositoryProcessor.updateManifestOnly()` signature to accept labels                                                                                                   |
 | `package.json`                        | Exclude `src/settings/labels/types.ts` from c8 coverage                                                                                                                         |
 | `mkdocs.yml`                          | Add `Labels: configuration/labels.md` nav entry                                                                                                                                 |
 | `docs/configuration/index.md`         | Reference labels in settings section                                                                                                                                            |
