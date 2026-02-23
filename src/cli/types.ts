@@ -28,7 +28,7 @@ export interface IRepositoryProcessor {
     repoInfo: RepoInfo,
     repoConfig: RepoConfig,
     options: ProcessorOptions,
-    manifestUpdate: { rulesets: string[] }
+    manifestUpdate: { rulesets?: string[]; labels?: string[] }
   ): Promise<ProcessorResult>;
 }
 

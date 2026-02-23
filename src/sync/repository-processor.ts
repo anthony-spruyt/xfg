@@ -19,6 +19,7 @@ import {
   SyncWorkflow,
   loadManifest,
   updateManifestRulesets,
+  updateManifestLabels,
   MANIFEST_FILENAME,
   type IFileWriter,
   type IManifestManager,
@@ -119,25 +120,43 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     repoInfo: RepoInfo,
     repoConfig: RepoConfig,
     options: ProcessorOptions,
-    manifestUpdate: { rulesets: string[] }
+    manifestUpdate: { rulesets?: string[]; labels?: string[] }
   ): Promise<ProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
     const { workDir, dryRun } = options;
 
     // Pre-check manifest changes (preserves original early-return behavior)
     const existingManifest = loadManifest(workDir);
-    const rulesetsWithDeleteOrphaned = new Map<string, boolean | undefined>(
-      manifestUpdate.rulesets.map((name) => [name, true])
-    );
-    const { manifest: newManifest } = updateManifestRulesets(
-      existingManifest,
-      options.configId,
-      rulesetsWithDeleteOrphaned
-    );
+    let simulatedManifest = existingManifest;
+
+    if (manifestUpdate.rulesets) {
+      const rulesetsWithDeleteOrphaned = new Map<string, boolean | undefined>(
+        manifestUpdate.rulesets.map((name) => [name, true])
+      );
+      const result = updateManifestRulesets(
+        simulatedManifest,
+        options.configId,
+        rulesetsWithDeleteOrphaned
+      );
+      simulatedManifest = result.manifest;
+    }
+
+    if (manifestUpdate.labels) {
+      const labelsWithDeleteOrphaned = new Map<string, boolean | undefined>(
+        manifestUpdate.labels.map((name) => [name, true])
+      );
+      const result = updateManifestLabels(
+        simulatedManifest,
+        options.configId,
+        labelsWithDeleteOrphaned
+      );
+      simulatedManifest = result.manifest;
+    }
 
     const existingConfigs = existingManifest?.configs ?? {};
     if (
-      JSON.stringify(existingConfigs) === JSON.stringify(newManifest.configs)
+      JSON.stringify(existingConfigs) ===
+      JSON.stringify(simulatedManifest!.configs)
     ) {
       return {
         success: true,
