@@ -1389,7 +1389,17 @@ In `src/config/validator.ts`:
    }
    ```
 
-3. Update `validateSettings()` signature to accept `rootLabelNames?: string[]`.
+3. Update `validateSettings()` signature — add `rootLabelNames?: string[]` as the **5th parameter** (after `hasRootRepoSettings?: boolean`). This position preserves all existing 4-argument call sites without changes:
+
+   ```typescript
+   export function validateSettings(
+     settings: unknown,
+     context: string,
+     rootRulesetNames?: string[],
+     hasRootRepoSettings?: boolean,
+     rootLabelNames?: string[] // <-- new, 5th parameter
+   ): void;
+   ```
 
 4. Update calls to `validateSettings()` in `validateRawConfig()`:
    - Root level: pass no `rootLabelNames`
@@ -1699,7 +1709,8 @@ Import `updateManifestLabels` from `./manifest.js`. Update `execute()`:
 
 - When only `this.params.rulesets` is present, call `updateManifestRulesets()` (current behavior)
 - When only `this.params.labels` is present, call `updateManifestLabels()`
-- When both are present, apply **sequentially**: call `updateManifestRulesets()` first, then pass the resulting manifest to `updateManifestLabels()`. Surface both `rulesetsToDelete` and `labelsToDelete` from the respective return values.
+- When both are present, apply **sequentially**: call `updateManifestRulesets()` first, then pass the resulting manifest to `updateManifestLabels()`. Build the `Map<string, boolean | undefined>` for labels using the same pattern as rulesets: `new Map(this.params.labels.map((name) => [name, true]))`.
+- Note: `rulesetsToDelete` and `labelsToDelete` from the return values are not used downstream (the current rulesets implementation already discards `rulesetsToDelete`) — discard them.
 - Make commit message dynamic: "chore: update manifest with labels tracking" or "chore: update manifest with ruleset/labels tracking"
 
 **Step 3: Update IRepositoryProcessor signature**
@@ -1718,9 +1729,9 @@ In `src/sync/repository-processor.ts`:
 
 2. **Update the pre-check logic** (lines ~118-148):
    - Import `updateManifestLabels` alongside `updateManifestRulesets`
-   - Check rulesets changes if `manifestUpdate.rulesets` is present
-   - Check labels changes if `manifestUpdate.labels` is present
-   - Only skip if neither has changes
+   - For the "would anything change?" pre-check: when both rulesets and labels are present, simulate the combined update **sequentially** — call `updateManifestRulesets()` first on the loaded manifest, then call `updateManifestLabels()` on the resulting manifest. Compare the final result against the original to determine if a write is needed.
+   - When only one of rulesets/labels is present, the pre-check runs just that one update function (existing behavior for rulesets-only).
+   - Only skip if the final manifest equals the original (neither update changed anything)
    - Pass the full `manifestUpdate` to `ManifestStrategy`
 
 **Step 5: Run build and existing tests**
@@ -1744,6 +1755,8 @@ git commit -m "feat(labels): update manifest strategy and repository processor f
 - Modify: `src/cli/types.ts`
 
 **Step 1: Add factory type and default**
+
+Note: `src/cli/types.ts` was also modified in Task 13 (Step 3). These additions are **additive** on top of those changes — do not revert the `updateManifestOnly` signature change from Task 13.
 
 Add to `src/cli/types.ts`:
 
@@ -1841,11 +1854,16 @@ git commit -m "feat(labels): wire labels processing into settings command"
 
 **Step 1: Update ProcessorResults and buildSettingsReport**
 
-Add `labelsResult` to `ProcessorResults`:
+Add imports:
 
 ```typescript
 import type { LabelsPlanEntry } from "../settings/labels/formatter.js";
+import type { LabelChange } from "../output/settings-report.js";
+```
 
+Add `labelsResult` to `ProcessorResults`:
+
+```typescript
 labelsResult?: {
   planOutput?: {
     entries?: LabelsPlanEntry[];
@@ -1853,7 +1871,18 @@ labelsResult?: {
 };
 ```
 
-Add `labels: { create: 0, update: 0, delete: 0 }` to totals.
+Add `labels: { create: 0, update: 0, delete: 0 }` to the `totals` initialization object.
+
+**IMPORTANT:** Initialize `labels: []` in the `repoChanges` construction (alongside `settings: []` and `rulesets: []`):
+
+```typescript
+const repoChanges: RepoChanges = {
+  repoName: result.repoName,
+  settings: [],
+  rulesets: [],
+  labels: [], // <-- MUST be initialized or output layer crashes on r.labels.length
+};
+```
 
 Add labels conversion block in `buildSettingsReport()` (parallel to rulesets):
 
