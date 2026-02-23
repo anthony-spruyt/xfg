@@ -1753,7 +1753,10 @@ Import `updateManifestLabels` from `./manifest.js`. Update `execute()`:
 - When only `this.params.labels` is present, call `updateManifestLabels()`. Build the `Map<string, boolean | undefined>` for labels using the same pattern as rulesets: `new Map(this.params.labels.map((name) => [name, true]))`.
 - When both are present, apply **sequentially**: call `updateManifestRulesets()` first (guarded), then pass the resulting manifest to `updateManifestLabels()`.
 - Note: `rulesetsToDelete` and `labelsToDelete` from the return values are not used downstream (the current rulesets implementation already discards `rulesetsToDelete`) — discard them.
-- Make commit message dynamic: "chore: update manifest with labels tracking" or "chore: update manifest with ruleset/labels tracking"
+- Make commit message dynamic based on which params are present:
+  1. Rulesets only → `"chore: update manifest with ruleset tracking"` (preserve existing message)
+  2. Labels only → `"chore: update manifest with labels tracking"`
+  3. Both → `"chore: update manifest with ruleset/labels tracking"`
 
 **Step 3: Update IRepositoryProcessor signature**
 
@@ -1771,7 +1774,8 @@ In `src/sync/repository-processor.ts`:
 
 2. **Update the pre-check logic** (lines ~118-148):
    - Import `updateManifestLabels` alongside `updateManifestRulesets`
-   - For the "would anything change?" pre-check: when both rulesets and labels are present, simulate the combined update **sequentially** — call `updateManifestRulesets()` first on the loaded manifest, then call `updateManifestLabels()` on the resulting manifest. Compare the final result against the original to determine if a write is needed.
+   - **IMPORTANT:** The existing `manifestUpdate.rulesets.map(...)` call (line ~129-130) will become a TypeScript error since `rulesets` is now `string[] | undefined`. Guard it with `if (manifestUpdate.rulesets)` before calling `updateManifestRulesets()`. This is the same guard pattern required in `ManifestStrategy.execute()` (Step 2 above).
+   - For the "would anything change?" pre-check: when both rulesets and labels are present, simulate the combined update **sequentially** — call `updateManifestRulesets()` first on the loaded manifest (guarded), then call `updateManifestLabels()` on the resulting manifest (guarded). Compare the final result against the original to determine if a write is needed.
    - When only one of rulesets/labels is present, the pre-check runs just that one update function (existing behavior for rulesets-only).
    - Only skip if the final manifest equals the original (neither update changed anything)
    - Pass the full `manifestUpdate` to `ManifestStrategy`
