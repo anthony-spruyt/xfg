@@ -90,7 +90,7 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
       parts.push(`${rulesetsTotal} ${rulesetWord} (${actions.join(", ")})`);
     }
 
-    const lt = t.labels ?? { create: 0, update: 0, delete: 0 };
+    const lt = t.labels;
     const labelsTotal = lt.create + lt.update + lt.delete;
     if (labelsTotal > 0) {
       const labelWord = labelsTotal === 1 ? "label" : "labels";
@@ -121,7 +121,7 @@ function hasAnyChanges(input: UnifiedSummaryInput): boolean {
       (r) =>
         r.settings.length > 0 ||
         r.rulesets.length > 0 ||
-        (r.labels ?? []).length > 0 ||
+        r.labels.length > 0 ||
         r.error
     )
   )
@@ -227,7 +227,7 @@ function renderSettingsLines(
     }
   }
 
-  for (const label of settingsRepo.labels ?? []) {
+  for (const label of settingsRepo.labels) {
     if (label.action === "create") {
       diffLines.push(`+ label "${label.name}"`);
       if (label.config) {
@@ -312,7 +312,7 @@ export function formatUnifiedSummaryMarkdown(
       settingsRepo &&
       (settingsRepo.settings.length > 0 ||
         settingsRepo.rulesets.length > 0 ||
-        (settingsRepo.labels ?? []).length > 0 ||
+        settingsRepo.labels.length > 0 ||
         settingsRepo.error);
 
     if (!hasLcChange && !hasSyncChanges && !hasSettingsChanges) continue;

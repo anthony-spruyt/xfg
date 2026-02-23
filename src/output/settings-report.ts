@@ -11,7 +11,7 @@ export interface SettingsReport {
   totals: {
     settings: { add: number; change: number };
     rulesets: { create: number; update: number; delete: number };
-    labels?: { create: number; update: number; delete: number };
+    labels: { create: number; update: number; delete: number };
   };
 }
 
@@ -19,7 +19,7 @@ export interface RepoChanges {
   repoName: string;
   settings: SettingChange[];
   rulesets: RulesetChange[];
-  labels?: LabelChange[];
+  labels: LabelChange[];
   error?: string;
 }
 
@@ -125,7 +125,7 @@ function formatSummary(totals: SettingsReport["totals"]): string {
   const settingsTotal = totals.settings.add + totals.settings.change;
   const rulesetsTotal =
     totals.rulesets.create + totals.rulesets.update + totals.rulesets.delete;
-  const labelTotals = totals.labels ?? { create: 0, update: 0, delete: 0 };
+  const labelTotals = totals.labels;
   const labelsTotal =
     labelTotals.create + labelTotals.update + labelTotals.delete;
 
@@ -177,7 +177,7 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
     if (
       repo.settings.length === 0 &&
       repo.rulesets.length === 0 &&
-      (repo.labels ?? []).length === 0 &&
+      repo.labels.length === 0 &&
       !repo.error
     ) {
       continue;
@@ -226,7 +226,7 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
     }
 
     // Labels
-    for (const label of repo.labels ?? []) {
+    for (const label of repo.labels) {
       if (label.action === "create") {
         lines.push(chalk.green(`    + label "${label.name}"`));
         if (label.config) {
@@ -369,7 +369,7 @@ export function formatSettingsReportMarkdown(
     if (
       repo.settings.length === 0 &&
       repo.rulesets.length === 0 &&
-      (repo.labels ?? []).length === 0 &&
+      repo.labels.length === 0 &&
       !repo.error
     ) {
       continue;
@@ -420,7 +420,7 @@ export function formatSettingsReportMarkdown(
       }
     }
 
-    for (const label of repo.labels ?? []) {
+    for (const label of repo.labels) {
       if (label.action === "create") {
         diffLines.push(`+ label "${label.name}"`);
         if (label.config) {

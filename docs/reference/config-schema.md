@@ -113,10 +113,10 @@ The schema validates:
 
 ### Command-Specific Requirements
 
-| Command        | Required Fields                                    |
-| -------------- | -------------------------------------------------- |
-| `xfg sync`     | `files` with at least one file defined             |
-| `xfg settings` | `settings` with actionable config (e.g., rulesets, labels) |
+| Command        | Required Fields                                              |
+| -------------- | ------------------------------------------------------------ |
+| `xfg sync`     | `files` with at least one file defined                       |
+| `xfg settings` | `settings` with actionable config (e.g., rulesets, labels)   |
 
 If you run the wrong command for your config, you'll see a helpful error:
 

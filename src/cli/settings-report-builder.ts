@@ -109,7 +109,6 @@ export function buildSettingsReport(
           propertyChanges: entry.propertyChanges,
           config: entry.config,
         };
-        if (!repoChanges.labels) repoChanges.labels = [];
         repoChanges.labels.push(labelChange);
 
         if (entry.action === "create") totals.labels.create++;

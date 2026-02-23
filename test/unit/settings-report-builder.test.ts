@@ -121,6 +121,148 @@ describe("buildSettingsReport", () => {
     assert.equal(report.totals.rulesets.delete, 1);
   });
 
+  test("converts labelsResult with create/update/delete entries", () => {
+    const results = [
+      {
+        repoName: "org/repo",
+        labelsResult: {
+          planOutput: {
+            entries: [
+              {
+                name: "bug",
+                action: "create" as const,
+                config: { color: "d73a4a", description: "Something is broken" },
+              },
+              {
+                name: "old-name",
+                action: "update" as const,
+                newName: "new-name",
+                propertyChanges: [
+                  {
+                    property: "color",
+                    oldValue: "ffffff",
+                    newValue: "000000",
+                  },
+                ],
+              },
+              {
+                name: "stale",
+                action: "delete" as const,
+              },
+              {
+                name: "keep-me",
+                action: "unchanged" as const,
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+    const report = buildSettingsReport(results);
+
+    // Unchanged entries should be filtered out
+    assert.equal(report.repos[0].labels.length, 3);
+
+    // Verify create entry
+    const createLabel = report.repos[0].labels[0];
+    assert.equal(createLabel.name, "bug");
+    assert.equal(createLabel.action, "create");
+    assert.deepEqual(createLabel.config, {
+      color: "d73a4a",
+      description: "Something is broken",
+    });
+
+    // Verify update entry
+    const updateLabel = report.repos[0].labels[1];
+    assert.equal(updateLabel.name, "old-name");
+    assert.equal(updateLabel.action, "update");
+    assert.equal(updateLabel.newName, "new-name");
+    assert.deepEqual(updateLabel.propertyChanges, [
+      { property: "color", oldValue: "ffffff", newValue: "000000" },
+    ]);
+
+    // Verify delete entry
+    const deleteLabel = report.repos[0].labels[2];
+    assert.equal(deleteLabel.name, "stale");
+    assert.equal(deleteLabel.action, "delete");
+
+    // Verify totals
+    assert.equal(report.totals.labels.create, 1);
+    assert.equal(report.totals.labels.update, 1);
+    assert.equal(report.totals.labels.delete, 1);
+  });
+
+  test("aggregates label totals across multiple repos", () => {
+    const results = [
+      {
+        repoName: "org/repo1",
+        labelsResult: {
+          planOutput: {
+            entries: [
+              {
+                name: "bug",
+                action: "create" as const,
+                config: { color: "d73a4a" },
+              },
+              {
+                name: "feature",
+                action: "create" as const,
+                config: { color: "0075ca" },
+              },
+            ],
+          },
+        },
+      },
+      {
+        repoName: "org/repo2",
+        labelsResult: {
+          planOutput: {
+            entries: [
+              {
+                name: "old",
+                action: "delete" as const,
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+    const report = buildSettingsReport(results);
+
+    assert.equal(report.totals.labels.create, 2);
+    assert.equal(report.totals.labels.update, 0);
+    assert.equal(report.totals.labels.delete, 1);
+  });
+
+  test("initializes labels as empty array when no labelsResult", () => {
+    const results = [
+      {
+        repoName: "org/repo",
+        settingsResult: {
+          planOutput: {
+            entries: [
+              {
+                property: "hasWiki",
+                action: "change" as const,
+                oldValue: true,
+                newValue: false,
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+    const report = buildSettingsReport(results);
+
+    assert.deepEqual(report.repos[0].labels, []);
+    assert.equal(report.totals.labels.create, 0);
+    assert.equal(report.totals.labels.update, 0);
+    assert.equal(report.totals.labels.delete, 0);
+  });
+
   test("skips settings where both oldValue and newValue are undefined", () => {
     const results = [
       {

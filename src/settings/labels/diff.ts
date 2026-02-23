@@ -77,7 +77,12 @@ export function diffLabels(
     }
   }
 
-  // Check rename targets for collisions with existing labels
+  // Check rename targets for collisions with existing labels.
+  // Note: Chain renames (A->B and B->C) are allowed when the target label is
+  // itself being renamed away. This is safe because the apply ordering
+  // (deletes -> updates -> creates) ensures both renames execute in the same batch.
+  // This deviates from the original design plan which called for flagging chains
+  // as errors, but the permissive behavior is correct and more user-friendly.
   for (const [name, label] of Object.entries(desired)) {
     if (!label.new_name) continue;
     const targetLower = label.new_name.toLowerCase();

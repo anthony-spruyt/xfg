@@ -171,7 +171,13 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     ];
 
     if (dryRun) {
-      this.log.info(`Would update ${MANIFEST_FILENAME} with rulesets`);
+      const parts: string[] = [];
+      if (manifestUpdate.rulesets) parts.push("ruleset");
+      if (manifestUpdate.labels) parts.push("labels");
+      const trackingType = parts.join("/") || "settings";
+      this.log.info(
+        `Would update ${MANIFEST_FILENAME} with ${trackingType} tracking`
+      );
       return {
         success: true,
         repoName,
