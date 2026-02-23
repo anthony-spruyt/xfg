@@ -381,10 +381,32 @@
           ],
           "description": "GitHub repository settings (features, merge options, security). Set to false at per-repo level to opt out of inherited settings."
         },
+        "labels": {
+          "type": "object",
+          "description": "Map of label names to configurations. Set a label to false to opt out. Set inherit: false to skip all inherited labels.",
+          "properties": {
+            "inherit": {
+              "type": "boolean",
+              "description": "Set to false to skip all inherited root labels. Default: true"
+            }
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to opt out of this inherited label"
+              },
+              {
+                "$ref": "#/definitions/label"
+              }
+            ]
+          }
+        },
         "deleteOrphaned": {
           "type": "boolean",
           "default": false,
-          "description": "Track rulesets for orphan deletion. When true, if a ruleset is removed from the config, it will be deleted from the repo. Default: false"
+          "description": "Track managed resources for orphan deletion. When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false"
         }
       }
     },
@@ -1197,6 +1219,29 @@
               "description": "Maximum allowed file size in bytes"
             }
           }
+        }
+      }
+    },
+    "label": {
+      "type": "object",
+      "description": "GitHub label configuration",
+      "required": [
+        "color"
+      ],
+      "properties": {
+        "color": {
+          "type": "string",
+          "pattern": "^#?[0-9a-fA-F]{6}$",
+          "description": "Hex color code (with or without #). Example: 'd73a4a' or '#d73a4a'"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Label description (max 100 characters)"
+        },
+        "new_name": {
+          "type": "string",
+          "description": "Rename this label. Maps to GitHub API's new_name field."
         }
       }
     }
