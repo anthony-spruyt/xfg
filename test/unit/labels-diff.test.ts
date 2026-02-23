@@ -1,9 +1,6 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import {
-  diffLabels,
-  type LabelChange,
-} from "../../src/settings/labels/diff.js";
+import { diffLabels } from "../../src/settings/labels/diff.js";
 import type { Label } from "../../src/config/types.js";
 import type { GitHubLabel } from "../../src/settings/labels/types.js";
 
