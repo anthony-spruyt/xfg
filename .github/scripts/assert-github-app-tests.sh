@@ -7,8 +7,28 @@ set -euo pipefail
 TEST_REPO="anthony-spruyt/xfg-test-2"
 SYNC_BRANCH="chore/sync-github-app-test"
 DIRECT_FILE="github-app-direct-test.json"
+MAX_RETRIES=10
+RETRY_DELAY=3
 
 ERRORS=0
+
+# Poll until a commit's verification.verified field returns "true".
+# GitHub's API has eventual consistency — verification metadata may lag.
+wait_for_verified() {
+  local sha="$1"
+  local label="$2"
+  for i in $(seq 1 "${MAX_RETRIES}"); do
+    VERIFIED=$(gh api "repos/${TEST_REPO}/commits/${sha}" --jq '.commit.verification.verified' 2>/dev/null || true)
+    if [ "${VERIFIED}" = "true" ]; then
+      echo "  ${label} verified: true (attempt ${i})"
+      return 0
+    fi
+    echo "  ${label} verified: ${VERIFIED} (attempt ${i}/${MAX_RETRIES}, retrying in ${RETRY_DELAY}s...)"
+    sleep "${RETRY_DELAY}"
+  done
+  echo "  ERROR: ${label} is not verified after ${MAX_RETRIES} attempts"
+  return 1
+}
 
 echo "=== Validating GitHub App integration test results ==="
 
@@ -25,10 +45,7 @@ if [ -n "${PR_INFO}" ]; then
       echo "  ERROR: Commit author is github-actions[bot] — PAT leaked into App test"
       ERRORS=$((ERRORS + 1))
     fi
-    VERIFIED=$(gh api "repos/${TEST_REPO}/commits/${COMMIT_SHA}" --jq '.commit.verification.verified' 2>/dev/null || true)
-    echo "  Commit verified: ${VERIFIED}"
-    if [ "${VERIFIED}" != "true" ]; then
-      echo "  ERROR: Commit is not verified"
+    if ! wait_for_verified "${COMMIT_SHA}" "Sync commit"; then
       ERRORS=$((ERRORS + 1))
     fi
   fi
@@ -47,10 +64,7 @@ if [ -n "${DIRECT_SHA}" ]; then
     echo "  ERROR: Direct mode commit author is github-actions[bot]"
     ERRORS=$((ERRORS + 1))
   fi
-  VERIFIED=$(gh api "repos/${TEST_REPO}/commits/${MAIN_SHA}" --jq '.commit.verification.verified' 2>/dev/null || true)
-  echo "  Direct mode commit verified: ${VERIFIED}"
-  if [ "${VERIFIED}" != "true" ]; then
-    echo "  ERROR: Direct mode commit is not verified"
+  if ! wait_for_verified "${MAIN_SHA}" "Direct mode commit"; then
     ERRORS=$((ERRORS + 1))
   fi
 else
