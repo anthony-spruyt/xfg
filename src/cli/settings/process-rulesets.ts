@@ -4,12 +4,19 @@ import {
   parseGitUrl,
   getRepoDisplayName,
   isGitHubRepo,
+  type GitHubRepoInfo,
 } from "../../shared/repo-detector.js";
 import { logger } from "../../shared/logger.js";
 import { generateWorkspaceName } from "../../shared/workspace-utils.js";
 import type { RepoResult } from "../../output/github-summary.js";
 import { buildErrorResult } from "../../output/summary-utils.js";
-import { getManagedRulesets } from "../../sync/manifest.js";
+import {
+  getManagedRulesets,
+  parseManifestContent,
+  MANIFEST_FILENAME,
+} from "../../sync/manifest.js";
+import { defaultExecutor } from "../../shared/command-executor.js";
+import { escapeShellArg } from "../../shared/shell-utils.js";
 import type { IRulesetProcessor, IRepositoryProcessor } from "../types.js";
 import type { Config, RepoConfig } from "../../config/types.js";
 import type { RepoInfo } from "../../shared/repo-detector.js";
@@ -59,7 +66,10 @@ export async function processRulesets(
       continue;
     }
 
-    const managedRulesets = getManagedRulesets(null, config.id);
+    const managedRulesets = await fetchManagedRulesets(
+      repoInfo as GitHubRepoInfo,
+      config.id
+    );
 
     try {
       logger.progress(i + 1, repoName, "Processing rulesets...");
@@ -134,5 +144,31 @@ export async function processRulesets(
       results.push(buildErrorResult(repoName, error));
       collector.appendError(repoName, error);
     }
+  }
+}
+
+/**
+ * Fetches the managed rulesets list from a remote GitHub repo's manifest.
+ * Returns an empty array if the manifest doesn't exist or can't be read.
+ *
+ * Uses the project's ICommandExecutor + escapeShellArg pattern for safe
+ * command execution. All inputs are from parsed config (owner/repo), not
+ * user input.
+ */
+async function fetchManagedRulesets(
+  repoInfo: GitHubRepoInfo,
+  configId: string
+): Promise<string[]> {
+  try {
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/contents/${MANIFEST_FILENAME}`;
+    const command = `gh api ${escapeShellArg(endpoint)} --jq '.content'`;
+    const base64Content = await defaultExecutor.exec(command, process.cwd());
+    const content = Buffer.from(base64Content.trim(), "base64").toString(
+      "utf-8"
+    );
+    const manifest = parseManifestContent(content);
+    return getManagedRulesets(manifest, configId);
+  } catch {
+    return [];
   }
 }

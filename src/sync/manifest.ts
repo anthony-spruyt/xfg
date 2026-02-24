@@ -143,6 +143,28 @@ export function loadManifest(workDir: string): XfgManifest | null {
 }
 
 /**
+ * Parses manifest content from a string (e.g., fetched from a remote API).
+ * Handles V2→V3 migration, returns null for V1/unknown/invalid formats.
+ */
+export function parseManifestContent(content: string): XfgManifest | null {
+  try {
+    const parsed = JSON.parse(content) as unknown;
+
+    if (isV3Manifest(parsed)) {
+      return parsed;
+    }
+
+    if (isV2Manifest(parsed)) {
+      return migrateV2ToV3(parsed);
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Saves the xfg manifest to a repository's working directory.
  *
  * @param workDir - The repository working directory
