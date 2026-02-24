@@ -11,6 +11,7 @@ import {
   getManagedFiles,
   getManagedRulesets,
   getManagedLabels,
+  parseManifestContent,
   updateManifest,
   updateManifestRulesets,
   updateManifestLabels,
@@ -142,6 +143,35 @@ describe("manifest", () => {
       writeFileSync(join(testDir, MANIFEST_FILENAME), '"string"', "utf-8");
 
       const result = loadManifest(testDir);
+      assert.equal(result, null);
+    });
+  });
+
+  describe("parseManifestContent", () => {
+    test("parses v3 manifest from string", () => {
+      const manifest = {
+        version: 3,
+        configs: { "my-config": { labels: ["bug", "feature"] } },
+      };
+      const result = parseManifestContent(JSON.stringify(manifest));
+      assert.deepEqual(result, manifest);
+    });
+
+    test("migrates v2 manifest to v3", () => {
+      const v2 = { version: 2, configs: { "my-config": ["file.txt"] } };
+      const result = parseManifestContent(JSON.stringify(v2));
+      assert.equal(result?.version, 3);
+      assert.deepEqual(result?.configs["my-config"]?.files, ["file.txt"]);
+    });
+
+    test("returns null for invalid JSON", () => {
+      const result = parseManifestContent("not json");
+      assert.equal(result, null);
+    });
+
+    test("returns null for v1 manifest", () => {
+      const v1 = { version: 1, managedFiles: ["file.txt"] };
+      const result = parseManifestContent(JSON.stringify(v1));
       assert.equal(result, null);
     });
   });
