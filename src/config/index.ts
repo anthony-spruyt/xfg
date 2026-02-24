@@ -62,6 +62,8 @@ export type {
   MergeCommitMessage,
   RepoVisibility,
   GitHubRepoSettings,
+  // Labels
+  Label,
   RepoSettings,
   // Raw Config
   ContentValue,

@@ -4,13 +4,14 @@ import {
   formatPropertyTree,
   type PropertyDiff,
 } from "../settings/rulesets/formatter.js";
-import type { Ruleset } from "../config/index.js";
+import type { Ruleset, Label } from "../config/index.js";
 
 export interface SettingsReport {
   repos: RepoChanges[];
   totals: {
     settings: { add: number; change: number };
     rulesets: { create: number; update: number; delete: number };
+    labels: { create: number; update: number; delete: number };
   };
 }
 
@@ -18,6 +19,7 @@ export interface RepoChanges {
   repoName: string;
   settings: SettingChange[];
   rulesets: RulesetChange[];
+  labels: LabelChange[];
   error?: string;
 }
 
@@ -33,6 +35,18 @@ export interface RulesetChange {
   action: "create" | "update" | "delete";
   propertyDiffs?: PropertyDiff[];
   config?: Ruleset;
+}
+
+export interface LabelChange {
+  name: string;
+  action: "create" | "update" | "delete";
+  newName?: string;
+  propertyChanges?: {
+    property: string;
+    oldValue?: string;
+    newValue?: string;
+  }[];
+  config?: Label;
 }
 
 // =============================================================================
@@ -111,6 +125,9 @@ function formatSummary(totals: SettingsReport["totals"]): string {
   const settingsTotal = totals.settings.add + totals.settings.change;
   const rulesetsTotal =
     totals.rulesets.create + totals.rulesets.update + totals.rulesets.delete;
+  const labelTotals = totals.labels;
+  const labelsTotal =
+    labelTotals.create + labelTotals.update + labelTotals.delete;
 
   if (settingsTotal > 0) {
     const settingWord = settingsTotal === 1 ? "setting" : "settings";
@@ -133,6 +150,15 @@ function formatSummary(totals: SettingsReport["totals"]): string {
     parts.push(`${rulesetsTotal} ${rulesetWord} (${actions.join(", ")})`);
   }
 
+  if (labelsTotal > 0) {
+    const labelWord = labelsTotal === 1 ? "label" : "labels";
+    const actions: string[] = [];
+    if (labelTotals.create > 0) actions.push(`${labelTotals.create} to create`);
+    if (labelTotals.update > 0) actions.push(`${labelTotals.update} to update`);
+    if (labelTotals.delete > 0) actions.push(`${labelTotals.delete} to delete`);
+    parts.push(`${labelsTotal} ${labelWord} (${actions.join(", ")})`);
+  }
+
   if (parts.length === 0) {
     return "No changes";
   }
@@ -151,6 +177,7 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
     if (
       repo.settings.length === 0 &&
       repo.rulesets.length === 0 &&
+      repo.labels.length === 0 &&
       !repo.error
     ) {
       continue;
@@ -195,6 +222,49 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
         }
       } else if (ruleset.action === "delete") {
         lines.push(chalk.red(`    - ruleset "${ruleset.name}"`));
+      }
+    }
+
+    // Labels
+    for (const label of repo.labels) {
+      if (label.action === "create") {
+        lines.push(chalk.green(`    + label "${label.name}"`));
+        if (label.config) {
+          lines.push(chalk.green(`        color: "${label.config.color}"`));
+          if (label.config.description !== undefined) {
+            lines.push(
+              chalk.green(`        description: "${label.config.description}"`)
+            );
+          }
+        }
+      } else if (label.action === "update") {
+        if (label.newName) {
+          lines.push(
+            chalk.yellow(
+              `    ~ label "${label.name}" \u2192 "${label.newName}"`
+            )
+          );
+        } else {
+          lines.push(chalk.yellow(`    ~ label "${label.name}"`));
+        }
+        if (label.propertyChanges) {
+          for (const prop of label.propertyChanges) {
+            if (prop.property === "new_name") continue;
+            if (prop.oldValue !== undefined) {
+              lines.push(
+                chalk.yellow(
+                  `        ${prop.property}: "${prop.oldValue}" \u2192 "${prop.newValue}"`
+                )
+              );
+            } else {
+              lines.push(
+                chalk.yellow(`        ${prop.property}: "${prop.newValue}"`)
+              );
+            }
+          }
+        }
+      } else if (label.action === "delete") {
+        lines.push(chalk.red(`    - label "${label.name}"`));
       }
     }
 
@@ -299,6 +369,7 @@ export function formatSettingsReportMarkdown(
     if (
       repo.settings.length === 0 &&
       repo.rulesets.length === 0 &&
+      repo.labels.length === 0 &&
       !repo.error
     ) {
       continue;
@@ -346,6 +417,38 @@ export function formatSettingsReportMarkdown(
         }
       } else if (ruleset.action === "delete") {
         diffLines.push(`- ruleset "${ruleset.name}"`);
+      }
+    }
+
+    for (const label of repo.labels) {
+      if (label.action === "create") {
+        diffLines.push(`+ label "${label.name}"`);
+        if (label.config) {
+          diffLines.push(`+   color: "${label.config.color}"`);
+          if (label.config.description !== undefined) {
+            diffLines.push(`+   description: "${label.config.description}"`);
+          }
+        }
+      } else if (label.action === "update") {
+        if (label.newName) {
+          diffLines.push(`! label "${label.name}" \u2192 "${label.newName}"`);
+        } else {
+          diffLines.push(`! label "${label.name}"`);
+        }
+        if (label.propertyChanges) {
+          for (const prop of label.propertyChanges) {
+            if (prop.property === "new_name") continue;
+            if (prop.oldValue !== undefined) {
+              diffLines.push(
+                `!   ${prop.property}: "${prop.oldValue}" \u2192 "${prop.newValue}"`
+              );
+            } else {
+              diffLines.push(`!   ${prop.property}: "${prop.newValue}"`);
+            }
+          }
+        }
+      } else if (label.action === "delete") {
+        diffLines.push(`- label "${label.name}"`);
       }
     }
 

@@ -5,6 +5,7 @@ import {
   loadManifest,
   saveManifest,
   updateManifestRulesets,
+  updateManifestLabels,
   MANIFEST_FILENAME,
 } from "./manifest.js";
 import type {
@@ -19,7 +20,8 @@ import type {
  * Parameters for manifest-only updates
  */
 export interface ManifestUpdateParams {
-  rulesets: string[];
+  rulesets?: string[];
+  labels?: string[];
 }
 
 /**
@@ -42,27 +44,54 @@ export class ManifestStrategy implements IWorkStrategy {
 
     // Load and update manifest
     const existingManifest = loadManifest(workDir);
-    const rulesetsWithDeleteOrphaned = new Map<string, boolean | undefined>(
-      this.params.rulesets.map((name) => [name, true])
-    );
-    const { manifest: newManifest } = updateManifestRulesets(
-      existingManifest,
-      configId,
-      rulesetsWithDeleteOrphaned
-    );
+    let newManifest = existingManifest;
+
+    // Apply rulesets update if present
+    if (this.params.rulesets) {
+      const rulesetsWithDeleteOrphaned = new Map<string, boolean | undefined>(
+        this.params.rulesets.map((name) => [name, true])
+      );
+      const result = updateManifestRulesets(
+        newManifest,
+        configId,
+        rulesetsWithDeleteOrphaned
+      );
+      newManifest = result.manifest;
+    }
+
+    // Apply labels update if present
+    if (this.params.labels) {
+      const labelsWithDeleteOrphaned = new Map<string, boolean | undefined>(
+        this.params.labels.map((name) => [name, true])
+      );
+      const result = updateManifestLabels(
+        newManifest,
+        configId,
+        labelsWithDeleteOrphaned
+      );
+      newManifest = result.manifest;
+    }
 
     // Check if changed
     const existingConfigs = existingManifest?.configs ?? {};
     if (
-      JSON.stringify(existingConfigs) === JSON.stringify(newManifest.configs)
+      JSON.stringify(existingConfigs) === JSON.stringify(newManifest!.configs)
     ) {
       return null;
     }
 
+    // Build dynamic commit message
+    const parts: string[] = [];
+    if (this.params.rulesets) parts.push("ruleset");
+    if (this.params.labels) parts.push("labels");
+    const trackingType = parts.join("/");
+
     if (dryRun) {
-      this.log.info(`Would update ${MANIFEST_FILENAME} with rulesets`);
+      this.log.info(
+        `Would update ${MANIFEST_FILENAME} with ${trackingType} tracking`
+      );
     } else {
-      saveManifest(workDir, newManifest);
+      saveManifest(workDir, newManifest!);
     }
 
     const fileChanges = new Map<string, FileWriteResult>([
@@ -81,7 +110,7 @@ export class ManifestStrategy implements IWorkStrategy {
       changedFiles: [
         { fileName: MANIFEST_FILENAME, action: "update" as const },
       ],
-      commitMessage: "chore: update manifest with ruleset tracking",
+      commitMessage: `chore: update manifest with ${trackingType} tracking`,
       fileChangeDetails: [{ path: MANIFEST_FILENAME, action: "update" }],
     };
   }

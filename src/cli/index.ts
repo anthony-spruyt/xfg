@@ -13,10 +13,13 @@ export {
   type RulesetProcessorFactory,
   type RepoSettingsProcessorFactory,
   type IRepoSettingsProcessor,
+  type ILabelsProcessor,
+  type LabelsProcessorFactory,
   // Runtime values
   defaultProcessorFactory,
   defaultRulesetProcessorFactory,
   defaultRepoSettingsProcessorFactory,
+  defaultLabelsProcessorFactory,
 } from "./types.js";
 
 // Export command option types

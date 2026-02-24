@@ -16,13 +16,18 @@ import {
   runSettings,
   type SettingsOptions,
 } from "../../src/cli/settings-command.js";
-import type { IRepositoryProcessor } from "../../src/cli/types.js";
+import type {
+  IRepositoryProcessor,
+  ILabelsProcessor,
+} from "../../src/cli/types.js";
 import type { IRulesetProcessor } from "../../src/settings/rulesets/processor.js";
 import type { IRepoSettingsProcessor } from "../../src/settings/repo-settings/processor.js";
 import type { RepoSettingsProcessorResult } from "../../src/settings/repo-settings/processor.js";
 import type { RulesetProcessorResult } from "../../src/settings/rulesets/processor.js";
 import type { ProcessorResult } from "../../src/sync/repository-processor.js";
 import type { RulesetPlanResult } from "../../src/settings/rulesets/formatter.js";
+import type { LabelsProcessorResult } from "../../src/settings/labels/processor.js";
+import type { LabelsPlanResult } from "../../src/settings/labels/formatter.js";
 import {
   noopLifecycleManager,
   failingLifecycleManager,
@@ -49,6 +54,13 @@ const VALID_RULESET = `
               include: ["~DEFAULT_BRANCH"]
               exclude: []
           rules: []
+`;
+
+// Valid labels config
+const VALID_LABELS = `
+        bug:
+          color: "d73a4a"
+          description: "Something isn't working"
 `;
 
 // Default empty plan outputs with correct types
@@ -118,6 +130,34 @@ function createMockRepoSettingsProcessor(
         message: "Repo settings synced",
         skipped: false,
         planOutput: emptyRepoSettingsPlanOutput(),
+        ...overrides,
+      })
+    ),
+  };
+}
+
+function emptyLabelsPlanOutput(): LabelsPlanResult {
+  return {
+    lines: [],
+    creates: 0,
+    updates: 0,
+    deletes: 0,
+    unchanged: 0,
+    entries: [],
+  };
+}
+
+function createMockLabelsProcessor(
+  overrides: Partial<LabelsProcessorResult> = {}
+): ILabelsProcessor {
+  return {
+    process: mock.fn(
+      async (): Promise<LabelsProcessorResult> => ({
+        success: true,
+        repoName: "test/repo",
+        message: "Labels synced",
+        skipped: false,
+        planOutput: emptyLabelsPlanOutput(),
         ...overrides,
       })
     ),
@@ -660,6 +700,336 @@ repos:
 
       const output = consoleOutput.join("\n");
       assert.ok(output.includes("my-ruleset"));
+    });
+  });
+
+  describe("labels processing", () => {
+    test("skips non-GitHub repos for labels", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://dev.azure.com/org/project/_git/repo
+    settings:
+      labels:${VALID_LABELS}
+`
+      );
+
+      await runSettings(
+        { config: testConfigPath, dryRun: true },
+        () => createMockRulesetProcessor(),
+        () => createMockRepoProcessor(),
+        () => createMockRepoSettingsProcessor(),
+        noopLifecycleManager,
+        () => createMockLabelsProcessor()
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(output.includes("GitHub Labels only supported"));
+    });
+
+    test("processes labels for GitHub repos successfully", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:${VALID_LABELS}
+`
+      );
+
+      const mockLabelsProcessor = createMockLabelsProcessor({
+        success: true,
+        message: "Labels synced",
+      });
+
+      await runSettings(
+        { config: testConfigPath, dryRun: true },
+        () => createMockRulesetProcessor(),
+        () => createMockRepoProcessor(),
+        () => createMockRepoSettingsProcessor(),
+        noopLifecycleManager,
+        () => mockLabelsProcessor
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(output.includes("Labels synced"));
+    });
+
+    test("exits with code 1 when labels processor returns failure", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:${VALID_LABELS}
+`
+      );
+
+      const mockLabelsProcessor = createMockLabelsProcessor({
+        success: false,
+        message: "Failed to sync labels",
+      });
+
+      await assert.rejects(
+        async () =>
+          runSettings(
+            { config: testConfigPath, dryRun: true },
+            () => createMockRulesetProcessor(),
+            () => createMockRepoProcessor(),
+            () => createMockRepoSettingsProcessor(),
+            noopLifecycleManager,
+            () => mockLabelsProcessor
+          ),
+        /process\.exit\(1\)/
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(output.includes("Failed to sync labels"));
+      assert.equal(exitCode, 1);
+    });
+
+    test("handles exception in labels processing", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:${VALID_LABELS}
+`
+      );
+
+      const mockLabelsProcessor: ILabelsProcessor = {
+        process: mock.fn(async () => {
+          throw new Error("Labels API error");
+        }),
+      };
+
+      await assert.rejects(
+        async () =>
+          runSettings(
+            { config: testConfigPath, dryRun: true },
+            () => createMockRulesetProcessor(),
+            () => createMockRepoProcessor(),
+            () => createMockRepoSettingsProcessor(),
+            noopLifecycleManager,
+            () => mockLabelsProcessor
+          ),
+        /process\.exit\(1\)/
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(output.includes("Labels API error"));
+      assert.equal(exitCode, 1);
+    });
+
+    test("updates manifest when labels processing has manifest updates", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:${VALID_LABELS}
+`
+      );
+
+      const mockLabelsProcessor = createMockLabelsProcessor({
+        success: true,
+        message: "Labels synced",
+        manifestUpdate: { labels: ["bug"] },
+      });
+
+      const mockRepoProcessor = createMockRepoProcessor();
+
+      await runSettings(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        () => createMockRulesetProcessor(),
+        () => mockRepoProcessor,
+        () => createMockRepoSettingsProcessor(),
+        noopLifecycleManager,
+        () => mockLabelsProcessor
+      );
+
+      const updateManifestCalls = (
+        mockRepoProcessor.updateManifestOnly as unknown as MockFn
+      ).mock.calls;
+      assert.equal(updateManifestCalls.length, 1);
+    });
+
+    test("handles failed manifest update gracefully", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:${VALID_LABELS}
+`
+      );
+
+      const mockLabelsProcessor = createMockLabelsProcessor({
+        success: true,
+        message: "Labels synced",
+        manifestUpdate: { labels: ["bug"] },
+      });
+
+      const mockRepoProcessor = createMockRepoProcessor({
+        success: false,
+        message: "Failed to update manifest",
+      });
+
+      await runSettings(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        () => createMockRulesetProcessor(),
+        () => mockRepoProcessor,
+        () => createMockRepoSettingsProcessor(),
+        noopLifecycleManager,
+        () => mockLabelsProcessor
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(output.includes("Warning: Failed to update manifest"));
+    });
+
+    test("displays plan output when available", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:${VALID_LABELS}
+`
+      );
+
+      const planOutput: LabelsPlanResult = {
+        lines: ['  + label "bug"', '      color: "d73a4a"'],
+        creates: 1,
+        updates: 0,
+        deletes: 0,
+        unchanged: 0,
+        entries: [{ name: "bug", action: "create" }],
+      };
+
+      const mockLabelsProcessor = createMockLabelsProcessor({
+        success: true,
+        message: "Labels synced",
+        planOutput,
+      });
+
+      await runSettings(
+        { config: testConfigPath, dryRun: true },
+        () => createMockRulesetProcessor(),
+        () => createMockRepoProcessor(),
+        () => createMockRepoSettingsProcessor(),
+        noopLifecycleManager,
+        () => mockLabelsProcessor
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(output.includes("bug"));
+    });
+
+    test("handles skipped result from labels processor", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:${VALID_LABELS}
+`
+      );
+
+      const mockLabelsProcessor = createMockLabelsProcessor({
+        success: true,
+        skipped: true,
+        message: "No labels configured",
+      });
+
+      await runSettings(
+        { config: testConfigPath, dryRun: true },
+        () => createMockRulesetProcessor(),
+        () => createMockRepoProcessor(),
+        () => createMockRepoSettingsProcessor(),
+        noopLifecycleManager,
+        () => mockLabelsProcessor
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(output.includes("No labels configured"));
+    });
+
+    test("handles invalid git URL in labels config", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: invalid-url
+    settings:
+      labels:${VALID_LABELS}
+`
+      );
+
+      await assert.rejects(
+        async () =>
+          runSettings(
+            { config: testConfigPath, dryRun: true },
+            () => createMockRulesetProcessor(),
+            () => createMockRepoProcessor(),
+            () => createMockRepoSettingsProcessor(),
+            noopLifecycleManager,
+            () => createMockLabelsProcessor()
+          ),
+        /process\.exit\(1\)/
+      );
+      assert.equal(exitCode, 1);
+    });
+
+    test("skips labels processing when lifecycle would create repo in dry-run", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:${VALID_LABELS}
+`
+      );
+
+      const mockLabelsProcessor = createMockLabelsProcessor();
+
+      await runSettings(
+        { config: testConfigPath, dryRun: true },
+        () => createMockRulesetProcessor(),
+        () => createMockRepoProcessor(),
+        () => createMockRepoSettingsProcessor(),
+        creatingLifecycleManager,
+        () => mockLabelsProcessor
+      );
+
+      assert.equal(
+        (mockLabelsProcessor.process as MockFn).mock.calls.length,
+        0,
+        "labels processor should not be called for non-existent repo in dry-run"
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(output.includes("CREATE"));
     });
   });
 });

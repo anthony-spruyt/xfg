@@ -2310,4 +2310,123 @@ describe("mergeSettings with repo", () => {
     const result = mergeSettings(undefined, perRepo);
     assert.equal(result?.repo, undefined);
   });
+
+  // Labels merge tests
+  test("mergeSettings merges root and per-repo labels (per-repo overrides root color)", () => {
+    const root: RawRepoSettings = {
+      labels: {
+        bug: { color: "d73a4a", description: "Something isn't working" },
+      },
+    };
+    const perRepo: RawRepoSettings = {
+      labels: {
+        bug: { color: "ff0000" },
+      },
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.equal(result?.labels?.bug.color, "ff0000");
+    assert.equal(result?.labels?.bug.description, "Something isn't working");
+  });
+
+  test("mergeSettings handles inherit: false for labels", () => {
+    const root: RawRepoSettings = {
+      labels: {
+        bug: { color: "d73a4a" },
+        feature: { color: "0e8a16" },
+      },
+    };
+    const perRepo: RawRepoSettings = {
+      labels: {
+        inherit: false,
+        custom: { color: "aaaaaa" },
+      },
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.equal(result?.labels?.bug, undefined);
+    assert.equal(result?.labels?.feature, undefined);
+    assert.ok(result?.labels?.custom);
+  });
+
+  test("mergeSettings handles individual label opt-out (label: false)", () => {
+    const root: RawRepoSettings = {
+      labels: {
+        bug: { color: "d73a4a" },
+        feature: { color: "0e8a16" },
+      },
+    };
+    const perRepo: RawRepoSettings = {
+      labels: {
+        bug: false,
+      },
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.equal(result?.labels?.bug, undefined);
+    assert.ok(result?.labels?.feature);
+  });
+
+  test("mergeSettings per-repo label overrides root label properties", () => {
+    const root: RawRepoSettings = {
+      labels: {
+        bug: { color: "d73a4a", description: "Old desc" },
+      },
+    };
+    const perRepo: RawRepoSettings = {
+      labels: {
+        bug: { color: "d73a4a", description: "New desc" },
+      },
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.equal(result?.labels?.bug.description, "New desc");
+  });
+
+  test("normalizeConfig strips # from label color values during normalization", () => {
+    const raw: RawConfig = {
+      id: "test",
+      settings: {
+        labels: {
+          bug: { color: "#D73A4A" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    const config = normalizeConfig(raw);
+    assert.equal(config.repos[0].settings?.labels?.bug.color, "d73a4a");
+  });
+
+  test("root labels are preserved in Config.settings.labels", () => {
+    const raw: RawConfig = {
+      id: "test",
+      settings: {
+        labels: {
+          bug: { color: "#D73A4A", description: "Something isn't working" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    const config = normalizeConfig(raw);
+    assert.equal(config.settings?.labels?.bug.color, "d73a4a");
+    assert.equal(
+      config.settings?.labels?.bug.description,
+      "Something isn't working"
+    );
+  });
+
+  test("per-repo-only labels appear without root labels", () => {
+    const raw: RawConfig = {
+      id: "test",
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          settings: {
+            labels: {
+              custom: { color: "aaaaaa" },
+            },
+          },
+        },
+      ],
+    };
+    const config = normalizeConfig(raw);
+    assert.ok(config.repos[0].settings?.labels?.custom);
+    assert.equal(config.repos[0].settings?.labels?.custom.color, "aaaaaa");
+  });
 });

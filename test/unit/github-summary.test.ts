@@ -821,6 +821,178 @@ describe("formatSummary", () => {
       });
     });
 
+    describe("labels plan details", () => {
+      test("renders nested details with labels table", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "[DRY RUN] 1 to create, 1 to update, 1 to delete",
+          labelsPlanDetails: [
+            { name: "bug", action: "create" },
+            { name: "old-name", action: "update", newName: "new-name" },
+            { name: "stale", action: "delete" },
+          ],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          dryRun: true,
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        // Summary line
+        assert.ok(markdown.includes("<summary>org/repo"));
+        assert.ok(markdown.includes("Labels:"));
+        assert.ok(markdown.includes("1 to create"));
+        assert.ok(markdown.includes("1 to update"));
+        assert.ok(markdown.includes("1 to delete"));
+        // Table headers
+        assert.ok(markdown.includes("| Label |"));
+        assert.ok(markdown.includes("| Action |"));
+        // Table rows
+        assert.ok(markdown.includes("bug"));
+        assert.ok(markdown.includes("+ Create"));
+        assert.ok(markdown.includes("\u2192 new-name"));
+        assert.ok(markdown.includes("~ Update"));
+        assert.ok(markdown.includes("stale"));
+        assert.ok(markdown.includes("- Delete"));
+      });
+
+      test("renders unchanged labels as 'No change'", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "no changes",
+          labelsPlanDetails: [{ name: "keep-me", action: "unchanged" }],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          dryRun: true,
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        assert.ok(markdown.includes("keep-me"));
+        assert.ok(markdown.includes("No change"));
+      });
+
+      test("shows labels plan summary in changes column", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "Applied",
+          labelsPlanDetails: [
+            { name: "bug", action: "create" },
+            { name: "feature", action: "create" },
+            { name: "old", action: "delete" },
+          ],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        assert.ok(
+          markdown.includes("2 to create"),
+          "Changes column should show labels plan summary"
+        );
+        assert.ok(
+          markdown.includes("1 to delete"),
+          "Changes column should show delete count"
+        );
+      });
+
+      test("shows labels combined with rulesets in changes column", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "Applied",
+          rulesetPlanDetails: [
+            { name: "pr-rules", action: "create", propertyCount: 4 },
+          ],
+          labelsPlanDetails: [{ name: "bug", action: "create" }],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        // Both rulesets and labels summaries should appear separated by semicolon
+        assert.ok(
+          markdown.includes("1 to create; 1 to create"),
+          "Changes column should combine ruleset and label summaries"
+        );
+      });
+
+      test("formatLabelsPlanSummary returns 'no changes' for all unchanged", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "Done",
+          labelsPlanDetails: [{ name: "unchanged-label", action: "unchanged" }],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        // The changes column should show "no changes" since all labels are unchanged
+        assert.ok(
+          markdown.includes("no changes"),
+          "Should show 'no changes' when all labels unchanged"
+        );
+      });
+
+      test("empty labelsPlanDetails produces no nested details", () => {
+        const result: RepoResult = {
+          repoName: "org/repo",
+          status: "succeeded",
+          message: "Done",
+          labelsPlanDetails: [],
+        };
+        const data: SummaryData = {
+          title: "Repository Settings Summary",
+          total: 1,
+          succeeded: 1,
+          skipped: 0,
+          failed: 0,
+          results: [result],
+        };
+
+        const markdown = formatSummary(data);
+
+        assert.ok(!markdown.includes("Labels:"));
+      });
+    });
+
     describe("backwards compatibility", () => {
       test("no plan details produces no nested details blocks", () => {
         const result: RepoResult = {

@@ -175,3 +175,22 @@ GitHub Rulesets are the modern replacement for branch protection rules. They off
 - Advanced rules (code scanning, workflows, file restrictions)
 
 xfg uses the Rulesets API exclusively. If you need legacy branch protection rules, you'll need to manage those separately.
+
+## GitHub Labels
+
+The `xfg settings` command can manage GitHub labels declaratively. See [GitHub Labels](../configuration/labels.md) for full documentation.
+
+```yaml
+settings:
+  labels:
+    bug:
+      color: d73a4a
+      description: "Something isn't working"
+    enhancement:
+      color: a2eeef
+      description: "New feature or request"
+```
+
+```bash
+xfg settings --config ./config.yaml
+```

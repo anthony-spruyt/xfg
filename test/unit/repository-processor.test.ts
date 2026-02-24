@@ -2977,6 +2977,197 @@ describe("RepositoryProcessor", () => {
       assert.equal(result.message, "No manifest changes detected");
     });
 
+    test("dry-run with labels-only logs labels tracking", async () => {
+      const { mock: mockLogger, messages } = createMockLogger();
+      const localWorkDir = join(
+        testDir,
+        `manifest-labels-dryrun-${Date.now()}`
+      );
+      mkdirSync(localWorkDir, { recursive: true });
+
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        hasStagedChanges: true,
+        wouldChange: true,
+        fileContent: null,
+        onWriteFile: (fileName, content) => {
+          writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+        },
+      });
+      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+
+      const repoInfo: GitHubRepoInfo = {
+        type: "github",
+        owner: "test-owner",
+        repo: "test-repo",
+        host: "github.com",
+        gitUrl: "git@github.com:test-owner/test-repo.git",
+      };
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-owner/test-repo.git",
+        files: [],
+        prOptions: { merge: "direct" },
+      };
+
+      const options = {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        configId: "test-config",
+        dryRun: true,
+        executor: createMockExecutor(),
+      };
+
+      const manifestUpdate = { labels: ["bug", "enhancement"] };
+
+      const result = await processor.updateManifestOnly(
+        repoInfo,
+        repoConfig,
+        options,
+        manifestUpdate
+      );
+
+      assert.equal(result.success, true);
+      assert.equal(result.message, "Would update manifest (dry-run)");
+      assert.ok(
+        messages.some((m) =>
+          m.includes("Would update .xfg.json with labels tracking")
+        ),
+        `Expected labels tracking message, got: ${messages.join(", ")}`
+      );
+    });
+
+    test("dry-run with combined rulesets and labels logs ruleset/labels tracking", async () => {
+      const { mock: mockLogger, messages } = createMockLogger();
+      const localWorkDir = join(
+        testDir,
+        `manifest-combined-dryrun-${Date.now()}`
+      );
+      mkdirSync(localWorkDir, { recursive: true });
+
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        hasStagedChanges: true,
+        wouldChange: true,
+        fileContent: null,
+        onWriteFile: (fileName, content) => {
+          writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+        },
+      });
+      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+
+      const repoInfo: GitHubRepoInfo = {
+        type: "github",
+        owner: "test-owner",
+        repo: "test-repo",
+        host: "github.com",
+        gitUrl: "git@github.com:test-owner/test-repo.git",
+      };
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-owner/test-repo.git",
+        files: [],
+        prOptions: { merge: "direct" },
+      };
+
+      const options = {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        configId: "test-config",
+        dryRun: true,
+        executor: createMockExecutor(),
+      };
+
+      const manifestUpdate = { rulesets: ["pr-rules"], labels: ["bug"] };
+
+      const result = await processor.updateManifestOnly(
+        repoInfo,
+        repoConfig,
+        options,
+        manifestUpdate
+      );
+
+      assert.equal(result.success, true);
+      assert.equal(result.message, "Would update manifest (dry-run)");
+      assert.ok(
+        messages.some((m) =>
+          m.includes("Would update .xfg.json with ruleset/labels tracking")
+        ),
+        `Expected ruleset/labels tracking message, got: ${messages.join(", ")}`
+      );
+    });
+
+    test("skips when labels-only with no manifest changes", async () => {
+      const { mock: mockLogger } = createMockLogger();
+
+      const localWorkDir = join(
+        testDir,
+        `manifest-labels-nochange-${Date.now()}`
+      );
+      mkdirSync(localWorkDir, { recursive: true });
+
+      const manifestContent =
+        JSON.stringify(
+          {
+            version: 3,
+            configs: {
+              "test-config": {
+                labels: ["bug", "enhancement"],
+              },
+            },
+          },
+          null,
+          2
+        ) + "\n";
+      writeFileSync(join(localWorkDir, ".xfg.json"), manifestContent);
+
+      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        hasStagedChanges: true,
+        wouldChange: true,
+        fileContent: null,
+        onWriteFile: (fileName, content) => {
+          writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+        },
+      });
+      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const processor = new RepositoryProcessor(mockFactory, mockLogger);
+
+      const repoInfo: GitHubRepoInfo = {
+        type: "github",
+        owner: "test-owner",
+        repo: "test-repo",
+        host: "github.com",
+        gitUrl: "git@github.com:test-owner/test-repo.git",
+      };
+
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-owner/test-repo.git",
+        files: [],
+        prOptions: { merge: "direct" },
+      };
+
+      const options = {
+        branchName: "chore/sync-config",
+        workDir: localWorkDir,
+        configId: "test-config",
+        dryRun: false,
+        executor: createMockExecutor(),
+      };
+
+      const manifestUpdate = { labels: ["bug", "enhancement"] };
+
+      const result = await processor.updateManifestOnly(
+        repoInfo,
+        repoConfig,
+        options,
+        manifestUpdate
+      );
+
+      assert.equal(result.success, true);
+      assert.equal(result.skipped, true);
+      assert.equal(result.message, "No manifest changes detected");
+    });
+
     test("uses GH_TOKEN for git auth when no GitHub App token", async () => {
       const originalGhToken = process.env.GH_TOKEN;
       process.env.GH_TOKEN = "ghp_test_pat_token";

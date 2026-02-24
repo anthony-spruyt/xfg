@@ -32,6 +32,7 @@ function emptySettings(): SettingsReport {
     totals: {
       settings: { add: 0, change: 0 },
       rulesets: { create: 0, update: 0, delete: 0 },
+      labels: { create: 0, update: 0, delete: 0 },
     },
   };
 }
@@ -371,11 +372,13 @@ describe("formatUnifiedSummaryMarkdown", () => {
             { name: "visibility", action: "add", newValue: "private" },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 1, change: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -403,11 +406,13 @@ describe("formatUnifiedSummaryMarkdown", () => {
             },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -437,11 +442,13 @@ describe("formatUnifiedSummaryMarkdown", () => {
               },
             },
           ],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 1, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -473,11 +480,13 @@ describe("formatUnifiedSummaryMarkdown", () => {
               ],
             },
           ],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 0, update: 1, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -496,11 +505,13 @@ describe("formatUnifiedSummaryMarkdown", () => {
           repoName: "org/repo",
           settings: [],
           rulesets: [{ name: "old-ruleset", action: "delete" }],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 0, update: 0, delete: 1 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -519,12 +530,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
           repoName: "org/broken",
           settings: [],
           rulesets: [],
+          labels: [],
           error: "API rate limited",
         },
       ],
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -572,11 +585,13 @@ describe("formatUnifiedSummaryMarkdown", () => {
             },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 1, change: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -620,11 +635,13 @@ describe("formatUnifiedSummaryMarkdown", () => {
             { name: "visibility", action: "add", newValue: "private" },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 1, change: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -650,11 +667,13 @@ describe("formatUnifiedSummaryMarkdown", () => {
             },
             { name: "old-rule", action: "delete" },
           ],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 1, update: 0, delete: 1 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -668,6 +687,292 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(
       markdown.includes("**Applied: 2 rulesets (1 created, 1 deleted)**")
     );
+  });
+
+  // =========================================================================
+  // Labels tests
+  // =========================================================================
+
+  test("renders label create with config (color + description)", () => {
+    const settings: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+              config: { color: "d73a4a", description: "Something is broken" },
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      settings,
+      dryRun: false,
+    });
+
+    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes('+ label "bug"'));
+    assert.ok(markdown.includes('+   color: "d73a4a"'));
+    assert.ok(markdown.includes('+   description: "Something is broken"'));
+    assert.ok(markdown.includes("**Applied: 1 label (1 created)**"));
+  });
+
+  test("renders label update with newName (rename)", () => {
+    const settings: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "old-name",
+              action: "update",
+              newName: "new-name",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 0 },
+      },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      settings,
+      dryRun: false,
+    });
+
+    assert.ok(markdown.includes('! label "old-name" \u2192 "new-name"'));
+    assert.ok(markdown.includes("**Applied: 1 label (1 updated)**"));
+  });
+
+  test("renders label update without newName", () => {
+    const settings: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "update",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 0 },
+      },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      settings,
+      dryRun: false,
+    });
+
+    assert.ok(markdown.includes('! label "bug"'));
+    assert.ok(!markdown.includes("\u2192"));
+  });
+
+  test("renders label delete", () => {
+    const settings: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [{ name: "stale", action: "delete" }],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 1 },
+      },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      settings,
+      dryRun: false,
+    });
+
+    assert.ok(markdown.includes('- label "stale"'));
+    assert.ok(markdown.includes("**Applied: 1 label (1 deleted)**"));
+  });
+
+  test("formatCombinedSummary includes labels totals", () => {
+    const settings: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+              config: { color: "d73a4a" },
+            },
+            { name: "old", action: "delete" },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 1 },
+      },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      settings,
+      dryRun: false,
+    });
+
+    assert.ok(
+      markdown.includes("**Applied: 2 labels (1 created, 1 deleted)**")
+    );
+  });
+
+  test("dry-run label summary uses 'to create' wording", () => {
+    const settings: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+              config: { color: "d73a4a" },
+            },
+            { name: "old", action: "update", newName: "legacy" },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 1, delete: 0 },
+      },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      settings,
+      dryRun: true,
+    });
+
+    assert.ok(
+      markdown.includes("**Plan: 2 labels (1 to create, 1 to update)**")
+    );
+  });
+
+  test("singular 'label' when total is 1", () => {
+    const settings: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+              config: { color: "d73a4a" },
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      settings,
+      dryRun: false,
+    });
+
+    assert.ok(
+      markdown.includes("1 label (1 created)"),
+      "should use singular 'label' not 'labels'"
+    );
+    assert.ok(
+      !markdown.includes("1 labels"),
+      "should not use plural 'labels' for count of 1"
+    );
+  });
+
+  test("label create without description omits description line", () => {
+    const settings: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "feature",
+              action: "create",
+              config: { color: "0075ca" },
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      settings,
+      dryRun: false,
+    });
+
+    assert.ok(markdown.includes('+   color: "0075ca"'));
+    assert.ok(!markdown.includes("description:"));
+  });
+
+  test("hasAnyChanges detects labels-only changes", () => {
+    const settings: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            { name: "bug", action: "create", config: { color: "d73a4a" } },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      settings,
+      dryRun: false,
+    });
+
+    // Should not return empty string since there are label changes
+    assert.ok(markdown.length > 0, "should detect labels as changes");
+    assert.ok(markdown.includes("@@ org/repo @@"));
   });
 
   test("returns empty when settings has no changes", () => {

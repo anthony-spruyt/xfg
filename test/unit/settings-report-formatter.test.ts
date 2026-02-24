@@ -20,6 +20,7 @@ describe("settings-report types", () => {
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
     assert.ok(report);
@@ -30,6 +31,7 @@ describe("settings-report types", () => {
       repoName: "org/repo",
       settings: [],
       rulesets: [],
+      labels: [],
     };
     assert.ok(repoChanges);
   });
@@ -69,11 +71,13 @@ describe("formatSettingsReportCLI", () => {
             },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -103,11 +107,13 @@ describe("formatSettingsReportCLI", () => {
             },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 1, change: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -124,6 +130,7 @@ describe("formatSettingsReportCLI", () => {
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -140,6 +147,7 @@ describe("formatSettingsReportCLI", () => {
           repoName: "org/repo1",
           settings: [{ name: "hasWiki", action: "add", newValue: true }],
           rulesets: [],
+          labels: [],
         },
         {
           repoName: "org/repo2",
@@ -152,11 +160,13 @@ describe("formatSettingsReportCLI", () => {
             },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 1, change: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -181,12 +191,14 @@ describe("formatSettingsReportCLI", () => {
           repoName: "org/failed-repo",
           settings: [],
           rulesets: [],
+          labels: [],
           error: "Connection refused",
         },
       ],
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -224,11 +236,13 @@ describe("formatSettingsReportCLI", () => {
               },
             },
           ],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 1, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -270,11 +284,13 @@ describe("formatSettingsReportCLI", () => {
               ],
             },
           ],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 0, update: 1, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -305,11 +321,13 @@ describe("formatSettingsReportCLI", () => {
               action: "delete",
             },
           ],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 0, update: 0, delete: 1 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -349,11 +367,13 @@ describe("formatSettingsReportCLI", () => {
               ],
             },
           ],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 1 },
         rulesets: { create: 0, update: 1, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -384,11 +404,13 @@ describe("formatSettingsReportCLI", () => {
             },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 2 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -430,11 +452,13 @@ describe("formatSettingsReportCLI", () => {
               },
             },
           ],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 1, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -458,6 +482,257 @@ describe("formatSettingsReportCLI", () => {
       "should show parameters"
     );
   });
+
+  test("renders label create with color and description", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+              config: {
+                color: "d73a4a",
+                description: "Something isn't working",
+              },
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(output.includes('label "bug"'), "should include label name");
+    assert.ok(output.includes('color: "d73a4a"'), "should include color");
+    assert.ok(
+      output.includes('description: "Something isn\'t working"'),
+      "should include description"
+    );
+  });
+
+  test("renders label create with color only (no description)", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "priority",
+              action: "create",
+              config: {
+                color: "ff0000",
+              },
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(output.includes('label "priority"'), "should include label name");
+    assert.ok(output.includes('color: "ff0000"'), "should include color");
+    assert.ok(
+      !output.includes("description:"),
+      "should NOT include description when not set"
+    );
+  });
+
+  test("renders label update with newName (rename)", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "update",
+              newName: "defect",
+              propertyChanges: [
+                { property: "new_name", newValue: "defect" },
+                { property: "color", oldValue: "d73a4a", newValue: "ff0000" },
+              ],
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(
+      output.includes('label "bug"'),
+      "should include original label name"
+    );
+    assert.ok(output.includes('"defect"'), "should include new label name");
+    assert.ok(output.includes("\u2192"), "should include arrow for rename");
+    assert.ok(
+      output.includes('color: "d73a4a" \u2192 "ff0000"'),
+      "should include color change"
+    );
+    assert.ok(
+      !output.includes("new_name:"),
+      "should skip new_name property in property changes"
+    );
+  });
+
+  test("renders label update without newName, with propertyChanges", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "enhancement",
+              action: "update",
+              propertyChanges: [
+                { property: "color", oldValue: "a2eeef", newValue: "0075ca" },
+                { property: "description", newValue: "New feature request" },
+              ],
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(
+      output.includes('label "enhancement"'),
+      "should include label name"
+    );
+    assert.ok(
+      output.includes('color: "a2eeef" \u2192 "0075ca"'),
+      "should include color change with old and new values"
+    );
+    assert.ok(
+      output.includes('description: "New feature request"'),
+      "should include description with new value only"
+    );
+  });
+
+  test("renders label delete", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "wontfix",
+              action: "delete",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 1 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(output.includes('label "wontfix"'), "should include label name");
+  });
+
+  test("formatSummary renders singular label count", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            { name: "bug", action: "create", config: { color: "d73a4a" } },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(
+      output.includes("1 label"),
+      "should use singular 'label' for count of 1"
+    );
+    assert.ok(
+      !output.includes("1 labels"),
+      "should NOT use plural 'labels' for count of 1"
+    );
+  });
+
+  test("formatSummary renders plural labels count", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            { name: "bug", action: "create", config: { color: "d73a4a" } },
+            { name: "wontfix", action: "delete" },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 1 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(
+      output.includes("2 labels"),
+      "should use plural 'labels' for count of 2"
+    );
+  });
 });
 
 describe("formatSettingsReportMarkdown", () => {
@@ -475,11 +750,13 @@ describe("formatSettingsReportMarkdown", () => {
             },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -513,11 +790,13 @@ describe("formatSettingsReportMarkdown", () => {
             },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -545,11 +824,13 @@ describe("formatSettingsReportMarkdown", () => {
             },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -564,6 +845,7 @@ describe("formatSettingsReportMarkdown", () => {
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -593,11 +875,13 @@ describe("formatSettingsReportMarkdown", () => {
             },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 2 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -638,11 +922,13 @@ describe("formatSettingsReportMarkdown", () => {
               },
             },
           ],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 1, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -659,6 +945,293 @@ describe("formatSettingsReportMarkdown", () => {
       markdown.includes("pull_request") || markdown.includes('"pull_request"'),
       "should show type value"
     );
+  });
+
+  test("renders label create in markdown diff format", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+              config: {
+                color: "d73a4a",
+                description: "Something isn't working",
+              },
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(markdown.includes("```diff"), "should have diff code block");
+    assert.ok(
+      markdown.includes('+ label "bug"'),
+      "should include label create line"
+    );
+    assert.ok(markdown.includes('+   color: "d73a4a"'), "should include color");
+    assert.ok(
+      markdown.includes('+   description: "Something isn\'t working"'),
+      "should include description"
+    );
+  });
+
+  test("renders label update with rename in markdown", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "update",
+              newName: "defect",
+              propertyChanges: [
+                { property: "new_name", newValue: "defect" },
+                { property: "color", oldValue: "d73a4a", newValue: "ff0000" },
+              ],
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      markdown.includes('! label "bug" \u2192 "defect"'),
+      "should include rename with arrow"
+    );
+    assert.ok(
+      markdown.includes('!   color: "d73a4a" \u2192 "ff0000"'),
+      "should include color change"
+    );
+    assert.ok(
+      !markdown.includes("new_name:"),
+      "should skip new_name property in property changes"
+    );
+  });
+
+  test("renders label delete in markdown", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "wontfix",
+              action: "delete",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 1 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      markdown.includes('- label "wontfix"'),
+      "should include label delete line"
+    );
+  });
+
+  test("renders label update with only newValue (no oldValue) in markdown", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "enhancement",
+              action: "update",
+              propertyChanges: [
+                { property: "description", newValue: "New feature request" },
+              ],
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      markdown.includes('! label "enhancement"'),
+      "should include label update line"
+    );
+    assert.ok(
+      markdown.includes('!   description: "New feature request"'),
+      "should include description with newValue only (no arrow)"
+    );
+    assert.ok(
+      !markdown.includes("\u2192"),
+      "should NOT include arrow when oldValue is undefined"
+    );
+  });
+
+  test("renders label update without rename in markdown", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "update",
+              propertyChanges: [
+                { property: "color", oldValue: "d73a4a", newValue: "ff0000" },
+              ],
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      markdown.includes('! label "bug"'),
+      "should include label name without rename"
+    );
+    assert.ok(
+      markdown.includes('!   color: "d73a4a" \u2192 "ff0000"'),
+      "should include color change with arrow"
+    );
+  });
+
+  test("renders label create without config in markdown", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      markdown.includes('+ label "bug"'),
+      "should include label create line"
+    );
+    assert.ok(
+      !markdown.includes("color:"),
+      "should NOT include color when config is absent"
+    );
+  });
+
+  test("renders label create without config in CLI", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(output.includes('label "bug"'), "should include label name");
+    assert.ok(
+      !output.includes("color:"),
+      "should NOT include color when config is absent"
+    );
+  });
+
+  test("renders labels summary in markdown", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            { name: "bug", action: "create", config: { color: "d73a4a" } },
+            { name: "old", action: "delete" },
+          ],
+        },
+      ],
+      totals: {
+        settings: { add: 0, change: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 1 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      markdown.includes("**Plan: 2 labels"),
+      "should include bold labels summary"
+    );
+    assert.ok(markdown.includes("1 to create"), "should include create count");
+    assert.ok(markdown.includes("1 to delete"), "should include delete count");
   });
 });
 
@@ -697,11 +1270,13 @@ describe("writeSettingsReportSummary", () => {
             },
           ],
           rulesets: [],
+          labels: [],
         },
       ],
       totals: {
         settings: { add: 0, change: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -719,6 +1294,7 @@ describe("writeSettingsReportSummary", () => {
       totals: {
         settings: { add: 0, change: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
       },
     };
 

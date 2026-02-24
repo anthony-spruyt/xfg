@@ -2947,3 +2947,259 @@ describe("validateRepoSettings", () => {
     assert.throws(() => validateRawConfig(config), /repo must be an object/);
   });
 });
+
+describe("labels validation", () => {
+  test("valid label config passes validation", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          bug: { color: "d73a4a", description: "Something isn't working" },
+          feature: { color: "#0e8a16" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("invalid color format (not 6-char hex) throws", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          bug: { color: "xyz" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /color must be a 6-character hex code/
+    );
+  });
+
+  test("description over 100 chars throws", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          bug: { color: "d73a4a", description: "a".repeat(101) },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.throws(() => validateRawConfig(config), /exceeds 100 characters/);
+  });
+
+  test("inherit at root labels level throws", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          inherit: true as never,
+          bug: { color: "d73a4a" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /reserved key.*cannot be used as a label name/
+    );
+  });
+
+  test("opt-out of non-existent root label throws", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          bug: { color: "d73a4a" },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          settings: {
+            labels: {
+              nonexistent: false,
+            },
+          },
+        },
+      ],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /Cannot opt out of label 'nonexistent'/
+    );
+  });
+
+  test("validateForSettings passes with labels-only config", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          bug: { color: "d73a4a" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.doesNotThrow(() => validateForSettings(config));
+  });
+
+  test("hasActionableSettings returns true for labels-only settings", () => {
+    assert.equal(
+      hasActionableSettings({
+        labels: { bug: { color: "d73a4a" } },
+      }),
+      true
+    );
+  });
+
+  test("hasActionableSettings returns false for labels with only inherit key", () => {
+    assert.equal(
+      hasActionableSettings({
+        labels: { inherit: false },
+      }),
+      false
+    );
+  });
+
+  test("throws when label is null (not an object)", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          bug: null as never,
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /label 'bug' must be an object/
+    );
+  });
+
+  test("throws when label is an array (not an object)", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          bug: ["d73a4a"] as never,
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /label 'bug' must be an object/
+    );
+  });
+
+  test("throws when label is a string (not an object)", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          bug: "d73a4a" as never,
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /label 'bug' must be an object/
+    );
+  });
+
+  test("throws when label new_name is not a string", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          bug: { color: "d73a4a", new_name: 123 as never },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /label 'bug' new_name must be a string/
+    );
+  });
+
+  test("allows label with valid new_name field", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          bug: { color: "d73a4a", new_name: "defect" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("throws when labels is an array (not an object)", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: [{ color: "d73a4a" }] as never,
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.throws(() => validateRawConfig(config), /labels must be an object/);
+  });
+
+  test("throws when labels is null (not an object)", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: null as never,
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.throws(() => validateRawConfig(config), /labels must be an object/);
+  });
+
+  test("allows per-repo label: false opt-out when root label exists", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          bug: { color: "d73a4a" },
+          feature: { color: "0e8a16" },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          settings: {
+            labels: {
+              bug: false,
+            },
+          },
+        },
+      ],
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("throws when label description is not a string", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          bug: { color: "d73a4a", description: 123 as never },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /label 'bug' description must be a string/
+    );
+  });
+});

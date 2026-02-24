@@ -14,6 +14,10 @@ import {
   RepoSettingsProcessor,
   type IRepoSettingsProcessor,
 } from "../settings/repo-settings/processor.js";
+import {
+  LabelsProcessor,
+  type ILabelsProcessor,
+} from "../settings/labels/processor.js";
 
 /**
  * Processor interface for dependency injection in tests.
@@ -28,7 +32,7 @@ export interface IRepositoryProcessor {
     repoInfo: RepoInfo,
     repoConfig: RepoConfig,
     options: ProcessorOptions,
-    manifestUpdate: { rulesets: string[] }
+    manifestUpdate: { rulesets?: string[]; labels?: string[] }
   ): Promise<ProcessorResult>;
 }
 
@@ -76,5 +80,16 @@ export type RepoSettingsProcessorFactory = () => IRepoSettingsProcessor;
 export const defaultRepoSettingsProcessorFactory: RepoSettingsProcessorFactory =
   () => new RepoSettingsProcessor();
 
-// Re-export IRepoSettingsProcessor for convenience
-export type { IRepoSettingsProcessor };
+/**
+ * Labels processor interface for dependency injection in tests.
+ */
+export type LabelsProcessorFactory = () => ILabelsProcessor;
+
+/**
+ * Default factory that creates a real LabelsProcessor.
+ */
+export const defaultLabelsProcessorFactory: LabelsProcessorFactory = () =>
+  new LabelsProcessor();
+
+// Re-export for convenience
+export type { IRepoSettingsProcessor, ILabelsProcessor };

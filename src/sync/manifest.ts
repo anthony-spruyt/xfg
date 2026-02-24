@@ -15,10 +15,11 @@ interface XfgManifestV2 {
   configs: Record<string, string[]>; // configId -> managedFiles
 }
 
-// V3 config entry with separate files and rulesets
+// V3 config entry with separate files, rulesets, and labels
 export interface XfgManifestConfigEntry {
   files?: string[];
   rulesets?: string[];
+  labels?: string[];
 }
 
 // V3 manifest structure (current)
@@ -190,6 +191,20 @@ export function getManagedRulesets(
 }
 
 /**
+ * Gets the list of managed labels for a specific config from a manifest.
+ * Returns an empty array if the manifest is null or the config isn't found.
+ */
+export function getManagedLabels(
+  manifest: XfgManifest | null,
+  configId: string
+): string[] {
+  if (!manifest) {
+    return [];
+  }
+  return [...(manifest.configs[configId]?.labels ?? [])];
+}
+
+/**
  * Updates the manifest with the current set of files that have deleteOrphaned enabled
  * for a specific config. Only modifies that config's files namespace - other configs are untouched.
  *
@@ -235,24 +250,29 @@ export function updateManifest(
     ...(manifest?.configs ?? {}),
   };
 
-  // Preserve existing rulesets for this config
+  // Preserve existing rulesets and labels for this config
   const existingEntry = manifest?.configs[configId];
   const existingRulesets = existingEntry?.rulesets;
+  const existingLabels = existingEntry?.labels;
 
   // Update this config's managed files
   const sortedManaged = Array.from(newManaged).sort();
   if (
     sortedManaged.length > 0 ||
-    (existingRulesets && existingRulesets.length > 0)
+    (existingRulesets && existingRulesets.length > 0) ||
+    (existingLabels && existingLabels.length > 0)
   ) {
     updatedConfigs[configId] = {
       ...(sortedManaged.length > 0 ? { files: sortedManaged } : {}),
       ...(existingRulesets && existingRulesets.length > 0
         ? { rulesets: existingRulesets }
         : {}),
+      ...(existingLabels && existingLabels.length > 0
+        ? { labels: existingLabels }
+        : {}),
     };
   } else {
-    // Remove config entry if no managed files or rulesets
+    // Remove config entry if no managed files, rulesets, or labels
     delete updatedConfigs[configId];
   }
 
@@ -303,21 +323,29 @@ export function updateManifestRulesets(
     ...(manifest?.configs ?? {}),
   };
 
-  // Preserve existing files for this config
+  // Preserve existing files and labels for this config
   const existingEntry = manifest?.configs[configId];
   const existingFiles = existingEntry?.files;
+  const existingLabels = existingEntry?.labels;
 
   // Update this config's managed rulesets
   const sortedManaged = Array.from(newManaged).sort();
-  if (sortedManaged.length > 0 || (existingFiles && existingFiles.length > 0)) {
+  if (
+    sortedManaged.length > 0 ||
+    (existingFiles && existingFiles.length > 0) ||
+    (existingLabels && existingLabels.length > 0)
+  ) {
     updatedConfigs[configId] = {
       ...(existingFiles && existingFiles.length > 0
         ? { files: existingFiles }
         : {}),
       ...(sortedManaged.length > 0 ? { rulesets: sortedManaged } : {}),
+      ...(existingLabels && existingLabels.length > 0
+        ? { labels: existingLabels }
+        : {}),
     };
   } else {
-    // Remove config entry if no managed files or rulesets
+    // Remove config entry if no managed files, rulesets, or labels
     delete updatedConfigs[configId];
   }
 
@@ -327,5 +355,69 @@ export function updateManifestRulesets(
       configs: updatedConfigs,
     },
     rulesetsToDelete,
+  };
+}
+
+/**
+ * Updates the manifest with the current set of labels that have deleteOrphaned enabled
+ * for a specific config. Only modifies that config's labels namespace - other configs are untouched.
+ *
+ * @param manifest - The existing manifest (or null for new repos)
+ * @param configId - The config ID to update
+ * @param labelsWithDeleteOrphaned - Map of label name to deleteOrphaned value (true/false/undefined)
+ * @returns Updated manifest and list of labels to delete
+ */
+export function updateManifestLabels(
+  manifest: XfgManifest | null,
+  configId: string,
+  labelsWithDeleteOrphaned: Map<string, boolean | undefined>
+): { manifest: XfgManifest; labelsToDelete: string[] } {
+  const existingManaged = new Set(getManagedLabels(manifest, configId));
+  const newManaged = new Set<string>();
+  const labelsToDelete: string[] = [];
+
+  for (const [labelName, deleteOrphaned] of labelsWithDeleteOrphaned) {
+    if (deleteOrphaned === true) {
+      newManaged.add(labelName);
+    }
+  }
+
+  for (const labelName of existingManaged) {
+    if (!labelsWithDeleteOrphaned.has(labelName)) {
+      labelsToDelete.push(labelName);
+    }
+  }
+
+  const updatedConfigs: Record<string, XfgManifestConfigEntry> = {
+    ...(manifest?.configs ?? {}),
+  };
+
+  // Preserve existing files and rulesets for this config
+  const existingEntry = manifest?.configs[configId];
+  const existingFiles = existingEntry?.files;
+  const existingRulesets = existingEntry?.rulesets;
+  const sortedManaged = Array.from(newManaged).sort();
+
+  if (
+    sortedManaged.length > 0 ||
+    (existingFiles && existingFiles.length > 0) ||
+    (existingRulesets && existingRulesets.length > 0)
+  ) {
+    updatedConfigs[configId] = {
+      ...(existingFiles && existingFiles.length > 0
+        ? { files: existingFiles }
+        : {}),
+      ...(existingRulesets && existingRulesets.length > 0
+        ? { rulesets: existingRulesets }
+        : {}),
+      ...(sortedManaged.length > 0 ? { labels: sortedManaged } : {}),
+    };
+  } else {
+    delete updatedConfigs[configId];
+  }
+
+  return {
+    manifest: { version: 3, configs: updatedConfigs },
+    labelsToDelete,
   };
 }

@@ -16,6 +16,7 @@ import type {
   RepoSettings,
   RawRepoSettings,
   Ruleset,
+  Label,
   GitHubRepoSettings,
 } from "./types.js";
 
@@ -80,6 +81,49 @@ function mergeRuleset(
  * Merges settings: per-repo settings deep merge with root settings.
  * Returns undefined if no settings are defined.
  */
+/**
+ * Merges root and per-repo label configs.
+ * Per-repo labels override root labels by name.
+ * inherit: false skips all root labels.
+ * label: false opts out of a specific root label.
+ */
+function mergeLabels(
+  rootLabels: Record<string, unknown> | undefined,
+  repoLabels: Record<string, unknown> | undefined
+): Record<string, Label> | undefined {
+  if (!rootLabels && !repoLabels) return undefined;
+
+  const root = rootLabels ?? {};
+  const repo = repoLabels ?? {};
+  const inheritLabels = (repo as Record<string, unknown>)?.inherit !== false;
+
+  const allLabelNames = new Set([
+    ...Object.keys(root).filter((name) => name !== "inherit"),
+    ...Object.keys(repo).filter((name) => name !== "inherit"),
+  ]);
+
+  if (allLabelNames.size === 0) return undefined;
+
+  const result: Record<string, Label> = {};
+  for (const name of allLabelNames) {
+    const rootLabel = root[name];
+    const repoLabel = repo[name];
+
+    if (repoLabel === false) continue;
+    if (!inheritLabels && !repoLabel && rootLabel) continue;
+
+    const merged: Label = {
+      ...((rootLabel && rootLabel !== false ? rootLabel : {}) as Label),
+      ...((repoLabel && repoLabel !== false ? repoLabel : {}) as Label),
+    };
+    // Strip # from color and lowercase
+    merged.color = merged.color.replace(/^#/, "").toLowerCase();
+    result[name] = merged;
+  }
+
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
 export function mergeSettings(
   root: RawRepoSettings | undefined,
   perRepo: RawRepoSettings | undefined
@@ -148,6 +192,15 @@ export function mergeSettings(
         ...perRepoRepo,
       } as GitHubRepoSettings;
     }
+  }
+
+  // Merge labels by name
+  const mergedLabels = mergeLabels(
+    root?.labels as Record<string, unknown> | undefined,
+    perRepo?.labels as Record<string, unknown> | undefined
+  );
+  if (mergedLabels) {
+    result.labels = mergedLabels;
   }
 
   return Object.keys(result).length > 0 ? result : undefined;
@@ -324,6 +377,20 @@ export function normalizeConfig(raw: RawConfig): Config {
     }
     if (raw.settings.repo) {
       normalizedRootSettings.repo = raw.settings.repo as GitHubRepoSettings;
+    }
+    if (raw.settings.labels) {
+      const filteredLabels: Record<string, Label> = {};
+      for (const [name, label] of Object.entries(raw.settings.labels)) {
+        if (name === "inherit" || label === false) continue;
+        const l = label as Label;
+        filteredLabels[name] = {
+          ...l,
+          color: l.color.replace(/^#/, "").toLowerCase(),
+        };
+      }
+      if (Object.keys(filteredLabels).length > 0) {
+        normalizedRootSettings.labels = filteredLabels;
+      }
     }
     if (raw.settings.deleteOrphaned !== undefined) {
       normalizedRootSettings.deleteOrphaned = raw.settings.deleteOrphaned;

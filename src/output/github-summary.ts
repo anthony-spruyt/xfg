@@ -25,6 +25,12 @@ export interface RepoSettingsPlanDetail {
   action: "add" | "change";
 }
 
+export interface LabelsPlanDetail {
+  name: string;
+  action: "create" | "update" | "delete" | "unchanged";
+  newName?: string;
+}
+
 export interface RepoResult {
   repoName: string;
   status: "succeeded" | "skipped" | "failed";
@@ -34,6 +40,7 @@ export interface RepoResult {
   fileChanges?: FileChanges;
   rulesetPlanDetails?: RulesetPlanDetail[];
   repoSettingsPlanDetails?: RepoSettingsPlanDetail[];
+  labelsPlanDetails?: LabelsPlanDetail[];
 }
 
 export interface SummaryData {
@@ -70,6 +77,9 @@ function formatChangesColumn(result: RepoResult): string {
     result.repoSettingsPlanDetails.length > 0
   ) {
     parts.push(formatSettingsPlanSummary(result.repoSettingsPlanDetails));
+  }
+  if (result.labelsPlanDetails && result.labelsPlanDetails.length > 0) {
+    parts.push(formatLabelsPlanSummary(result.labelsPlanDetails));
   }
   return parts.length > 0 ? parts.join("; ") : "-";
 }
@@ -165,6 +175,17 @@ function formatSettingsPlanSummary(details: RepoSettingsPlanDetail[]): string {
   return parts.join(", ") || "no changes";
 }
 
+function formatLabelsPlanSummary(details: LabelsPlanDetail[]): string {
+  const creates = details.filter((d) => d.action === "create").length;
+  const updates = details.filter((d) => d.action === "update").length;
+  const deletes = details.filter((d) => d.action === "delete").length;
+  const parts: string[] = [];
+  if (creates > 0) parts.push(`${creates} to create`);
+  if (updates > 0) parts.push(`${updates} to update`);
+  if (deletes > 0) parts.push(`${deletes} to delete`);
+  return parts.join(", ") || "no changes";
+}
+
 export function formatSummary(data: SummaryData): string {
   const lines: string[] = [];
 
@@ -244,6 +265,33 @@ export function formatSummary(data: SummaryData): string {
           lines.push(
             `| ${detail.property} | ${formatSettingsAction(detail.action)} |`
           );
+        }
+        lines.push("");
+        lines.push("</details>");
+      }
+
+      if (result.labelsPlanDetails && result.labelsPlanDetails.length > 0) {
+        lines.push("");
+        lines.push("<details>");
+        lines.push(
+          `<summary>${result.repoName} — Labels: ${formatLabelsPlanSummary(result.labelsPlanDetails)}</summary>`
+        );
+        lines.push("");
+        lines.push("| Label | Action |");
+        lines.push("|-------|--------|");
+        for (const detail of result.labelsPlanDetails) {
+          const action =
+            detail.action === "create"
+              ? "+ Create"
+              : detail.action === "update"
+                ? "~ Update"
+                : detail.action === "delete"
+                  ? "- Delete"
+                  : "No change";
+          const name = detail.newName
+            ? `${detail.name} \u2192 ${detail.newName}`
+            : detail.name;
+          lines.push(`| ${name} | ${action} |`);
         }
         lines.push("");
         lines.push("</details>");

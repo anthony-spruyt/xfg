@@ -73,6 +73,7 @@ nav:
       - Repo Lifecycle: configuration/lifecycle.md
       - Repository Settings: configuration/repo-settings.md
       - GitHub Rulesets: configuration/rulesets.md
+      - GitHub Labels: configuration/labels.md
   - Examples:
       - Overview: examples/index.md
       - Multi-File Sync: examples/multi-file-sync.md

@@ -42,7 +42,7 @@ Or configure in `.vscode/settings.json`:
 | `id`             | `string`    | Yes      | Unique config identifier (alphanumeric, `-`, `_`) |
 | `files`          | `object`    | *        | Map of filenames to file configs                  |
 | `repos`          | `array`     | Yes      | List of repository configurations                 |
-| `settings`       | `object`    | *        | Repository settings (rulesets, etc.)              |
+| `settings`       | `object`    | *        | Repository settings (rulesets, labels, etc.)      |
 | `prOptions`      | `PROptions` | No       | Global PR merge options                           |
 | `prTemplate`     | `string`    | No       | Custom PR body template                           |
 | `githubHosts`    | `array`     | No       | GitHub Enterprise Server hostnames                |
@@ -113,10 +113,10 @@ The schema validates:
 
 ### Command-Specific Requirements
 
-| Command        | Required Fields                                    |
-| -------------- | -------------------------------------------------- |
-| `xfg sync`     | `files` with at least one file defined             |
-| `xfg settings` | `settings` with actionable config (e.g., rulesets) |
+| Command        | Required Fields                                              |
+| -------------- | ------------------------------------------------------------ |
+| `xfg sync`     | `files` with at least one file defined                       |
+| `xfg settings` | `settings` with actionable config (e.g., rulesets, labels)   |
 
 If you run the wrong command for your config, you'll see a helpful error:
 
