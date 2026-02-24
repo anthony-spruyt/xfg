@@ -297,6 +297,9 @@ settings:
     xfg-test-feature:
       color: a2eeef
       description: "New feature or request"
+prOptions:
+  merge: direct
+  deleteBranch: true
 repos:
   - git: https://github.com/anthony-spruyt/xfg-test-8.git
     files:
@@ -333,6 +336,9 @@ settings:
     xfg-test-bug:
       color: d73a4a
       description: "Something isn't working"
+prOptions:
+  merge: direct
+  deleteBranch: true
 repos:
   - git: https://github.com/anthony-spruyt/xfg-test-8.git
     files:
