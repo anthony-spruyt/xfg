@@ -16,6 +16,14 @@ echo "=== Resetting ${REPO} to clean state ==="
 DEFAULT_BRANCH=$(gh api "repos/${REPO}" --jq '.default_branch')
 echo "Default branch: ${DEFAULT_BRANCH}"
 
+# Step 0 — Delete all labels
+echo "Step 0: Deleting all labels..."
+gh api "repos/${REPO}/labels" --paginate --jq '.[].name' 2>/dev/null | while IFS= read -r label; do
+  encoded=$(printf '%s' "${label}" | jq -sRr @uri)
+  gh api --method DELETE "repos/${REPO}/labels/${encoded}" 2>/dev/null || true
+  echo "  Deleted label ${label}"
+done
+
 # Step 1 — Delete all rulesets
 # Must run first: rulesets enforce branch protection that blocks other cleanup.
 echo "Step 1: Deleting all rulesets..."
