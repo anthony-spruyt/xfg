@@ -17,6 +17,7 @@ Each integration test job MUST use its own dedicated repo to enable parallel CI 
 | `action-sync-app`           | `xfg-test-5` |
 | `action-settings-app`       | `xfg-test-6` |
 | `cli-settings-repo-pat`     | `xfg-test-7` |
+| `cli-settings-labels-pat`   | `xfg-test-8` |
 
 - **Never share a repo** between two test jobs
 - When adding a new GitHub integration test, create a new dedicated repo
