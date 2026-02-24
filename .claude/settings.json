@@ -1,10 +1,18 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
-    "INSIDE_CLAUDE_CODE": "1",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70",
     "BASH_DEFAULT_TIMEOUT_MS": "420000",
-    "BASH_MAX_TIMEOUT_MS": "420000"
+    "BASH_MAX_TIMEOUT_MS": "420000",
+    "CLAUDE_CODE_EFFORT_LEVEL": "medium",
+    "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1"
   },
-  "includeCoAuthoredBy": true,
+  "alwaysThinkingEnabled": true,
+  "fastMode": false,
+  "prefersReducedMotion": true,
+  "model": "claude-sonnet-4-6",
+  "autoUpdatesChannel": "latest",
+  "defaultMode": "acceptEdits",
   "permissions": {
     "allow": [
       "Bash(./lint.sh:*)",
@@ -72,6 +80,7 @@
       "WebFetch(domain:docs.github.com)",
       "WebFetch(domain:docs.goauthentik.io)",
       "WebFetch(domain:docs.n8n.io)",
+      "WebFetch(domain:docs.openclaw.ai)",
       "WebFetch(domain:docs.siderolabs.com)",
       "WebFetch(domain:docs.victoriametrics.com)",
       "WebFetch(domain:falco.org)",
@@ -84,7 +93,7 @@
       "WebFetch(domain:kubectl.docs.kubernetes.io)",
       "WebFetch(domain:megalinter.io)",
       "WebFetch(domain:qdrant.tech)",
-      "WebFetch(domain:docs.openclaw.ai)",
+      "WebFetch(domain:quay.io)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:rook.io)",
       "WebFetch(domain:talos.dev)",
