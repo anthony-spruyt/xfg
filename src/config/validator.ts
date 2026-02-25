@@ -1,4 +1,4 @@
-import type { RawConfig, RawRepoSettings } from "./types.js";
+import type { RawConfig, RawRepoSettings, RawRootSettings } from "./types.js";
 import {
   isTextContent,
   isObjectContent,
@@ -644,7 +644,7 @@ export function validateForSync(config: RawConfig): void {
  * Checks if settings contain actionable configuration.
  */
 export function hasActionableSettings(
-  settings: RawRepoSettings | undefined
+  settings: RawRootSettings | RawRepoSettings | undefined
 ): boolean {
   if (!settings) return false;
 
