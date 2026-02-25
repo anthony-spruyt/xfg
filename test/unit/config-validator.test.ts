@@ -1485,6 +1485,23 @@ describe("validateRawConfig", () => {
       );
     });
 
+    test("throws when 'inherit: true' is used at root rulesets level", () => {
+      const config: RawConfig = {
+        id: "test-config",
+        settings: {
+          rulesets: {
+            inherit: true as never,
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /'inherit' is a reserved key and cannot be used as a ruleset name/
+      );
+    });
+
     test("throws when opting out of non-existent ruleset", () => {
       const config = createValidConfig({
         settings: {
