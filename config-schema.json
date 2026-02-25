@@ -66,7 +66,7 @@
       "description": "Global default for orphan deletion. When true, files removed from the xfg config will be deleted from target repos (tracked via .xfg.json manifest). Can be overridden per-file or per-repo. Default: false"
     },
     "settings": {
-      "$ref": "#/definitions/repoSettings",
+      "$ref": "#/definitions/rootSettings",
       "description": "Global repository settings including GitHub Rulesets. Can be overridden per-repo. Settings are merged: per-repo rulesets override root rulesets with same name."
     }
   },
@@ -339,6 +339,59 @@
         "deleteOrphaned": {
           "type": "boolean",
           "description": "Override the file-level or global deleteOrphaned setting for this specific repo. Set to true to enable orphan tracking, or false to disable it for this repo."
+        }
+      }
+    },
+    "rootSettings": {
+      "type": "object",
+      "description": "Global repository settings including GitHub Rulesets and repository features. inherit is not valid at root level.",
+      "properties": {
+        "rulesets": {
+          "type": "object",
+          "description": "Map of ruleset names to configurations. Set a ruleset to false to disable it.",
+          "properties": {
+            "inherit": false
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to disable this ruleset"
+              },
+              {
+                "$ref": "#/definitions/ruleset"
+              }
+            ]
+          }
+        },
+        "repo": {
+          "$ref": "#/definitions/githubRepoSettings",
+          "description": "GitHub repository settings (features, merge options, security)."
+        },
+        "labels": {
+          "type": "object",
+          "description": "Map of label names to configurations. Set a label to false to disable it.",
+          "properties": {
+            "inherit": false
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to disable this label"
+              },
+              {
+                "$ref": "#/definitions/label"
+              }
+            ]
+          }
+        },
+        "deleteOrphaned": {
+          "type": "boolean",
+          "default": false,
+          "description": "Track managed resources for orphan deletion. When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false"
         }
       }
     },
