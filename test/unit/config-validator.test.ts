@@ -1468,6 +1468,40 @@ describe("validateRawConfig", () => {
       );
     });
 
+    test("throws when 'inherit: false' is used at root rulesets level", () => {
+      const config: RawConfig = {
+        id: "test-config",
+        settings: {
+          rulesets: {
+            inherit: false as never,
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /'inherit' is a reserved key and cannot be used as a ruleset name/
+      );
+    });
+
+    test("throws when 'inherit: true' is used at root rulesets level", () => {
+      const config: RawConfig = {
+        id: "test-config",
+        settings: {
+          rulesets: {
+            inherit: true as never,
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /'inherit' is a reserved key and cannot be used as a ruleset name/
+      );
+    });
+
     test("throws when opting out of non-existent ruleset", () => {
       const config = createValidConfig({
         settings: {
@@ -2992,12 +3026,29 @@ describe("labels validation", () => {
     assert.throws(() => validateRawConfig(config), /exceeds 100 characters/);
   });
 
-  test("inherit at root labels level throws", () => {
+  test("throws when 'inherit: true' is used at root labels level", () => {
     const config: RawConfig = {
       id: "test-config",
       settings: {
         labels: {
           inherit: true as never,
+          bug: { color: "d73a4a" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /reserved key.*cannot be used as a label name/
+    );
+  });
+
+  test("throws when 'inherit: false' is used at root labels level", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: {
+        labels: {
+          inherit: false as never,
           bug: { color: "d73a4a" },
         },
       },

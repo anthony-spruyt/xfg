@@ -462,7 +462,15 @@ export interface RawRepoFileOverride {
   deleteOrphaned?: boolean;
 }
 
-// Raw settings (before normalization)
+// Root-level settings (before normalization) - inherit not valid here
+export interface RawRootSettings {
+  rulesets?: Record<string, Ruleset | false>;
+  repo?: GitHubRepoSettings | false;
+  labels?: Record<string, Label | false>;
+  deleteOrphaned?: boolean;
+}
+
+// Per-repo settings (before normalization) - inherit controls whether root settings are inherited
 export interface RawRepoSettings {
   rulesets?: Record<string, Ruleset | false> & { inherit?: boolean };
   repo?: GitHubRepoSettings | false;
@@ -493,7 +501,7 @@ export interface RawConfig {
   prTemplate?: string;
   githubHosts?: string[];
   deleteOrphaned?: boolean;
-  settings?: RawRepoSettings;
+  settings?: RawRootSettings;
 }
 
 // =============================================================================

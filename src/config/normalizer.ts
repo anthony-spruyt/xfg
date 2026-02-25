@@ -14,6 +14,7 @@ import type {
   ContentValue,
   PRMergeOptions,
   RepoSettings,
+  RawRootSettings,
   RawRepoSettings,
   Ruleset,
   Label,
@@ -125,7 +126,7 @@ function mergeLabels(
 }
 
 export function mergeSettings(
-  root: RawRepoSettings | undefined,
+  root: RawRootSettings | undefined,
   perRepo: RawRepoSettings | undefined
 ): RepoSettings | undefined {
   if (!root && !perRepo) return undefined;
