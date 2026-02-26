@@ -732,7 +732,11 @@ mockExecutor.responses.set("gh api graphql", () => {
 });
 ```
 
-**Every remaining test with a `gh api graphql` mock or `git ls-remote` mock needs updating.** The key principle: `queryRemoteRef` is always call 1 now. Below is the complete list with concrete guidance for each.
+**Every remaining test with a `gh api graphql` mock or `git ls-remote` mock needs updating.** The key principle: `queryRemoteRef` is always call 1 now.
+
+**Note:** In addition to the specifically named tests below, there are ~9 tests with **static** `gh api graphql` responses (not functions) that will fail at runtime because the static `createCommitOnBranch` JSON gets consumed by `queryRemoteRef`, which can't find `repository.id`. These include: `"calls GraphQL API with createCommitOnBranch mutation"`, `"does not include empty deletions array"`, `"includes deletions when files need to be deleted"`, `"base64 encodes file contents"`, `"handles file deletions"`, `"supports GitHub Enterprise with custom host"`, `"throws descriptive error for permission denied"`, `"throws error when GraphQL response contains errors"`, `"throws error when GraphQL response missing commit OID"`. Apply the generic pattern (below) to each.
+
+Below is the complete list with concrete guidance for the non-obvious tests.
 
 **Test: "retries on expectedHeadOid mismatch"** -- counter shifts by +1:
 
@@ -798,7 +802,24 @@ mockExecutor.responses.set("gh api graphql", () => {
 
 Update assertion from `graphqlCallCount === 1` to `graphqlCallCount === 2`.
 
-**Test: "should retry GraphQL API call on transient network error"** -- same adjustment: queryRemoteRef is call 1, transient error on call 2, success on call 3.
+**Test: "should retry GraphQL API call on transient network error"** -- counter shifts by +1:
+
+```typescript
+const queryRefResponse = JSON.stringify({
+  data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
+});
+let graphqlCallCount = 0;
+mockExecutor.responses.set("gh api graphql", () => {
+  graphqlCallCount++;
+  if (graphqlCallCount === 1) return queryRefResponse; // queryRemoteRef
+  if (graphqlCallCount === 2) throw new Error("Connection timed out"); // transient on createCommitOnBranch
+  return JSON.stringify({
+    data: { createCommitOnBranch: { commit: { oid: "retrysha123" } } },
+  });
+});
+```
+
+Update assertion from `graphqlCallCount >= 2` to `graphqlCallCount >= 3`.
 
 **Test: "sanitized OID mismatch errors are still retryable by outer loop"** (~line 1223) -- counter shifts by +1. The huge-payload OID mismatch error must fire on call 2 (createCommitOnBranch), not call 1 (queryRemoteRef):
 
@@ -860,7 +881,21 @@ mockExecutor.responses.set("gh api graphql", () => {
 
 Assertion stays the same (no `GH_TOKEN=` prefix on any call).
 
-**Test: "sanitizes error messages to exclude GraphQL payload"** (~line 1180) -- replace `git ls-remote` mock with counter-based GraphQL mock; the sanitization error happens on createCommitOnBranch (call 2), not queryRemoteRef (call 1).
+**Test: "sanitizes error messages to exclude GraphQL payload"** (~line 1180) -- **CRITICAL: the current static `Error` mock will fire on `queryRemoteRef` (call 1), silently testing the wrong method.** Replace with counter-based mock:
+
+```typescript
+const queryRefResponse = JSON.stringify({
+  data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
+});
+let graphqlCallCount = 0;
+const hugePayload = "x".repeat(100_000);
+const errorMessage = `Command failed: echo '${hugePayload}' | gh api graphql --input -\ngh: Resource not accessible by integration (createCommitOnBranch)`;
+mockExecutor.responses.set("gh api graphql", () => {
+  graphqlCallCount++;
+  if (graphqlCallCount === 1) return queryRefResponse; // queryRemoteRef
+  throw new Error(errorMessage); // createCommitOnBranch
+});
+```
 
 **Step 3: Run all tests**
 
