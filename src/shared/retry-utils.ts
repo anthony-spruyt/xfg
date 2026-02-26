@@ -9,6 +9,7 @@ import { sanitizeCredentials } from "./sanitize-utils.js";
  */
 export const DEFAULT_PERMANENT_ERROR_PATTERNS: RegExp[] = [
   /permission\s*denied/i,
+  /not\s*accessible\s*by\s*integration/i,
   /authentication\s*failed/i,
   /bad\s*credentials/i,
   /invalid\s*(token|credentials)/i,

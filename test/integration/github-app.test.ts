@@ -189,9 +189,11 @@ function setupSignedCommitRuleset(): void {
   console.log("  required_signatures ruleset active on all branches");
 }
 
+// Runs after the main block — do NOT call resetTestRepo() here because it
+// overwrites the direct-mode App commit on main that the assert step validates.
+// The PR branch is recreated fresh by xfg sync anyway.
 describe("GitHub App Signed Refs Test", { skip: SKIP_TESTS }, () => {
   beforeEach(() => {
-    resetTestRepo();
     setupSignedCommitRuleset();
   });
 
