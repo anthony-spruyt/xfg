@@ -32,6 +32,8 @@ export interface PRStrategyOptions {
   retries?: number;
   /** GitHub App installation token for authentication */
   token?: string;
+  /** Labels to apply to the created PR */
+  labels?: string[];
 }
 
 export interface MergeOptions {

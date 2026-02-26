@@ -30,6 +30,8 @@ export interface PROptions {
   executor?: ICommandExecutor;
   /** GitHub App installation token for authentication */
   token?: string;
+  /** Labels to apply to the created PR */
+  labels?: string[];
 }
 
 export interface PRResult {
@@ -156,6 +158,7 @@ export async function createPR(options: PROptions): Promise<PRResult> {
     prTemplate,
     executor,
     token,
+    labels,
   } = options;
 
   const title = formatPRTitle(files);
@@ -179,6 +182,7 @@ export async function createPR(options: PROptions): Promise<PRResult> {
     workDir,
     retries,
     token,
+    labels,
   });
 }
 
