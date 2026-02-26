@@ -75,3 +75,26 @@ repos:
 | ----------- | ------------------------ | ------------------- |
 | `.sh` files | Automatically executable | `executable: false` |
 | Other files | Not executable           | `executable: true`  |
+
+## GitHub App Limitation
+
+When using GitHub App authentication, xfg uses the `createCommitOnBranch` GraphQL API to create verified (signed) commits. This API does not support setting file modes.
+
+**Impact:**
+
+- New executable files are created as `100644` (non-executable) on the remote
+- Updating an existing file preserves whatever mode it already has -- if a file is `100755`, it stays `100755`
+
+**Workaround:**
+
+After the first sync creates the file, manually set it to executable:
+
+```bash
+git update-index --chmod=+x path/to/script.sh
+git commit -m "fix: set executable mode"
+git push
+```
+
+All future xfg syncs will preserve the `100755` mode.
+
+**PAT authentication** is not affected -- it uses `git commit` which correctly records file modes.

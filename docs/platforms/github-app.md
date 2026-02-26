@@ -95,6 +95,7 @@ When `XFG_GITHUB_APP_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` are set, xfg uses GitH
 2. **File size** - Large files (>50MB) should use PAT flow instead
 3. **GHE compatibility** - Requires GitHub Enterprise Server 3.6+
 4. **Atomic commits** - All file changes in a single commit
+5. **Executable file modes** -- The `createCommitOnBranch` GraphQL API cannot set file modes. New `.sh` files (or files with `executable: true`) are created as non-executable. See [Executable Files -- GitHub App Limitation](../examples/executable-files.md#github-app-limitation) for details and workaround.
 
 ## Troubleshooting
 
