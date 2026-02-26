@@ -2429,4 +2429,23 @@ describe("mergeSettings with repo", () => {
     assert.ok(config.repos[0].settings?.labels?.custom);
     assert.equal(config.repos[0].settings?.labels?.custom.color, "aaaaaa");
   });
+
+  describe("PR options merging", () => {
+    test("global labels propagate to repo", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        prOptions: {
+          labels: ["config-sync", "automated"],
+        },
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].prOptions?.labels, [
+        "config-sync",
+        "automated",
+      ]);
+    });
+  });
 });
