@@ -899,6 +899,8 @@ repos:
   test("sync creates a PR with configured prOptions.labels", async () => {
     // Arrange — create the labels that prOptions.labels references
     // (reset-test-repo.sh deletes all labels, so we must recreate them)
+    const prLabelsBranch = "chore/sync-pr-labels-test";
+
     console.log("\n=== Setting up PR labels test ===\n");
     console.log("Creating labels on test repo...");
     exec(
@@ -923,7 +925,7 @@ repos:
     // Assert — verify PR was created with the expected labels
     console.log("\nVerifying PR labels...");
     const prInfo = exec(
-      `gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number,labels --jq '.[0]'`
+      `gh pr list --repo ${TEST_REPO} --head ${prLabelsBranch} --json number,labels --jq '.[0]'`
     );
 
     assert.ok(prInfo, "Expected a PR to be created");
@@ -944,6 +946,8 @@ repos:
 
   test("per-repo prOptions.labels overrides global labels", async () => {
     // Arrange — create only the label used by the per-repo override
+    const prLabelsOverrideBranch = "chore/sync-pr-labels-override-test";
+
     console.log("\n=== Setting up per-repo PR labels override test ===\n");
     console.log("Creating label on test repo...");
     exec(
@@ -967,7 +971,7 @@ repos:
     // Assert — verify PR has only the per-repo label, not the global ones
     console.log("\nVerifying PR labels (per-repo override)...");
     const prInfo = exec(
-      `gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number,labels --jq '.[0]'`
+      `gh pr list --repo ${TEST_REPO} --head ${prLabelsOverrideBranch} --json number,labels --jq '.[0]'`
     );
 
     assert.ok(prInfo, "Expected a PR to be created");
