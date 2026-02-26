@@ -23,15 +23,8 @@ function createMockGitOps(): AuthenticatedGitOps & {
   const calls: Array<{ method: string; args: unknown[] }> = [];
   return {
     calls,
-    async lsRemote(branchName: string, options?: { skipRetry?: boolean }) {
-      calls.push({ method: "lsRemote", args: [branchName, options] });
-      return "";
-    },
     async fetchBranch(branchName: string) {
       calls.push({ method: "fetchBranch", args: [branchName] });
-    },
-    async pushRefspec(refspec: string, options?: { delete?: boolean }) {
-      calls.push({ method: "pushRefspec", args: [refspec, options] });
     },
   } as AuthenticatedGitOps & {
     calls: Array<{ method: string; args: unknown[] }>;
@@ -1045,7 +1038,7 @@ describe("GraphQLCommitStrategy", () => {
         },
       });
       const createRefResponse = JSON.stringify({
-        data: { createRef: { ref: { id: "REF_new123" } } },
+        data: { createRef: { clientMutationId: null } },
       });
       const commitResponse = JSON.stringify({
         data: { createCommitOnBranch: { commit: { oid: "newcommitsha" } } },
@@ -1111,7 +1104,7 @@ describe("GraphQLCommitStrategy", () => {
         data: { deleteRef: { clientMutationId: null } },
       });
       const createRefResponse = JSON.stringify({
-        data: { createRef: { ref: { id: "REF_new789" } } },
+        data: { createRef: { clientMutationId: null } },
       });
       const commitResponse = JSON.stringify({
         data: { createCommitOnBranch: { commit: { oid: "sha123" } } },
@@ -1216,7 +1209,7 @@ describe("GraphQLCommitStrategy", () => {
         data: { repository: { id: "R_ghe_repo", ref: null } },
       });
       const createRefResponse = JSON.stringify({
-        data: { createRef: { ref: { id: "REF_ghe_new" } } },
+        data: { createRef: { clientMutationId: null } },
       });
       const commitResponse = JSON.stringify({
         data: { createCommitOnBranch: { commit: { oid: "ghesha" } } },
@@ -1413,7 +1406,7 @@ describe("GraphQLCommitStrategy", () => {
         data: { deleteRef: { clientMutationId: null } },
       });
       const createRefResponse = JSON.stringify({
-        data: { createRef: { ref: { id: "REF_ghe_new" } } },
+        data: { createRef: { clientMutationId: null } },
       });
       const commitResponse = JSON.stringify({
         data: { createCommitOnBranch: { commit: { oid: "ghesha" } } },
@@ -1554,7 +1547,7 @@ describe("GraphQLCommitStrategy", () => {
         data: { repository: { id: "R_repo", ref: null } },
       });
       const createRefResponse = JSON.stringify({
-        data: { createRef: { ref: { id: "REF_new" } } },
+        data: { createRef: { clientMutationId: null } },
       });
       const commitResponse = JSON.stringify({
         data: { createCommitOnBranch: { commit: { oid: "sha" } } },

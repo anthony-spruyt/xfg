@@ -3,6 +3,7 @@ import { FileStatus, formatStatusBadge } from "../sync/diff-utils.js";
 
 export interface ILogger {
   info(message: string): void;
+  warn(message: string): void;
   debug(message: string): void;
   fileDiff(fileName: string, status: FileStatus, diffLines: string[]): void;
   diffSummary(
@@ -46,6 +47,10 @@ export class Logger implements ILogger {
 
   info(message: string): void {
     console.log(chalk.gray(`    ${message}`));
+  }
+
+  warn(message: string): void {
+    console.log(chalk.yellow(`    ⚠ ${message}`));
   }
 
   debug(message: string): void {

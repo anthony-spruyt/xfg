@@ -144,10 +144,9 @@ export class FileWriter implements IFileWriter {
       }
 
       if (shouldBeExecutable(file)) {
-        const tracked = fileChanges.get(file.fileName);
         if (tracked?.action === "create" && hasGitHubAppCredentials()) {
-          log.info(
-            `Warning: ${file.fileName}: GitHub App commits cannot set executable mode on new files. ` +
+          log.warn(
+            `${file.fileName}: GitHub App commits cannot set executable mode on new files. ` +
               `The file will be created as non-executable (100644). ` +
               `See: https://anthony-spruyt.github.io/xfg/examples/executable-files/`
           );

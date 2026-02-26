@@ -16,6 +16,7 @@ export interface DiffSummaryEntry {
 export interface LoggerMockResult {
   mock: ILogger;
   messages: string[];
+  warnings: string[];
   diffStatuses: DiffStatusEntry[];
   diffSummaries: DiffSummaryEntry[];
   reset: () => void;
@@ -23,12 +24,16 @@ export interface LoggerMockResult {
 
 export function createMockLogger(): LoggerMockResult {
   const messages: string[] = [];
+  const warnings: string[] = [];
   const diffStatuses: DiffStatusEntry[] = [];
   const diffSummaries: DiffSummaryEntry[] = [];
 
   const mock: ILogger = {
     info(message: string): void {
       messages.push(message);
+    },
+    warn(message: string): void {
+      warnings.push(message);
     },
     fileDiff(fileName: string, status: FileStatus, _diffLines: string[]): void {
       diffStatuses.push({ fileName, status });
@@ -66,10 +71,12 @@ export function createMockLogger(): LoggerMockResult {
   return {
     mock,
     messages,
+    warnings,
     diffStatuses,
     diffSummaries,
     reset: () => {
       messages.length = 0;
+      warnings.length = 0;
       diffStatuses.length = 0;
       diffSummaries.length = 0;
     },

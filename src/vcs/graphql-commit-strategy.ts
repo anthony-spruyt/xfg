@@ -419,24 +419,26 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
   }
 
   /**
-   * Query the remote for a repository's Node ID and a ref's Node ID.
-   * Returns repositoryId (always) and refId (null if branch doesn't exist).
+   * Execute a GraphQL query or mutation for ref operations.
+   * Handles command construction, retry, error sanitization, and response parsing.
+   * Uses gh CLI's --input flag to pass GraphQL via stdin (same pattern as executeGraphQLMutation).
    */
-  private async queryRemoteRef(
+  private async executeGraphQLRefOp(
+    queryOrMutation: string,
     repoInfo: GitHubRepoInfo,
-    branchName: string,
     workDir: string,
     token?: string
-  ): Promise<{ repositoryId: string; refId: string | null }> {
-    const query = `{ repository(owner: ${JSON.stringify(repoInfo.owner)}, name: ${JSON.stringify(repoInfo.repo)}) { id ref(qualifiedName: ${JSON.stringify(`refs/heads/${branchName}`)}) { id } } }`;
-    const requestBody = JSON.stringify({ query });
+  ): Promise<{
+    data?: Record<string, unknown>;
+    errors?: Array<{ message: string }>;
+  }> {
+    const requestBody = JSON.stringify({ query: queryOrMutation });
 
     const hostnameArg =
       repoInfo.host !== "github.com"
         ? `--hostname ${escapeShellArg(repoInfo.host)}`
         : "";
     const tokenPrefix = token ? `GH_TOKEN=${token} ` : "";
-    // Uses gh CLI's --input flag to pass GraphQL via stdin (same pattern as executeGraphQLMutation)
     const command = `echo ${escapeShellArg(requestBody)} | ${tokenPrefix}gh api graphql ${hostnameArg} --input -`;
 
     let response: string;
@@ -459,14 +461,39 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       );
     }
 
-    const repositoryId = parsed.data?.repository?.id;
+    return parsed;
+  }
+
+  /**
+   * Query the remote for a repository's Node ID and a ref's Node ID.
+   * Returns repositoryId (always) and refId (null if branch doesn't exist).
+   */
+  private async queryRemoteRef(
+    repoInfo: GitHubRepoInfo,
+    branchName: string,
+    workDir: string,
+    token?: string
+  ): Promise<{ repositoryId: string; refId: string | null }> {
+    const query = `{ repository(owner: ${JSON.stringify(repoInfo.owner)}, name: ${JSON.stringify(repoInfo.repo)}) { id ref(qualifiedName: ${JSON.stringify(`refs/heads/${branchName}`)}) { id } } }`;
+
+    const parsed = await this.executeGraphQLRefOp(
+      query,
+      repoInfo,
+      workDir,
+      token
+    );
+
+    const repo = parsed.data?.repository as
+      | { id?: string; ref?: { id?: string } }
+      | undefined;
+    const repositoryId = repo?.id;
     if (!repositoryId) {
       throw new Error(
         `GraphQL response missing repository ID for ${repoInfo.owner}/${repoInfo.repo}`
       );
     }
 
-    return { repositoryId, refId: parsed.data?.repository?.ref?.id ?? null };
+    return { repositoryId, refId: repo?.ref?.id ?? null };
   }
 
   /**
@@ -480,36 +507,8 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     repoInfo: GitHubRepoInfo,
     token?: string
   ): Promise<void> {
-    const mutation = `mutation { createRef(input: { repositoryId: ${JSON.stringify(repositoryId)}, name: ${JSON.stringify(`refs/heads/${branchName}`)}, oid: ${JSON.stringify(oid)} }) { ref { id } } }`;
-    const requestBody = JSON.stringify({ query: mutation });
-
-    const hostnameArg =
-      repoInfo.host !== "github.com"
-        ? `--hostname ${escapeShellArg(repoInfo.host)}`
-        : "";
-    const tokenPrefix = token ? `GH_TOKEN=${token} ` : "";
-    // Uses gh CLI's --input flag to pass GraphQL via stdin (same pattern as executeGraphQLMutation)
-    const command = `echo ${escapeShellArg(requestBody)} | ${tokenPrefix}gh api graphql ${hostnameArg} --input -`;
-
-    let response: string;
-    try {
-      response = await withRetry(() => this.executor.exec(command, workDir), {
-        permanentErrorPatterns:
-          GraphQLCommitStrategy.GRAPHQL_PERMANENT_ERROR_PATTERNS,
-      });
-    } catch (error) {
-      throw this.sanitizeCommandError(
-        error,
-        `${repoInfo.owner}/${repoInfo.repo}`
-      );
-    }
-
-    const parsed = JSON.parse(response);
-    if (parsed.errors) {
-      throw new Error(
-        `GraphQL error: ${parsed.errors.map((e: { message: string }) => e.message).join(", ")}`
-      );
-    }
+    const mutation = `mutation { createRef(input: { repositoryId: ${JSON.stringify(repositoryId)}, name: ${JSON.stringify(`refs/heads/${branchName}`)}, oid: ${JSON.stringify(oid)} }) { clientMutationId } }`;
+    await this.executeGraphQLRefOp(mutation, repoInfo, workDir, token);
   }
 
   /**
@@ -522,34 +521,6 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     token?: string
   ): Promise<void> {
     const mutation = `mutation { deleteRef(input: { refId: ${JSON.stringify(refId)} }) { clientMutationId } }`;
-    const requestBody = JSON.stringify({ query: mutation });
-
-    const hostnameArg =
-      repoInfo.host !== "github.com"
-        ? `--hostname ${escapeShellArg(repoInfo.host)}`
-        : "";
-    const tokenPrefix = token ? `GH_TOKEN=${token} ` : "";
-    // Uses gh CLI's --input flag to pass GraphQL via stdin (same pattern as executeGraphQLMutation)
-    const command = `echo ${escapeShellArg(requestBody)} | ${tokenPrefix}gh api graphql ${hostnameArg} --input -`;
-
-    let response: string;
-    try {
-      response = await withRetry(() => this.executor.exec(command, workDir), {
-        permanentErrorPatterns:
-          GraphQLCommitStrategy.GRAPHQL_PERMANENT_ERROR_PATTERNS,
-      });
-    } catch (error) {
-      throw this.sanitizeCommandError(
-        error,
-        `${repoInfo.owner}/${repoInfo.repo}`
-      );
-    }
-
-    const parsed = JSON.parse(response);
-    if (parsed.errors) {
-      throw new Error(
-        `GraphQL error: ${parsed.errors.map((e: { message: string }) => e.message).join(", ")}`
-      );
-    }
+    await this.executeGraphQLRefOp(mutation, repoInfo, workDir, token);
   }
 }

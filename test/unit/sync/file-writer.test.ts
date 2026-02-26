@@ -272,7 +272,7 @@ describe("FileWriter", () => {
           fileExists: false,
           wouldChange: true,
         });
-        const { mock: mockLogger, messages } = createMockLogger();
+        const { mock: mockLogger, warnings } = createMockLogger();
 
         const writer = new FileWriter();
         const files: FileContent[] = [
@@ -298,12 +298,12 @@ describe("FileWriter", () => {
           }
         );
 
-        const warningMsg = messages.find((m) =>
+        const warningMsg = warnings.find((m) =>
           /cannot set executable mode/i.test(m)
         );
         assert.ok(
           warningMsg,
-          `Expected warning about executable mode, got messages: ${JSON.stringify(messages)}`
+          `Expected warning about executable mode, got warnings: ${JSON.stringify(warnings)}`
         );
       } finally {
         if (origAppId === undefined) delete process.env.XFG_GITHUB_APP_ID;
