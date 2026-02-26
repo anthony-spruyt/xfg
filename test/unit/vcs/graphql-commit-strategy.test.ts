@@ -1317,6 +1317,238 @@ describe("GraphQLCommitStrategy", () => {
       );
     });
 
+    test("throws when queryRemoteRef response contains GraphQL errors", async () => {
+      // queryRemoteRef returns a successful HTTP response but with GraphQL errors in the body
+      mockExecutor.responses.set("gh api graphql", () => {
+        return JSON.stringify({
+          errors: [
+            { message: "Field 'repository' doesn't exist on type 'Query'" },
+          ],
+        });
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      await assert.rejects(
+        () =>
+          strategy.commit({
+            repoInfo: githubRepoInfo,
+            branchName: "feature",
+            message: "Test",
+            fileChanges: [{ path: "f.txt", content: "c" }],
+            workDir: testDir,
+            token: "ghs_token",
+          }),
+        /GraphQL error.*Field 'repository'/,
+        "Should throw error with GraphQL error messages from queryRemoteRef"
+      );
+    });
+
+    test("throws when queryRemoteRef response is missing repositoryId", async () => {
+      // queryRemoteRef returns a valid response but without repository.id
+      mockExecutor.responses.set("gh api graphql", () => {
+        return JSON.stringify({
+          data: { repository: null },
+        });
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      await assert.rejects(
+        () =>
+          strategy.commit({
+            repoInfo: githubRepoInfo,
+            branchName: "feature",
+            message: "Test",
+            fileChanges: [{ path: "f.txt", content: "c" }],
+            workDir: testDir,
+            token: "ghs_token",
+          }),
+        /missing repository ID.*owner\/repo/,
+        "Should throw error about missing repository ID"
+      );
+    });
+
+    test("throws when createRemoteRef response contains GraphQL errors", async () => {
+      // queryRemoteRef succeeds (branch doesn't exist), but createRef returns GraphQL errors
+      const queryResponse = JSON.stringify({
+        data: { repository: { id: "R_repo123", ref: null } },
+      });
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("git rev-parse HEAD", "headsha123");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin/", "headsha123");
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryResponse;
+        // createRef returns GraphQL errors in body (not thrown)
+        return JSON.stringify({
+          errors: [{ message: "Name already exists on this repository" }],
+        });
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      await assert.rejects(
+        () =>
+          strategy.commit({
+            repoInfo: githubRepoInfo,
+            branchName: "feature-branch",
+            message: "Test",
+            fileChanges: [{ path: "f.txt", content: "c" }],
+            workDir: testDir,
+            token: "ghs_token",
+          }),
+        /GraphQL error.*Name already exists/,
+        "Should throw GraphQL error from createRemoteRef response body"
+      );
+    });
+
+    test("deleteRemoteRef uses --hostname for GitHub Enterprise", async () => {
+      // force=true with existing branch triggers deleteRef + createRef
+      const queryResponse = JSON.stringify({
+        data: {
+          repository: { id: "R_ghe_repo", ref: { id: "REF_ghe_existing" } },
+        },
+      });
+      const deleteRefResponse = JSON.stringify({
+        data: { deleteRef: { clientMutationId: null } },
+      });
+      const createRefResponse = JSON.stringify({
+        data: { createRef: { ref: { id: "REF_ghe_new" } } },
+      });
+      const commitResponse = JSON.stringify({
+        data: { createCommitOnBranch: { commit: { oid: "ghesha" } } },
+      });
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("git rev-parse HEAD", "gheheadsha");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin/", "gheheadsha");
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryResponse;
+        if (graphqlCallCount === 2) return deleteRefResponse;
+        if (graphqlCallCount === 3) return createRefResponse;
+        return commitResponse;
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      await strategy.commit({
+        repoInfo: gheRepoInfo,
+        branchName: "feature",
+        message: "GHE force commit",
+        fileChanges: [{ path: "file.txt", content: "content" }],
+        workDir: testDir,
+        force: true,
+        token: "ghs_ghe_token",
+      });
+
+      const graphqlCalls = mockExecutor.calls.filter((c) =>
+        c.command.includes("gh api graphql")
+      );
+      // The deleteRef call (second graphql call) should include --hostname
+      assert.ok(
+        graphqlCalls[1].command.includes("deleteRef"),
+        "Second call should be deleteRef"
+      );
+      assert.ok(
+        graphqlCalls[1].command.includes("--hostname") &&
+          graphqlCalls[1].command.includes("github.enterprise.com"),
+        "deleteRef call should include GHE hostname"
+      );
+    });
+
+    test("deleteRemoteRef sanitizes and rethrows executor errors", async () => {
+      // force=true with existing branch triggers deleteRef, which throws
+      const queryResponse = JSON.stringify({
+        data: {
+          repository: { id: "R_repo123", ref: { id: "REF_existing" } },
+        },
+      });
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("git rev-parse HEAD", "headsha");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin/", "headsha");
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryResponse;
+        // deleteRef call throws (executor error)
+        const hugePayload = "z".repeat(50_000);
+        throw new Error(
+          `Command failed: echo '${hugePayload}' | gh api graphql --input -\ngh: Permission denied (HTTP 403)`
+        );
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      try {
+        await strategy.commit({
+          repoInfo: githubRepoInfo,
+          branchName: "feature-branch",
+          message: "Test",
+          fileChanges: [{ path: "f.txt", content: "c" }],
+          workDir: testDir,
+          force: true,
+          token: "ghs_token",
+        });
+        assert.fail("Should have thrown");
+      } catch (error) {
+        const err = error as Error;
+        // Error should be sanitized (no huge payload)
+        assert.ok(
+          err.message.length < 1000,
+          `Error should be concise, got ${err.message.length} chars`
+        );
+        // Error should contain the meaningful part
+        assert.ok(
+          err.message.includes("Permission denied") ||
+            err.message.includes("403"),
+          `Should include meaningful error. Got: ${err.message}`
+        );
+        assert.ok(
+          err.message.includes("owner/repo"),
+          `Should identify the repo. Got: ${err.message}`
+        );
+      }
+    });
+
+    test("throws when deleteRemoteRef response contains GraphQL errors", async () => {
+      // force=true with existing branch triggers deleteRef, which returns GraphQL errors in body
+      const queryResponse = JSON.stringify({
+        data: {
+          repository: { id: "R_repo123", ref: { id: "REF_existing" } },
+        },
+      });
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("git rev-parse HEAD", "headsha");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin/", "headsha");
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryResponse;
+        // deleteRef returns GraphQL errors in body (not thrown)
+        return JSON.stringify({
+          errors: [{ message: "Cannot delete a protected ref" }],
+        });
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      await assert.rejects(
+        () =>
+          strategy.commit({
+            repoInfo: githubRepoInfo,
+            branchName: "main",
+            message: "Test",
+            fileChanges: [{ path: "f.txt", content: "c" }],
+            workDir: testDir,
+            force: true,
+            token: "ghs_token",
+          }),
+        /GraphQL error.*Cannot delete a protected ref/,
+        "Should throw GraphQL error from deleteRemoteRef response body"
+      );
+    });
+
     test("uses token in GraphQL ref operation commands", async () => {
       const queryResponse = JSON.stringify({
         data: { repository: { id: "R_repo", ref: null } },
