@@ -10,6 +10,7 @@ Configure how PRs are handled after creation.
 | `mergeStrategy` | How to merge: `merge`, `squash`, `rebase`                                             | `squash` |
 | `deleteBranch`  | Delete source branch after merge                                                      | `true`   |
 | `bypassReason`  | Reason for bypassing policies (Azure DevOps only, required for `force`)               | -        |
+| `labels`        | Labels to apply to created PRs (GitHub only, more platforms coming)                    | -        |
 
 ## Merge Modes
 
@@ -49,6 +50,31 @@ repos:
     prOptions:
       merge: force
 ```
+
+## PR Labels
+
+Apply labels to PRs automatically:
+
+```yaml
+prOptions:
+  labels: ["config-sync", "automated"]
+
+repos:
+  # Uses global labels
+  - git: git@github.com:org/frontend.git
+
+  # Override with repo-specific labels (replaces global)
+  - git: git@github.com:org/critical.git
+    prOptions:
+      labels: ["critical-config", "urgent"]
+
+  # Clear labels for this repo
+  - git: git@github.com:org/no-labels.git
+    prOptions:
+      labels: []
+```
+
+**Note:** Labels must already exist on the target repository. If a label doesn't exist, the PR creation will fail. Currently supported on GitHub only.
 
 ## CLI Override
 

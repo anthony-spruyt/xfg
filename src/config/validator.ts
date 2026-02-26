@@ -400,6 +400,14 @@ export function validateRawConfig(config: RawConfig): void {
     }
   }
 
+  // Validate prOptions.labels if present
+  if (
+    config.prOptions?.labels !== undefined &&
+    !Array.isArray(config.prOptions.labels)
+  ) {
+    throw new Error("prOptions.labels must be an array of strings");
+  }
+
   // Validate each repo
   for (let i = 0; i < config.repos.length; i++) {
     const repo = config.repos[i];

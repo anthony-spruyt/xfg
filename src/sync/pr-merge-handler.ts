@@ -40,6 +40,7 @@ export class PRMergeHandler implements IPRMergeHandler {
       prTemplate: options.prTemplate,
       executor: options.executor,
       token: options.token,
+      labels: repoConfig.prOptions?.labels,
     });
 
     const mergeMode = repoConfig.prOptions?.merge ?? "auto";

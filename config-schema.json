@@ -264,6 +264,14 @@
         "bypassReason": {
           "type": "string",
           "description": "Reason for bypassing policies (Azure DevOps only, required when merge=force)"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Labels to apply to created PRs/MRs. Labels must exist on the target repository."
         }
       }
     },

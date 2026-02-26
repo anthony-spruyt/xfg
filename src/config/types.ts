@@ -12,6 +12,7 @@ export interface PRMergeOptions {
   mergeStrategy?: MergeStrategy;
   deleteBranch?: boolean;
   bypassReason?: string;
+  labels?: string[];
 }
 
 // =============================================================================

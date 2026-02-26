@@ -149,5 +149,50 @@ describe("PRMergeHandler", () => {
 
       assert.deepEqual(result.diffStats, diffStats);
     });
+
+    test("passes labels to createPR", async () => {
+      const { mock: mockLogger } = createMockLogger();
+      const { mock: mockExecutor, calls } = createMockExecutor({
+        responses: new Map([
+          ["gh pr list", ""],
+          ["gh pr create", "https://github.com/test/repo/pull/1"],
+          ["gh pr merge", ""],
+        ]),
+      });
+
+      const handler = new PRMergeHandler(mockLogger);
+      const changedFiles: FileAction[] = [
+        { fileName: "config.json", action: "create" },
+      ];
+      const repoConfig: RepoConfig = {
+        gitUrl: mockRepoInfo.gitUrl,
+        files: [],
+        prOptions: {
+          labels: ["config-sync", "automated"],
+        },
+      };
+
+      await handler.createAndMerge(
+        mockRepoInfo,
+        repoConfig,
+        {
+          branchName: "chore/sync",
+          baseBranch: "main",
+          workDir,
+          dryRun: false,
+          retries: 1,
+          executor: mockExecutor,
+        },
+        changedFiles,
+        "test/repo"
+      );
+
+      const createCall = calls.find((c) => c.command.includes("gh pr create"));
+      assert.ok(createCall, "gh pr create should have been called");
+      assert.ok(
+        createCall.command.includes("--label"),
+        "gh pr create should include --label flag"
+      );
+    });
   });
 });

@@ -3253,4 +3253,33 @@ describe("labels validation", () => {
       /label 'bug' description must be a string/
     );
   });
+
+  describe("prOptions labels validation", () => {
+    test("accepts valid labels array in prOptions", () => {
+      const config = {
+        id: "test",
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        prOptions: {
+          labels: ["config-sync", "automated"],
+        },
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when prOptions labels is not an array", () => {
+      const config = {
+        id: "test",
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        prOptions: {
+          labels: "not-an-array",
+        },
+      } as unknown as RawConfig;
+      assert.throws(
+        () => validateRawConfig(config),
+        /prOptions\.labels must be an array/
+      );
+    });
+  });
 });
