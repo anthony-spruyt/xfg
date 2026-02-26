@@ -3281,5 +3281,35 @@ describe("labels validation", () => {
         /prOptions\.labels must be an array/
       );
     });
+
+    test("throws when prOptions labels contains non-string element", () => {
+      const config = {
+        id: "test",
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        prOptions: {
+          labels: ["valid", 123],
+        },
+      } as unknown as RawConfig;
+      assert.throws(
+        () => validateRawConfig(config),
+        /prOptions\.labels entries must be non-empty strings/
+      );
+    });
+
+    test("throws when prOptions labels contains empty string", () => {
+      const config = {
+        id: "test",
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+        prOptions: {
+          labels: ["valid", ""],
+        },
+      } as unknown as RawConfig;
+      assert.throws(
+        () => validateRawConfig(config),
+        /prOptions\.labels entries must be non-empty strings/
+      );
+    });
   });
 });
