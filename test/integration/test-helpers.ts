@@ -144,6 +144,54 @@ export async function waitForFileDeleted(
   );
 }
 
+/**
+ * Polls GitHub API until the manifest (.xfg.json) contains the expected
+ * managed labels for a given config ID. Handles eventual consistency after
+ * a manifest push.
+ *
+ * Note: The repo and configId are hardcoded test constants, not user input.
+ */
+export async function waitForManifestLabels(
+  repo: string,
+  configId: string,
+  expectedLabels: string[],
+  timeoutMs = 10000,
+  envOptions?: { env: Record<string, string | undefined> }
+): Promise<void> {
+  const startTime = Date.now();
+  const pollInterval = 500;
+  const sorted = [...expectedLabels].sort();
+
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      const content = exec(
+        `gh api repos/${repo}/contents/.xfg.json --jq '.content' | base64 -d`,
+        envOptions
+      );
+      if (content && !content.includes("Not Found")) {
+        const manifest = JSON.parse(content);
+        const labels: string[] = manifest?.configs?.[configId]?.labels ?? [];
+        if (
+          labels.length === sorted.length &&
+          [...labels].sort().every((l, i) => l === sorted[i])
+        ) {
+          console.log(
+            `  Manifest labels visible after ${Date.now() - startTime}ms`
+          );
+          return;
+        }
+      }
+    } catch {
+      // API call failed or manifest not yet available, continue polling
+    }
+    await new Promise((resolve) => setTimeout(resolve, pollInterval));
+  }
+
+  throw new Error(
+    `Manifest labels [${sorted.join(", ")}] for config '${configId}' not visible in ${repo} after ${timeoutMs}ms (GitHub API eventual consistency)`
+  );
+}
+
 // --- Lifecycle test helpers ---
 // Shared helpers for ephemeral repo tests (create/fork/migrate).
 // All inputs are controlled test constants (owner, repoName from

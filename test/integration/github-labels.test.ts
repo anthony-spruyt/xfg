@@ -2,7 +2,7 @@ import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
 import { writeFileSync } from "node:fs";
-import { exec, projectRoot } from "./test-helpers.js";
+import { exec, projectRoot, waitForManifestLabels } from "./test-helpers.js";
 
 const fixturesDir = join(projectRoot, "test", "fixtures");
 
@@ -280,7 +280,7 @@ repos:
     console.log("\n=== Dry-run labels integration test passed ===\n");
   });
 
-  test("settings deletes orphaned labels when removed from config", () => {
+  test("settings deletes orphaned labels when removed from config", async () => {
     // Phase 1: Create labels with deleteOrphaned enabled
     const phase1Config = `
 id: integration-test-github-labels
@@ -322,6 +322,15 @@ repos:
       findLabel(labelsPhase1, "xfg-test-feature"),
       "Feature label should exist after phase 1"
     );
+
+    // Wait for manifest to be visible via GitHub Contents API before phase 2.
+    // Phase 2 reads the manifest to determine which labels were previously
+    // managed — without this, eventual consistency can cause it to miss orphans.
+    console.log("\nWaiting for manifest API consistency...");
+    await waitForManifestLabels(TEST_REPO, "integration-test-github-labels", [
+      "xfg-test-bug",
+      "xfg-test-feature",
+    ]);
 
     // Phase 2: Remove xfg-test-feature from config
     const phase2Config = `
