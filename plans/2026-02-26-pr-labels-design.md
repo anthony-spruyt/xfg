@@ -25,7 +25,7 @@ export interface PRMergeOptions {
 
 ### Schema
 
-Add `labels` to the `prOptions` definition in `config-schema.json`:
+Add `labels` to the `prOptions` definition in `config-schema.json` (repository root):
 
 ```json
 "labels": {
@@ -49,13 +49,13 @@ repos:
 
 ## Decisions
 
-| Decision             | Choice                 | Rationale                                                           |
-| -------------------- | ---------------------- | ------------------------------------------------------------------- |
-| Label timing         | During PR creation     | Simpler, one CLI call, all platforms support it                     |
-| Per-repo override    | Simple replace         | Consistent with existing `mergePROptions()` behavior                |
-| Missing labels       | Fail loudly            | Config error the user should fix                                    |
-| Platform scope       | GitHub only            | Ship incrementally; ADO/GitLab in follow-up issues                  |
-| Non-GitHub platforms | Silently ignore labels | No warning, no error; field flows through config but isn't acted on |
+| Decision             | Choice                 | Rationale                                                                                                                                     |
+| -------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Label timing         | During PR creation     | Simpler, one CLI call, all platforms support it                                                                                               |
+| Per-repo override    | Replace, not merge     | Per-repo array replaces (not merges with) global; falls back to global when absent. Consistent with existing `mergePROptions()` `??` behavior |
+| Missing labels       | Fail loudly            | Config error the user should fix                                                                                                              |
+| Platform scope       | GitHub only            | Ship incrementally; ADO/GitLab in follow-up issues                                                                                            |
+| Non-GitHub platforms | Silently ignore labels | No warning, no error; field flows through config but isn't acted on                                                                           |
 
 ## Normalizer
 
@@ -73,7 +73,7 @@ Note: `labels: []` at per-repo level explicitly clears global labels (empty arra
 Full call chain with required changes:
 
 1. `PRMergeHandler.createAndMerge()` in `src/sync/pr-merge-handler.ts` — pass `labels: repoConfig.prOptions?.labels` to `createPR()`
-2. `createPR()` in `src/vcs/pr-creator.ts` — destructure `labels` from `PROptions`, pass through to `strategy.execute()`
+2. `createPR()` in `src/vcs/pr-creator.ts` — destructure `labels` from `PROptions` and include it in the `PRStrategyOptions` object literal passed to `strategy.execute()`
 3. `PRWorkflowExecutor.execute()` in `src/vcs/pr-strategy.ts` — passes `PRStrategyOptions` through to `strategy.create()` (no change needed)
 4. `GitHubPRStrategy.create()` in `src/vcs/github-pr-strategy.ts` — append `--label ${escapeShellArg(label)}` for each label to the `gh pr create` command
 
