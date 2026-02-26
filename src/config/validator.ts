@@ -401,11 +401,15 @@ export function validateRawConfig(config: RawConfig): void {
   }
 
   // Validate prOptions.labels if present
-  if (
-    config.prOptions?.labels !== undefined &&
-    !Array.isArray(config.prOptions.labels)
-  ) {
-    throw new Error("prOptions.labels must be an array of strings");
+  if (config.prOptions?.labels !== undefined) {
+    if (!Array.isArray(config.prOptions.labels)) {
+      throw new Error("prOptions.labels must be an array of strings");
+    }
+    for (const label of config.prOptions.labels) {
+      if (typeof label !== "string" || label.length === 0) {
+        throw new Error("prOptions.labels entries must be non-empty strings");
+      }
+    }
   }
 
   // Validate each repo
