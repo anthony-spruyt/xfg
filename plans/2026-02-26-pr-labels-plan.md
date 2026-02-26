@@ -185,49 +185,65 @@ git commit -m "feat(config): add labels merging to mergePROptions"
 
 - Modify: `config-schema.json` (repository root, lines 234-269)
 
-**Step 1: Write the failing test**
+**Important context:** `validateRawConfig` in `src/config/validator.ts` is a hand-written validator — it does NOT use `config-schema.json` at runtime. The schema file is only for IDE/editor autocompletion. Runtime validation requires explicit code in `validator.ts`.
 
-Add to `test/unit/config-validator.test.ts` (find the appropriate describe block for schema validation):
+**Step 1: Write the failing tests**
+
+Add to `test/unit/config-validator.test.ts` inside the `describe("validateRawConfig")` block (find an appropriate nested describe, or add a new one):
 
 ```typescript
-test("accepts valid labels in prOptions", () => {
-  const config = {
-    id: "test",
-    files: { "config.json": { content: { key: "value" } } },
-    repos: [{ git: "git@github.com:org/repo.git" }],
-    prOptions: {
-      labels: ["config-sync", "automated"],
-    },
-  };
-  const errors = validateRawConfig(config);
-  const prOptionsErrors = errors.filter((e) => e.path?.includes("prOptions"));
-  assert.equal(prOptionsErrors.length, 0);
-});
+describe("prOptions labels validation", () => {
+  test("accepts valid labels array in prOptions", () => {
+    const config = {
+      id: "test",
+      files: { "config.json": { content: { key: "value" } } },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+      prOptions: {
+        labels: ["config-sync", "automated"],
+      },
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
 
-test("rejects non-array labels in prOptions", () => {
-  const config = {
-    id: "test",
-    files: { "config.json": { content: { key: "value" } } },
-    repos: [{ git: "git@github.com:org/repo.git" }],
-    prOptions: {
-      labels: "not-an-array",
-    },
-  };
-  const errors = validateRawConfig(config);
-  assert.ok(errors.length > 0);
+  test("throws when prOptions labels is not an array", () => {
+    const config = {
+      id: "test",
+      files: { "config.json": { content: { key: "value" } } },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+      prOptions: {
+        labels: "not-an-array",
+      },
+    } as unknown as RawConfig;
+    assert.throws(
+      () => validateRawConfig(config),
+      /prOptions\.labels must be an array/
+    );
+  });
 });
 ```
 
-Note: Before writing these tests, read `test/unit/config-validator.test.ts` to understand imports and test patterns (e.g., the `validateRawConfig` function name and how errors are checked).
+Note: `validateRawConfig` throws on validation errors and returns void on success. Use `assert.doesNotThrow` for valid configs and `assert.throws` for invalid ones. This matches the existing test patterns throughout `test/unit/config-validator.test.ts`.
 
 **Step 2: Run tests to verify they fail**
 
-Run: `npm test -- --test-name-pattern "accepts valid labels|rejects non-array labels" 2>&1 | tail -20`
-Expected: FAIL — `"not-an-array"` passes validation because schema doesn't know about `labels`
+Run: `npm test -- --test-name-pattern "accepts valid labels array in prOptions|throws when prOptions labels is not an array" 2>&1 | tail -20`
+Expected: FAIL — the "throws when not an array" test fails because no validation exists yet for `prOptions.labels`
 
-**Step 3: Add labels to schema**
+**Step 3: Add labels validation to `validator.ts` and labels to schema**
 
-In `config-schema.json`, inside the `prOptions` definition's `properties` object (after `bypassReason` at line 267), add:
+In `src/config/validator.ts`, find the `validateRawConfig` function and add a check for `prOptions.labels` type. Look for where prOptions is accessed (search for `prOptions`) and add after the existing prOptions handling:
+
+```typescript
+// Validate prOptions.labels if present
+if (
+  config.prOptions?.labels !== undefined &&
+  !Array.isArray(config.prOptions.labels)
+) {
+  throw new Error("prOptions.labels must be an array of strings");
+}
+```
+
+In `config-schema.json`, inside the `prOptions` definition's `properties` object (after the closing `}` of `bypassReason` at line 267 — `bypassReason` starts at line 264, its closing `}` is at line 267, and the closing `}` of `properties` is at line 268), add:
 
 ```json
         "labels": {
@@ -242,14 +258,14 @@ In `config-schema.json`, inside the `prOptions` definition's `properties` object
 
 **Step 4: Run tests to verify they pass**
 
-Run: `npm test -- --test-name-pattern "accepts valid labels|rejects non-array labels" 2>&1 | tail -20`
+Run: `npm test -- --test-name-pattern "accepts valid labels array in prOptions|throws when prOptions labels is not an array" 2>&1 | tail -20`
 Expected: PASS
 
 **Step 5: Commit**
 
 ```bash
-git add config-schema.json test/unit/config-validator.test.ts
-git commit -m "feat(config): add labels to prOptions schema"
+git add config-schema.json src/config/validator.ts test/unit/config-validator.test.ts
+git commit -m "feat(config): add labels to prOptions schema and validation"
 ```
 
 ---
@@ -272,6 +288,7 @@ test("passes labels to createPR", async () => {
   const { mock: mockLogger } = createMockLogger();
   const { mock: mockExecutor, calls } = createMockExecutor({
     responses: new Map([
+      ["gh pr list", ""],
       ["gh pr create", "https://github.com/test/repo/pull/1"],
       ["gh pr merge", ""],
     ]),
@@ -282,7 +299,7 @@ test("passes labels to createPR", async () => {
     { fileName: "config.json", action: "create" },
   ];
   const repoConfig: RepoConfig = {
-    git: "git@github.com:test/repo.git",
+    gitUrl: mockRepoInfo.gitUrl,
     files: [],
     prOptions: {
       labels: ["config-sync", "automated"],
@@ -296,6 +313,7 @@ test("passes labels to createPR", async () => {
       branchName: "chore/sync",
       baseBranch: "main",
       workDir,
+      dryRun: false,
       retries: 1,
       executor: mockExecutor,
     },
