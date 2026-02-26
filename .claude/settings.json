@@ -10,7 +10,7 @@
   "alwaysThinkingEnabled": true,
   "fastMode": false,
   "prefersReducedMotion": true,
-  "model": "claude-sonnet-4-6",
+  "model": "claude-opus-4-6",
   "autoUpdatesChannel": "latest",
   "defaultMode": "acceptEdits",
   "permissions": {
