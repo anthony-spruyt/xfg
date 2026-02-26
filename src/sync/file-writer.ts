@@ -16,6 +16,7 @@ import type {
   FileWriteAllResult,
   FileWriteResult,
 } from "./types.js";
+import { hasGitHubAppCredentials } from "../vcs/commit-strategy-selector.js";
 
 /**
  * Determines if a file should be marked as executable.
@@ -143,6 +144,14 @@ export class FileWriter implements IFileWriter {
       }
 
       if (shouldBeExecutable(file)) {
+        const tracked = fileChanges.get(file.fileName);
+        if (tracked?.action === "create" && hasGitHubAppCredentials()) {
+          log.info(
+            `Warning: ${file.fileName}: GitHub App commits cannot set executable mode on new files. ` +
+              `The file will be created as non-executable (100644). ` +
+              `See: https://anthony-spruyt.github.io/xfg/examples/executable-files/`
+          );
+        }
         log.info(`Setting executable: ${file.fileName}`);
         await gitOps.setExecutable(file.fileName);
       }
