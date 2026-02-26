@@ -164,6 +164,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       workDir,
       retries = 3,
       token,
+      labels,
     } = options;
 
     if (!isGitHubRepo(repoInfo)) {
@@ -176,7 +177,14 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     // Token is passed via env var to avoid shell injection
     const tokenEnv = buildTokenEnv(token);
-    const command = `gh pr create --title ${escapeShellArg(title)} --body-file ${escapeShellArg(bodyFile)} --base ${escapeShellArg(baseBranch)} --head ${escapeShellArg(branchName)}`;
+    let command = `gh pr create --title ${escapeShellArg(title)} --body-file ${escapeShellArg(bodyFile)} --base ${escapeShellArg(baseBranch)} --head ${escapeShellArg(branchName)}`;
+
+    // Append label flags
+    if (labels && labels.length > 0) {
+      for (const label of labels) {
+        command += ` --label ${escapeShellArg(label)}`;
+      }
+    }
 
     try {
       const result = await withRetry(

@@ -283,6 +283,90 @@ describe("GitHubPRStrategy with mock executor", () => {
       const bodyFile = join(testDir, ".pr-body.md");
       assert.equal(existsSync(bodyFile), false);
     });
+
+    test("includes --label flags when labels provided", async () => {
+      mockExecutor.responses.set(
+        "gh pr create",
+        "https://github.com/owner/repo/pull/123"
+      );
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const options: PRStrategyOptions = {
+        repoInfo: githubRepoInfo,
+        title: "Test PR",
+        body: "Test body",
+        branchName: "test-branch",
+        baseBranch: "main",
+        workDir: testDir,
+        retries: 0,
+        labels: ["config-sync", "automated"],
+      };
+
+      const result = await strategy.create(options);
+
+      assert.equal(result.success, true);
+      const createCall = mockExecutor.calls.find((c) =>
+        c.command.includes("gh pr create")
+      );
+      assert.ok(createCall);
+      assert.ok(createCall.command.includes("--label 'config-sync'"));
+      assert.ok(createCall.command.includes("--label 'automated'"));
+    });
+
+    test("creates PR without --label flags when no labels", async () => {
+      mockExecutor.responses.set(
+        "gh pr create",
+        "https://github.com/owner/repo/pull/124"
+      );
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const options: PRStrategyOptions = {
+        repoInfo: githubRepoInfo,
+        title: "Test PR",
+        body: "Test body",
+        branchName: "test-branch",
+        baseBranch: "main",
+        workDir: testDir,
+        retries: 0,
+      };
+
+      const result = await strategy.create(options);
+
+      assert.equal(result.success, true);
+      const createCall = mockExecutor.calls.find((c) =>
+        c.command.includes("gh pr create")
+      );
+      assert.ok(createCall);
+      assert.ok(!createCall.command.includes("--label"));
+    });
+
+    test("creates PR without --label flags when labels is empty array", async () => {
+      mockExecutor.responses.set(
+        "gh pr create",
+        "https://github.com/owner/repo/pull/125"
+      );
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const options: PRStrategyOptions = {
+        repoInfo: githubRepoInfo,
+        title: "Test PR",
+        body: "Test body",
+        branchName: "test-branch",
+        baseBranch: "main",
+        workDir: testDir,
+        retries: 0,
+        labels: [],
+      };
+
+      const result = await strategy.create(options);
+
+      assert.equal(result.success, true);
+      const createCall = mockExecutor.calls.find((c) =>
+        c.command.includes("gh pr create")
+      );
+      assert.ok(createCall);
+      assert.ok(!createCall.command.includes("--label"));
+    });
   });
 
   describe("execute (full workflow)", () => {
