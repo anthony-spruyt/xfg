@@ -67,8 +67,8 @@ Note: `runLifecycleCheck` (`lifecycle-helpers.ts`) passes only `visibility` and 
 
 In `GitHubLifecycleProvider.create()`, after `gh repo create --add-readme`, before `deleteReadme`:
 
-1. If `settings.defaultBranch` is set, call `gh api {hostnameFlag} /repos/{owner}/{repo} --jq '.default_branch'` to detect the actual created branch name (using `getHostnameFlag(repoInfo)` as with all existing API calls in this method). This call should use `withRetry` with `postCreatePermanentPatterns` to tolerate the same post-creation eventual consistency window that `deleteReadme` already handles.
-2. If it differs from desired, call `POST /repos/{owner}/{repo}/branches/{current}/rename` with `{"new_name": desired}` (same `hostnameFlag`; also wrapped in `withRetry` with `postCreatePermanentPatterns`) — GitHub automatically updates the default branch pointer, and also updates any existing branch protection rules and open PRs targeting the old branch name. If the API call fails, the error propagates and `deleteReadme` is not reached.
+1. If `settings.defaultBranch` is set, call `gh api {hostnameFlag} /repos/{owner}/{repo} --jq '.default_branch'` to detect the actual created branch name (using `getHostnameFlag(repoInfo)` as with all existing API calls in this method). This call uses `withRetry` with `postCreatePermanentPatterns` to tolerate post-creation eventual consistency (the repo itself may not yet be visible).
+2. If it differs from desired, call `POST /repos/{owner}/{repo}/branches/{current}/rename` with `{"new_name": desired}` (same `hostnameFlag`; wrapped in plain `withRetry` with default permanent patterns — a 404 here is a genuine error indicating the branch no longer exists, not eventual consistency) — GitHub automatically updates the default branch pointer, and also updates any existing branch protection rules and open PRs targeting the old branch name. If the API call fails, the error propagates and `deleteReadme` is not reached.
 3. `deleteReadme` proceeds unchanged (uses content SHA lookup, not branch name)
 
 If `settings.defaultBranch` is unset — no extra API calls, existing behaviour.
@@ -81,7 +81,7 @@ In `GitHubLifecycleProvider.receiveMigration()`, after stripping non-standard re
 
 > Note: `{sourceDir}` is a **bare mirror clone** (`git clone --mirror`). Both `git branch -m` and `git symbolic-ref` operate correctly on bare repositories.
 
-1. If `settings.defaultBranch` is set, read source HEAD: `git -C {sourceDir} symbolic-ref HEAD` → strip `refs/heads/` prefix → `sourceBranch`. If the output does not start with `refs/heads/` (e.g., detached HEAD or broken symref), throw a descriptive error rather than proceeding silently.
+1. If `settings.defaultBranch` is set, read source HEAD: `git -C {sourceDir} symbolic-ref HEAD` → strip `refs/heads/` prefix → `sourceBranch`. Two failure paths: (a) if `git symbolic-ref HEAD` exits non-zero (e.g., detached HEAD), the executor throws and the error propagates naturally; (b) if it exits zero but the output does not start with `refs/heads/` (broken symref edge case), throw explicitly with a descriptive message.
 2. If `sourceBranch` differs from `defaultBranch`:
    ```
    git -C {sourceDir} branch -m {sourceBranch} {defaultBranch}
