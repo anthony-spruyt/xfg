@@ -297,6 +297,45 @@ describe("ensureBranchExistsOnRemote (GraphQL ref operations)", () => {
     );
   });
 
+  test("propagates createRef failure after deleteRef success", async () => {
+    const queryResponse = JSON.stringify({
+      data: { repository: { id: "R_repo123", ref: { id: "REF_existing" } } },
+    });
+    const deleteRefResponse = JSON.stringify({
+      data: { deleteRef: { clientMutationId: null } },
+    });
+
+    let graphqlCallCount = 0;
+    mockExecutor.responses.set("git rev-parse HEAD", "headsha");
+    mockExecutor.responses.set("git fetch", "");
+    mockExecutor.responses.set("git rev-parse origin/", "headsha");
+    mockExecutor.responses.set("gh api graphql", () => {
+      graphqlCallCount++;
+      if (graphqlCallCount === 1) return queryResponse;
+      if (graphqlCallCount === 2) return deleteRefResponse;
+      // createRef fails
+      throw new Error(
+        "Command failed: gh api graphql\nGraphQL: Name already exists"
+      );
+    });
+
+    const strategy = new GraphQLCommitStrategy(mockExecutor);
+    await assert.rejects(
+      () =>
+        strategy.commit({
+          repoInfo: githubRepoInfo,
+          branchName: "feature-branch",
+          message: "Test",
+          fileChanges: [{ path: "f.txt", content: "c" }],
+          workDir: testDir,
+          force: true,
+          token: "ghs_token",
+        }),
+      /Name already exists|GraphQL|failed/i,
+      "Should propagate createRef error even after successful deleteRef"
+    );
+  });
+
   test("uses token in GraphQL ref operation commands", async () => {
     const queryResponse = JSON.stringify({
       data: { repository: { id: "R_repo", ref: null } },
@@ -649,6 +688,9 @@ mockExecutor.responses.set("gh api graphql", () => {
 
 ```typescript
 // queryRemoteRef is call 1, then the OID mismatch retry logic starts at call 2
+const queryRefResponse = JSON.stringify({
+  data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
+});
 let graphqlCallCount = 0;
 mockExecutor.responses.set("gh api graphql", () => {
   graphqlCallCount++;
@@ -665,9 +707,37 @@ mockExecutor.responses.set("gh api graphql", () => {
 });
 ```
 
+Also update the assertion from `graphqlCallCount === 2` to `graphqlCallCount === 3` (1 queryRemoteRef + 1 OID mismatch + 1 success).
+
+**Special case: "should not waste inner retries on OID mismatch errors" test** -- currently its counter starts at call 1. Update:
+
+```typescript
+const queryRefResponse = JSON.stringify({
+  data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
+});
+let graphqlCallCount = 0;
+mockExecutor.responses.set("gh api graphql", () => {
+  graphqlCallCount++;
+  if (graphqlCallCount === 1) return queryRefResponse; // queryRemoteRef
+  if (graphqlCallCount === 2) {
+    // createCommitOnBranch -- OID mismatch
+    throw new Error(
+      "Expected branch to point to abc123 but it points to xyz789"
+    );
+  }
+  return JSON.stringify({
+    data: { createCommitOnBranch: { commit: { oid: "successsha" } } },
+  });
+});
+```
+
+Also update the assertion from `graphqlCallCount === 2` to `graphqlCallCount === 3` (1 queryRemoteRef + 1 OID mismatch + 1 success).
+
 **Special case: "should retry GraphQL API call on transient network error" test** -- same adjustment: queryRemoteRef is call 1, transient error on call 2, success on call 3.
 
 **Special case: "uses token parameter for authorization when provided" test** -- update assertions to check that token appears in ref operation calls too (or only check the createCommitOnBranch call by index).
+
+**Special case: "sanitizes error messages to exclude GraphQL payload" test** -- replace `git ls-remote` mock with counter-based GraphQL mock; the sanitization error happens on createCommitOnBranch (call 2), not queryRemoteRef (call 1).
 
 **Step 3: Run all tests**
 
@@ -714,7 +784,9 @@ Look for `test/unit/sync/file-writer.test.ts` or search for tests that import `F
 
 **Step 2: Write the failing test**
 
-Add a test that verifies: when `shouldBeExecutable()` returns true, the file action is `"create"`, and `hasGitHubAppCredentials()` returns true, a warning is logged containing "cannot set executable mode".
+Add a test that verifies: when `shouldBeExecutable()` returns true, the file action is `"create"`, and `hasGitHubAppCredentials()` returns true, a warning is logged via `log.info()` containing "cannot set executable mode".
+
+**Important:** `ILogger` has no `warn()` method. The warning MUST use `log.info()` with a warning prefix. The mock logger captures `info()` calls in its `messages[]` array, so assert against that.
 
 Since `hasGitHubAppCredentials()` reads `process.env`, set the env vars in the test and restore after:
 
@@ -726,11 +798,47 @@ test("warns when creating new executable file under GitHub App auth", async () =
   process.env.XFG_GITHUB_APP_PRIVATE_KEY = "fake-key";
 
   try {
-    const warnings: string[] = [];
-    // Set up mock deps where log.warn captures messages to warnings[]
-    // Set up mock gitOps where wouldChange returns true, getFileContent returns null (new file)
-    // Call writeFiles with a .sh file
-    // Assert: warnings array contains message matching /cannot set executable mode/i
+    const writtenFiles: Array<{ fileName: string; content: string }> = [];
+    const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      fileExists: false,
+      wouldChange: true,
+      onWriteFile: (fileName, content) => {
+        writtenFiles.push({ fileName, content });
+      },
+    });
+    const { mock: mockLogger, messages } = createMockLogger();
+
+    const writer = new FileWriter();
+    const files: FileContent[] = [
+      {
+        fileName: "deploy.sh",
+        content: "#!/bin/bash\necho hello",
+      },
+    ];
+
+    await writer.writeFiles(
+      files,
+      {
+        repoInfo: mockRepoInfo,
+        baseBranch: "main",
+        workDir,
+        dryRun: false,
+        noDelete: false,
+        configId: "test",
+      },
+      {
+        gitOps: mockGitOps,
+        log: mockLogger,
+      }
+    );
+
+    const warningMsg = messages.find((m) =>
+      /cannot set executable mode/i.test(m)
+    );
+    assert.ok(
+      warningMsg,
+      `Expected warning about executable mode, got messages: ${JSON.stringify(messages)}`
+    );
   } finally {
     if (origAppId === undefined) delete process.env.XFG_GITHUB_APP_ID;
     else process.env.XFG_GITHUB_APP_ID = origAppId;
@@ -766,8 +874,8 @@ if (shouldBeExecutable(file)) {
 if (shouldBeExecutable(file)) {
   const tracked = fileChanges.get(file.fileName);
   if (tracked?.action === "create" && hasGitHubAppCredentials()) {
-    log.warn(
-      `${file.fileName}: GitHub App commits cannot set executable mode on new files. ` +
+    log.info(
+      `Warning: ${file.fileName}: GitHub App commits cannot set executable mode on new files. ` +
         `The file will be created as non-executable (100644). ` +
         `See: https://anthony-spruyt.github.io/xfg/examples/executable-files/`
     );
