@@ -59,21 +59,25 @@ if (repo.defaultBranch !== undefined) result.defaultBranch = repo.defaultBranch;
 
 `CreateRepoSettings` (`lifecycle/types.ts`) gains `defaultBranch?: string`. The `fork()` path already ignores fields it doesn't use in `applyRepoSettings` — no change needed there.
 
+Note: `toCreateRepoSettings` returns `undefined` when no recognised fields are present. A config with only `defaultBranch` set will produce `{ defaultBranch: "..." }` (`Object.keys(result).length === 1`), so the early-return guard is not a problem — the settings object reaches `create()` and `receiveMigration()` as expected.
+
 ### Create path
 
 In `GitHubLifecycleProvider.create()`, after `gh repo create --add-readme`, before `deleteReadme`:
 
-1. If `settings.defaultBranch` is set, call `gh api /repos/{owner}/{repo} --jq '.default_branch'` to detect the actual created branch name
-2. If it differs from desired, call `POST /repos/{owner}/{repo}/branches/{current}/rename` with `{"new_name": desired}` — GitHub automatically updates the default branch pointer
+1. If `settings.defaultBranch` is set, call `gh api {hostnameFlag} /repos/{owner}/{repo} --jq '.default_branch'` to detect the actual created branch name (using `getHostnameFlag(repoInfo)` as with all existing API calls in this method)
+2. If it differs from desired, call `POST /repos/{owner}/{repo}/branches/{current}/rename` with `{"new_name": desired}` (same `hostnameFlag`) — GitHub automatically updates the default branch pointer, and also updates any existing branch protection rules and open PRs targeting the old branch name
 3. `deleteReadme` proceeds unchanged (uses content SHA lookup, not branch name)
 
 If `settings.defaultBranch` is unset — no extra API calls, existing behaviour.
+
+> **Dry-run:** Dry-run mode is short-circuited at the `RepoLifecycleManager` level before `provider.create()` is called, so none of the above executes during a dry-run.
 
 ### Migration path
 
 In `GitHubLifecycleProvider.receiveMigration()`, after stripping non-standard refs, before `gh repo create --source --push`:
 
-1. If `settings.defaultBranch` is set, read source HEAD: `git -C {sourceDir} symbolic-ref HEAD` → strip `refs/heads/` prefix → `sourceBranch`
+1. If `settings.defaultBranch` is set, read source HEAD: `git -C {sourceDir} symbolic-ref HEAD` → strip `refs/heads/` prefix → `sourceBranch`. If the output does not start with `refs/heads/` (e.g., detached HEAD or broken symref), throw a descriptive error rather than proceeding silently.
 2. If `sourceBranch` differs from `defaultBranch`:
    ```
    git -C {sourceDir} branch -m {sourceBranch} {defaultBranch}
@@ -83,15 +87,17 @@ In `GitHubLifecycleProvider.receiveMigration()`, after stripping non-standard re
 
 If `settings.defaultBranch` is unset — no rename, existing behaviour.
 
+> **Dry-run:** Dry-run mode is short-circuited at the `RepoLifecycleManager` level before `provider.receiveMigration()` is called, so none of the above executes during a dry-run.
+
 ## Files Changed
 
-| File                                         | Change                                                                                      |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `src/lifecycle/types.ts`                     | Add `defaultBranch?: string` to `CreateRepoSettings`                                        |
-| `src/lifecycle/lifecycle-helpers.ts`         | Map `defaultBranch` in `toCreateRepoSettings`                                               |
-| `src/lifecycle/github-lifecycle-provider.ts` | Branch rename logic in `create()` and `receiveMigration()`; private `renameBranch()` helper |
-| `docs/configuration/lifecycle.md`            | Document new behaviour in Creation Settings table and Migration section                     |
-| `test/integration/github-lifecycle.test.ts`  | Integration tests (see below)                                                               |
+| File                                         | Change                                                                                                                                                                         |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/lifecycle/types.ts`                     | Add `defaultBranch?: string` to `CreateRepoSettings`                                                                                                                           |
+| `src/lifecycle/lifecycle-helpers.ts`         | Map `defaultBranch` in `toCreateRepoSettings`                                                                                                                                  |
+| `src/lifecycle/github-lifecycle-provider.ts` | Branch rename logic in `create()` and `receiveMigration()`; private `renameBranch(repoInfo, current, desired)` helper that wraps the `POST /branches/{branch}/rename` API call |
+| `docs/configuration/lifecycle.md`            | Document new behaviour in Creation Settings table and Migration section                                                                                                        |
+| `test/integration/github-lifecycle.test.ts`  | Integration tests (see below)                                                                                                                                                  |
 
 ## Testing
 
@@ -103,15 +109,16 @@ If `settings.defaultBranch` is unset — no rename, existing behaviour.
 - `receiveMigration()` with `defaultBranch` set, source HEAD differs → git rename applied
 - `receiveMigration()` with `defaultBranch` matching source HEAD → no rename
 - `receiveMigration()` without `defaultBranch` → no rename, no git ops
+- `receiveMigration()` with `defaultBranch` set, `symbolic-ref HEAD` returns value not starting with `refs/heads/` → throws descriptive error
 - `fork()` with `defaultBranch` set → ignored
 
 ### Integration tests
 
-Added to `test/integration/github-lifecycle.test.ts` (uses ephemeral repos, skipped without ADO creds):
+Added to `test/integration/github-lifecycle.test.ts`, run by the `integration-test-cli-lifecycle-github-pat` CI job (concurrency group `integration-github-8`). Uses ephemeral repos; skipped without ADO credentials.
 
 **Test 1 — migrate with defaultBranch rename (`master` → `main`)**
 
-- Source: `https://dev.azure.com/aspruyt/fxg/_git/xfg-test-2` (default branch: `master`)
+- Source: `https://dev.azure.com/aspruyt/fxg/_git/fxg-test` (default branch: `master`)
 - Config: `settings.repo.defaultBranch: main`
 - Assert: `gh api repos/{owner}/{repoName} --jq '.default_branch'` returns `main`
 
