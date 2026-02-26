@@ -27,7 +27,7 @@ npm run dev      # Run CLI via ts-node
 
 1. `npm test` - Unit tests
 2. `./lint.sh` - Linting
-3. Integration tests (if CLI behavior changed):
+3. Integration tests (for ALL behavioral changes that integration tests can cover):
    - `npm run test:integration:github`
    - `npm run test:integration:ado`
    - `npm run test:integration:gitlab`
