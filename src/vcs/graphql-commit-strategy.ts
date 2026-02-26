@@ -72,6 +72,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     /not\s*found/i,
     /unauthorized/i,
     /permission\s*denied/i,
+    /not\s*accessible\s*by\s*integration/i,
     /bad\s*credentials/i,
     /invalid\s*(token|credentials)/i,
     /401\b/,

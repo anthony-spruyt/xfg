@@ -192,6 +192,43 @@ export async function waitForManifestLabels(
   );
 }
 
+/**
+ * Polls GitHub API until a commit's verification.verified field is "true".
+ * GitHub's API has eventual consistency — verification metadata may lag.
+ *
+ * Note: The repo and sha are hardcoded test constants, not user input.
+ */
+export async function waitForCommitVerified(
+  repo: string,
+  sha: string,
+  timeoutMs = 30000
+): Promise<void> {
+  const startTime = Date.now();
+  const pollInterval = 3000;
+
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      const verified = exec(
+        `gh api repos/${repo}/commits/${sha} --jq '.commit.verification.verified'`
+      );
+      if (verified === "true") {
+        console.log(
+          `  Commit ${sha.slice(0, 7)} verified after ${Date.now() - startTime}ms`
+        );
+        return;
+      }
+      console.log(
+        `  Commit ${sha.slice(0, 7)} verified: ${verified} (waiting...)`
+      );
+    } catch {
+      // API call failed, continue polling
+    }
+    await new Promise((resolve) => setTimeout(resolve, pollInterval));
+  }
+
+  throw new Error(`Commit ${sha} not verified in ${repo} after ${timeoutMs}ms`);
+}
+
 // --- Lifecycle test helpers ---
 // Shared helpers for ephemeral repo tests (create/fork/migrate).
 // All inputs are controlled test constants (owner, repoName from
