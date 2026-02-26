@@ -895,4 +895,102 @@ repos:
 
     console.log("\n=== Lifecycle dry-run CREATE test passed ===\n");
   });
+
+  test("sync creates a PR with configured prOptions.labels", async () => {
+    // Arrange — create the labels that prOptions.labels references
+    // (reset-test-repo.sh deletes all labels, so we must recreate them)
+    console.log("\n=== Setting up PR labels test ===\n");
+    console.log("Creating labels on test repo...");
+    exec(
+      `gh api --method POST repos/${TEST_REPO}/labels -f name="bug" -f color="ededed"`
+    );
+    exec(
+      `gh api --method POST repos/${TEST_REPO}/labels -f name="enhancement" -f color="ededed"`
+    );
+    console.log("  Created labels: bug, enhancement");
+
+    // Act — run xfg sync with prOptions.labels configured
+    const configPath = join(
+      fixturesDir,
+      "integration-test-pr-labels-github.yaml"
+    );
+    console.log("\nRunning xfg sync with prOptions.labels...");
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    // Assert — verify PR was created with the expected labels
+    console.log("\nVerifying PR labels...");
+    const prInfo = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number,labels --jq '.[0]'`
+    );
+
+    assert.ok(prInfo, "Expected a PR to be created");
+    const pr = JSON.parse(prInfo);
+    console.log(`  PR #${pr.number}`);
+
+    const labelNames: string[] = pr.labels.map((l: { name: string }) => l.name);
+    console.log(`  Labels: ${labelNames.join(", ")}`);
+
+    assert.ok(labelNames.includes("bug"), "PR should have 'bug' label");
+    assert.ok(
+      labelNames.includes("enhancement"),
+      "PR should have 'enhancement' label"
+    );
+
+    console.log("\n=== PR labels test passed ===\n");
+  });
+
+  test("per-repo prOptions.labels overrides global labels", async () => {
+    // Arrange — create only the label used by the per-repo override
+    console.log("\n=== Setting up per-repo PR labels override test ===\n");
+    console.log("Creating label on test repo...");
+    exec(
+      `gh api --method POST repos/${TEST_REPO}/labels -f name="documentation" -f color="ededed"`
+    );
+    console.log("  Created label: documentation");
+
+    // Act — run xfg sync with per-repo labels override
+    const configPath = join(
+      fixturesDir,
+      "integration-test-pr-labels-override-github.yaml"
+    );
+    console.log(
+      "\nRunning xfg sync with per-repo prOptions.labels override..."
+    );
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    // Assert — verify PR has only the per-repo label, not the global ones
+    console.log("\nVerifying PR labels (per-repo override)...");
+    const prInfo = exec(
+      `gh pr list --repo ${TEST_REPO} --head ${BRANCH_NAME} --json number,labels --jq '.[0]'`
+    );
+
+    assert.ok(prInfo, "Expected a PR to be created");
+    const pr = JSON.parse(prInfo);
+    console.log(`  PR #${pr.number}`);
+
+    const labelNames: string[] = pr.labels.map((l: { name: string }) => l.name);
+    console.log(`  Labels: ${labelNames.join(", ")}`);
+
+    // Per-repo override replaces global: should only have 'documentation'
+    assert.ok(
+      labelNames.includes("documentation"),
+      "PR should have 'documentation' label (per-repo override)"
+    );
+    assert.ok(
+      !labelNames.includes("bug"),
+      "PR should NOT have 'bug' label (overridden by per-repo)"
+    );
+    assert.ok(
+      !labelNames.includes("enhancement"),
+      "PR should NOT have 'enhancement' label (overridden by per-repo)"
+    );
+
+    console.log("\n=== Per-repo PR labels override test passed ===\n");
+  });
 });

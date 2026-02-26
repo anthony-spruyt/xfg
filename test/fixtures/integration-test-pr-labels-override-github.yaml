@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+# Integration test config - tests per-repo prOptions.labels override
+id: integration-test-pr-labels-override-github
+files:
+  pr-labels-override-test.json:
+    content:
+      prLabelsOverrideTest: true
+
+prOptions:
+  labels:
+    - bug
+    - enhancement
+
+repos:
+  - git: https://github.com/anthony-spruyt/xfg-test.git
+    prOptions:
+      labels:
+        - documentation
