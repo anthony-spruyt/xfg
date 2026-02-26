@@ -9,7 +9,6 @@ import {
   withRetry,
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "../shared/retry-utils.js";
-import { IAuthenticatedGitOps } from "./authenticated-git-ops.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
@@ -63,6 +62,24 @@ const OID_MISMATCH_PATTERNS: RegExp[] = [
  * This strategy is GitHub-only and requires the `gh` CLI to be authenticated.
  */
 export class GraphQLCommitStrategy implements ICommitStrategy {
+  /**
+   * GraphQL permanent error patterns for ref operations.
+   * Differs from DEFAULT_PERMANENT_ERROR_PATTERNS which has
+   * git-CLI-specific patterns (/remote\s*rejected/i) that don't
+   * apply to GraphQL responses.
+   */
+  private static readonly GRAPHQL_PERMANENT_ERROR_PATTERNS: RegExp[] = [
+    /not\s*found/i,
+    /unauthorized/i,
+    /permission\s*denied/i,
+    /bad\s*credentials/i,
+    /invalid\s*(token|credentials)/i,
+    /401\b/,
+    /403\b/,
+    /does\s*not\s*exist/i,
+    /could\s*not\s*resolve/i,
+  ];
+
   private executor: ICommandExecutor;
 
   constructor(executor?: ICommandExecutor) {
@@ -126,7 +143,8 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       branchName,
       workDir,
       options.force,
-      gitOps
+      githubInfo,
+      token
     );
 
     // Retry loop for expectedHeadOid mismatch
@@ -297,6 +315,9 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
    * Ensure the branch exists on the remote and matches local HEAD.
    * createCommitOnBranch requires the branch to already exist.
    *
+   * Uses GraphQL ref mutations instead of git push to support repos
+   * with required_signatures on all branches.
+   *
    * For PR branches (force=true): delete existing remote branch and recreate
    * from local HEAD to ensure a fresh start from main.
    *
@@ -306,52 +327,49 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     branchName: string,
     workDir: string,
     force?: boolean,
-    gitOps?: IAuthenticatedGitOps
+    repoInfo?: GitHubRepoInfo,
+    token?: string
   ): Promise<void> {
-    // Branch name was validated in commit(), safe for shell use
-    try {
-      // Check if the branch exists on remote
-      // Use skipRetry because failure is expected for new branches
-      if (gitOps) {
-        await gitOps.lsRemote(branchName, { skipRetry: true });
-      } else {
-        await this.executor.exec(
-          `git ls-remote --exit-code --heads origin ${escapeShellArg(branchName)}`,
-          workDir
-        );
-      }
-
-      // Branch exists - for PR branches, delete and recreate to ensure fresh from main
-      if (force) {
-        if (gitOps) {
-          await gitOps.pushRefspec(branchName, { delete: true });
-          // Now push fresh branch from local HEAD
-          await gitOps.pushRefspec(`HEAD:${branchName}`);
-        } else {
-          await this.executor.exec(
-            `git push origin --delete ${escapeShellArg(branchName)}`,
-            workDir
-          );
-          // Now push fresh branch from local HEAD
-          await this.executor.exec(
-            `git push -u origin HEAD:${escapeShellArg(branchName)}`,
-            workDir
-          );
-        }
-      }
-      // For direct mode (force=false), leave existing branch as-is
-    } catch {
-      // Branch doesn't exist on remote, push it
-      // This pushes the current local branch to create it on remote
-      if (gitOps) {
-        await gitOps.pushRefspec(`HEAD:${branchName}`);
-      } else {
-        await this.executor.exec(
-          `git push -u origin HEAD:${escapeShellArg(branchName)}`,
-          workDir
-        );
-      }
+    if (!repoInfo) {
+      throw new Error("repoInfo is required for GraphQL ref operations");
     }
+
+    const { repositoryId, refId } = await this.queryRemoteRef(
+      repoInfo,
+      branchName,
+      workDir,
+      token
+    );
+
+    if (refId && force) {
+      // Branch exists + force: delete then recreate from local HEAD
+      await this.deleteRemoteRef(refId, workDir, repoInfo, token);
+      const sha = (
+        await this.executor.exec("git rev-parse HEAD", workDir)
+      ).trim();
+      await this.createRemoteRef(
+        repositoryId,
+        branchName,
+        sha,
+        workDir,
+        repoInfo,
+        token
+      );
+    } else if (!refId) {
+      // Branch doesn't exist: create from local HEAD
+      const sha = (
+        await this.executor.exec("git rev-parse HEAD", workDir)
+      ).trim();
+      await this.createRemoteRef(
+        repositoryId,
+        branchName,
+        sha,
+        workDir,
+        repoInfo,
+        token
+      );
+    }
+    // refId exists + !force: no-op (branch already exists)
   }
 
   /**
@@ -398,5 +416,140 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       // GitHub may return this generic error for OID mismatches
       message.includes("was provided invalid value")
     );
+  }
+
+  /**
+   * Query the remote for a repository's Node ID and a ref's Node ID.
+   * Returns repositoryId (always) and refId (null if branch doesn't exist).
+   */
+  private async queryRemoteRef(
+    repoInfo: GitHubRepoInfo,
+    branchName: string,
+    workDir: string,
+    token?: string
+  ): Promise<{ repositoryId: string; refId: string | null }> {
+    const query = `{ repository(owner: ${JSON.stringify(repoInfo.owner)}, name: ${JSON.stringify(repoInfo.repo)}) { id ref(qualifiedName: ${JSON.stringify(`refs/heads/${branchName}`)}) { id } } }`;
+    const requestBody = JSON.stringify({ query });
+
+    const hostnameArg =
+      repoInfo.host !== "github.com"
+        ? `--hostname ${escapeShellArg(repoInfo.host)}`
+        : "";
+    const tokenPrefix = token ? `GH_TOKEN=${token} ` : "";
+    // Uses gh CLI's --input flag to pass GraphQL via stdin (same pattern as executeGraphQLMutation)
+    const command = `echo ${escapeShellArg(requestBody)} | ${tokenPrefix}gh api graphql ${hostnameArg} --input -`;
+
+    let response: string;
+    try {
+      response = await withRetry(() => this.executor.exec(command, workDir), {
+        permanentErrorPatterns:
+          GraphQLCommitStrategy.GRAPHQL_PERMANENT_ERROR_PATTERNS,
+      });
+    } catch (error) {
+      throw this.sanitizeCommandError(
+        error,
+        `${repoInfo.owner}/${repoInfo.repo}`
+      );
+    }
+
+    const parsed = JSON.parse(response);
+    if (parsed.errors) {
+      throw new Error(
+        `GraphQL error: ${parsed.errors.map((e: { message: string }) => e.message).join(", ")}`
+      );
+    }
+
+    const repositoryId = parsed.data?.repository?.id;
+    if (!repositoryId) {
+      throw new Error(
+        `GraphQL response missing repository ID for ${repoInfo.owner}/${repoInfo.repo}`
+      );
+    }
+
+    return { repositoryId, refId: parsed.data?.repository?.ref?.id ?? null };
+  }
+
+  /**
+   * Create a branch ref on the remote via GraphQL createRef mutation.
+   */
+  private async createRemoteRef(
+    repositoryId: string,
+    branchName: string,
+    oid: string,
+    workDir: string,
+    repoInfo: GitHubRepoInfo,
+    token?: string
+  ): Promise<void> {
+    const mutation = `mutation { createRef(input: { repositoryId: ${JSON.stringify(repositoryId)}, name: ${JSON.stringify(`refs/heads/${branchName}`)}, oid: ${JSON.stringify(oid)} }) { ref { id } } }`;
+    const requestBody = JSON.stringify({ query: mutation });
+
+    const hostnameArg =
+      repoInfo.host !== "github.com"
+        ? `--hostname ${escapeShellArg(repoInfo.host)}`
+        : "";
+    const tokenPrefix = token ? `GH_TOKEN=${token} ` : "";
+    // Uses gh CLI's --input flag to pass GraphQL via stdin (same pattern as executeGraphQLMutation)
+    const command = `echo ${escapeShellArg(requestBody)} | ${tokenPrefix}gh api graphql ${hostnameArg} --input -`;
+
+    let response: string;
+    try {
+      response = await withRetry(() => this.executor.exec(command, workDir), {
+        permanentErrorPatterns:
+          GraphQLCommitStrategy.GRAPHQL_PERMANENT_ERROR_PATTERNS,
+      });
+    } catch (error) {
+      throw this.sanitizeCommandError(
+        error,
+        `${repoInfo.owner}/${repoInfo.repo}`
+      );
+    }
+
+    const parsed = JSON.parse(response);
+    if (parsed.errors) {
+      throw new Error(
+        `GraphQL error: ${parsed.errors.map((e: { message: string }) => e.message).join(", ")}`
+      );
+    }
+  }
+
+  /**
+   * Delete a branch ref on the remote via GraphQL deleteRef mutation.
+   */
+  private async deleteRemoteRef(
+    refId: string,
+    workDir: string,
+    repoInfo: GitHubRepoInfo,
+    token?: string
+  ): Promise<void> {
+    const mutation = `mutation { deleteRef(input: { refId: ${JSON.stringify(refId)} }) { clientMutationId } }`;
+    const requestBody = JSON.stringify({ query: mutation });
+
+    const hostnameArg =
+      repoInfo.host !== "github.com"
+        ? `--hostname ${escapeShellArg(repoInfo.host)}`
+        : "";
+    const tokenPrefix = token ? `GH_TOKEN=${token} ` : "";
+    // Uses gh CLI's --input flag to pass GraphQL via stdin (same pattern as executeGraphQLMutation)
+    const command = `echo ${escapeShellArg(requestBody)} | ${tokenPrefix}gh api graphql ${hostnameArg} --input -`;
+
+    let response: string;
+    try {
+      response = await withRetry(() => this.executor.exec(command, workDir), {
+        permanentErrorPatterns:
+          GraphQLCommitStrategy.GRAPHQL_PERMANENT_ERROR_PATTERNS,
+      });
+    } catch (error) {
+      throw this.sanitizeCommandError(
+        error,
+        `${repoInfo.owner}/${repoInfo.repo}`
+      );
+    }
+
+    const parsed = JSON.parse(response);
+    if (parsed.errors) {
+      throw new Error(
+        `GraphQL error: ${parsed.errors.map((e: { message: string }) => e.message).join(", ")}`
+      );
+    }
   }
 }

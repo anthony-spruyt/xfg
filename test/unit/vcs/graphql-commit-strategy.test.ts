@@ -1313,4 +1313,329 @@ describe("GraphQLCommitStrategy", () => {
       );
     });
   });
+
+  describe("ensureBranchExistsOnRemote (GraphQL ref operations)", () => {
+    test("creates branch via GraphQL createRef when branch does not exist", async () => {
+      const queryResponse = JSON.stringify({
+        data: {
+          repository: { id: "R_repo123", ref: null },
+        },
+      });
+      const createRefResponse = JSON.stringify({
+        data: { createRef: { ref: { id: "REF_new123" } } },
+      });
+      const commitResponse = JSON.stringify({
+        data: { createCommitOnBranch: { commit: { oid: "newcommitsha" } } },
+      });
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("git rev-parse HEAD", "abc123def456");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin/", "abc123def456");
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryResponse;
+        if (graphqlCallCount === 2) return createRefResponse;
+        return commitResponse;
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const result = await strategy.commit({
+        repoInfo: githubRepoInfo,
+        branchName: "feature-branch",
+        message: "Test",
+        fileChanges: [{ path: "file.txt", content: "content" }],
+        workDir: testDir,
+        token: "ghs_test_token",
+      });
+
+      assert.equal(result.sha, "newcommitsha");
+
+      const graphqlCalls = mockExecutor.calls.filter((c) =>
+        c.command.includes("gh api graphql")
+      );
+      assert.ok(
+        graphqlCalls.length >= 3,
+        `Expected >= 3 GraphQL calls, got ${graphqlCalls.length}`
+      );
+      assert.ok(
+        graphqlCalls[0].command.includes("repository(owner:"),
+        "First call should be queryRemoteRef"
+      );
+      assert.ok(
+        graphqlCalls[1].command.includes("createRef"),
+        "Second call should be createRef"
+      );
+
+      // No git push or git ls-remote calls
+      const pushCalls = mockExecutor.calls.filter((c) =>
+        c.command.includes("git push")
+      );
+      assert.equal(pushCalls.length, 0, "Should NOT use git push");
+      const lsRemoteCalls = mockExecutor.calls.filter((c) =>
+        c.command.includes("git ls-remote")
+      );
+      assert.equal(lsRemoteCalls.length, 0, "Should NOT use git ls-remote");
+    });
+
+    test("deletes and recreates branch via GraphQL when force=true and branch exists", async () => {
+      const queryResponse = JSON.stringify({
+        data: {
+          repository: { id: "R_repo123", ref: { id: "REF_existing456" } },
+        },
+      });
+      const deleteRefResponse = JSON.stringify({
+        data: { deleteRef: { clientMutationId: null } },
+      });
+      const createRefResponse = JSON.stringify({
+        data: { createRef: { ref: { id: "REF_new789" } } },
+      });
+      const commitResponse = JSON.stringify({
+        data: { createCommitOnBranch: { commit: { oid: "sha123" } } },
+      });
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("git rev-parse HEAD", "headsha123");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin/", "headsha123");
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryResponse;
+        if (graphqlCallCount === 2) return deleteRefResponse;
+        if (graphqlCallCount === 3) return createRefResponse;
+        return commitResponse;
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const result = await strategy.commit({
+        repoInfo: githubRepoInfo,
+        branchName: "feature-branch",
+        message: "Test",
+        fileChanges: [{ path: "file.txt", content: "content" }],
+        workDir: testDir,
+        force: true,
+        token: "ghs_test_token",
+      });
+
+      assert.equal(result.sha, "sha123");
+      const graphqlCalls = mockExecutor.calls.filter((c) =>
+        c.command.includes("gh api graphql")
+      );
+      assert.ok(
+        graphqlCalls.length >= 4,
+        `Expected >= 4 GraphQL calls, got ${graphqlCalls.length}`
+      );
+      assert.ok(
+        graphqlCalls[1].command.includes("deleteRef"),
+        "Second call should be deleteRef"
+      );
+      assert.ok(
+        graphqlCalls[2].command.includes("createRef"),
+        "Third call should be createRef"
+      );
+      const pushCalls = mockExecutor.calls.filter((c) =>
+        c.command.includes("git push")
+      );
+      assert.equal(pushCalls.length, 0, "Should NOT use git push");
+    });
+
+    test("does not delete or create ref when force=false and branch exists", async () => {
+      const queryResponse = JSON.stringify({
+        data: {
+          repository: { id: "R_repo123", ref: { id: "REF_existing456" } },
+        },
+      });
+      const commitResponse = JSON.stringify({
+        data: { createCommitOnBranch: { commit: { oid: "sha123" } } },
+      });
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin/", "abc123");
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryResponse;
+        return commitResponse;
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const result = await strategy.commit({
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Direct commit",
+        fileChanges: [{ path: "file.txt", content: "content" }],
+        workDir: testDir,
+        force: false,
+        token: "ghs_test_token",
+      });
+
+      assert.equal(result.sha, "sha123");
+      const graphqlCalls = mockExecutor.calls.filter((c) =>
+        c.command.includes("gh api graphql")
+      );
+      assert.equal(
+        graphqlCalls.length,
+        2,
+        `Expected 2 GraphQL calls, got ${graphqlCalls.length}`
+      );
+      assert.ok(
+        !graphqlCalls.some((c) => c.command.includes("deleteRef")),
+        "Should NOT call deleteRef"
+      );
+      assert.ok(
+        !graphqlCalls.some((c) => c.command.includes("createRef")),
+        "Should NOT call createRef"
+      );
+    });
+
+    test("includes --hostname flag for GitHub Enterprise in ref operations", async () => {
+      const queryResponse = JSON.stringify({
+        data: { repository: { id: "R_ghe_repo", ref: null } },
+      });
+      const createRefResponse = JSON.stringify({
+        data: { createRef: { ref: { id: "REF_ghe_new" } } },
+      });
+      const commitResponse = JSON.stringify({
+        data: { createCommitOnBranch: { commit: { oid: "ghesha" } } },
+      });
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("git rev-parse HEAD", "gheheadsha");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin/", "gheheadsha");
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryResponse;
+        if (graphqlCallCount === 2) return createRefResponse;
+        return commitResponse;
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      await strategy.commit({
+        repoInfo: gheRepoInfo,
+        branchName: "feature",
+        message: "GHE commit",
+        fileChanges: [{ path: "file.txt", content: "content" }],
+        workDir: testDir,
+        token: "ghs_ghe_token",
+      });
+
+      const graphqlCalls = mockExecutor.calls.filter((c) =>
+        c.command.includes("gh api graphql")
+      );
+      for (const call of graphqlCalls) {
+        assert.ok(
+          call.command.includes("--hostname") &&
+            call.command.includes("github.enterprise.com"),
+          `GraphQL call should include GHE hostname: ${call.command.substring(0, 100)}...`
+        );
+      }
+    });
+
+    test("propagates GraphQL query error from queryRemoteRef", async () => {
+      mockExecutor.responses.set("gh api graphql", () => {
+        throw new Error(
+          "Command failed: gh api graphql\nGraphQL: Could not resolve to a Repository"
+        );
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      await assert.rejects(
+        () =>
+          strategy.commit({
+            repoInfo: githubRepoInfo,
+            branchName: "feature",
+            message: "Test",
+            fileChanges: [{ path: "f.txt", content: "c" }],
+            workDir: testDir,
+            token: "ghs_token",
+          }),
+        /Could not resolve|GraphQL|failed/i,
+        "Should propagate queryRemoteRef errors"
+      );
+    });
+
+    test("propagates createRef failure after deleteRef success", async () => {
+      const queryResponse = JSON.stringify({
+        data: { repository: { id: "R_repo123", ref: { id: "REF_existing" } } },
+      });
+      const deleteRefResponse = JSON.stringify({
+        data: { deleteRef: { clientMutationId: null } },
+      });
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("git rev-parse HEAD", "headsha");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin/", "headsha");
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryResponse;
+        if (graphqlCallCount === 2) return deleteRefResponse;
+        // createRef fails
+        throw new Error(
+          "Command failed: gh api graphql\nGraphQL: Name already exists"
+        );
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      await assert.rejects(
+        () =>
+          strategy.commit({
+            repoInfo: githubRepoInfo,
+            branchName: "feature-branch",
+            message: "Test",
+            fileChanges: [{ path: "f.txt", content: "c" }],
+            workDir: testDir,
+            force: true,
+            token: "ghs_token",
+          }),
+        /Name already exists|GraphQL|failed/i,
+        "Should propagate createRef error even after successful deleteRef"
+      );
+    });
+
+    test("uses token in GraphQL ref operation commands", async () => {
+      const queryResponse = JSON.stringify({
+        data: { repository: { id: "R_repo", ref: null } },
+      });
+      const createRefResponse = JSON.stringify({
+        data: { createRef: { ref: { id: "REF_new" } } },
+      });
+      const commitResponse = JSON.stringify({
+        data: { createCommitOnBranch: { commit: { oid: "sha" } } },
+      });
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("git rev-parse HEAD", "headsha");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin/", "headsha");
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryResponse;
+        if (graphqlCallCount === 2) return createRefResponse;
+        return commitResponse;
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      await strategy.commit({
+        repoInfo: githubRepoInfo,
+        branchName: "feature",
+        message: "Test",
+        fileChanges: [{ path: "f.txt", content: "c" }],
+        workDir: testDir,
+        token: "ghs_my_secret_token",
+      });
+
+      const graphqlCalls = mockExecutor.calls.filter((c) =>
+        c.command.includes("gh api graphql")
+      );
+      // First two calls are ref operations (query + create)
+      for (let i = 0; i < 2; i++) {
+        assert.ok(
+          graphqlCalls[i].command.includes("GH_TOKEN=ghs_my_secret_token"),
+          `GraphQL ref call ${i} should include token`
+        );
+      }
+    });
+  });
 });
