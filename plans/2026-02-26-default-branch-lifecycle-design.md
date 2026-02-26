@@ -61,11 +61,13 @@ if (repo.defaultBranch !== undefined) result.defaultBranch = repo.defaultBranch;
 
 Note: `toCreateRepoSettings` returns `undefined` when no recognised fields are present. A config with only `defaultBranch` set will produce `{ defaultBranch: "..." }` (`Object.keys(result).length === 1`), so the early-return guard is not a problem — the settings object reaches `create()` and `receiveMigration()` as expected.
 
+Note: `runLifecycleCheck` (`lifecycle-helpers.ts`) passes only `visibility` and `description` to `formatLifecycleAction`, so `defaultBranch` will not appear in the lifecycle output log. This is acceptable for this change — branch rename is a one-time operation that throws on failure, so silent success is fine. Extending the formatter is out of scope.
+
 ### Create path
 
 In `GitHubLifecycleProvider.create()`, after `gh repo create --add-readme`, before `deleteReadme`:
 
-1. If `settings.defaultBranch` is set, call `gh api {hostnameFlag} /repos/{owner}/{repo} --jq '.default_branch'` to detect the actual created branch name (using `getHostnameFlag(repoInfo)` as with all existing API calls in this method)
+1. If `settings.defaultBranch` is set, call `gh api {hostnameFlag} /repos/{owner}/{repo} --jq '.default_branch'` to detect the actual created branch name (using `getHostnameFlag(repoInfo)` as with all existing API calls in this method). This call should use `withRetry` with `postCreatePermanentPatterns` to tolerate the same post-creation eventual consistency window that `deleteReadme` already handles.
 2. If it differs from desired, call `POST /repos/{owner}/{repo}/branches/{current}/rename` with `{"new_name": desired}` (same `hostnameFlag`) — GitHub automatically updates the default branch pointer, and also updates any existing branch protection rules and open PRs targeting the old branch name
 3. `deleteReadme` proceeds unchanged (uses content SHA lookup, not branch name)
 
@@ -77,12 +79,15 @@ If `settings.defaultBranch` is unset — no extra API calls, existing behaviour.
 
 In `GitHubLifecycleProvider.receiveMigration()`, after stripping non-standard refs, before `gh repo create --source --push`:
 
+> Note: `{sourceDir}` is a **bare mirror clone** (`git clone --mirror`). Both `git branch -m` and `git symbolic-ref` operate correctly on bare repositories.
+
 1. If `settings.defaultBranch` is set, read source HEAD: `git -C {sourceDir} symbolic-ref HEAD` → strip `refs/heads/` prefix → `sourceBranch`. If the output does not start with `refs/heads/` (e.g., detached HEAD or broken symref), throw a descriptive error rather than proceeding silently.
 2. If `sourceBranch` differs from `defaultBranch`:
    ```
    git -C {sourceDir} branch -m {sourceBranch} {defaultBranch}
    git -C {sourceDir} symbolic-ref HEAD refs/heads/{defaultBranch}
    ```
+   Note: `git branch -m` on a bare repo automatically updates `HEAD` when renaming the HEAD-pointed branch, so the `symbolic-ref` update is a safety belt for any edge case where that does not happen. Both commands are harmless to run together.
 3. Push proceeds — GitHub receives `{defaultBranch}` as HEAD, creating the repo with the correct default branch from day one
 
 If `settings.defaultBranch` is unset — no rename, existing behaviour.
@@ -110,7 +115,7 @@ If `settings.defaultBranch` is unset — no rename, existing behaviour.
 - `receiveMigration()` with `defaultBranch` matching source HEAD → no rename
 - `receiveMigration()` without `defaultBranch` → no rename, no git ops
 - `receiveMigration()` with `defaultBranch` set, `symbolic-ref HEAD` returns value not starting with `refs/heads/` → throws descriptive error
-- `fork()` with `defaultBranch` set → ignored
+- `fork()` with `defaultBranch` set → `renameBranch` is never called and `fork()` completes without error
 
 ### Integration tests
 
