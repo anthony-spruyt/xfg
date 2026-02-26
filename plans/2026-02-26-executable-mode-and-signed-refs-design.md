@@ -352,7 +352,7 @@ Add a "GitHub App Limitation" section at the bottom of the file:
 
 Add to the existing Limitations section:
 
-> 5. **Executable file modes** — The `createCommitOnBranch` GraphQL API cannot set file modes. New `.sh` files (or files with `executable: true`) are created as non-executable. See [Executable Files — GitHub App Limitation](../examples/executable-files.md#github-app-limitation) for details and workaround.
+> 5. **Executable file modes** — The `createCommitOnBranch` GraphQL API cannot set file modes. New `.sh` files (or files with `executable: true`) are created as non-executable. See [Executable Files — GitHub App Limitation](https://anthony-spruyt.github.io/xfg/examples/executable-files/#github-app-limitation) for details and workaround.
 
 ### 5. Cleanup
 
