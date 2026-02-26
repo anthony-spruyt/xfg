@@ -1,0 +1,28 @@
+# Settings fixture to enforce signed commits on all branches of xfg-test-2.
+# Applied after reset in beforeEach to validate GraphQL ref operations
+# work when unsigned git push would be rejected.
+id: integration-test-github-app-signed-refs-settings
+
+# Placeholder file required by schema - excluded from target repo
+files:
+  .xfg-signed-refs-test:
+    content: "# Placeholder for signed-refs ruleset test"
+    createOnly: true
+
+settings:
+  rulesets:
+    xfg-require-signed-commits:
+      target: branch
+      enforcement: active
+      conditions:
+        refName:
+          include:
+            - "refs/heads/**"
+          exclude: []
+      rules:
+        - type: required_signatures
+
+repos:
+  - git: https://github.com/anthony-spruyt/xfg-test-2.git
+    files:
+      .xfg-signed-refs-test: false

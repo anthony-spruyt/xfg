@@ -4,12 +4,12 @@ Configure how PRs are handled after creation.
 
 ## PR Options Fields
 
-| Field           | Description                                                                           | Default  |
-| --------------- | ------------------------------------------------------------------------------------- | -------- |
-| `merge`         | Merge mode: `manual` (leave open), `auto` (merge when checks pass), `force`, `direct` | `auto`   |
-| `mergeStrategy` | How to merge: `merge`, `squash`, `rebase`                                             | `squash` |
-| `deleteBranch`  | Delete source branch after merge                                                      | `true`   |
-| `bypassReason`  | Reason for bypassing policies (Azure DevOps only, required for `force`)               | -        |
+| Field           | Description                                                                            | Default  |
+| --------------- | -------------------------------------------------------------------------------------- | -------- |
+| `merge`         | Merge mode: `manual` (leave open), `auto` (merge when checks pass), `force`, `direct`  | `auto`   |
+| `mergeStrategy` | How to merge: `merge`, `squash`, `rebase`                                              | `squash` |
+| `deleteBranch`  | Delete source branch after merge                                                       | `true`   |
+| `bypassReason`  | Reason for bypassing policies (Azure DevOps only, required for `force`)                | -        |
 | `labels`        | Labels to apply to created PRs (GitHub only, more platforms coming)                    | -        |
 
 ## Merge Modes

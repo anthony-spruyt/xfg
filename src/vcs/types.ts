@@ -116,7 +116,7 @@ export interface CommitOptions {
   force?: boolean;
   /** GitHub App installation token for authentication (used by GraphQLCommitStrategy) */
   token?: string;
-  /** Authenticated git operations wrapper (used by GraphQLCommitStrategy for network ops) */
+  /** Authenticated git operations wrapper (used by GraphQLCommitStrategy for fetchBranch() during OID mismatch retries) */
   gitOps?: IAuthenticatedGitOps;
 }
 

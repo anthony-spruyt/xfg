@@ -1715,12 +1715,25 @@ describe("RepositoryProcessor", () => {
 
         // Track executor calls to verify GraphQL vs git commit
         const executorCalls: string[] = [];
+        let graphqlCallCount = 0;
         const mockExecutor: ICommandExecutor = {
           async exec(command: string): Promise<string> {
             executorCalls.push(command);
 
-            // Return mock responses for GraphQL call
+            // Return mock responses for GraphQL calls
+            // Call 1: queryRemoteRef, Call 2+: createCommitOnBranch
             if (command.includes("gh api graphql")) {
+              graphqlCallCount++;
+              if (graphqlCallCount === 1) {
+                return JSON.stringify({
+                  data: {
+                    repository: {
+                      id: "R_repo123",
+                      ref: { id: "REF_existing", target: { oid: "abc123" } },
+                    },
+                  },
+                });
+              }
               return JSON.stringify({
                 data: {
                   createCommitOnBranch: {
@@ -1764,14 +1777,13 @@ describe("RepositoryProcessor", () => {
 
         assert.equal(result.success, true, "Should succeed");
 
-        // Verify GraphQL was called
-        const graphqlCall = executorCalls.find((c) =>
-          c.includes("gh api graphql")
+        // Verify GraphQL createCommitOnBranch mutation was called
+        const graphqlCommitCall = executorCalls.find((c) =>
+          c.includes("createCommitOnBranch")
         );
-        assert.ok(graphqlCall, "Should call gh api graphql");
         assert.ok(
-          graphqlCall.includes("createCommitOnBranch"),
-          "GraphQL call should use createCommitOnBranch mutation"
+          graphqlCommitCall,
+          "Should call gh api graphql with createCommitOnBranch mutation"
         );
 
         // Verify git commit was NOT called (we use GraphQL instead)

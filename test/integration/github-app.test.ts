@@ -170,3 +170,35 @@ describe("GitHub App Repo Settings Test", { skip: SKIP_TESTS }, () => {
     );
   });
 });
+
+// Force PAT-only auth: strip App credentials so GH_TOKEN is used for admin operations
+const patOnlyEnv = {
+  env: {
+    XFG_GITHUB_APP_ID: undefined,
+    XFG_GITHUB_APP_PRIVATE_KEY: undefined,
+  },
+};
+
+function setupSignedCommitRuleset(): void {
+  console.log("  Applying required_signatures ruleset...");
+  const configPath = join(
+    fixturesDir,
+    "integration-test-github-app-signed-refs-settings.yaml"
+  );
+  exec(`node dist/cli.js settings --config ${configPath}`, patOnlyEnv);
+  console.log("  required_signatures ruleset active on all branches");
+}
+
+describe("GitHub App Signed Refs Test", { skip: SKIP_TESTS }, () => {
+  beforeEach(() => {
+    resetTestRepo();
+    setupSignedCommitRuleset();
+  });
+
+  test("sync creates PR on repo with required_signatures on all branches", () => {
+    const configPath = join(fixturesDir, "integration-test-github-app.yaml");
+    console.log("Running xfg sync with required_signatures active...");
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
+    console.log(output);
+  });
+});

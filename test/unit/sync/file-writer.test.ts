@@ -260,5 +260,58 @@ describe("FileWriter", () => {
       assert.equal(executableFiles.length, 1);
       assert.equal(executableFiles[0], "script.sh");
     });
+
+    test("warns when creating new executable file under GitHub App auth", async () => {
+      const origAppId = process.env.XFG_GITHUB_APP_ID;
+      const origKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+      process.env.XFG_GITHUB_APP_ID = "12345";
+      process.env.XFG_GITHUB_APP_PRIVATE_KEY = "fake-key";
+
+      try {
+        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+        });
+        const { mock: mockLogger, warnings } = createMockLogger();
+
+        const writer = new FileWriter();
+        const files: FileContent[] = [
+          {
+            fileName: "deploy.sh",
+            content: "#!/bin/bash\necho hello",
+          },
+        ];
+
+        await writer.writeFiles(
+          files,
+          {
+            repoInfo: mockRepoInfo,
+            baseBranch: "main",
+            workDir,
+            dryRun: false,
+            noDelete: false,
+            configId: "test",
+          },
+          {
+            gitOps: mockGitOps,
+            log: mockLogger,
+          }
+        );
+
+        const warningMsg = warnings.find((m) =>
+          /cannot set executable mode/i.test(m)
+        );
+        assert.ok(
+          warningMsg,
+          `Expected warning about executable mode, got warnings: ${JSON.stringify(warnings)}`
+        );
+      } finally {
+        if (origAppId === undefined) delete process.env.XFG_GITHUB_APP_ID;
+        else process.env.XFG_GITHUB_APP_ID = origAppId;
+        if (origKey === undefined)
+          delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+        else process.env.XFG_GITHUB_APP_PRIVATE_KEY = origKey;
+      }
+    });
   });
 });

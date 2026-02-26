@@ -229,7 +229,7 @@ Then add the same public key as a **signing key** at [GitHub Settings > SSH and 
 
 The SSH agent socket mount can fail after a reboot, sleep/wake cycle, or agent restart. The symptoms differ by platform but the root cause is the same: Docker tries to mount a socket path that no longer exists.
 
-#### macOS
+#### macOS (SSH agent socket)
 
 **Error**: `bind source path does not exist: /socket_mnt/private/tmp/com.apple.launchd.…/Listeners`
 
