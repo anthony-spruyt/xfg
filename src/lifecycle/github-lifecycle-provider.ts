@@ -3,7 +3,10 @@ import {
   ICommandExecutor,
   defaultExecutor,
 } from "../shared/command-executor.js";
-import { withRetry } from "../shared/retry-utils.js";
+import {
+  withRetry,
+  DEFAULT_PERMANENT_ERROR_PATTERNS,
+} from "../shared/retry-utils.js";
 import {
   isGitHubRepo,
   type RepoInfo,
@@ -440,6 +443,12 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
     const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
 
+    // After repo creation, GitHub may return 404 due to eventual consistency.
+    // Exclude 404/not-found from permanent errors so withRetry retries them.
+    const postCreatePermanentPatterns = DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
+      (p) => !p.test("404 Not Found")
+    );
+
     // Get the SHA of the README.md created by --add-readme
     const fileInfo = await withRetry(
       () =>
@@ -447,7 +456,10 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           `${tokenPrefix}gh api ${hostnamePart}${apiPath}/contents/README.md --jq '.sha'`,
           this.cwd
         ),
-      { retries: this.retries }
+      {
+        retries: this.retries,
+        permanentErrorPatterns: postCreatePermanentPatterns,
+      }
     );
 
     const sha = fileInfo.trim();
@@ -460,7 +472,10 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
             `--method DELETE -f message='Remove initialization file' -f sha=${escapeShellArg(sha)}`,
           this.cwd
         ),
-      { retries: this.retries }
+      {
+        retries: this.retries,
+        permanentErrorPatterns: postCreatePermanentPatterns,
+      }
     );
   }
 }
