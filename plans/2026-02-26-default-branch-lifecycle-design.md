@@ -61,14 +61,14 @@ if (repo.defaultBranch !== undefined) result.defaultBranch = repo.defaultBranch;
 
 Note: `toCreateRepoSettings` returns `undefined` when no recognised fields are present. A config with only `defaultBranch` set will produce `{ defaultBranch: "..." }` (`Object.keys(result).length === 1`), so the early-return guard is not a problem — the settings object reaches `create()` and `receiveMigration()` as expected.
 
-Note: `runLifecycleCheck` (`lifecycle-helpers.ts`) passes only `visibility` and `description` to `formatLifecycleAction`, so `defaultBranch` will not appear in the lifecycle output log. This is acceptable for this change — branch rename is a one-time operation that throws on failure, so silent success is fine. Extending the formatter is out of scope.
+Note: `runLifecycleCheck` (`lifecycle-helpers.ts`) passes only `visibility` and `description` to `formatLifecycleAction`, so `defaultBranch` will not appear in the lifecycle output log. The destructuring produces `{ visibility: undefined, description: undefined }` when only `defaultBranch` is set; `formatLifecycleAction` treats fields that are `undefined` the same as an absent `settings` object, so no spurious output is generated. Branch rename is a one-time operation that throws on failure, so silent success is acceptable. Extending the formatter is out of scope.
 
 ### Create path
 
 In `GitHubLifecycleProvider.create()`, after `gh repo create --add-readme`, before `deleteReadme`:
 
 1. If `settings.defaultBranch` is set, call `gh api {hostnameFlag} /repos/{owner}/{repo} --jq '.default_branch'` to detect the actual created branch name (using `getHostnameFlag(repoInfo)` as with all existing API calls in this method). This call should use `withRetry` with `postCreatePermanentPatterns` to tolerate the same post-creation eventual consistency window that `deleteReadme` already handles.
-2. If it differs from desired, call `POST /repos/{owner}/{repo}/branches/{current}/rename` with `{"new_name": desired}` (same `hostnameFlag`) — GitHub automatically updates the default branch pointer, and also updates any existing branch protection rules and open PRs targeting the old branch name
+2. If it differs from desired, call `POST /repos/{owner}/{repo}/branches/{current}/rename` with `{"new_name": desired}` (same `hostnameFlag`; also wrapped in `withRetry` with `postCreatePermanentPatterns`) — GitHub automatically updates the default branch pointer, and also updates any existing branch protection rules and open PRs targeting the old branch name. If the API call fails, the error propagates and `deleteReadme` is not reached.
 3. `deleteReadme` proceeds unchanged (uses content SHA lookup, not branch name)
 
 If `settings.defaultBranch` is unset — no extra API calls, existing behaviour.
@@ -96,13 +96,14 @@ If `settings.defaultBranch` is unset — no rename, existing behaviour.
 
 ## Files Changed
 
-| File                                         | Change                                                                                                                                                                         |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/lifecycle/types.ts`                     | Add `defaultBranch?: string` to `CreateRepoSettings`                                                                                                                           |
-| `src/lifecycle/lifecycle-helpers.ts`         | Map `defaultBranch` in `toCreateRepoSettings`                                                                                                                                  |
-| `src/lifecycle/github-lifecycle-provider.ts` | Branch rename logic in `create()` and `receiveMigration()`; private `renameBranch(repoInfo, current, desired)` helper that wraps the `POST /branches/{branch}/rename` API call |
-| `docs/configuration/lifecycle.md`            | Document new behaviour in Creation Settings table and Migration section                                                                                                        |
-| `test/integration/github-lifecycle.test.ts`  | Integration tests (see below)                                                                                                                                                  |
+| File                                            | Change                                                                                                                                                                         |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/lifecycle/types.ts`                        | Add `defaultBranch?: string` to `CreateRepoSettings`                                                                                                                           |
+| `src/lifecycle/lifecycle-helpers.ts`            | Map `defaultBranch` in `toCreateRepoSettings`                                                                                                                                  |
+| `src/lifecycle/github-lifecycle-provider.ts`    | Branch rename logic in `create()` and `receiveMigration()`; private `renameBranch(repoInfo, current, desired)` helper that wraps the `POST /branches/{branch}/rename` API call |
+| `docs/configuration/lifecycle.md`               | Document new behaviour in Creation Settings table and Migration section                                                                                                        |
+| `test/integration/github-lifecycle.test.ts`     | Integration tests — PAT auth (see below)                                                                                                                                       |
+| `test/integration/github-lifecycle-app.test.ts` | Integration tests — GitHub App auth (mirrors PAT tests, consistent with existing coverage)                                                                                     |
 
 ## Testing
 
@@ -111,6 +112,7 @@ If `settings.defaultBranch` is unset — no rename, existing behaviour.
 - `create()` with `defaultBranch` set, GitHub created a different name → rename called
 - `create()` with `defaultBranch` set, matches GitHub's created name → no rename called
 - `create()` without `defaultBranch` → no extra API calls
+- `create()` with `defaultBranch` set, rename API call fails → error propagates (does not proceed to `deleteReadme`)
 - `receiveMigration()` with `defaultBranch` set, source HEAD differs → git rename applied
 - `receiveMigration()` with `defaultBranch` matching source HEAD → no rename
 - `receiveMigration()` without `defaultBranch` → no rename, no git ops
@@ -119,18 +121,20 @@ If `settings.defaultBranch` is unset — no rename, existing behaviour.
 
 ### Integration tests
 
-Added to `test/integration/github-lifecycle.test.ts`, run by the `integration-test-cli-lifecycle-github-pat` CI job (concurrency group `integration-github-8`). Uses ephemeral repos; skipped without ADO credentials.
+Added to both `test/integration/github-lifecycle.test.ts` (PAT, CI job `integration-test-cli-lifecycle-github-pat`, concurrency group `integration-github-8`) and `test/integration/github-lifecycle-app.test.ts` (GitHub App, concurrency group `integration-github-9`). Both use ephemeral repos.
 
 **Test 1 — migrate with defaultBranch rename (`master` → `main`)**
 
 - Source: `https://dev.azure.com/aspruyt/fxg/_git/fxg-test` (default branch: `master`)
 - Config: `settings.repo.defaultBranch: main`
 - Assert: `gh api repos/{owner}/{repoName} --jq '.default_branch'` returns `main`
+- Gated: `{ skip: !HAS_ADO_CREDS }` — requires `AZURE_DEVOPS_EXT_PAT`
 
 **Test 2 — create with defaultBranch**
 
 - Config: `settings.repo.defaultBranch: main`
 - Assert: created repo's default branch is `main`
+- Gated: none — runs unconditionally (consistent with other create tests in both files)
 
 ## Alternatives Considered
 
