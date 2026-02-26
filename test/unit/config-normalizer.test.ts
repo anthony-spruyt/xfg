@@ -2447,5 +2447,70 @@ describe("mergeSettings with repo", () => {
         "automated",
       ]);
     });
+
+    test("per-repo labels replace global labels", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            prOptions: {
+              labels: ["critical-config"],
+            },
+          },
+        ],
+        prOptions: {
+          labels: ["config-sync", "automated"],
+        },
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].prOptions?.labels, ["critical-config"]);
+    });
+
+    test("per-repo empty labels array clears global labels", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            prOptions: {
+              labels: [],
+            },
+          },
+        ],
+        prOptions: {
+          labels: ["config-sync"],
+        },
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].prOptions?.labels, []);
+    });
+
+    test("repo without labels inherits global labels", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: { key: "value" } } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            prOptions: {
+              merge: "manual",
+            },
+          },
+        ],
+        prOptions: {
+          labels: ["config-sync"],
+          merge: "auto",
+        },
+      };
+
+      const result = normalizeConfig(raw);
+      assert.deepEqual(result.repos[0].prOptions?.labels, ["config-sync"]);
+      assert.equal(result.repos[0].prOptions?.merge, "manual");
+    });
   });
 });

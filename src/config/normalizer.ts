@@ -49,11 +49,13 @@ function mergePROptions(
   const mergeStrategy = perRepo.mergeStrategy ?? global.mergeStrategy;
   const deleteBranch = perRepo.deleteBranch ?? global.deleteBranch;
   const bypassReason = perRepo.bypassReason ?? global.bypassReason;
+  const labels = perRepo.labels ?? global.labels;
 
   if (merge !== undefined) result.merge = merge;
   if (mergeStrategy !== undefined) result.mergeStrategy = mergeStrategy;
   if (deleteBranch !== undefined) result.deleteBranch = deleteBranch;
   if (bypassReason !== undefined) result.bypassReason = bypassReason;
+  if (labels !== undefined) result.labels = labels;
 
   return Object.keys(result).length > 0 ? result : undefined;
 }
