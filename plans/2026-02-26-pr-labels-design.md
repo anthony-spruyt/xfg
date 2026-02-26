@@ -59,17 +59,33 @@ repos:
 
 ## Normalizer
 
-In `mergePROptions()`, add labels with the same `??` pattern:
+In `mergePROptions()` in `src/config/normalizer.ts`, add labels following the existing conditional assignment pattern:
 
 ```typescript
 const labels = perRepo.labels ?? global.labels;
+if (labels !== undefined) result.labels = labels;
 ```
+
+Note: `labels: []` at per-repo level explicitly clears global labels (empty array is not `undefined`).
 
 ## PR Creation Flow
 
-1. `PRMergeHandler.createAndMerge()` already has access to `repoConfig.prOptions`
-2. Pass `labels` through to `createPR()` via the `PROptions` interface
-3. `GitHubPRStrategy.create()` appends `--label` flags to `gh pr create`
+Full call chain with required changes:
+
+1. `PRMergeHandler.createAndMerge()` in `src/sync/pr-merge-handler.ts` — pass `labels: repoConfig.prOptions?.labels` to `createPR()`
+2. `createPR()` in `src/vcs/pr-creator.ts` — destructure `labels` from `PROptions`, pass through to `strategy.execute()`
+3. `PRWorkflowExecutor.execute()` in `src/vcs/pr-strategy.ts` — passes `PRStrategyOptions` through to `strategy.create()` (no change needed)
+4. `GitHubPRStrategy.create()` in `src/vcs/github-pr-strategy.ts` — append `--label ${escapeShellArg(label)}` for each label to the `gh pr create` command
+
+### Interfaces that need `labels?: string[]`
+
+| Interface           | File                    | Purpose                         |
+| ------------------- | ----------------------- | ------------------------------- |
+| `PRMergeOptions`    | `src/config/types.ts`   | Config type                     |
+| `PROptions`         | `src/vcs/pr-creator.ts` | Input to `createPR()`           |
+| `PRStrategyOptions` | `src/vcs/types.ts`      | Input to `IPRStrategy.create()` |
+
+`IPRStrategy` in `src/vcs/types.ts` is implicitly updated since `create()` takes `PRStrategyOptions`.
 
 Command output:
 
@@ -77,13 +93,15 @@ Command output:
 gh pr create --title "..." --body-file "..." --base main --head chore/sync-config --label "config-sync" --label "automated"
 ```
 
+Label values must be escaped with `escapeShellArg()` from `src/shared/shell-utils.ts`, consistent with all other `gh` command arguments.
+
 ## Other Platform Strategies
 
-Azure DevOps and GitLab strategies ignore labels silently for now. The `labels` field flows through config normalization for all platforms, it just won't be acted on yet.
+Azure DevOps (`src/vcs/azure-pr-strategy.ts`) and GitLab (`src/vcs/gitlab-pr-strategy.ts`) strategies ignore labels silently for now — they receive `labels` via `PRStrategyOptions` but don't use it. No code changes needed in those files.
 
 ## Validation
 
-JSON schema handles type validation. `validateForSync()` can add a semantic check that labels don't contain empty strings.
+JSON schema handles type validation (array of strings). `validateForSync()` can add a semantic check that labels don't contain empty strings.
 
 ## Testing
 
