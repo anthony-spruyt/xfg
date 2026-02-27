@@ -526,6 +526,40 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(commands[0].includes("feature-branch"));
       assert.ok(commands[0].includes("refs/remotes/origin/"));
       assert.ok(!commands[0].includes("insteadOf"), "Should not have -c flag");
+      assert.ok(
+        commands[0].includes("+"),
+        "Should use + prefix in refspec to allow non-fast-forward updates"
+      );
+    });
+
+    it("fetchBranch uses + refspec prefix to allow non-fast-forward updates", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          return "";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir: "/tmp/test",
+        executor: mockExecutor,
+      });
+      const authOps = new AuthenticatedGitOps(gitOps, {
+        token: "test-token",
+        host: "github.com",
+        owner: "owner",
+        repo: "repo",
+      });
+
+      await authOps.fetchBranch("chore/sync-config");
+
+      // Regression: without +, git fetch rejects non-fast-forward updates
+      // when a PR branch (e.g. chore/sync-config) has been rebased or force-pushed
+      assert.match(
+        commands[0],
+        /\+.*chore\/sync-config.*:refs\/remotes\/origin/,
+        "Refspec must have + prefix to allow non-fast-forward updates"
+      );
     });
 
     it("lsRemote without auth uses plain git command", async () => {

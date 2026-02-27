@@ -159,7 +159,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
           await gitOps.fetchBranch(branchName);
         } else {
           await this.executor.exec(
-            `git fetch origin ${safeBranch}:refs/remotes/origin/${safeBranch}`,
+            `git fetch origin +${safeBranch}:refs/remotes/origin/${safeBranch}`,
             workDir
           );
         }

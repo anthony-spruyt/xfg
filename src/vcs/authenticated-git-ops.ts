@@ -216,7 +216,7 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
     // Remote URL already has auth from clone
     const safeBranch = escapeShellArg(branchName);
     await this.execWithRetry(
-      `git fetch origin ${safeBranch}:refs/remotes/origin/${safeBranch}`
+      `git fetch origin +${safeBranch}:refs/remotes/origin/${safeBranch}`
     );
   }
 
