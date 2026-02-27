@@ -253,6 +253,49 @@ repos:
     console.log("  Create with settings test passed");
   });
 
+  test("create with defaultBranch: renames default branch to desired name", async () => {
+    const repoName = generateRepoName();
+    reposToDelete.push(repoName);
+
+    const configPath = writeConfig(
+      tmpDir,
+      `id: lifecycle-create-defaultbranch-test
+settings:
+  repo:
+    defaultBranch: main
+files:
+  lifecycle-test.json:
+    content:
+      created: true
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+`
+    );
+
+    console.log(
+      `\nCreating repo ${OWNER}/${repoName} with defaultBranch: main via xfg sync...`
+    );
+    // Note: uses controlled test constants (repoName from randomBytes,
+    // configPath from tmpDir), not user input. Standard integration test pattern.
+    const output = exec(
+      `node dist/cli.js sync --config ${configPath} --merge direct`,
+      { cwd: projectRoot }
+    );
+    console.log(output);
+
+    assert.ok(
+      repoExists(OWNER, repoName),
+      `Repo ${repoName} should exist after sync`
+    );
+
+    const defaultBranch = exec(
+      `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
+    );
+    assert.equal(defaultBranch, "main", "Default branch should be 'main'");
+
+    console.log("  Create with defaultBranch test passed");
+  });
+
   test("already-existing repo: second sync shows existed", async () => {
     const repoName = generateRepoName();
     reposToDelete.push(repoName);
