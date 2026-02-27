@@ -417,6 +417,119 @@ describe("diffRulesets", () => {
     });
   });
 
+  describe("rule removals", () => {
+    test("identifies removal of a rule type from rules array as UPDATE", () => {
+      // Regression: #549 — removing required_signatures from pr-rules
+      // was incorrectly reported as "unchanged" because projectToDesiredShape
+      // dropped current-only items from the projected array
+      const current: GitHubRuleset[] = [
+        {
+          id: 1,
+          name: "pr-rules",
+          target: "branch",
+          enforcement: "active",
+          conditions: {
+            ref_name: { include: ["refs/heads/main"], exclude: [] },
+          },
+          rules: [
+            {
+              type: "pull_request",
+              parameters: {
+                required_approving_review_count: 0,
+                dismiss_stale_reviews_on_push: true,
+                require_code_owner_review: false,
+                require_last_push_approval: false,
+                required_review_thread_resolution: true,
+              },
+            },
+            { type: "required_signatures" },
+            {
+              type: "required_status_checks",
+              parameters: {
+                required_status_checks: [
+                  { context: "summary / Check Results" },
+                ],
+                strict_required_status_checks_policy: true,
+                do_not_enforce_on_create: false,
+              },
+            },
+          ],
+        },
+      ];
+      const desired = new Map<string, Ruleset>([
+        [
+          "pr-rules",
+          {
+            target: "branch",
+            enforcement: "active",
+            conditions: {
+              refName: { include: ["refs/heads/main"], exclude: [] },
+            },
+            rules: [
+              {
+                type: "pull_request",
+                parameters: {
+                  requiredApprovingReviewCount: 0,
+                  dismissStaleReviewsOnPush: true,
+                  requireCodeOwnerReview: false,
+                  requireLastPushApproval: false,
+                  requiredReviewThreadResolution: true,
+                },
+              },
+              {
+                type: "required_status_checks",
+                parameters: {
+                  requiredStatusChecks: [
+                    { context: "summary / Check Results" },
+                  ],
+                  strictRequiredStatusChecksPolicy: true,
+                  doNotEnforceOnCreate: false,
+                },
+              },
+            ],
+          },
+        ],
+      ]);
+      const managed: string[] = [];
+
+      const changes = diffRulesets(current, desired, managed);
+
+      assert.equal(changes.length, 1);
+      assert.equal(changes[0].action, "update");
+      assert.equal(changes[0].name, "pr-rules");
+    });
+
+    test("identifies removal of one rule from a two-rule ruleset as UPDATE", () => {
+      const current: GitHubRuleset[] = [
+        {
+          id: 1,
+          name: "branch-rules",
+          target: "branch",
+          enforcement: "active",
+          rules: [
+            { type: "required_signatures" },
+            { type: "non_fast_forward" },
+          ],
+        },
+      ];
+      const desired = new Map<string, Ruleset>([
+        [
+          "branch-rules",
+          {
+            target: "branch",
+            enforcement: "active",
+            rules: [{ type: "non_fast_forward" }],
+          },
+        ],
+      ]);
+
+      const changes = diffRulesets(current, desired, []);
+
+      assert.equal(changes.length, 1);
+      assert.equal(changes[0].action, "update");
+    });
+  });
+
   describe("parameter comparison", () => {
     test("detects changes in pull_request rule parameters", () => {
       const current: GitHubRuleset[] = [
@@ -1140,6 +1253,33 @@ describe("projectToDesiredShape", () => {
     );
 
     assert.deepEqual(result, ["main", "develop"]);
+  });
+
+  test("preserves current items not in desired (removals) when matching by type", () => {
+    // Regression: #549 — matchByType was dropping current-only items
+    const current = {
+      rules: [
+        {
+          type: "pull_request",
+          parameters: { required_approving_review_count: 1 },
+        },
+        { type: "required_signatures" },
+      ],
+    };
+    const desired = {
+      rules: [
+        {
+          type: "pull_request",
+          parameters: { required_approving_review_count: 1 },
+        },
+      ],
+    };
+
+    const result = projectToDesiredShape(current, desired);
+
+    // The projected current should still contain the extra item
+    // so deepEqual detects the removal
+    assert.equal((result as Record<string, unknown[]>).rules.length, 2);
   });
 
   test("handles desired items not in current (additions)", () => {

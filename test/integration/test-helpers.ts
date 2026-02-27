@@ -201,7 +201,7 @@ export async function waitForManifestLabels(
 export async function waitForCommitVerified(
   repo: string,
   sha: string,
-  timeoutMs = 30000
+  timeoutMs = 60000
 ): Promise<void> {
   const startTime = Date.now();
   const pollInterval = 3000;

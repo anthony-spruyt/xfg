@@ -221,15 +221,29 @@ function matchByType(current: unknown[], desired: unknown[]): unknown[] {
     }
   }
 
+  const desiredTypes = new Set<string>();
   const result: unknown[] = [];
   for (const desiredItem of desired) {
     const type = (desiredItem as Record<string, unknown>).type as string;
+    desiredTypes.add(type);
     const currentItem = currentByType.get(type);
     if (currentItem) {
       result.push(projectToDesiredShape(currentItem, desiredItem));
     }
     // If no match in current, skip — diff handles additions
   }
+
+  // Append current items not in desired — these are removals that
+  // deepEqual must detect (length mismatch). Fixes #549.
+  for (const item of current) {
+    if (isPlainObject(item)) {
+      const type = (item as Record<string, unknown>).type as string;
+      if (type && !desiredTypes.has(type)) {
+        result.push(item);
+      }
+    }
+  }
+
   return result;
 }
 
