@@ -69,11 +69,20 @@ BLOB_SHA=$(gh api "repos/${REPO}/git/blobs" \
   --jq '.sha' 2>/dev/null) || BLOB_SHA=""
 
 if [ -z "${BLOB_SHA}" ]; then
-  # Repo is empty — bootstrap via Contents API (creates initial commit automatically)
-  echo "  Repo is empty, bootstrapping via Contents API..."
-  gh api --method PUT "repos/${REPO}/contents/README.md" \
-    -f message="test: reset to clean state" \
-    -f content="${README_CONTENT}" >/dev/null
+  # Blob API failed — repo may be empty or in a transient state after cleanup.
+  # If README.md already exists, we need its sha to update it via Contents API.
+  echo "  Blob API unavailable, falling back to Contents API..."
+  EXISTING_SHA=$(gh api "repos/${REPO}/contents/README.md" --jq '.sha' 2>/dev/null || true)
+  if [ -n "${EXISTING_SHA}" ]; then
+    gh api --method PUT "repos/${REPO}/contents/README.md" \
+      -f message="test: reset to clean state" \
+      -f content="${README_CONTENT}" \
+      -f sha="${EXISTING_SHA}" >/dev/null
+  else
+    gh api --method PUT "repos/${REPO}/contents/README.md" \
+      -f message="test: reset to clean state" \
+      -f content="${README_CONTENT}" >/dev/null
+  fi
   echo "  Bootstrapped ${DEFAULT_BRANCH} with README.md"
 else
   # Create tree with only README.md
