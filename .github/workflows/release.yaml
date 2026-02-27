@@ -13,6 +13,11 @@ on:
           - patch
           - minor
           - major
+      ci_timeout:
+        description: "Seconds to wait for CI after version bump"
+        required: false
+        type: number
+        default: 1200
 
 permissions:
   contents: read
@@ -68,7 +73,7 @@ jobs:
           COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
           echo "Waiting for CI on commit $COMMIT_SHA..."
 
-          TIMEOUT=600
+          TIMEOUT=${{ inputs.ci_timeout }}
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
             # Get all check runs for this commit
