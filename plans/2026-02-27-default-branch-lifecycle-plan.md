@@ -240,7 +240,35 @@ In `src/lifecycle/github-lifecycle-provider.ts`, modify `create()` to add branch
 
     // Rename default branch if requested and it differs from what GitHub created.
     if (settings?.defaultBranch) {
-      await this.renameDefaultBranchAfterCreate(repoInfo, settings.defaultBranch, token);
+      const tokenPrefix = this.buildTokenPrefix(token);
+      const hostnameFlag = getHostnameFlag(repoInfo);
+      const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
+      const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+
+      // After repo creation, GitHub may return 404 due to eventual consistency.
+      // Exclude 404/not-found from permanent errors so withRetry retries them.
+      const postCreatePermanentPatterns = DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
+        (p) => !p.test("404 Not Found")
+      );
+
+      // Detect the actual default branch name
+      const actualBranch = (
+        await withRetry(
+          () =>
+            this.executor.exec(
+              `${tokenPrefix}gh api ${hostnamePart}${apiPath} --jq '.default_branch'`,
+              this.cwd
+            ),
+          {
+            retries: this.retries,
+            permanentErrorPatterns: postCreatePermanentPatterns,
+          }
+        )
+      ).trim();
+
+      if (actualBranch !== settings.defaultBranch) {
+        await this.renameBranch(repoInfo, actualBranch, settings.defaultBranch, token);
+      }
     }
 
     // Delete the README so xfg sync starts from a clean state.
@@ -248,16 +276,17 @@ In `src/lifecycle/github-lifecycle-provider.ts`, modify `create()` to add branch
   }
 ```
 
-Add the private helper method after `deleteReadme`:
+Add the private `renameBranch` helper method after `deleteReadme`:
 
 ```ts
   /**
-   * Rename the default branch after repo creation if it differs from the desired name.
-   * Uses the GitHub branch rename API which automatically updates the default branch pointer.
+   * Rename a branch via the GitHub branch rename API.
+   * GitHub automatically updates the default branch pointer.
    */
-  private async renameDefaultBranchAfterCreate(
+  private async renameBranch(
     repoInfo: GitHubRepoInfo,
-    desiredBranch: string,
+    current: string,
+    desired: string,
     token?: string
   ): Promise<void> {
     const tokenPrefix = this.buildTokenPrefix(token);
@@ -265,37 +294,11 @@ Add the private helper method after `deleteReadme`:
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
     const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
 
-    // After repo creation, GitHub may return 404 due to eventual consistency.
-    // Exclude 404/not-found from permanent errors so withRetry retries them.
-    const postCreatePermanentPatterns = DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
-      (p) => !p.test("404 Not Found")
-    );
-
-    // Detect the actual default branch name
-    const actualBranch = (
-      await withRetry(
-        () =>
-          this.executor.exec(
-            `${tokenPrefix}gh api ${hostnamePart}${apiPath} --jq '.default_branch'`,
-            this.cwd
-          ),
-        {
-          retries: this.retries,
-          permanentErrorPatterns: postCreatePermanentPatterns,
-        }
-      )
-    ).trim();
-
-    if (actualBranch === desiredBranch) {
-      return;
-    }
-
-    // Rename the branch - GitHub automatically updates the default branch pointer
     await withRetry(
       () =>
         this.executor.exec(
-          `${tokenPrefix}gh api ${hostnamePart}${apiPath}/branches/${escapeShellArg(actualBranch)}/rename ` +
-            `--method POST -f new_name=${escapeShellArg(desiredBranch)}`,
+          `${tokenPrefix}gh api ${hostnamePart}${apiPath}/branches/${escapeShellArg(current)}/rename ` +
+            `--method POST -f new_name=${escapeShellArg(desired)}`,
           this.cwd
         ),
       {
@@ -825,17 +828,22 @@ If lint/test failures, fix and commit. Otherwise, no action needed.
 
 ---
 
-### Task 9: Run integration tests locally (PAT)
+### Task 9: Run integration tests locally (PAT and App auth)
 
 **Step 1: Build**
 
 Run: `npm run build`
 
-**Step 2: Run GitHub lifecycle integration tests**
+**Step 2: Run GitHub lifecycle integration tests (PAT)**
 
 Run: `npm run test:integration:github-lifecycle`
 Expected: PASS — both new tests pass. The migrate test requires `AZURE_DEVOPS_EXT_PAT`; it will be skipped automatically if not set.
 
-**Step 3: Fix any issues and commit**
+**Step 3: Run GitHub lifecycle integration tests (App auth)**
+
+Run: `npm run test:integration:github-lifecycle-app`
+Expected: PASS — both new App auth tests pass. The migrate test requires `AZURE_DEVOPS_EXT_PAT`; it will be skipped automatically if not set.
+
+**Step 4: Fix any issues and commit**
 
 If integration test failures, fix and commit.
