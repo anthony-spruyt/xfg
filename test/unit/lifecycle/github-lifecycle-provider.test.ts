@@ -841,6 +841,91 @@ describe("GitHubLifecycleProvider", () => {
       assert.ok(createCall);
       assert.ok(createCall.command.includes("--private"));
     });
+
+    describe("receiveMigration() with defaultBranch", () => {
+      test("renames branch in mirror clone when source HEAD differs from desired", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([
+            ["for-each-ref", "refs/heads/master\nrefs/tags/v1.0"],
+            ["symbolic-ref HEAD", "refs/heads/master"],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror", {
+          defaultBranch: "main",
+        });
+
+        const branchRenameCall = calls.find((c) =>
+          c.command.includes("branch -m")
+        );
+        assert.ok(branchRenameCall, "should call git branch -m");
+        assert.ok(branchRenameCall.command.includes("'master'"));
+        assert.ok(branchRenameCall.command.includes("'main'"));
+
+        const symrefSetCall = calls.find((c) =>
+          c.command.includes("symbolic-ref HEAD refs/heads/")
+        );
+        assert.ok(symrefSetCall, "should update symbolic-ref HEAD");
+        assert.ok(symrefSetCall.command.includes("refs/heads/'main'"));
+      });
+
+      test("skips rename when source HEAD matches desired branch", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([
+            ["for-each-ref", "refs/heads/main\nrefs/tags/v1.0"],
+            ["symbolic-ref HEAD", "refs/heads/main"],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror", {
+          defaultBranch: "main",
+        });
+
+        assert.ok(!calls.some((c) => c.command.includes("branch -m")));
+      });
+
+      test("no git rename ops when defaultBranch is not set", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([
+            [
+              "for-each-ref",
+              "refs/heads/master\nrefs/tags/v1.0\nrefs/pull/1/head",
+            ],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
+
+        assert.ok(!calls.some((c) => c.command.includes("symbolic-ref HEAD")));
+        assert.ok(!calls.some((c) => c.command.includes("branch -m")));
+      });
+
+      test("throws descriptive error when symbolic-ref output is not refs/heads/", async () => {
+        const { mock: executor } = createMockExecutor({
+          responses: new Map([
+            ["for-each-ref", "refs/heads/main"],
+            ["symbolic-ref HEAD", "refs/tags/v1.0"],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+
+        await assert.rejects(
+          () =>
+            provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror", {
+              defaultBranch: "main",
+            }),
+          /refs\/heads\//
+        );
+      });
+    });
   });
 
   describe("token prefix", () => {

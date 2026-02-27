@@ -428,6 +428,37 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       // No refs to remove — ignore
     }
 
+    // Rename default branch in mirror clone if requested.
+    if (settings?.defaultBranch) {
+      const headRef = (
+        await this.executor.exec(
+          `git -C ${escapeShellArg(sourceDir)} symbolic-ref HEAD`,
+          this.cwd
+        )
+      ).trim();
+
+      const prefix = "refs/heads/";
+      if (!headRef.startsWith(prefix)) {
+        throw new Error(
+          `Mirror clone HEAD symbolic-ref is '${headRef}', expected to start with '${prefix}'. ` +
+            `Cannot rename default branch.`
+        );
+      }
+
+      const sourceBranch = headRef.slice(prefix.length);
+
+      if (sourceBranch !== settings.defaultBranch) {
+        await this.executor.exec(
+          `git -C ${escapeShellArg(sourceDir)} branch -m ${escapeShellArg(sourceBranch)} ${escapeShellArg(settings.defaultBranch)}`,
+          this.cwd
+        );
+        await this.executor.exec(
+          `git -C ${escapeShellArg(sourceDir)} symbolic-ref HEAD refs/heads/${escapeShellArg(settings.defaultBranch)}`,
+          this.cwd
+        );
+      }
+    }
+
     // Use gh repo create --source --push to create and mirror in one step.
     // For bare repos (from git clone --mirror), --push mirrors all refs.
     // This uses gh CLI authentication, avoiding raw git auth issues with GHE.
