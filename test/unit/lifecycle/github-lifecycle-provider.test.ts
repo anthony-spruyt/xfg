@@ -679,6 +679,25 @@ describe("GitHubLifecycleProvider", () => {
         /Cannot fork.*same owner/
       );
     });
+
+    test("fork with defaultBranch set completes without rename", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["users/", '{"type": "Organization"}'],
+          ["gh repo fork", ""],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      await provider.fork!(upstreamRepoInfo, mockRepoInfo, {
+        defaultBranch: "main",
+      });
+
+      // Should not call any branch rename API
+      assert.ok(!calls.some((c) => c.command.includes("branches/")));
+      assert.ok(!calls.some((c) => c.command.includes("branch -m")));
+    });
   });
 
   describe("waitForForkReady (via fork())", () => {
