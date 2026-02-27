@@ -38,7 +38,7 @@ xfg settings -c config.yaml
 
 | Property      | Required | Description                                                          |
 | ------------- | -------- | -------------------------------------------------------------------- |
-| `color`       | Yes      | Hex color code, with or without `#` (e.g., `d73a4a` or `#d73a4a`)   |
+| `color`       | Yes      | Hex color code, with or without `#` (e.g., `d73a4a` or `#d73a4a`)    |
 | `description` | No       | Label description (max 100 characters)                               |
 | `new_name`    | No       | Rename the label to this value                                       |
 
