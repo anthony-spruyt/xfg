@@ -319,6 +319,58 @@ repos:
       console.log("  Create with defaultBranch test (App) passed");
     });
 
+    test(
+      "migrate with defaultBranch: renames master to main during migration (App auth)",
+      { skip: !HAS_ADO_CREDS },
+      async () => {
+        const repoName = generateRepoName();
+        reposToDelete.push(repoName);
+
+        // Note: All inputs are controlled test constants (repoName from randomBytes,
+        // configPath from tmpDir), not user input. Standard integration test pattern.
+        const configPath = writeConfig(
+          tmpDir,
+          `id: lifecycle-migrate-defaultbranch-app-test
+settings:
+  repo:
+    defaultBranch: main
+files:
+  lifecycle-migrate-test.json:
+    content:
+      migrated: true
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+    source: ${ADO_MIGRATE_SOURCE}
+`
+        );
+
+        console.log(
+          `\nMigrating from ADO to ${OWNER}/${repoName} with defaultBranch: main (App)...`
+        );
+        const output = exec(
+          `node dist/cli.js sync --config ${configPath} --merge direct`,
+          xfgEnv
+        );
+        console.log(output);
+
+        assert.ok(
+          repoExists(OWNER, repoName),
+          `Repo ${repoName} should exist after migrate`
+        );
+
+        const defaultBranch = exec(
+          `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
+        );
+        assert.equal(
+          defaultBranch,
+          "main",
+          "Default branch should be 'main' after rename"
+        );
+
+        console.log("  Migrate with defaultBranch test (App) passed");
+      }
+    );
+
     test("already-existing repo: second sync shows existed (App auth)", async () => {
       const repoName = generateRepoName();
       reposToDelete.push(repoName);
