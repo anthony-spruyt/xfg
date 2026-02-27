@@ -41,6 +41,7 @@ export interface CreateRepoSettings {
   description?: string;
   hasIssues?: boolean;
   hasWiki?: boolean;
+  defaultBranch?: string;
 }
 
 /**

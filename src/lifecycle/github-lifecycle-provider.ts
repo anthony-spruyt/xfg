@@ -215,6 +215,45 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       retries: this.retries,
     });
 
+    // Rename default branch if requested and it differs from what GitHub created.
+    if (settings?.defaultBranch) {
+      const tokenPrefix = this.buildTokenPrefix(token);
+      const hostnameFlag = getHostnameFlag(repoInfo);
+      const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
+      const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+
+      // After repo creation, GitHub may return 404 due to eventual consistency.
+      // Exclude 404/not-found from permanent errors so withRetry retries them.
+      const postCreatePermanentPatterns =
+        DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
+          (p) => !p.test("404 Not Found")
+        );
+
+      // Detect the actual default branch name
+      const actualBranch = (
+        await withRetry(
+          () =>
+            this.executor.exec(
+              `${tokenPrefix}gh api ${hostnamePart}${apiPath} --jq '.default_branch'`,
+              this.cwd
+            ),
+          {
+            retries: this.retries,
+            permanentErrorPatterns: postCreatePermanentPatterns,
+          }
+        )
+      ).trim();
+
+      if (actualBranch !== settings.defaultBranch) {
+        await this.renameBranch(
+          repoInfo,
+          actualBranch,
+          settings.defaultBranch,
+          token
+        );
+      }
+    }
+
     // Delete the README so xfg sync starts from a clean state.
     await this.deleteReadme(repoInfo, token);
   }
@@ -389,6 +428,37 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       // No refs to remove — ignore
     }
 
+    // Rename default branch in mirror clone if requested.
+    if (settings?.defaultBranch) {
+      const headRef = (
+        await this.executor.exec(
+          `git -C ${escapeShellArg(sourceDir)} symbolic-ref HEAD`,
+          this.cwd
+        )
+      ).trim();
+
+      const prefix = "refs/heads/";
+      if (!headRef.startsWith(prefix)) {
+        throw new Error(
+          `Mirror clone HEAD symbolic-ref is '${headRef}', expected to start with '${prefix}'. ` +
+            `Cannot rename default branch.`
+        );
+      }
+
+      const sourceBranch = headRef.slice(prefix.length);
+
+      if (sourceBranch !== settings.defaultBranch) {
+        await this.executor.exec(
+          `git -C ${escapeShellArg(sourceDir)} branch -m ${escapeShellArg(sourceBranch)} ${escapeShellArg(settings.defaultBranch)}`,
+          this.cwd
+        );
+        await this.executor.exec(
+          `git -C ${escapeShellArg(sourceDir)} symbolic-ref HEAD refs/heads/${escapeShellArg(settings.defaultBranch)}`,
+          this.cwd
+        );
+      }
+    }
+
     // Use gh repo create --source --push to create and mirror in one step.
     // For bare repos (from git clone --mirror), --push mirrors all refs.
     // This uses gh CLI authentication, avoiding raw git auth issues with GHE.
@@ -427,6 +497,34 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     await withRetry(() => this.executor.exec(command, this.cwd), {
       retries: this.retries,
     });
+  }
+
+  /**
+   * Rename a branch via the GitHub branch rename API.
+   * GitHub automatically updates the default branch pointer.
+   */
+  private async renameBranch(
+    repoInfo: GitHubRepoInfo,
+    current: string,
+    desired: string,
+    token?: string
+  ): Promise<void> {
+    const renameTokenPrefix = this.buildTokenPrefix(token);
+    const hostnameFlag = getHostnameFlag(repoInfo);
+    const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
+    const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+
+    await withRetry(
+      () =>
+        this.executor.exec(
+          `${renameTokenPrefix}gh api ${hostnamePart}${apiPath}/branches/${escapeShellArg(current)}/rename ` +
+            `--method POST -f new_name=${escapeShellArg(desired)}`,
+          this.cwd
+        ),
+      {
+        retries: this.retries,
+      }
+    );
   }
 
   /**

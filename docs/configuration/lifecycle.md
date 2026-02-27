@@ -114,12 +114,34 @@ repos:
 
 The following settings apply during repo creation:
 
-| Setting       | Description                                      |
-| ------------- | ------------------------------------------------ |
-| `description` | Repository description                           |
-| `visibility`  | `public`, `private`, or `internal`               |
-| `hasIssues`   | Enable/disable Issues (default: enabled)         |
-| `hasWiki`     | Enable/disable Wiki (default: enabled)           |
+| Setting         | Description                                            |
+| --------------- | ------------------------------------------------------ |
+| `description`   | Repository description                                 |
+| `visibility`    | `public`, `private`, or `internal`                     |
+| `hasIssues`     | Enable/disable Issues (default: enabled)               |
+| `hasWiki`       | Enable/disable Wiki (default: enabled)                 |
+| `defaultBranch` | Rename the default branch during creation or migration |
+
+### Default Branch Renaming
+
+When `settings.repo.defaultBranch` is set, xfg renames the default branch during lifecycle operations:
+
+| Operation    | Behaviour                                                                                    |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| **Create**   | After creating the repo, detects the actual branch name and renames it via the GitHub API    |
+| **Migrate**  | Before pushing the mirror clone, renames the source HEAD branch in git                       |
+| **Fork**     | Ignored — forked repos inherit the upstream's branch structure                               |
+| **Settings** | Existing behaviour — updates the GitHub API pointer (branch must already exist by that name) |
+
+```yaml
+# Migrate ADO repo with 'master', rename to 'main' on GitHub
+repos:
+  - git: git@github.com:my-org/migrated-app.git
+    source: https://dev.azure.com/myorg/myproject/_git/legacy-app
+    settings:
+      repo:
+        defaultBranch: main
+```
 
 ### Empty Repository Initialization
 

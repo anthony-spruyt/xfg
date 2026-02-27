@@ -324,6 +324,94 @@ describe("GitHubLifecycleProvider", () => {
         /Permission denied/
       );
     });
+
+    describe("create() with defaultBranch", () => {
+      test("renames branch when GitHub created a different default branch", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([
+            // gh repo create succeeds
+            ["gh repo create", ""],
+            // GET repo -> actual default branch is "master"
+            ["--jq '.default_branch'", "master"],
+            // POST branch rename succeeds
+            ["branches/'master'/rename", ""],
+            // GET README SHA
+            ["contents/README.md --jq", "abc123def"],
+            // DELETE README
+            ["--method DELETE", ""],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.create(mockRepoInfo, { defaultBranch: "main" });
+
+        // Should have: create, get default_branch, rename, get README sha, delete README
+        assert.equal(calls.length, 5);
+        assert.ok(calls[1].command.includes("--jq '.default_branch'"));
+        assert.ok(calls[2].command.includes("branches/'master'/rename"));
+        assert.ok(calls[2].command.includes("--method POST"));
+        assert.ok(calls[2].command.includes("'main'"));
+      });
+
+      test("skips rename when GitHub created branch matches desired name", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([
+            ["gh repo create", ""],
+            ["--jq '.default_branch'", "main"],
+            ["contents/README.md --jq", "abc123def"],
+            ["--method DELETE", ""],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.create(mockRepoInfo, { defaultBranch: "main" });
+
+        // Should have: create, get default_branch, get README sha, delete README (no rename)
+        assert.equal(calls.length, 4);
+        assert.ok(!calls.some((c) => c.command.includes("branches/")));
+      });
+
+      test("no extra API calls when defaultBranch is not set", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([["contents/README.md --jq", "abc123def"]]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.create(mockRepoInfo);
+
+        // Should have: create, get README sha, delete README (no default_branch check)
+        assert.equal(calls.length, 3);
+        assert.ok(!calls.some((c) => c.command.includes("default_branch")));
+      });
+
+      test("error propagates from rename API and deleteReadme is not reached", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([
+            ["gh repo create", ""],
+            ["--jq '.default_branch'", "master"],
+            [
+              "branches/'master'/rename",
+              new Error("Rename failed: 422 Unprocessable Entity"),
+            ],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+
+        await assert.rejects(
+          () => provider.create(mockRepoInfo, { defaultBranch: "main" }),
+          /Rename failed/
+        );
+
+        // Should have: create, get default_branch, rename (failed) - no README calls
+        assert.equal(calls.length, 3);
+        assert.ok(!calls.some((c) => c.command.includes("contents/README.md")));
+      });
+    });
   });
 
   describe("fork()", () => {
@@ -591,6 +679,25 @@ describe("GitHubLifecycleProvider", () => {
         /Cannot fork.*same owner/
       );
     });
+
+    test("fork with defaultBranch set completes without rename", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["users/", '{"type": "Organization"}'],
+          ["gh repo fork", ""],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      await provider.fork!(upstreamRepoInfo, mockRepoInfo, {
+        defaultBranch: "main",
+      });
+
+      // Should not call any branch rename API
+      assert.ok(!calls.some((c) => c.command.includes("branches/")));
+      assert.ok(!calls.some((c) => c.command.includes("branch -m")));
+    });
   });
 
   describe("waitForForkReady (via fork())", () => {
@@ -752,6 +859,91 @@ describe("GitHubLifecycleProvider", () => {
       );
       assert.ok(createCall);
       assert.ok(createCall.command.includes("--private"));
+    });
+
+    describe("receiveMigration() with defaultBranch", () => {
+      test("renames branch in mirror clone when source HEAD differs from desired", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([
+            ["for-each-ref", "refs/heads/master\nrefs/tags/v1.0"],
+            ["symbolic-ref HEAD", "refs/heads/master"],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror", {
+          defaultBranch: "main",
+        });
+
+        const branchRenameCall = calls.find((c) =>
+          c.command.includes("branch -m")
+        );
+        assert.ok(branchRenameCall, "should call git branch -m");
+        assert.ok(branchRenameCall.command.includes("'master'"));
+        assert.ok(branchRenameCall.command.includes("'main'"));
+
+        const symrefSetCall = calls.find((c) =>
+          c.command.includes("symbolic-ref HEAD refs/heads/")
+        );
+        assert.ok(symrefSetCall, "should update symbolic-ref HEAD");
+        assert.ok(symrefSetCall.command.includes("refs/heads/'main'"));
+      });
+
+      test("skips rename when source HEAD matches desired branch", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([
+            ["for-each-ref", "refs/heads/main\nrefs/tags/v1.0"],
+            ["symbolic-ref HEAD", "refs/heads/main"],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror", {
+          defaultBranch: "main",
+        });
+
+        assert.ok(!calls.some((c) => c.command.includes("branch -m")));
+      });
+
+      test("no git rename ops when defaultBranch is not set", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([
+            [
+              "for-each-ref",
+              "refs/heads/master\nrefs/tags/v1.0\nrefs/pull/1/head",
+            ],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
+
+        assert.ok(!calls.some((c) => c.command.includes("symbolic-ref HEAD")));
+        assert.ok(!calls.some((c) => c.command.includes("branch -m")));
+      });
+
+      test("throws descriptive error when symbolic-ref output is not refs/heads/", async () => {
+        const { mock: executor } = createMockExecutor({
+          responses: new Map([
+            ["for-each-ref", "refs/heads/main"],
+            ["symbolic-ref HEAD", "refs/tags/v1.0"],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+
+        await assert.rejects(
+          () =>
+            provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror", {
+              defaultBranch: "main",
+            }),
+          /refs\/heads\//
+        );
+      });
     });
   });
 

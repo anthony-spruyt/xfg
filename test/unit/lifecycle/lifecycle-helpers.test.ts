@@ -45,6 +45,17 @@ describe("lifecycle-helpers", () => {
         visibility: "private",
       });
     });
+
+    test("maps defaultBranch from GitHubRepoSettings", () => {
+      const result = toCreateRepoSettings({ defaultBranch: "main" });
+      assert.deepEqual(result, { defaultBranch: "main" });
+    });
+
+    test("returns settings when only defaultBranch is set", () => {
+      const result = toCreateRepoSettings({ defaultBranch: "develop" });
+      assert.ok(result !== undefined, "should not return undefined");
+      assert.equal(result!.defaultBranch, "develop");
+    });
   });
 
   describe("runLifecycleCheck()", () => {

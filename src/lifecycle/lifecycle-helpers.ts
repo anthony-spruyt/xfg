@@ -34,6 +34,8 @@ export function toCreateRepoSettings(
   if (repo.description !== undefined) result.description = repo.description;
   if (repo.hasIssues !== undefined) result.hasIssues = repo.hasIssues;
   if (repo.hasWiki !== undefined) result.hasWiki = repo.hasWiki;
+  if (repo.defaultBranch !== undefined)
+    result.defaultBranch = repo.defaultBranch;
 
   return Object.keys(result).length > 0 ? result : undefined;
 }
