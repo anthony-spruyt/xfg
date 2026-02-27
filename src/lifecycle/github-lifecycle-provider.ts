@@ -215,6 +215,45 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       retries: this.retries,
     });
 
+    // Rename default branch if requested and it differs from what GitHub created.
+    if (settings?.defaultBranch) {
+      const renameTokenPrefix = this.buildTokenPrefix(token);
+      const hostnameFlag = getHostnameFlag(repoInfo);
+      const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
+      const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+
+      // After repo creation, GitHub may return 404 due to eventual consistency.
+      // Exclude 404/not-found from permanent errors so withRetry retries them.
+      const postCreatePermanentPatterns =
+        DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
+          (p) => !p.test("404 Not Found")
+        );
+
+      // Detect the actual default branch name
+      const actualBranch = (
+        await withRetry(
+          () =>
+            this.executor.exec(
+              `${renameTokenPrefix}gh api ${hostnamePart}${apiPath} --jq '.default_branch'`,
+              this.cwd
+            ),
+          {
+            retries: this.retries,
+            permanentErrorPatterns: postCreatePermanentPatterns,
+          }
+        )
+      ).trim();
+
+      if (actualBranch !== settings.defaultBranch) {
+        await this.renameBranch(
+          repoInfo,
+          actualBranch,
+          settings.defaultBranch,
+          token
+        );
+      }
+    }
+
     // Delete the README so xfg sync starts from a clean state.
     await this.deleteReadme(repoInfo, token);
   }
@@ -427,6 +466,34 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     await withRetry(() => this.executor.exec(command, this.cwd), {
       retries: this.retries,
     });
+  }
+
+  /**
+   * Rename a branch via the GitHub branch rename API.
+   * GitHub automatically updates the default branch pointer.
+   */
+  private async renameBranch(
+    repoInfo: GitHubRepoInfo,
+    current: string,
+    desired: string,
+    token?: string
+  ): Promise<void> {
+    const renameTokenPrefix = this.buildTokenPrefix(token);
+    const hostnameFlag = getHostnameFlag(repoInfo);
+    const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
+    const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+
+    await withRetry(
+      () =>
+        this.executor.exec(
+          `${renameTokenPrefix}gh api ${hostnamePart}${apiPath}/branches/${escapeShellArg(current)}/rename ` +
+            `--method POST -f new_name=${escapeShellArg(desired)}`,
+          this.cwd
+        ),
+      {
+        retries: this.retries,
+      }
+    );
   }
 
   /**

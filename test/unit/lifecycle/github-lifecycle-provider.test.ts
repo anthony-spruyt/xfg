@@ -324,6 +324,94 @@ describe("GitHubLifecycleProvider", () => {
         /Permission denied/
       );
     });
+
+    describe("create() with defaultBranch", () => {
+      test("renames branch when GitHub created a different default branch", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([
+            // gh repo create succeeds
+            ["gh repo create", ""],
+            // GET repo -> actual default branch is "master"
+            ["--jq '.default_branch'", "master"],
+            // POST branch rename succeeds
+            ["branches/'master'/rename", ""],
+            // GET README SHA
+            ["contents/README.md --jq", "abc123def"],
+            // DELETE README
+            ["--method DELETE", ""],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.create(mockRepoInfo, { defaultBranch: "main" });
+
+        // Should have: create, get default_branch, rename, get README sha, delete README
+        assert.equal(calls.length, 5);
+        assert.ok(calls[1].command.includes("--jq '.default_branch'"));
+        assert.ok(calls[2].command.includes("branches/'master'/rename"));
+        assert.ok(calls[2].command.includes("--method POST"));
+        assert.ok(calls[2].command.includes("'main'"));
+      });
+
+      test("skips rename when GitHub created branch matches desired name", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([
+            ["gh repo create", ""],
+            ["--jq '.default_branch'", "main"],
+            ["contents/README.md --jq", "abc123def"],
+            ["--method DELETE", ""],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.create(mockRepoInfo, { defaultBranch: "main" });
+
+        // Should have: create, get default_branch, get README sha, delete README (no rename)
+        assert.equal(calls.length, 4);
+        assert.ok(!calls.some((c) => c.command.includes("branches/")));
+      });
+
+      test("no extra API calls when defaultBranch is not set", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([["contents/README.md --jq", "abc123def"]]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.create(mockRepoInfo);
+
+        // Should have: create, get README sha, delete README (no default_branch check)
+        assert.equal(calls.length, 3);
+        assert.ok(!calls.some((c) => c.command.includes("default_branch")));
+      });
+
+      test("error propagates from rename API and deleteReadme is not reached", async () => {
+        const { mock: executor, calls } = createMockExecutor({
+          responses: new Map([
+            ["gh repo create", ""],
+            ["--jq '.default_branch'", "master"],
+            [
+              "branches/'master'/rename",
+              new Error("Rename failed: 422 Unprocessable Entity"),
+            ],
+          ]),
+          defaultResponse: "",
+        });
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+
+        await assert.rejects(
+          () => provider.create(mockRepoInfo, { defaultBranch: "main" }),
+          /Rename failed/
+        );
+
+        // Should have: create, get default_branch, rename (failed) - no README calls
+        assert.equal(calls.length, 3);
+        assert.ok(!calls.some((c) => c.command.includes("contents/README.md")));
+      });
+    });
   });
 
   describe("fork()", () => {
