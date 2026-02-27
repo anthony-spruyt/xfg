@@ -217,7 +217,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     // Rename default branch if requested and it differs from what GitHub created.
     if (settings?.defaultBranch) {
-      const renameTokenPrefix = this.buildTokenPrefix(token);
+      const tokenPrefix = this.buildTokenPrefix(token);
       const hostnameFlag = getHostnameFlag(repoInfo);
       const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
       const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
@@ -234,7 +234,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         await withRetry(
           () =>
             this.executor.exec(
-              `${renameTokenPrefix}gh api ${hostnamePart}${apiPath} --jq '.default_branch'`,
+              `${tokenPrefix}gh api ${hostnamePart}${apiPath} --jq '.default_branch'`,
               this.cwd
             ),
           {

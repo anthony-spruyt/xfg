@@ -262,7 +262,7 @@ repos:
       `id: lifecycle-create-defaultbranch-test
 settings:
   repo:
-    defaultBranch: main
+    defaultBranch: develop
 files:
   lifecycle-test.json:
     content:
@@ -273,7 +273,7 @@ repos:
     );
 
     console.log(
-      `\nCreating repo ${OWNER}/${repoName} with defaultBranch: main via xfg sync...`
+      `\nCreating repo ${OWNER}/${repoName} with defaultBranch: develop via xfg sync...`
     );
     // Note: uses controlled test constants (repoName from randomBytes,
     // configPath from tmpDir), not user input. Standard integration test pattern.
@@ -291,7 +291,11 @@ repos:
     const defaultBranch = exec(
       `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
     );
-    assert.equal(defaultBranch, "main", "Default branch should be 'main'");
+    assert.equal(
+      defaultBranch,
+      "develop",
+      "Default branch should be 'develop'"
+    );
 
     console.log("  Create with defaultBranch test passed");
   });

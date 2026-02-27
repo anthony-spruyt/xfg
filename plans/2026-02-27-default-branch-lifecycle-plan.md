@@ -12,7 +12,7 @@
 
 ---
 
-### Task 1: Add `defaultBranch` to `CreateRepoSettings` and plumb through helpers
+## Task 1: Add `defaultBranch` to `CreateRepoSettings` and plumb through helpers
 
 **Files:**
 
@@ -82,7 +82,7 @@ git commit -m "feat(lifecycle): add defaultBranch to CreateRepoSettings and plum
 
 ---
 
-### Task 2: Branch rename in `create()` — unit tests and implementation
+## Task 2: Branch rename in `create()` — unit tests and implementation
 
 **Files:**
 
@@ -322,7 +322,7 @@ git commit -m "feat(lifecycle): rename default branch after create when settings
 
 ---
 
-### Task 3: Branch rename in `receiveMigration()` — unit tests and implementation
+## Task 3: Branch rename in `receiveMigration()` — unit tests and implementation
 
 **Files:**
 
@@ -471,7 +471,7 @@ git commit -m "feat(lifecycle): rename default branch in mirror clone during mig
 
 ---
 
-### Task 4: Fork ignores `defaultBranch` — unit test
+## Task 4: Fork ignores `defaultBranch` — unit test
 
 **Files:**
 
@@ -518,7 +518,7 @@ git commit -m "test(lifecycle): verify fork ignores defaultBranch setting"
 
 ---
 
-### Task 5: Integration tests — create with defaultBranch
+## Task 5: Integration tests — create with defaultBranch
 
 **Files:**
 
@@ -628,7 +628,7 @@ git commit -m "test(lifecycle): add integration tests for create with defaultBra
 
 ---
 
-### Task 6: Integration tests — migrate with defaultBranch rename
+## Task 6: Integration tests — migrate with defaultBranch rename
 
 **Files:**
 
@@ -756,7 +756,7 @@ git commit -m "test(lifecycle): add integration tests for migrate with defaultBr
 
 ---
 
-### Task 7: Update lifecycle documentation
+## Task 7: Update lifecycle documentation
 
 **Files:**
 
@@ -810,7 +810,7 @@ git commit -m "docs(lifecycle): document defaultBranch rename during create and 
 
 ---
 
-### Task 8: Run full lint and unit test suite
+## Task 8: Run full lint and unit test suite
 
 **Step 1: Run linter**
 
@@ -828,7 +828,7 @@ If lint/test failures, fix and commit. Otherwise, no action needed.
 
 ---
 
-### Task 9: Run integration tests locally (PAT and App auth)
+## Task 9: Run integration tests locally (PAT and App auth)
 
 **Step 1: Build**
 
