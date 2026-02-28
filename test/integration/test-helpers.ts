@@ -237,8 +237,8 @@ export async function waitForCommitVerified(
 /**
  * Generate a unique ephemeral repo name for lifecycle tests.
  */
-export function generateRepoName(): string {
-  return `xfg-lifecycle-test-${Date.now()}-${randomBytes(3).toString("hex")}`;
+export function generateRepoName(prefix = "lifecycle"): string {
+  return `xfg-${prefix}-test-${Date.now()}-${randomBytes(3).toString("hex")}`;
 }
 
 /**
@@ -257,6 +257,22 @@ export function deleteRepo(
       `  Cleanup: ${owner}/${repoName} (already deleted or not found)`
     );
   }
+}
+
+/**
+ * Create an ephemeral private repo under the given owner.
+ */
+export function createRepo(
+  owner: string,
+  repoName: string,
+  envOptions?: { env: Record<string, string | undefined> }
+): void {
+  console.log(`  Creating ephemeral repo ${owner}/${repoName}...`);
+  // owner and repoName are controlled test constants (from generateRepoName),
+  // not user input — safe to use with exec()
+  const cmd = `gh repo create ${owner}/${repoName} --private --add-readme`;
+  exec(cmd, envOptions);
+  console.log(`  Created ${owner}/${repoName}`);
 }
 
 /**
