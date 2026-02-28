@@ -21,7 +21,7 @@ if [ "${1:-}" = "--fixture" ]; then
   echo "Generated repo name: ${REPO_NAME}"
 
   # Create the ephemeral repo (action jobs sync TO an existing repo)
-  gh repo create "${OWNER}/${REPO_NAME}" --private --add-readme
+  gh repo create "${OWNER}/${REPO_NAME}" --public --add-readme
 
   # Substitute placeholder in fixture template
   sed "s|OWNER/REPO_PLACEHOLDER|${OWNER}/${REPO_NAME}|g" "${FIXTURE_PATH}" >"${CONFIG_PATH}"

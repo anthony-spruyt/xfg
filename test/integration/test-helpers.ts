@@ -260,7 +260,7 @@ export function deleteRepo(
 }
 
 /**
- * Create an ephemeral private repo under the given owner.
+ * Create an ephemeral public repo under the given owner.
  */
 export function createRepo(
   owner: string,
@@ -270,7 +270,7 @@ export function createRepo(
   console.log(`  Creating ephemeral repo ${owner}/${repoName}...`);
   // owner and repoName are controlled test constants (from generateRepoName),
   // not user input — safe to use with exec()
-  const cmd = `gh repo create ${owner}/${repoName} --private --add-readme`;
+  const cmd = `gh repo create ${owner}/${repoName} --public --add-readme`;
   exec(cmd, envOptions);
   console.log(`  Created ${owner}/${repoName}`);
 }
