@@ -36,7 +36,7 @@ const GITHUB_DEFAULTS = {
   delete_branch_on_merge: false,
 };
 
-const SYNC_BRANCH = "chore/sync-github-app-test";
+const SYNC_BRANCH = "chore/sync-my-config";
 const DIRECT_FILE = "github-app-direct-test.json";
 
 let repoName: string;
@@ -69,8 +69,6 @@ files:
   my.config.json:
     content:
       prop1: main
-prOptions:
-  branch: ${SYNC_BRANCH}
 repos:
   - git: https://github.com/${testRepo}.git
 `
@@ -332,8 +330,6 @@ files:
   my.config.json:
     content:
       prop1: main
-prOptions:
-  branch: ${SYNC_BRANCH}
 repos:
   - git: https://github.com/${signedTestRepo}.git
 `

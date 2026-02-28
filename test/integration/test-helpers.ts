@@ -261,6 +261,7 @@ export function deleteRepo(
 
 /**
  * Create an ephemeral public repo under the given owner.
+ * Waits for PAT permissions to propagate to the new repo before returning.
  */
 export function createRepo(
   owner: string,
@@ -273,6 +274,41 @@ export function createRepo(
   const cmd = `gh repo create ${owner}/${repoName} --public --add-readme`;
   exec(cmd, envOptions);
   console.log(`  Created ${owner}/${repoName}`);
+  waitForRepoReady(`${owner}/${repoName}`, envOptions);
+}
+
+/**
+ * Polls until fine-grained PAT permissions have propagated to a newly created repo.
+ * When a fine-grained PAT is scoped to "All repositories", permissions like
+ * issues:write and pull_requests:write may take seconds to propagate to
+ * dynamically created repos, even though administration and contents scopes
+ * are available immediately.
+ */
+function waitForRepoReady(
+  repo: string,
+  envOptions?: { env: Record<string, string | undefined> },
+  timeoutMs = 30000,
+  pollMs = 2000
+): void {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < timeoutMs) {
+    try {
+      // The labels endpoint requires issues:write — if this succeeds,
+      // all permission scopes have propagated to the new repo
+      exec(`gh api repos/${repo}/labels --jq '.[0].name'`, envOptions);
+      console.log(`  Repo permissions ready after ${Date.now() - startTime}ms`);
+      return;
+    } catch {
+      // Permission not yet propagated, continue polling
+    }
+    // Synchronous sleep — Atomics.wait on a dummy SharedArrayBuffer
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, pollMs);
+  }
+
+  throw new Error(
+    `Repo ${repo} permissions not ready after ${timeoutMs}ms — check PAT repository scope`
+  );
 }
 
 /**

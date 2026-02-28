@@ -51,6 +51,24 @@ ENDCONFIG
   echo "Wrote config to ${CONFIG_PATH}"
 fi
 
+# Wait for fine-grained PAT permissions to propagate to the new repo.
+# When a PAT is scoped to "All repositories", issues:write and pull_requests:write
+# may take seconds to propagate to dynamically created repos.
+echo "Waiting for PAT permissions to propagate to ${OWNER}/${REPO_NAME}..."
+TIMEOUT=30
+ELAPSED=0
+while [ "$ELAPSED" -lt "$TIMEOUT" ]; do
+  if gh api "repos/${OWNER}/${REPO_NAME}/labels" --jq '.[0].name' >/dev/null 2>&1; then
+    echo "Repo permissions ready after ${ELAPSED}s"
+    break
+  fi
+  sleep 2
+  ELAPSED=$((ELAPSED + 2))
+done
+if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+  echo "WARNING: Repo permissions not ready after ${TIMEOUT}s — PAT may lack issues:write scope"
+fi
+
 # Output for GitHub Actions
 if [ -n "${GITHUB_OUTPUT:-}" ]; then
   echo "repo_name=${REPO_NAME}" >>"$GITHUB_OUTPUT"
