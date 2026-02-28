@@ -312,6 +312,88 @@ export function isForkedFrom(
 }
 
 /**
+ * Reset an ephemeral test repo to a clean state:
+ * close open PRs, delete non-default branches, delete all files on main,
+ * delete rulesets, and optionally delete labels.
+ *
+ * Note: repo is a hardcoded test constant (e.g. "spruyt-labs/xfg-sync-test-..."),
+ * not user input.
+ */
+export function resetTestRepo(
+  repo: string,
+  options?: { deleteLabels?: boolean }
+): void {
+  console.log("\n=== Resetting ephemeral repo ===\n");
+  // Close open PRs
+  try {
+    const prs = exec(`gh api repos/${repo}/pulls --jq '.[].number'`);
+    for (const pr of prs.split("\n").filter(Boolean)) {
+      exec(`gh api --method PATCH repos/${repo}/pulls/${pr} -f state=closed`);
+    }
+  } catch {
+    /* no PRs */
+  }
+  // Delete non-default branches
+  try {
+    const branches = exec(`gh api repos/${repo}/branches --jq '.[].name'`);
+    for (const branch of branches.split("\n").filter(Boolean)) {
+      if (branch !== "main") {
+        try {
+          exec(`gh api --method DELETE repos/${repo}/git/refs/heads/${branch}`);
+        } catch {
+          /* already gone */
+        }
+      }
+    }
+  } catch {
+    /* no branches */
+  }
+  // Delete all files on main
+  try {
+    const files = exec(`gh api repos/${repo}/contents --jq '.[].name'`);
+    for (const file of files.split("\n").filter(Boolean)) {
+      try {
+        const sha = exec(`gh api repos/${repo}/contents/${file} --jq '.sha'`);
+        exec(
+          `gh api --method DELETE repos/${repo}/contents/${file} -f message="reset" -f sha="${sha}"`
+        );
+      } catch {
+        /* ignore */
+      }
+    }
+  } catch {
+    /* empty repo */
+  }
+  // Delete rulesets
+  try {
+    const rulesets = exec(`gh api repos/${repo}/rulesets --jq '.[].id'`);
+    for (const id of rulesets.split("\n").filter(Boolean)) {
+      exec(`gh api --method DELETE repos/${repo}/rulesets/${id}`);
+    }
+  } catch {
+    /* no rulesets */
+  }
+  // Delete labels (optional)
+  if (options?.deleteLabels) {
+    try {
+      const labels = exec(`gh api repos/${repo}/labels --jq '.[].name'`);
+      for (const label of labels.split("\n").filter(Boolean)) {
+        try {
+          exec(
+            `gh api --method DELETE repos/${repo}/labels/${encodeURIComponent(label)}`
+          );
+        } catch {
+          /* ignore */
+        }
+      }
+    } catch {
+      /* no labels */
+    }
+  }
+  console.log("=== Reset complete ===\n");
+}
+
+/**
  * Write a YAML config file and return its path.
  */
 export function writeConfig(tmpDir: string, configYaml: string): string {

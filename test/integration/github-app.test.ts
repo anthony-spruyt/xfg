@@ -10,6 +10,7 @@ import {
   createRepo,
   deleteRepo,
   writeConfig,
+  resetTestRepo,
   waitForCommitVerified,
 } from "./test-helpers.js";
 
@@ -42,66 +43,6 @@ let repoName: string;
 let testRepo: string;
 let tmpDir: string;
 
-function resetTestRepo(): void {
-  console.log("\n=== Resetting ephemeral repo branches/PRs ===\n");
-  // Close open PRs
-  try {
-    const prs = exec(`gh api repos/${testRepo}/pulls --jq '.[].number'`);
-    for (const pr of prs.split("\n").filter(Boolean)) {
-      exec(
-        `gh api --method PATCH repos/${testRepo}/pulls/${pr} -f state=closed`
-      );
-    }
-  } catch {
-    /* no PRs */
-  }
-  // Delete non-default branches
-  try {
-    const branches = exec(`gh api repos/${testRepo}/branches --jq '.[].name'`);
-    for (const branch of branches.split("\n").filter(Boolean)) {
-      if (branch !== "main") {
-        try {
-          exec(
-            `gh api --method DELETE repos/${testRepo}/git/refs/heads/${branch}`
-          );
-        } catch {
-          /* already gone */
-        }
-      }
-    }
-  } catch {
-    /* no branches */
-  }
-  // Delete all files on main except initial commit
-  try {
-    const files = exec(`gh api repos/${testRepo}/contents --jq '.[].name'`);
-    for (const file of files.split("\n").filter(Boolean)) {
-      try {
-        const sha = exec(
-          `gh api repos/${testRepo}/contents/${file} --jq '.sha'`
-        );
-        exec(
-          `gh api --method DELETE repos/${testRepo}/contents/${file} -f message="reset" -f sha="${sha}"`
-        );
-      } catch {
-        /* ignore */
-      }
-    }
-  } catch {
-    /* empty repo */
-  }
-  // Delete rulesets
-  try {
-    const rulesets = exec(`gh api repos/${testRepo}/rulesets --jq '.[].id'`);
-    for (const id of rulesets.split("\n").filter(Boolean)) {
-      exec(`gh api --method DELETE repos/${testRepo}/rulesets/${id}`);
-    }
-  } catch {
-    /* no rulesets */
-  }
-  console.log("=== Reset complete ===\n");
-}
-
 describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
   before(() => {
     tmpDir = join(tmpdir(), `xfg-app-test-${Date.now()}`);
@@ -117,7 +58,7 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
   });
 
   beforeEach(() => {
-    resetTestRepo();
+    resetTestRepo(testRepo);
   });
 
   test("sync creates PR via GraphQL API with GitHub App credentials", async () => {
@@ -358,66 +299,7 @@ describe("GitHub App Signed Refs Test", { skip: SKIP_TESTS }, () => {
   });
 
   beforeEach(() => {
-    // Reset the signed-refs repo (close PRs, delete branches, files, rulesets)
-    try {
-      const prs = exec(
-        `gh api repos/${signedTestRepo}/pulls --jq '.[].number'`
-      );
-      for (const pr of prs.split("\n").filter(Boolean)) {
-        exec(
-          `gh api --method PATCH repos/${signedTestRepo}/pulls/${pr} -f state=closed`
-        );
-      }
-    } catch {
-      /* no PRs */
-    }
-    try {
-      const branches = exec(
-        `gh api repos/${signedTestRepo}/branches --jq '.[].name'`
-      );
-      for (const branch of branches.split("\n").filter(Boolean)) {
-        if (branch !== "main") {
-          try {
-            exec(
-              `gh api --method DELETE repos/${signedTestRepo}/git/refs/heads/${branch}`
-            );
-          } catch {
-            /* */
-          }
-        }
-      }
-    } catch {
-      /* */
-    }
-    try {
-      const files = exec(
-        `gh api repos/${signedTestRepo}/contents --jq '.[].name'`
-      );
-      for (const file of files.split("\n").filter(Boolean)) {
-        try {
-          const sha = exec(
-            `gh api repos/${signedTestRepo}/contents/${file} --jq '.sha'`
-          );
-          exec(
-            `gh api --method DELETE repos/${signedTestRepo}/contents/${file} -f message="reset" -f sha="${sha}"`
-          );
-        } catch {
-          /* */
-        }
-      }
-    } catch {
-      /* */
-    }
-    try {
-      const rulesets = exec(
-        `gh api repos/${signedTestRepo}/rulesets --jq '.[].id'`
-      );
-      for (const id of rulesets.split("\n").filter(Boolean)) {
-        exec(`gh api --method DELETE repos/${signedTestRepo}/rulesets/${id}`);
-      }
-    } catch {
-      /* */
-    }
+    resetTestRepo(signedTestRepo);
 
     // Apply required_signatures ruleset via PAT
     const rulesetConfig = writeConfig(

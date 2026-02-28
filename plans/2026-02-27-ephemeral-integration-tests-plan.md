@@ -10,7 +10,7 @@
 
 ---
 
-### Task 1: Extend test-helpers with createRepo and parameterized generateRepoName
+## Task 1: Extend test-helpers with createRepo and parameterized generateRepoName
 
 **Files:**
 
@@ -49,7 +49,7 @@ export function createRepo(
   envOptions?: { env: Record<string, string | undefined> }
 ): void {
   console.log(`  Creating ephemeral repo ${owner}/${repoName}...`);
-  const cmd = `gh repo create ${owner}/${repoName} --private --confirm`;
+  const cmd = `gh repo create ${owner}/${repoName} --private --add-readme`;
   exec(cmd, envOptions);
   console.log(`  Created ${owner}/${repoName}`);
 }
@@ -69,7 +69,7 @@ git commit -m "feat(test): add createRepo helper and parameterize generateRepoNa
 
 ---
 
-### Task 2: Migrate github-rulesets.test.ts to ephemeral repos
+## Task 2: Migrate github-rulesets.test.ts to ephemeral repos
 
 **Files:**
 
@@ -132,34 +132,35 @@ function makeConfig(): string {
   return writeConfig(
     tmpDir,
     `id: integration-test-github-rulesets
+files:
+  .xfg-settings-test:
+    content: "# Placeholder for settings integration test"
+    createOnly: true
 settings:
   rulesets:
     ${RULESET_NAME}:
       target: branch
       enforcement: active
       conditions:
-        ref_name:
+        refName:
           include:
-            - "~DEFAULT_BRANCH"
-          exclude: []
+            - refs/heads/main
       rules:
-        pull_request:
-          dismiss_stale_reviews_on_push: true
-          require_code_owner_review: false
-          require_last_push_approval: false
-          required_approving_review_count: 1
-          required_review_thread_resolution: false
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 1
 repos:
   - git: https://github.com/${OWNER}/${repoName}.git
+    files:
+      .xfg-settings-test: false
 `
   );
 }
 
 describe("GitHub Settings Integration Test", () => {
   before(() => {
-    tmpDir = mkdirSync(join(tmpdir(), `xfg-rulesets-test-${Date.now()}`), {
-      recursive: true,
-    }) as string;
+    tmpDir = join(tmpdir(), `xfg-rulesets-test-${Date.now()}`);
+    mkdirSync(tmpDir, { recursive: true });
     repoName = generateRepoName("rulesets");
     testRepo = `${OWNER}/${repoName}`;
     createRepo(OWNER, repoName);
@@ -280,7 +281,7 @@ git commit -m "refactor(test): migrate github-rulesets to ephemeral repos"
 
 ---
 
-### Task 3: Migrate github-labels.test.ts to ephemeral repos
+## Task 3: Migrate github-labels.test.ts to ephemeral repos
 
 **Files:**
 
@@ -367,9 +368,8 @@ repos:
 
 describe("GitHub Labels Integration Test", () => {
   before(() => {
-    tmpDir = mkdirSync(join(tmpdir(), `xfg-labels-test-${Date.now()}`), {
-      recursive: true,
-    }) as string;
+    tmpDir = join(tmpdir(), `xfg-labels-test-${Date.now()}`);
+    mkdirSync(tmpDir, { recursive: true });
     repoName = generateRepoName("labels");
     testRepo = `${OWNER}/${repoName}`;
     createRepo(OWNER, repoName);
@@ -388,8 +388,9 @@ describe("GitHub Labels Integration Test", () => {
         exec(
           `gh api --method DELETE repos/${testRepo}/labels/${encodeURIComponent(label.name)}`
         );
-      } catch {
-        // ignore
+      } catch (e) {
+        // Label may already be deleted; log for debugging
+        console.warn(`Failed to delete label ${label.name}: ${e}`);
       }
     }
   });
@@ -594,7 +595,7 @@ git commit -m "refactor(test): migrate github-labels to ephemeral repos"
 
 ---
 
-### Task 4: Migrate github-repo-settings.test.ts to ephemeral repos
+## Task 4: Migrate github-repo-settings.test.ts to ephemeral repos
 
 **Files:**
 
@@ -730,9 +731,8 @@ repos:
 
 describe("GitHub Repo Settings Integration Test", () => {
   before(() => {
-    tmpDir = mkdirSync(join(tmpdir(), `xfg-repo-settings-test-${Date.now()}`), {
-      recursive: true,
-    }) as string;
+    tmpDir = join(tmpdir(), `xfg-repo-settings-test-${Date.now()}`);
+    mkdirSync(tmpDir, { recursive: true });
     repoName = generateRepoName("repo-settings");
     testRepo = `${OWNER}/${repoName}`;
     createRepo(OWNER, repoName);
@@ -836,7 +836,9 @@ git commit -m "refactor(test): migrate github-repo-settings to ephemeral repos"
 
 ---
 
-### Task 5: Migrate github-app.test.ts to ephemeral repos
+## Task 5: Migrate github-app.test.ts to ephemeral repos
+
+**Prerequisites: Task 1** — This task uses `generateRepoName(prefix)` and `createRepo()` from `test/integration/test-helpers.ts`, which are added by Task 1.
 
 **Files:**
 
@@ -973,9 +975,8 @@ function resetTestRepo(): void {
 
 describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
   before(() => {
-    tmpDir = mkdirSync(join(tmpdir(), `xfg-app-test-${Date.now()}`), {
-      recursive: true,
-    }) as string;
+    tmpDir = join(tmpdir(), `xfg-app-test-${Date.now()}`);
+    mkdirSync(tmpDir, { recursive: true });
     repoName = generateRepoName("app");
     testRepo = `${OWNER}/${repoName}`;
     createRepo(OWNER, repoName);
@@ -1061,28 +1062,36 @@ repos:
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-github-app-settings
+files:
+  .xfg-settings-test:
+    content: "# Placeholder for settings integration test"
+    createOnly: true
 settings:
   rulesets:
-    xfg-app-test-ruleset:
+    xfg-app-bypass-test:
       target: branch
       enforcement: active
-      bypass_actors:
-        - actor_id: 5
-          actor_type: RepositoryRole
-          bypass_mode: always
+      bypassActors:
+        - actorId: 2753244
+          actorType: Integration
+          bypassMode: always
       conditions:
-        ref_name:
-          include: ["~DEFAULT_BRANCH"]
+        refName:
+          include:
+            - refs/heads/main
           exclude: []
       rules:
-        pull_request:
-          dismiss_stale_reviews_on_push: true
-          require_code_owner_review: false
-          require_last_push_approval: false
-          required_approving_review_count: 1
-          required_review_thread_resolution: false
+        - type: pull_request
+          parameters:
+            dismissStaleReviewsOnPush: true
+            requireCodeOwnerReview: false
+            requireLastPushApproval: false
+            requiredApprovingReviewCount: 1
+            requiredReviewThreadResolution: false
 repos:
   - git: https://github.com/${testRepo}.git
+    files:
+      .xfg-settings-test: false
 `
     );
 
@@ -1103,10 +1112,11 @@ files:
   app-orphan-test.json:
     content:
       orphanTest: true
+    deleteOrphaned: true
   app-keep-test.json:
     content:
       keepTest: true
-deleteOrphaned: true
+    deleteOrphaned: true
 prOptions:
   merge: direct
   deleteBranch: true
@@ -1125,7 +1135,7 @@ files:
   app-keep-test.json:
     content:
       keepTest: true
-deleteOrphaned: true
+    deleteOrphaned: true
 prOptions:
   merge: direct
   deleteBranch: true
@@ -1139,22 +1149,32 @@ repos:
 });
 
 describe("GitHub App Repo Settings Test", { skip: SKIP_TESTS }, () => {
+  let settingsRepoName: string;
+  let settingsTestRepo: string;
+  let settingsTmpDir: string;
+
   before(() => {
-    if (!tmpDir) {
-      tmpDir = mkdirSync(join(tmpdir(), `xfg-app-test-${Date.now()}`), {
-        recursive: true,
-      }) as string;
-      repoName = generateRepoName("app");
-      testRepo = `${OWNER}/${repoName}`;
-      createRepo(OWNER, repoName);
-    }
+    settingsTmpDir = join(tmpdir(), `xfg-app-settings-test-${Date.now()}`);
+    mkdirSync(settingsTmpDir, { recursive: true });
+    settingsRepoName = generateRepoName("app-settings");
+    settingsTestRepo = `${OWNER}/${settingsRepoName}`;
+    createRepo(OWNER, settingsRepoName);
+  });
+
+  after(() => {
+    deleteRepo(OWNER, settingsRepoName);
+    rmSync(settingsTmpDir, { recursive: true, force: true });
   });
 
   test("repo settings with GitHub App token is idempotent", () => {
-    resetRepoSettings();
+    // Reset repo settings to defaults
+    const fields = Object.entries(GITHUB_DEFAULTS)
+      .map(([k, v]) => `-F ${k}=${v}`)
+      .join(" ");
+    exec(`gh api --method PATCH repos/${settingsTestRepo} ${fields}`);
 
     const configPath = writeConfig(
-      tmpDir,
+      settingsTmpDir,
       `id: integration-test-github-app-repo-settings
 settings:
   repo:
@@ -1165,7 +1185,7 @@ settings:
     allowRebaseMerge: false
     deleteBranchOnMerge: true
 repos:
-  - git: https://github.com/${testRepo}.git
+  - git: https://github.com/${settingsTestRepo}.git
 `
     );
 
@@ -1191,26 +1211,103 @@ const patOnlyEnv = {
 };
 
 describe("GitHub App Signed Refs Test", { skip: SKIP_TESTS }, () => {
+  let signedRepoName: string;
+  let signedTestRepo: string;
+  let signedTmpDir: string;
+
+  before(() => {
+    signedTmpDir = join(tmpdir(), `xfg-app-signed-test-${Date.now()}`);
+    mkdirSync(signedTmpDir, { recursive: true });
+    signedRepoName = generateRepoName("app-signed");
+    signedTestRepo = `${OWNER}/${signedRepoName}`;
+    createRepo(OWNER, signedRepoName);
+  });
+
+  after(() => {
+    deleteRepo(OWNER, signedRepoName);
+    rmSync(signedTmpDir, { recursive: true, force: true });
+  });
+
   beforeEach(() => {
-    resetTestRepo();
+    // Reset the signed-refs repo (close PRs, delete branches, files, rulesets)
+    try {
+      const prs = exec(
+        `gh api repos/${signedTestRepo}/pulls --jq '.[].number'`
+      );
+      for (const pr of prs.split("\n").filter(Boolean)) {
+        exec(
+          `gh api --method PATCH repos/${signedTestRepo}/pulls/${pr} -f state=closed`
+        );
+      }
+    } catch {
+      /* no PRs */
+    }
+    try {
+      const branches = exec(
+        `gh api repos/${signedTestRepo}/branches --jq '.[].name'`
+      );
+      for (const branch of branches.split("\n").filter(Boolean)) {
+        if (branch !== "main") {
+          try {
+            exec(
+              `gh api --method DELETE repos/${signedTestRepo}/git/refs/heads/${branch}`
+            );
+          } catch {
+            /* */
+          }
+        }
+      }
+    } catch {
+      /* */
+    }
+    try {
+      const files = exec(
+        `gh api repos/${signedTestRepo}/contents --jq '.[].name'`
+      );
+      for (const file of files.split("\n").filter(Boolean)) {
+        try {
+          const sha = exec(
+            `gh api repos/${signedTestRepo}/contents/${file} --jq '.sha'`
+          );
+          exec(
+            `gh api --method DELETE repos/${signedTestRepo}/contents/${file} -f message="reset" -f sha="${sha}"`
+          );
+        } catch {
+          /* */
+        }
+      }
+    } catch {
+      /* */
+    }
+    try {
+      const rulesets = exec(
+        `gh api repos/${signedTestRepo}/rulesets --jq '.[].id'`
+      );
+      for (const id of rulesets.split("\n").filter(Boolean)) {
+        exec(`gh api --method DELETE repos/${signedTestRepo}/rulesets/${id}`);
+      }
+    } catch {
+      /* */
+    }
 
     // Apply required_signatures ruleset via PAT
     const rulesetConfig = writeConfig(
-      tmpDir,
+      signedTmpDir,
       `id: integration-test-signed-refs
 settings:
   rulesets:
-    required_signatures:
+    xfg-require-signed-commits:
       target: branch
       enforcement: active
       conditions:
-        ref_name:
-          include: ["~ALL"]
+        refName:
+          include:
+            - "refs/heads/**"
           exclude: []
       rules:
-        required_signatures: {}
+        - type: required_signatures
 repos:
-  - git: https://github.com/${testRepo}.git
+  - git: https://github.com/${signedTestRepo}.git
 `
     );
     exec(`node dist/cli.js settings --config ${rulesetConfig}`, patOnlyEnv);
@@ -1218,7 +1315,7 @@ repos:
 
   test("sync creates PR on repo with required_signatures on all branches", async () => {
     const configPath = writeConfig(
-      tmpDir,
+      signedTmpDir,
       `id: integration-test-github-app
 files:
   my.config.json:
@@ -1227,7 +1324,7 @@ files:
 prOptions:
   branch: ${SYNC_BRANCH}
 repos:
-  - git: https://github.com/${testRepo}.git
+  - git: https://github.com/${signedTestRepo}.git
 `
     );
 
@@ -1235,14 +1332,14 @@ repos:
     console.log(output);
 
     const prNumber = exec(
-      `gh api repos/${testRepo}/pulls --jq '.[] | select(.head.ref == "${SYNC_BRANCH}") | .number'`
+      `gh api repos/${signedTestRepo}/pulls --jq '.[] | select(.head.ref == "${SYNC_BRANCH}") | .number'`
     );
     assert.ok(prNumber);
 
     const commitSha = exec(
-      `gh api repos/${testRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
+      `gh api repos/${signedTestRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
     );
-    await waitForCommitVerified(testRepo, commitSha);
+    await waitForCommitVerified(signedTestRepo, commitSha);
   });
 });
 ```
@@ -1274,7 +1371,9 @@ git commit -m "refactor(test): migrate github-app to ephemeral repos"
 
 ---
 
-### Task 6: Migrate github.test.ts to ephemeral repos
+## Task 6: Migrate github.test.ts to ephemeral repos
+
+**Prerequisites: Task 1** — This task uses `generateRepoName(prefix)` and `createRepo()` from `test/integration/test-helpers.ts`, which are added by Task 1.
 
 **Files:**
 
@@ -1411,9 +1510,8 @@ function resetTestRepo(): void {
 
 describe("GitHub Integration Test", () => {
   before(() => {
-    tmpDir = mkdirSync(join(tmpdir(), `xfg-sync-test-${Date.now()}`), {
-      recursive: true,
-    }) as string;
+    tmpDir = join(tmpdir(), `xfg-sync-test-${Date.now()}`);
+    mkdirSync(tmpDir, { recursive: true });
     repoName = generateRepoName("sync");
     testRepo = `${OWNER}/${repoName}`;
     createRepo(OWNER, repoName);
@@ -1737,7 +1835,7 @@ files:
   remaining-file.json:
     content:
       remaining: true
-    deleteOrphaned: false
+    deleteOrphaned: true
 repos:
   - git: https://github.com/${testRepo}.git
 prOptions:
@@ -2063,7 +2161,7 @@ git commit -m "refactor(test): migrate github.test.ts to ephemeral repos"
 
 ---
 
-### Task 7: Generalize create-ephemeral-repo-config.sh for fixture templates
+## Task 7: Generalize create-ephemeral-repo-config.sh for fixture templates
 
 **Files:**
 
@@ -2097,6 +2195,9 @@ if [ "${1:-}" = "--fixture" ]; then
 
   REPO_NAME="xfg-${PREFIX}-test-$(date +%s)-$(openssl rand -hex 3)"
   echo "Generated repo name: ${REPO_NAME}"
+
+  # Create the ephemeral repo (action jobs sync TO an existing repo)
+  gh repo create "${OWNER}/${REPO_NAME}" --private --add-readme
 
   # Substitute placeholder in fixture template
   sed "s|OWNER/REPO_PLACEHOLDER|${OWNER}/${REPO_NAME}|g" "${FIXTURE_PATH}" > "${CONFIG_PATH}"
@@ -2149,7 +2250,7 @@ git commit -m "feat(ci): add --fixture mode to create-ephemeral-repo-config.sh"
 
 ---
 
-### Task 8: Convert action fixture files to templates with placeholder URLs
+## Task 8: Convert action fixture files to templates with placeholder URLs
 
 **Files:**
 
@@ -2200,13 +2301,13 @@ To:
 **Step 2: Commit**
 
 ```bash
-git add test/fixtures/integration-test-action-github-*.yaml
+git add test/fixtures/integration-test-action-github-*.yaml test/fixtures/integration-test-action-settings-app.yaml
 git commit -m "refactor(fixtures): replace hardcoded repo URLs with OWNER/REPO_PLACEHOLDER"
 ```
 
 ---
 
-### Task 9: Update CI workflow - migrate 5 CLI jobs to ephemeral repos
+## Task 9: Update CI workflow - migrate 5 CLI jobs to ephemeral repos
 
 **Files:**
 
@@ -2214,11 +2315,14 @@ git commit -m "refactor(fixtures): replace hardcoded repo URLs with OWNER/REPO_P
 
 This task updates the 5 CLI test jobs: `cli-sync-github-pat`, `cli-sync-github-app`, `cli-settings-rulesets-pat`, `cli-settings-labels-pat`, `cli-settings-repo-pat`.
 
+**Note:** CLI jobs do NOT have a `reset-test-repo.sh` step (only the 3 action jobs in Task 10 do). The changes here are token swap and concurrency removal only.
+
+**Important dependency:** The `GH_PAT` to `GH_PAT_ORG` swap depends on the test code already being updated (Tasks 2-6) to use `spruyt-labs` org with `createRepo()`/`deleteRepo()`. If the workflow changes are deployed before the test code changes, CI will fail because the old test code expects a different token scope. Ensure Tasks 2-6 are merged first or in the same PR.
+
 For each job:
 
 1. Change `GH_TOKEN: ${{ secrets.GH_PAT }}` to `GH_TOKEN: ${{ secrets.GH_PAT_ORG }}`
-2. Remove the `run: bash .github/scripts/reset-test-repo.sh ...` step
-3. Remove the `concurrency` block
+2. Remove the `concurrency` block
 
 **Step 1: Read the current workflow file**
 
@@ -2227,7 +2331,6 @@ Run: Read `.github/workflows/_integration-tests.yaml` to find exact line numbers
 **Step 2: For each of the 5 CLI jobs:**
 
 - Replace `secrets.GH_PAT` with `secrets.GH_PAT_ORG` in the `env` block
-- Delete the reset-test-repo.sh step
 - Delete the `concurrency:` block (usually 2 lines: `group:` and `cancel-in-progress:`)
 
 **Step 3: Verify YAML syntax**
@@ -2244,7 +2347,7 @@ git commit -m "refactor(ci): migrate 5 CLI jobs to ephemeral repos with GH_PAT_O
 
 ---
 
-### Task 10: Update CI workflow - migrate 3 action jobs to ephemeral repos
+## Task 10: Update CI workflow - migrate 3 action jobs to ephemeral repos
 
 **Files:**
 
@@ -2253,48 +2356,155 @@ git commit -m "refactor(ci): migrate 5 CLI jobs to ephemeral repos with GH_PAT_O
 For the 3 action jobs (`action-sync-pat`, `action-sync-app`, `action-settings-app`):
 
 1. Change `GH_TOKEN` from `GH_PAT` to `GH_PAT_ORG`
-2. Replace `reset-test-repo.sh` step with `create-ephemeral-repo-config.sh --fixture` step
+2. Replace `reset-test-repo.sh` step with `create-ephemeral-repo-config.sh --fixture` step (only these 3 action jobs have `reset-test-repo.sh` -- CLI jobs in Task 9 do not)
 3. Add `delete-ephemeral-repo.sh` cleanup step with `if: always()`
-4. Update the `seed-manifest.sh` call to use the ephemeral repo name from output
-5. Remove the `concurrency` block
+4. For `action-sync-pat` and `action-sync-app`: update the `seed-manifest.sh` call to use the ephemeral repo name from `${{ steps.ephemeral.outputs.repo_name }}` (`action-settings-app` has no `seed-manifest.sh` step -- do not add one)
+5. Update the act step's `config:` input from the original fixture path to `${{ runner.temp }}/config.yaml`
+6. Remove the `concurrency` block
+
+**Note:** The `create-ephemeral-repo-config.sh` script takes positional arguments, not flags. Since the existing script only supports inline config mode (prefix, owner, config-path, config-id, file-name, file-content-json), Task 7 must add `--fixture` mode first. Alternatively, the fixture template substitution can be done inline in the workflow step using `sed`.
 
 **Step 1: For `action-sync-pat` job:**
 
 Replace the reset step:
 
 ```yaml
-- name: Reset test repo
-  run: bash .github/scripts/reset-test-repo.sh anthony-spruyt/xfg-test-4
+- name: Cleanup — reset test repo
   env:
     GH_TOKEN: ${{ secrets.GH_PAT }}
+  run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
 ```
 
 With:
 
 ```yaml
-- name: Create ephemeral repo
+- name: Arrange — create ephemeral repo and config
   id: ephemeral
+  env:
+    GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
   run: |
-    bash .github/scripts/create-ephemeral-repo-config.sh \
+    .github/scripts/create-ephemeral-repo-config.sh \
       --fixture "action-pat" "spruyt-labs" \
       "${{ runner.temp }}/config.yaml" \
       "test/fixtures/integration-test-action-github-pat.yaml"
-    REPO_NAME=$(grep 'REPO_NAME=' <<< "$(cat /dev/stdin)" | cut -d= -f2)
-  env:
-    GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
 ```
 
-And add cleanup at end:
+The script writes `repo_name=<name>` to `$GITHUB_OUTPUT`, so reference `${{ steps.ephemeral.outputs.repo_name }}` in subsequent steps.
+
+Update the act step's `config:` input:
 
 ```yaml
-- name: Delete ephemeral repo
-  if: always()
-  run: gh repo delete --yes spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}
-  env:
-    GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+config: ${{ runner.temp }}/config.yaml
 ```
 
-Apply the same pattern for `action-sync-app` and `action-settings-app`, using their respective fixture templates.
+And add cleanup at end using the existing `delete-ephemeral-repo.sh` script (consistent with lifecycle jobs):
+
+```yaml
+- name: Cleanup — delete ephemeral repo
+  if: always()
+  env:
+    GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+  run: .github/scripts/delete-ephemeral-repo.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}"
+```
+
+Apply the same pattern for `action-sync-app` and `action-settings-app`, using their respective fixture templates. Remember: `action-settings-app` has no `seed-manifest.sh` step, so do not add one.
+
+**Step 1b: Remove job-level `env:` blocks from `action-sync-pat`, `action-sync-app`, and `action-settings-app`**
+
+All three jobs currently define hardcoded env vars at the job level that reference persistent repos. These must be removed since the ephemeral repo name comes from `steps.ephemeral.outputs.repo_name`:
+
+For `integration-test-action-sync-pat`, delete:
+
+```yaml
+env:
+  TEST_REPO: anthony-spruyt/xfg-test-4
+  PAT_BRANCH: chore/sync-my-config
+```
+
+For `integration-test-action-sync-app`, delete:
+
+```yaml
+env:
+  TEST_REPO: anthony-spruyt/xfg-test-5
+  APP_BRANCH: chore/sync-app-test
+```
+
+For `integration-test-action-settings-app`, delete:
+
+```yaml
+env:
+  TEST_REPO: anthony-spruyt/xfg-test-6
+```
+
+The branch names (`chore/sync-my-config` and `chore/sync-app-test`) are passed as inputs to the xfg action via the `branch:` field, so they can be hardcoded inline in the act step's `branch:` input. `TEST_REPO` is no longer needed -- all references become `spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}`.
+
+**Step 1c: Update assertion steps to reference ephemeral repo**
+
+In `action-sync-pat`, `action-sync-app`, and `action-settings-app` assertion steps, replace all occurrences of `${TEST_REPO}` with `spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}`. For example:
+
+In `action-sync-pat`, the "Assert -- verify PR created" step currently uses:
+
+```bash
+PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${PAT_BRANCH} --json number,title,url --jq '.[0]')
+```
+
+Change to:
+
+```bash
+PR_INFO=$(gh pr list --repo spruyt-labs/${{ steps.ephemeral.outputs.repo_name }} --head chore/sync-my-config --json number,title,url --jq '.[0]')
+```
+
+Similarly update `PR_NUMBER`, `COMMIT_SHA`, `COMMIT_AUTHOR` lines and the `verify-commit-file-count.sh` call. The same applies to the `action-sync-app` assertion steps, replacing `${TEST_REPO}` with `spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}` and `${APP_BRANCH}` with the literal `chore/sync-app-test`.
+
+For `action-settings-app`, the "Assert -- verify ruleset was created" step currently uses:
+
+```bash
+RULESET=$(gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset")')
+```
+
+Change to:
+
+```bash
+RULESET=$(gh api repos/spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset")')
+```
+
+**Step 1d: Update `seed-manifest.sh` steps for `action-sync-pat` and `action-sync-app`**
+
+For `action-sync-pat`, replace:
+
+```yaml
+- name: Arrange — seed manifest
+  env:
+    GH_TOKEN: ${{ secrets.GH_PAT }}
+  run: .github/scripts/seed-manifest.sh "${TEST_REPO}" "integration-test-action-github-pat"
+```
+
+With:
+
+```yaml
+- name: Arrange — seed manifest
+  env:
+    GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+  run: .github/scripts/seed-manifest.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "integration-test-action-github-pat"
+```
+
+For `action-sync-app`, replace:
+
+```yaml
+- name: Arrange — seed manifest
+  env:
+    GH_TOKEN: ${{ secrets.GH_PAT }}
+  run: .github/scripts/seed-manifest.sh "${TEST_REPO}" "integration-test-action-github-app"
+```
+
+With:
+
+```yaml
+- name: Arrange — seed manifest
+  env:
+    GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+  run: .github/scripts/seed-manifest.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "integration-test-action-github-app"
+```
 
 **Step 2: Verify YAML syntax**
 
@@ -2309,13 +2519,13 @@ git commit -m "refactor(ci): migrate 3 action jobs to ephemeral repos"
 
 ---
 
-### Task 11: Remove concurrency groups from 4 lifecycle jobs
+## Task 11: Remove concurrency groups from 4 lifecycle jobs
 
 **Files:**
 
 - Modify: `.github/workflows/_integration-tests.yaml`
 
-The 4 lifecycle jobs (`cli-lifecycle-create-pat`, `cli-lifecycle-fork-pat`, `cli-lifecycle-migrate-pat`, `action-lifecycle-create-pat`) already use ephemeral repos but still have concurrency groups (`integration-github-8` through `integration-github-11`). Remove these since ephemeral repos cannot collide.
+The 4 lifecycle jobs (`integration-test-cli-lifecycle-github-pat`, `integration-test-cli-lifecycle-github-app`, `integration-test-action-lifecycle-pat`, `integration-test-action-lifecycle-app`) already use ephemeral repos but still have concurrency groups (`integration-github-8` through `integration-github-11`). Remove these since ephemeral repos cannot collide.
 
 **Step 1: For each lifecycle job, delete the concurrency block:**
 
@@ -2338,7 +2548,7 @@ git commit -m "refactor(ci): remove concurrency groups from lifecycle jobs"
 
 ---
 
-### Task 12: Delete reset-test-repo.sh
+## Task 12: Delete reset-test-repo.sh
 
 **Files:**
 
@@ -2360,15 +2570,15 @@ git commit -m "chore: delete reset-test-repo.sh (replaced by ephemeral repos)"
 
 ---
 
-### Task 13: Update integration-tests.md rules
+## Task 13: Update integration-tests.md rules
 
 **Files:**
 
 - Modify: `.claude/rules/integration-tests.md`
 
-Rewrite to document the ephemeral repo pattern.
+Rewrite to document the ephemeral repo pattern. The existing rules file prohibits `gh repo create` and `gh repo delete` outside lifecycle tests -- this must be updated since all GitHub integration tests now use ephemeral repos with create/delete lifecycle.
 
-**Step 1: Replace the file contents with:**
+**Step 1: Replace the entire file contents with the following:**
 
 ````markdown
 ---
@@ -2389,7 +2599,7 @@ All GitHub integration tests use **ephemeral repos** with unique names per run. 
 
 ### CLI Tests
 
-Each CLI test file creates its own ephemeral repo in `before()` and deletes it in `after()`:
+Each CLI test file creates its own ephemeral repo in `before()` and deletes it in `after()`. Configs are written inline via `writeConfig()` (from `test/integration/test-helpers.ts`):
 
 ```typescript
 const OWNER = "spruyt-labs";
@@ -2406,7 +2616,6 @@ after(() => {
   deleteRepo(OWNER, repoName);
 });
 ```
-````
 
 ### Action Tests
 
@@ -2418,9 +2627,10 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 
 ## Key Rules
 
+- **All tests use `gh repo create` / `gh repo delete`** for ephemeral repos (this replaces the old persistent-repo model)
 - **Never reuse a deleted repo name** - GitHub has eventual consistency; use unique timestamp+random names
 - **Never share a repo** between two test jobs
-- Inline configs via `writeConfig()` - no static fixture files for CLI tests
+- Inline configs via `writeConfig()` (from `test/integration/test-helpers.ts`) - no static fixture files for CLI tests
 - Action fixture templates use `OWNER/REPO_PLACEHOLDER` placeholder
 - All GitHub jobs use `GH_PAT_ORG` secret (spruyt-labs org access)
 - **No concurrency groups** on GitHub jobs (ephemeral repos can't collide)
@@ -2430,7 +2640,6 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 
 - GitHub integration tests only run on `push` to `main` (not on PR branches)
 - All jobs run in parallel after `build` - never chain GitHub jobs with `needs`
-
 ````
 
 **Step 2: Commit**
@@ -2438,11 +2647,11 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 ```bash
 git add .claude/rules/integration-tests.md
 git commit -m "docs: update integration-tests rules for ephemeral repo pattern"
-````
+```
 
 ---
 
-### Task 14: Final verification - build + lint
+## Task 14: Final verification - build + lint
 
 **Files:** None (verification only)
 

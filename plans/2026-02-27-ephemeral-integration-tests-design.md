@@ -26,7 +26,7 @@ Migrate all 8 persistent-repo jobs to ephemeral repos with unique names per test
 
 Add optional prefix parameter, defaulting to `"lifecycle"` for backward compat.
 
-```
+```text
 xfg-${prefix}-test-${Date.now()}-${randomBytes(3).toString("hex")}
 ```
 
@@ -79,7 +79,7 @@ Configs written at runtime via `writeConfig(tmpDir, yamlString)` with ephemeral 
 
 New signature:
 
-```
+```bash
 create-ephemeral-repo-config.sh <prefix> <owner> <output-path> <fixture-path>
 ```
 
@@ -103,15 +103,15 @@ Existing lifecycle callers updated to new signature (or backward compat maintain
 
 Replace:
 
-```
+```yaml
 - run: bash .github/scripts/reset-test-repo.sh $TEST_REPO
 ```
 
 With:
 
-```
+```yaml
 - run: bash .github/scripts/create-ephemeral-repo-config.sh <prefix> <owner> <output> <fixture>
-- run: bash .github/scripts/seed-manifest.sh ...  # where applicable
+- run: bash .github/scripts/seed-manifest.sh ... # where applicable
 - ... (run action) ...
 - run: bash .github/scripts/delete-ephemeral-repo.sh <owner/repo>
   if: always()

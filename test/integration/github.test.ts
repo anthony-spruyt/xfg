@@ -10,6 +10,7 @@ import {
   createRepo,
   deleteRepo,
   writeConfig,
+  resetTestRepo,
   waitForFileVisible as waitForFileVisibleBase,
 } from "./test-helpers.js";
 
@@ -28,81 +29,6 @@ async function waitForFileVisible(
   return waitForFileVisibleBase(testRepo, filePath, timeoutMs);
 }
 
-function resetTestRepo(): void {
-  console.log("\n=== Resetting ephemeral repo ===\n");
-  // Close open PRs
-  try {
-    const prs = exec(`gh api repos/${testRepo}/pulls --jq '.[].number'`);
-    for (const pr of prs.split("\n").filter(Boolean)) {
-      exec(
-        `gh api --method PATCH repos/${testRepo}/pulls/${pr} -f state=closed`
-      );
-    }
-  } catch {
-    /* no PRs */
-  }
-  // Delete non-default branches
-  try {
-    const branches = exec(`gh api repos/${testRepo}/branches --jq '.[].name'`);
-    for (const branch of branches.split("\n").filter(Boolean)) {
-      if (branch !== "main") {
-        try {
-          exec(
-            `gh api --method DELETE repos/${testRepo}/git/refs/heads/${branch}`
-          );
-        } catch {
-          /* already gone */
-        }
-      }
-    }
-  } catch {
-    /* no branches */
-  }
-  // Delete all files on main
-  try {
-    const files = exec(`gh api repos/${testRepo}/contents --jq '.[].name'`);
-    for (const file of files.split("\n").filter(Boolean)) {
-      try {
-        const sha = exec(
-          `gh api repos/${testRepo}/contents/${file} --jq '.sha'`
-        );
-        exec(
-          `gh api --method DELETE repos/${testRepo}/contents/${file} -f message="reset" -f sha="${sha}"`
-        );
-      } catch {
-        /* ignore */
-      }
-    }
-  } catch {
-    /* empty repo */
-  }
-  // Delete rulesets
-  try {
-    const rulesets = exec(`gh api repos/${testRepo}/rulesets --jq '.[].id'`);
-    for (const id of rulesets.split("\n").filter(Boolean)) {
-      exec(`gh api --method DELETE repos/${testRepo}/rulesets/${id}`);
-    }
-  } catch {
-    /* no rulesets */
-  }
-  // Delete all labels
-  try {
-    const labels = exec(`gh api repos/${testRepo}/labels --jq '.[].name'`);
-    for (const label of labels.split("\n").filter(Boolean)) {
-      try {
-        exec(
-          `gh api --method DELETE repos/${testRepo}/labels/${encodeURIComponent(label)}`
-        );
-      } catch {
-        /* ignore */
-      }
-    }
-  } catch {
-    /* no labels */
-  }
-  console.log("=== Reset complete ===\n");
-}
-
 describe("GitHub Integration Test", () => {
   before(() => {
     tmpDir = join(tmpdir(), `xfg-sync-test-${Date.now()}`);
@@ -118,7 +44,7 @@ describe("GitHub Integration Test", () => {
   });
 
   beforeEach(() => {
-    resetTestRepo();
+    resetTestRepo(testRepo, { deleteLabels: true });
   });
 
   test("sync creates a PR in the test repository", async () => {
@@ -493,7 +419,12 @@ repos:
       `gh pr list --repo ${testRepo} --head ${testBranch} --json number --jq '.[0]'`
     );
     assert.ok(prInfo2);
-    assert.ok(output2.includes("\u2713") || output2.includes("github.com"));
+    // Verify sync produced output (check mark or repo reference)
+    const url = new URL(`https://github.com/${testRepo}`);
+    assert.ok(
+      output2.includes("\u2713") ||
+        output2.includes(url.hostname + url.pathname)
+    );
   });
 
   test("handles divergent branch when no PR exists but branch exists (issue #183)", async () => {
