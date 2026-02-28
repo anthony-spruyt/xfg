@@ -13,4 +13,4 @@ files:
       setting2: value2
 
 repos:
-  - git: https://github.com/anthony-spruyt/xfg-test-5.git
+  - git: https://github.com/OWNER/REPO_PLACEHOLDER.git

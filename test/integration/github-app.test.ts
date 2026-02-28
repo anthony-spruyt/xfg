@@ -1,27 +1,32 @@
-import { test, describe, beforeEach } from "node:test";
+import { test, describe, before, after, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
+import { mkdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { exec, waitForCommitVerified, projectRoot } from "./test-helpers.js";
+import {
+  exec,
+  projectRoot,
+  generateRepoName,
+  createRepo,
+  deleteRepo,
+  writeConfig,
+  resetTestRepo,
+  waitForCommitVerified,
+} from "./test-helpers.js";
 
-const fixturesDir = join(projectRoot, "test", "fixtures");
-
-// Skip all tests if GitHub App credentials are not set
+const OWNER = "spruyt-labs";
 const SKIP_TESTS =
   !process.env.XFG_GITHUB_APP_ID || !process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
 if (SKIP_TESTS) {
   console.log(
-    "\n⚠️  Skipping GitHub App integration tests: XFG_GITHUB_APP_ID and XFG_GITHUB_APP_PRIVATE_KEY not set\n"
+    "\n  Skipping GitHub App integration tests: XFG_GITHUB_APP_ID and XFG_GITHUB_APP_PRIVATE_KEY not set\n"
   );
 }
 
-// xfg commands must NOT see GH_TOKEN — only App credentials
+// xfg commands must NOT see GH_TOKEN - only App credentials
 const xfgEnv = { cwd: projectRoot, env: { GH_TOKEN: undefined } };
 
-const RESET_SCRIPT = join(projectRoot, ".github/scripts/reset-test-repo.sh");
-const TEST_REPO = "anthony-spruyt/xfg-test-2";
-
-// GitHub default repo settings — used to reset between tests
 const GITHUB_DEFAULTS = {
   has_wiki: true,
   has_projects: true,
@@ -31,113 +36,137 @@ const GITHUB_DEFAULTS = {
   delete_branch_on_merge: false,
 };
 
-function resetTestRepo(): void {
-  console.log("\n=== Resetting test repo to clean state ===\n");
-  exec(`bash ${RESET_SCRIPT} ${TEST_REPO}`);
-  console.log("\n=== Reset complete ===\n");
-}
-
-/**
- * Reset repo settings to GitHub defaults via PATCH API.
- * Uses gh CLI which has GH_TOKEN - this is intentional for setup.
- */
-function resetRepoSettings(): void {
-  console.log("  Resetting repo settings to defaults...");
-  const fields = Object.entries(GITHUB_DEFAULTS)
-    .map(([k, v]) => `-F ${k}=${v}`)
-    .join(" ");
-  exec(`gh api --method PATCH repos/${TEST_REPO} ${fields}`);
-  console.log("  Settings reset to defaults");
-}
-
 const SYNC_BRANCH = "chore/sync-github-app-test";
 const DIRECT_FILE = "github-app-direct-test.json";
 
-// Note: exec() here calls the test-helpers wrapper (not child_process.exec directly).
-// All arguments are hardcoded test constants — no user input, no injection risk.
+let repoName: string;
+let testRepo: string;
+let tmpDir: string;
+
 describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
+  before(() => {
+    tmpDir = join(tmpdir(), `xfg-app-test-${Date.now()}`);
+    mkdirSync(tmpDir, { recursive: true });
+    repoName = generateRepoName("app");
+    testRepo = `${OWNER}/${repoName}`;
+    createRepo(OWNER, repoName);
+  });
+
+  after(() => {
+    deleteRepo(OWNER, repoName);
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
   beforeEach(() => {
-    resetTestRepo();
+    resetTestRepo(testRepo);
   });
 
   test("sync creates PR via GraphQL API with GitHub App credentials", async () => {
-    const configPath = join(fixturesDir, "integration-test-github-app.yaml");
-    console.log("Running xfg sync with GitHub App credentials...");
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-app
+files:
+  my.config.json:
+    content:
+      prop1: main
+prOptions:
+  branch: ${SYNC_BRANCH}
+repos:
+  - git: https://github.com/${testRepo}.git
+`
+    );
+
     const output = exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
     console.log(output);
 
-    // Assert: PR exists on the sync branch
     const prNumber = exec(
-      `gh api repos/${TEST_REPO}/pulls --jq '.[] | select(.head.ref == "${SYNC_BRANCH}") | .number'`
+      `gh api repos/${testRepo}/pulls --jq '.[] | select(.head.ref == "${SYNC_BRANCH}") | .number'`
     );
-    assert.ok(prNumber, `Expected PR on ${SYNC_BRANCH}, found none`);
-    console.log(`  PR #${prNumber} exists`);
+    assert.ok(prNumber, `Expected PR on ${SYNC_BRANCH}`);
 
-    // Assert: commit author is App (not github-actions[bot] which would mean PAT leaked)
     const commitSha = exec(
-      `gh api repos/${TEST_REPO}/commits/${SYNC_BRANCH} --jq '.sha'`
+      `gh api repos/${testRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
     );
     const author = exec(
-      `gh api repos/${TEST_REPO}/commits/${commitSha} --jq '.commit.author.name'`
+      `gh api repos/${testRepo}/commits/${commitSha} --jq '.commit.author.name'`
     );
-    console.log(`  Commit author: ${author}`);
-    assert.notStrictEqual(
-      author,
-      "github-actions[bot]",
-      "Commit author is github-actions[bot] — PAT leaked into App test"
-    );
+    assert.notStrictEqual(author, "github-actions[bot]");
 
-    // Assert: commit is verified (poll for eventual consistency)
-    await waitForCommitVerified(TEST_REPO, commitSha);
+    await waitForCommitVerified(testRepo, commitSha);
   });
 
   test("direct mode pushes verified commit to main", async () => {
-    const configPath = join(
-      fixturesDir,
-      "integration-test-github-app-direct.yaml"
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-app-direct
+files:
+  ${DIRECT_FILE}:
+    content:
+      directMode: true
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${testRepo}.git
+`
     );
-    console.log("Running xfg sync with direct mode + GitHub App...");
+
     const output = exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
     console.log(output);
 
-    // Assert: file exists on main
     const fileSha = exec(
-      `gh api repos/${TEST_REPO}/contents/${DIRECT_FILE} --jq '.sha'`
+      `gh api repos/${testRepo}/contents/${DIRECT_FILE} --jq '.sha'`
     );
-    assert.ok(fileSha, `Expected ${DIRECT_FILE} to exist on main`);
+    assert.ok(fileSha, `Expected ${DIRECT_FILE} on main`);
 
-    // Assert: latest main commit is authored by App (not github-actions[bot])
-    const mainSha = exec(`gh api repos/${TEST_REPO}/commits/main --jq '.sha'`);
+    const mainSha = exec(`gh api repos/${testRepo}/commits/main --jq '.sha'`);
     const author = exec(
-      `gh api repos/${TEST_REPO}/commits/${mainSha} --jq '.commit.author.name'`
+      `gh api repos/${testRepo}/commits/${mainSha} --jq '.commit.author.name'`
     );
-    console.log(`  Direct mode commit author: ${author}`);
-    assert.notStrictEqual(
-      author,
-      "github-actions[bot]",
-      "Direct mode commit author is github-actions[bot]"
-    );
+    assert.notStrictEqual(author, "github-actions[bot]");
 
-    // Assert: commit is verified (poll for eventual consistency)
-    await waitForCommitVerified(TEST_REPO, mainSha);
+    await waitForCommitVerified(testRepo, mainSha);
   });
 
   test("settings command with bypass_actors is idempotent", () => {
-    const configPath = join(
-      fixturesDir,
-      "integration-test-github-app-settings.yaml"
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-app-settings
+files:
+  .xfg-settings-test:
+    content: "# Placeholder for settings integration test"
+    createOnly: true
+settings:
+  rulesets:
+    xfg-app-bypass-test:
+      target: branch
+      enforcement: active
+      bypassActors:
+        - actorId: 2753244
+          actorType: Integration
+          bypassMode: always
+      conditions:
+        refName:
+          include:
+            - refs/heads/main
+          exclude: []
+      rules:
+        - type: pull_request
+          parameters:
+            dismissStaleReviewsOnPush: true
+            requireCodeOwnerReview: false
+            requireLastPushApproval: false
+            requiredApprovingReviewCount: 1
+            requiredReviewThreadResolution: false
+repos:
+  - git: https://github.com/${testRepo}.git
+    files:
+      .xfg-settings-test: false
+`
     );
 
-    // Create the ruleset
-    console.log("Creating ruleset with bypass_actors...");
-    const createOutput = exec(
-      `node dist/cli.js settings --config ${configPath}`,
-      xfgEnv
-    );
-    console.log(createOutput);
+    exec(`node dist/cli.js settings --config ${configPath}`, xfgEnv);
 
-    // Run again in dry-run — should not fail
-    console.log("\nRunning settings --dry-run (should be idempotent)...");
     const dryRunOutput = exec(
       `node dist/cli.js settings --config ${configPath} --dry-run`,
       xfgEnv
@@ -146,79 +175,104 @@ describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
   });
 
   test("deleteOrphaned removes orphan files", async () => {
-    const configPath1 = join(
-      fixturesDir,
-      "integration-test-github-app-delete-phase1.yaml"
-    );
-    const configPath2 = join(
-      fixturesDir,
-      "integration-test-github-app-delete-phase2.yaml"
+    const config1 = writeConfig(
+      tmpDir,
+      `id: integration-test-github-app-delete
+files:
+  app-orphan-test.json:
+    content:
+      orphanTest: true
+    deleteOrphaned: true
+  app-keep-test.json:
+    content:
+      keepTest: true
+    deleteOrphaned: true
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${testRepo}.git
+`
     );
 
-    // Phase 1: Create files with deleteOrphaned config
-    console.log("Phase 1: Creating files with deleteOrphaned: true...");
-    const output1 = exec(
-      `node dist/cli.js sync --config ${configPath1}`,
-      xfgEnv
-    );
-    console.log(output1);
-
-    // Small delay for GitHub API eventual consistency
+    exec(`node dist/cli.js sync --config ${config1}`, xfgEnv);
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    // Phase 2: Remove file from config (should trigger deletion)
-    console.log(
-      "\nPhase 2: Removing file from config (should delete orphan)..."
+    const config2 = writeConfig(
+      tmpDir,
+      `id: integration-test-github-app-delete
+files:
+  app-keep-test.json:
+    content:
+      keepTest: true
+    deleteOrphaned: true
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${testRepo}.git
+`
     );
-    const output2 = exec(
-      `node dist/cli.js sync --config ${configPath2}`,
-      xfgEnv
-    );
-    console.log(output2);
+
+    exec(`node dist/cli.js sync --config ${config2}`, xfgEnv);
   });
 });
 
-// Separate describe block — repo settings don't need full repo reset
 describe("GitHub App Repo Settings Test", { skip: SKIP_TESTS }, () => {
-  // Regression test for issue #418 - RepoSettingsProcessor missing GitHub App token support
+  let settingsRepoName: string;
+  let settingsTestRepo: string;
+  let settingsTmpDir: string;
+
+  before(() => {
+    settingsTmpDir = join(tmpdir(), `xfg-app-settings-test-${Date.now()}`);
+    mkdirSync(settingsTmpDir, { recursive: true });
+    settingsRepoName = generateRepoName("app-settings");
+    settingsTestRepo = `${OWNER}/${settingsRepoName}`;
+    createRepo(OWNER, settingsRepoName);
+  });
+
+  after(() => {
+    deleteRepo(OWNER, settingsRepoName);
+    rmSync(settingsTmpDir, { recursive: true, force: true });
+  });
+
   test("repo settings with GitHub App token is idempotent", () => {
-    const configPath = join(
-      fixturesDir,
-      "integration-test-github-app-repo-settings.yaml"
+    // Reset repo settings to defaults
+    const fields = Object.entries(GITHUB_DEFAULTS)
+      .map(([k, v]) => `-F ${k}=${v}`)
+      .join(" ");
+    exec(`gh api --method PATCH repos/${settingsTestRepo} ${fields}`);
+
+    const configPath = writeConfig(
+      settingsTmpDir,
+      `id: integration-test-github-app-repo-settings
+settings:
+  repo:
+    hasWiki: false
+    hasProjects: false
+    allowSquashMerge: true
+    allowMergeCommit: false
+    allowRebaseMerge: false
+    deleteBranchOnMerge: true
+repos:
+  - git: https://github.com/${settingsTestRepo}.git
+`
     );
 
-    // Reset repo settings to defaults (uses gh CLI with GH_TOKEN for setup)
-    // Note: This does NOT reset the repo content/commits, only settings
-    resetRepoSettings();
+    exec(`node dist/cli.js settings --config ${configPath}`, xfgEnv);
 
-    // Apply repo settings with GitHub App credentials (no GH_TOKEN)
-    console.log("Applying repo settings with GitHub App credentials...");
-    const applyOutput = exec(
-      `node dist/cli.js settings --config ${configPath}`,
-      xfgEnv
-    );
-    console.log(applyOutput);
-
-    // Run again - should report no changes (idempotency check)
-    // Before fix #418, this would show all settings as "additions" because
-    // RepoSettingsProcessor couldn't fetch current settings without token
-    console.log("\nRunning settings again (should report no changes)...");
     const secondOutput = exec(
       `node dist/cli.js settings --config ${configPath}`,
       xfgEnv
     );
-    console.log(secondOutput);
-
-    // Assert idempotency - second run should have no changes
     assert.ok(
       secondOutput.includes("No changes needed") ||
-        secondOutput.includes("0 to add, 0 to change"),
-      `Expected no changes on second run, got: ${secondOutput}`
+        secondOutput.includes("0 to add, 0 to change")
     );
   });
 });
 
-// Force PAT-only auth: strip App credentials so GH_TOKEN is used for admin operations
+// Force PAT-only auth
 const patOnlyEnv = {
   env: {
     XFG_GITHUB_APP_ID: undefined,
@@ -226,37 +280,76 @@ const patOnlyEnv = {
   },
 };
 
-function setupSignedCommitRuleset(): void {
-  console.log("  Applying required_signatures ruleset...");
-  const configPath = join(
-    fixturesDir,
-    "integration-test-github-app-signed-refs-settings.yaml"
-  );
-  exec(`node dist/cli.js settings --config ${configPath}`, patOnlyEnv);
-  console.log("  required_signatures ruleset active on all branches");
-}
-
 describe("GitHub App Signed Refs Test", { skip: SKIP_TESTS }, () => {
+  let signedRepoName: string;
+  let signedTestRepo: string;
+  let signedTmpDir: string;
+
+  before(() => {
+    signedTmpDir = join(tmpdir(), `xfg-app-signed-test-${Date.now()}`);
+    mkdirSync(signedTmpDir, { recursive: true });
+    signedRepoName = generateRepoName("app-signed");
+    signedTestRepo = `${OWNER}/${signedRepoName}`;
+    createRepo(OWNER, signedRepoName);
+  });
+
+  after(() => {
+    deleteRepo(OWNER, signedRepoName);
+    rmSync(signedTmpDir, { recursive: true, force: true });
+  });
+
   beforeEach(() => {
-    resetTestRepo();
-    setupSignedCommitRuleset();
+    resetTestRepo(signedTestRepo);
+
+    // Apply required_signatures ruleset via PAT
+    const rulesetConfig = writeConfig(
+      signedTmpDir,
+      `id: integration-test-signed-refs
+settings:
+  rulesets:
+    xfg-require-signed-commits:
+      target: branch
+      enforcement: active
+      conditions:
+        refName:
+          include:
+            - "refs/heads/**"
+          exclude: []
+      rules:
+        - type: required_signatures
+repos:
+  - git: https://github.com/${signedTestRepo}.git
+`
+    );
+    exec(`node dist/cli.js settings --config ${rulesetConfig}`, patOnlyEnv);
   });
 
   test("sync creates PR on repo with required_signatures on all branches", async () => {
-    const configPath = join(fixturesDir, "integration-test-github-app.yaml");
-    console.log("Running xfg sync with required_signatures active...");
+    const configPath = writeConfig(
+      signedTmpDir,
+      `id: integration-test-github-app
+files:
+  my.config.json:
+    content:
+      prop1: main
+prOptions:
+  branch: ${SYNC_BRANCH}
+repos:
+  - git: https://github.com/${signedTestRepo}.git
+`
+    );
+
     const output = exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
     console.log(output);
 
-    // Assert: PR exists and commit is verified despite required_signatures
     const prNumber = exec(
-      `gh api repos/${TEST_REPO}/pulls --jq '.[] | select(.head.ref == "${SYNC_BRANCH}") | .number'`
+      `gh api repos/${signedTestRepo}/pulls --jq '.[] | select(.head.ref == "${SYNC_BRANCH}") | .number'`
     );
-    assert.ok(prNumber, `Expected PR on ${SYNC_BRANCH}, found none`);
+    assert.ok(prNumber);
 
     const commitSha = exec(
-      `gh api repos/${TEST_REPO}/commits/${SYNC_BRANCH} --jq '.sha'`
+      `gh api repos/${signedTestRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
     );
-    await waitForCommitVerified(TEST_REPO, commitSha);
+    await waitForCommitVerified(signedTestRepo, commitSha);
   });
 });

@@ -69,10 +69,6 @@ jobs:
   integration-test-cli-sync-github-pat:
     runs-on: ubuntu-latest
 
-    concurrency:
-      group: integration-github-1
-      cancel-in-progress: false
-
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
@@ -84,15 +80,11 @@ jobs:
 
       - name: Run GitHub integration tests (PAT)
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         run: npm run test:integration:github
 
   integration-test-cli-sync-github-app:
     runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github-2
-      cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@v6
@@ -103,21 +95,17 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # GH_TOKEN needed for resetTestRepo() in tests (cross-repo access).
+      # GH_TOKEN needed for createRepo()/deleteRepo() in tests (spruyt-labs org access).
       # xfg commands strip GH_TOKEN via xfgEnv — only App credentials are used.
       - name: Act — run GitHub App integration tests
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           XFG_GITHUB_APP_ID: ${{ vars.TEST_APP_ID }}
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
         run: npm run test:integration:github-app
 
   integration-test-cli-settings-rulesets-pat:
     runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github-3
-      cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@v6
@@ -130,15 +118,11 @@ jobs:
 
       - name: Run GitHub settings integration tests
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         run: npm run test:integration:github-rulesets
 
   integration-test-cli-settings-repo-pat:
     runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github-4
-      cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@v6
@@ -151,19 +135,11 @@ jobs:
 
       - name: Run GitHub repo settings integration tests
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         run: npm run test:integration:github-repo-settings
 
   integration-test-action-sync-pat:
     runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github-5
-      cancel-in-progress: false
-
-    env:
-      TEST_REPO: anthony-spruyt/xfg-test-4
-      PAT_BRANCH: chore/sync-my-config
 
     steps:
       - uses: actions/checkout@v6
@@ -171,17 +147,22 @@ jobs:
         with:
           download-package: "true"
 
-      # Cleanup before — reset test repo to clean state
-      - name: Cleanup — reset test repo
+      # Arrange — create ephemeral repo and config from fixture template
+      - name: Arrange — create ephemeral repo and config
+        id: ephemeral
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: |
+          .github/scripts/create-ephemeral-repo-config.sh \
+            --fixture "action-pat" "spruyt-labs" \
+            "${{ runner.temp }}/config.yaml" \
+            "test/fixtures/integration-test-action-github-pat.yaml"
 
       # Arrange — seed manifest and configure git identity
       - name: Arrange — seed manifest
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/seed-manifest.sh "${TEST_REPO}" "integration-test-action-github-pat"
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/seed-manifest.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "integration-test-action-github-pat"
 
       - name: Arrange — configure custom git identity
         run: |
@@ -192,19 +173,19 @@ jobs:
       - name: Act — run xfg action
         uses: ./
         with:
-          config: ./test/fixtures/integration-test-action-github-pat.yaml
-          branch: ${{ env.PAT_BRANCH }}
-          github-token: ${{ secrets.GH_PAT }}
+          config: ${{ runner.temp }}/config.yaml
+          branch: chore/sync-my-config
+          github-token: ${{ secrets.GH_PAT_ORG }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
       # Assert — verify PR created and git identity preserved
       - name: Assert — verify PR created and git identity preserved
         id: pat-validate
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         run: |
           echo "Verifying PR was created..."
-          PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${PAT_BRANCH} --json number,title,url --jq '.[0]')
+          PR_INFO=$(gh pr list --repo spruyt-labs/${{ steps.ephemeral.outputs.repo_name }} --head chore/sync-my-config --json number,title,url --jq '.[0]')
           if [ -z "$PR_INFO" ]; then
             echo "ERROR: No PR was created"
             exit 1
@@ -214,8 +195,8 @@ jobs:
 
           # Verify commit author is preserved (not overwritten to github-actions[bot])
           PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
-          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo ${TEST_REPO} --json commits --jq '.commits[-1].oid')
-          COMMIT_AUTHOR=$(gh pr view $PR_NUMBER --repo ${TEST_REPO} --json commits --jq '.commits[-1].authors[0].name')
+          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo spruyt-labs/${{ steps.ephemeral.outputs.repo_name }} --json commits --jq '.commits[-1].oid')
+          COMMIT_AUTHOR=$(gh pr view $PR_NUMBER --repo spruyt-labs/${{ steps.ephemeral.outputs.repo_name }} --json commits --jq '.commits[-1].authors[0].name')
           echo "Commit author: $COMMIT_AUTHOR"
           if [ "$COMMIT_AUTHOR" = "github-actions[bot]" ]; then
             echo "ERROR: Git identity was overwritten to github-actions[bot]"
@@ -228,19 +209,17 @@ jobs:
 
       - name: Assert — verify file count in commit message
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.pat-validate.outputs.commit_sha }}"
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/verify-commit-file-count.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "${{ steps.pat-validate.outputs.commit_sha }}"
+
+      - name: Cleanup — delete ephemeral repo
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/delete-ephemeral-repo.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}"
 
   integration-test-action-sync-app:
     runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github-6
-      cancel-in-progress: false
-
-    env:
-      TEST_REPO: anthony-spruyt/xfg-test-5
-      APP_BRANCH: chore/sync-app-test
 
     steps:
       - uses: actions/checkout@v6
@@ -248,24 +227,29 @@ jobs:
         with:
           download-package: "true"
 
-      # Cleanup before — reset test repo to clean state
-      - name: Cleanup — reset test repo
+      # Arrange — create ephemeral repo and config from fixture template
+      - name: Arrange — create ephemeral repo and config
+        id: ephemeral
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: |
+          .github/scripts/create-ephemeral-repo-config.sh \
+            --fixture "action-app" "spruyt-labs" \
+            "${{ runner.temp }}/config.yaml" \
+            "test/fixtures/integration-test-action-github-app.yaml"
 
       # Arrange — seed manifest
       - name: Arrange — seed manifest
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/seed-manifest.sh "${TEST_REPO}" "integration-test-action-github-app"
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/seed-manifest.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "integration-test-action-github-app"
 
       # Act — run xfg action with GitHub App credentials (NO GH_TOKEN)
       - name: Act — run xfg action with GitHub App credentials
         uses: ./
         with:
-          config: ./test/fixtures/integration-test-action-github-app.yaml
-          branch: ${{ env.APP_BRANCH }}
+          config: ${{ runner.temp }}/config.yaml
+          branch: chore/sync-app-test
           # Include github-token to simulate real usage where both are set
           # This tests that GitHub App credentials take precedence over PAT
           github-token: ${{ github.token }}
@@ -277,10 +261,10 @@ jobs:
       - name: Assert — verify commit author is GitHub App
         id: app-validate
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         run: |
           echo "Verifying PR was created..."
-          PR_INFO=$(gh pr list --repo ${TEST_REPO} --head ${APP_BRANCH} --json number,title,url --jq '.[0]')
+          PR_INFO=$(gh pr list --repo spruyt-labs/${{ steps.ephemeral.outputs.repo_name }} --head chore/sync-app-test --json number,title,url --jq '.[0]')
           if [ -z "$PR_INFO" ]; then
             echo "ERROR: No PR was created"
             exit 1
@@ -290,8 +274,8 @@ jobs:
 
           # Get commit author - should be GitHub App, NOT github-actions[bot]
           PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
-          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo ${TEST_REPO} --json commits --jq '.commits[-1].oid')
-          COMMIT_AUTHOR=$(gh api "repos/${TEST_REPO}/commits/${COMMIT_SHA}" --jq '.commit.author.name')
+          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo spruyt-labs/${{ steps.ephemeral.outputs.repo_name }} --json commits --jq '.commits[-1].oid')
+          COMMIT_AUTHOR=$(gh api "repos/spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}/commits/${COMMIT_SHA}" --jq '.commit.author.name')
           echo "Commit author: $COMMIT_AUTHOR"
 
           # Verify commit author is GitHub App, not github-actions[bot] (issue #268)
@@ -307,18 +291,17 @@ jobs:
 
       - name: Assert — verify file count in commit message
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/verify-commit-file-count.sh "${TEST_REPO}" "${{ steps.app-validate.outputs.commit_sha }}"
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/verify-commit-file-count.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "${{ steps.app-validate.outputs.commit_sha }}"
+
+      - name: Cleanup — delete ephemeral repo
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/delete-ephemeral-repo.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}"
 
   integration-test-action-settings-app:
     runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github-7
-      cancel-in-progress: false
-
-    env:
-      TEST_REPO: anthony-spruyt/xfg-test-6
 
     steps:
       - uses: actions/checkout@v6
@@ -326,39 +309,46 @@ jobs:
         with:
           download-package: "true"
 
-      # Cleanup before — reset test repo to clean state
-      - name: Cleanup — reset test repo
+      # Arrange — create ephemeral repo and config from fixture template
+      - name: Arrange — create ephemeral repo and config
+        id: ephemeral
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-        run: .github/scripts/reset-test-repo.sh "${TEST_REPO}"
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: |
+          .github/scripts/create-ephemeral-repo-config.sh \
+            --fixture "action-settings" "spruyt-labs" \
+            "${{ runner.temp }}/config.yaml" \
+            "test/fixtures/integration-test-action-settings-app.yaml"
 
       # Act — run xfg action with settings command
       - name: Act — run xfg action with settings command
         uses: ./
         with:
           command: settings
-          config: ./test/fixtures/integration-test-action-settings-app.yaml
-          github-token: ${{ secrets.GH_PAT }}
+          config: ${{ runner.temp }}/config.yaml
+          github-token: ${{ secrets.GH_PAT_ORG }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
       # Assert — verify ruleset was created
       - name: Assert — verify ruleset was created
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         run: |
-          RULESET=$(gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset")')
+          RULESET=$(gh api repos/spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset")')
           if [ -z "$RULESET" ]; then
             echo "ERROR: Ruleset was not created"
             exit 1
           fi
           echo "Ruleset created successfully"
 
+      - name: Cleanup — delete ephemeral repo
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/delete-ephemeral-repo.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}"
+
   integration-test-cli-lifecycle-github-pat:
     runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github-8
-      cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@v6
@@ -380,10 +370,6 @@ jobs:
 
   integration-test-cli-lifecycle-github-app:
     runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github-9
-      cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@v6
@@ -408,10 +394,6 @@ jobs:
   integration-test-cli-settings-labels-pat:
     runs-on: ubuntu-latest
 
-    concurrency:
-      group: integration-github-12
-      cancel-in-progress: false
-
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/integration-test-setup
@@ -423,15 +405,11 @@ jobs:
 
       - name: Run GitHub labels integration tests
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         run: npm run test:integration:github-labels
 
   integration-test-action-lifecycle-pat:
     runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github-10
-      cancel-in-progress: false
 
     env:
       OWNER: spruyt-labs
@@ -479,10 +457,6 @@ jobs:
 
   integration-test-action-lifecycle-app:
     runs-on: ubuntu-latest
-
-    concurrency:
-      group: integration-github-11
-      cancel-in-progress: false
 
     env:
       OWNER: spruyt-labs

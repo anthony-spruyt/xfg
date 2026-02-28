@@ -1,26 +1,34 @@
-import { test, describe, beforeEach } from "node:test";
+import { test, describe, before, after, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
+import { mkdirSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   exec,
   projectRoot,
+  generateRepoName,
+  createRepo,
+  deleteRepo,
+  writeConfig,
   waitForRulesetVisible as waitForRulesetVisibleBase,
 } from "./test-helpers.js";
 
-const fixturesDir = join(projectRoot, "test", "fixtures");
-
-const TEST_REPO = "anthony-spruyt/xfg-test-3";
+const OWNER = "spruyt-labs";
 const RULESET_NAME = "xfg-test-ruleset";
+
+let repoName: string;
+let testRepo: string;
+let tmpDir: string;
 
 function deleteRulesetIfExists(): void {
   try {
     const rulesets = exec(
-      `gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}") | .id'`
+      `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}") | .id'`
     );
     if (rulesets) {
-      for (const rulesetId of rulesets.split("\n").filter(Boolean)) {
-        console.log(`  Deleting ruleset ID: ${rulesetId}`);
-        exec(`gh api --method DELETE repos/${TEST_REPO}/rulesets/${rulesetId}`);
+      for (const id of rulesets.split("\n").filter(Boolean)) {
+        console.log(`  Deleting ruleset ID: ${id}`);
+        exec(`gh api --method DELETE repos/${testRepo}/rulesets/${id}`);
       }
     }
   } catch {
@@ -28,169 +36,140 @@ function deleteRulesetIfExists(): void {
   }
 }
 
-// Wrapper to use TEST_REPO by default
 async function waitForRulesetVisible(
   rulesetId: number,
   timeoutMs = 30000
 ): Promise<void> {
-  return waitForRulesetVisibleBase(TEST_REPO, rulesetId, timeoutMs);
+  return waitForRulesetVisibleBase(testRepo, rulesetId, timeoutMs);
 }
 
-const RESET_SCRIPT = join(projectRoot, ".github/scripts/reset-test-repo.sh");
-
-function resetTestRepo(): void {
-  console.log("\n=== Resetting test repo to clean state ===\n");
-  exec(`bash ${RESET_SCRIPT} ${TEST_REPO}`);
-  console.log("\n=== Reset complete ===\n");
+function makeConfig(): string {
+  return writeConfig(
+    tmpDir,
+    `id: integration-test-github-rulesets
+files:
+  .xfg-settings-test:
+    content: "# Placeholder for settings integration test"
+    createOnly: true
+settings:
+  rulesets:
+    ${RULESET_NAME}:
+      target: branch
+      enforcement: active
+      conditions:
+        refName:
+          include:
+            - refs/heads/main
+      rules:
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 1
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+    files:
+      .xfg-settings-test: false
+`
+  );
 }
 
 describe("GitHub Settings Integration Test", () => {
+  before(() => {
+    tmpDir = join(tmpdir(), `xfg-rulesets-test-${Date.now()}`);
+    mkdirSync(tmpDir, { recursive: true });
+    repoName = generateRepoName("rulesets");
+    testRepo = `${OWNER}/${repoName}`;
+    createRepo(OWNER, repoName);
+  });
+
+  after(() => {
+    deleteRepo(OWNER, repoName);
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
   beforeEach(() => {
-    resetTestRepo();
+    deleteRulesetIfExists();
   });
 
   test("settings creates a ruleset in the test repository", async () => {
-    const configPath = join(
-      fixturesDir,
-      "integration-test-config-github-rulesets.yaml"
-    );
+    const configPath = makeConfig();
 
-    // Verify no ruleset exists before
     console.log("Verifying no ruleset exists...");
     const rulesetsBefore = exec(
-      `gh api repos/${TEST_REPO}/rulesets --jq '[.[] | select(.name == "${RULESET_NAME}")] | length'`
+      `gh api repos/${testRepo}/rulesets --jq '[.[] | select(.name == "${RULESET_NAME}")] | length'`
     );
-    assert.equal(rulesetsBefore, "0", "Expected no ruleset to exist before");
+    assert.equal(rulesetsBefore, "0", "Expected no ruleset before");
 
-    // Run the settings command
     console.log("\nRunning xfg settings...");
     const output = exec(`node dist/cli.js settings --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
 
-    // Verify ruleset was created
     console.log("\nVerifying ruleset was created...");
     const rulesetsAfter = exec(
-      `gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+      `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
     );
-
     assert.ok(rulesetsAfter, "Expected a ruleset to be created");
 
     const ruleset = JSON.parse(rulesetsAfter);
-    console.log(`  Ruleset ID: ${ruleset.id}`);
-    console.log(`  Ruleset name: ${ruleset.name}`);
-    console.log(`  Enforcement: ${ruleset.enforcement}`);
+    assert.equal(ruleset.name, RULESET_NAME);
+    assert.equal(ruleset.enforcement, "active");
+    assert.equal(ruleset.target, "branch");
 
-    assert.equal(ruleset.name, RULESET_NAME, "Ruleset name should match");
-    assert.equal(ruleset.enforcement, "active", "Ruleset should be active");
-    assert.equal(ruleset.target, "branch", "Ruleset target should be branch");
-
-    // Wait for API consistency before next test runs
-    // GitHub API has eventual consistency - newly created rulesets may not
-    // immediately appear in the list endpoint
-    console.log("\nWaiting for API consistency...");
     await waitForRulesetVisible(ruleset.id);
-
-    console.log("\n=== Settings integration test passed ===\n");
   });
 
   test("settings updates an existing ruleset", async () => {
-    const configPath = join(
-      fixturesDir,
-      "integration-test-config-github-rulesets.yaml"
-    );
+    const configPath = makeConfig();
 
-    // Setup: ensure clean state and create ruleset (self-contained test)
-    console.log("Setting up: creating ruleset for update test...");
-    deleteRulesetIfExists();
-
-    // Create ruleset via xfg settings (mirrors real usage)
-    console.log("\nCreating initial ruleset...");
-    const createOutput = exec(
-      `node dist/cli.js settings --config ${configPath}`,
-      {
-        cwd: projectRoot,
-      }
-    );
-    console.log(createOutput);
-
-    // Get the created ruleset and wait for visibility
-    const rulesetCreated = exec(
-      `gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
-    );
-    assert.ok(rulesetCreated, "Expected ruleset to be created");
-
-    const rulesetBeforeParsed = JSON.parse(rulesetCreated);
-    const rulesetIdBefore = rulesetBeforeParsed.id;
-    console.log(`  Ruleset ID before update: ${rulesetIdBefore}`);
-
-    // Wait for API consistency before update
-    console.log("\nWaiting for API consistency...");
-    await waitForRulesetVisible(rulesetIdBefore);
-
-    // Run settings again - should update existing ruleset
-    console.log("\nRunning xfg settings again (update)...");
-    const output = exec(`node dist/cli.js settings --config ${configPath}`, {
+    console.log("Creating initial ruleset...");
+    exec(`node dist/cli.js settings --config ${configPath}`, {
       cwd: projectRoot,
     });
-    console.log(output);
 
-    // Verify ruleset still exists with same ID (update, not recreate)
-    console.log("\nVerifying ruleset was updated (same ID)...");
-    const rulesetAfter = exec(
-      `gh api repos/${TEST_REPO}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+    const rulesetCreated = exec(
+      `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
     );
+    const rulesetBefore = JSON.parse(rulesetCreated);
+    await waitForRulesetVisible(rulesetBefore.id);
 
-    const rulesetAfterParsed = JSON.parse(rulesetAfter);
+    console.log("\nRunning xfg settings again (update)...");
+    exec(`node dist/cli.js settings --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+
+    const rulesetAfter = JSON.parse(
+      exec(
+        `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+      )
+    );
     assert.equal(
-      rulesetAfterParsed.id,
-      rulesetIdBefore,
-      "Ruleset ID should remain the same (update, not recreate)"
+      rulesetAfter.id,
+      rulesetBefore.id,
+      "Same ID = update not recreate"
     );
-
-    console.log("\n=== Update integration test passed ===\n");
   });
 
   test("settings dry-run shows changes without applying", async () => {
-    const configPath = join(
-      fixturesDir,
-      "integration-test-config-github-rulesets.yaml"
-    );
+    const configPath = makeConfig();
 
-    // Delete the ruleset first
-    console.log("Deleting ruleset to test dry-run...");
-    deleteRulesetIfExists();
-
-    // Verify no ruleset exists
     const rulesetsBefore = exec(
-      `gh api repos/${TEST_REPO}/rulesets --jq '[.[] | select(.name == "${RULESET_NAME}")] | length'`
+      `gh api repos/${testRepo}/rulesets --jq '[.[] | select(.name == "${RULESET_NAME}")] | length'`
     );
-    assert.equal(rulesetsBefore, "0", "Expected no ruleset before dry-run");
+    assert.equal(rulesetsBefore, "0");
 
-    // Run settings with dry-run
-    console.log("\nRunning xfg settings --dry-run...");
     const output = exec(
       `node dist/cli.js settings --config ${configPath} --dry-run`,
-      {
-        cwd: projectRoot,
-      }
+      { cwd: projectRoot }
     );
-    console.log(output);
-
-    // Verify output indicates dry-run
     assert.ok(
       output.includes("DRY RUN") || output.includes("dry-run"),
-      "Output should indicate dry-run mode"
+      "Output should indicate dry-run"
     );
 
-    // Verify no ruleset was actually created
-    console.log("\nVerifying no ruleset was created...");
     const rulesetsAfter = exec(
-      `gh api repos/${TEST_REPO}/rulesets --jq '[.[] | select(.name == "${RULESET_NAME}")] | length'`
+      `gh api repos/${testRepo}/rulesets --jq '[.[] | select(.name == "${RULESET_NAME}")] | length'`
     );
     assert.equal(rulesetsAfter, "0", "Dry-run should not create ruleset");
-
-    console.log("\n=== Dry-run integration test passed ===\n");
   });
 });
