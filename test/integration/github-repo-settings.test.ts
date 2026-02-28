@@ -1,22 +1,19 @@
-import { test, describe, beforeEach } from "node:test";
+import { test, describe, before, after, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
-import { writeFileSync } from "node:fs";
-import { exec, projectRoot } from "./test-helpers.js";
-
-// Test constants - repo is pre-created and persistent (never deleted)
-const TEST_REPO = "anthony-spruyt/xfg-test-7";
-
-// Dynamic config file path (created during test)
-const configPath = join(
+import {
+  exec,
   projectRoot,
-  "test",
-  "fixtures",
-  "integration-test-config-repo-settings.yaml"
-);
+  generateRepoName,
+  createRepo,
+  deleteRepo,
+} from "./test-helpers.js";
 
-// GitHub default repo settings — used to reset between tests
+const OWNER = "spruyt-labs";
+
 const GITHUB_DEFAULTS = {
   has_wiki: true,
   has_projects: true,
@@ -26,54 +23,67 @@ const GITHUB_DEFAULTS = {
   delete_branch_on_merge: false,
 };
 
-/**
- * Reset repo settings to GitHub defaults via PATCH API.
- * Repo is pre-created and persistent — never deleted or recreated.
- */
+let repoName: string;
+let testRepo: string;
+let tmpDir: string;
+
 function resetRepoSettings(): void {
   console.log("  Resetting repo settings to defaults...");
   const fields = Object.entries(GITHUB_DEFAULTS)
     .map(([k, v]) => `-F ${k}=${v}`)
     .join(" ");
-  exec(`gh api --method PATCH repos/${TEST_REPO} ${fields}`);
-  console.log("  Settings reset to defaults");
+  exec(`gh api --method PATCH repos/${testRepo} ${fields}`);
 }
 
-/**
- * Get current security settings from GitHub API.
- */
+function resetSecuritySettings(): void {
+  console.log("  Resetting security settings...");
+  try {
+    exec(`gh api -X PUT repos/${testRepo}/vulnerability-alerts`);
+  } catch {
+    /* already enabled */
+  }
+  try {
+    exec(`gh api -X DELETE repos/${testRepo}/automated-security-fixes`);
+  } catch {
+    /* already disabled */
+  }
+  try {
+    exec(`gh api -X DELETE repos/${testRepo}/vulnerability-alerts`);
+  } catch {
+    /* already disabled */
+  }
+  try {
+    exec(`gh api -X DELETE repos/${testRepo}/private-vulnerability-reporting`);
+  } catch {
+    /* already disabled */
+  }
+}
+
 function getSecuritySettings(): {
   vulnerabilityAlerts: boolean;
   automatedSecurityFixes: boolean;
   privateVulnerabilityReporting: boolean;
 } {
-  // Check vulnerability alerts (204 = enabled, 404 = disabled)
   let vulnerabilityAlerts = false;
   try {
-    exec(`gh api repos/${TEST_REPO}/vulnerability-alerts`);
+    exec(`gh api repos/${testRepo}/vulnerability-alerts`);
     vulnerabilityAlerts = true;
   } catch {
     vulnerabilityAlerts = false;
   }
 
-  // Check automated security fixes (JSON response with {enabled: boolean})
   let automatedSecurityFixes = false;
   try {
-    const asfResult = exec(
-      `gh api repos/${TEST_REPO}/automated-security-fixes`
-    );
-    const asfData = JSON.parse(asfResult);
-    automatedSecurityFixes = asfData.enabled === true;
+    const r = exec(`gh api repos/${testRepo}/automated-security-fixes`);
+    automatedSecurityFixes = JSON.parse(r).enabled === true;
   } catch {
     automatedSecurityFixes = false;
   }
 
-  // Check private vulnerability reporting (JSON response)
   const pvrResult = exec(
-    `gh api repos/${TEST_REPO}/private-vulnerability-reporting`
+    `gh api repos/${testRepo}/private-vulnerability-reporting`
   );
-  const pvrData = JSON.parse(pvrResult);
-  const privateVulnerabilityReporting = pvrData.enabled === true;
+  const privateVulnerabilityReporting = JSON.parse(pvrResult).enabled === true;
 
   return {
     vulnerabilityAlerts,
@@ -82,56 +92,15 @@ function getSecuritySettings(): {
   };
 }
 
-/**
- * Reset security settings to known state (all disabled).
- * Order matters: automated-security-fixes requires vulnerability-alerts to be enabled first.
- */
-function resetSecuritySettings(): void {
-  console.log("  Resetting security settings...");
-  // 1. Enable vulnerability alerts first (required to configure automated-security-fixes)
-  try {
-    exec(`gh api -X PUT repos/${TEST_REPO}/vulnerability-alerts`);
-  } catch {
-    // Already enabled
-  }
-  // 2. Disable automated security fixes (now possible since vuln alerts are enabled)
-  try {
-    exec(`gh api -X DELETE repos/${TEST_REPO}/automated-security-fixes`);
-  } catch {
-    // Already disabled
-  }
-  // 3. Disable vulnerability alerts
-  try {
-    exec(`gh api -X DELETE repos/${TEST_REPO}/vulnerability-alerts`);
-  } catch {
-    // Already disabled
-  }
-  // 4. Disable private vulnerability reporting
-  try {
-    exec(`gh api -X DELETE repos/${TEST_REPO}/private-vulnerability-reporting`);
-  } catch {
-    // Already disabled
-  }
-  console.log("  Security settings reset");
-}
-
-/**
- * Get current repo settings from GitHub API.
- * Note: Uses hardcoded TEST_REPO constant, not user input.
- */
 function getRepoSettings(): Record<string, unknown> {
-  const result = exec(`gh api repos/${TEST_REPO}`);
-  return JSON.parse(result);
+  return JSON.parse(exec(`gh api repos/${testRepo}`));
 }
 
-/**
- * Create the test config file.
- */
-function createConfigFile(): void {
-  const config = `# yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
-# Integration test config for xfg repo settings
-id: integration-test-repo-settings
-
+function createConfigFile(): string {
+  const configPath = join(tmpDir, `repo-settings-${Date.now()}.yaml`);
+  writeFileSync(
+    configPath,
+    `id: integration-test-repo-settings
 settings:
   repo:
     hasWiki: false
@@ -143,201 +112,101 @@ settings:
     vulnerabilityAlerts: true
     automatedSecurityFixes: false
     privateVulnerabilityReporting: true
-
 repos:
-  - git: https://github.com/${TEST_REPO}.git
-`;
-  writeFileSync(configPath, config);
-  console.log(`  Created config file: ${configPath}`);
-}
-
-async function resetTestRepo(): Promise<void> {
-  console.log("\n=== Resetting repo settings test repo ===\n");
-  resetRepoSettings();
-  resetSecuritySettings();
-  createConfigFile();
-  console.log("\n=== Reset complete ===\n");
+  - git: https://github.com/${testRepo}.git
+`
+  );
+  return configPath;
 }
 
 describe("GitHub Repo Settings Integration Test", () => {
-  beforeEach(async () => {
-    await resetTestRepo();
+  before(() => {
+    tmpDir = join(tmpdir(), `xfg-repo-settings-test-${Date.now()}`);
+    mkdirSync(tmpDir, { recursive: true });
+    repoName = generateRepoName("repo-settings");
+    testRepo = `${OWNER}/${repoName}`;
+    createRepo(OWNER, repoName);
   });
 
-  test("settings dry-run shows planned repo settings changes", async () => {
-    // Get current settings before
-    console.log("Getting current repo settings...");
-    const settingsBefore = getRepoSettings();
-    console.log(`  has_wiki: ${settingsBefore.has_wiki}`);
-    console.log(`  has_projects: ${settingsBefore.has_projects}`);
-    console.log(`  allow_squash_merge: ${settingsBefore.allow_squash_merge}`);
+  after(() => {
+    deleteRepo(OWNER, repoName);
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
 
-    // Run settings with dry-run
-    console.log("\nRunning xfg settings --dry-run...");
+  beforeEach(() => {
+    resetRepoSettings();
+    resetSecuritySettings();
+  });
+
+  test("settings dry-run shows planned repo settings changes", () => {
+    const configPath = createConfigFile();
+    const settingsBefore = getRepoSettings();
+
     const output = exec(
       `node dist/cli.js settings --config ${configPath} --dry-run`,
       { cwd: projectRoot }
     );
-    console.log(output);
+    assert.ok(output.includes("DRY RUN") || output.includes("dry-run"));
 
-    // Verify output indicates dry-run
-    assert.ok(
-      output.includes("DRY RUN") || output.includes("dry-run"),
-      "Output should indicate dry-run mode"
-    );
-
-    // Verify settings were NOT changed
-    console.log("\nVerifying settings were not changed...");
     const settingsAfter = getRepoSettings();
-    assert.equal(
-      settingsAfter.has_wiki,
-      settingsBefore.has_wiki,
-      "has_wiki should not change in dry-run"
-    );
-
-    console.log("\n=== Dry-run test passed ===\n");
+    assert.equal(settingsAfter.has_wiki, settingsBefore.has_wiki);
   });
 
-  test("settings applies repo settings changes", async () => {
-    // Get current settings before
-    console.log("Getting current repo settings before apply...");
-    const settingsBefore = getRepoSettings();
-    console.log(`  has_wiki: ${settingsBefore.has_wiki}`);
-    console.log(`  allow_merge_commit: ${settingsBefore.allow_merge_commit}`);
-    console.log(
-      `  delete_branch_on_merge: ${settingsBefore.delete_branch_on_merge}`
-    );
+  test("settings applies repo settings changes", () => {
+    const configPath = createConfigFile();
 
-    // Run settings (apply)
-    console.log("\nRunning xfg settings (apply)...");
-    const output = exec(`node dist/cli.js settings --config ${configPath}`, {
-      cwd: projectRoot,
-    });
-    console.log(output);
-
-    // Verify settings were applied
-    console.log("\nVerifying settings were applied...");
-    const settingsAfter = getRepoSettings();
-
-    assert.equal(settingsAfter.has_wiki, false, "has_wiki should be false");
-    assert.equal(
-      settingsAfter.has_projects,
-      false,
-      "has_projects should be false"
-    );
-    assert.equal(
-      settingsAfter.allow_squash_merge,
-      true,
-      "allow_squash_merge should be true"
-    );
-    assert.equal(
-      settingsAfter.allow_merge_commit,
-      false,
-      "allow_merge_commit should be false"
-    );
-    assert.equal(
-      settingsAfter.allow_rebase_merge,
-      false,
-      "allow_rebase_merge should be false"
-    );
-    assert.equal(
-      settingsAfter.delete_branch_on_merge,
-      true,
-      "delete_branch_on_merge should be true"
-    );
-
-    // Verify security settings
-    const securitySettings = getSecuritySettings();
-    assert.equal(
-      securitySettings.vulnerabilityAlerts,
-      true,
-      "vulnerabilityAlerts should be true"
-    );
-    assert.equal(
-      securitySettings.automatedSecurityFixes,
-      false,
-      "automatedSecurityFixes should be false"
-    );
-    assert.equal(
-      securitySettings.privateVulnerabilityReporting,
-      true,
-      "privateVulnerabilityReporting should be true"
-    );
-
-    console.log("  All settings verified!");
-    console.log("\n=== Apply test passed ===\n");
-  });
-
-  test("settings reports no changes when already in desired state", async () => {
-    // Apply settings first so repo is in desired state
-    console.log("Applying settings to reach desired state...");
-    // Note: exec is the test helper from test-helpers.js, not child_process.exec
     exec(`node dist/cli.js settings --config ${configPath}`, {
       cwd: projectRoot,
     });
 
-    // Run settings again - should report no changes
-    console.log("Running xfg settings again (should report no changes)...");
+    const s = getRepoSettings();
+    assert.equal(s.has_wiki, false);
+    assert.equal(s.has_projects, false);
+    assert.equal(s.allow_squash_merge, true);
+    assert.equal(s.allow_merge_commit, false);
+    assert.equal(s.allow_rebase_merge, false);
+    assert.equal(s.delete_branch_on_merge, true);
+
+    const sec = getSecuritySettings();
+    assert.equal(sec.vulnerabilityAlerts, true);
+    assert.equal(sec.automatedSecurityFixes, false);
+    assert.equal(sec.privateVulnerabilityReporting, true);
+  });
+
+  test("settings reports no changes when already in desired state", () => {
+    const configPath = createConfigFile();
+    exec(`node dist/cli.js settings --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+
     const output = exec(`node dist/cli.js settings --config ${configPath}`, {
       cwd: projectRoot,
     });
-    console.log(output);
-
-    // Verify output indicates no changes needed
     assert.ok(
       output.includes("No changes needed") ||
-        output.includes("0 to add, 0 to change"),
-      "Output should indicate no changes needed"
+        output.includes("0 to add, 0 to change")
     );
-
-    console.log("\n=== No-changes test passed ===\n");
   });
 
-  test("settings applies description to repository", async () => {
-    // Generate a random description to ensure we detect the change
+  test("settings applies description to repository", () => {
     const randomDescription = `xfg integration test - ${randomUUID()}`;
-
-    console.log(
-      `\n=== Setting up description test (description: "${randomDescription}") ===\n`
-    );
-
-    // Create a config with the random description
-    const descConfigPath = join(
-      projectRoot,
-      "test",
-      "fixtures",
-      "integration-test-config-repo-settings-description.yaml"
-    );
-    const descConfig = `id: integration-test-repo-settings-description
-
+    const descConfigPath = join(tmpDir, `repo-desc-${Date.now()}.yaml`);
+    writeFileSync(
+      descConfigPath,
+      `id: integration-test-repo-settings-description
 settings:
   repo:
     description: "${randomDescription}"
-
 repos:
-  - git: https://github.com/${TEST_REPO}.git
-`;
-    writeFileSync(descConfigPath, descConfig);
-
-    // Note: exec is the test helper from test-helpers.js, not child_process.exec
-    // Run settings (apply)
-    console.log("Running xfg settings to apply description...");
-    const output = exec(
-      `node dist/cli.js settings --config ${descConfigPath}`,
-      { cwd: projectRoot }
+  - git: https://github.com/${testRepo}.git
+`
     );
-    console.log(output);
 
-    // Verify description was applied
-    console.log("\nVerifying description was applied...");
+    exec(`node dist/cli.js settings --config ${descConfigPath}`, {
+      cwd: projectRoot,
+    });
+
     const settingsAfter = getRepoSettings();
-    assert.equal(
-      settingsAfter.description,
-      randomDescription,
-      `Description should be "${randomDescription}"`
-    );
-    console.log(`  Description verified: "${settingsAfter.description}"`);
-
-    console.log("\n=== Description test passed ===\n");
+    assert.equal(settingsAfter.description, randomDescription);
   });
 });
