@@ -24,7 +24,7 @@ if [ "${1:-}" = "--fixture" ]; then
   gh repo create "${OWNER}/${REPO_NAME}" --private --add-readme
 
   # Substitute placeholder in fixture template
-  sed "s|OWNER/REPO_PLACEHOLDER|${OWNER}/${REPO_NAME}|g" "${FIXTURE_PATH}" > "${CONFIG_PATH}"
+  sed "s|OWNER/REPO_PLACEHOLDER|${OWNER}/${REPO_NAME}|g" "${FIXTURE_PATH}" >"${CONFIG_PATH}"
 
   echo "Wrote config to ${CONFIG_PATH} (from fixture ${FIXTURE_PATH})"
 else

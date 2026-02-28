@@ -4,8 +4,9 @@ https://www.npmjs.com/package/@aspruyt/xfg
 # GitLab test repos (403 for unauthenticated requests)
 https://gitlab.com/anthony-spruyt1/xfg-test.git
 
-# Example/placeholder URLs in documentation and schema
+# Example/placeholder URLs in documentation, schema, and fixture templates
 https://github.com/owner/repo.git
+https://github.com/OWNER/REPO_PLACEHOLDER.git
 https://github.com/anthony-spruyt/xfg/config-schema.json
 https://host/owner/repo.git
 

@@ -42,13 +42,6 @@ let repoName: string;
 let testRepo: string;
 let tmpDir: string;
 
-function resetRepoSettings(): void {
-  const fields = Object.entries(GITHUB_DEFAULTS)
-    .map(([k, v]) => `-F ${k}=${v}`)
-    .join(" ");
-  exec(`gh api --method PATCH repos/${testRepo} ${fields}`);
-}
-
 function resetTestRepo(): void {
   console.log("\n=== Resetting ephemeral repo branches/PRs ===\n");
   // Close open PRs
