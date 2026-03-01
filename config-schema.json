@@ -383,7 +383,7 @@
             }
           },
           "additionalProperties": {
-            "oneOf": [
+            "anyOf": [
               {
                 "type": "boolean",
                 "const": false,
