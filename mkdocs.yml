@@ -64,6 +64,7 @@ nav:
       - Overview: configuration/index.md
       - Content Types: configuration/content-types.md
       - Content Inheritance: configuration/inheritance.md
+      - Groups: configuration/groups.md
       - Environment Variables: configuration/env-variables.md
       - Templating: configuration/templating.md
       - Merge Strategies: configuration/merge-strategies.md

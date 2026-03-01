@@ -8,6 +8,8 @@ import {
 import { interpolateContent } from "../shared/env.js";
 import type {
   RawConfig,
+  RawGroupConfig,
+  RawFileConfig,
   Config,
   RepoConfig,
   FileContent,
@@ -16,10 +18,19 @@ import type {
   RepoSettings,
   RawRootSettings,
   RawRepoSettings,
+  RawRepoFileOverride,
   Ruleset,
   Label,
   GitHubRepoSettings,
 } from "./types.js";
+
+/**
+ * Checks whether an object's `inherit` property is not explicitly set to false.
+ * Replaces the repeated `(x )?.inherit !== false` pattern.
+ */
+function shouldInherit(obj: { inherit?: boolean } | undefined): boolean {
+  return obj?.inherit !== false;
+}
 
 /**
  * Normalizes header to array format.
@@ -98,7 +109,7 @@ function mergeLabels(
 
   const root = rootLabels ?? {};
   const repo = repoLabels ?? {};
-  const inheritLabels = (repo as Record<string, unknown>)?.inherit !== false;
+  const inheritLabels = shouldInherit(repo);
 
   const allLabelNames = new Set([
     ...Object.keys(root).filter((name) => name !== "inherit"),
@@ -140,8 +151,7 @@ export function mergeSettings(
   const repoRulesets = perRepo?.rulesets ?? {};
 
   // Check if repo opts out of all inherited rulesets
-  const inheritRulesets =
-    (repoRulesets as Record<string, unknown>)?.inherit !== false;
+  const inheritRulesets = shouldInherit(repoRulesets);
 
   const allRulesetNames = new Set([
     ...Object.keys(rootRulesets).filter((name) => name !== "inherit"),
@@ -210,24 +220,236 @@ export function mergeSettings(
 }
 
 /**
+ * Merges group file layers onto root files, producing an effective root file map.
+ * Each group layer is processed in order: inherit:false clears accumulated,
+ * file:false removes a file, otherwise deep-merge content.
+ */
+function mergeGroupFiles(
+  rootFiles: Record<string, RawFileConfig>,
+  groupNames: string[],
+  groupDefs: Record<string, RawGroupConfig>
+): Record<string, RawFileConfig> {
+  let accumulated: Record<string, RawFileConfig> = structuredClone(rootFiles);
+
+  for (const groupName of groupNames) {
+    const group = groupDefs[groupName];
+    if (!group?.files) continue;
+
+    const inheritFiles = shouldInherit(group.files);
+
+    if (!inheritFiles) {
+      // Intentionally clear: "discard everything above me"
+      accumulated = {};
+    }
+
+    for (const [fileName, fileConfig] of Object.entries(group.files)) {
+      if (fileName === "inherit") continue;
+
+      // file: false removes from accumulated set
+      if (fileConfig === false) {
+        delete accumulated[fileName];
+        continue;
+      }
+
+      if (fileConfig === undefined) continue;
+
+      const existing = accumulated[fileName];
+      if (existing) {
+        // Deep-merge content if both sides have object content
+        const overlay = fileConfig as RawRepoFileOverride;
+        let mergedContent: ContentValue | undefined;
+
+        if (overlay.override || !existing.content || !overlay.content) {
+          // override:true or one side missing content — use overlay content
+          mergedContent = overlay.content ?? existing.content;
+        } else if (
+          isTextContent(existing.content) &&
+          isTextContent(overlay.content)
+        ) {
+          mergedContent = mergeTextContent(
+            existing.content,
+            overlay.content,
+            existing.mergeStrategy ?? "replace"
+          );
+        } else if (
+          !isTextContent(existing.content) &&
+          !isTextContent(overlay.content)
+        ) {
+          const ctx = createMergeContext(existing.mergeStrategy ?? "replace");
+          mergedContent = deepMerge(
+            structuredClone(existing.content),
+            overlay.content as Record<string, unknown>,
+            ctx
+          );
+          mergedContent = stripMergeDirectives(mergedContent);
+        } else {
+          // Type mismatch — overlay wins
+          mergedContent = overlay.content;
+        }
+
+        const { override: _override, ...restFileConfig } = fileConfig as Record<
+          string,
+          unknown
+        >;
+        accumulated[fileName] = {
+          ...existing,
+          ...restFileConfig,
+          content: mergedContent,
+        } as RawFileConfig;
+      } else {
+        // New file introduced by group
+        accumulated[fileName] = structuredClone(fileConfig) as RawFileConfig;
+      }
+    }
+  }
+
+  return accumulated;
+}
+
+/**
+ * Merges group PR options layers onto root PR options.
+ */
+function mergeGroupPROptions(
+  rootPR: PRMergeOptions | undefined,
+  groupNames: string[],
+  groupDefs: Record<string, RawGroupConfig>
+): PRMergeOptions | undefined {
+  let accumulated = rootPR;
+  for (const name of groupNames) {
+    const group = groupDefs[name];
+    if (group?.prOptions) {
+      accumulated = mergePROptions(accumulated, group.prOptions);
+    }
+  }
+  return accumulated;
+}
+
+/**
+ * Merges two raw settings layers (root/group into accumulated).
+ * Unlike mergeSettings(), this operates on raw types and returns raw types,
+ * preserving false values and inherit keys for downstream processing.
+ * The final accumulated result feeds into the existing mergeSettings(accumulated, repoSettings).
+ */
+function mergeRawSettings(
+  base: RawRootSettings | undefined,
+  overlay: RawRepoSettings | undefined
+): RawRootSettings | undefined {
+  if (!base && !overlay) return undefined;
+  if (!overlay) return structuredClone(base);
+
+  const result: RawRootSettings = base ? structuredClone(base) : {};
+
+  // Merge rulesets
+  if (overlay.rulesets) {
+    const inheritRulesets = shouldInherit(overlay.rulesets);
+    if (!inheritRulesets) {
+      // Discard accumulated rulesets, start fresh with overlay's own
+      result.rulesets = {};
+    }
+    if (!result.rulesets) result.rulesets = {};
+    for (const [name, ruleset] of Object.entries(overlay.rulesets)) {
+      if (name === "inherit") continue;
+      if (ruleset === false) {
+        result.rulesets[name] = false;
+      } else if (typeof ruleset === "object") {
+        const existing = result.rulesets[name];
+        result.rulesets[name] = existing
+          ? (mergeRuleset(existing, ruleset) as Ruleset)
+          : structuredClone(ruleset);
+      }
+    }
+  }
+
+  // Merge repo settings: overlay replaces base (shallow merge, same as mergeSettings)
+  if (overlay.repo !== undefined) {
+    if (overlay.repo === false) {
+      result.repo = false;
+    } else {
+      result.repo = {
+        ...(result.repo === false ? {} : result.repo),
+        ...overlay.repo,
+      } as GitHubRepoSettings;
+    }
+  }
+
+  // Merge labels
+  if (overlay.labels) {
+    const inheritLabels = shouldInherit(overlay.labels);
+    if (!inheritLabels) {
+      result.labels = {};
+    }
+    if (!result.labels) result.labels = {};
+    for (const [name, label] of Object.entries(overlay.labels)) {
+      if (name === "inherit") continue;
+      if (label === false) {
+        result.labels[name] = false;
+      } else if (typeof label === "object") {
+        const existing = result.labels[name];
+        result.labels[name] = {
+          ...(existing && typeof existing === "object" ? existing : {}),
+          ...label,
+        };
+      }
+    }
+  }
+
+  // deleteOrphaned: overlay wins
+  if (overlay.deleteOrphaned !== undefined) {
+    result.deleteOrphaned = overlay.deleteOrphaned;
+  }
+
+  return result;
+}
+
+/**
+ * Merges group settings layers onto root settings.
+ */
+function mergeGroupSettings(
+  rootSettings: RawRootSettings | undefined,
+  groupNames: string[],
+  groupDefs: Record<string, RawGroupConfig>
+): RawRootSettings | undefined {
+  let accumulated = rootSettings;
+  for (const name of groupNames) {
+    const group = groupDefs[name];
+    if (group?.settings) {
+      accumulated = mergeRawSettings(accumulated, group.settings);
+    }
+  }
+  return accumulated;
+}
+
+/**
  * Normalizes raw config into expanded, merged config.
  * Pipeline: expand git arrays -> merge content -> interpolate env vars
  */
 export function normalizeConfig(raw: RawConfig): Config {
   const expandedRepos: RepoConfig[] = [];
-  const fileNames = raw.files ? Object.keys(raw.files) : [];
 
   for (const rawRepo of raw.repos) {
     // Step 1: Expand git arrays
     const gitUrls = Array.isArray(rawRepo.git) ? rawRepo.git : [rawRepo.git];
 
+    // Resolve groups: build effective root files/prOptions/settings by merging group layers
+    const effectiveRootFiles = rawRepo.groups?.length
+      ? mergeGroupFiles(raw.files ?? {}, rawRepo.groups, raw.groups ?? {})
+      : (raw.files ?? {});
+
+    const effectivePROptions = rawRepo.groups?.length
+      ? mergeGroupPROptions(raw.prOptions, rawRepo.groups, raw.groups ?? {})
+      : raw.prOptions;
+
+    const effectiveSettings = rawRepo.groups?.length
+      ? mergeGroupSettings(raw.settings, rawRepo.groups, raw.groups ?? {})
+      : raw.settings;
+
+    const fileNames = Object.keys(effectiveRootFiles);
+
     for (const gitUrl of gitUrls) {
       const files: FileContent[] = [];
 
       // Check if repo opts out of all inherited files
-      const inheritFiles =
-        (rawRepo.files as Record<string, unknown> | undefined)?.inherit !==
-        false;
+      const inheritFiles = shouldInherit(rawRepo.files);
 
       // Step 2: Process each file definition
       for (const fileName of fileNames) {
@@ -246,7 +468,7 @@ export function normalizeConfig(raw: RawConfig): Config {
           continue;
         }
 
-        const fileConfig = raw.files![fileName];
+        const fileConfig = effectiveRootFiles[fileName];
         const fileStrategy = fileConfig.mergeStrategy ?? "replace";
 
         // Step 3: Compute merged content for this file
@@ -261,7 +483,7 @@ export function normalizeConfig(raw: RawConfig): Config {
             mergedContent = structuredClone(repoOverride.content);
           } else {
             mergedContent = stripMergeDirectives(
-              structuredClone(repoOverride.content as Record<string, unknown>)
+              structuredClone(repoOverride.content)
             );
           }
         } else if (fileConfig.content === undefined) {
@@ -271,7 +493,7 @@ export function normalizeConfig(raw: RawConfig): Config {
               mergedContent = structuredClone(repoOverride.content);
             } else {
               mergedContent = stripMergeDirectives(
-                structuredClone(repoOverride.content as Record<string, unknown>)
+                structuredClone(repoOverride.content)
               );
             }
           } else {
@@ -298,7 +520,7 @@ export function normalizeConfig(raw: RawConfig): Config {
             // Object content: deep merge file base + repo overlay
             const ctx = createMergeContext(fileStrategy);
             mergedContent = deepMerge(
-              structuredClone(fileConfig.content as Record<string, unknown>),
+              structuredClone(fileConfig.content),
               repoOverride.content as Record<string, unknown>,
               ctx
             );
@@ -347,11 +569,11 @@ export function normalizeConfig(raw: RawConfig): Config {
         });
       }
 
-      // Merge PR options: per-repo overrides global
-      const prOptions = mergePROptions(raw.prOptions, rawRepo.prOptions);
+      // Merge PR options: per-repo overrides effective (root + groups)
+      const prOptions = mergePROptions(effectivePROptions, rawRepo.prOptions);
 
-      // Merge settings: per-repo deep merges with root settings
-      const settings = mergeSettings(raw.settings, rawRepo.settings);
+      // Merge settings: per-repo deep merges with effective (root + groups)
+      const settings = mergeSettings(effectiveSettings, rawRepo.settings);
 
       expandedRepos.push({
         git: gitUrl,

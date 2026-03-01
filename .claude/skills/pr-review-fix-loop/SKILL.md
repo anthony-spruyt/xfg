@@ -71,17 +71,17 @@ digraph loop {
 
 ### Review Phase (3 subagents in parallel via single Task tool message)
 
-| #   | Subagent Type               | Model   | Prompt essence                                                                                                                                                                                                                   |
-| --- | --------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | `superpowers:code-reviewer` | default | Review PR #{number} diff (base..HEAD). Return `[CRITICAL/IMPORTANT/MINOR] file:line - description` or `NO ISSUES`.                                                                                                               |
-| 2   | `general-purpose`           | haiku   | Check CI status (`gh pr checks`), CodeQL alerts (`gh api code-scanning/alerts`), lint results for PR #{number}. Return `[CI_FAIL/CODEQL/LINT] check - description` or `NO ISSUES`.                                               |
-| 3   | `general-purpose`           | haiku   | Check unresolved PR review comments (`gh api pulls/{number}/comments`), change requests (`gh api pulls/{number}/reviews`), and general comments for PR #{number}. Return `[COMMENT/REVIEW/FEEDBACK] description` or `NO ISSUES`. |
+| #   | Subagent Type               | Model   | Prompt essence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| --- | --------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `superpowers:code-reviewer` | default | Review PR #{number} diff (base..HEAD). Return `[CRITICAL/IMPORTANT/MINOR] file:line - description` or `NO ISSUES`.                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 2   | `general-purpose`           | haiku   | Check CI status (`gh pr checks`), CodeQL alerts (`gh api code-scanning/alerts`), lint results for PR #{number}. Return `[CI_FAIL/CODEQL/LINT] check - description` or `NO ISSUES`.                                                                                                                                                                                                                                                                                                                                                    |
+| 3   | `general-purpose`           | haiku   | Check ALL comments on PR #{number} from ALL sources and ALL authors (human and bot alike). Query all three endpoints: (1) `gh api repos/{owner}/{repo}/pulls/{number}/comments` — inline review comments, (2) `gh api repos/{owner}/{repo}/pulls/{number}/reviews` — review submissions, (3) `gh api repos/{owner}/{repo}/issues/{number}/comments` — general comments. Every comment is potentially actionable. Report each as `[COMMENT] author: summary (source)` or `NO ISSUES` if all three endpoints return nothing actionable. |
 
 ### Fix Phase (1 subagent, sequential after all reviews complete)
 
-| Subagent Type     | Model   | Prompt essence                                                                                                                                                                         |
-| ----------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `general-purpose` | default | Fix ALL issues below on branch {branch}. Prioritize CRITICAL > IMPORTANT > MINOR. Run tests and lint. Commit and **push**. Report what was fixed and what remains. `{combined_issues}` |
+| Subagent Type     | Model   | Prompt essence                                                                                                                                                                                                                                                                        |
+| ----------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `general-purpose` | default | Fix ALL issues below on branch {branch}. Prioritize CRITICAL > IMPORTANT > MINOR. After fixing, verify with: `npm test`, `npx tsc --noEmit`, and `./lint.sh`. All three must pass before committing. Commit and **push**. Report what was fixed and what remains. `{combined_issues}` |
 
 ## Controller Rules
 
@@ -108,11 +108,12 @@ Iteration {n}/{max}: {summary}
 
 ## Red Flags
 
-| Thought                                     | Reality                                           |
-| ------------------------------------------- | ------------------------------------------------- |
-| "Let me just quickly read/fix this"         | NO. Dispatch a subagent. You are the controller.  |
-| "One review source is enough"               | NO. Always dispatch all 3 in parallel.            |
-| "The fixer said it's done, skip re-review"  | NO. Loop back. Fresh eyes every time.             |
-| "3 iterations is enough"                    | Default is 10. Don't reduce without user consent. |
-| "I'll skip comments, no one reviewed yet"   | NO. Always check. Comments may appear mid-loop.   |
-| "Reviewer returned junk, I'll interpret it" | NO. Dispatch the reviewer again.                  |
+| Thought                                     | Reality                                                                |
+| ------------------------------------------- | ---------------------------------------------------------------------- |
+| "Let me just quickly read/fix this"         | NO. Dispatch a subagent. You are the controller.                       |
+| "One review source is enough"               | NO. Always dispatch all 3 in parallel.                                 |
+| "The fixer said it's done, skip re-review"  | NO. Loop back. Fresh eyes every time.                                  |
+| "3 iterations is enough"                    | Default is 10. Don't reduce without user consent.                      |
+| "I'll skip comments, no one reviewed yet"   | NO. Always check. Comments may appear mid-loop.                        |
+| "Reviewer returned junk, I'll interpret it" | NO. Dispatch the reviewer again.                                       |
+| "It's just a bot comment, not actionable"   | NO. Bot comments ARE actionable. Coverage, lint, security — all of it. |

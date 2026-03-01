@@ -55,15 +55,21 @@ files:
   my.config.json:
     content:
       prop1: base-value
-      prop2:
-        prop3: MyService
-      prop4:
-        prop5:
-          - prop6: platform
-          - prop7: engineering
       baseOnly: inherited-from-root
+groups:
+  service-config:
+    files:
+      my.config.json:
+        content:
+          prop2:
+            prop3: MyService
+          prop4:
+            prop5:
+              - prop6: platform
+              - prop7: engineering
 repos:
   - git: https://github.com/${testRepo}.git
+    groups: [service-config]
     files:
       my.config.json:
         content:
@@ -93,6 +99,12 @@ repos:
     assert.equal(json.prop1, "main");
     assert.equal(json.baseOnly, "inherited-from-root");
     assert.equal(json.addedByOverlay, true);
+    // Assert properties specifically introduced by the service-config group layer
+    assert.equal(json.prop2.prop3, "MyService");
+    assert.deepEqual(json.prop4.prop5, [
+      { prop6: "platform" },
+      { prop7: "engineering" },
+    ]);
   });
 
   test("re-sync closes existing PR and creates fresh one", async () => {

@@ -69,6 +69,7 @@ export type {
   ContentValue,
   RawFileConfig,
   RawRepoFileOverride,
+  RawGroupConfig,
   RawRootSettings,
   RawRepoSettings,
   RawRepoConfig,

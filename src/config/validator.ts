@@ -212,14 +212,32 @@ export function validateRawConfig(config: RawConfig): void {
     );
   }
 
-  // Validate at least one of files or settings exists
+  // Validate at least one of files or settings exists (including in groups)
   const hasFiles =
     config.files &&
     typeof config.files === "object" &&
     Object.keys(config.files).length > 0;
   const hasSettings = config.settings && typeof config.settings === "object";
+  const hasGroupFiles =
+    config.groups &&
+    typeof config.groups === "object" &&
+    !Array.isArray(config.groups) &&
+    Object.values(config.groups).some(
+      (g) =>
+        g.files &&
+        Object.keys(g.files).filter(
+          (k) => k !== "inherit" && g.files![k] !== false
+        ).length > 0
+    );
+  const hasGroupSettings =
+    config.groups &&
+    typeof config.groups === "object" &&
+    !Array.isArray(config.groups) &&
+    Object.values(config.groups).some(
+      (g) => g.settings && typeof g.settings === "object"
+    );
 
-  if (!hasFiles && !hasSettings) {
+  if (!hasFiles && !hasSettings && !hasGroupFiles && !hasGroupSettings) {
     throw new Error(
       "Config requires at least one of: 'files' or 'settings'. " +
         "Use 'files' to sync configuration files, or 'settings' to manage repository settings."
@@ -412,6 +430,77 @@ export function validateRawConfig(config: RawConfig): void {
     }
   }
 
+  // Validate groups
+  if (config.groups !== undefined) {
+    if (
+      typeof config.groups !== "object" ||
+      config.groups === null ||
+      Array.isArray(config.groups)
+    ) {
+      throw new Error("groups must be an object");
+    }
+
+    const rootRulesetNames = config.settings?.rulesets
+      ? Object.keys(config.settings.rulesets).filter((k) => k !== "inherit")
+      : [];
+    const hasRootRepoSettings =
+      config.settings?.repo !== undefined && config.settings.repo !== false;
+    const rootLabelNames = config.settings?.labels
+      ? Object.keys(config.settings.labels).filter((k) => k !== "inherit")
+      : [];
+
+    for (const [groupName, group] of Object.entries(config.groups)) {
+      if (groupName === "inherit") {
+        throw new Error(
+          "'inherit' is a reserved key and cannot be used as a group name"
+        );
+      }
+
+      // Validate group files
+      if (group.files) {
+        for (const [fileName, fileConfig] of Object.entries(group.files)) {
+          if (fileName === "inherit") continue;
+          if (fileConfig === false) continue;
+          if (fileConfig === undefined) continue;
+
+          const fc = fileConfig as Record<string, unknown>;
+          if (fc.content !== undefined) {
+            const hasText = isTextContent(fc.content);
+            const hasObject = isObjectContent(fc.content);
+            if (!hasText && !hasObject) {
+              throw new Error(
+                `groups.${groupName}: file '${fileName}' content must be an object, string, or array of strings`
+              );
+            }
+
+            const isStructured = isStructuredFileExtension(fileName);
+            if (isStructured && hasText) {
+              throw new Error(
+                `groups.${groupName}: file '${fileName}' has JSON/YAML extension but string content`
+              );
+            }
+            if (!isStructured && hasObject) {
+              throw new Error(
+                `groups.${groupName}: file '${fileName}' has text extension but object content`
+              );
+            }
+          }
+        }
+      }
+
+      // Validate group settings
+      if (group.settings !== undefined) {
+        validateSettings(
+          group.settings,
+          `groups.${groupName}`,
+          rootRulesetNames,
+          hasRootRepoSettings,
+          rootLabelNames
+        );
+      }
+    }
+  }
+
   // Validate each repo
   for (let i = 0; i < config.repos.length; i++) {
     const repo = config.repos[i];
@@ -464,10 +553,49 @@ export function validateRawConfig(config: RawConfig): void {
       }
     }
 
+    // Validate per-repo groups
+    if (repo.groups !== undefined) {
+      if (
+        !Array.isArray(repo.groups) ||
+        !repo.groups.every((g: unknown) => typeof g === "string")
+      ) {
+        throw new Error(
+          `Repo at index ${i}: groups must be an array of strings`
+        );
+      }
+      const seen = new Set<string>();
+      for (const groupName of repo.groups) {
+        if (!config.groups || !config.groups[groupName]) {
+          throw new Error(
+            `Repo at index ${i}: group '${groupName}' is not defined in root 'groups'`
+          );
+        }
+        if (seen.has(groupName)) {
+          throw new Error(`Repo at index ${i}: duplicate group '${groupName}'`);
+        }
+        seen.add(groupName);
+      }
+    }
+
     // Validate per-repo file overrides
     if (repo.files) {
       if (typeof repo.files !== "object" || Array.isArray(repo.files)) {
         throw new Error(`Repo at index ${i}: files must be an object`);
+      }
+
+      // Build the set of known files once per repo (root + referenced groups)
+      const knownFiles = new Set<string>(
+        config.files ? Object.keys(config.files) : []
+      );
+      if (repo.groups && config.groups) {
+        for (const groupName of repo.groups) {
+          const group = config.groups[groupName];
+          if (group?.files) {
+            for (const fn of Object.keys(group.files)) {
+              if (fn !== "inherit") knownFiles.add(fn);
+            }
+          }
+        }
       }
 
       for (const fileName of Object.keys(repo.files)) {
@@ -482,10 +610,10 @@ export function validateRawConfig(config: RawConfig): void {
           continue;
         }
 
-        // Ensure the file is defined at root level
-        if (!config.files || !config.files[fileName]) {
+        // Ensure the file is defined at root level or in a referenced group
+        if (!knownFiles.has(fileName)) {
           throw new Error(
-            `Repo at index ${i} references undefined file '${fileName}'. File must be defined in root 'files' object.`
+            `Repo at index ${i} references undefined file '${fileName}'. File must be defined in root 'files' object or in a referenced group.`
           );
         }
 
@@ -616,6 +744,24 @@ export function validateRawConfig(config: RawConfig): void {
       const rootLabelNames = config.settings?.labels
         ? Object.keys(config.settings.labels).filter((k) => k !== "inherit")
         : [];
+
+      // Augment known names with those from the repo's referenced groups
+      if (repo.groups && config.groups) {
+        for (const groupName of repo.groups) {
+          const group = config.groups[groupName];
+          if (group?.settings?.rulesets) {
+            for (const name of Object.keys(group.settings.rulesets)) {
+              if (name !== "inherit") rootRulesetNames.push(name);
+            }
+          }
+          if (group?.settings?.labels) {
+            for (const name of Object.keys(group.settings.labels)) {
+              if (name !== "inherit") rootLabelNames.push(name);
+            }
+          }
+        }
+      }
+
       validateSettings(
         repo.settings,
         `Repo ${getGitDisplayName(repo.git)}`,
@@ -636,17 +782,20 @@ export function validateRawConfig(config: RawConfig): void {
  * @throws Error if files section is missing or empty
  */
 export function validateForSync(config: RawConfig): void {
-  if (!config.files) {
-    throw new Error(
-      "The 'sync' command requires a 'files' section with at least one file defined. " +
-        "To manage repository settings instead, use 'xfg settings'."
+  const hasRootFiles = config.files && Object.keys(config.files).length > 0;
+  const hasGroupFiles =
+    config.groups &&
+    Object.values(config.groups).some(
+      (g) =>
+        g.files &&
+        Object.keys(g.files).filter(
+          (k) => k !== "inherit" && g.files![k] !== false
+        ).length > 0
     );
-  }
 
-  const fileNames = Object.keys(config.files);
-  if (fileNames.length === 0) {
+  if (!hasRootFiles && !hasGroupFiles) {
     throw new Error(
-      "The 'sync' command requires a 'files' section with at least one file defined. " +
+      "The 'sync' command requires files defined in root 'files' or in at least one group. " +
         "To manage repository settings instead, use 'xfg settings'."
     );
   }
@@ -689,16 +838,23 @@ export function hasActionableSettings(
  * @throws Error if no settings are defined or no actionable settings exist
  */
 export function validateForSettings(config: RawConfig): void {
-  // Check if settings exist at root or in any repo
+  // Check if settings exist at root, in any repo, or in any group
   const hasRootSettings = config.settings !== undefined;
   const hasRepoSettings = config.repos.some(
     (repo) => repo.settings !== undefined
   );
+  const hasGroupSettings =
+    config.groups &&
+    typeof config.groups === "object" &&
+    !Array.isArray(config.groups) &&
+    Object.values(config.groups).some(
+      (g) => g.settings && typeof g.settings === "object"
+    );
 
-  if (!hasRootSettings && !hasRepoSettings) {
+  if (!hasRootSettings && !hasRepoSettings && !hasGroupSettings) {
     throw new Error(
-      "The 'settings' command requires a 'settings' section at root level or " +
-        "in at least one repo. To sync files instead, use 'xfg sync'."
+      "The 'settings' command requires a 'settings' section at root level, " +
+        "in at least one repo, or in at least one group. To sync files instead, use 'xfg sync'."
     );
   }
 
@@ -707,8 +863,11 @@ export function validateForSettings(config: RawConfig): void {
   const repoActionable = config.repos.some((repo) =>
     hasActionableSettings(repo.settings)
   );
+  const groupActionable =
+    config.groups &&
+    Object.values(config.groups).some((g) => hasActionableSettings(g.settings));
 
-  if (!rootActionable && !repoActionable) {
+  if (!rootActionable && !repoActionable && !groupActionable) {
     throw new Error(
       "No actionable settings configured. Currently supported: rulesets, repo, labels. " +
         "To sync files instead, use 'xfg sync'. " +

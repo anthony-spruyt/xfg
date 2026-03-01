@@ -9,7 +9,7 @@ import {
   resolveFileReference,
   resolveFileReferencesInConfig,
 } from "../../src/config/file-reference-resolver.js";
-import type { RawConfig } from "../../src/config/index.js";
+import type { RawConfig, RawFileConfig } from "../../src/config/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -520,6 +520,32 @@ describe("File Reference Resolver", () => {
         () => resolveFileReference("@templates/invalid.json", fixturesDir),
         /Invalid JSON/
       );
+    });
+  });
+
+  describe("group file references", () => {
+    test("resolves @file refs in group file content", () => {
+      const jsonPath = join(testDir, "templates", "group-config.json");
+      writeFileSync(jsonPath, '{"fromGroup": true}', "utf-8");
+
+      const raw: RawConfig = {
+        id: "test",
+        files: {},
+        groups: {
+          mygroup: {
+            files: {
+              "config.json": { content: "@templates/group-config.json" },
+            },
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
+      };
+
+      const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
+      const groupFile = result.groups!.mygroup.files![
+        "config.json"
+      ] as RawFileConfig;
+      assert.deepStrictEqual(groupFile.content, { fromGroup: true });
     });
   });
 });

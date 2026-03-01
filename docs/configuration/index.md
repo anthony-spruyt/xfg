@@ -28,6 +28,7 @@ repos: # List of repositories
 | `files`          | Map of target filenames to configs                                                          | *        |
 | `repos`          | Array of repository configurations                                                          | Yes      |
 | `settings`       | Global settings. See [Repo Settings](repo-settings.md) and [Rulesets](rulesets.md)          | *        |
+| `groups`         | Named config groups. See [Groups](groups.md)                                                | No       |
 | `prOptions`      | Global PR merge options (can be overridden per-repo)                                        | No       |
 | `prTemplate`     | Custom PR body template (inline or `@path/to/file` reference)                               | No       |
 | `deleteOrphaned` | Global default for orphan deletion. Files/rulesets removed from config are deleted.         | No       |
@@ -35,9 +36,9 @@ repos: # List of repositories
 
 <!-- markdownlint-disable MD046 -->
 !!! note "files/settings requirement"
-    At least one of `files` or `settings` must be present:
+    At least one of `files` or `settings` must be present (at root level or in groups):
 
-    - **`xfg sync`** requires `files` with at least one file
+    - **`xfg sync`** requires files defined in root `files` or in at least one group
     - **`xfg settings`** requires `settings` with actionable config (e.g., rulesets)
 
     A config can have both for use with both commands.
@@ -62,6 +63,7 @@ repos: # List of repositories
 | Field       | Description                                                                           | Required |
 | ----------- | ------------------------------------------------------------------------------------- | -------- |
 | `git`       | Git URL (string) or array of URLs                                                     | Yes      |
+| `groups`    | Array of group names to apply (in order). See [Groups](groups.md)                     | No       |
 | `files`     | Per-repo file overrides (optional)                                                    | No       |
 | `settings`  | Per-repo settings like `rulesets` (merged with root settings)                         | No       |
 | `prOptions` | Per-repo PR merge options (overrides global)                                          | No       |

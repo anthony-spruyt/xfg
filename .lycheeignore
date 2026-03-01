@@ -19,3 +19,6 @@ git+https://github.com/anthony-spruyt/xfg.git
 
 # Token placeholder URLs in GitHub Actions
 https://x-access-token/
+
+# Trivy schema URL (repo was emptied, schema no longer accessible)
+https://raw.githubusercontent.com/aquasecurity/trivy/main/schema/trivy-config.json
