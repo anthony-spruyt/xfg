@@ -2568,4 +2568,311 @@ describe("group configuration", () => {
     assert.ok(fileNames.includes("root.json"));
     assert.ok(fileNames.includes("group.json"));
   });
+
+  test("multiple groups merge left-to-right, later wins", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "root.json": { content: { fromRoot: true } },
+      },
+      groups: {
+        groupA: {
+          files: { "shared.json": { content: { source: "A" } } },
+        },
+        groupB: {
+          files: { "shared.json": { content: { source: "B" } } },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["groupA", "groupB"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const shared = result.repos[0].files.find(
+      (f) => f.fileName === "shared.json"
+    );
+    assert.deepStrictEqual(shared?.content, { source: "B" });
+  });
+
+  test("repo overrides group file", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { base: true } },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "config.json": { content: { fromGroup: true } },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+          files: {
+            "config.json": { content: { fromRepo: true } },
+          },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const config = result.repos[0].files.find(
+      (f) => f.fileName === "config.json"
+    );
+    // Deep merge: root → group → repo
+    assert.equal((config?.content as Record<string, unknown>).base, true);
+    assert.equal((config?.content as Record<string, unknown>).fromGroup, true);
+    assert.equal((config?.content as Record<string, unknown>).fromRepo, true);
+  });
+
+  test("group inherit:false discards root files", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "root.json": { content: { fromRoot: true } },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            inherit: false,
+            "group.json": { content: { fromGroup: true } },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(!fileNames.includes("root.json"));
+    assert.ok(fileNames.includes("group.json"));
+  });
+
+  test("repo inherit:false discards root and group files", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "root.json": { content: { fromRoot: true } },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "group.json": { content: { fromGroup: true } },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+          files: {
+            inherit: false,
+            "repo.json": { content: { fromRepo: true } },
+          } as Record<string, any>,
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    // With inherit:false on repo and no root definition of repo.json,
+    // the repo file won't appear (it needs a root definition to be processed).
+    // This test verifies root and group files are excluded.
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(!fileNames.includes("root.json"));
+    assert.ok(!fileNames.includes("group.json"));
+  });
+
+  test("group file:false excludes a root file", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "keep.json": { content: { keep: true } },
+        "remove.json": { content: { remove: true } },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "remove.json": false,
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("keep.json"));
+    assert.ok(!fileNames.includes("remove.json"));
+  });
+
+  test("repo file:false excludes a group file", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        mygroup: {
+          files: {
+            "group.json": { content: { fromGroup: true } },
+            "other.json": { content: { other: true } },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+          files: {
+            "group.json": false,
+          },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(!fileNames.includes("group.json"));
+    assert.ok(fileNames.includes("other.json"));
+  });
+
+  test("git array expansion with groups", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        mygroup: {
+          files: {
+            "group.json": { content: { fromGroup: true } },
+          },
+        },
+      },
+      repos: [
+        {
+          git: ["git@github.com:org/repo1.git", "git@github.com:org/repo2.git"],
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.equal(result.repos.length, 2);
+    assert.equal(result.repos[0].files.length, 1);
+    assert.equal(result.repos[1].files.length, 1);
+    assert.equal(result.repos[0].files[0].fileName, "group.json");
+    assert.equal(result.repos[1].files[0].fileName, "group.json");
+  });
+
+  test("no groups field on repo behaves identically", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.equal(result.repos.length, 1);
+    assert.equal(result.repos[0].files.length, 1);
+    assert.deepStrictEqual(result.repos[0].files[0].content, { key: "value" });
+  });
+
+  test("empty groups array behaves identically", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: [],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.equal(result.repos[0].files.length, 1);
+    assert.deepStrictEqual(result.repos[0].files[0].content, { key: "value" });
+  });
+
+  test("override:true at group level replaces root file content", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { fromRoot: true, shared: "root" } },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "config.json": {
+              content: { fromGroup: true },
+              override: true,
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const config = result.repos[0].files[0];
+    assert.deepStrictEqual(config.content, { fromGroup: true });
+  });
+
+  test("override:true at repo level replaces group file content", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { fromRoot: true } },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "config.json": {
+              content: { fromGroup: true, shared: "group" },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+          files: {
+            "config.json": {
+              content: { fromRepo: true },
+              override: true,
+            },
+          },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const config = result.repos[0].files[0];
+    // override:true at repo level replaces all accumulated content (root + group)
+    assert.deepStrictEqual(config.content, { fromRepo: true });
+  });
 });
