@@ -3036,4 +3036,1107 @@ describe("group configuration", () => {
     assert.equal(result.repos[0].prOptions?.merge, "force");
     assert.deepStrictEqual(result.repos[0].prOptions?.labels, ["from-group"]);
   });
+
+  test("group with no files is skipped in mergeGroupFiles", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "root.json": { content: { fromRoot: true } },
+      },
+      groups: {
+        emptyGroup: {},
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["emptyGroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.equal(result.repos[0].files.length, 1);
+    assert.equal(result.repos[0].files[0].fileName, "root.json");
+  });
+
+  test("group file with undefined value is skipped", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "root.json": { content: { fromRoot: true } },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "undef.json": undefined as any,
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("root.json"));
+    assert.ok(!fileNames.includes("undef.json"));
+  });
+
+  test("group merges text array content onto root text array content", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "script.sh": {
+          content: ["#!/bin/bash", "echo root"],
+          mergeStrategy: "append",
+        },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "script.sh": {
+              content: ["echo group"],
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const script = result.repos[0].files.find(
+      (f) => f.fileName === "script.sh"
+    );
+    // text array + text array with append = concatenation
+    assert.ok(Array.isArray(script?.content));
+    const lines = script?.content as string[];
+    assert.ok(lines.includes("echo root"));
+    assert.ok(lines.includes("echo group"));
+  });
+
+  test("group merges string text content onto root (string overlay replaces)", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "script.sh": {
+          content: "#!/bin/bash\necho root",
+        },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "script.sh": {
+              content: "#!/bin/bash\necho group",
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const script = result.repos[0].files.find(
+      (f) => f.fileName === "script.sh"
+    );
+    // String overlay always replaces
+    assert.equal(script?.content, "#!/bin/bash\necho group");
+  });
+
+  test("group content type mismatch (text root + object group) - overlay wins", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.sh": { content: "original text" },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "config.sh": {
+              content: { key: "value" },
+            } as any,
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const config = result.repos[0].files.find(
+      (f) => f.fileName === "config.sh"
+    );
+    // Type mismatch: overlay wins
+    assert.deepStrictEqual(config?.content, { key: "value" });
+  });
+
+  test("group override:true with no content uses existing content", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { fromRoot: true } },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "config.json": {
+              override: true,
+            } as any,
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const config = result.repos[0].files[0];
+    // override:true with no overlay content = use existing content
+    assert.deepStrictEqual(config.content, { fromRoot: true });
+  });
+
+  test("group introduces new file not in root", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        mygroup: {
+          files: {
+            "new-file.json": { content: { brand: "new" } },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.equal(result.repos[0].files.length, 1);
+    assert.equal(result.repos[0].files[0].fileName, "new-file.json");
+    assert.deepStrictEqual(result.repos[0].files[0].content, { brand: "new" });
+  });
+
+  test("group with no prOptions is skipped in mergeGroupPROptions", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      prOptions: { merge: "auto" },
+      groups: {
+        emptyGroup: {},
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["emptyGroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.equal(result.repos[0].prOptions?.merge, "auto");
+  });
+
+  test("group with no settings is skipped in mergeGroupSettings", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        rulesets: {
+          "root-rule": { target: "branch", enforcement: "active" },
+        },
+      },
+      groups: {
+        emptyGroup: {},
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["emptyGroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.ok(result.repos[0].settings?.rulesets?.["root-rule"]);
+  });
+
+  test("group settings without base (no root settings)", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            rulesets: {
+              "group-rule": { target: "branch", enforcement: "active" },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.ok(result.repos[0].settings?.rulesets?.["group-rule"]);
+  });
+
+  test("group settings merge rulesets with existing base ruleset", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        rulesets: {
+          "shared-rule": {
+            target: "branch",
+            enforcement: "active",
+          },
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            rulesets: {
+              "shared-rule": {
+                enforcement: "evaluate",
+              },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const rule = result.repos[0].settings?.rulesets?.["shared-rule"] as Record<
+      string,
+      unknown
+    >;
+    // Group overrides enforcement, keeps target from root
+    assert.equal(rule?.target, "branch");
+    assert.equal(rule?.enforcement, "evaluate");
+  });
+
+  test("group settings ruleset: false accumulates opt-out marker", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        rulesets: {
+          "root-rule": { target: "branch", enforcement: "active" },
+          "keep-rule": { target: "branch", enforcement: "active" },
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            rulesets: {
+              "root-rule": false,
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    // mergeRawSettings accumulates false; mergeSettings then processes it
+    // keep-rule should remain present
+    assert.ok(result.repos[0].settings?.rulesets?.["keep-rule"]);
+  });
+
+  test("group settings repo: false opts out of repo settings", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        repo: {
+          hasIssues: true,
+          hasWiki: true,
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            repo: false,
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    // repo: false in group opts out of all repo settings
+    assert.equal(result.repos[0].settings?.repo, undefined);
+  });
+
+  test("group settings merge repo settings with base", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        repo: {
+          hasIssues: true,
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            repo: {
+              hasWiki: false,
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const repo = result.repos[0].settings?.repo as Record<string, unknown>;
+    assert.equal(repo?.hasIssues, true);
+    assert.equal(repo?.hasWiki, false);
+  });
+
+  test("group settings merge repo settings when base repo is false", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        repo: false as any,
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            repo: {
+              hasWiki: false,
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const repo = result.repos[0].settings?.repo as Record<string, unknown>;
+    assert.equal(repo?.hasWiki, false);
+  });
+
+  test("group settings labels merging", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        labels: {
+          bug: { color: "d73a4a", description: "Something broken" },
+          feature: { color: "0e8a16" },
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            labels: {
+              bug: { color: "ff0000", description: "Group bug" },
+              enhancement: { color: "a2eeef" },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const labels = result.repos[0].settings?.labels;
+    // Group overrides bug label color/description
+    assert.equal(labels?.bug?.color, "ff0000");
+    assert.equal(labels?.bug?.description, "Group bug");
+    // feature from root preserved
+    assert.ok(labels?.feature);
+    // enhancement from group added
+    assert.equal(labels?.enhancement?.color, "a2eeef");
+  });
+
+  test("group settings labels inherit:false discards accumulated labels", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        labels: {
+          bug: { color: "d73a4a" },
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            labels: {
+              inherit: false,
+              enhancement: { color: "a2eeef" },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const labels = result.repos[0].settings?.labels;
+    // bug from root should be discarded
+    assert.equal(labels?.bug, undefined);
+    // enhancement from group should be present
+    assert.equal(labels?.enhancement?.color, "a2eeef");
+  });
+
+  test("group settings labels false opts out of specific label via repo", () => {
+    // Group accumulates false, then per-repo level inherits that
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        labels: {
+          bug: { color: "d73a4a" },
+          feature: { color: "0e8a16" },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          settings: {
+            labels: {
+              bug: false,
+            },
+          },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const labels = result.repos[0].settings?.labels;
+    // bug opted out via per-repo false
+    assert.equal(labels?.bug, undefined);
+    // feature preserved
+    assert.ok(labels?.feature);
+  });
+
+  test("group settings labels accumulates false marker", () => {
+    // mergeRawSettings stores false; we verify feature label still present
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        labels: {
+          bug: { color: "d73a4a" },
+          feature: { color: "0e8a16" },
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            labels: {
+              bug: false,
+              enhancement: { color: "a2eeef" },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+          settings: {
+            labels: {
+              bug: false,
+            },
+          },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const labels = result.repos[0].settings?.labels;
+    // bug opted out
+    assert.equal(labels?.bug, undefined);
+    // feature from root preserved
+    assert.ok(labels?.feature);
+    // enhancement from group preserved
+    assert.ok(labels?.enhancement);
+  });
+
+  test("group settings deleteOrphaned overrides root", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        rulesets: {
+          rule: { target: "branch" },
+        },
+        deleteOrphaned: false,
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            deleteOrphaned: true,
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.equal(result.repos[0].settings?.deleteOrphaned, true);
+  });
+
+  test("multiple groups chain settings left-to-right", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        rulesets: {
+          "root-rule": { target: "branch", enforcement: "active" },
+        },
+      },
+      groups: {
+        groupA: {
+          settings: {
+            rulesets: {
+              "group-a-rule": { target: "branch", enforcement: "active" },
+            },
+          },
+        },
+        groupB: {
+          settings: {
+            rulesets: {
+              "group-b-rule": { target: "branch", enforcement: "evaluate" },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["groupA", "groupB"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.ok(result.repos[0].settings?.rulesets?.["root-rule"]);
+    assert.ok(result.repos[0].settings?.rulesets?.["group-a-rule"]);
+    assert.ok(result.repos[0].settings?.rulesets?.["group-b-rule"]);
+  });
+
+  test("overlayToRoot handles rulesets with inherit key", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            rulesets: {
+              inherit: false,
+              "group-rule": { target: "branch", enforcement: "active" },
+            },
+            deleteOrphaned: true,
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    // inherit key should be stripped, group-rule present
+    assert.ok(result.repos[0].settings?.rulesets?.["group-rule"]);
+    assert.equal(result.repos[0].settings?.deleteOrphaned, true);
+  });
+
+  test("overlayToRoot handles labels with inherit key", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            labels: {
+              inherit: false,
+              enhancement: { color: "a2eeef" },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.ok(result.repos[0].settings?.labels?.enhancement);
+  });
+
+  test("overlayToRoot handles repo settings", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            repo: {
+              hasIssues: true,
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const repo = result.repos[0].settings?.repo as Record<string, unknown>;
+    assert.equal(repo?.hasIssues, true);
+  });
+
+  test("group settings with new ruleset (no existing base for that name)", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        rulesets: {
+          "existing-rule": { target: "branch" },
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            rulesets: {
+              "brand-new-rule": { target: "tag", enforcement: "active" },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const rule = result.repos[0].settings?.rulesets?.[
+      "brand-new-rule"
+    ] as Record<string, unknown>;
+    assert.equal(rule?.target, "tag");
+    assert.equal(rule?.enforcement, "active");
+  });
+
+  test("group settings labels merge with existing label entry", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        labels: {
+          bug: { color: "d73a4a", description: "Root description" },
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            labels: {
+              bug: { color: "ff0000" },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const bug = result.repos[0].settings?.labels?.bug;
+    // Group overrides color but description from root is preserved via mergeSettings
+    assert.equal(bug?.color, "ff0000");
+  });
+
+  test("mergeRawSettings returns undefined when both base and overlay are undefined", () => {
+    // This is exercised when both root settings and group settings are undefined
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      groups: {
+        mygroup: {},
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.equal(result.repos[0].settings, undefined);
+  });
+
+  test("mergeRawSettings returns structuredClone of base when overlay has no settings", () => {
+    // Tests the path where overlay is undefined but base exists
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        rulesets: {
+          "root-rule": { target: "branch" },
+        },
+      },
+      groups: {
+        groupA: {
+          settings: {
+            rulesets: {
+              "group-rule": { target: "branch" },
+            },
+          },
+        },
+        groupB: {}, // no settings -> overlay is undefined
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["groupA", "groupB"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.ok(result.repos[0].settings?.rulesets?.["root-rule"]);
+    assert.ok(result.repos[0].settings?.rulesets?.["group-rule"]);
+  });
+
+  test("group settings rulesets.inherit:false with no overlay rulesets results in empty rulesets", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        rulesets: {
+          "root-rule": { target: "branch", enforcement: "active" },
+        },
+        repo: { hasIssues: true },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            rulesets: {
+              inherit: false,
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    // Rulesets should be empty (inherit:false discarded root, no group rulesets added)
+    // But repo settings should still be there
+    assert.equal(result.repos[0].settings?.rulesets, undefined);
+    const repo = result.repos[0].settings?.repo as Record<string, unknown>;
+    assert.equal(repo?.hasIssues, true);
+  });
+
+  test("group settings labels.inherit:false with no overlay labels", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        labels: {
+          bug: { color: "d73a4a" },
+        },
+        rulesets: {
+          rule: { target: "branch" },
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            labels: {
+              inherit: false,
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    // Labels should be empty since inherit:false discarded root labels
+    assert.equal(result.repos[0].settings?.labels, undefined);
+    // But rulesets should still be there
+    assert.ok(result.repos[0].settings?.rulesets?.["rule"]);
+  });
+
+  test("multiple groups chain prOptions left-to-right", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      prOptions: { merge: "auto" },
+      groups: {
+        groupA: {
+          prOptions: { labels: ["from-A"] },
+        },
+        groupB: {
+          prOptions: { merge: "force" },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["groupA", "groupB"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    // groupB overrides merge from root/groupA
+    assert.equal(result.repos[0].prOptions?.merge, "force");
+    // groupA labels preserved
+    assert.deepStrictEqual(result.repos[0].prOptions?.labels, ["from-A"]);
+  });
+
+  test("group file deep merges object content with root object content", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": {
+          content: { root: true, shared: { a: 1 } },
+          mergeStrategy: "replace",
+        },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "config.json": {
+              content: { group: true, shared: { b: 2 } },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const content = result.repos[0].files[0].content as Record<string, unknown>;
+    assert.equal(content.root, true);
+    assert.equal(content.group, true);
+  });
+
+  test("group file without content uses existing content", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { fromRoot: true } },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "config.json": {
+              createOnly: true,
+            } as any,
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const config = result.repos[0].files[0];
+    assert.deepStrictEqual(config.content, { fromRoot: true });
+    assert.equal(config.createOnly, true);
+  });
+
+  test("group file with no existing base content uses overlay content", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { fromRoot: true } },
+      },
+      groups: {
+        groupA: {
+          files: {
+            "new.json": {
+              content: { fromGroupA: true },
+            },
+          },
+        },
+        groupB: {
+          files: {
+            "new.json": {
+              content: { fromGroupB: true },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["groupA", "groupB"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const newFile = result.repos[0].files.find(
+      (f) => f.fileName === "new.json"
+    );
+    // groupB merges onto groupA's accumulated value
+    const content = newFile?.content as Record<string, unknown>;
+    assert.equal(content.fromGroupA, true);
+    assert.equal(content.fromGroupB, true);
+  });
 });
