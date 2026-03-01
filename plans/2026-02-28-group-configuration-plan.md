@@ -294,7 +294,11 @@ const effectiveRootFiles = rawRepo.groups?.length
   : (raw.files ?? {});
 ```
 
-Then use `effectiveRootFiles` instead of `raw.files` in the per-file loop. Critically, the `fileNames` variable (currently computed as `Object.keys(raw.files)` at line 218 of `normalizer.ts`) must be recomputed per-repo as `Object.keys(effectiveRootFiles)` so that files introduced by groups are included in the iteration. Move the `fileNames` computation inside the per-repo loop:
+Then use `effectiveRootFiles` instead of `raw.files` in the per-file loop. Critically, the `fileNames` variable (currently computed as `Object.keys(raw.files)` at line 218 of `normalizer.ts`) must be recomputed per-repo as `Object.keys(effectiveRootFiles)` so that files introduced by groups are included in the iteration. Move the `fileNames` computation inside the per-repo loop.
+
+Also change the `fileConfig` lookup from `const fileConfig = raw.files![fileName]` to `const fileConfig = effectiveRootFiles[fileName]`. This is essential — without it, files introduced by groups will not be found in `raw.files` and will cause a runtime error.
+
+Recompute `fileNames`:
 
 ```typescript
 const fileNames = Object.keys(effectiveRootFiles);
@@ -1134,7 +1138,16 @@ Expected: FAIL — no group validation in `validateRawConfig` yet
 In `validateRawConfig()` in `src/config/validator.ts`, add group validation after the root settings validation block and before the repo loop:
 
 1. Validate `config.groups` structure (if present, must be an object)
-2. For each group: validate name not reserved, validate files (reuse existing file validation logic), validate settings (reuse `validateSettings()`), validate prOptions
+2. For each group: validate name not reserved, validate files (reuse existing file validation logic), validate settings (reuse `validateSettings()`), validate prOptions. When validating group settings, pass the group's settings with a context string of the form `groups.<groupName>`, along with `rootRulesetNames`, `hasRootRepoSettings`, and `rootLabelNames` derived from `config.settings` (same as when validating repo settings). This allows groups to reference root-level rulesets/labels for opt-out (`ruleset: false`) and ensures those references are validated. Example call:
+   ```typescript
+   validateSettings(
+     group.settings,
+     `groups.${groupName}`,
+     rootRulesetNames,
+     hasRootRepoSettings,
+     rootLabelNames
+   );
+   ```
 3. In the repo loop: validate `repo.groups` is array of strings, each references a defined group, no duplicates
 4. When validating per-repo file overrides, also check group-defined files (not just root files). The existing check at line 486 of `validator.ts`:
    ```typescript
@@ -1214,7 +1227,9 @@ describe("group file references", () => {
     };
 
     const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
-    const groupFile = result.groups!.mygroup.files!["config.json"];
+    const groupFile = result.groups!.mygroup.files![
+      "config.json"
+    ] as RawFileConfig;
     assert.deepStrictEqual(groupFile.content, { fromGroup: true });
   });
 });
