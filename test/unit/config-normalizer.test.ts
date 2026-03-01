@@ -6,8 +6,6 @@ import type {
   RawRepoConfig,
   RawRepoFileOverride,
   RawFileConfig,
-  RawGroupConfig,
-  RawRootSettings,
   PullRequestRuleParameters,
 } from "../../src/config/index.js";
 
