@@ -220,14 +220,16 @@ Customize PR descriptions with [PR templates](configuration/pr-templates.md) usi
 ```mermaid
 flowchart TB
     subgraph Loading["Config Loading"]
-        YAML[/"YAML Config File"/] --> REFS["Resolve @file references"]
+        YAML[/"YAML Config File"/] --> REFS["Resolve @file references<br/>(root, group & repo levels)"]
         REFS --> VALIDATE["Validate structure"]
+        VALIDATE --> VALIDATE_CMD_S["Validate for sync<br/>(require files to sync)"]
     end
 
     subgraph Normalization
-        EXPAND["Expand git arrays"] --> MERGE["Merge base + overlay content"]
+        EXPAND["Expand git arrays"] --> GROUPS["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
+        GROUPS --> MERGE["Merge per-repo overrides<br/>(deep merge / text merge / override)"]
         MERGE --> ENV["Interpolate env vars<br/><code>${VAR}</code>, <code>${VAR:-default}</code>"]
-        ENV --> OPTS["Resolve PR options &<br/>settings per-repo"]
+        ENV --> OPTS["Resolve per-repo fields<br/>(createOnly, executable,<br/>template, vars, etc.)"]
     end
 
     subgraph ForEach["For Each Repository"]
@@ -240,7 +242,7 @@ flowchart TB
 
     SUMMARY["Generate CI Summary Report"]
 
-    VALIDATE --> EXPAND
+    VALIDATE_CMD_S --> EXPAND
     OPTS --> ForEach
     ForEach --> SUMMARY
 ```
@@ -265,23 +267,29 @@ flowchart TB
     STAY --> WRITE
 
     subgraph FileSync["File Sync"]
-        WRITE["Write config files<br/>(xfg template interpolation)"]
-        WRITE --> ORPHANS["Detect & delete<br/>orphaned files"]
+        WRITE["Pass 1: Write each config file<br/>(xfg template interpolation,<br/>skip createOnly if exists on base)"]
+        WRITE --> CHMOD["Pass 2: Set executable mode<br/>(git update-index --chmod=+x<br/>for all executable files)"]
+        CHMOD --> ORPHANS["Detect & delete<br/>orphaned files"]
         ORPHANS --> MANIFEST["Update manifest<br/>(.xfg.json)"]
     end
 
-    MANIFEST --> STAGE["git add -A"]
+    MANIFEST --> CHANGES_CHECK{Any file changes?}
+    CHANGES_CHECK -->|No| SKIP_NC_EARLY["Skip — no changes"]
+    CHANGES_CHECK -->|Yes| DRY{Dry run?}
+    DRY -->|Yes| DRY_SHOW["Show diff summary ✓"]
+    DRY -->|No| STAGE["git add -A"]
     STAGE --> STAGED{Staged changes?}
     STAGED -->|No| SKIP_NC["Skip — no changes"]
-    STAGED -->|Yes| COMMIT_SELECT{Auth type?}
-    COMMIT_SELECT -->|"GitHub App"| GQL["GraphQL commit<br/>(verified badge)"]
-    COMMIT_SELECT -->|"PAT / CLI"| GIT["Git commit & push"]
+    STAGED -->|Yes| COMMIT_SELECT{"GitHub +<br/>App credentials?"}
+    COMMIT_SELECT -->|Yes| GQL_BRANCH["Ensure remote branch<br/>(createRef / deleteRef<br/>GraphQL mutations)"]
+    GQL_BRANCH --> GQL["GraphQL commit<br/>(createCommitOnBranch —<br/>verified / signed)"]
+    COMMIT_SELECT -->|No| GIT["Git commit & push"]
 
     GQL --> DIRECT_CHECK
     GIT --> DIRECT_CHECK
 
     DIRECT_CHECK{Direct mode?}
-    DIRECT_CHECK -->|Yes| DONE["Push to default branch ✓"]
+    DIRECT_CHECK -->|Yes| DONE["Done — on default branch ✓"]
     DIRECT_CHECK -->|No| PR_CREATE
 
     subgraph PR["PR Creation & Merge"]
@@ -306,7 +314,10 @@ flowchart TB
     end
 
     subgraph Normalization
-        EXPAND["Expand git arrays"] --> MERGE_S["Merge base + per-repo<br/>settings & rulesets"]
+        EXPAND["Expand git arrays"] --> GROUPS_S["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
+        GROUPS_S --> MERGE_S["Merge per-repo overrides<br/>(deep merge / text merge / override)"]
+        MERGE_S --> ENV_S["Interpolate env vars<br/><code>${VAR}</code>, <code>${VAR:-default}</code>"]
+        ENV_S --> OPTS_S["Resolve per-repo fields<br/>(createOnly, executable,<br/>template, vars, etc.)"]
     end
 
     subgraph Lifecycle["Lifecycle Pre-Check (all unique repos)"]
@@ -324,13 +335,18 @@ flowchart TB
         REPO["For each repo with repo settings<br/><i>(see detail below)</i>"]
     end
 
+    subgraph Phase3["Phase 3: Labels"]
+        LBL["For each repo with labels<br/><i>(see detail below)</i>"]
+    end
+
     REPORT["Generate Summary Report"]
 
     VALIDATE_CMD --> EXPAND
-    MERGE_S --> Lifecycle
+    OPTS_S --> Lifecycle
     Lifecycle --> Phase1
     Phase1 --> Phase2
-    Phase2 --> REPORT
+    Phase2 --> Phase3
+    Phase3 --> REPORT
 ```
 
 #### Ruleset Processing (per repo)
@@ -338,10 +354,12 @@ flowchart TB
 ```mermaid
 flowchart TB
     GUARD{GitHub repo?} -->|No| SKIP_P["Skip (GitHub only)"]
-    GUARD -->|Yes| TOKEN["Resolve auth token"]
+    GUARD -->|Yes| FETCH_MANIFEST["Fetch remote manifest<br/>(.xfg.json)"]
+
+    FETCH_MANIFEST --> TOKEN["Resolve auth token"]
 
     TOKEN --> LIST["List current rulesets<br/>(summary only)"]
-    LIST --> HYDRATE["Hydrate matching rulesets<br/>(full detail per match)"]
+    LIST --> HYDRATE["Hydrate matching rulesets<br/>(full detail: conditions,<br/>rules, bypass_actors)"]
 
     HYDRATE --> DIFF["Diff: create / update /<br/>delete / unchanged"]
     DIFF --> PLAN["Format terraform-style plan"]
@@ -356,9 +374,9 @@ flowchart TB
         D["DELETE — remove orphaned<br/>(if deleteOrphaned)"]
     end
 
-    APPLY --> MANIFEST_CHECK{deleteOrphaned?}
+    APPLY --> MANIFEST_CHECK{"Managed rulesets<br/>to track?"}
     MANIFEST_CHECK -->|No| DONE["Done ✓"]
-    MANIFEST_CHECK -->|Yes| MANIFEST["Update manifest via<br/>git clone + commit + PR<br/>(branch: chore/sync-rulesets)"]
+    MANIFEST_CHECK -->|Yes| MANIFEST["Update manifest via<br/>SyncWorkflow + ManifestStrategy<br/>(branch: chore/sync-rulesets)"]
     MANIFEST --> DONE
 ```
 
@@ -373,13 +391,13 @@ flowchart TB
 
     subgraph FETCH["Fetch Current State (4 API calls)"]
         direction TB
-        F1["GET /repos — main settings"]
+        F1["GET /repos — main settings<br/>(includes security_and_analysis)"]
         F2["GET vulnerability-alerts"]
         F3["GET automated-security-fixes"]
         F4["GET private-vulnerability-reporting"]
     end
 
-    FETCH --> SEC_VAL{"Security settings<br/>valid for repo<br/>visibility/owner?"}
+    FETCH --> SEC_VAL{"Security settings<br/>valid for visibility /<br/>owner / GHAS?"}
     SEC_VAL -->|No| SEC_ERR["Error — abort repo"]
     SEC_VAL -->|Yes| DIFF["Diff: add / change"]
 
@@ -390,7 +408,7 @@ flowchart TB
     DRY -->|Yes| SHOW["Show plan ✓"]
     DRY -->|No| APPLY
 
-    subgraph APPLY["Apply (4 API calls, ordered)"]
+    subgraph APPLY["Apply (ordered)"]
         direction TB
         A1["PATCH /repos — main settings"]
         A2["PUT/DELETE vulnerability-alerts"]
@@ -399,6 +417,35 @@ flowchart TB
     end
 
     APPLY --> DONE["Done ✓"]
+```
+
+#### Labels Processing (per repo)
+
+```mermaid
+flowchart TB
+    GUARD{GitHub repo?} -->|No| SKIP_P["Skip (GitHub only)"]
+    GUARD -->|Yes| FETCH_MANIFEST["Fetch remote manifest<br/>(.xfg.json)"]
+
+    FETCH_MANIFEST --> TOKEN["Resolve auth token"]
+    TOKEN --> LIST["List current labels"]
+
+    LIST --> DIFF["Diff: create / update /<br/>delete / unchanged"]
+    DIFF --> PLAN["Format terraform-style plan"]
+    PLAN --> DRY{Dry run?}
+    DRY -->|Yes| SHOW["Show plan ✓"]
+    DRY -->|No| APPLY
+
+    subgraph APPLY["Apply Changes (ordered)"]
+        direction TB
+        D["DELETE — remove orphaned<br/>(if deleteOrphaned)"]
+        U["PUT — update changed labels"]
+        C["POST — create new labels"]
+    end
+
+    APPLY --> MANIFEST_CHECK{"Managed labels<br/>to track?"}
+    MANIFEST_CHECK -->|No| DONE["Done ✓"]
+    MANIFEST_CHECK -->|Yes| MANIFEST["Update manifest via<br/>SyncWorkflow + ManifestStrategy<br/>(branch: chore/sync-labels)"]
+    MANIFEST --> DONE
 ```
 
 **See [Use Cases](use-cases.md)** for real-world scenarios: platform engineering, CI/CD standardization, security governance, repo migration, and more.
