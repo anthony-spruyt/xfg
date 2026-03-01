@@ -92,6 +92,7 @@ nav:
   - Platforms:
       - Overview: platforms/index.md
       - GitHub: platforms/github.md
+      - GitHub App: platforms/github-app.md
       - Azure DevOps: platforms/azure-devops.md
       - GitLab: platforms/gitlab.md
   - CI/CD:

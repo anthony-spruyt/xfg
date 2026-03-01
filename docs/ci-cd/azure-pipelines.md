@@ -27,7 +27,7 @@ steps:
 ## Token Requirements
 
 !!! note "Build Service Permissions"
-Ensure the build service account has permission to create PRs in target repositories.
+    Ensure the build service account has permission to create PRs in target repositories.
 
 ### Using System.AccessToken
 

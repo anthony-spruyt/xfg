@@ -113,7 +113,7 @@ features:
 ```
 
 !!! note "Directives are stripped"
-The `$arrayMerge` and `values` keys are internal directives and do not appear in the final output.
+    The `$arrayMerge` and `values` keys are internal directives and do not appear in the final output.
 
 ## Text File Merge Strategies
 
@@ -144,7 +144,7 @@ coverage/
 ```
 
 !!! note
-String content (not lines array) always uses replace strategy - the entire string is replaced.
+    String content (not lines array) always uses replace strategy - the entire string is replaced.
 
 ## Example: Different Strategies per File
 

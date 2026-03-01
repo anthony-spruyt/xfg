@@ -123,5 +123,6 @@ gh repo edit org/repo --enable-auto-merge
 
 1. CLI flags (highest)
 2. Per-repo `prOptions`
-3. Global `prOptions`
-4. Built-in defaults (lowest)
+3. Group `prOptions` (applied in order, later groups override earlier ones)
+4. Global `prOptions`
+5. Built-in defaults (lowest)

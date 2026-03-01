@@ -46,4 +46,4 @@ config/
 Parent directories (`.github/workflows/` and `config/settings/`) are created if they don't exist.
 
 !!! note
-Quote file paths containing `/` in YAML keys to ensure proper parsing.
+    Quote file paths containing `/` in YAML keys to ensure proper parsing.

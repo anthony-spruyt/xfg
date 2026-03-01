@@ -90,7 +90,7 @@ files:
 ```
 
 !!! note
-`header` and `schemaUrl` only apply to YAML output files. They are ignored for JSON files.
+    `header` and `schemaUrl` only apply to YAML output files. They are ignored for JSON files.
 
 ## Text Files
 

@@ -159,11 +159,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
 ```
 
-## Token Requirements
-
-!!! warning "Personal Access Token Required"
-`GH_PAT` must be a Personal Access Token with `repo` scope to create PRs in target repositories. The default `GITHUB_TOKEN` only has access to the current repository.
-
 ## Creating a PAT
 
 1. Go to **Settings** > **Developer settings** > **Personal access tokens** > **Tokens (classic)**
