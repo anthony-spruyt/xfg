@@ -46,7 +46,7 @@ Groups support the same override capabilities as repos:
 | ------------ | ---------------------------------------------------- |
 | `files`      | File definitions or overrides (same syntax as repos) |
 | `prOptions`  | PR merge options (merged into chain)                 |
-| `settings`   | Repository settings like rulesets, labels             |
+| `settings`   | Repository settings like rulesets, labels              |
 
 ## Merge Chain
 
