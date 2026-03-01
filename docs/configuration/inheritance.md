@@ -1,6 +1,6 @@
 # Content Inheritance
 
-xfg uses a 3-level inheritance system that lets you define base configurations once and customize them per-repository.
+xfg uses a multi-level inheritance system that lets you define base configurations once and customize them per-repository. The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**.
 
 ## Inheritance Levels
 
@@ -21,7 +21,11 @@ files:
         - metrics
 ```
 
-### Level 2: Per-Repo Overlay
+### Level 2: Group Layers (Optional)
+
+Groups add intermediate layers between root and per-repo overrides. When a repo references groups via `groups: [...]`, each group's files are deep-merged onto the accumulated result in array order. See [Groups](groups.md) for full details.
+
+### Level 3: Per-Repo Overlay
 
 Add or override specific fields for certain repos:
 
@@ -50,7 +54,7 @@ The result is a deep merge of base + overlay:
 }
 ```
 
-### Level 3: Per-Repo Override
+### Level 4: Per-Repo Override
 
 Use `override: true` to completely replace the base content:
 
