@@ -222,7 +222,7 @@ function mergeGroupFiles(
   groupNames: string[],
   groupDefs: Record<string, RawGroupConfig>
 ): Record<string, RawFileConfig> {
-  let accumulated: Record<string, RawFileConfig> = { ...rootFiles };
+  let accumulated: Record<string, RawFileConfig> = structuredClone(rootFiles);
 
   for (const groupName of groupNames) {
     const group = groupDefs[groupName];
@@ -281,11 +281,15 @@ function mergeGroupFiles(
           mergedContent = overlay.content;
         }
 
+        const { override: _override, ...restFileConfig } = fileConfig as Record<
+          string,
+          unknown
+        >;
         accumulated[fileName] = {
           ...existing,
-          ...fileConfig,
+          ...restFileConfig,
           content: mergedContent,
-        };
+        } as RawFileConfig;
       } else {
         // New file introduced by group
         accumulated[fileName] = structuredClone(fileConfig) as RawFileConfig;

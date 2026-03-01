@@ -2981,6 +2981,37 @@ describe("group configuration", () => {
     assert.ok(result.repos[0].settings?.rulesets?.["group-only-protection"]);
   });
 
+  test("should allow group to override non-content file properties", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "script.sh": { content: "#!/bin/bash\necho hello", executable: false },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "script.sh": {
+              content: "#!/bin/bash\necho hello",
+              executable: true,
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    const script = result.repos[0].files.find(
+      (f) => f.fileName === "script.sh"
+    );
+    assert.equal(script?.executable, true);
+  });
+
   test("repo prOptions override group prOptions", () => {
     const raw: RawConfig = {
       id: "test-config",
