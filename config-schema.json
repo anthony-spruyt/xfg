@@ -18,6 +18,11 @@
       "required": [
         "settings"
       ]
+    },
+    {
+      "required": [
+        "groups"
+      ]
     }
   ],
   "properties": {
@@ -34,6 +39,13 @@
       "minProperties": 1,
       "additionalProperties": {
         "$ref": "#/definitions/fileConfig"
+      }
+    },
+    "groups": {
+      "type": "object",
+      "description": "Named configuration groups that repos can reference via 'groups: [...]'. Groups create a merge chain: root → group1 → group2 → repo overrides. Each group can define files, prOptions, and settings.",
+      "additionalProperties": {
+        "$ref": "#/definitions/groupConfig"
       }
     },
     "repos": {
@@ -200,6 +212,13 @@
             ]
           }
         },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of group names to apply to this repo. Groups are merged in order: root → group1 → group2 → repo overrides. Group names must reference groups defined in the root 'groups' object."
+        },
         "prOptions": {
           "$ref": "#/definitions/prOptions",
           "description": "Per-repo PR merge options. Overrides global prOptions."
@@ -347,6 +366,45 @@
         "deleteOrphaned": {
           "type": "boolean",
           "description": "Override the file-level or global deleteOrphaned setting for this specific repo. Set to true to enable orphan tracking, or false to disable it for this repo."
+        }
+      }
+    },
+    "groupConfig": {
+      "type": "object",
+      "description": "Configuration group that can define files, prOptions, and settings. Referenced by repos via 'groups: [groupName]'.",
+      "properties": {
+        "files": {
+          "type": "object",
+          "description": "Files defined or overridden by this group. Keys are filenames. Set to false to remove an inherited file. Set inherit: false to discard all accumulated files from prior layers.",
+          "properties": {
+            "inherit": {
+              "type": "boolean",
+              "description": "Set to false to discard all files accumulated from root and earlier groups. Default: true"
+            }
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to remove this file from the group's output"
+              },
+              {
+                "$ref": "#/definitions/fileConfig"
+              },
+              {
+                "$ref": "#/definitions/repoFileOverride"
+              }
+            ]
+          }
+        },
+        "prOptions": {
+          "$ref": "#/definitions/prOptions",
+          "description": "PR merge options for repos using this group. Overrides root prOptions, can be overridden by repo prOptions."
+        },
+        "settings": {
+          "$ref": "#/definitions/repoSettings",
+          "description": "Settings for repos using this group. Supports inherit: false on rulesets/labels sub-sections. Merged between root and repo settings."
         }
       }
     },

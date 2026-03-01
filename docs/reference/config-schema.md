@@ -41,6 +41,7 @@ Or configure in `.vscode/settings.json`:
 | ---------------- | ----------- | -------- | ------------------------------------------------- |
 | `id`             | `string`    | Yes      | Unique config identifier (alphanumeric, `-`, `_`) |
 | `files`          | `object`    | *        | Map of filenames to file configs                  |
+| `groups`         | `object`    | *        | Named config groups referenced by repos           |
 | `repos`          | `array`     | Yes      | List of repository configurations                 |
 | `settings`       | `object`    | *        | Repository settings (rulesets, labels, etc.)      |
 | `prOptions`      | `PROptions` | No       | Global PR merge options                           |
@@ -48,8 +49,8 @@ Or configure in `.vscode/settings.json`:
 | `githubHosts`    | `array`     | No       | GitHub Enterprise Server hostnames                |
 | `deleteOrphaned` | `boolean`   | No       | Global default for orphan file deletion           |
 
-!!! note "files/settings requirement"
-    At least one of `files` or `settings` must be present. The `sync` command requires `files`, while the `settings` command requires `settings`.
+!!! note "files/settings/groups requirement"
+    At least one of `files`, `settings`, or `groups` must be present. The `sync` command requires files defined in root `files` or in at least one group. The `settings` command requires `settings` at root, repo, or group level.
 
 ### File Config
 
@@ -65,12 +66,23 @@ Or configure in `.vscode/settings.json`:
 | `vars`           | `object`              | No       | Custom template variables            |
 | `deleteOrphaned` | `boolean`             | No       | Track file for orphan deletion       |
 
+### Group Config
+
+| Field       | Type        | Required | Description                                                  |
+| ----------- | ----------- | -------- | ------------------------------------------------------------ |
+| `files`     | `object`    | No       | Files defined or overridden by this group                    |
+| `prOptions` | `PROptions` | No       | PR options for repos using this group                        |
+| `settings`  | `object`    | No       | Settings for repos using this group (supports `inherit`)     |
+
+Group files support `inherit: false` (discard accumulated files), `file: false` (remove a file), and full file config or override objects.
+
 ### Repo Config
 
 | Field       | Type           | Required | Description                                                 |
 | ----------- | -------------- | -------- | ----------------------------------------------------------- |
 | `git`       | `string/array` | Yes      | Git URL(s)                                                  |
 | `files`     | `object`       | No       | Per-repo file overrides                                     |
+| `groups`    | `string[]`     | No       | Group names to apply (merged in order)                      |
 | `prOptions` | `PROptions`    | No       | Per-repo PR options                                         |
 | `upstream`  | `string`       | No       | Fork from this URL if target doesn't exist                  |
 | `source`    | `string`       | No       | Migrate from this URL if target doesn't exist               |
@@ -105,7 +117,7 @@ Or configure in `.vscode/settings.json`:
 
 The schema validates:
 
-- Required fields (`id`, `repos`, at least one of `files` or `settings`)
+- Required fields (`id`, `repos`, at least one of `files`, `settings`, or `groups`)
 - Command-specific requirements (see below)
 - Enum values (`mergeStrategy`, `merge`, etc.)
 - Content types (object for JSON/YAML, string/array for text files)
@@ -113,19 +125,19 @@ The schema validates:
 
 ### Command-Specific Requirements
 
-| Command        | Required Fields                                              |
-| -------------- | ------------------------------------------------------------ |
-| `xfg sync`     | `files` with at least one file defined                       |
-| `xfg settings` | `settings` with actionable config (e.g., rulesets, labels)   |
+| Command        | Required Fields                                                    |
+| -------------- | ------------------------------------------------------------------ |
+| `xfg sync`     | Files defined in root `files` or in at least one group             |
+| `xfg settings` | `settings` at root, repo, or group level with actionable config    |
 
 If you run the wrong command for your config, you'll see a helpful error:
 
 ```text
 # Running sync with a settings-only config:
-The 'sync' command requires a 'files' section with at least one file defined.
+The 'sync' command requires files defined in root 'files' or in at least one group.
 To manage repository settings instead, use 'xfg settings'.
 
 # Running settings with a files-only config:
-The 'settings' command requires a 'settings' section at root level or in at least one repo.
+The 'settings' command requires a 'settings' section at root level, in at least one repo, or in at least one group.
 To sync files instead, use 'xfg sync'.
 ```
