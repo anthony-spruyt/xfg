@@ -347,12 +347,11 @@ function mergeRawSettings(
       if (name === "inherit") continue;
       if (ruleset === false) {
         result.rulesets[name] = false;
-      } else {
+      } else if (typeof ruleset === "object") {
         const existing = result.rulesets[name];
-        result.rulesets[name] =
-          existing && existing !== false
-            ? (mergeRuleset(existing, ruleset) as Ruleset)
-            : structuredClone(ruleset);
+        result.rulesets[name] = existing
+          ? (mergeRuleset(existing, ruleset) as Ruleset)
+          : structuredClone(ruleset);
       }
     }
   }
@@ -381,10 +380,10 @@ function mergeRawSettings(
       if (name === "inherit") continue;
       if (label === false) {
         result.labels[name] = false;
-      } else {
+      } else if (typeof label === "object") {
         const existing = result.labels[name];
         result.labels[name] = {
-          ...(existing && existing !== false ? existing : {}),
+          ...(existing && typeof existing === "object" ? existing : {}),
           ...label,
         };
       }
@@ -409,7 +408,9 @@ function overlayToRoot(overlay: RawRepoSettings): RawRootSettings {
     result.rulesets = {};
     for (const [name, ruleset] of Object.entries(overlay.rulesets)) {
       if (name === "inherit") continue;
-      result.rulesets[name] = structuredClone(ruleset);
+      if (ruleset === false || typeof ruleset === "object") {
+        result.rulesets[name] = structuredClone(ruleset);
+      }
     }
   }
   if (overlay.repo !== undefined)
@@ -418,7 +419,9 @@ function overlayToRoot(overlay: RawRepoSettings): RawRootSettings {
     result.labels = {};
     for (const [name, label] of Object.entries(overlay.labels)) {
       if (name === "inherit") continue;
-      result.labels[name] = structuredClone(label);
+      if (label === false || typeof label === "object") {
+        result.labels[name] = structuredClone(label);
+      }
     }
   }
   if (overlay.deleteOrphaned !== undefined)

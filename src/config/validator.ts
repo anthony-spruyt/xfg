@@ -226,7 +226,7 @@ export function validateRawConfig(config: RawConfig): void {
       (g) =>
         g.files &&
         Object.keys(g.files).filter(
-          (k) => k !== "inherit" && g.files[k] !== false
+          (k) => k !== "inherit" && g.files![k] !== false
         ).length > 0
     );
   const hasGroupSettings =
@@ -771,7 +771,7 @@ export function validateForSync(config: RawConfig): void {
       (g) =>
         g.files &&
         Object.keys(g.files).filter(
-          (k) => k !== "inherit" && g.files[k] !== false
+          (k) => k !== "inherit" && g.files![k] !== false
         ).length > 0
     );
 
