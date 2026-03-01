@@ -2875,4 +2875,134 @@ describe("group configuration", () => {
     // override:true at repo level replaces all accumulated content (root + group)
     assert.deepStrictEqual(config.content, { fromRepo: true });
   });
+
+  test("group prOptions merge into chain", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      prOptions: { merge: "auto" },
+      groups: {
+        mygroup: {
+          prOptions: { labels: ["from-group"] },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.equal(result.repos[0].prOptions?.merge, "auto");
+    assert.deepStrictEqual(result.repos[0].prOptions?.labels, ["from-group"]);
+  });
+
+  test("group settings merge into chain", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        rulesets: {
+          "base-protection": {
+            target: "branch",
+            enforcement: "active",
+          },
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            rulesets: {
+              "group-protection": {
+                target: "branch",
+                enforcement: "active",
+              },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.ok(result.repos[0].settings?.rulesets?.["base-protection"]);
+    assert.ok(result.repos[0].settings?.rulesets?.["group-protection"]);
+  });
+
+  test("group settings.rulesets.inherit:false discards accumulated rulesets", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        rulesets: {
+          "root-protection": {
+            target: "branch",
+            enforcement: "active",
+          },
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            rulesets: {
+              inherit: false,
+              "group-only-protection": {
+                target: "branch",
+                enforcement: "active",
+              },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    // Group's inherit:false discards root rulesets
+    assert.ok(!result.repos[0].settings?.rulesets?.["root-protection"]);
+    assert.ok(result.repos[0].settings?.rulesets?.["group-only-protection"]);
+  });
+
+  test("repo prOptions override group prOptions", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      groups: {
+        mygroup: {
+          prOptions: { merge: "auto", labels: ["from-group"] },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+          prOptions: { merge: "force" },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.equal(result.repos[0].prOptions?.merge, "force");
+    assert.deepStrictEqual(result.repos[0].prOptions?.labels, ["from-group"]);
+  });
 });

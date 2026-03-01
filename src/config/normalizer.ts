@@ -452,9 +452,18 @@ export function normalizeConfig(raw: RawConfig): Config {
     const gitUrls = Array.isArray(rawRepo.git) ? rawRepo.git : [rawRepo.git];
 
     // Resolve groups: build effective root files by merging group layers
+    // Resolve groups: build effective root files/prOptions/settings by merging group layers
     const effectiveRootFiles = rawRepo.groups?.length
       ? mergeGroupFiles(raw.files ?? {}, rawRepo.groups, raw.groups ?? {})
       : (raw.files ?? {});
+
+    const effectivePROptions = rawRepo.groups?.length
+      ? mergeGroupPROptions(raw.prOptions, rawRepo.groups, raw.groups ?? {})
+      : raw.prOptions;
+
+    const effectiveSettings = rawRepo.groups?.length
+      ? mergeGroupSettings(raw.settings, rawRepo.groups, raw.groups ?? {})
+      : raw.settings;
 
     const fileNames = Object.keys(effectiveRootFiles);
 
@@ -584,11 +593,11 @@ export function normalizeConfig(raw: RawConfig): Config {
         });
       }
 
-      // Merge PR options: per-repo overrides global
-      const prOptions = mergePROptions(raw.prOptions, rawRepo.prOptions);
+      // Merge PR options: per-repo overrides effective (root + groups)
+      const prOptions = mergePROptions(effectivePROptions, rawRepo.prOptions);
 
-      // Merge settings: per-repo deep merges with root settings
-      const settings = mergeSettings(raw.settings, rawRepo.settings);
+      // Merge settings: per-repo deep merges with effective (root + groups)
+      const settings = mergeSettings(effectiveSettings, rawRepo.settings);
 
       expandedRepos.push({
         git: gitUrl,
