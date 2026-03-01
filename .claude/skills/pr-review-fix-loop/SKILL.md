@@ -79,9 +79,9 @@ digraph loop {
 
 ### Fix Phase (1 subagent, sequential after all reviews complete)
 
-| Subagent Type     | Model   | Prompt essence                                                                                                                                                                         |
-| ----------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `general-purpose` | default | Fix ALL issues below on branch {branch}. Prioritize CRITICAL > IMPORTANT > MINOR. Run tests and lint. Commit and **push**. Report what was fixed and what remains. `{combined_issues}` |
+| Subagent Type     | Model   | Prompt essence                                                                                                                                                                                                                                                                        |
+| ----------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `general-purpose` | default | Fix ALL issues below on branch {branch}. Prioritize CRITICAL > IMPORTANT > MINOR. After fixing, verify with: `npm test`, `npx tsc --noEmit`, and `./lint.sh`. All three must pass before committing. Commit and **push**. Report what was fixed and what remains. `{combined_issues}` |
 
 ## Controller Rules
 
