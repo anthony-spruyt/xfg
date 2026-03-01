@@ -1527,6 +1527,60 @@ describe("validateRawConfig", () => {
       );
     });
 
+    test("allows opting out of a ruleset defined in a referenced group", () => {
+      const config = createValidConfig({
+        groups: {
+          mygroup: {
+            settings: {
+              rulesets: {
+                "group-ruleset": { target: "branch" },
+              },
+            },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["mygroup"],
+            settings: {
+              rulesets: {
+                "group-ruleset": false,
+              },
+            },
+          },
+        ],
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows opting out of a label defined in a referenced group", () => {
+      const config = createValidConfig({
+        groups: {
+          mygroup: {
+            settings: {
+              labels: {
+                "group-label": { color: "d73a4a" },
+              },
+            },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["mygroup"],
+            settings: {
+              labels: {
+                "group-label": false,
+              },
+            },
+          },
+        ],
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
     test("throws when root settings has repo: false", () => {
       const config = createValidConfig({
         settings: {
@@ -2679,6 +2733,41 @@ describe("validateForSettings", () => {
       },
       repos: [{ git: "git@github.com:org/repo.git" }],
     };
+
+    assert.throws(
+      () => validateForSettings(config),
+      /No actionable settings configured/
+    );
+  });
+
+  test("passes when settings defined only in groups", () => {
+    const config = {
+      id: "group-settings-only",
+      groups: {
+        mygroup: {
+          settings: {
+            rulesets: {
+              "branch-protection": { target: "branch" },
+            },
+          },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
+    } as RawConfig;
+
+    assert.doesNotThrow(() => validateForSettings(config));
+  });
+
+  test("throws when group settings exist but have no actionable config", () => {
+    const config = {
+      id: "group-empty-settings",
+      groups: {
+        mygroup: {
+          settings: {},
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
+    } as RawConfig;
 
     assert.throws(
       () => validateForSettings(config),

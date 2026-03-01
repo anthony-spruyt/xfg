@@ -744,6 +744,24 @@ export function validateRawConfig(config: RawConfig): void {
       const rootLabelNames = config.settings?.labels
         ? Object.keys(config.settings.labels).filter((k) => k !== "inherit")
         : [];
+
+      // Augment known names with those from the repo's referenced groups
+      if (repo.groups && config.groups) {
+        for (const groupName of repo.groups) {
+          const group = config.groups[groupName];
+          if (group?.settings?.rulesets) {
+            for (const name of Object.keys(group.settings.rulesets)) {
+              if (name !== "inherit") rootRulesetNames.push(name);
+            }
+          }
+          if (group?.settings?.labels) {
+            for (const name of Object.keys(group.settings.labels)) {
+              if (name !== "inherit") rootLabelNames.push(name);
+            }
+          }
+        }
+      }
+
       validateSettings(
         repo.settings,
         `Repo ${getGitDisplayName(repo.git)}`,
@@ -820,16 +838,23 @@ export function hasActionableSettings(
  * @throws Error if no settings are defined or no actionable settings exist
  */
 export function validateForSettings(config: RawConfig): void {
-  // Check if settings exist at root or in any repo
+  // Check if settings exist at root, in any repo, or in any group
   const hasRootSettings = config.settings !== undefined;
   const hasRepoSettings = config.repos.some(
     (repo) => repo.settings !== undefined
   );
+  const hasGroupSettings =
+    config.groups &&
+    typeof config.groups === "object" &&
+    !Array.isArray(config.groups) &&
+    Object.values(config.groups).some(
+      (g) => g.settings && typeof g.settings === "object"
+    );
 
-  if (!hasRootSettings && !hasRepoSettings) {
+  if (!hasRootSettings && !hasRepoSettings && !hasGroupSettings) {
     throw new Error(
-      "The 'settings' command requires a 'settings' section at root level or " +
-        "in at least one repo. To sync files instead, use 'xfg sync'."
+      "The 'settings' command requires a 'settings' section at root level, " +
+        "in at least one repo, or in at least one group. To sync files instead, use 'xfg sync'."
     );
   }
 
@@ -838,8 +863,11 @@ export function validateForSettings(config: RawConfig): void {
   const repoActionable = config.repos.some((repo) =>
     hasActionableSettings(repo.settings)
   );
+  const groupActionable =
+    config.groups &&
+    Object.values(config.groups).some((g) => hasActionableSettings(g.settings));
 
-  if (!rootActionable && !repoActionable) {
+  if (!rootActionable && !repoActionable && !groupActionable) {
     throw new Error(
       "No actionable settings configured. Currently supported: rulesets, repo, labels. " +
         "To sync files instead, use 'xfg sync'. " +
