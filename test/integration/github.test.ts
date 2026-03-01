@@ -55,15 +55,21 @@ files:
   my.config.json:
     content:
       prop1: base-value
-      prop2:
-        prop3: MyService
-      prop4:
-        prop5:
-          - prop6: platform
-          - prop7: engineering
       baseOnly: inherited-from-root
+groups:
+  service-config:
+    files:
+      my.config.json:
+        content:
+          prop2:
+            prop3: MyService
+          prop4:
+            prop5:
+              - prop6: platform
+              - prop7: engineering
 repos:
   - git: https://github.com/${testRepo}.git
+    groups: [service-config]
     files:
       my.config.json:
         content:
