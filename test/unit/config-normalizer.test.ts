@@ -2516,6 +2516,31 @@ describe("mergeSettings with repo", () => {
 });
 
 describe("group configuration", () => {
+  test("repo with no groups behaves identically to before", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          files: {
+            "config.json": { content: { extra: true } },
+          },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.equal(result.repos.length, 1);
+    assert.equal(result.repos[0].files.length, 1);
+    assert.deepStrictEqual(result.repos[0].files[0].content, {
+      key: "value",
+      extra: true,
+    });
+  });
+
   test("single group merges files onto root", () => {
     const raw: RawConfig = {
       id: "test-config",
