@@ -463,6 +463,19 @@ export interface RawRepoFileOverride {
   deleteOrphaned?: boolean;
 }
 
+// Group configuration (shared config layer between root and per-repo)
+// Groups need the same file override capabilities as repos: file: false to remove,
+// inherit: false to discard accumulated files. So files uses the repo-style type.
+// Groups need inherit: false support on settings sub-sections (rulesets, labels),
+// so settings uses RawRepoSettings (which has inherit on rulesets/labels).
+export interface RawGroupConfig {
+  files?: Record<string, RawFileConfig | RawRepoFileOverride | false> & {
+    inherit?: boolean;
+  };
+  prOptions?: PRMergeOptions;
+  settings?: RawRepoSettings;
+}
+
 // Root-level settings (before normalization) - inherit not valid here
 export interface RawRootSettings {
   rulesets?: Record<string, Ruleset | false>;
@@ -485,6 +498,7 @@ export interface RawRepoSettings {
 export interface RawRepoConfig {
   git: string | string[];
   files?: Record<string, RawRepoFileOverride | false> & { inherit?: boolean };
+  groups?: string[];
   prOptions?: PRMergeOptions;
   settings?: RawRepoSettings;
   /** Fork upstream repo if target doesn't exist */
@@ -497,6 +511,7 @@ export interface RawRepoConfig {
 export interface RawConfig {
   id: string;
   files?: Record<string, RawFileConfig>;
+  groups?: Record<string, RawGroupConfig>;
   repos: RawRepoConfig[];
   prOptions?: PRMergeOptions;
   prTemplate?: string;

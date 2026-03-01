@@ -2514,3 +2514,33 @@ describe("mergeSettings with repo", () => {
     });
   });
 });
+
+describe("group configuration", () => {
+  test("single group merges files onto root", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "root.json": { content: { fromRoot: true } },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "group.json": { content: { fromGroup: true } },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw);
+    assert.equal(result.repos.length, 1);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("root.json"));
+    assert.ok(fileNames.includes("group.json"));
+  });
+});
