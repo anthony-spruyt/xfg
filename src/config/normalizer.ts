@@ -446,11 +446,17 @@ function mergeGroupSettings(
  */
 export function normalizeConfig(raw: RawConfig): Config {
   const expandedRepos: RepoConfig[] = [];
-  const fileNames = raw.files ? Object.keys(raw.files) : [];
 
   for (const rawRepo of raw.repos) {
     // Step 1: Expand git arrays
     const gitUrls = Array.isArray(rawRepo.git) ? rawRepo.git : [rawRepo.git];
+
+    // Resolve groups: build effective root files by merging group layers
+    const effectiveRootFiles = rawRepo.groups?.length
+      ? mergeGroupFiles(raw.files ?? {}, rawRepo.groups, raw.groups ?? {})
+      : (raw.files ?? {});
+
+    const fileNames = Object.keys(effectiveRootFiles);
 
     for (const gitUrl of gitUrls) {
       const files: FileContent[] = [];
@@ -477,7 +483,7 @@ export function normalizeConfig(raw: RawConfig): Config {
           continue;
         }
 
-        const fileConfig = raw.files![fileName];
+        const fileConfig = effectiveRootFiles[fileName];
         const fileStrategy = fileConfig.mergeStrategy ?? "replace";
 
         // Step 3: Compute merged content for this file
