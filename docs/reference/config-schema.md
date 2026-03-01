@@ -83,6 +83,7 @@ Group files support `inherit: false` (discard accumulated files), `file: false` 
 | `git`       | `string/array` | Yes      | Git URL(s)                                                  |
 | `files`     | `object`       | No       | Per-repo file overrides                                     |
 | `groups`    | `string[]`     | No       | Group names to apply (merged in order)                      |
+| `settings`  | `object`       | No       | Per-repo settings (rulesets, labels, repo settings)         |
 | `prOptions` | `PROptions`    | No       | Per-repo PR options                                         |
 | `upstream`  | `string`       | No       | Fork from this URL if target doesn't exist                  |
 | `source`    | `string`       | No       | Migrate from this URL if target doesn't exist               |
@@ -108,10 +109,11 @@ Group files support `inherit: false` (discard accumulated files), `file: false` 
 
 | Field           | Type      | Default  | Description                           |
 | --------------- | --------- | -------- | ------------------------------------- |
-| `merge`         | `string`  | `auto`   | `manual`, `auto`, `force`             |
-| `mergeStrategy` | `string`  | `squash` | `merge`, `squash`, `rebase`           |
-| `deleteBranch`  | `boolean` | `true`   | Delete branch after merge             |
-| `bypassReason`  | `string`  | -        | Reason for bypass (Azure DevOps only) |
+| `merge`         | `string`   | `auto`   | `manual`, `auto`, `force`, `direct`              |
+| `mergeStrategy` | `string`   | `squash` | `merge`, `squash`, `rebase`                      |
+| `deleteBranch`  | `boolean`  | `true`   | Delete branch after merge                        |
+| `bypassReason`  | `string`   | -        | Reason for bypass (Azure DevOps only)            |
+| `labels`        | `string[]` | -        | Labels to apply to created PRs (GitHub only)     |
 
 ## Validation
 

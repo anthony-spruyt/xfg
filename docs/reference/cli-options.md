@@ -77,7 +77,7 @@ xfg settings --config <path> [options]
 | `--dry-run`   | `-d`  | Show what would be done without making changes          | `false`      |
 | `--work-dir`  | `-w`  | Temporary directory (not used for settings, but shared) | `./tmp`      |
 | `--retries`   | `-r`  | Number of retries for network operations                | `3`          |
-| `--no-delete` |       | Skip deletion of orphaned rulesets                      | `false`      |
+| `--no-delete` |       | Skip deletion of orphaned rulesets and labels            | `false`      |
 
 ### Settings Examples
 
@@ -130,8 +130,9 @@ CLI flags override config file settings:
 
 1. CLI flags (highest priority)
 2. Per-repo settings (e.g., `prOptions`, `settings.rulesets`)
-3. Global settings
-4. Built-in defaults (lowest priority)
+3. Group settings (applied in order, later groups override earlier ones)
+4. Global settings
+5. Built-in defaults (lowest priority)
 
 ## Exit Codes
 

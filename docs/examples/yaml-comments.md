@@ -92,4 +92,4 @@ repos:
 ```
 
 !!! note
-`header` and `schemaUrl` only apply to YAML output files (`.yaml`, `.yml`). They are ignored for JSON files.
+    `header` and `schemaUrl` only apply to YAML output files (`.yaml`, `.yml`). They are ignored for JSON files.

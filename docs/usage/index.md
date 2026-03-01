@@ -67,16 +67,17 @@ xfg settings --config ./config.yaml --dry-run
 | `--config`    | `-c`  | Path to YAML config file                       | Yes      |
 | `--dry-run`   | `-d`  | Show what would be done without making changes | No       |
 | `--retries`   | `-r`  | Number of retries for network operations       | No       |
-| `--no-delete` |       | Skip deletion of orphaned rulesets             | No       |
+| `--no-delete` |       | Skip deletion of orphaned rulesets and labels  | No       |
 
 !!! note
-The settings command only works with GitHub repositories. Azure DevOps and GitLab repos are skipped.
+    The settings command only works with GitHub repositories. Azure DevOps and GitLab repos are skipped.
 
 ## Console Output
 
 ```text
 [1/3] Processing example-org/repo1...
   ✓ Cloned repository
+  ✓ Closed existing PR and deleted branch
   ✓ Created branch chore/sync-config
   ✓ Wrote .eslintrc.json
   ✓ Wrote .prettierrc.yaml
@@ -86,7 +87,7 @@ The settings command only works with GitHub repositories. Azure DevOps and GitLa
 
 [2/3] Processing example-org/repo2...
   ✓ Cloned repository
-  ✓ Checked out existing branch chore/sync-config
+  ✓ Created branch chore/sync-config
   ✓ Wrote .eslintrc.json
   ✓ Wrote .prettierrc.yaml
   ⊘ No changes detected, skipping
@@ -98,7 +99,7 @@ The settings command only works with GitHub repositories. Azure DevOps and GitLa
   ✓ Wrote .prettierrc.yaml
   ✓ Committed changes
   ✓ Pushed to remote
-  ✓ PR already exists: https://github.com/example-org/repo3/pull/15
+  ✓ Created PR: https://github.com/example-org/repo3/pull/15
 
 Summary: 2 succeeded, 1 skipped, 0 failed
 ```

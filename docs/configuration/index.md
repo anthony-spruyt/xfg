@@ -35,11 +35,11 @@ repos: # List of repositories
 | `githubHosts`    | Array of GitHub Enterprise hostnames (e.g., `github.mycompany.com`)                         | No       |
 
 <!-- markdownlint-disable MD046 -->
-!!! note "files/settings requirement"
-    At least one of `files` or `settings` must be present (at root level or in groups):
+!!! note "files/settings/groups requirement"
+    At least one of `files`, `settings`, or `groups` must be present:
 
     - **`xfg sync`** requires files defined in root `files` or in at least one group
-    - **`xfg settings`** requires `settings` with actionable config (e.g., rulesets)
+    - **`xfg settings`** requires `settings` at root, repo, or group level with actionable config (e.g., rulesets)
 
     A config can have both for use with both commands.
 <!-- markdownlint-enable MD046 -->
