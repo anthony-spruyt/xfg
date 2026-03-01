@@ -495,8 +495,9 @@ repos:
       assert.equal(result.success, false);
       const output = result.stdout + result.stderr;
       assert.ok(
-        output.includes("'sync' command requires a 'files' section") ||
-          output.includes("requires a 'files' section"),
+        output.includes("'sync' command requires files") ||
+          output.includes("requires a 'files' section") ||
+          output.includes("requires files defined"),
         `Expected files requirement error, got: ${output}`
       );
     });

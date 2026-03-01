@@ -2542,7 +2542,7 @@ describe("validateForSync", () => {
 
     assert.throws(
       () => validateForSync(config),
-      /The 'sync' command requires a 'files' section/
+      /The 'sync' command requires files defined/
     );
   });
 
@@ -2560,7 +2560,7 @@ describe("validateForSync", () => {
 
     assert.throws(
       () => validateForSync(config),
-      /The 'sync' command requires a 'files' section with at least one file/
+      /The 'sync' command requires files defined/
     );
   });
 
@@ -2573,6 +2573,33 @@ describe("validateForSync", () => {
       repos: [{ git: "git@github.com:org/repo.git" }],
     };
 
+    assert.doesNotThrow(() => validateForSync(config));
+  });
+
+  test("passes when groups define files but root files is empty", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        mygroup: {
+          files: { "config.json": { content: { key: "value" } } },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
+    };
+    assert.doesNotThrow(() => validateForSync(config));
+  });
+
+  test("passes when groups define files and no root files field", () => {
+    const config = {
+      id: "test-config",
+      groups: {
+        mygroup: {
+          files: { "config.json": { content: { key: "value" } } },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
+    } as RawConfig;
     assert.doesNotThrow(() => validateForSync(config));
   });
 });

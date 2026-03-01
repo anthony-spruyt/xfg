@@ -758,17 +758,16 @@ export function validateRawConfig(config: RawConfig): void {
  * @throws Error if files section is missing or empty
  */
 export function validateForSync(config: RawConfig): void {
-  if (!config.files) {
-    throw new Error(
-      "The 'sync' command requires a 'files' section with at least one file defined. " +
-        "To manage repository settings instead, use 'xfg settings'."
+  const hasRootFiles = config.files && Object.keys(config.files).length > 0;
+  const hasGroupFiles =
+    config.groups &&
+    Object.values(config.groups).some(
+      (g) => g.files && Object.keys(g.files).length > 0
     );
-  }
 
-  const fileNames = Object.keys(config.files);
-  if (fileNames.length === 0) {
+  if (!hasRootFiles && !hasGroupFiles) {
     throw new Error(
-      "The 'sync' command requires a 'files' section with at least one file defined. " +
+      "The 'sync' command requires files defined in root 'files' or in at least one group. " +
         "To manage repository settings instead, use 'xfg settings'."
     );
   }
