@@ -99,6 +99,12 @@ repos:
     assert.equal(json.prop1, "main");
     assert.equal(json.baseOnly, "inherited-from-root");
     assert.equal(json.addedByOverlay, true);
+    // Assert properties specifically introduced by the service-config group layer
+    assert.equal(json.prop2.prop3, "MyService");
+    assert.deepEqual(json.prop4.prop5, [
+      { prop6: "platform" },
+      { prop7: "engineering" },
+    ]);
   });
 
   test("re-sync closes existing PR and creates fresh one", async () => {

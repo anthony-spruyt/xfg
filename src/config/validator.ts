@@ -223,7 +223,9 @@ export function validateRawConfig(config: RawConfig): void {
     typeof config.groups === "object" &&
     !Array.isArray(config.groups) &&
     Object.values(config.groups).some(
-      (g) => g.files && Object.keys(g.files).length > 0
+      (g) =>
+        g.files &&
+        Object.keys(g.files).filter((k) => k !== "inherit").length > 0
     );
   const hasGroupSettings =
     config.groups &&
@@ -579,6 +581,21 @@ export function validateRawConfig(config: RawConfig): void {
         throw new Error(`Repo at index ${i}: files must be an object`);
       }
 
+      // Build the set of known files once per repo (root + referenced groups)
+      const knownFiles = new Set<string>(
+        config.files ? Object.keys(config.files) : []
+      );
+      if (repo.groups && config.groups) {
+        for (const groupName of repo.groups) {
+          const group = config.groups[groupName];
+          if (group?.files) {
+            for (const fn of Object.keys(group.files)) {
+              if (fn !== "inherit") knownFiles.add(fn);
+            }
+          }
+        }
+      }
+
       for (const fileName of Object.keys(repo.files)) {
         // Skip reserved key 'inherit'
         if (fileName === "inherit") {
@@ -592,19 +609,6 @@ export function validateRawConfig(config: RawConfig): void {
         }
 
         // Ensure the file is defined at root level or in a referenced group
-        const knownFiles = new Set<string>(
-          config.files ? Object.keys(config.files) : []
-        );
-        if (repo.groups && config.groups) {
-          for (const groupName of repo.groups) {
-            const group = config.groups[groupName];
-            if (group?.files) {
-              for (const fn of Object.keys(group.files)) {
-                if (fn !== "inherit") knownFiles.add(fn);
-              }
-            }
-          }
-        }
         if (!knownFiles.has(fileName)) {
           throw new Error(
             `Repo at index ${i} references undefined file '${fileName}'. File must be defined in root 'files' object or in a referenced group.`
@@ -762,7 +766,9 @@ export function validateForSync(config: RawConfig): void {
   const hasGroupFiles =
     config.groups &&
     Object.values(config.groups).some(
-      (g) => g.files && Object.keys(g.files).length > 0
+      (g) =>
+        g.files &&
+        Object.keys(g.files).filter((k) => k !== "inherit").length > 0
     );
 
   if (!hasRootFiles && !hasGroupFiles) {

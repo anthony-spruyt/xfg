@@ -288,7 +288,7 @@ function mergeGroupFiles(
         };
       } else {
         // New file introduced by group
-        accumulated[fileName] = fileConfig as RawFileConfig;
+        accumulated[fileName] = structuredClone(fileConfig) as RawFileConfig;
       }
     }
   }
@@ -451,7 +451,6 @@ export function normalizeConfig(raw: RawConfig): Config {
     // Step 1: Expand git arrays
     const gitUrls = Array.isArray(rawRepo.git) ? rawRepo.git : [rawRepo.git];
 
-    // Resolve groups: build effective root files by merging group layers
     // Resolve groups: build effective root files/prOptions/settings by merging group layers
     const effectiveRootFiles = rawRepo.groups?.length
       ? mergeGroupFiles(raw.files ?? {}, rawRepo.groups, raw.groups ?? {})
