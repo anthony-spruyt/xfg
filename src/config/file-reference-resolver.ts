@@ -155,6 +155,29 @@ export function resolveFileReferencesInConfig(
     }
   }
 
+  // Resolve group-level file content
+  if (result.groups) {
+    for (const [groupName, group] of Object.entries(result.groups)) {
+      if (group.files) {
+        for (const [fileName, fileConfig] of Object.entries(group.files)) {
+          if (
+            fileConfig &&
+            typeof fileConfig === "object" &&
+            "content" in fileConfig
+          ) {
+            const resolved = resolveContentValue(fileConfig.content, configDir);
+            if (resolved !== undefined) {
+              result.groups[groupName].files![fileName] = {
+                ...fileConfig,
+                content: resolved,
+              };
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Resolve per-repo file content
   if (result.repos) {
     for (const repo of result.repos) {
