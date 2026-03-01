@@ -72,7 +72,7 @@ describe("GitHubLabelsStrategy", () => {
 
   beforeEach(() => {
     mockExecutor = new MockExecutor();
-    strategy = new GitHubLabelsStrategy(mockExecutor);
+    strategy = new GitHubLabelsStrategy(mockExecutor, { retries: 0 });
   });
 
   describe("list", () => {
@@ -451,7 +451,7 @@ describe("GitHubLabelsStrategy", () => {
         },
       };
 
-      const retryStrategy = new GitHubLabelsStrategy(executor);
+      const retryStrategy = new GitHubLabelsStrategy(executor, { retries: 1 });
       const result = await retryStrategy.list(mockGitHubRepo);
 
       assert.deepEqual(result, []);
@@ -474,7 +474,7 @@ describe("GitHubLabelsStrategy", () => {
         },
       };
 
-      const retryStrategy = new GitHubLabelsStrategy(executor);
+      const retryStrategy = new GitHubLabelsStrategy(executor, { retries: 1 });
       await assert.rejects(
         async () => retryStrategy.list(mockGitHubRepo),
         /404/
@@ -494,7 +494,7 @@ describe("GitHubLabelsStrategy", () => {
         },
       };
 
-      const errorStrategy = new GitHubLabelsStrategy(executor);
+      const errorStrategy = new GitHubLabelsStrategy(executor, { retries: 0 });
       await assert.rejects(
         async () =>
           errorStrategy.create(mockGitHubRepo, {

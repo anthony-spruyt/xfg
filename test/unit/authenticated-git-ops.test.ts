@@ -741,6 +741,7 @@ describe("AuthenticatedGitOps", () => {
       const gitOps = new GitOps({
         workDir: "/tmp/test",
         executor: mockExecutor,
+        retries: 0,
       });
       const authOps = new AuthenticatedGitOps(gitOps, {
         token: "test-token",
@@ -773,6 +774,7 @@ describe("AuthenticatedGitOps", () => {
       const gitOps = new GitOps({
         workDir: "/tmp/test",
         executor: mockExecutor,
+        retries: 0,
       });
       const authOps = new AuthenticatedGitOps(gitOps, {
         token: "test-token",
@@ -796,6 +798,7 @@ describe("AuthenticatedGitOps", () => {
       const gitOps = new GitOps({
         workDir: "/tmp/test",
         executor: mockExecutor,
+        retries: 0,
       });
       const authOps = new AuthenticatedGitOps(gitOps, {
         token: "test-token",

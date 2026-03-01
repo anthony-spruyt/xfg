@@ -66,7 +66,7 @@ describe("GitHubRulesetStrategy", () => {
 
   beforeEach(() => {
     mockExecutor = new MockExecutor();
-    strategy = new GitHubRulesetStrategy(mockExecutor);
+    strategy = new GitHubRulesetStrategy(mockExecutor, { retries: 0 });
   });
 
   describe("list", () => {
@@ -303,7 +303,7 @@ describe("GitHubRulesetStrategy", () => {
         },
       };
 
-      const retryStrategy = new GitHubRulesetStrategy(executor);
+      const retryStrategy = new GitHubRulesetStrategy(executor, { retries: 1 });
       const result = await retryStrategy.list(mockGitHubRepo);
 
       assert.deepEqual(result, []);
@@ -326,7 +326,7 @@ describe("GitHubRulesetStrategy", () => {
         },
       };
 
-      const retryStrategy = new GitHubRulesetStrategy(executor);
+      const retryStrategy = new GitHubRulesetStrategy(executor, { retries: 1 });
       await assert.rejects(
         async () => retryStrategy.list(mockGitHubRepo),
         /404/

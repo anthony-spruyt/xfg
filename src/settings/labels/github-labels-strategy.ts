@@ -15,6 +15,10 @@ import type {
   LabelsStrategyOptions,
 } from "./types.js";
 
+export interface GitHubLabelsStrategyOptions {
+  retries?: number;
+}
+
 /**
  * GitHub Labels Strategy for managing repository labels via GitHub REST API.
  * Uses `gh api` CLI for authentication and API calls.
@@ -24,9 +28,14 @@ import type {
  */
 export class GitHubLabelsStrategy implements ILabelsStrategy {
   private executor: ICommandExecutor;
+  private retries: number;
 
-  constructor(executor?: ICommandExecutor) {
+  constructor(
+    executor?: ICommandExecutor,
+    options?: GitHubLabelsStrategyOptions
+  ) {
     this.executor = executor ?? defaultExecutor;
+    this.retries = options?.retries ?? 3;
   }
 
   /**
@@ -149,11 +158,15 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     if (payload && (method === "POST" || method === "PATCH")) {
       const payloadJson = JSON.stringify(payload);
       const command = `echo ${escapeShellArg(payloadJson)} | ${tokenPrefix}${baseCommand} --input -`;
-      return await withRetry(() => this.executor.exec(command, process.cwd()));
+      return await withRetry(() => this.executor.exec(command, process.cwd()), {
+        retries: this.retries,
+      });
     }
 
     // For GET/DELETE, run command directly
     const command = `${tokenPrefix}${baseCommand}`;
-    return await withRetry(() => this.executor.exec(command, process.cwd()));
+    return await withRetry(() => this.executor.exec(command, process.cwd()), {
+      retries: this.retries,
+    });
   }
 }
