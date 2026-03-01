@@ -2391,6 +2391,141 @@ describe("validateRawConfig", () => {
       assert.doesNotThrow(() => validateRawConfig(config));
     });
   });
+
+  describe("group validation", () => {
+    const createValidConfig = (overrides?: Partial<RawConfig>): RawConfig => ({
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+      ...overrides,
+    });
+
+    test("valid group config passes", () => {
+      const config = createValidConfig({
+        groups: {
+          mygroup: {
+            files: { "extra.json": { content: { key: "value" } } },
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws for unknown group reference", () => {
+      const config = createValidConfig({
+        groups: {
+          mygroup: { files: {} },
+        },
+        repos: [
+          { git: "git@github.com:org/repo.git", groups: ["nonexistent"] },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /group 'nonexistent' is not defined/
+      );
+    });
+
+    test("throws for duplicate group in repo list", () => {
+      const config = createValidConfig({
+        groups: {
+          mygroup: { files: {} },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["mygroup", "mygroup"],
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /duplicate group 'mygroup'/
+      );
+    });
+
+    test("throws for reserved group name 'inherit'", () => {
+      const config = createValidConfig({
+        groups: {
+          inherit: { files: {} },
+        } as any,
+      });
+      assert.throws(() => validateRawConfig(config), /reserved/i);
+    });
+
+    test("throws when groups is not an object", () => {
+      const config = createValidConfig({
+        groups: ["not-an-object"] as any,
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /groups must be an object/
+      );
+    });
+
+    test("throws when repo groups is not an array of strings", () => {
+      const config = createValidConfig({
+        groups: { mygroup: { files: {} } },
+        repos: [{ git: "git@github.com:org/repo.git", groups: [123] } as any],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /groups must be an array of strings/
+      );
+    });
+
+    test("validates group file configs", () => {
+      const config = createValidConfig({
+        groups: {
+          mygroup: {
+            files: {
+              "config.json": { content: 123 } as any,
+            },
+          },
+        },
+      });
+      assert.throws(() => validateRawConfig(config), /content must be/);
+    });
+
+    test("validates group settings", () => {
+      const config = createValidConfig({
+        groups: {
+          mygroup: {
+            settings: {
+              rulesets: "not-an-object",
+            } as any,
+          },
+        },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /rulesets must be an object/
+      );
+    });
+
+    test("repo can reference file defined only in group", () => {
+      const config = createValidConfig({
+        groups: {
+          mygroup: {
+            files: { "group-only.json": { content: { key: "value" } } },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["mygroup"],
+            files: {
+              "group-only.json": { content: { override: true } },
+            },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+  });
 });
 
 describe("validateForSync", () => {
