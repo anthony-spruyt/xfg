@@ -6,7 +6,12 @@ import {
   validateForSettings,
   hasActionableSettings,
 } from "../../src/config/validator.js";
-import type { RawConfig } from "../../src/config/index.js";
+import type {
+  RawConfig,
+  RawFileConfig,
+  RawGroupConfig,
+  RawRepoSettings,
+} from "../../src/config/index.js";
 
 describe("validateRawConfig", () => {
   // Helper to create a minimal valid config
@@ -2505,14 +2510,14 @@ describe("validateRawConfig", () => {
       const config = createValidConfig({
         groups: {
           inherit: { files: {} },
-        } as any,
+        },
       });
       assert.throws(() => validateRawConfig(config), /reserved/i);
     });
 
     test("throws when groups is not an object", () => {
       const config = createValidConfig({
-        groups: ["not-an-object"] as any,
+        groups: ["not-an-object"] as unknown as RawConfig["groups"],
       });
       assert.throws(
         () => validateRawConfig(config),
@@ -2523,7 +2528,12 @@ describe("validateRawConfig", () => {
     test("throws when repo groups is not an array of strings", () => {
       const config = createValidConfig({
         groups: { mygroup: { files: {} } },
-        repos: [{ git: "git@github.com:org/repo.git", groups: [123] } as any],
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: [123],
+          } as unknown as RawConfig["repos"][number],
+        ],
       });
       assert.throws(
         () => validateRawConfig(config),
@@ -2536,7 +2546,7 @@ describe("validateRawConfig", () => {
         groups: {
           mygroup: {
             files: {
-              "config.json": { content: 123 } as any,
+              "config.json": { content: 123 } as unknown as RawFileConfig,
             },
           },
         },
@@ -2550,7 +2560,7 @@ describe("validateRawConfig", () => {
           mygroup: {
             settings: {
               rulesets: "not-an-object",
-            } as any,
+            } as unknown as RawRepoSettings,
           },
         },
       });
@@ -3580,7 +3590,7 @@ describe("group validation - extended coverage", () => {
       groups: {
         mygroup: {
           files: {
-            "config.json": { content: "text content" } as any,
+            "config.json": { content: "text content" } as RawFileConfig,
           },
         },
       },
@@ -3596,7 +3606,7 @@ describe("group validation - extended coverage", () => {
       groups: {
         mygroup: {
           files: {
-            "script.sh": { content: { key: "value" } } as any,
+            "script.sh": { content: { key: "value" } } as RawFileConfig,
           },
         },
       },
@@ -3639,7 +3649,7 @@ describe("group validation - extended coverage", () => {
       groups: {
         mygroup: {
           files: {
-            "config.json": undefined as any,
+            "config.json": undefined as unknown as RawFileConfig,
           },
         },
       },
@@ -3652,7 +3662,7 @@ describe("group validation - extended coverage", () => {
       groups: {
         mygroup: {
           files: {
-            "config.json": {} as any,
+            "config.json": {} as RawFileConfig,
           },
         },
       },
@@ -3714,7 +3724,7 @@ describe("group validation - extended coverage", () => {
 
   test("throws when groups is null", () => {
     const config = createValidConfig({
-      groups: null as any,
+      groups: null as unknown as RawConfig["groups"],
     });
     assert.throws(() => validateRawConfig(config), /groups must be an object/);
   });
@@ -3739,7 +3749,7 @@ describe("group validation - extended coverage", () => {
       groups: {
         mygroup: {
           files: {
-            "config.yaml": { content: "text content" } as any,
+            "config.yaml": { content: "text content" } as RawFileConfig,
           },
         },
       },
@@ -3755,7 +3765,7 @@ describe("group validation - extended coverage", () => {
       groups: {
         mygroup: {
           files: {
-            "config.json": { content: 42 } as any,
+            "config.json": { content: 42 } as unknown as RawFileConfig,
           },
         },
       },
@@ -3885,7 +3895,7 @@ describe("validateForSettings - group coverage", () => {
       id: "no-actionable",
       groups: {
         mygroup: {
-          settings: "invalid" as any,
+          settings: "invalid" as unknown as RawGroupConfig["settings"],
         },
       },
       repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],

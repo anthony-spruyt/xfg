@@ -3,6 +3,11 @@ import { strict as assert } from "node:assert";
 import { normalizeConfig, mergeSettings } from "../../src/config/normalizer.js";
 import type {
   RawConfig,
+  RawRepoConfig,
+  RawRepoFileOverride,
+  RawFileConfig,
+  RawGroupConfig,
+  RawRootSettings,
   PullRequestRuleParameters,
 } from "../../src/config/index.js";
 
@@ -2680,7 +2685,7 @@ describe("group configuration", () => {
           files: {
             inherit: false,
             "repo.json": { content: { fromRepo: true } },
-          } as Record<string, any>,
+          } as unknown as NonNullable<RawRepoConfig["files"]>,
         },
       ],
     };
@@ -3068,7 +3073,7 @@ describe("group configuration", () => {
       groups: {
         mygroup: {
           files: {
-            "undef.json": undefined as any,
+            "undef.json": undefined as unknown as RawFileConfig,
           },
         },
       },
@@ -3167,7 +3172,7 @@ describe("group configuration", () => {
           files: {
             "config.sh": {
               content: { key: "value" },
-            } as any,
+            } as RawFileConfig,
           },
         },
       },
@@ -3198,7 +3203,7 @@ describe("group configuration", () => {
           files: {
             "config.json": {
               override: true,
-            } as any,
+            } as RawRepoFileOverride,
           },
         },
       },
@@ -3467,7 +3472,7 @@ describe("group configuration", () => {
         "config.json": { content: { key: "value" } },
       },
       settings: {
-        repo: false as any,
+        repo: false,
       },
       groups: {
         mygroup: {
@@ -4082,7 +4087,7 @@ describe("group configuration", () => {
           files: {
             "config.json": {
               createOnly: true,
-            } as any,
+            } as RawRepoFileOverride,
           },
         },
       },
