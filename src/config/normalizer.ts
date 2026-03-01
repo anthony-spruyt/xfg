@@ -28,8 +28,7 @@ import type {
  * Checks whether an object's `inherit` property is not explicitly set to false.
  * Replaces the repeated `(x )?.inherit !== false` pattern.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function shouldInherit(obj: any): boolean {
+function shouldInherit(obj: { inherit?: boolean } | undefined): boolean {
   return obj?.inherit !== false;
 }
 
