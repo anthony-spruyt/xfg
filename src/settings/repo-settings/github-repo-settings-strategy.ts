@@ -86,6 +86,10 @@ function configToGitHubPayload(
   return payload;
 }
 
+export interface GitHubRepoSettingsStrategyOptions {
+  retries?: number;
+}
+
 /**
  * GitHub Repository Settings Strategy.
  * Manages repository settings via GitHub REST API using `gh api` CLI.
@@ -94,9 +98,14 @@ function configToGitHubPayload(
  */
 export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   private executor: ICommandExecutor;
+  private retries: number;
 
-  constructor(executor?: ICommandExecutor) {
+  constructor(
+    executor?: ICommandExecutor,
+    options?: GitHubRepoSettingsStrategyOptions
+  ) {
     this.executor = executor ?? defaultExecutor;
+    this.retries = options?.retries ?? 3;
   }
 
   async getSettings(
@@ -287,10 +296,14 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     ) {
       const payloadJson = JSON.stringify(payload);
       const command = `echo ${escapeShellArg(payloadJson)} | ${tokenPrefix}${baseCommand} --input -`;
-      return await withRetry(() => this.executor.exec(command, process.cwd()));
+      return await withRetry(() => this.executor.exec(command, process.cwd()), {
+        retries: this.retries,
+      });
     }
 
     const command = `${tokenPrefix}${baseCommand}`;
-    return await withRetry(() => this.executor.exec(command, process.cwd()));
+    return await withRetry(() => this.executor.exec(command, process.cwd()), {
+      retries: this.retries,
+    });
   }
 }

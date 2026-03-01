@@ -197,15 +197,24 @@ export interface RulesetStrategyOptions {
   host?: string;
 }
 
+export interface GitHubRulesetStrategyOptions {
+  retries?: number;
+}
+
 /**
  * GitHub Ruleset Strategy for managing repository rulesets via GitHub REST API.
  * Uses `gh api` CLI for authentication and API calls.
  */
 export class GitHubRulesetStrategy implements IRulesetStrategy {
   private executor: ICommandExecutor;
+  private retries: number;
 
-  constructor(executor?: ICommandExecutor) {
+  constructor(
+    executor?: ICommandExecutor,
+    options?: GitHubRulesetStrategyOptions
+  ) {
     this.executor = executor ?? defaultExecutor;
+    this.retries = options?.retries ?? 3;
   }
 
   /**
@@ -344,11 +353,15 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     if (payload && (method === "POST" || method === "PUT")) {
       const payloadJson = JSON.stringify(payload);
       const command = `echo ${escapeShellArg(payloadJson)} | ${tokenPrefix}${baseCommand} --input -`;
-      return await withRetry(() => this.executor.exec(command, process.cwd()));
+      return await withRetry(() => this.executor.exec(command, process.cwd()), {
+        retries: this.retries,
+      });
     }
 
     // For GET/DELETE, run command directly
     const command = `${tokenPrefix}${baseCommand}`;
-    return await withRetry(() => this.executor.exec(command, process.cwd()));
+    return await withRetry(() => this.executor.exec(command, process.cwd()), {
+      retries: this.retries,
+    });
   }
 }
