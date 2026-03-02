@@ -579,7 +579,7 @@ ${VALID_RULESET}
       );
     });
 
-    test("collects settings errors and continues sync", async () => {
+    test("catches settings processor errors and exits with error code", async () => {
       writeFileSync(
         testConfigPath,
         `id: test-config
