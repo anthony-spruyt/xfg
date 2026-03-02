@@ -107,13 +107,13 @@ Group files support `inherit: false` (discard accumulated files), `file: false` 
 
 ### PR Options
 
-| Field           | Type      | Default  | Description                           |
-| --------------- | --------- | -------- | ------------------------------------- |
-| `merge`         | `string`   | `auto`   | `manual`, `auto`, `force`, `direct`              |
-| `mergeStrategy` | `string`   | `squash` | `merge`, `squash`, `rebase`                      |
-| `deleteBranch`  | `boolean`  | `true`   | Delete branch after merge                        |
-| `bypassReason`  | `string`   | -        | Reason for bypass (Azure DevOps only)            |
-| `labels`        | `string[]` | -        | Labels to apply to created PRs (GitHub only)     |
+| Field           | Type       | Default  | Description                                  |
+| --------------- | ---------- | -------- | -------------------------------------------- |
+| `merge`         | `string`   | `auto`   | `manual`, `auto`, `force`, `direct`          |
+| `mergeStrategy` | `string`   | `squash` | `merge`, `squash`, `rebase`                  |
+| `deleteBranch`  | `boolean`  | `true`   | Delete branch after merge                    |
+| `bypassReason`  | `string`   | -        | Reason for bypass (Azure DevOps only)        |
+| `labels`        | `string[]` | -        | Labels to apply to created PRs (GitHub only) |
 
 ## Validation
 

@@ -346,7 +346,7 @@ export async function runSync(
       });
     }
 
-    // After file sync, apply settings via API
+    // After file sync, apply settings via API (GitHub-only; Azure DevOps and GitLab do not support settings management)
     if (repoConfig.settings && isGitHubRepo(repoInfo)) {
       const githubRepo = repoInfo as GitHubRepoInfo;
       let settingsToken: string | undefined;
@@ -369,7 +369,6 @@ export async function runSync(
             repoConfig,
             repoInfo,
             {
-              configId: config.id,
               dryRun: options.dryRun,
               noDelete: options.noDelete,
               token: settingsToken,
@@ -403,7 +402,6 @@ export async function runSync(
             repoConfig,
             repoInfo,
             {
-              configId: config.id,
               dryRun: options.dryRun,
               noDelete: options.noDelete,
               token: settingsToken,

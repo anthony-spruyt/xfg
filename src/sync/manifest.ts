@@ -175,7 +175,7 @@ export function loadManifest(workDir: string): XfgManifest | null {
       return migrateV3ToV4(migrateV2ToV3(parsed));
     }
 
-    // V1 manifest - treat as no manifest (will be overwritten with v3)
+    // V1 manifest - treat as no manifest (will be overwritten with v4)
     if (isV1Manifest(parsed)) {
       return null;
     }

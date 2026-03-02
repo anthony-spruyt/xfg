@@ -30,7 +30,6 @@ export interface IRulesetProcessor {
 // =============================================================================
 
 export interface RulesetProcessorOptions {
-  configId: string;
   dryRun?: boolean;
   noDelete?: boolean;
   token?: string;
