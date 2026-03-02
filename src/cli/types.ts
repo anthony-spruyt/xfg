@@ -1,5 +1,6 @@
 import { RepoConfig } from "../config/index.js";
 import { RepoInfo } from "../shared/repo-detector.js";
+import type { IRepoLifecycleManager } from "../lifecycle/index.js";
 import {
   RepositoryProcessor,
   type ProcessorResult,
@@ -84,6 +85,17 @@ export type LabelsProcessorFactory = () => ILabelsProcessor;
  */
 export const defaultLabelsProcessorFactory: LabelsProcessorFactory = () =>
   new LabelsProcessor();
+
+/**
+ * Dependencies for the sync command (dependency injection).
+ */
+export interface SyncDependencies {
+  processorFactory?: ProcessorFactory;
+  lifecycleManager?: IRepoLifecycleManager;
+  rulesetProcessorFactory?: RulesetProcessorFactory;
+  repoSettingsProcessorFactory?: RepoSettingsProcessorFactory;
+  labelsProcessorFactory?: LabelsProcessorFactory;
+}
 
 // Re-export for convenience
 export type { IRepoSettingsProcessor, ILabelsProcessor };

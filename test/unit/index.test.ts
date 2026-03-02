@@ -1669,8 +1669,7 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath },
-      mockFactory,
-      noopLifecycleManager
+      { processorFactory: mockFactory, lifecycleManager: noopLifecycleManager }
     );
 
     assert.equal(mockProcessor.calls.length, 1);
@@ -1696,8 +1695,7 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath, dryRun: true },
-      mockFactory,
-      noopLifecycleManager
+      { processorFactory: mockFactory, lifecycleManager: noopLifecycleManager }
     );
 
     assert.equal(mockProcessor.calls.length, 1);
@@ -1721,8 +1719,7 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath, branch: "feature/custom-branch" },
-      mockFactory,
-      noopLifecycleManager
+      { processorFactory: mockFactory, lifecycleManager: noopLifecycleManager }
     );
 
     assert.equal(mockProcessor.calls.length, 1);
@@ -1747,8 +1744,7 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath },
-      mockFactory,
-      noopLifecycleManager
+      { processorFactory: mockFactory, lifecycleManager: noopLifecycleManager }
     );
 
     assert.equal(mockProcessor.calls.length, 2);
@@ -1778,8 +1774,7 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath, noDelete: true },
-      mockFactory,
-      noopLifecycleManager
+      { processorFactory: mockFactory, lifecycleManager: noopLifecycleManager }
     );
 
     assert.equal(mockProcessor.calls.length, 1);
