@@ -380,7 +380,7 @@ export async function runSync(
             for (const line of rulesetResult.planOutput.lines) {
               logger.info(line);
             }
-          } else if (!rulesetResult.skipped) {
+          } else if (!rulesetResult.skipped && rulesetResult.success) {
             logger.success(
               current,
               repoName,
@@ -390,6 +390,14 @@ export async function runSync(
           if (!rulesetResult.skipped) {
             settingsCollector.getOrCreate(repoName).rulesetResult =
               rulesetResult;
+          }
+          if (!rulesetResult.success && !rulesetResult.skipped) {
+            logger.error(
+              current,
+              repoName,
+              `Rulesets: ${rulesetResult.message}`
+            );
+            settingsCollector.appendError(repoName, rulesetResult.message);
           }
         } catch (error) {
           logger.error(current, repoName, `Rulesets: ${String(error)}`);
@@ -419,7 +427,7 @@ export async function runSync(
             for (const line of labelsResult.planOutput.lines) {
               logger.info(line);
             }
-          } else if (!labelsResult.skipped) {
+          } else if (!labelsResult.skipped && labelsResult.success) {
             logger.success(
               current,
               repoName,
@@ -428,6 +436,10 @@ export async function runSync(
           }
           if (!labelsResult.skipped) {
             settingsCollector.getOrCreate(repoName).labelsResult = labelsResult;
+          }
+          if (!labelsResult.success && !labelsResult.skipped) {
+            logger.error(current, repoName, `Labels: ${labelsResult.message}`);
+            settingsCollector.appendError(repoName, labelsResult.message);
           }
         } catch (error) {
           logger.error(current, repoName, `Labels: ${String(error)}`);
@@ -461,7 +473,10 @@ export async function runSync(
                 logger.info(`Warning: ${warning}`);
               }
             }
-          } else if (!repoSettingsResult.skipped) {
+          } else if (
+            !repoSettingsResult.skipped &&
+            repoSettingsResult.success
+          ) {
             logger.success(
               current,
               repoName,
@@ -471,6 +486,14 @@ export async function runSync(
           if (!repoSettingsResult.skipped) {
             settingsCollector.getOrCreate(repoName).settingsResult =
               repoSettingsResult;
+          }
+          if (!repoSettingsResult.success && !repoSettingsResult.skipped) {
+            logger.error(
+              current,
+              repoName,
+              `Repo settings: ${repoSettingsResult.message}`
+            );
+            settingsCollector.appendError(repoName, repoSettingsResult.message);
           }
         } catch (error) {
           logger.error(current, repoName, `Repo settings: ${String(error)}`);

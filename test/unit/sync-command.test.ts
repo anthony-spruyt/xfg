@@ -17,8 +17,10 @@ import type {
   IRepoSettingsProcessor,
   ILabelsProcessor,
 } from "../../src/cli/types.js";
-import type { IRulesetProcessor } from "../../src/settings/rulesets/processor.js";
-import type { RulesetProcessorResult } from "../../src/settings/rulesets/processor.js";
+import type {
+  IRulesetProcessor,
+  RulesetProcessorResult,
+} from "../../src/settings/rulesets/processor.js";
 import type { LabelsProcessorResult } from "../../src/settings/labels/processor.js";
 import type { RepoSettingsProcessorResult } from "../../src/settings/repo-settings/processor.js";
 import type { RulesetPlanResult } from "../../src/settings/rulesets/formatter.js";
@@ -681,6 +683,45 @@ ${VALID_RULESET}
 
       const output = consoleOutput.join("\n");
       assert.ok(output.includes("API rate limit exceeded"));
+      assert.equal(exitCode, 1);
+    });
+
+    test("exits with code 1 when settings processor returns success: false without throwing", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      rulesets:
+${VALID_RULESET}
+`
+      );
+
+      const mockRulesetProcessor = createMockRulesetProcessor({
+        success: false,
+        message: "Failed: insufficient permissions",
+      });
+
+      await assert.rejects(
+        async () =>
+          runSync(
+            { config: testConfigPath, dryRun: true, workDir: testDir },
+            {
+              processorFactory: () => createMockProcessor(),
+              lifecycleManager: noopLifecycleManager,
+              rulesetProcessorFactory: () => mockRulesetProcessor,
+            }
+          ),
+        /process\.exit\(1\)/
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("Failed: insufficient permissions"),
+        "Should log error message for failed settings result"
+      );
       assert.equal(exitCode, 1);
     });
 
