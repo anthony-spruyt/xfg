@@ -804,29 +804,23 @@ if (repoConfig.settings && isGitHubRepo(repoInfo)) {
     repoConfig.settings.rulesets &&
     Object.keys(repoConfig.settings.rulesets).length > 0
   ) {
-    if (rulesetProcessorFactory) {
-      const rulesetProcessor = rulesetProcessorFactory();
-      const rulesetResult = await rulesetProcessor.process(
-        repoConfig,
-        repoInfo,
-        {
-          configId: config.id,
-          dryRun: options.dryRun,
-          noDelete: options.noDelete,
-          token: settingsToken,
-        }
-      );
-      // Log result, collect for report
-      if (rulesetResult.planOutput?.lines?.length) {
-        logger.info("");
-        logger.info(`${repoName} - Rulesets:`);
-        for (const line of rulesetResult.planOutput.lines) {
-          logger.info(line);
-        }
+    const rulesetProcessor = rulesetProcessorFactory();
+    const rulesetResult = await rulesetProcessor.process(repoConfig, repoInfo, {
+      configId: config.id,
+      dryRun: options.dryRun,
+      noDelete: options.noDelete,
+      token: settingsToken,
+    });
+    // Log result, collect for report
+    if (rulesetResult.planOutput?.lines?.length) {
+      logger.info("");
+      logger.info(`${repoName} - Rulesets:`);
+      for (const line of rulesetResult.planOutput.lines) {
+        logger.info(line);
       }
-      if (!rulesetResult.skipped) {
-        settingsCollector.getOrCreate(repoName).rulesetResult = rulesetResult;
-      }
+    }
+    if (!rulesetResult.skipped) {
+      settingsCollector.getOrCreate(repoName).rulesetResult = rulesetResult;
     }
   }
 
@@ -1260,6 +1254,19 @@ git commit -m "feat!: remove command input from action — always runs sync"
 **Files:**
 
 - Modify: `.github/workflows/_integration-tests.yaml`
+- Modify: `test/integration/github-app.test.ts`
+
+**Step 0: Update GitHub App integration tests**
+
+`test/integration/github-app.test.ts` has 5 calls to `node dist/cli.js settings` that must be changed to `node dist/cli.js sync`:
+
+- Line 166: `exec(\`node dist/cli.js settings --config ${configPath}\`, xfgEnv)` — in the "settings command with bypass_actors is idempotent" test
+- Line 169: `exec(\`node dist/cli.js settings --config ${configPath} --dry-run\`, xfgEnv)` — dry-run follow-up in the same test
+- Line 260: `exec(\`node dist/cli.js settings --config ${configPath}\`, xfgEnv)` — in the "repo settings with GitHub App token is idempotent" test
+- Line 263: `exec(\`node dist/cli.js settings --config ${configPath}\`, xfgEnv)` — idempotency re-run in the same test
+- Line 322: `exec(\`node dist/cli.js settings --config ${rulesetConfig}\`, patOnlyEnv)` — in the "GitHub App Signed Refs Test" beforeEach setup
+
+Replace `settings` with `sync` in all five calls.
 
 **Step 1: Merge settings test jobs**
 
@@ -1349,7 +1356,7 @@ Add new test cases to verify the v4 desired-state behavior. The design doc speci
 **Scenario 2: Settings-only config (no files)**
 
 ```typescript
-test("settings-only config: applies settings and updates manifest in one clone/PR", async () => {
+test("settings-only config: applies settings via API", async () => {
   // Config with settings but no files section
   const configYaml = `
 id: settings-only-test
@@ -1719,7 +1726,7 @@ Note: `docs/index.md` contains Mermaid diagrams referencing `chore/sync-rulesets
 - Update the getting started / quickstart guides
 - Update the action usage examples
 - Document the breaking changes
-- Remove `chore/sync-rulesets` and `chore/sync-labels` branch references from Mermaid diagrams in `docs/index.md`
+- In `docs/index.md`, remove the entire manifest-tracking branch from each Mermaid flowchart: the `MANIFEST_CHECK` decision node, the `MANIFEST` action node, and the `APPLY --> MANIFEST_CHECK` edge. The `APPLY` node should go directly to `DONE` (i.e., `APPLY --> DONE`). Affected diagrams: Rulesets Processing (lines ~377-380) and Labels Processing (lines ~445-449)
 - Update `CLAUDE.md` module descriptions (line 58): change `config-validator.ts` description from `validateForSync`/`validateForSettings` per-command`to reflect that`validateForSettings` no longer exists
 
 **Step 3: Add migration guide**
