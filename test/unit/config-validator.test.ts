@@ -3,7 +3,6 @@ import { strict as assert } from "node:assert";
 import {
   validateRawConfig,
   validateForSync,
-  validateForSettings,
   hasActionableSettings,
 } from "../../src/config/validator.js";
 import type {
@@ -2593,38 +2592,28 @@ describe("validateRawConfig", () => {
 });
 
 describe("validateForSync", () => {
-  test("throws when files is missing", () => {
+  test("throws when no files and no settings", () => {
     const config: RawConfig = {
-      id: "settings-only",
-      settings: {
-        rulesets: {
-          "main-protection": { target: "branch" },
-        },
-      },
+      id: "empty",
       repos: [{ git: "git@github.com:org/repo.git" }],
     };
 
     assert.throws(
       () => validateForSync(config),
-      /The 'sync' command requires files defined/
+      /Config requires at least one of: 'files' or 'settings'/
     );
   });
 
-  test("throws when files is empty", () => {
+  test("throws when files is empty and no settings", () => {
     const config: RawConfig = {
       id: "empty-files",
       files: {},
-      settings: {
-        rulesets: {
-          "main-protection": { target: "branch" },
-        },
-      },
       repos: [{ git: "git@github.com:org/repo.git" }],
     };
 
     assert.throws(
       () => validateForSync(config),
-      /The 'sync' command requires files defined/
+      /Config requires at least one of: 'files' or 'settings'/
     );
   });
 
@@ -2636,6 +2625,56 @@ describe("validateForSync", () => {
       },
       repos: [{ git: "git@github.com:org/repo.git" }],
     };
+
+    assert.doesNotThrow(() => validateForSync(config));
+  });
+
+  test("passes with settings-only config (no files)", () => {
+    const config: RawConfig = {
+      id: "settings-only",
+      settings: {
+        rulesets: {
+          "main-protection": { target: "branch" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+
+    assert.doesNotThrow(() => validateForSync(config));
+  });
+
+  test("passes with repo-level settings only", () => {
+    const config: RawConfig = {
+      id: "repo-settings-only",
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          settings: {
+            rulesets: {
+              "main-protection": { target: "branch" },
+            },
+          },
+        },
+      ],
+    };
+
+    assert.doesNotThrow(() => validateForSync(config));
+  });
+
+  test("passes with group-level settings only", () => {
+    const config = {
+      id: "group-settings-only",
+      groups: {
+        mygroup: {
+          settings: {
+            labels: {
+              bug: { color: "d73a4a" },
+            },
+          },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
+    } as RawConfig;
 
     assert.doesNotThrow(() => validateForSync(config));
   });
@@ -2666,61 +2705,6 @@ describe("validateForSync", () => {
     } as RawConfig;
     assert.doesNotThrow(() => validateForSync(config));
   });
-});
-
-describe("validateForSettings", () => {
-  test("throws when no settings anywhere", () => {
-    const config: RawConfig = {
-      id: "files-only",
-      files: {
-        "config.json": { content: {} },
-      },
-      repos: [{ git: "git@github.com:org/repo.git" }],
-    };
-
-    assert.throws(
-      () => validateForSettings(config),
-      /The 'settings' command requires a 'settings' section/
-    );
-  });
-
-  test("passes when settings at root level", () => {
-    const config: RawConfig = {
-      id: "root-settings",
-      files: {
-        "config.json": { content: {} },
-      },
-      settings: {
-        rulesets: {
-          "main-protection": { target: "branch" },
-        },
-      },
-      repos: [{ git: "git@github.com:org/repo.git" }],
-    };
-
-    assert.doesNotThrow(() => validateForSettings(config));
-  });
-
-  test("passes when settings only in repo", () => {
-    const config: RawConfig = {
-      id: "repo-settings",
-      files: {
-        "config.json": { content: {} },
-      },
-      repos: [
-        {
-          git: "git@github.com:org/repo.git",
-          settings: {
-            rulesets: {
-              "main-protection": { target: "branch" },
-            },
-          },
-        },
-      ],
-    };
-
-    assert.doesNotThrow(() => validateForSettings(config));
-  });
 
   test("throws when settings exists but has no actionable config", () => {
     const config: RawConfig = {
@@ -2730,58 +2714,8 @@ describe("validateForSettings", () => {
     };
 
     assert.throws(
-      () => validateForSettings(config),
-      /No actionable settings configured/
-    );
-  });
-
-  test("throws when settings has empty rulesets", () => {
-    const config: RawConfig = {
-      id: "empty-rulesets",
-      settings: {
-        rulesets: {},
-      },
-      repos: [{ git: "git@github.com:org/repo.git" }],
-    };
-
-    assert.throws(
-      () => validateForSettings(config),
-      /No actionable settings configured/
-    );
-  });
-
-  test("passes when settings defined only in groups", () => {
-    const config = {
-      id: "group-settings-only",
-      groups: {
-        mygroup: {
-          settings: {
-            rulesets: {
-              "branch-protection": { target: "branch" },
-            },
-          },
-        },
-      },
-      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
-    } as RawConfig;
-
-    assert.doesNotThrow(() => validateForSettings(config));
-  });
-
-  test("throws when group settings exist but have no actionable config", () => {
-    const config = {
-      id: "group-empty-settings",
-      groups: {
-        mygroup: {
-          settings: {},
-        },
-      },
-      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
-    } as RawConfig;
-
-    assert.throws(
-      () => validateForSettings(config),
-      /No actionable settings configured/
+      () => validateForSync(config),
+      /Config requires at least one of: 'files' or 'settings'/
     );
   });
 });
@@ -3346,7 +3280,7 @@ describe("labels validation", () => {
     );
   });
 
-  test("validateForSettings passes with labels-only config", () => {
+  test("validateForSync passes with labels-only config", () => {
     const config: RawConfig = {
       id: "test-config",
       settings: {
@@ -3356,7 +3290,7 @@ describe("labels validation", () => {
       },
       repos: [{ git: "git@github.com:org/repo.git" }],
     };
-    assert.doesNotThrow(() => validateForSettings(config));
+    assert.doesNotThrow(() => validateForSync(config));
   });
 
   test("hasActionableSettings returns true for labels-only settings", () => {
@@ -3792,7 +3726,7 @@ describe("validateForSync - group coverage", () => {
     } as RawConfig;
     assert.throws(
       () => validateForSync(config),
-      /The 'sync' command requires files defined/
+      /Config requires at least one of: 'files' or 'settings'/
     );
   });
 
@@ -3810,7 +3744,7 @@ describe("validateForSync - group coverage", () => {
     } as RawConfig;
     assert.throws(
       () => validateForSync(config),
-      /The 'sync' command requires files defined/
+      /Config requires at least one of: 'files' or 'settings'/
     );
   });
 
@@ -3847,83 +3781,6 @@ describe("validateForSync - group coverage", () => {
       ],
     } as RawConfig;
     assert.doesNotThrow(() => validateForSync(config));
-  });
-});
-
-describe("validateForSettings - group coverage", () => {
-  test("passes when groups define settings and no root/repo settings", () => {
-    const config = {
-      id: "group-settings",
-      files: {
-        "config.json": { content: { key: "value" } },
-      },
-      groups: {
-        mygroup: {
-          settings: {
-            labels: {
-              bug: { color: "d73a4a" },
-            },
-          },
-        },
-      },
-      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
-    } as RawConfig;
-    assert.doesNotThrow(() => validateForSettings(config));
-  });
-
-  test("throws when groups exist but no settings anywhere", () => {
-    const config = {
-      id: "no-settings",
-      files: {
-        "config.json": { content: { key: "value" } },
-      },
-      groups: {
-        mygroup: {
-          files: { "extra.json": { content: { key: "value" } } },
-        },
-      },
-      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
-    } as RawConfig;
-    assert.throws(
-      () => validateForSettings(config),
-      /The 'settings' command requires a 'settings' section/
-    );
-  });
-
-  test("groups with non-object settings are not counted", () => {
-    const config = {
-      id: "no-actionable",
-      groups: {
-        mygroup: {
-          settings: "invalid" as unknown as RawGroupConfig["settings"],
-        },
-      },
-      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
-    } as RawConfig;
-    assert.throws(
-      () => validateForSettings(config),
-      /The 'settings' command requires a 'settings' section/
-    );
-  });
-
-  test("groups with repo settings are actionable", () => {
-    const config = {
-      id: "group-repo-settings",
-      files: {
-        "config.json": { content: { key: "value" } },
-      },
-      groups: {
-        mygroup: {
-          settings: {
-            repo: {
-              hasIssues: true,
-            },
-          },
-        },
-      },
-      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
-    } as RawConfig;
-    assert.doesNotThrow(() => validateForSettings(config));
   });
 });
 

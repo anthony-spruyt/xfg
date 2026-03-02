@@ -476,7 +476,7 @@ repos:
       );
     });
 
-    test("sync command fails with settings-only config", () => {
+    test("sync command accepts settings-only config", () => {
       writeFileSync(
         testConfigPath,
         `
@@ -492,13 +492,11 @@ repos:
       );
 
       const result = runCLI(["sync", "-c", testConfigPath, "--dry-run"]);
-      assert.equal(result.success, false);
+      // Settings-only configs are now valid for the unified sync command
       const output = result.stdout + result.stderr;
       assert.ok(
-        output.includes("'sync' command requires files") ||
-          output.includes("requires a 'files' section") ||
-          output.includes("requires files defined"),
-        `Expected files requirement error, got: ${output}`
+        output.includes("Loading config from:"),
+        `Expected sync to start processing, got: ${output}`
       );
     });
 
@@ -517,12 +515,11 @@ repos:
       );
 
       const result = runCLI(["settings", "-c", testConfigPath, "--dry-run"]);
-      assert.equal(result.success, false);
+      assert.equal(result.success, true);
       const output = result.stdout + result.stderr;
       assert.ok(
-        output.includes("'settings' command requires") ||
-          output.includes("No actionable settings"),
-        `Expected settings requirement error, got: ${output}`
+        output.includes("No settings configured"),
+        `Expected no settings message, got: ${output}`
       );
     });
 
@@ -1230,11 +1227,14 @@ repos:
       const result = runCLI(["settings", "-c", settingsTestConfigPath]);
       const output = result.stdout + result.stderr;
       assert.ok(
-        output.includes("'settings' command requires") ||
-          output.includes("No actionable settings"),
-        `Should show settings requirement error, got: ${output}`
+        output.includes("No settings configured"),
+        `Should show no settings message, got: ${output}`
       );
-      assert.equal(result.success, false, "Should fail when no settings");
+      assert.equal(
+        result.success,
+        true,
+        "Should succeed (no error, just informational message)"
+      );
     });
 
     test("fails when rulesets object is empty", () => {
@@ -1256,11 +1256,14 @@ repos:
       const result = runCLI(["settings", "-c", settingsTestConfigPath]);
       const output = result.stdout + result.stderr;
       assert.ok(
-        output.includes("No actionable settings") ||
-          output.includes("'settings' command requires"),
-        `Should show actionable settings error, got: ${output}`
+        output.includes("No settings configured"),
+        `Should show no settings message, got: ${output}`
       );
-      assert.equal(result.success, false, "Should fail with empty rulesets");
+      assert.equal(
+        result.success,
+        true,
+        "Should succeed (no error, just informational message)"
+      );
     });
   });
 });

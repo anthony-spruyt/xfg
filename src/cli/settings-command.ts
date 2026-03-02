@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 import { existsSync } from "node:fs";
 import { loadRawConfig, normalizeConfig } from "../config/index.js";
-import { validateForSettings } from "../config/validator.js";
+import { validateForSync } from "../config/validator.js";
 import {
   hasGitHubAppCredentials,
   GitHubAppTokenManager,
@@ -63,7 +63,7 @@ export async function runSettings(
   const rawConfig = loadRawConfig(configPath);
 
   try {
-    validateForSettings(rawConfig);
+    validateForSync(rawConfig);
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(1);

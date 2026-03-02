@@ -119,6 +119,5 @@ export {
   validateRawConfig,
   validateSettings,
   validateForSync,
-  validateForSettings,
   hasActionableSettings,
 } from "./validator.js";
