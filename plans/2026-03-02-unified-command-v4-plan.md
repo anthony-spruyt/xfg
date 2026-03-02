@@ -490,7 +490,13 @@ export interface RulesetProcessorResult {
 3. Update `process()` method:
    - Remove `managedRulesets` destructuring
    - Change skip condition from checking both `desiredRulesets` and `managedRulesets` to only checking `desiredRulesets`
-     > **Intentional behavior change:** The current skip condition is `Object.keys(desiredRulesets).length === 0 && managedRulesets.length === 0`. Removing the `managedRulesets` check means repos with zero desired rulesets but previously tracked managed rulesets will now be skipped (no cleanup). This is intentional in the desired-state model: no rulesets in config means "don't touch rulesets on this repo." Cleanup of unmanaged rulesets is handled by `deleteOrphaned: true` only when desired rulesets are explicitly configured.
+     > **Intentional behavior change:** The current skip condition is
+     > `Object.keys(desiredRulesets).length === 0 && managedRulesets.length === 0`.
+     > Removing the `managedRulesets` check means repos with zero desired rulesets
+     > but previously tracked managed rulesets will now be skipped (no cleanup).
+     > This is intentional in the desired-state model: no rulesets in config means
+     > "don't touch rulesets on this repo." Cleanup of unmanaged rulesets is handled
+     > by `deleteOrphaned: true` only when desired rulesets are explicitly configured.
    - Pass `deleteOrphaned` to `diffRulesets()` instead of `managedRulesets`
    - Remove `computeManifestUpdate()` private method and all calls to it
 
@@ -1102,7 +1108,12 @@ Remove:
 Keep `src/cli/settings/results-collector.ts` — it's now used by `sync-command.ts`.
 Keep `src/cli/settings-report-builder.ts` — it's used by `sync-command.ts`.
 
-> **Note:** Deleting `src/cli/settings/process-rulesets.ts` and `src/cli/settings/process-labels.ts` also removes the `"chore/sync-rulesets"` and `"chore/sync-labels"` branch name strings from the codebase (they are only referenced in those two files). Verify with a codebase search after deletion that no other references remain. The `docs/index.md` Mermaid diagrams also reference these branch names — those are cleaned up in Task 13 (docs content).
+> **Note:** Deleting `src/cli/settings/process-rulesets.ts` and
+> `src/cli/settings/process-labels.ts` also removes the `"chore/sync-rulesets"`
+> and `"chore/sync-labels"` branch name strings from the codebase (they are only
+> referenced in those two files). Verify with a codebase search after deletion
+> that no other references remain. The `docs/index.md` Mermaid diagrams also
+> reference these branch names — those are cleaned up in Task 13 (docs content).
 
 **Step 4: Update CLI barrel exports**
 
@@ -1792,7 +1803,7 @@ This workflow handles the actual `package.json` version bump and npm publication
 
 ## Dependency Graph
 
-```
+```text
 Task 1 (Manifest V4)
   └── Task 2 (Remove ManifestStrategy)
        └── Task 3 (Rulesets desired-state)

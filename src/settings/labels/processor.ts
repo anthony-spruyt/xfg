@@ -29,7 +29,6 @@ export interface ILabelsProcessor {
 // =============================================================================
 
 export interface LabelsProcessorOptions {
-  configId: string;
   dryRun?: boolean;
   noDelete?: boolean;
   token?: string;

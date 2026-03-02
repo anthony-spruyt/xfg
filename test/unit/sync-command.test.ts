@@ -12,7 +12,18 @@ import { writeFileSync, rmSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { runSync, type SyncOptions } from "../../src/cli/sync-command.js";
 import type { ProcessorResult } from "../../src/sync/repository-processor.js";
-import type { IRepositoryProcessor } from "../../src/cli/types.js";
+import type {
+  IRepositoryProcessor,
+  IRepoSettingsProcessor,
+  ILabelsProcessor,
+} from "../../src/cli/types.js";
+import type { IRulesetProcessor } from "../../src/settings/rulesets/processor.js";
+import type { RulesetProcessorResult } from "../../src/settings/rulesets/processor.js";
+import type { LabelsProcessorResult } from "../../src/settings/labels/processor.js";
+import type { RepoSettingsProcessorResult } from "../../src/settings/repo-settings/processor.js";
+import type { RulesetPlanResult } from "../../src/settings/rulesets/formatter.js";
+import type { LabelsPlanResult } from "../../src/settings/labels/formatter.js";
+import type { RepoSettingsPlanResult } from "../../src/settings/repo-settings/formatter.js";
 import {
   noopLifecycleManager,
   failingLifecycleManager,
@@ -316,6 +327,409 @@ repos:
       // Should log error for invalid URL
       assert.ok(output.includes("invalid-url-format"));
       assert.equal(exitCode, 1);
+    });
+  });
+
+  describe("settings processing", () => {
+    // Valid config snippets for settings
+    const VALID_RULESET = `
+        my-ruleset:
+          target: branch
+          enforcement: active
+          conditions:
+            ref_name:
+              include: ["~DEFAULT_BRANCH"]
+              exclude: []
+          rules: []
+`;
+
+    const VALID_LABELS = `
+        bug:
+          color: "d73a4a"
+          description: "Something isn't working"
+`;
+
+    function emptyRulesetPlanOutput(): RulesetPlanResult {
+      return {
+        lines: [],
+        creates: 0,
+        updates: 0,
+        deletes: 0,
+        unchanged: 0,
+        entries: [],
+      };
+    }
+
+    function emptyLabelsPlanOutput(): LabelsPlanResult {
+      return {
+        lines: [],
+        creates: 0,
+        updates: 0,
+        deletes: 0,
+        unchanged: 0,
+        entries: [],
+      };
+    }
+
+    function emptyRepoSettingsPlanOutput(): RepoSettingsPlanResult {
+      return {
+        lines: [],
+        adds: 0,
+        changes: 0,
+        warnings: [],
+        entries: [],
+      };
+    }
+
+    function createMockRulesetProcessor(
+      overrides: Partial<RulesetProcessorResult> = {}
+    ): IRulesetProcessor {
+      return {
+        process: mock.fn(
+          async (): Promise<RulesetProcessorResult> => ({
+            success: true,
+            repoName: "test/repo",
+            message: "Rulesets synced",
+            skipped: false,
+            planOutput: emptyRulesetPlanOutput(),
+            ...overrides,
+          })
+        ),
+      };
+    }
+
+    function createMockLabelsProcessor(
+      overrides: Partial<LabelsProcessorResult> = {}
+    ): ILabelsProcessor {
+      return {
+        process: mock.fn(
+          async (): Promise<LabelsProcessorResult> => ({
+            success: true,
+            repoName: "test/repo",
+            message: "Labels synced",
+            skipped: false,
+            planOutput: emptyLabelsPlanOutput(),
+            ...overrides,
+          })
+        ),
+      };
+    }
+
+    function createMockRepoSettingsProcessor(
+      overrides: Partial<RepoSettingsProcessorResult> = {}
+    ): IRepoSettingsProcessor {
+      return {
+        process: mock.fn(
+          async (): Promise<RepoSettingsProcessorResult> => ({
+            success: true,
+            repoName: "test/repo",
+            message: "Repo settings synced",
+            skipped: false,
+            planOutput: emptyRepoSettingsPlanOutput(),
+            ...overrides,
+          })
+        ),
+      };
+    }
+
+    test("processes rulesets for GitHub repos", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      rulesets:
+${VALID_RULESET}
+`
+      );
+
+      const mockRulesetProcessor = createMockRulesetProcessor({
+        success: true,
+        message: "1 created",
+        planOutput: {
+          lines: ["  + my-ruleset"],
+          creates: 1,
+          updates: 0,
+          deletes: 0,
+          unchanged: 0,
+          entries: [{ name: "my-ruleset", action: "create" as const }],
+        },
+      });
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => createMockProcessor(),
+          lifecycleManager: noopLifecycleManager,
+          rulesetProcessorFactory: () => mockRulesetProcessor,
+        }
+      );
+
+      assert.equal(
+        (mockRulesetProcessor.process as MockFn).mock.calls.length,
+        1,
+        "rulesetProcessor.process should be called once"
+      );
+    });
+
+    test("processes labels for GitHub repos", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:
+${VALID_LABELS}
+`
+      );
+
+      const mockLabelsProcessor = createMockLabelsProcessor({
+        success: true,
+        message: "1 created",
+      });
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => createMockProcessor(),
+          lifecycleManager: noopLifecycleManager,
+          labelsProcessorFactory: () => mockLabelsProcessor,
+        }
+      );
+
+      assert.equal(
+        (mockLabelsProcessor.process as MockFn).mock.calls.length,
+        1,
+        "labelsProcessor.process should be called once"
+      );
+    });
+
+    test("processes repo settings for GitHub repos", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      repo:
+        hasWiki: false
+`
+      );
+
+      const mockRepoSettingsProcessor = createMockRepoSettingsProcessor({
+        success: true,
+        message: "No changes needed",
+      });
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => createMockProcessor(),
+          lifecycleManager: noopLifecycleManager,
+          repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+        }
+      );
+
+      assert.equal(
+        (mockRepoSettingsProcessor.process as MockFn).mock.calls.length,
+        1,
+        "repoSettingsProcessor.process should be called once"
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("No changes needed"),
+        "Should log no-changes message for repo settings"
+      );
+    });
+
+    test("skips settings processing for non-GitHub repos", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://dev.azure.com/org/project/_git/repo
+    settings:
+      rulesets:
+${VALID_RULESET}
+`
+      );
+
+      const mockRulesetProcessor = createMockRulesetProcessor();
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => createMockProcessor(),
+          lifecycleManager: noopLifecycleManager,
+          rulesetProcessorFactory: () => mockRulesetProcessor,
+        }
+      );
+
+      assert.equal(
+        (mockRulesetProcessor.process as MockFn).mock.calls.length,
+        0,
+        "rulesetProcessor.process should not be called for non-GitHub repos"
+      );
+    });
+
+    test("catches settings processor error and sets exit code 1", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      rulesets:
+${VALID_RULESET}
+`
+      );
+
+      const mockRulesetProcessor: IRulesetProcessor = {
+        process: mock.fn(async () => {
+          throw new Error("API rate limit exceeded");
+        }),
+      };
+
+      await assert.rejects(
+        async () =>
+          runSync(
+            { config: testConfigPath, dryRun: true, workDir: testDir },
+            {
+              processorFactory: () => createMockProcessor(),
+              lifecycleManager: noopLifecycleManager,
+              rulesetProcessorFactory: () => mockRulesetProcessor,
+            }
+          ),
+        /process\.exit\(1\)/
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(output.includes("API rate limit exceeded"));
+      assert.equal(exitCode, 1);
+    });
+
+    test("exits with code 1 when settings errors even if file sync succeeds", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:
+${VALID_LABELS}
+`
+      );
+
+      const mockLabelsProcessor: ILabelsProcessor = {
+        process: mock.fn(async () => {
+          throw new Error("Labels API failure");
+        }),
+      };
+
+      await assert.rejects(
+        async () =>
+          runSync(
+            { config: testConfigPath, dryRun: true, workDir: testDir },
+            {
+              processorFactory: () =>
+                createMockProcessor({ success: true, message: "Files synced" }),
+              lifecycleManager: noopLifecycleManager,
+              labelsProcessorFactory: () => mockLabelsProcessor,
+            }
+          ),
+        /process\.exit\(1\)/
+      );
+
+      assert.equal(exitCode, 1);
+    });
+
+    test("processes all three settings types together", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      rulesets:
+${VALID_RULESET}
+      labels:
+${VALID_LABELS}
+      repo:
+        hasWiki: false
+`
+      );
+
+      const mockRulesetProcessor = createMockRulesetProcessor();
+      const mockLabelsProcessor = createMockLabelsProcessor();
+      const mockRepoSettingsProcessor = createMockRepoSettingsProcessor();
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => createMockProcessor(),
+          lifecycleManager: noopLifecycleManager,
+          rulesetProcessorFactory: () => mockRulesetProcessor,
+          labelsProcessorFactory: () => mockLabelsProcessor,
+          repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+        }
+      );
+
+      assert.equal(
+        (mockRulesetProcessor.process as MockFn).mock.calls.length,
+        1,
+        "rulesetProcessor should be called"
+      );
+      assert.equal(
+        (mockLabelsProcessor.process as MockFn).mock.calls.length,
+        1,
+        "labelsProcessor should be called"
+      );
+      assert.equal(
+        (mockRepoSettingsProcessor.process as MockFn).mock.calls.length,
+        1,
+        "repoSettingsProcessor should be called"
+      );
+    });
+
+    test("no error exit when settings succeed", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      rulesets:
+${VALID_RULESET}
+`
+      );
+
+      const mockRulesetProcessor = createMockRulesetProcessor({
+        success: true,
+        message: "No changes needed",
+      });
+
+      // Should NOT throw (no process.exit(1))
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => createMockProcessor(),
+          lifecycleManager: noopLifecycleManager,
+          rulesetProcessorFactory: () => mockRulesetProcessor,
+        }
+      );
+
+      assert.equal(exitCode, undefined, "Should not exit with error code");
     });
   });
 });

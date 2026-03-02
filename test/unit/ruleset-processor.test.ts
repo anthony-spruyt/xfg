@@ -134,7 +134,6 @@ describe("RulesetProcessor", () => {
       mockStrategy.setListResponse([]);
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: false,
       });
 
@@ -169,7 +168,6 @@ describe("RulesetProcessor", () => {
       ]);
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: false,
       });
 
@@ -218,7 +216,6 @@ describe("RulesetProcessor", () => {
       });
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: false,
       });
 
@@ -266,7 +263,6 @@ describe("RulesetProcessor", () => {
       });
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: false,
       });
 
@@ -288,7 +284,6 @@ describe("RulesetProcessor", () => {
       };
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: false,
       });
 
@@ -319,7 +314,6 @@ describe("RulesetProcessor", () => {
       ]);
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: false,
       });
 
@@ -379,7 +373,6 @@ describe("RulesetProcessor", () => {
       });
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: false,
       });
 
@@ -429,7 +422,6 @@ describe("RulesetProcessor", () => {
       });
 
       await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: false,
       });
 
@@ -502,7 +494,6 @@ describe("RulesetProcessor", () => {
       });
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: true,
       });
 
@@ -533,7 +524,6 @@ describe("RulesetProcessor", () => {
       ]);
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: false,
         noDelete: true, // Override deleteOrphaned
       });
@@ -563,7 +553,6 @@ describe("RulesetProcessor", () => {
       mockStrategy.setListResponse([]);
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: true,
       });
 
@@ -592,7 +581,6 @@ describe("RulesetProcessor", () => {
       mockStrategy.setListResponse([]);
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: true,
       });
 
@@ -616,7 +604,6 @@ describe("RulesetProcessor", () => {
       ]);
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: true,
       });
 
@@ -644,7 +631,6 @@ describe("RulesetProcessor", () => {
       ]);
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: false,
       });
 
@@ -677,7 +663,6 @@ describe("RulesetProcessor", () => {
       };
 
       const result = await processor.process(repoConfig, mockAzureRepo, {
-        configId: "test-config",
         dryRun: false,
       });
 
@@ -732,7 +717,6 @@ describe("RulesetProcessor", () => {
       };
 
       const result = await freshProcessor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: true,
       });
 
@@ -799,7 +783,6 @@ describe("RulesetProcessor", () => {
       };
 
       const result = await freshProcessor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: true,
       });
 
@@ -850,7 +833,6 @@ describe("RulesetProcessor", () => {
       };
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
         dryRun: false,
       });
 
