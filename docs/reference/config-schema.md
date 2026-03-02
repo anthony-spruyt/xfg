@@ -125,21 +125,6 @@ The schema validates:
 - Content types (object for JSON/YAML, string/array for text files)
 - File path security (no path traversal in file references)
 
-### Command-Specific Requirements
+### Config Requirements
 
-| Command        | Required Fields                                                    |
-| -------------- | ------------------------------------------------------------------ |
-| `xfg sync`     | Files defined in root `files` or in at least one group             |
-| `xfg settings` | `settings` at root, repo, or group level with actionable config    |
-
-If you run the wrong command for your config, you'll see a helpful error:
-
-```text
-# Running sync with a settings-only config:
-The 'sync' command requires files defined in root 'files' or in at least one group.
-To manage repository settings instead, use 'xfg settings'.
-
-# Running settings with a files-only config:
-The 'settings' command requires a 'settings' section at root level, in at least one repo, or in at least one group.
-To sync files instead, use 'xfg sync'.
-```
+The `xfg sync` command accepts configs with files, settings, or both. At least one of `files`, `settings`, or `groups` must be present.

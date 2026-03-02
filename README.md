@@ -47,11 +47,8 @@ npm install -g @aspruyt/xfg
 # Authenticate (GitHub)
 gh auth login
 
-# Sync files across repos
+# Sync files, settings, rulesets, and labels across repos
 xfg sync --config ./config.yaml
-
-# Apply repository settings and rulesets
-xfg settings --config ./config.yaml
 ```
 
 ### Example Config

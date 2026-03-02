@@ -1,26 +1,16 @@
 # CLI Options Reference
 
-xfg uses subcommands to separate file sync (`sync`) from repository settings management (`settings`).
-
-## Subcommands
-
-| Command        | Description                                      |
-| -------------- | ------------------------------------------------ |
-| `xfg sync`     | Sync configuration files across repositories     |
-| `xfg settings` | Manage GitHub repository settings and rulesets   |
+xfg uses a single `sync` command to handle file synchronization, repository settings, rulesets, and labels.
 
 ## Sync Command
 
-Sync configuration files across repositories.
+Sync configuration files, repository settings, rulesets, and labels across repositories.
 
 ```bash
 xfg sync --config <path> [options]
 ```
 
-!!! warning "Config Requirement"
-    The sync command requires a `files` section with at least one file defined. If your config only has `settings`, use `xfg settings` instead.
-
-### Sync Options
+### Options
 
 | Option             | Alias | Description                                        | Default                                        |
 | ------------------ | ----- | -------------------------------------------------- | ---------------------------------------------- |
@@ -32,12 +22,15 @@ xfg sync --config <path> [options]
 | `--merge`          | `-m`  | PR merge mode: `manual`, `auto`, `force`, `direct` | `auto`                                         |
 | `--merge-strategy` |       | Merge strategy: `merge`, `squash`, `rebase`        | `squash`                                       |
 | `--delete-branch`  |       | Delete source branch after merge                   | `true`                                         |
-| `--no-delete`      |       | Skip deletion of orphaned files even if configured | `false`                                        |
+| `--no-delete`      |       | Skip deletion of orphaned files, rulesets, and labels | `false`                                     |
 
-### Sync Examples
+!!! note "GitHub-Only Settings"
+    Repository settings, rulesets, and labels management only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.
+
+### Examples
 
 ```bash
-# Basic sync
+# Basic sync (files + settings)
 xfg sync --config ./config.yaml
 
 # Dry run
@@ -55,44 +48,7 @@ xfg sync --config ./config.yaml --merge direct   # Push directly
 xfg sync --config ./config.yaml --no-delete
 ```
 
-## Settings Command
-
-Manage GitHub repository settings and rulesets. Updates repository configuration and creates, updates, or deletes rulesets to match your config.
-
-```bash
-xfg settings --config <path> [options]
-```
-
-!!! warning "Config Requirement"
-    The settings command requires a `settings` section with actionable configuration (e.g., rulesets). If your config only has `files`, use `xfg sync` instead.
-
-!!! note "GitHub-Only"
-    The settings command only works with GitHub repositories. Azure DevOps and GitLab repos are skipped.
-
-### Settings Options
-
-| Option        | Alias | Description                                             | Default      |
-| ------------- | ----- | ------------------------------------------------------- | ------------ |
-| `--config`    | `-c`  | Path to YAML config file                                | **Required** |
-| `--dry-run`   | `-d`  | Show what would be done without making changes          | `false`      |
-| `--work-dir`  | `-w`  | Temporary directory (not used for settings, but shared) | `./tmp`      |
-| `--retries`   | `-r`  | Number of retries for network operations                | `3`          |
-| `--no-delete` |       | Skip deletion of orphaned rulesets and labels            | `false`      |
-
-### Settings Examples
-
-```bash
-# Apply rulesets
-xfg settings --config ./config.yaml
-
-# Preview changes
-xfg settings --config ./config.yaml --dry-run
-
-# Apply without deleting orphans
-xfg settings --config ./config.yaml --no-delete
-```
-
-### Settings Output
+### Output
 
 ```text
 Loading config from: ./config.yaml
@@ -109,19 +65,6 @@ Found 3 repositories with rulesets
 
 ==================================================
 Completed: 3 succeeded, 0 skipped, 0 failed
-```
-
-## Combined Workflow
-
-Run both commands together:
-
-```bash
-# Sync files and apply rulesets
-xfg sync -c config.yaml && xfg settings -c config.yaml
-
-# Preview both
-xfg sync -c config.yaml --dry-run
-xfg settings -c config.yaml --dry-run
 ```
 
 ## Priority Order

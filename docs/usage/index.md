@@ -1,36 +1,22 @@
 # Usage
 
-xfg uses subcommands to separate file sync from repository settings management.
-
-## Commands
-
-| Command        | Description                                      |
-| -------------- | ------------------------------------------------ |
-| `xfg sync`     | Sync configuration files across repositories     |
-| `xfg settings` | Manage GitHub repository settings and rulesets   |
+xfg uses a single `sync` command to handle file synchronization, repository settings, rulesets, and labels.
 
 ## Basic Usage
 
 ```bash
-# Sync files
+# Sync files, settings, rulesets, and labels
 xfg sync --config ./config.yaml
 
-# Apply rulesets
-xfg settings --config ./config.yaml
-
-# Dry run
+# Dry run — preview changes without applying
 xfg sync --config ./config.yaml --dry-run
-xfg settings --config ./config.yaml --dry-run
-
-# Combined workflow
-xfg sync -c config.yaml && xfg settings -c config.yaml
 ```
 
 ## Dry-Run Mode
 
 The `--dry-run` flag lets you preview changes without actually making them.
 
-**For sync:**
+**For files:**
 
 - Files are compared but not written
 - Commits and pushes are skipped
@@ -39,14 +25,15 @@ The `--dry-run` flag lets you preview changes without actually making them.
 **For settings:**
 
 - Rulesets are compared but not created/updated/deleted
+- Labels are compared but not created/updated/deleted
+- Repository settings are compared but not applied
 - Shows planned changes (create, update, delete, unchanged)
 
 ```bash
 xfg sync --config ./config.yaml --dry-run
-xfg settings --config ./config.yaml --dry-run
 ```
 
-## Sync CLI Options
+## CLI Options
 
 | Option             | Alias | Description                                                                    | Required |
 | ------------------ | ----- | ------------------------------------------------------------------------------ | -------- |
@@ -58,19 +45,10 @@ xfg settings --config ./config.yaml --dry-run
 | `--merge`          | `-m`  | PR merge mode: `manual`, `auto` (default), `force` (bypass checks), `direct`   | No       |
 | `--merge-strategy` |       | Merge strategy: `merge`, `squash` (default), `rebase`                          | No       |
 | `--delete-branch`  |       | Delete source branch after merge                                               | No       |
-| `--no-delete`      |       | Skip deletion of orphaned files                                                | No       |
-
-## Settings CLI Options
-
-| Option        | Alias | Description                                    | Required |
-| ------------- | ----- | ---------------------------------------------- | -------- |
-| `--config`    | `-c`  | Path to YAML config file                       | Yes      |
-| `--dry-run`   | `-d`  | Show what would be done without making changes | No       |
-| `--retries`   | `-r`  | Number of retries for network operations       | No       |
-| `--no-delete` |       | Skip deletion of orphaned rulesets and labels  | No       |
+| `--no-delete`      |       | Skip deletion of orphaned files, rulesets, and labels                          | No       |
 
 !!! note
-    The settings command only works with GitHub repositories. Azure DevOps and GitLab repos are skipped.
+    Settings management (rulesets, labels, repo settings) only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.
 
 ## Console Output
 

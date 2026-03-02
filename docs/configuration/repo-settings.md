@@ -3,7 +3,7 @@
 xfg can manage GitHub repository settings declaratively using the `settings` command. Configure features, merge options, and security settings in your config file, and xfg will update repositories to match your desired state.
 
 !!! note "GitHub-Only Feature"
-    Repository settings are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg settings`.
+    Repository settings are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg sync`.
 
 ## Quick Start
 
@@ -27,10 +27,10 @@ repos:
 
 ```bash
 # Preview changes (dry-run)
-xfg settings -c config.yaml --dry-run
+xfg sync -c config.yaml --dry-run
 
 # Apply settings
-xfg settings -c config.yaml
+xfg sync -c config.yaml
 ```
 
 ## Available Settings
@@ -168,7 +168,7 @@ Example output:
 Use `--dry-run` to preview changes without applying them:
 
 ```bash
-xfg settings -c config.yaml --dry-run
+xfg sync -c config.yaml --dry-run
 ```
 
 Output shows planned changes in Terraform-style format:
@@ -214,10 +214,10 @@ settings:
             requiredApprovingReviewCount: 1
 ```
 
-Run `xfg settings` to apply both:
+Run `xfg sync` to apply both:
 
 ```bash
-xfg settings -c config.yaml
+xfg sync -c config.yaml
 ```
 
 ## API Limitations

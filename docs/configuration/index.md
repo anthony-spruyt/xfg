@@ -36,12 +36,7 @@ repos: # List of repositories
 
 <!-- markdownlint-disable MD046 -->
 !!! note "files/settings/groups requirement"
-    At least one of `files`, `settings`, or `groups` must be present:
-
-    - **`xfg sync`** requires files defined in root `files` or in at least one group
-    - **`xfg settings`** requires `settings` at root, repo, or group level with actionable config (e.g., rulesets)
-
-    A config can have both for use with both commands.
+    At least one of `files`, `settings`, or `groups` must be present. The `xfg sync` command handles both file synchronization and settings management in a single run.
 <!-- markdownlint-enable MD046 -->
 
 ## Per-File Fields
