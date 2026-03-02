@@ -15,17 +15,28 @@ interface XfgManifestV2 {
   configs: Record<string, string[]>; // configId -> managedFiles
 }
 
-// V3 config entry with separate files, rulesets, and labels
-export interface XfgManifestConfigEntry {
-  files?: string[];
-  rulesets?: string[];
-  labels?: string[];
+// V3 manifest structure (legacy - for migration detection only)
+interface XfgManifestV3 {
+  version: 3;
+  configs: Record<
+    string,
+    {
+      files?: string[];
+      rulesets?: string[];
+      labels?: string[];
+    }
+  >;
 }
 
-// V3 manifest structure (current)
+// V4 config entry — files only (rulesets and labels removed in V4)
+export interface XfgManifestConfigEntry {
+  files?: string[];
+}
+
+// V4 manifest structure (current)
 export interface XfgManifest {
-  version: 3;
-  configs: Record<string, XfgManifestConfigEntry>; // configId -> { files, rulesets }
+  version: 4;
+  configs: Record<string, XfgManifestConfigEntry>;
 }
 
 /**
@@ -56,11 +67,24 @@ function isV2Manifest(manifest: unknown): manifest is XfgManifestV2 {
 /**
  * Type guard to check if a manifest is v3 format.
  */
-function isV3Manifest(manifest: unknown): manifest is XfgManifest {
+function isV3Manifest(manifest: unknown): manifest is XfgManifestV3 {
   return (
     typeof manifest === "object" &&
     manifest !== null &&
-    (manifest as XfgManifest).version === 3 &&
+    (manifest as XfgManifestV3).version === 3 &&
+    typeof (manifest as XfgManifestV3).configs === "object" &&
+    (manifest as XfgManifestV3).configs !== null
+  );
+}
+
+/**
+ * Type guard to check if a manifest is v4 format.
+ */
+function isV4Manifest(manifest: unknown): manifest is XfgManifest {
+  return (
+    typeof manifest === "object" &&
+    manifest !== null &&
+    (manifest as XfgManifest).version === 4 &&
     typeof (manifest as XfgManifest).configs === "object" &&
     (manifest as XfgManifest).configs !== null
   );
@@ -69,10 +93,10 @@ function isV3Manifest(manifest: unknown): manifest is XfgManifest {
 /**
  * Migrates a V2 manifest to V3 format.
  * V2: configs is Record<string, string[]>
- * V3: configs is Record<string, { files?: string[], rulesets?: string[] }>
+ * V3: configs is Record<string, { files?: string[], rulesets?: string[], labels?: string[] }>
  */
-function migrateV2ToV3(v2: XfgManifestV2): XfgManifest {
-  const v3Configs: Record<string, XfgManifestConfigEntry> = {};
+function migrateV2ToV3(v2: XfgManifestV2): XfgManifestV3 {
+  const v3Configs: Record<string, { files?: string[] }> = {};
 
   for (const [configId, files] of Object.entries(v2.configs)) {
     if (files.length > 0) {
@@ -87,11 +111,27 @@ function migrateV2ToV3(v2: XfgManifestV2): XfgManifest {
 }
 
 /**
+ * Migrates a V3 manifest to V4 format.
+ * V3: configs have files, rulesets, labels
+ * V4: configs have files only — rulesets and labels are dropped
+ */
+function migrateV3ToV4(v3: XfgManifestV3): XfgManifest {
+  const v4Configs: Record<string, XfgManifestConfigEntry> = {};
+  for (const [configId, entry] of Object.entries(v3.configs)) {
+    // Only preserve files — rulesets and labels are dropped
+    if (entry.files && entry.files.length > 0) {
+      v4Configs[configId] = { files: entry.files };
+    }
+  }
+  return { version: 4, configs: v4Configs };
+}
+
+/**
  * Creates an empty manifest with the current version.
  */
 export function createEmptyManifest(): XfgManifest {
   return {
-    version: 3,
+    version: 4,
     configs: {},
   };
 }
@@ -120,14 +160,19 @@ export function loadManifest(workDir: string): XfgManifest | null {
     const content = readFileSync(manifestPath, "utf-8");
     const parsed = JSON.parse(content) as unknown;
 
-    // V3 manifest - return as-is
-    if (isV3Manifest(parsed)) {
+    // V4 manifest - return as-is
+    if (isV4Manifest(parsed)) {
       return parsed;
     }
 
-    // V2 manifest - migrate to V3
+    // V3 manifest - migrate to V4
+    if (isV3Manifest(parsed)) {
+      return migrateV3ToV4(parsed);
+    }
+
+    // V2 manifest - migrate to V3, then to V4
     if (isV2Manifest(parsed)) {
-      return migrateV2ToV3(parsed);
+      return migrateV3ToV4(migrateV2ToV3(parsed));
     }
 
     // V1 manifest - treat as no manifest (will be overwritten with v3)
@@ -150,12 +195,16 @@ export function parseManifestContent(content: string): XfgManifest | null {
   try {
     const parsed = JSON.parse(content) as unknown;
 
-    if (isV3Manifest(parsed)) {
+    if (isV4Manifest(parsed)) {
       return parsed;
     }
 
+    if (isV3Manifest(parsed)) {
+      return migrateV3ToV4(parsed);
+    }
+
     if (isV2Manifest(parsed)) {
-      return migrateV2ToV3(parsed);
+      return migrateV3ToV4(migrateV2ToV3(parsed));
     }
 
     return null;
@@ -192,38 +241,6 @@ export function getManagedFiles(
     return [];
   }
   return [...(manifest.configs[configId]?.files ?? [])];
-}
-
-/**
- * Gets the list of managed rulesets for a specific config from a manifest.
- * Returns an empty array if the manifest is null or the config isn't found.
- *
- * @param manifest - The manifest or null
- * @param configId - The config ID to get rulesets for
- * @returns Array of managed ruleset names for the given config
- */
-export function getManagedRulesets(
-  manifest: XfgManifest | null,
-  configId: string
-): string[] {
-  if (!manifest) {
-    return [];
-  }
-  return [...(manifest.configs[configId]?.rulesets ?? [])];
-}
-
-/**
- * Gets the list of managed labels for a specific config from a manifest.
- * Returns an empty array if the manifest is null or the config isn't found.
- */
-export function getManagedLabels(
-  manifest: XfgManifest | null,
-  configId: string
-): string[] {
-  if (!manifest) {
-    return [];
-  }
-  return [...(manifest.configs[configId]?.labels ?? [])];
 }
 
 /**
@@ -272,174 +289,19 @@ export function updateManifest(
     ...(manifest?.configs ?? {}),
   };
 
-  // Preserve existing rulesets and labels for this config
-  const existingEntry = manifest?.configs[configId];
-  const existingRulesets = existingEntry?.rulesets;
-  const existingLabels = existingEntry?.labels;
-
   // Update this config's managed files
   const sortedManaged = Array.from(newManaged).sort();
-  if (
-    sortedManaged.length > 0 ||
-    (existingRulesets && existingRulesets.length > 0) ||
-    (existingLabels && existingLabels.length > 0)
-  ) {
-    updatedConfigs[configId] = {
-      ...(sortedManaged.length > 0 ? { files: sortedManaged } : {}),
-      ...(existingRulesets && existingRulesets.length > 0
-        ? { rulesets: existingRulesets }
-        : {}),
-      ...(existingLabels && existingLabels.length > 0
-        ? { labels: existingLabels }
-        : {}),
-    };
+  if (sortedManaged.length > 0) {
+    updatedConfigs[configId] = { files: sortedManaged };
   } else {
-    // Remove config entry if no managed files, rulesets, or labels
     delete updatedConfigs[configId];
   }
 
   return {
     manifest: {
-      version: 3,
+      version: 4,
       configs: updatedConfigs,
     },
     filesToDelete,
-  };
-}
-
-/**
- * Updates the manifest with the current set of rulesets that have deleteOrphaned enabled
- * for a specific config. Only modifies that config's rulesets namespace - other configs are untouched.
- *
- * @param manifest - The existing manifest (or null for new repos)
- * @param configId - The config ID to update
- * @param rulesetsWithDeleteOrphaned - Map of ruleset name to deleteOrphaned value (true/false/undefined)
- * @returns Updated manifest and list of rulesets to delete
- */
-export function updateManifestRulesets(
-  manifest: XfgManifest | null,
-  configId: string,
-  rulesetsWithDeleteOrphaned: Map<string, boolean | undefined>
-): { manifest: XfgManifest; rulesetsToDelete: string[] } {
-  // Get existing managed rulesets for this config only
-  const existingManaged = new Set(getManagedRulesets(manifest, configId));
-  const newManaged = new Set<string>();
-  const rulesetsToDelete: string[] = [];
-
-  // Process current config rulesets
-  for (const [rulesetName, deleteOrphaned] of rulesetsWithDeleteOrphaned) {
-    if (deleteOrphaned === true) {
-      newManaged.add(rulesetName);
-    }
-  }
-
-  // Find orphaned rulesets: in old manifest for this config but not in current config
-  for (const rulesetName of existingManaged) {
-    if (!rulesetsWithDeleteOrphaned.has(rulesetName)) {
-      rulesetsToDelete.push(rulesetName);
-    }
-  }
-
-  // Build updated manifest, preserving other configs
-  const updatedConfigs: Record<string, XfgManifestConfigEntry> = {
-    ...(manifest?.configs ?? {}),
-  };
-
-  // Preserve existing files and labels for this config
-  const existingEntry = manifest?.configs[configId];
-  const existingFiles = existingEntry?.files;
-  const existingLabels = existingEntry?.labels;
-
-  // Update this config's managed rulesets
-  const sortedManaged = Array.from(newManaged).sort();
-  if (
-    sortedManaged.length > 0 ||
-    (existingFiles && existingFiles.length > 0) ||
-    (existingLabels && existingLabels.length > 0)
-  ) {
-    updatedConfigs[configId] = {
-      ...(existingFiles && existingFiles.length > 0
-        ? { files: existingFiles }
-        : {}),
-      ...(sortedManaged.length > 0 ? { rulesets: sortedManaged } : {}),
-      ...(existingLabels && existingLabels.length > 0
-        ? { labels: existingLabels }
-        : {}),
-    };
-  } else {
-    // Remove config entry if no managed files, rulesets, or labels
-    delete updatedConfigs[configId];
-  }
-
-  return {
-    manifest: {
-      version: 3,
-      configs: updatedConfigs,
-    },
-    rulesetsToDelete,
-  };
-}
-
-/**
- * Updates the manifest with the current set of labels that have deleteOrphaned enabled
- * for a specific config. Only modifies that config's labels namespace - other configs are untouched.
- *
- * @param manifest - The existing manifest (or null for new repos)
- * @param configId - The config ID to update
- * @param labelsWithDeleteOrphaned - Map of label name to deleteOrphaned value (true/false/undefined)
- * @returns Updated manifest and list of labels to delete
- */
-export function updateManifestLabels(
-  manifest: XfgManifest | null,
-  configId: string,
-  labelsWithDeleteOrphaned: Map<string, boolean | undefined>
-): { manifest: XfgManifest; labelsToDelete: string[] } {
-  const existingManaged = new Set(getManagedLabels(manifest, configId));
-  const newManaged = new Set<string>();
-  const labelsToDelete: string[] = [];
-
-  for (const [labelName, deleteOrphaned] of labelsWithDeleteOrphaned) {
-    if (deleteOrphaned === true) {
-      newManaged.add(labelName);
-    }
-  }
-
-  for (const labelName of existingManaged) {
-    if (!labelsWithDeleteOrphaned.has(labelName)) {
-      labelsToDelete.push(labelName);
-    }
-  }
-
-  const updatedConfigs: Record<string, XfgManifestConfigEntry> = {
-    ...(manifest?.configs ?? {}),
-  };
-
-  // Preserve existing files and rulesets for this config
-  const existingEntry = manifest?.configs[configId];
-  const existingFiles = existingEntry?.files;
-  const existingRulesets = existingEntry?.rulesets;
-  const sortedManaged = Array.from(newManaged).sort();
-
-  if (
-    sortedManaged.length > 0 ||
-    (existingFiles && existingFiles.length > 0) ||
-    (existingRulesets && existingRulesets.length > 0)
-  ) {
-    updatedConfigs[configId] = {
-      ...(existingFiles && existingFiles.length > 0
-        ? { files: existingFiles }
-        : {}),
-      ...(existingRulesets && existingRulesets.length > 0
-        ? { rulesets: existingRulesets }
-        : {}),
-      ...(sortedManaged.length > 0 ? { labels: sortedManaged } : {}),
-    };
-  } else {
-    delete updatedConfigs[configId];
-  }
-
-  return {
-    manifest: { version: 3, configs: updatedConfigs },
-    labelsToDelete,
   };
 }
