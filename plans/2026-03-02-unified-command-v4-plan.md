@@ -282,7 +282,7 @@ Both must be updated. The `src/sync/types.ts` version is the canonical type used
 In `src/sync/index.ts`:
 
 - Remove `ManifestStrategy` and `ManifestUpdateParams` exports
-- Remove `updateManifestRulesets`, `updateManifestLabels` exports (already removed from manifest.ts)
+- Remove `getManagedRulesets`, `getManagedLabels`, `updateManifestRulesets`, `updateManifestLabels` exports (already removed from manifest.ts in Task 1 Step 5)
 
 **Step 5: Delete manifest-strategy test file**
 
@@ -792,6 +792,8 @@ Add imports for the settings processor types and defaults from `./types.js`.
 
 Inside the `runSync` repo loop, after the file sync `processor.process()` block, add settings processing:
 
+Note: The `isGitHubRepo(repoInfo)` guard means settings blocks are silently skipped for non-GitHub repos (ADO, GitLab). This is intentional per the design doc — only GitHub supports rulesets/labels/repo-settings via API.
+
 ```typescript
 // After file sync, apply settings via API
 if (repoConfig.settings && isGitHubRepo(repoInfo)) {
@@ -1254,6 +1256,7 @@ git commit -m "feat!: remove command input from action — always runs sync"
 **Files:**
 
 - Modify: `.github/workflows/_integration-tests.yaml`
+- Modify: `test/fixtures/integration-test-action-settings-app.yaml` (review/update comment on line 2; currently says "settings command" — clarify it's now handled via sync)
 - Modify: `test/integration/github-app.test.ts`
 
 **Step 0: Update GitHub App integration tests**
@@ -1751,7 +1754,7 @@ git commit -m "docs: update for v4 unified sync command"
 
 **Files:**
 
-- Modify: `package.json` (version bump happens via release workflow)
+- No direct edits — version bump is handled by release workflow
 
 **Step 1: Verify all tests pass**
 
@@ -1774,6 +1777,16 @@ Create a PR targeting `main` with:
 - Title: `feat!: v4 unified command — merge settings into sync`
 - Body: Summary of all breaking changes
 - Reference the design doc
+
+**Step 4: After PR merge, run release workflow**
+
+Once PR is merged to `main`, trigger the release workflow to bump version and publish:
+
+```bash
+gh workflow run release.yaml -f version=major
+```
+
+This workflow handles the actual `package.json` version bump and npm publication. Do NOT manually edit `package.json` — the workflow will update it automatically.
 
 ---
 
