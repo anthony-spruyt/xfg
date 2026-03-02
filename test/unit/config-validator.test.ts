@@ -8,7 +8,6 @@ import {
 import type {
   RawConfig,
   RawFileConfig,
-  RawGroupConfig,
   RawRepoSettings,
 } from "../../src/config/index.js";
 

@@ -23,13 +23,9 @@ import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoInfo } from "../shared/repo-detector.js";
 import {
-  ProcessorFactory,
   defaultProcessorFactory,
-  RulesetProcessorFactory,
   defaultRulesetProcessorFactory,
-  RepoSettingsProcessorFactory,
   defaultRepoSettingsProcessorFactory,
-  LabelsProcessorFactory,
   defaultLabelsProcessorFactory,
   type SyncDependencies,
 } from "./types.js";
@@ -50,7 +46,6 @@ import {
   RepoLifecycleManager,
   runLifecycleCheck,
   toCreateRepoSettings,
-  type IRepoLifecycleManager,
 } from "../lifecycle/index.js";
 
 /**

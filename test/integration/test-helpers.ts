@@ -341,7 +341,7 @@ export function isForkedFrom(
  */
 export function resetTestRepo(
   repo: string,
-  options?: { deleteLabels?: boolean }
+  _options?: { deleteLabels?: boolean }
 ): void {
   console.log("\n=== Resetting ephemeral repo ===\n");
   // Close open PRs
