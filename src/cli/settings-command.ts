@@ -113,7 +113,6 @@ export async function runSettings(
   );
 
   const processor = processorFactory();
-  const repoProcessor = repoProcessorFactory();
   const lm =
     lifecycleManager ?? new RepoLifecycleManager(undefined, options.retries);
   const tokenManager = hasGitHubAppCredentials()
@@ -146,7 +145,6 @@ export async function runSettings(
     config,
     options,
     processor,
-    repoProcessor,
     results,
     collector,
     lifecycleSkipped
@@ -168,7 +166,6 @@ export async function runSettings(
     config,
     options,
     labelsProcessorFactory(),
-    repoProcessor,
     results,
     collector,
     lifecycleSkipped,

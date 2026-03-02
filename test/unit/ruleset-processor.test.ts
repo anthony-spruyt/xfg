@@ -136,7 +136,6 @@ describe("RulesetProcessor", () => {
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: false,
-        managedRulesets: [],
       });
 
       assert.equal(result.success, true);
@@ -172,7 +171,6 @@ describe("RulesetProcessor", () => {
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: false,
-        managedRulesets: ["main-protection"],
       });
 
       assert.equal(result.success, true);
@@ -189,11 +187,22 @@ describe("RulesetProcessor", () => {
         git: "git@github.com:test-org/test-repo.git",
         files: [],
         settings: {
-          rulesets: {},
+          rulesets: {
+            "keep-ruleset": {
+              target: "branch",
+              enforcement: "active",
+            },
+          },
           deleteOrphaned: true,
         },
       };
       mockStrategy.setListResponse([
+        {
+          id: 123,
+          name: "keep-ruleset",
+          target: "branch",
+          enforcement: "active",
+        },
         {
           id: 456,
           name: "old-ruleset",
@@ -201,11 +210,16 @@ describe("RulesetProcessor", () => {
           enforcement: "active",
         },
       ]);
+      mockStrategy.setGetResponse(123, {
+        id: 123,
+        name: "keep-ruleset",
+        target: "branch",
+        enforcement: "active",
+      });
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: false,
-        managedRulesets: ["old-ruleset"], // Previously managed
       });
 
       assert.equal(result.success, true);
@@ -216,7 +230,54 @@ describe("RulesetProcessor", () => {
       assert.equal(deleteCalls[0].args[0], 456);
     });
 
-    test("does not delete unmanaged rulesets", async () => {
+    test("does not delete orphaned rulesets when deleteOrphaned is false", async () => {
+      const repoConfig: RepoConfig = {
+        git: "git@github.com:test-org/test-repo.git",
+        files: [],
+        settings: {
+          rulesets: {
+            "keep-ruleset": {
+              target: "branch",
+              enforcement: "active",
+            },
+          },
+          deleteOrphaned: false,
+        },
+      };
+      mockStrategy.setListResponse([
+        {
+          id: 123,
+          name: "keep-ruleset",
+          target: "branch",
+          enforcement: "active",
+        },
+        {
+          id: 789,
+          name: "external-ruleset",
+          target: "branch",
+          enforcement: "active",
+        },
+      ]);
+      mockStrategy.setGetResponse(123, {
+        id: 123,
+        name: "keep-ruleset",
+        target: "branch",
+        enforcement: "active",
+      });
+
+      const result = await processor.process(repoConfig, mockGitHubRepo, {
+        configId: "test-config",
+        dryRun: false,
+      });
+
+      assert.equal(result.success, true);
+      const deleteCalls = mockStrategy.calls.filter(
+        (c) => c.method === "delete"
+      );
+      assert.equal(deleteCalls.length, 0);
+    });
+
+    test("skips processing when rulesets config is empty", async () => {
       const repoConfig: RepoConfig = {
         git: "git@github.com:test-org/test-repo.git",
         files: [],
@@ -225,26 +286,14 @@ describe("RulesetProcessor", () => {
           deleteOrphaned: true,
         },
       };
-      mockStrategy.setListResponse([
-        {
-          id: 789,
-          name: "external-ruleset",
-          target: "branch",
-          enforcement: "active",
-        },
-      ]);
 
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: false,
-        managedRulesets: [], // Not managed by xfg
       });
 
-      assert.equal(result.success, true);
-      const deleteCalls = mockStrategy.calls.filter(
-        (c) => c.method === "delete"
-      );
-      assert.equal(deleteCalls.length, 0);
+      assert.equal(result.skipped, true);
+      assert.equal(result.message, "No rulesets configured");
     });
 
     test("skips unchanged rulesets", async () => {
@@ -272,7 +321,6 @@ describe("RulesetProcessor", () => {
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: false,
-        managedRulesets: ["main-protection"],
       });
 
       assert.equal(result.success, true);
@@ -333,7 +381,6 @@ describe("RulesetProcessor", () => {
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: false,
-        managedRulesets: ["main-protection"],
       });
 
       assert.equal(result.success, true);
@@ -384,7 +431,6 @@ describe("RulesetProcessor", () => {
       await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: false,
-        managedRulesets: ["main-protection"],
       });
 
       // Should only call get() for "main-protection", not "unrelated-ruleset"
@@ -458,7 +504,6 @@ describe("RulesetProcessor", () => {
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: true,
-        managedRulesets: ["branch-rules"],
       });
 
       assert.equal(result.success, true);
@@ -490,7 +535,6 @@ describe("RulesetProcessor", () => {
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: false,
-        managedRulesets: ["old-ruleset"],
         noDelete: true, // Override deleteOrphaned
       });
 
@@ -521,7 +565,6 @@ describe("RulesetProcessor", () => {
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: true,
-        managedRulesets: [],
       });
 
       assert.equal(result.success, true);
@@ -551,7 +594,6 @@ describe("RulesetProcessor", () => {
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: true,
-        managedRulesets: [],
       });
 
       assert.ok(result.changes);
@@ -576,7 +618,6 @@ describe("RulesetProcessor", () => {
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: true,
-        managedRulesets: ["existing"],
       });
 
       assert.equal(result.dryRun, true);
@@ -605,7 +646,6 @@ describe("RulesetProcessor", () => {
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: false,
-        managedRulesets: ["existing"],
       });
 
       assert.equal(result.success, true);
@@ -639,7 +679,6 @@ describe("RulesetProcessor", () => {
       const result = await processor.process(repoConfig, mockAzureRepo, {
         configId: "test-config",
         dryRun: false,
-        managedRulesets: [],
       });
 
       assert.equal(result.success, true);
@@ -695,7 +734,6 @@ describe("RulesetProcessor", () => {
       const result = await freshProcessor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: true,
-        managedRulesets: [],
       });
 
       const listCalls = freshStrategy.calls.filter((c) => c.method === "list");
@@ -763,7 +801,6 @@ describe("RulesetProcessor", () => {
       const result = await freshProcessor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: true,
-        managedRulesets: [],
       });
 
       const listCalls = freshStrategy.calls.filter((c) => c.method === "list");
@@ -815,66 +852,10 @@ describe("RulesetProcessor", () => {
       const result = await processor.process(repoConfig, mockGitHubRepo, {
         configId: "test-config",
         dryRun: false,
-        managedRulesets: [],
       });
 
       assert.equal(result.success, false);
       assert.ok(result.message.includes("API rate limit exceeded"));
-    });
-  });
-
-  describe("manifest updates", () => {
-    test("returns updated manifest with managed rulesets", async () => {
-      const repoConfig: RepoConfig = {
-        git: "git@github.com:test-org/test-repo.git",
-        files: [],
-        settings: {
-          rulesets: {
-            "main-protection": {
-              target: "branch",
-              enforcement: "active",
-            },
-          },
-          deleteOrphaned: true,
-        },
-      };
-      mockStrategy.setListResponse([]);
-
-      const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
-        dryRun: false,
-        managedRulesets: [],
-      });
-
-      assert.ok(result.manifestUpdate);
-      assert.deepEqual(result.manifestUpdate.rulesets, ["main-protection"]);
-    });
-
-    test("includes all rulesets with deleteOrphaned in manifest", async () => {
-      const repoConfig: RepoConfig = {
-        git: "git@github.com:test-org/test-repo.git",
-        files: [],
-        settings: {
-          rulesets: {
-            "ruleset-a": { target: "branch", enforcement: "active" },
-            "ruleset-b": { target: "tag", enforcement: "evaluate" },
-          },
-          deleteOrphaned: true,
-        },
-      };
-      mockStrategy.setListResponse([]);
-
-      const result = await processor.process(repoConfig, mockGitHubRepo, {
-        configId: "test-config",
-        dryRun: false,
-        managedRulesets: [],
-      });
-
-      assert.ok(result.manifestUpdate);
-      assert.deepEqual(result.manifestUpdate.rulesets.sort(), [
-        "ruleset-a",
-        "ruleset-b",
-      ]);
     });
   });
 });

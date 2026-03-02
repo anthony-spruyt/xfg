@@ -1,22 +1,12 @@
-import { resolve, join } from "node:path";
 import chalk from "chalk";
 import {
   parseGitUrl,
   getRepoDisplayName,
   isGitHubRepo,
-  type GitHubRepoInfo,
 } from "../../shared/repo-detector.js";
 import { logger } from "../../shared/logger.js";
-import { generateWorkspaceName } from "../../shared/workspace-utils.js";
 import type { RepoResult } from "../../output/github-summary.js";
-import {
-  getManagedLabels,
-  parseManifestContent,
-  MANIFEST_FILENAME,
-} from "../../sync/manifest.js";
-import { defaultExecutor } from "../../shared/command-executor.js";
-import { escapeShellArg } from "../../shared/shell-utils.js";
-import type { ILabelsProcessor, IRepositoryProcessor } from "../types.js";
+import type { ILabelsProcessor } from "../types.js";
 import type { Config, RepoConfig } from "../../config/types.js";
 import type { RepoInfo } from "../../shared/repo-detector.js";
 import type { ResultsCollector } from "./results-collector.js";
@@ -30,7 +20,6 @@ export async function processLabels(
   config: Config,
   options: SettingsOptions,
   processor: ILabelsProcessor,
-  repoProcessor: IRepositoryProcessor,
   results: RepoResult[],
   collector: ResultsCollector,
   lifecycleSkipped: Set<string>,
@@ -72,18 +61,13 @@ export async function processLabels(
       continue;
     }
 
-    const managedLabels = await fetchManagedLabels(
-      repoInfo as GitHubRepoInfo,
-      config.id
-    );
-
     try {
       logger.progress(current, repoName, "Processing labels...");
 
       const result = await processor.process(repoConfig, repoInfo, {
         configId: config.id,
         dryRun: options.dryRun,
-        managedLabels,
+        managedLabels: [],
         noDelete: options.noDelete,
       });
 
@@ -99,30 +83,6 @@ export async function processLabels(
         logger.skip(current, repoName, result.message);
       } else if (result.success) {
         logger.success(current, repoName, result.message);
-
-        if (result.manifestUpdate && result.manifestUpdate.labels.length > 0) {
-          const workDir = resolve(
-            join(options.workDir ?? "./tmp", generateWorkspaceName(i))
-          );
-          logger.progress(current, repoName, "Updating manifest...");
-          const manifestResult = await repoProcessor.updateManifestOnly(
-            repoInfo,
-            repoConfig,
-            {
-              branchName: "chore/sync-labels",
-              workDir,
-              configId: config.id,
-              dryRun: options.dryRun,
-              retries: options.retries,
-            },
-            { labels: result.manifestUpdate.labels }
-          );
-          if (!manifestResult.success && !manifestResult.skipped) {
-            logger.info(
-              `Warning: Failed to update manifest for ${repoName}: ${manifestResult.message}`
-            );
-          }
-        }
       } else {
         logger.error(current, repoName, result.message);
         collector.appendError(repoName, result.message);
@@ -151,31 +111,5 @@ export async function processLabels(
       logger.error(current, repoName, String(error));
       collector.appendError(repoName, error);
     }
-  }
-}
-
-/**
- * Fetches the managed labels list from a remote GitHub repo's manifest.
- * Returns an empty array if the manifest doesn't exist or can't be read.
- *
- * Uses the project's ICommandExecutor + escapeShellArg pattern for safe
- * command execution. All inputs are from parsed config (owner/repo), not
- * user input.
- */
-async function fetchManagedLabels(
-  repoInfo: GitHubRepoInfo,
-  configId: string
-): Promise<string[]> {
-  try {
-    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/contents/${MANIFEST_FILENAME}`;
-    const command = `gh api ${escapeShellArg(endpoint)} --jq '.content'`;
-    const base64Content = await defaultExecutor.exec(command, process.cwd());
-    const content = Buffer.from(base64Content.trim(), "base64").toString(
-      "utf-8"
-    );
-    const manifest = parseManifestContent(content);
-    return getManagedLabels(manifest, configId);
-  } catch {
-    return [];
   }
 }

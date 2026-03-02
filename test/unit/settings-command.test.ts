@@ -115,7 +115,6 @@ function createMockRepoProcessor(
   };
   return {
     process: mock.fn(async (): Promise<ProcessorResult> => result),
-    updateManifestOnly: mock.fn(async (): Promise<ProcessorResult> => result),
   };
 }
 
@@ -594,75 +593,6 @@ repos:
       assert.equal(exitCode, 1);
     });
 
-    test("updates manifest when ruleset processing has manifest updates", async () => {
-      writeFileSync(
-        testConfigPath,
-        `id: test-config
-${MINIMAL_FILES}
-repos:
-  - git: https://github.com/test/repo
-    settings:
-      rulesets:${VALID_RULESET}
-`
-      );
-
-      const mockRulesetProcessor = createMockRulesetProcessor({
-        success: true,
-        message: "Rulesets synced",
-        manifestUpdate: { rulesets: ["my-ruleset"] },
-      });
-
-      const mockRepoProcessor = createMockRepoProcessor();
-
-      await runSettings(
-        { config: testConfigPath, dryRun: true, workDir: testDir },
-        () => mockRulesetProcessor,
-        () => mockRepoProcessor,
-        () => createMockRepoSettingsProcessor(),
-        noopLifecycleManager
-      );
-
-      const updateManifestCalls = (
-        mockRepoProcessor.updateManifestOnly as unknown as MockFn
-      ).mock.calls;
-      assert.equal(updateManifestCalls.length, 1);
-    });
-
-    test("handles failed manifest update gracefully", async () => {
-      writeFileSync(
-        testConfigPath,
-        `id: test-config
-${MINIMAL_FILES}
-repos:
-  - git: https://github.com/test/repo
-    settings:
-      rulesets:${VALID_RULESET}
-`
-      );
-
-      const mockRulesetProcessor = createMockRulesetProcessor({
-        success: true,
-        message: "Rulesets synced",
-        manifestUpdate: { rulesets: ["my-ruleset"] },
-      });
-
-      const mockRepoProcessor = createMockRepoProcessor({
-        success: false,
-        message: "Failed to update manifest",
-      });
-
-      await runSettings(
-        { config: testConfigPath, dryRun: true, workDir: testDir },
-        () => mockRulesetProcessor,
-        () => mockRepoProcessor,
-        () => createMockRepoSettingsProcessor(),
-        noopLifecycleManager
-      );
-
-      const output = consoleOutput.join("\n");
-      assert.ok(output.includes("Warning: Failed to update manifest"));
-    });
-
     test("displays plan output when available", async () => {
       writeFileSync(
         testConfigPath,
@@ -828,77 +758,6 @@ repos:
       const output = consoleOutput.join("\n");
       assert.ok(output.includes("Labels API error"));
       assert.equal(exitCode, 1);
-    });
-
-    test("updates manifest when labels processing has manifest updates", async () => {
-      writeFileSync(
-        testConfigPath,
-        `id: test-config
-${MINIMAL_FILES}
-repos:
-  - git: https://github.com/test/repo
-    settings:
-      labels:${VALID_LABELS}
-`
-      );
-
-      const mockLabelsProcessor = createMockLabelsProcessor({
-        success: true,
-        message: "Labels synced",
-        manifestUpdate: { labels: ["bug"] },
-      });
-
-      const mockRepoProcessor = createMockRepoProcessor();
-
-      await runSettings(
-        { config: testConfigPath, dryRun: true, workDir: testDir },
-        () => createMockRulesetProcessor(),
-        () => mockRepoProcessor,
-        () => createMockRepoSettingsProcessor(),
-        noopLifecycleManager,
-        () => mockLabelsProcessor
-      );
-
-      const updateManifestCalls = (
-        mockRepoProcessor.updateManifestOnly as unknown as MockFn
-      ).mock.calls;
-      assert.equal(updateManifestCalls.length, 1);
-    });
-
-    test("handles failed manifest update gracefully", async () => {
-      writeFileSync(
-        testConfigPath,
-        `id: test-config
-${MINIMAL_FILES}
-repos:
-  - git: https://github.com/test/repo
-    settings:
-      labels:${VALID_LABELS}
-`
-      );
-
-      const mockLabelsProcessor = createMockLabelsProcessor({
-        success: true,
-        message: "Labels synced",
-        manifestUpdate: { labels: ["bug"] },
-      });
-
-      const mockRepoProcessor = createMockRepoProcessor({
-        success: false,
-        message: "Failed to update manifest",
-      });
-
-      await runSettings(
-        { config: testConfigPath, dryRun: true, workDir: testDir },
-        () => createMockRulesetProcessor(),
-        () => mockRepoProcessor,
-        () => createMockRepoSettingsProcessor(),
-        noopLifecycleManager,
-        () => mockLabelsProcessor
-      );
-
-      const output = consoleOutput.join("\n");
-      assert.ok(output.includes("Warning: Failed to update manifest"));
     });
 
     test("displays plan output when available", async () => {
