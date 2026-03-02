@@ -41,7 +41,6 @@ function createMockProcessor(
   };
   return {
     process: mock.fn(async (): Promise<ProcessorResult> => result),
-    updateManifestOnly: mock.fn(async (): Promise<ProcessorResult> => result),
   };
 }
 
@@ -105,8 +104,10 @@ repos:
         async () =>
           runSync(
             { config: testConfigPath, dryRun: true, workDir: testDir },
-            () => mockProcessor,
-            failingLifecycleManager
+            {
+              processorFactory: () => mockProcessor,
+              lifecycleManager: failingLifecycleManager,
+            }
           ),
         /process\.exit\(1\)/
       );
@@ -137,8 +138,10 @@ repos:
 
       await runSync(
         { config: testConfigPath, dryRun: true, workDir: testDir },
-        () => mockProcessor,
-        noopLifecycleManager
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
       );
 
       const output = consoleOutput.join("\n");
@@ -163,8 +166,10 @@ repos:
 
       await runSync(
         { config: testConfigPath, dryRun: true, workDir: testDir },
-        () => mockProcessor,
-        noopLifecycleManager
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
       );
 
       const output = consoleOutput.join("\n");
@@ -190,8 +195,10 @@ repos:
         async () =>
           runSync(
             { config: testConfigPath, dryRun: true, workDir: testDir },
-            () => mockProcessor,
-            noopLifecycleManager
+            {
+              processorFactory: () => mockProcessor,
+              lifecycleManager: noopLifecycleManager,
+            }
           ),
         /process\.exit\(1\)/
       );
@@ -215,8 +222,10 @@ repos:
 
       await runSync(
         { config: testConfigPath, dryRun: true, workDir: testDir },
-        () => mockProcessor,
-        creatingLifecycleManager
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: creatingLifecycleManager,
+        }
       );
 
       // Processor should NOT be called — repo doesn't exist in dry-run
@@ -244,20 +253,16 @@ repos:
         process: mock.fn(async () => {
           throw new Error("Network error");
         }),
-        updateManifestOnly: mock.fn(async () => ({
-          success: true,
-          skipped: false,
-          message: "ok",
-          repoName: "test/repo",
-        })),
       };
 
       await assert.rejects(
         async () =>
           runSync(
             { config: testConfigPath, dryRun: true, workDir: testDir },
-            () => mockProcessor,
-            noopLifecycleManager
+            {
+              processorFactory: () => mockProcessor,
+              lifecycleManager: noopLifecycleManager,
+            }
           ),
         /process\.exit\(1\)/
       );
@@ -299,8 +304,10 @@ repos:
         async () =>
           runSync(
             { config: testConfigPath, dryRun: true, workDir: testDir },
-            () => mockProcessor,
-            noopLifecycleManager
+            {
+              processorFactory: () => mockProcessor,
+              lifecycleManager: noopLifecycleManager,
+            }
           ),
         /process\.exit\(1\)/
       );

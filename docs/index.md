@@ -13,11 +13,8 @@ npm install -g @aspruyt/xfg
 # Authenticate (GitHub)
 gh auth login
 
-# Sync files across repos
+# Sync files, settings, rulesets, and labels across repos
 xfg sync --config ./config.yaml
-
-# Apply repository settings and rulesets
-xfg settings --config ./config.yaml
 ```
 
 ### Example Config
@@ -112,7 +109,7 @@ files:
 
 **Custom variables:** Define with `vars`, override per-repo.
 
-### Repository Settings (`xfg settings`)
+### Repository Settings
 
 Manage [GitHub repository settings](configuration/repo-settings.md) declaratively:
 
@@ -303,14 +300,14 @@ flowchart TB
     end
 ```
 
-### Settings Workflow (`xfg settings`)
+### Settings Workflow
 
 ```mermaid
 flowchart TB
     subgraph Loading["Config Loading"]
         YAML[/"YAML Config File"/] --> REFS["Resolve @file references"]
         REFS --> VALIDATE["Validate structure"]
-        VALIDATE --> VALIDATE_CMD["Validate for settings<br/>(require actionable settings)"]
+        VALIDATE --> VALIDATE_CMD["Validate for sync"]
     end
 
     subgraph Normalization
@@ -374,10 +371,7 @@ flowchart TB
         D["DELETE — remove orphaned<br/>(if deleteOrphaned)"]
     end
 
-    APPLY --> MANIFEST_CHECK{"Managed rulesets<br/>to track?"}
-    MANIFEST_CHECK -->|No| DONE["Done ✓"]
-    MANIFEST_CHECK -->|Yes| MANIFEST["Update manifest via<br/>SyncWorkflow + ManifestStrategy<br/>(branch: chore/sync-rulesets)"]
-    MANIFEST --> DONE
+    APPLY --> DONE["Done ✓"]
 ```
 
 #### Repo Settings Processing (per repo)
@@ -442,10 +436,7 @@ flowchart TB
         C["POST — create new labels"]
     end
 
-    APPLY --> MANIFEST_CHECK{"Managed labels<br/>to track?"}
-    MANIFEST_CHECK -->|No| DONE["Done ✓"]
-    MANIFEST_CHECK -->|Yes| MANIFEST["Update manifest via<br/>SyncWorkflow + ManifestStrategy<br/>(branch: chore/sync-labels)"]
-    MANIFEST --> DONE
+    APPLY --> DONE["Done ✓"]
 ```
 
 **See [Use Cases](use-cases.md)** for real-world scenarios: platform engineering, CI/CD standardization, security governance, repo migration, and more.

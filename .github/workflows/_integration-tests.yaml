@@ -104,7 +104,7 @@ jobs:
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
         run: npm run test:integration:github-app
 
-  integration-test-cli-settings-rulesets-pat:
+  integration-test-cli-sync-rulesets-pat:
     runs-on: ubuntu-latest
 
     steps:
@@ -116,12 +116,12 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Run GitHub settings integration tests
+      - name: Run GitHub rulesets integration tests
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         run: npm run test:integration:github-rulesets
 
-  integration-test-cli-settings-repo-pat:
+  integration-test-cli-sync-repo-settings-pat:
     runs-on: ubuntu-latest
 
     steps:
@@ -300,7 +300,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         run: .github/scripts/delete-ephemeral-repo.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}"
 
-  integration-test-action-settings-app:
+  integration-test-action-sync-settings-app:
     runs-on: ubuntu-latest
 
     steps:
@@ -320,11 +320,10 @@ jobs:
             "${{ runner.temp }}/config.yaml" \
             "test/fixtures/integration-test-action-settings-app.yaml"
 
-      # Act — run xfg action with settings command
-      - name: Act — run xfg action with settings command
+      # Act — run xfg action (sync handles settings)
+      - name: Act — run xfg action
         uses: ./
         with:
-          command: settings
           config: ${{ runner.temp }}/config.yaml
           github-token: ${{ secrets.GH_PAT_ORG }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
@@ -391,7 +390,7 @@ jobs:
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         run: npm run test:integration:github-lifecycle-app
 
-  integration-test-cli-settings-labels-pat:
+  integration-test-cli-sync-labels-pat:
     runs-on: ubuntu-latest
 
     steps:

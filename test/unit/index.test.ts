@@ -476,7 +476,7 @@ repos:
       );
     });
 
-    test("sync command fails with settings-only config", () => {
+    test("sync command accepts settings-only config", () => {
       writeFileSync(
         testConfigPath,
         `
@@ -492,74 +492,11 @@ repos:
       );
 
       const result = runCLI(["sync", "-c", testConfigPath, "--dry-run"]);
-      assert.equal(result.success, false);
+      // Settings-only configs are now valid for the unified sync command
       const output = result.stdout + result.stderr;
       assert.ok(
-        output.includes("'sync' command requires files") ||
-          output.includes("requires a 'files' section") ||
-          output.includes("requires files defined"),
-        `Expected files requirement error, got: ${output}`
-      );
-    });
-
-    test("settings command fails with files-only config", () => {
-      writeFileSync(
-        testConfigPath,
-        `
-id: files-only
-files:
-  config.json:
-    content:
-      key: value
-repos:
-  - git: git@github.com:test/repo.git
-`
-      );
-
-      const result = runCLI(["settings", "-c", testConfigPath, "--dry-run"]);
-      assert.equal(result.success, false);
-      const output = result.stdout + result.stderr;
-      assert.ok(
-        output.includes("'settings' command requires") ||
-          output.includes("No actionable settings"),
-        `Expected settings requirement error, got: ${output}`
-      );
-    });
-
-    test("settings command succeeds with settings-only config", () => {
-      writeFileSync(
-        testConfigPath,
-        `
-id: settings-only
-settings:
-  rulesets:
-    main-protection:
-      target: branch
-      enforcement: active
-      conditions:
-        refName:
-          include: ["refs/heads/main"]
-          exclude: []
-repos:
-  - git: git@github.com:test/invalid-repo.git
-`
-      );
-
-      // Will fail on API call but should get past validation
-      const result = runCLI([
-        "settings",
-        "-c",
-        testConfigPath,
-        "--dry-run",
-        "-w",
-        `${testDir}/work`,
-      ]);
-      const output = result.stdout + result.stderr;
-      // Should show it's processing, not validation error
-      assert.ok(
-        output.includes("Loading config") ||
-          output.includes("repositories with rulesets"),
-        `Expected processing output, got: ${output}`
+        output.includes("Loading config from:"),
+        `Expected sync to start processing, got: ${output}`
       );
     });
   });
@@ -1166,115 +1103,6 @@ describe("buildErrorResult", () => {
   });
 });
 
-// =============================================================================
-// Settings Command Tests (CLI argument parsing only)
-// =============================================================================
-
-const settingsTestDir = join(process.cwd(), "test-settings-cli-tmp");
-const settingsTestConfigPath = join(settingsTestDir, "settings-config.yaml");
-
-describe("settings command CLI", () => {
-  beforeEach(() => {
-    if (existsSync(settingsTestDir)) {
-      rmSync(settingsTestDir, { recursive: true, force: true });
-    }
-    mkdirSync(settingsTestDir, { recursive: true });
-  });
-
-  afterEach(() => {
-    if (existsSync(settingsTestDir)) {
-      rmSync(settingsTestDir, { recursive: true, force: true });
-    }
-  });
-
-  describe("argument parsing", () => {
-    test("shows help with settings --help", () => {
-      const result = runCLI(["settings", "--help"]);
-      assert.ok(result.stdout.includes("settings"));
-      assert.ok(result.stdout.includes("-c, --config"));
-      assert.ok(result.stdout.includes("-d, --dry-run"));
-      assert.ok(result.stdout.includes("--no-delete"));
-    });
-
-    test("requires --config option", () => {
-      const result = runCLI(["settings"]);
-      assert.equal(result.success, false);
-      assert.ok(
-        result.stderr.includes("required") || result.stderr.includes("--config")
-      );
-    });
-
-    test("fails with non-existent config file", () => {
-      const result = runCLI(["settings", "-c", "/nonexistent/config.yaml"]);
-      assert.equal(result.success, false);
-      const output = result.stdout + result.stderr;
-      assert.ok(output.includes("Config file not found"));
-    });
-  });
-
-  describe("config validation", () => {
-    test("fails when no settings configured", () => {
-      writeFileSync(
-        settingsTestConfigPath,
-        `
-id: test-settings
-files:
-  test.json:
-    content:
-      key: value
-repos:
-  - git: git@github.com:test/repo.git
-`
-      );
-
-      const result = runCLI(["settings", "-c", settingsTestConfigPath]);
-      const output = result.stdout + result.stderr;
-      assert.ok(
-        output.includes("'settings' command requires") ||
-          output.includes("No actionable settings"),
-        `Should show settings requirement error, got: ${output}`
-      );
-      assert.equal(result.success, false, "Should fail when no settings");
-    });
-
-    test("fails when rulesets object is empty", () => {
-      writeFileSync(
-        settingsTestConfigPath,
-        `
-id: test-settings
-files:
-  test.json:
-    content:
-      key: value
-repos:
-  - git: git@github.com:test/repo.git
-    settings:
-      rulesets: {}
-`
-      );
-
-      const result = runCLI(["settings", "-c", settingsTestConfigPath]);
-      const output = result.stdout + result.stderr;
-      assert.ok(
-        output.includes("No actionable settings") ||
-          output.includes("'settings' command requires"),
-        `Should show actionable settings error, got: ${output}`
-      );
-      assert.equal(result.success, false, "Should fail with empty rulesets");
-    });
-  });
-});
-
-// =============================================================================
-// Settings Command Unit Tests (with mocked processor)
-// =============================================================================
-
-import {
-  runSettings,
-  IRulesetProcessor,
-  RulesetProcessorFactory,
-} from "../../src/index.js";
-import type { RulesetProcessorResult } from "../../src/ruleset-processor.js";
 import type { IRepoLifecycleManager } from "../../src/lifecycle/types.js";
 
 /**
@@ -1285,379 +1113,6 @@ const noopLifecycleManager: IRepoLifecycleManager = {
     return { repoInfo, action: "existed" };
   },
 };
-
-// Mock for repository processor used by settings command for manifest updates
-class MockSettingsRepoProcessor implements IRepositoryProcessor {
-  manifestCalls: {
-    repoInfo: unknown;
-    repoConfig: RepoConfig;
-    options: unknown;
-    manifestUpdate: { rulesets: string[] };
-  }[] = [];
-
-  async process(
-    repoConfig: RepoConfig,
-    _repoInfo: unknown,
-    _options: unknown
-  ): Promise<ProcessorResult> {
-    return {
-      success: true,
-      repoName: repoConfig.git,
-      message: "Mock process",
-    };
-  }
-
-  async updateManifestOnly(
-    repoInfo: unknown,
-    repoConfig: RepoConfig,
-    options: unknown,
-    manifestUpdate: { rulesets: string[] }
-  ): Promise<ProcessorResult> {
-    this.manifestCalls.push({ repoInfo, repoConfig, options, manifestUpdate });
-    return {
-      success: true,
-      repoName: repoConfig.git,
-      message: "Manifest updated",
-    };
-  }
-
-  reset(): void {
-    this.manifestCalls = [];
-  }
-}
-
-class MockRulesetProcessor implements IRulesetProcessor {
-  calls: { repoConfig: RepoConfig; repoInfo: unknown; options: unknown }[] = [];
-  results: Map<string, RulesetProcessorResult> = new Map();
-
-  async process(
-    repoConfig: RepoConfig,
-    repoInfo: unknown,
-    options: unknown
-  ): Promise<RulesetProcessorResult> {
-    this.calls.push({ repoConfig, repoInfo, options });
-
-    const result = this.results.get(repoConfig.git);
-    if (result) {
-      return result;
-    }
-
-    // Default success response
-    return {
-      success: true,
-      repoName: repoConfig.git,
-      message: "Mock success",
-      changes: { create: 1, update: 0, delete: 0, unchanged: 0 },
-    };
-  }
-
-  setResult(gitUrl: string, result: RulesetProcessorResult): void {
-    this.results.set(gitUrl, result);
-  }
-
-  reset(): void {
-    this.calls = [];
-    this.results.clear();
-  }
-}
-
-const unitTestDir = join(process.cwd(), "test-settings-unit-tmp");
-const unitTestConfigPath = join(unitTestDir, "settings-config.yaml");
-
-describe("runSettings with mock processor", () => {
-  let mockProcessor: MockRulesetProcessor;
-  let mockFactory: RulesetProcessorFactory;
-
-  beforeEach(() => {
-    mockProcessor = new MockRulesetProcessor();
-    mockFactory = () => mockProcessor;
-
-    if (existsSync(unitTestDir)) {
-      rmSync(unitTestDir, { recursive: true, force: true });
-    }
-    mkdirSync(unitTestDir, { recursive: true });
-  });
-
-  afterEach(() => {
-    if (existsSync(unitTestDir)) {
-      rmSync(unitTestDir, { recursive: true, force: true });
-    }
-  });
-
-  test("processes GitHub repos with rulesets", async () => {
-    writeFileSync(
-      unitTestConfigPath,
-      `
-id: test-settings
-files:
-  test.json:
-    content:
-      key: value
-repos:
-  - git: git@github.com:test-org/test-repo.git
-    settings:
-      rulesets:
-        main-protection:
-          target: branch
-          enforcement: active
-          rules: []
-`
-    );
-
-    await runSettings(
-      { config: unitTestConfigPath },
-      mockFactory,
-      undefined,
-      undefined,
-      noopLifecycleManager
-    );
-
-    assert.equal(mockProcessor.calls.length, 1);
-    assert.equal(
-      mockProcessor.calls[0].repoConfig.git,
-      "git@github.com:test-org/test-repo.git"
-    );
-  });
-
-  test("skips non-GitHub repos without calling processor", async () => {
-    writeFileSync(
-      unitTestConfigPath,
-      `
-id: test-settings
-files:
-  test.json:
-    content:
-      key: value
-repos:
-  - git: git@ssh.dev.azure.com:v3/org/project/repo
-    settings:
-      rulesets:
-        main-protection:
-          target: branch
-          enforcement: active
-          rules: []
-`
-    );
-
-    await runSettings(
-      { config: unitTestConfigPath },
-      mockFactory,
-      undefined,
-      undefined,
-      noopLifecycleManager
-    );
-
-    // Processor should not be called for non-GitHub repos
-    assert.equal(mockProcessor.calls.length, 0);
-  });
-
-  test("passes dry run option to processor", async () => {
-    writeFileSync(
-      unitTestConfigPath,
-      `
-id: test-settings
-files:
-  test.json:
-    content:
-      key: value
-repos:
-  - git: git@github.com:test-org/test-repo.git
-    settings:
-      rulesets:
-        main-protection:
-          target: branch
-          enforcement: active
-          rules: []
-`
-    );
-
-    await runSettings(
-      { config: unitTestConfigPath, dryRun: true },
-      mockFactory,
-      undefined,
-      undefined,
-      noopLifecycleManager
-    );
-
-    assert.equal(mockProcessor.calls.length, 1);
-    const options = mockProcessor.calls[0].options as { dryRun?: boolean };
-    assert.equal(options.dryRun, true);
-  });
-
-  test("passes noDelete option to processor", async () => {
-    writeFileSync(
-      unitTestConfigPath,
-      `
-id: test-settings
-files:
-  test.json:
-    content:
-      key: value
-repos:
-  - git: git@github.com:test-org/test-repo.git
-    settings:
-      rulesets:
-        main-protection:
-          target: branch
-          enforcement: active
-          rules: []
-`
-    );
-
-    await runSettings(
-      { config: unitTestConfigPath, noDelete: true },
-      mockFactory,
-      undefined,
-      undefined,
-      noopLifecycleManager
-    );
-
-    assert.equal(mockProcessor.calls.length, 1);
-    const options = mockProcessor.calls[0].options as { noDelete?: boolean };
-    assert.equal(options.noDelete, true);
-  });
-
-  // Note: Failure cases (processor.success=false, processor throws) are not tested here
-  // because they trigger process.exit(1) which terminates the test runner.
-  // Failure handling is covered in ruleset-processor.test.ts with proper mocking.
-
-  test("processes multiple repos", async () => {
-    writeFileSync(
-      unitTestConfigPath,
-      `
-id: test-settings
-files:
-  test.json:
-    content:
-      key: value
-repos:
-  - git: git@github.com:test-org/repo1.git
-    settings:
-      rulesets:
-        main-protection:
-          target: branch
-          enforcement: active
-          rules: []
-  - git: git@github.com:test-org/repo2.git
-    settings:
-      rulesets:
-        dev-protection:
-          target: branch
-          enforcement: evaluate
-          rules: []
-`
-    );
-
-    await runSettings(
-      { config: unitTestConfigPath },
-      mockFactory,
-      undefined,
-      undefined,
-      noopLifecycleManager
-    );
-
-    assert.equal(mockProcessor.calls.length, 2);
-    assert.equal(
-      mockProcessor.calls[0].repoConfig.git,
-      "git@github.com:test-org/repo1.git"
-    );
-    assert.equal(
-      mockProcessor.calls[1].repoConfig.git,
-      "git@github.com:test-org/repo2.git"
-    );
-  });
-
-  test("skips repos without rulesets in mixed config", async () => {
-    writeFileSync(
-      unitTestConfigPath,
-      `
-id: test-settings
-files:
-  test.json:
-    content:
-      key: value
-repos:
-  - git: git@github.com:test-org/repo-with-rulesets.git
-    settings:
-      rulesets:
-        main-protection:
-          target: branch
-          enforcement: active
-          rules: []
-  - git: git@github.com:test-org/repo-without-rulesets.git
-`
-    );
-
-    await runSettings(
-      { config: unitTestConfigPath },
-      mockFactory,
-      undefined,
-      undefined,
-      noopLifecycleManager
-    );
-
-    // Only the repo with rulesets should be processed
-    assert.equal(mockProcessor.calls.length, 1);
-    assert.equal(
-      mockProcessor.calls[0].repoConfig.git,
-      "git@github.com:test-org/repo-with-rulesets.git"
-    );
-  });
-
-  test("calls updateManifestOnly when result has rulesets to track", async () => {
-    writeFileSync(
-      unitTestConfigPath,
-      `
-id: test-settings
-files:
-  test.json:
-    content:
-      key: value
-repos:
-  - git: git@github.com:test-org/test-repo.git
-    settings:
-      rulesets:
-        main-protection:
-          target: branch
-          enforcement: active
-          rules: []
-`
-    );
-
-    // Configure mock to return manifestUpdate with rulesets
-    mockProcessor.setResult("git@github.com:test-org/test-repo.git", {
-      success: true,
-      repoName: "test-org/test-repo",
-      message: "Applied rulesets",
-      changes: { create: 1, update: 0, delete: 0, unchanged: 0 },
-      manifestUpdate: {
-        rulesets: ["main-protection"],
-      },
-    });
-
-    // Create a mock repository processor to track updateManifestOnly calls
-    const mockRepoProcessor = new MockSettingsRepoProcessor();
-    const mockRepoProcessorFactory: ProcessorFactory = () => mockRepoProcessor;
-
-    await runSettings(
-      { config: unitTestConfigPath },
-      mockFactory,
-      mockRepoProcessorFactory,
-      undefined,
-      noopLifecycleManager
-    );
-
-    // Verify updateManifestOnly was called with the manifest update
-    assert.equal(mockRepoProcessor.manifestCalls.length, 1);
-    assert.deepEqual(mockRepoProcessor.manifestCalls[0].manifestUpdate, {
-      rulesets: ["main-protection"],
-    });
-  });
-});
-
-// =============================================================================
-// Sync Command Unit Tests (with mocked processor)
-// =============================================================================
 
 import {
   runSync,
@@ -1759,8 +1214,7 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath },
-      mockFactory,
-      noopLifecycleManager
+      { processorFactory: mockFactory, lifecycleManager: noopLifecycleManager }
     );
 
     assert.equal(mockProcessor.calls.length, 1);
@@ -1786,8 +1240,7 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath, dryRun: true },
-      mockFactory,
-      noopLifecycleManager
+      { processorFactory: mockFactory, lifecycleManager: noopLifecycleManager }
     );
 
     assert.equal(mockProcessor.calls.length, 1);
@@ -1811,8 +1264,7 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath, branch: "feature/custom-branch" },
-      mockFactory,
-      noopLifecycleManager
+      { processorFactory: mockFactory, lifecycleManager: noopLifecycleManager }
     );
 
     assert.equal(mockProcessor.calls.length, 1);
@@ -1837,8 +1289,7 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath },
-      mockFactory,
-      noopLifecycleManager
+      { processorFactory: mockFactory, lifecycleManager: noopLifecycleManager }
     );
 
     assert.equal(mockProcessor.calls.length, 2);
@@ -1868,8 +1319,7 @@ repos:
 
     await runSync(
       { config: syncUnitTestConfigPath, noDelete: true },
-      mockFactory,
-      noopLifecycleManager
+      { processorFactory: mockFactory, lifecycleManager: noopLifecycleManager }
     );
 
     assert.equal(mockProcessor.calls.length, 1);

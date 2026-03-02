@@ -1,6 +1,5 @@
 // CLI command implementations
 export { runSync } from "./sync-command.js";
-export { runSettings } from "./settings-command.js";
 export { program } from "./program.js";
 
 // Export types - using 'export type' for type aliases, but interfaces need special handling
@@ -24,4 +23,3 @@ export {
 
 // Export command option types
 export type { SyncOptions, SharedOptions } from "./sync-command.js";
-export type { SettingsOptions } from "./settings-command.js";

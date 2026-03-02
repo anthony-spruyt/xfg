@@ -32,7 +32,6 @@ export interface IRulesetProcessor {
 export interface RulesetProcessorOptions {
   configId: string;
   dryRun?: boolean;
-  managedRulesets: string[];
   noDelete?: boolean;
   token?: string;
 }
@@ -48,9 +47,6 @@ export interface RulesetProcessorResult {
     update: number;
     delete: number;
     unchanged: number;
-  };
-  manifestUpdate?: {
-    rulesets: string[];
   };
   planOutput?: RulesetPlanResult;
 }
@@ -89,7 +85,7 @@ export class RulesetProcessor implements IRulesetProcessor {
     options: RulesetProcessorOptions
   ): Promise<RulesetProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
-    const { dryRun, managedRulesets, noDelete, token } = options;
+    const { dryRun, noDelete, token } = options;
 
     // Check if this is a GitHub repo
     if (!isGitHubRepo(repoInfo)) {
@@ -107,10 +103,7 @@ export class RulesetProcessor implements IRulesetProcessor {
     const deleteOrphaned = settings?.deleteOrphaned ?? false;
 
     // If no rulesets configured, skip
-    if (
-      Object.keys(desiredRulesets).length === 0 &&
-      managedRulesets.length === 0
-    ) {
+    if (Object.keys(desiredRulesets).length === 0) {
       return {
         success: true,
         repoName,
@@ -152,7 +145,7 @@ export class RulesetProcessor implements IRulesetProcessor {
       }
 
       // Compute diff
-      const changes = diffRulesets(fullRulesets, desiredMap, managedRulesets);
+      const changes = diffRulesets(fullRulesets, desiredMap, deleteOrphaned);
 
       // Count changes by type
       const changeCounts = {
@@ -174,10 +167,6 @@ export class RulesetProcessor implements IRulesetProcessor {
           dryRun: true,
           changes: changeCounts,
           planOutput,
-          manifestUpdate: this.computeManifestUpdate(
-            desiredRulesets,
-            deleteOrphaned
-          ),
         };
       }
 
@@ -236,10 +225,6 @@ export class RulesetProcessor implements IRulesetProcessor {
         message: appliedCount > 0 ? `Applied: ${summary}` : "No changes needed",
         changes: changeCounts,
         planOutput,
-        manifestUpdate: this.computeManifestUpdate(
-          desiredRulesets,
-          deleteOrphaned
-        ),
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -266,23 +251,6 @@ export class RulesetProcessor implements IRulesetProcessor {
     if (counts.delete > 0) parts.push(`${counts.delete} deleted`);
     if (counts.unchanged > 0) parts.push(`${counts.unchanged} unchanged`);
     return parts.length > 0 ? parts.join(", ") : "no changes";
-  }
-
-  /**
-   * Compute manifest update based on current config.
-   * Only rulesets with deleteOrphaned enabled should be tracked.
-   */
-  private computeManifestUpdate(
-    rulesets: Record<string, Ruleset>,
-    deleteOrphaned: boolean
-  ): { rulesets: string[] } | undefined {
-    if (!deleteOrphaned) {
-      return undefined;
-    }
-
-    // Track all ruleset names when deleteOrphaned is enabled
-    const rulesetNames = Object.keys(rulesets).sort();
-    return { rulesets: rulesetNames };
   }
 
   /**

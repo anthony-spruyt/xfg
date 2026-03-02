@@ -120,7 +120,7 @@ Use [file references](configuration/file-references.md) to load complex template
 
 **Problem:** You need consistent branch protection rules across all repositories. Managing rulesets manually through the GitHub UI doesn't scale, and there's no audit trail for changes.
 
-**Solution:** Define GitHub Rulesets declaratively and apply them with `xfg settings`:
+**Solution:** Define GitHub Rulesets declaratively and apply them with `xfg sync`:
 
 ```yaml
 settings:
@@ -169,7 +169,7 @@ repos:
       - git@github.com:your-org/service-critical.git
 ```
 
-Run `xfg settings --config ./config.yaml` to apply rules to all repos. Stricter requirements for specific repos? Override per-repo:
+Run `xfg sync --config ./config.yaml` to apply rules to all repos. Stricter requirements for specific repos? Override per-repo:
 
 ```yaml
 repos:
@@ -189,7 +189,7 @@ repos:
 
 **Problem:** Your GitHub repositories have inconsistent merge strategies, security settings, and feature toggles. Some repos allow merge commits while others only allow squash. Dependabot alerts are enabled on some but not others. Managing this through the GitHub UI doesn't scale.
 
-**Solution:** Define repository settings declaratively and apply them with `xfg settings`:
+**Solution:** Define repository settings declaratively and apply them with `xfg sync`:
 
 ```yaml
 settings:
@@ -221,7 +221,7 @@ repos:
 Preview changes with dry-run:
 
 ```bash
-xfg settings -c config.yaml --dry-run
+xfg sync -c config.yaml --dry-run
 ```
 
 Output shows exactly what will change:

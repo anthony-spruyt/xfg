@@ -73,14 +73,13 @@ Push directly to the default branch without creating PRs:
     merge: direct
 ```
 
-### Settings Command Example
+### Settings-Only Example
 
-Apply branch protection rulesets to repositories:
+Apply branch protection rulesets and labels to repositories (no files section needed):
 
 ```yaml
-- uses: anthony-spruyt/xfg@v3
+- uses: anthony-spruyt/xfg@v4
   with:
-    command: settings
     config: ./settings-config.yml
     github-token: ${{ secrets.GH_PAT }}
 ```

@@ -99,7 +99,6 @@ describe("LabelsProcessor", () => {
 
     const result = await processor.process(config, mockAzureRepo, {
       configId: "test",
-      managedLabels: [],
     });
 
     assert.equal(result.skipped, true);
@@ -114,7 +113,6 @@ describe("LabelsProcessor", () => {
 
     const result = await processor.process(config, mockGitHubRepo, {
       configId: "test",
-      managedLabels: [],
     });
 
     assert.equal(result.success, true);
@@ -131,7 +129,7 @@ describe("LabelsProcessor", () => {
 
     const result = await processor.process(config, mockGitHubRepo, {
       configId: "test",
-      managedLabels: [],
+
       dryRun: true,
     });
 
@@ -169,7 +167,6 @@ describe("LabelsProcessor", () => {
 
     const result = await processor.process(config, mockGitHubRepo, {
       configId: "test",
-      managedLabels: ["delete-me", "update-me"],
     });
 
     assert.equal(result.success, true);
@@ -182,38 +179,12 @@ describe("LabelsProcessor", () => {
     assert.equal(mutationCalls[2].method, "create");
   });
 
-  test("returns manifest update when deleteOrphaned is true", async () => {
-    mockStrategy.listResponse = [];
-    const config = makeRepoConfig({ bug: { color: "d73a4a" } }, true);
-
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-      managedLabels: [],
-    });
-
-    assert.ok(result.manifestUpdate);
-    assert.deepEqual(result.manifestUpdate.labels, ["bug"]);
-  });
-
-  test("returns no manifest update when deleteOrphaned is false", async () => {
-    mockStrategy.listResponse = [];
-    const config = makeRepoConfig({ bug: { color: "d73a4a" } }, false);
-
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-      managedLabels: [],
-    });
-
-    assert.equal(result.manifestUpdate, undefined);
-  });
-
   test("handles API errors gracefully", async () => {
     mockStrategy.shouldThrow = new Error("API rate limit exceeded");
     const config = makeRepoConfig({ bug: { color: "d73a4a" } });
 
     const result = await processor.process(config, mockGitHubRepo, {
       configId: "test",
-      managedLabels: [],
     });
 
     assert.equal(result.success, false);
@@ -226,14 +197,13 @@ describe("LabelsProcessor", () => {
 
     const result = await processor.process(config, mockGitHubRepo, {
       configId: "test",
-      managedLabels: [],
     });
 
     assert.equal(result.success, false);
     assert.ok(result.message.includes("string error"));
   });
 
-  test("skips when no labels configured and no managed labels", async () => {
+  test("skips when no labels configured", async () => {
     const config: RepoConfig = {
       git: "git@github.com:test-org/test-repo.git",
       files: [],
@@ -244,7 +214,6 @@ describe("LabelsProcessor", () => {
 
     const result = await processor.process(config, mockGitHubRepo, {
       configId: "test",
-      managedLabels: [],
     });
 
     assert.equal(result.skipped, true);
@@ -268,7 +237,7 @@ describe("LabelsProcessor", () => {
 
     const result = await processor.process(config, mockGitHubRepo, {
       configId: "test",
-      managedLabels: ["orphaned"],
+
       noDelete: true,
     });
 
@@ -297,7 +266,6 @@ describe("LabelsProcessor", () => {
 
     const result = await processor.process(config, mockGitHubRepo, {
       configId: "test",
-      managedLabels: [],
     });
 
     assert.equal(result.success, true);
@@ -322,7 +290,6 @@ describe("LabelsProcessor", () => {
 
     const result = await processor.process(config, mockGitHubRepo, {
       configId: "test",
-      managedLabels: [],
     });
 
     assert.equal(result.success, true);
@@ -336,25 +303,10 @@ describe("LabelsProcessor", () => {
 
     const result = await processor.process(config, mockGitHubRepo, {
       configId: "test",
-      managedLabels: [],
     });
 
     assert.ok(result.planOutput);
     assert.equal(result.planOutput.creates, 1);
-  });
-
-  test("dry run includes manifest update when deleteOrphaned is true", async () => {
-    mockStrategy.listResponse = [];
-    const config = makeRepoConfig({ bug: { color: "d73a4a" } }, true);
-
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-      managedLabels: [],
-      dryRun: true,
-    });
-
-    assert.ok(result.manifestUpdate);
-    assert.deepEqual(result.manifestUpdate.labels, ["bug"]);
   });
 
   test("creates label without description", async () => {
@@ -365,7 +317,6 @@ describe("LabelsProcessor", () => {
 
     const result = await processor.process(config, mockGitHubRepo, {
       configId: "test",
-      managedLabels: [],
     });
 
     assert.equal(result.success, true);
@@ -396,7 +347,6 @@ describe("LabelsProcessor", () => {
 
     const result = await processor.process(config, mockGitHubRepo, {
       configId: "test",
-      managedLabels: [],
     });
 
     assert.equal(result.success, true);

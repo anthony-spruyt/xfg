@@ -31,6 +31,11 @@ theme:
   icon:
     repo: fontawesome/brands/github
 
+extra:
+  version:
+    provider: mike
+    alias: true
+
 markdown_extensions:
   - admonition
   - pymdownx.details
@@ -102,6 +107,8 @@ nav:
   - Reference:
       - CLI Options: reference/cli-options.md
       - Config Schema: reference/config-schema.md
+  - Migration:
+      - v3 to v4: migration-v4.md
   - Troubleshooting: troubleshooting.md
   - Security:
       - Secret Rotation: security/secret-rotation.md

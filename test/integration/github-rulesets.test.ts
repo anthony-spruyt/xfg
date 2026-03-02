@@ -99,8 +99,8 @@ describe("GitHub Settings Integration Test", () => {
     );
     assert.equal(rulesetsBefore, "0", "Expected no ruleset before");
 
-    console.log("\nRunning xfg settings...");
-    const output = exec(`node dist/cli.js settings --config ${configPath}`, {
+    console.log("\nRunning xfg sync...");
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -123,7 +123,7 @@ describe("GitHub Settings Integration Test", () => {
     const configPath = makeConfig();
 
     console.log("Creating initial ruleset...");
-    exec(`node dist/cli.js settings --config ${configPath}`, {
+    exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
 
@@ -133,8 +133,8 @@ describe("GitHub Settings Integration Test", () => {
     const rulesetBefore = JSON.parse(rulesetCreated);
     await waitForRulesetVisible(rulesetBefore.id);
 
-    console.log("\nRunning xfg settings again (update)...");
-    exec(`node dist/cli.js settings --config ${configPath}`, {
+    console.log("\nRunning xfg sync again (update)...");
+    exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
 
@@ -159,7 +159,7 @@ describe("GitHub Settings Integration Test", () => {
     assert.equal(rulesetsBefore, "0");
 
     const output = exec(
-      `node dist/cli.js settings --config ${configPath} --dry-run`,
+      `node dist/cli.js sync --config ${configPath} --dry-run`,
       { cwd: projectRoot }
     );
     assert.ok(

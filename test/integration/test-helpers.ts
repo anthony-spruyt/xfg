@@ -145,51 +145,35 @@ export async function waitForFileDeleted(
 }
 
 /**
- * Polls GitHub API until the manifest (.xfg.json) contains the expected
- * managed labels for a given config ID. Handles eventual consistency after
- * a manifest push.
- *
- * Note: The repo and configId are hardcoded test constants, not user input.
+ * List all rulesets on a repo via GitHub API.
+ * Note: repo is a hardcoded test constant, not user input.
  */
-export async function waitForManifestLabels(
+export function listRulesets(
   repo: string,
-  configId: string,
-  expectedLabels: string[],
-  timeoutMs = 10000,
   envOptions?: { env: Record<string, string | undefined> }
-): Promise<void> {
-  const startTime = Date.now();
-  const pollInterval = 500;
-  const sorted = [...expectedLabels].sort();
-
-  while (Date.now() - startTime < timeoutMs) {
-    try {
-      const content = exec(
-        `gh api repos/${repo}/contents/.xfg.json --jq '.content' | base64 -d`,
-        envOptions
-      );
-      if (content && !content.includes("Not Found")) {
-        const manifest = JSON.parse(content);
-        const labels: string[] = manifest?.configs?.[configId]?.labels ?? [];
-        if (
-          labels.length === sorted.length &&
-          [...labels].sort().every((l, i) => l === sorted[i])
-        ) {
-          console.log(
-            `  Manifest labels visible after ${Date.now() - startTime}ms`
-          );
-          return;
-        }
-      }
-    } catch {
-      // API call failed or manifest not yet available, continue polling
-    }
-    await new Promise((resolve) => setTimeout(resolve, pollInterval));
+): Array<{ id: number; name: string }> {
+  try {
+    const json = exec(`gh api repos/${repo}/rulesets`, envOptions);
+    return JSON.parse(json) as Array<{ id: number; name: string }>;
+  } catch {
+    return [];
   }
+}
 
-  throw new Error(
-    `Manifest labels [${sorted.join(", ")}] for config '${configId}' not visible in ${repo} after ${timeoutMs}ms (GitHub API eventual consistency)`
-  );
+/**
+ * List all labels on a repo via GitHub API.
+ * Note: repo is a hardcoded test constant, not user input.
+ */
+export function listLabels(
+  repo: string,
+  envOptions?: { env: Record<string, string | undefined> }
+): Array<{ name: string; color: string }> {
+  try {
+    const json = exec(`gh api repos/${repo}/labels --paginate`, envOptions);
+    return JSON.parse(json) as Array<{ name: string; color: string }>;
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -357,7 +341,7 @@ export function isForkedFrom(
  */
 export function resetTestRepo(
   repo: string,
-  options?: { deleteLabels?: boolean }
+  _options?: { deleteLabels?: boolean }
 ): void {
   console.log("\n=== Resetting ephemeral repo ===\n");
   // Close open PRs
@@ -409,22 +393,20 @@ export function resetTestRepo(
   } catch {
     /* no rulesets */
   }
-  // Delete labels (optional)
-  if (options?.deleteLabels) {
-    try {
-      const labels = exec(`gh api repos/${repo}/labels --jq '.[].name'`);
-      for (const label of labels.split("\n").filter(Boolean)) {
-        try {
-          exec(
-            `gh api --method DELETE repos/${repo}/labels/${encodeURIComponent(label)}`
-          );
-        } catch {
-          /* ignore */
-        }
+  // Delete labels
+  try {
+    const labels = exec(`gh api repos/${repo}/labels --jq '.[].name'`);
+    for (const label of labels.split("\n").filter(Boolean)) {
+      try {
+        exec(
+          `gh api --method DELETE repos/${repo}/labels/${encodeURIComponent(label)}`
+        );
+      } catch {
+        /* ignore */
       }
-    } catch {
-      /* no labels */
     }
+  } catch {
+    /* no labels */
   }
   console.log("=== Reset complete ===\n");
 }

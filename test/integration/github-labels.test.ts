@@ -10,7 +10,6 @@ import {
   createRepo,
   deleteRepo,
   writeConfig,
-  waitForManifestLabels,
 } from "./test-helpers.js";
 
 const OWNER = "spruyt-labs";
@@ -38,9 +37,9 @@ function findLabel(labels: Label[], name: string): Label | undefined {
   return labels.find((l) => l.name.toLowerCase() === name.toLowerCase());
 }
 
-function runSettings(configPath: string, extraArgs = ""): string {
+function runSync(configPath: string, extraArgs = ""): string {
   return exec(
-    `node dist/cli.js settings --config ${configPath} ${extraArgs}`.trim(),
+    `node dist/cli.js sync --config ${configPath} ${extraArgs}`.trim(),
     { cwd: projectRoot }
   );
 }
@@ -104,7 +103,7 @@ describe("GitHub Labels Integration Test", () => {
     const labelsBefore = getLabels();
     assert.equal(labelsBefore.length, 0);
 
-    const output = runSettings(configPath);
+    const output = runSync(configPath);
     console.log(output);
 
     const labelsAfter = getLabels();
@@ -120,7 +119,7 @@ describe("GitHub Labels Integration Test", () => {
 
   test("settings updates label color and description", () => {
     const baseConfig = makeBaseConfig();
-    runSettings(baseConfig);
+    runSync(baseConfig);
 
     const updateConfig = writeConfig(
       tmpDir,
@@ -144,7 +143,7 @@ repos:
 `
     );
 
-    const output = runSettings(updateConfig);
+    const output = runSync(updateConfig);
     console.log(output);
 
     const labelsAfter = getLabels();
@@ -156,7 +155,7 @@ repos:
 
   test("settings renames a label", () => {
     const baseConfig = makeBaseConfig();
-    runSettings(baseConfig);
+    runSync(baseConfig);
 
     const renameConfig = writeConfig(
       tmpDir,
@@ -181,7 +180,7 @@ repos:
 `
     );
 
-    runSettings(renameConfig);
+    runSync(renameConfig);
 
     const labelsAfter = getLabels();
     assert.equal(findLabel(labelsAfter, "xfg-test-bug"), undefined);
@@ -190,9 +189,9 @@ repos:
 
   test("settings is idempotent when labels already match", () => {
     const configPath = makeBaseConfig();
-    runSettings(configPath);
+    runSync(configPath);
 
-    const output = runSettings(configPath);
+    const output = runSync(configPath);
     const lower = output.toLowerCase();
     assert.ok(lower.includes("no changes") || lower.includes("up to date"));
   });
@@ -200,7 +199,7 @@ repos:
   test("settings dry-run shows changes without applying", () => {
     const configPath = makeBaseConfig();
 
-    const output = runSettings(configPath, "--dry-run");
+    const output = runSync(configPath, "--dry-run");
     assert.ok(output.includes("DRY RUN") || output.includes("dry-run"));
 
     const labelsAfter = getLabels();
@@ -234,16 +233,11 @@ repos:
 `
     );
 
-    runSettings(phase1Config);
+    runSync(phase1Config);
 
     const labelsPhase1 = getLabels();
     assert.ok(findLabel(labelsPhase1, "xfg-test-bug"));
     assert.ok(findLabel(labelsPhase1, "xfg-test-feature"));
-
-    await waitForManifestLabels(testRepo, "integration-test-github-labels", [
-      "xfg-test-bug",
-      "xfg-test-feature",
-    ]);
 
     const phase2Config = writeConfig(
       tmpDir,
@@ -268,7 +262,7 @@ repos:
 `
     );
 
-    runSettings(phase2Config);
+    runSync(phase2Config);
 
     const labelsPhase2 = getLabels();
     assert.ok(findLabel(labelsPhase2, "xfg-test-bug"));

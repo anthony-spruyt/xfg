@@ -3,7 +3,7 @@
 xfg can manage GitHub Rulesets declaratively using the `settings` command. Define rulesets in your config file, and xfg will create, update, or delete them to match your desired state.
 
 !!! note "GitHub-Only Feature"
-    Rulesets are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg settings`.
+    Rulesets are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg sync`.
 
 ## Quick Start
 
@@ -38,7 +38,7 @@ repos:
 xfg sync -c config.yaml
 
 # Apply rulesets
-xfg settings -c config.yaml
+xfg sync -c config.yaml
 ```
 
 ## Why Rulesets?
@@ -389,12 +389,12 @@ settings:
       # ...
 ```
 
-If you later remove `main-protection` from the config and run `xfg settings`, it will be deleted from the repository.
+If you later remove `main-protection` from the config and run `xfg sync`, it will be deleted from the repository.
 
 Use `--no-delete` to skip orphan deletion:
 
 ```bash
-xfg settings -c config.yaml --no-delete
+xfg sync -c config.yaml --no-delete
 ```
 
 ## Dry Run
@@ -402,7 +402,7 @@ xfg settings -c config.yaml --no-delete
 Preview changes without applying them:
 
 ```bash
-xfg settings -c config.yaml --dry-run
+xfg sync -c config.yaml --dry-run
 ```
 
 Output shows planned changes:
@@ -426,12 +426,12 @@ The `sync` and `settings` commands are independent. Run them together or separat
 
 ```bash
 # Sync files and apply rulesets
-xfg sync -c config.yaml && xfg settings -c config.yaml
+xfg sync -c config.yaml && xfg sync -c config.yaml
 
 # Or run separately
 xfg sync -c config.yaml
-xfg settings -c config.yaml --dry-run  # Preview first
-xfg settings -c config.yaml            # Apply
+xfg sync -c config.yaml --dry-run  # Preview first
+xfg sync -c config.yaml            # Apply
 ```
 
 ## Complete Example

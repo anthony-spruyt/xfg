@@ -163,10 +163,10 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js settings --config ${configPath}`, xfgEnv);
+    exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
 
     const dryRunOutput = exec(
-      `node dist/cli.js settings --config ${configPath} --dry-run`,
+      `node dist/cli.js sync --config ${configPath} --dry-run`,
       xfgEnv
     );
     console.log(dryRunOutput);
@@ -257,10 +257,10 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js settings --config ${configPath}`, xfgEnv);
+    exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
 
     const secondOutput = exec(
-      `node dist/cli.js settings --config ${configPath}`,
+      `node dist/cli.js sync --config ${configPath}`,
       xfgEnv
     );
     assert.ok(
@@ -319,7 +319,7 @@ repos:
   - git: https://github.com/${signedTestRepo}.git
 `
     );
-    exec(`node dist/cli.js settings --config ${rulesetConfig}`, patOnlyEnv);
+    exec(`node dist/cli.js sync --config ${rulesetConfig}`, patOnlyEnv);
   });
 
   test("sync creates PR on repo with required_signatures on all branches", async () => {

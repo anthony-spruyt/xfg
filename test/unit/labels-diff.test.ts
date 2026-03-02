@@ -18,7 +18,7 @@ describe("diffLabels", () => {
         bug: { color: "d73a4a", description: "Something isn't working" },
       };
 
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "create");
@@ -33,7 +33,7 @@ describe("diffLabels", () => {
         bug: { color: "ff0000" },
       };
 
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "update");
@@ -52,7 +52,7 @@ describe("diffLabels", () => {
         bug: { color: "d73a4a", description: "New desc" },
       };
 
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "update");
@@ -64,7 +64,7 @@ describe("diffLabels", () => {
         "old-name": { color: "d73a4a", new_name: "new-name" },
       };
 
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "update");
@@ -73,11 +73,11 @@ describe("diffLabels", () => {
   });
 
   describe("delete", () => {
-    test("identifies labels in managedLabels but not in desired as delete", () => {
+    test("deletes current labels not in desired when deleteOrphaned is true", () => {
       const current = [makeGitHubLabel({ name: "stale", color: "cccccc" })];
       const desired: Record<string, Label> = {};
 
-      const changes = diffLabels(current, desired, ["stale"], false);
+      const changes = diffLabels(current, desired, true, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "delete");
@@ -88,16 +88,16 @@ describe("diffLabels", () => {
       const current = [makeGitHubLabel({ name: "stale", color: "cccccc" })];
       const desired: Record<string, Label> = {};
 
-      const changes = diffLabels(current, desired, ["stale"], true);
+      const changes = diffLabels(current, desired, true, true);
 
       assert.equal(changes.length, 0);
     });
 
-    test("does not delete unmanaged labels", () => {
+    test("does not delete labels when deleteOrphaned is false", () => {
       const current = [makeGitHubLabel({ name: "unmanaged", color: "cccccc" })];
       const desired: Record<string, Label> = {};
 
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       assert.equal(changes.length, 0);
     });
@@ -116,7 +116,7 @@ describe("diffLabels", () => {
         bug: { color: "d73a4a", description: "Something isn't working" },
       };
 
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "unchanged");
@@ -130,7 +130,7 @@ describe("diffLabels", () => {
         bug: { color: "d73a4a" },
       };
 
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "unchanged");
@@ -142,7 +142,7 @@ describe("diffLabels", () => {
         bug: { color: "d73a4a" },
       };
 
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "unchanged");
@@ -158,7 +158,7 @@ describe("diffLabels", () => {
         bug: { color: "d73a4a" },
       };
 
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "unchanged");
@@ -176,7 +176,7 @@ describe("diffLabels", () => {
         bug: { color: "d73a4a", description: "" },
       };
 
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "unchanged");
@@ -194,7 +194,7 @@ describe("diffLabels", () => {
         bug: { color: "d73a4a", description: "" },
       };
 
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "update");
@@ -213,7 +213,7 @@ describe("diffLabels", () => {
       };
 
       assert.throws(
-        () => diffLabels(current, desired, [], false),
+        () => diffLabels(current, desired, false, false),
         /collision|collides/i
       );
     });
@@ -227,8 +227,8 @@ describe("diffLabels", () => {
         old: { color: "d73a4a", new_name: "new-name" },
       };
 
-      // "new-name" is in managedLabels but not in desired -> will be deleted
-      const changes = diffLabels(current, desired, ["old", "new-name"], false);
+      // "new-name" is not in desired and deleteOrphaned is true -> will be deleted
+      const changes = diffLabels(current, desired, true, false);
 
       // Should not throw
       const deleteChange = changes.find((c) => c.action === "delete");
@@ -248,7 +248,7 @@ describe("diffLabels", () => {
       };
 
       assert.throws(
-        () => diffLabels(current, desired, [], false),
+        () => diffLabels(current, desired, false, false),
         /collision|duplicate/i
       );
     });
@@ -265,12 +265,7 @@ describe("diffLabels", () => {
         "create-me": { color: "000000" },
       };
 
-      const changes = diffLabels(
-        current,
-        desired,
-        ["delete-me", "update-me"],
-        false
-      );
+      const changes = diffLabels(current, desired, true, false);
 
       const actions = changes.map((c) => c.action);
       assert.deepEqual(actions, ["delete", "update", "create"]);
@@ -283,7 +278,7 @@ describe("diffLabels", () => {
         "new-one": { color: "000000" },
       };
 
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       const actions = changes.map((c) => c.action);
       assert.deepEqual(actions, ["create", "unchanged"]);
@@ -302,7 +297,7 @@ describe("diffLabels", () => {
       };
 
       // Should not throw — "b" is being renamed to "c", so "a" can take "b"
-      const changes = diffLabels(current, desired, [], false);
+      const changes = diffLabels(current, desired, false, false);
 
       const updates = changes.filter((c) => c.action === "update");
       assert.equal(updates.length, 2);

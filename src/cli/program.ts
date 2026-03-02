@@ -4,9 +4,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { MergeMode, MergeStrategy } from "../config/index.js";
 import { runSync } from "./sync-command.js";
-import { runSettings } from "./settings-command.js";
 import type { SyncOptions } from "./sync-command.js";
-import type { SettingsOptions } from "./settings-command.js";
 
 // Get version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -93,18 +91,5 @@ const syncCommand = new Command("sync")
 
 addSharedOptions(syncCommand);
 program.addCommand(syncCommand);
-
-// Settings command (repository settings and rulesets)
-const settingsCommand = new Command("settings")
-  .description("Manage GitHub repository settings and rulesets")
-  .action((opts) => {
-    runSettings(opts as SettingsOptions).catch((error) => {
-      console.error("Fatal error:", error);
-      process.exit(1);
-    });
-  });
-
-addSharedOptions(settingsCommand);
-program.addCommand(settingsCommand);
 
 export { program };

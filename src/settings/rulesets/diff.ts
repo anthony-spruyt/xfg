@@ -264,17 +264,16 @@ function matchByIndex(current: unknown[], desired: unknown[]): unknown[] {
  *
  * @param current - Current rulesets from GitHub API
  * @param desired - Desired rulesets from config (name → ruleset)
- * @param managedNames - Names of rulesets managed by xfg (from manifest)
+ * @param deleteOrphaned - When true, delete ALL current rulesets not in desired (desired-state model)
  * @returns Array of changes to apply
  */
 export function diffRulesets(
   current: GitHubRuleset[],
   desired: Map<string, Ruleset>,
-  managedNames: string[]
+  deleteOrphaned: boolean
 ): RulesetChange[] {
   const changes: RulesetChange[] = [];
   const currentByName = new Map(current.map((r) => [r.name, r]));
-  const managedSet = new Set(managedNames);
 
   // Check each desired ruleset
   for (const [name, desiredRuleset] of desired) {
@@ -316,11 +315,10 @@ export function diffRulesets(
     }
   }
 
-  // Check for orphaned rulesets (in manifest but not in desired config)
-  for (const name of managedSet) {
-    if (!desired.has(name)) {
-      const currentRuleset = currentByName.get(name);
-      if (currentRuleset) {
+  // Desired-state: delete ALL current rulesets not in desired when deleteOrphaned is true
+  if (deleteOrphaned) {
+    for (const [name, currentRuleset] of currentByName) {
+      if (!desired.has(name)) {
         changes.push({
           action: "delete",
           name,

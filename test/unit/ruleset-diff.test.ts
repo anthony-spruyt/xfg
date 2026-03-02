@@ -17,9 +17,7 @@ describe("diffRulesets", () => {
       const desired = new Map<string, Ruleset>([
         ["main-protection", { target: "branch", enforcement: "active" }],
       ]);
-      const managed: string[] = [];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "create");
@@ -36,9 +34,8 @@ describe("diffRulesets", () => {
         ["main-protection", { target: "branch", enforcement: "active" }],
         ["tag-protection", { target: "tag", enforcement: "evaluate" }],
       ]);
-      const managed: string[] = [];
 
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes.length, 2);
       const actions = changes.map((c) => c.action);
@@ -59,9 +56,7 @@ describe("diffRulesets", () => {
       const desired = new Map<string, Ruleset>([
         ["main-protection", { target: "branch", enforcement: "active" }],
       ]);
-      const managed: string[] = [];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "update");
@@ -89,9 +84,7 @@ describe("diffRulesets", () => {
           },
         ],
       ]);
-      const managed: string[] = [];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "update");
@@ -125,9 +118,7 @@ describe("diffRulesets", () => {
           },
         ],
       ]);
-      const managed: string[] = [];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "update");
@@ -156,9 +147,7 @@ describe("diffRulesets", () => {
           },
         ],
       ]);
-      const managed: string[] = [];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "update");
@@ -178,9 +167,7 @@ describe("diffRulesets", () => {
       const desired = new Map<string, Ruleset>([
         ["main-protection", { target: "branch", enforcement: "active" }],
       ]);
-      const managed: string[] = [];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "unchanged");
@@ -198,9 +185,7 @@ describe("diffRulesets", () => {
       ];
       // Desired has no explicit target/enforcement - should use defaults
       const desired = new Map<string, Ruleset>([["main-protection", {}]]);
-      const managed: string[] = [];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
       // Default target is "branch", default enforcement is "active"
       assert.equal(changes[0].action, "unchanged");
@@ -229,9 +214,7 @@ describe("diffRulesets", () => {
       const desired = new Map<string, Ruleset>([
         ["main-protection", { target: "branch", enforcement: "active" }],
       ]);
-      const managed: string[] = [];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes[0].action, "unchanged");
     });
@@ -275,14 +258,14 @@ describe("diffRulesets", () => {
         ],
       ]);
 
-      const changes = diffRulesets(current, desired, []);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes[0].action, "unchanged");
     });
   });
 
   describe("deleted rulesets", () => {
-    test("identifies rulesets in managed but not in desired as DELETE", () => {
+    test("identifies current rulesets not in desired as DELETE when deleteOrphaned is true", () => {
       const current: GitHubRuleset[] = [
         {
           id: 1,
@@ -292,9 +275,8 @@ describe("diffRulesets", () => {
         },
       ];
       const desired = new Map<string, Ruleset>();
-      const managed = ["old-ruleset"];
 
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, true);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "delete");
@@ -302,7 +284,7 @@ describe("diffRulesets", () => {
       assert.equal(changes[0].rulesetId, 1);
     });
 
-    test("does not delete rulesets not in managed list", () => {
+    test("does not delete rulesets when deleteOrphaned is false", () => {
       const current: GitHubRuleset[] = [
         {
           id: 1,
@@ -312,37 +294,34 @@ describe("diffRulesets", () => {
         },
       ];
       const desired = new Map<string, Ruleset>();
-      const managed: string[] = []; // Not managed by xfg
 
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
-      // Should not suggest deleting unmanaged rulesets
+      // Should not suggest deleting when deleteOrphaned is false
       assert.equal(changes.length, 0);
     });
 
-    test("deletes only managed orphaned rulesets", () => {
+    test("deletes all current rulesets not in desired when deleteOrphaned is true", () => {
       const current: GitHubRuleset[] = [
         {
           id: 1,
-          name: "managed-old",
+          name: "orphaned-one",
           target: "branch",
           enforcement: "active",
         },
         {
           id: 2,
-          name: "external",
+          name: "orphaned-two",
           target: "branch",
           enforcement: "active",
         },
       ];
       const desired = new Map<string, Ruleset>();
-      const managed = ["managed-old"]; // Only managed-old was managed
 
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, true);
 
-      assert.equal(changes.length, 1);
-      assert.equal(changes[0].name, "managed-old");
-      assert.equal(changes[0].action, "delete");
+      assert.equal(changes.length, 2);
+      assert.ok(changes.every((c) => c.action === "delete"));
     });
   });
 
@@ -373,9 +352,7 @@ describe("diffRulesets", () => {
         ["unchanged", { target: "branch", enforcement: "active" }],
         ["to-create", { target: "tag", enforcement: "evaluate" }],
       ]);
-      const managed = ["to-update", "to-delete", "unchanged"];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, true);
 
       assert.equal(changes.length, 4);
       const byName = new Map(changes.map((c) => [c.name, c]));
@@ -405,9 +382,7 @@ describe("diffRulesets", () => {
         ["unchanged", { target: "branch", enforcement: "active" }],
         ["to-create", { target: "tag", enforcement: "evaluate" }],
       ]);
-      const managed = ["to-delete", "unchanged"];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, true);
 
       const actions = changes.map((c) => c.action);
       // Should be sorted: delete first, then create, then unchanged
@@ -490,9 +465,7 @@ describe("diffRulesets", () => {
           },
         ],
       ]);
-      const managed: string[] = [];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "update");
@@ -523,7 +496,7 @@ describe("diffRulesets", () => {
         ],
       ]);
 
-      const changes = diffRulesets(current, desired, []);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes.length, 1);
       assert.equal(changes[0].action, "update");
@@ -565,9 +538,7 @@ describe("diffRulesets", () => {
           },
         ],
       ]);
-      const managed: string[] = [];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes[0].action, "update");
     });
@@ -609,9 +580,7 @@ describe("diffRulesets", () => {
           },
         ],
       ]);
-      const managed: string[] = [];
-
-      const changes = diffRulesets(current, desired, managed);
+      const changes = diffRulesets(current, desired, false);
 
       assert.equal(changes[0].action, "update");
     });
@@ -753,7 +722,7 @@ describe("diffRulesets bypass_actors null vs empty array", () => {
       ],
     ]);
 
-    const changes = diffRulesets(current, desired, []);
+    const changes = diffRulesets(current, desired, false);
 
     assert.equal(changes[0].action, "unchanged");
   });
@@ -783,7 +752,7 @@ describe("diffRulesets bypass_actors null vs empty array", () => {
       ],
     ]);
 
-    const changes = diffRulesets(current, desired, []);
+    const changes = diffRulesets(current, desired, false);
 
     // null means "token can't read this field" — assume it matches desired
     assert.equal(changes[0].action, "unchanged");
@@ -814,7 +783,7 @@ describe("diffRulesets bypass_actors null vs empty array", () => {
       ],
     ]);
 
-    const changes = diffRulesets(current, desired, []);
+    const changes = diffRulesets(current, desired, false);
 
     assert.equal(changes[0].action, "unchanged");
   });
@@ -919,12 +888,55 @@ describe("diffRulesets bypass_actors null vs empty array", () => {
       ],
     ]);
 
-    const changes = diffRulesets(current, desired, []);
+    const changes = diffRulesets(current, desired, false);
 
     const byName = new Map(changes.map((c) => [c.name, c]));
     assert.equal(byName.get("pr-rules")?.action, "unchanged");
     assert.equal(byName.get("push-protection")?.action, "unchanged");
     assert.equal(byName.get("tag-rules")?.action, "unchanged");
+  });
+});
+
+describe("desired-state orphan detection", () => {
+  test("deleteOrphaned: true deletes ALL current rulesets not in desired", () => {
+    const current: GitHubRuleset[] = [
+      { id: 1, name: "protect-main", target: "branch", enforcement: "active" },
+      {
+        id: 2,
+        name: "unmanaged-ruleset",
+        target: "branch",
+        enforcement: "active",
+      },
+      {
+        id: 3,
+        name: "another-unmanaged",
+        target: "branch",
+        enforcement: "active",
+      },
+    ];
+    const desired = new Map<string, Ruleset>([
+      ["protect-main", { target: "branch", enforcement: "active" }],
+    ]);
+
+    const changes = diffRulesets(current, desired, true); // deleteOrphaned = true
+    const deletes = changes.filter((c) => c.action === "delete");
+    assert.strictEqual(deletes.length, 2);
+    assert.ok(deletes.some((d) => d.name === "unmanaged-ruleset"));
+    assert.ok(deletes.some((d) => d.name === "another-unmanaged"));
+  });
+
+  test("deleteOrphaned: false does not delete any unmanaged rulesets", () => {
+    const current: GitHubRuleset[] = [
+      { id: 1, name: "protect-main", target: "branch", enforcement: "active" },
+      { id: 2, name: "unmanaged", target: "branch", enforcement: "active" },
+    ];
+    const desired = new Map<string, Ruleset>([
+      ["protect-main", { target: "branch", enforcement: "active" }],
+    ]);
+
+    const changes = diffRulesets(current, desired, false);
+    const deletes = changes.filter((c) => c.action === "delete");
+    assert.strictEqual(deletes.length, 0);
   });
 });
 
@@ -964,7 +976,7 @@ describe("diffRulesets edge cases", () => {
       ],
     ]);
 
-    const changes = diffRulesets(current, desired, []);
+    const changes = diffRulesets(current, desired, false);
     assert.equal(changes[0].action, "update");
   });
 
@@ -1003,7 +1015,7 @@ describe("diffRulesets edge cases", () => {
       ],
     ]);
 
-    const changes = diffRulesets(current, desired, []);
+    const changes = diffRulesets(current, desired, false);
     assert.equal(changes[0].action, "update");
   });
 
@@ -1043,7 +1055,7 @@ describe("diffRulesets edge cases", () => {
       ],
     ]);
 
-    const changes = diffRulesets(current, desired, []);
+    const changes = diffRulesets(current, desired, false);
     assert.equal(changes[0].action, "unchanged");
   });
 });

@@ -1,4 +1,4 @@
-import type { RepoConfig, Label } from "../../config/index.js";
+import type { RepoConfig } from "../../config/index.js";
 import type { RepoInfo, GitHubRepoInfo } from "../../shared/repo-detector.js";
 import {
   isGitHubRepo,
@@ -31,7 +31,6 @@ export interface ILabelsProcessor {
 export interface LabelsProcessorOptions {
   configId: string;
   dryRun?: boolean;
-  managedLabels: string[];
   noDelete?: boolean;
   token?: string;
 }
@@ -47,9 +46,6 @@ export interface LabelsProcessorResult {
     update: number;
     delete: number;
     unchanged: number;
-  };
-  manifestUpdate?: {
-    labels: string[];
   };
   planOutput?: LabelsPlanResult;
 }
@@ -88,7 +84,7 @@ export class LabelsProcessor implements ILabelsProcessor {
     options: LabelsProcessorOptions
   ): Promise<LabelsProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
-    const { dryRun, managedLabels, noDelete, token } = options;
+    const { dryRun, noDelete, token } = options;
 
     // Check if this is a GitHub repo
     if (!isGitHubRepo(repoInfo)) {
@@ -106,7 +102,7 @@ export class LabelsProcessor implements ILabelsProcessor {
     const deleteOrphaned = settings?.deleteOrphaned ?? false;
 
     // If no labels configured, skip
-    if (Object.keys(desiredLabels).length === 0 && managedLabels.length === 0) {
+    if (Object.keys(desiredLabels).length === 0) {
       return {
         success: true,
         repoName,
@@ -129,7 +125,7 @@ export class LabelsProcessor implements ILabelsProcessor {
       const changes = diffLabels(
         currentLabels,
         desiredLabels,
-        managedLabels,
+        deleteOrphaned,
         noDelete ?? false
       );
 
@@ -153,10 +149,6 @@ export class LabelsProcessor implements ILabelsProcessor {
           dryRun: true,
           changes: changeCounts,
           planOutput,
-          manifestUpdate: this.computeManifestUpdate(
-            desiredLabels,
-            deleteOrphaned
-          ),
         };
       }
 
@@ -233,10 +225,6 @@ export class LabelsProcessor implements ILabelsProcessor {
         message: appliedCount > 0 ? `Applied: ${summary}` : "No changes needed",
         changes: changeCounts,
         planOutput,
-        manifestUpdate: this.computeManifestUpdate(
-          desiredLabels,
-          deleteOrphaned
-        ),
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -263,22 +251,6 @@ export class LabelsProcessor implements ILabelsProcessor {
     if (counts.delete > 0) parts.push(`${counts.delete} deleted`);
     if (counts.unchanged > 0) parts.push(`${counts.unchanged} unchanged`);
     return parts.length > 0 ? parts.join(", ") : "no changes";
-  }
-
-  /**
-   * Compute manifest update based on current config.
-   * Only labels with deleteOrphaned enabled should be tracked.
-   */
-  private computeManifestUpdate(
-    labels: Record<string, Label>,
-    deleteOrphaned: boolean
-  ): { labels: string[] } | undefined {
-    if (!deleteOrphaned) {
-      return undefined;
-    }
-
-    const labelNames = Object.keys(labels).sort();
-    return { labels: labelNames };
   }
 
   /**
