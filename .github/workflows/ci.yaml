@@ -59,7 +59,6 @@ jobs:
           fail_ci_if_error: true
 
       - name: Upload build artifact
-        if: github.event_name == 'push'
         uses: actions/upload-artifact@v7
         with:
           name: dist
@@ -67,11 +66,9 @@ jobs:
           retention-days: 1
 
       - name: Create package for action tests
-        if: github.event_name == 'push'
         run: npm pack
 
       - name: Upload package artifact
-        if: github.event_name == 'push'
         uses: actions/upload-artifact@v7
         with:
           name: package
@@ -81,7 +78,7 @@ jobs:
   integration-tests:
     needs:
       - "build"
-    if: ${{ !failure() && !cancelled() && github.event_name == 'push' }}
+    if: ${{ !failure() && !cancelled() }}
     uses: ./.github/workflows/_integration-tests.yaml
     secrets: "inherit"
 
