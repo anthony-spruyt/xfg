@@ -314,12 +314,6 @@ export interface IRepositoryProcessor {
     repoInfo: RepoInfo,
     options: ProcessorOptions
   ): Promise<ProcessorResult>;
-  updateManifestOnly(
-    repoInfo: RepoInfo,
-    repoConfig: RepoConfig,
-    options: ProcessorOptions,
-    manifestUpdate: { rulesets?: string[]; labels?: string[] }
-  ): Promise<ProcessorResult>;
 }
 
 /**

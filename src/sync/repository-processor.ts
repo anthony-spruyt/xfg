@@ -15,12 +15,7 @@ import {
   FileSyncOrchestrator,
   PRMergeHandler,
   FileSyncStrategy,
-  ManifestStrategy,
   SyncWorkflow,
-  loadManifest,
-  updateManifestRulesets,
-  updateManifestLabels,
-  MANIFEST_FILENAME,
   type IFileWriter,
   type IManifestManager,
   type IBranchManager,
@@ -34,13 +29,10 @@ import {
   type GitOpsFactory,
   type ProcessorOptions,
   type ProcessorResult,
-  type FileChangeDetail,
 } from "./index.js";
-import { getRepoDisplayName } from "../shared/repo-detector.js";
 
 /**
- * Thin facade that delegates to SyncWorkflow with appropriate strategy.
- * process() uses FileSyncStrategy, updateManifestOnly() uses ManifestStrategy.
+ * Thin facade that delegates to SyncWorkflow with FileSyncStrategy.
  */
 export class RepositoryProcessor implements IRepositoryProcessor {
   private readonly syncWorkflow: ISyncWorkflow;
@@ -113,81 +105,6 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     options: ProcessorOptions
   ): Promise<ProcessorResult> {
     const strategy = new FileSyncStrategy(this.fileSyncOrchestrator);
-    return this.syncWorkflow.execute(repoConfig, repoInfo, options, strategy);
-  }
-
-  async updateManifestOnly(
-    repoInfo: RepoInfo,
-    repoConfig: RepoConfig,
-    options: ProcessorOptions,
-    manifestUpdate: { rulesets?: string[]; labels?: string[] }
-  ): Promise<ProcessorResult> {
-    const repoName = getRepoDisplayName(repoInfo);
-    const { workDir, dryRun } = options;
-
-    // Pre-check manifest changes (preserves original early-return behavior)
-    const existingManifest = loadManifest(workDir);
-    let simulatedManifest = existingManifest;
-
-    if (manifestUpdate.rulesets) {
-      const rulesetsWithDeleteOrphaned = new Map<string, boolean | undefined>(
-        manifestUpdate.rulesets.map((name) => [name, true])
-      );
-      const result = updateManifestRulesets(
-        simulatedManifest,
-        options.configId,
-        rulesetsWithDeleteOrphaned
-      );
-      simulatedManifest = result.manifest;
-    }
-
-    if (manifestUpdate.labels) {
-      const labelsWithDeleteOrphaned = new Map<string, boolean | undefined>(
-        manifestUpdate.labels.map((name) => [name, true])
-      );
-      const result = updateManifestLabels(
-        simulatedManifest,
-        options.configId,
-        labelsWithDeleteOrphaned
-      );
-      simulatedManifest = result.manifest;
-    }
-
-    const existingConfigs = existingManifest?.configs ?? {};
-    if (
-      JSON.stringify(existingConfigs) ===
-      JSON.stringify(simulatedManifest!.configs)
-    ) {
-      return {
-        success: true,
-        repoName,
-        message: "No manifest changes detected",
-        skipped: true,
-      };
-    }
-
-    const manifestFileChange: FileChangeDetail[] = [
-      { path: MANIFEST_FILENAME, action: "update" },
-    ];
-
-    if (dryRun) {
-      const parts: string[] = [];
-      if (manifestUpdate.rulesets) parts.push("ruleset");
-      if (manifestUpdate.labels) parts.push("labels");
-      const trackingType = parts.join("/") || "settings";
-      this.log.info(
-        `Would update ${MANIFEST_FILENAME} with ${trackingType} tracking`
-      );
-      return {
-        success: true,
-        repoName,
-        message: "Would update manifest (dry-run)",
-        fileChanges: manifestFileChange,
-      };
-    }
-
-    // Delegate to workflow for actual commit/push/PR
-    const strategy = new ManifestStrategy(manifestUpdate, this.log);
     return this.syncWorkflow.execute(repoConfig, repoInfo, options, strategy);
   }
 }

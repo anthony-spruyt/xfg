@@ -41,7 +41,6 @@ function createMockProcessor(
   };
   return {
     process: mock.fn(async (): Promise<ProcessorResult> => result),
-    updateManifestOnly: mock.fn(async (): Promise<ProcessorResult> => result),
   };
 }
 
@@ -244,12 +243,6 @@ repos:
         process: mock.fn(async () => {
           throw new Error("Network error");
         }),
-        updateManifestOnly: mock.fn(async () => ({
-          success: true,
-          skipped: false,
-          message: "ok",
-          repoName: "test/repo",
-        })),
       };
 
       await assert.rejects(
