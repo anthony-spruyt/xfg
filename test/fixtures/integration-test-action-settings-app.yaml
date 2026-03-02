@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
-# Action integration test config for settings command with GitHub App
+# Action integration test config for settings via sync with GitHub App
 id: integration-test-action-settings-app
 
 # Placeholder file required by schema - excluded from target repo

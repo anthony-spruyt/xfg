@@ -143,7 +143,7 @@ describe("GitHub Repo Settings Integration Test", () => {
     const settingsBefore = getRepoSettings();
 
     const output = exec(
-      `node dist/cli.js settings --config ${configPath} --dry-run`,
+      `node dist/cli.js sync --config ${configPath} --dry-run`,
       { cwd: projectRoot }
     );
     assert.ok(output.includes("DRY RUN") || output.includes("dry-run"));
@@ -155,7 +155,7 @@ describe("GitHub Repo Settings Integration Test", () => {
   test("settings applies repo settings changes", () => {
     const configPath = createConfigFile();
 
-    exec(`node dist/cli.js settings --config ${configPath}`, {
+    exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
 
@@ -175,11 +175,11 @@ describe("GitHub Repo Settings Integration Test", () => {
 
   test("settings reports no changes when already in desired state", () => {
     const configPath = createConfigFile();
-    exec(`node dist/cli.js settings --config ${configPath}`, {
+    exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
 
-    const output = exec(`node dist/cli.js settings --config ${configPath}`, {
+    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     assert.ok(
@@ -202,7 +202,7 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js settings --config ${descConfigPath}`, {
+    exec(`node dist/cli.js sync --config ${descConfigPath}`, {
       cwd: projectRoot,
     });
 
