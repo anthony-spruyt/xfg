@@ -67,7 +67,6 @@ export async function processLabels(
       const result = await processor.process(repoConfig, repoInfo, {
         configId: config.id,
         dryRun: options.dryRun,
-        managedLabels: [],
         noDelete: options.noDelete,
       });
 

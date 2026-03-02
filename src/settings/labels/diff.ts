@@ -29,7 +29,7 @@ export interface LabelChange {
  *
  * @param current - Current labels from GitHub API
  * @param desired - Desired labels from config (name -> label)
- * @param managedLabels - Names of labels managed by xfg (from manifest)
+ * @param deleteOrphaned - If true, delete current labels not in desired config
  * @param noDelete - If true, skip delete operations
  * @returns Array of changes to apply
  * @throws Error if rename collisions are detected
@@ -37,7 +37,7 @@ export interface LabelChange {
 export function diffLabels(
   current: GitHubLabel[],
   desired: Record<string, Label>,
-  managedLabels: string[],
+  deleteOrphaned: boolean,
   noDelete: boolean
 ): LabelChange[] {
   const changes: LabelChange[] = [];
@@ -47,8 +47,6 @@ export function diffLabels(
   for (const label of current) {
     currentByName.set(label.name.toLowerCase(), label);
   }
-
-  const managedSet = new Set(managedLabels.map((n) => n.toLowerCase()));
 
   // Collect rename targets for collision detection
   const renameTargets = new Map<string, string>(); // lowercase target -> source name
@@ -69,10 +67,10 @@ export function diffLabels(
     Object.keys(desired).map((n) => n.toLowerCase())
   );
   const deletedNames = new Set<string>();
-  if (!noDelete) {
-    for (const name of managedSet) {
-      if (!desiredLower.has(name) && currentByName.has(name)) {
-        deletedNames.add(name);
+  if (deleteOrphaned && !noDelete) {
+    for (const nameLower of currentByName.keys()) {
+      if (!desiredLower.has(nameLower)) {
+        deletedNames.add(nameLower);
       }
     }
   }
@@ -173,18 +171,15 @@ export function diffLabels(
     }
   }
 
-  // Check for orphaned labels (in manifest but not in desired config)
-  if (!noDelete) {
-    for (const name of managedSet) {
-      if (!desiredLower.has(name)) {
-        const currentLabel = currentByName.get(name);
-        if (currentLabel) {
-          changes.push({
-            action: "delete",
-            name: currentLabel.name,
-            current: currentLabel,
-          });
-        }
+  // Desired-state orphan detection: delete ALL current not in desired
+  if (deleteOrphaned && !noDelete) {
+    for (const [nameLower, currentLabel] of currentByName) {
+      if (!desiredLower.has(nameLower)) {
+        changes.push({
+          action: "delete",
+          name: currentLabel.name,
+          current: currentLabel,
+        });
       }
     }
   }
