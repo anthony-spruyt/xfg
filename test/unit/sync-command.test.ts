@@ -548,6 +548,74 @@ repos:
       );
     });
 
+    test("logs no-changes message for rulesets when no changes needed", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      rulesets:
+${VALID_RULESET}
+`
+      );
+
+      const mockRulesetProcessor = createMockRulesetProcessor({
+        success: true,
+        message: "No changes needed",
+      });
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => createMockProcessor(),
+          lifecycleManager: noopLifecycleManager,
+          rulesetProcessorFactory: () => mockRulesetProcessor,
+        }
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("No changes needed"),
+        "Should log no-changes message for rulesets"
+      );
+    });
+
+    test("logs no-changes message for labels when no changes needed", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:
+${VALID_LABELS}
+`
+      );
+
+      const mockLabelsProcessor = createMockLabelsProcessor({
+        success: true,
+        message: "No changes needed",
+      });
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => createMockProcessor(),
+          lifecycleManager: noopLifecycleManager,
+          labelsProcessorFactory: () => mockLabelsProcessor,
+        }
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("No changes needed"),
+        "Should log no-changes message for labels"
+      );
+    });
+
     test("skips settings processing for non-GitHub repos", async () => {
       writeFileSync(
         testConfigPath,

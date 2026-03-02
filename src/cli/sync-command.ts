@@ -380,6 +380,12 @@ export async function runSync(
             for (const line of rulesetResult.planOutput.lines) {
               logger.info(line);
             }
+          } else if (!rulesetResult.skipped) {
+            logger.success(
+              current,
+              repoName,
+              `Rulesets: ${rulesetResult.message}`
+            );
           }
           if (!rulesetResult.skipped) {
             settingsCollector.getOrCreate(repoName).rulesetResult =
@@ -413,6 +419,12 @@ export async function runSync(
             for (const line of labelsResult.planOutput.lines) {
               logger.info(line);
             }
+          } else if (!labelsResult.skipped) {
+            logger.success(
+              current,
+              repoName,
+              `Labels: ${labelsResult.message}`
+            );
           }
           if (!labelsResult.skipped) {
             settingsCollector.getOrCreate(repoName).labelsResult = labelsResult;
