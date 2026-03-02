@@ -490,6 +490,7 @@ export interface RulesetProcessorResult {
 3. Update `process()` method:
    - Remove `managedRulesets` destructuring
    - Change skip condition from checking both `desiredRulesets` and `managedRulesets` to only checking `desiredRulesets`
+     > **Intentional behavior change:** The current skip condition is `Object.keys(desiredRulesets).length === 0 && managedRulesets.length === 0`. Removing the `managedRulesets` check means repos with zero desired rulesets but previously tracked managed rulesets will now be skipped (no cleanup). This is intentional in the desired-state model: no rulesets in config means "don't touch rulesets on this repo." Cleanup of unmanaged rulesets is handled by `deleteOrphaned: true` only when desired rulesets are explicitly configured.
    - Pass `deleteOrphaned` to `diffRulesets()` instead of `managedRulesets`
    - Remove `computeManifestUpdate()` private method and all calls to it
 
@@ -818,7 +819,7 @@ if (repoConfig.settings && isGitHubRepo(repoInfo)) {
       // Log result, collect for report
       if (rulesetResult.planOutput?.lines?.length) {
         logger.info("");
-        logger.info(chalk.bold(`${repoName} - Rulesets:`));
+        logger.info(`${repoName} - Rulesets:`);
         for (const line of rulesetResult.planOutput.lines) {
           logger.info(line);
         }
@@ -843,7 +844,7 @@ if (repoConfig.settings && isGitHubRepo(repoInfo)) {
     });
     if (labelsResult.planOutput?.lines?.length) {
       logger.info("");
-      logger.info(chalk.bold(`${repoName} - Labels:`));
+      logger.info(`${repoName} - Labels:`);
       for (const line of labelsResult.planOutput.lines) {
         logger.info(line);
       }
@@ -869,13 +870,13 @@ if (repoConfig.settings && isGitHubRepo(repoInfo)) {
     );
     if (repoSettingsResult.planOutput?.lines?.length) {
       logger.info("");
-      logger.info(chalk.bold(`${repoName} - Repo Settings:`));
+      logger.info(`${repoName} - Repo Settings:`);
       for (const line of repoSettingsResult.planOutput.lines) {
         logger.info(line);
       }
       if (repoSettingsResult.warnings?.length) {
         for (const warning of repoSettingsResult.warnings) {
-          logger.info(chalk.yellow(`Warning: ${warning}`));
+          logger.info(`Warning: ${warning}`);
         }
       }
     }
@@ -918,12 +919,11 @@ if (settingsResults.length > 0) {
 
 **Step 6: Import required modules**
 
-Add imports to `sync-command.ts`:
+Add imports to `sync-command.ts`. Note: `isGitHubRepo` (line 14) and `GitHubRepoInfo` (line 16) are already imported — do NOT add duplicate imports for those.
+
+New imports to add:
 
 ```typescript
-import chalk from "chalk";
-import { isGitHubRepo } from "../shared/repo-detector.js";
-import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 import {
   RulesetProcessorFactory,
   defaultRulesetProcessorFactory,
@@ -956,6 +956,7 @@ git commit -m "feat: add settings processing to sync command"
 **Files:**
 
 - Modify: `src/config/validator.ts`
+- Modify: `src/config/index.ts`
 - Test: `test/unit/config-validator.test.ts`
 
 **Step 1: Write failing test**
@@ -1026,6 +1027,17 @@ export function validateForSync(config: RawConfig): void {
 
 Delete the `validateForSettings` function entirely (line 840 in `src/config/validator.ts`). Remove its export.
 
+Also remove the `validateForSettings` re-export from `src/config/index.ts` (line 122). The validation re-export block should become:
+
+```typescript
+export {
+  validateRawConfig,
+  validateSettings,
+  validateForSync,
+  hasActionableSettings,
+} from "./validator.js";
+```
+
 > **Note:** Consider renaming `validateForSync` to `validateConfig` since there is now only one command and the "ForSync" suffix is misleading. The design doc suggests this rename. If renaming, update all callers (search for `validateForSync` across the codebase). This is optional — can be done in this task or deferred to Task 10 cleanup.
 
 **Step 5: Update error message in validateForSync**
@@ -1065,6 +1077,7 @@ git commit -m "feat!: unify validation — remove validateForSettings, relax val
 - Modify: `src/cli/program.ts`
 - Modify: `src/cli/index.ts`
 - Modify: `src/index.ts`
+- Modify: `test/unit/index.test.ts`
 - Delete: `test/unit/settings-command.test.ts`
 - Delete: `test/unit/settings/process-rulesets.test.ts` (if exists)
 - Delete: `test/unit/settings/process-labels.test.ts` (if exists)
@@ -1075,7 +1088,7 @@ In `src/cli/program.ts`:
 
 - Remove `import { runSettings } from "./settings-command.js"`
 - Remove `import type { SettingsOptions } from "./settings-command.js"`
-- Remove the entire `settingsCommand` block (lines 98-108)
+- Remove the entire `settingsCommand` block (lines 97-108)
 
 **Step 2: Delete settings-command.ts**
 
@@ -1120,6 +1133,38 @@ Remove:
 
 - `test/unit/settings-command.test.ts`
 - Any test files under `test/unit/settings/` that tested the deleted orchestration modules
+
+**Step 7b: Clean up settings tests in `test/unit/index.test.ts`**
+
+This file contains extensive settings command tests that must be removed:
+
+1. Remove the `runSettings` import and related imports (line 1272-1278):
+
+   ```typescript
+   import {
+     runSettings,
+     IRulesetProcessor,
+     RulesetProcessorFactory,
+   } from "../../src/index.js";
+   import type { RulesetProcessorResult } from "../../src/ruleset-processor.js";
+   ```
+
+2. Remove the `noopLifecycleManager` const and `MockSettingsRepoProcessor` class (lines 1283-1327)
+
+3. Remove the `MockRulesetProcessor` class (lines 1329-1362)
+
+4. Remove the "settings command CLI" describe block and all its contents (lines 1170-1266), which includes:
+   - `settingsTestDir` / `settingsTestConfigPath` variables
+   - "argument parsing" tests (help, --config, non-existent config)
+   - "config validation" tests (no settings, empty rulesets)
+
+5. Remove the "runSettings with mock processor" describe block and all its contents (line 1367 to end of that block), which includes:
+   - `unitTestDir` / `unitTestConfigPath` variables
+   - All `runSettings()` test cases
+
+6. Remove the two CLI validation tests that reference the settings command:
+   - "settings command fails with files-only config" (line 505-527)
+   - "settings command succeeds with settings-only config" (line 529 onward)
 
 **Step 8: Run tests**
 
@@ -1675,6 +1720,7 @@ Note: `docs/index.md` contains Mermaid diagrams referencing `chore/sync-rulesets
 - Update the action usage examples
 - Document the breaking changes
 - Remove `chore/sync-rulesets` and `chore/sync-labels` branch references from Mermaid diagrams in `docs/index.md`
+- Update `CLAUDE.md` module descriptions (line 58): change `config-validator.ts` description from `validateForSync`/`validateForSettings` per-command`to reflect that`validateForSettings` no longer exists
 
 **Step 3: Add migration guide**
 
