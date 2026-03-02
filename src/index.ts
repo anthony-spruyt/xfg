@@ -1,11 +1,7 @@
 // Public API for library consumers
-export { runSync, runSettings } from "./cli/index.js";
+export { runSync } from "./cli/index.js";
 
-export type {
-  SyncOptions,
-  SettingsOptions,
-  SharedOptions,
-} from "./cli/index.js";
+export type { SyncOptions, SharedOptions } from "./cli/index.js";
 
 export {
   type IRepositoryProcessor,
