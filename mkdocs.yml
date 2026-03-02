@@ -31,6 +31,11 @@ theme:
   icon:
     repo: fontawesome/brands/github
 
+extra:
+  version:
+    provider: mike
+    alias: true
+
 markdown_extensions:
   - admonition
   - pymdownx.details
