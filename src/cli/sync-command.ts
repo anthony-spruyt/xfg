@@ -500,9 +500,10 @@ export async function runSync(
     dryRun: options.dryRun ?? false,
   });
 
-  // Exit with error if any failures
+  // Exit with error if any failures (file sync or settings)
   const hasErrors = reportResults.some((r) => r.error);
-  if (hasErrors) {
+  const hasSettingsErrors = settingsCollector.getAll().some((r) => r.error);
+  if (hasErrors || hasSettingsErrors) {
     process.exit(1);
   }
 }

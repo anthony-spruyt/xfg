@@ -142,9 +142,9 @@ export function createEmptyManifest(): XfgManifest {
  *
  * V1 manifests are treated as non-existent because they lack the config ID
  * namespace required for multi-config support. The next run will create
- * a fresh v3 manifest.
+ * a fresh v4 manifest.
  *
- * V2 manifests are automatically migrated to V3 format.
+ * V2/V3 manifests are automatically migrated to V4 format.
  *
  * @param workDir - The repository working directory
  * @returns The manifest or null if not found or incompatible
