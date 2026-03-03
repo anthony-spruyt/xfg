@@ -1,48 +1,347 @@
 {
-  "command": "resolve",
-  "patterns": [
-    "cycles::src/sync/index.ts::src/sync/index.ts::src/sync/repository-processor.ts"
+  "command": "issues",
+  "action": "list",
+  "count": 52,
+  "items": [
+    {
+      "id": "review::.::holistic::abstraction_fitness::subjective::abstraction_fitness::src/sync/file-sync-strategy.ts::filesyncstrategy_is_a_thin_adapter_with_minimal_lo::5e4a201d",
+      "summary": "FileSyncStrategy is a thin adapter with minimal logic",
+      "dimension": "abstraction_fitness",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::abstraction_fitness::subjective::abstraction_fitness::src/sync/repository-processor.ts::repositoryprocessor_is_a_thin_facade_over_syncwork::652f115e",
+      "summary": "RepositoryProcessor is a thin facade over SyncWorkflow with 9 injectable components",
+      "dimension": "abstraction_fitness",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::abstraction_fitness::subjective::abstraction_fitness::src/sync/types.ts::excessive_one-implementation_interface_ecosystem_i::610b8ab2",
+      "summary": "Excessive one-implementation interface ecosystem in sync/types.ts",
+      "dimension": "abstraction_fitness",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::abstraction_fitness::subjective::abstraction_fitness::src/vcs/authenticated-git-ops.ts::authenticatedgitops_has_13_pass-through_delegation::d514ba34",
+      "summary": "AuthenticatedGitOps has 13 pass-through delegation methods",
+      "dimension": "abstraction_fitness",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::abstraction_fitness::subjective::abstraction_fitness::src/vcs/git-ops.ts::igitops_interface_is_private_and_unused_outside_gi::f1873ce4",
+      "summary": "IGitOps interface is private and unused outside git-ops.ts",
+      "dimension": "abstraction_fitness",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::ai_generated_debt::subjective::ai_generated_debt::src/shared/command-executor.ts::verbose_jsdoc_on_icommandexecutor_restates_the_obv::a5b6038e",
+      "summary": "Verbose JSDoc on ICommandExecutor restates the obvious",
+      "dimension": "ai_generated_debt",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::ai_generated_debt::subjective::ai_generated_debt::src/sync/types.ts::pervasive_restating_docstrings_across_interface_de::1c0d92ef",
+      "summary": "Pervasive restating docstrings across interface definitions",
+      "dimension": "ai_generated_debt",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::ai_generated_debt::subjective::ai_generated_debt::src/vcs/pr-strategy.ts::multi-line_docstring_on_trivial_orchestration_clas::ce660819",
+      "summary": "Multi-line docstring on trivial orchestration class",
+      "dimension": "ai_generated_debt",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::api_surface_coherence::subjective::api_surface_coherence::src/sync/pr-merge-handler.ts::iprmergehandler.createandmerge_takes_7_positional_::db76b943",
+      "summary": "IPRMergeHandler.createAndMerge takes 7 positional parameters",
+      "dimension": "api_surface_coherence",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::api_surface_coherence::subjective::api_surface_coherence::src/sync/types.ts::commitpushoptions_has_11_fields,_several_duplicate::7c8c976f",
+      "summary": "CommitPushOptions has 11 fields, several duplicated across peer option types",
+      "dimension": "api_surface_coherence",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::api_surface_coherence::subjective::api_surface_coherence::src/vcs/git-ops.ts::mixed_sync_async_methods_on_gitops_public_api::98f073e0",
+      "summary": "Mixed sync/async methods on GitOps public API",
+      "dimension": "api_surface_coherence",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::authorization_consistency::subjective::authorization_consistency::src/lifecycle/github-lifecycle-provider.ts::token_passed_via_command_string_interpolation_in_l::20edc1c8",
+      "summary": "Token passed via command string interpolation in lifecycle vs env vars in PR strategies",
+      "dimension": "authorization_consistency",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::authorization_consistency::subjective::authorization_consistency::src/settings/base-processor.ts::token_precedence_differs_between_sync_and_settings::903fa665",
+      "summary": "Token precedence differs between sync and settings paths",
+      "dimension": "authorization_consistency",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::authorization_consistency::subjective::authorization_consistency::src/vcs/azure-pr-strategy.ts::azure_devops_pr_strategy_does_not_support_token_in::5cc8aa81",
+      "summary": "Azure DevOps PR strategy does not support token injection",
+      "dimension": "authorization_consistency",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::cross_module_architecture::subjective::cross_module_architecture::src/shared/logger.ts::shared__imports_from_sync__\u2014_dependency_direction_::1284aaef",
+      "summary": "shared/ imports from sync/ \u2014 dependency direction violation",
+      "dimension": "cross_module_architecture",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::cross_module_architecture::subjective::cross_module_architecture::src/vcs/pr-creator.ts::vcs__imports_from_sync__\u2014_upward_dependency::6af58326",
+      "summary": "vcs/ imports from sync/ \u2014 upward dependency",
+      "dimension": "cross_module_architecture",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::design_coherence::subjective::design_coherence::src/cli/sync-command.ts::runsync_function_mixes_too_many_responsibilities_a::79238aa9",
+      "summary": "runSync function mixes too many responsibilities across 400+ lines",
+      "dimension": "design_coherence",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::design_coherence::subjective::design_coherence::src/cli/sync-command.ts::triplicated_settings-processing_pattern::34d4b160",
+      "summary": "Triplicated settings-processing pattern",
+      "dimension": "design_coherence",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::design_coherence::subjective::design_coherence::src/sync/pr-merge-handler.ts::createandmerge_has_7_positional_parameters::2a506347",
+      "summary": "createAndMerge has 7 positional parameters",
+      "dimension": "design_coherence",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::design_coherence::subjective::design_coherence::src/sync/types.ts::branchsetupoptions_bundles_10_fields_mixing_data_a::2a30e412",
+      "summary": "BranchSetupOptions bundles 10 fields mixing data and dependencies",
+      "dimension": "design_coherence",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::error_consistency::subjective::error_consistency::src/lifecycle/github-lifecycle-provider.ts::silent_catch_blocks_in_receivemigration_for_cleanu::88399ce6",
+      "summary": "Silent catch blocks in receiveMigration for cleanup operations",
+      "dimension": "error_consistency",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::error_consistency::subjective::error_consistency::src/vcs/authenticated-git-ops.ts::silent_error_swallowing_in_getdefaultbranch_vs_ver::2f3d1235",
+      "summary": "Silent error swallowing in getDefaultBranch vs verbose logging in GitOps",
+      "dimension": "error_consistency",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::error_consistency::subjective::error_consistency::src/vcs/github-pr-strategy.ts::inconsistent_error_propagation_in_checkexistingpr_::53cfadc2",
+      "summary": "Inconsistent error propagation in checkExistingPR across strategies",
+      "dimension": "error_consistency",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::high_level_elegance::subjective::high_level_elegance::src/cli/sync-command.ts::runsync_function_accumulates_too_many_responsibili::28acd428",
+      "summary": "runSync function accumulates too many responsibilities",
+      "dimension": "high_level_elegance",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::high_level_elegance::subjective::high_level_elegance::src/cli/types.ts::duplicate_irepositoryprocessor_interface_across_la::35ec47f4",
+      "summary": "Duplicate IRepositoryProcessor interface across layers",
+      "dimension": "high_level_elegance",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::incomplete_migration::subjective::incomplete_migration::src/vcs/pr-strategy.ts::deprecated_execute()_method_still_required_by_iprs::97e70e18",
+      "summary": "Deprecated execute() method still required by IPRStrategy interface",
+      "dimension": "incomplete_migration",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::low_level_elegance::subjective::low_level_elegance::src/cli/sync-command.ts::near-identical_settings_application_blocks_repeate::e3e7cc4a",
+      "summary": "Near-identical settings application blocks repeated three times",
+      "dimension": "low_level_elegance",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::package_organization::subjective::package_organization::src/cli/types.ts::cli_types.ts_duplicates_irepositoryprocessor_inter::ae94233e",
+      "summary": "cli/types.ts duplicates IRepositoryProcessor interface from sync/types.ts",
+      "dimension": "package_organization",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::abstraction_fitness::subjective::abstraction_fitness::src/settings/labels/processor.ts::ilabelsprocessor_interface_duplicates_the_class_si::c001c59a",
+      "summary": "ILabelsProcessor interface duplicates the class signature",
+      "dimension": "abstraction_fitness",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::ai_generated_debt::subjective::ai_generated_debt::src/shared/sanitize-utils.ts::docstring_bloat_on_simple_utility_function::884e5afb",
+      "summary": "Docstring bloat on simple utility function",
+      "dimension": "ai_generated_debt",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::ai_generated_debt::subjective::ai_generated_debt::src/sync/types.ts::section_banner_comments_add_visual_noise_without_n::493819a0",
+      "summary": "Section banner comments add visual noise without navigation value",
+      "dimension": "ai_generated_debt",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::ai_generated_debt::subjective::ai_generated_debt::src/vcs/pr-creator.ts::backwards_compatibility_re-exports_without_evidenc::257d9844",
+      "summary": "Backwards compatibility re-exports without evidence of external consumers",
+      "dimension": "ai_generated_debt",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::api_surface_coherence::subjective::api_surface_coherence::src/settings/labels/processor.ts::inconsistent_result_type_shapes_across_settings_pr::5114d8b4",
+      "summary": "Inconsistent result type shapes across settings processors",
+      "dimension": "api_surface_coherence",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::authorization_consistency::subjective::authorization_consistency::src/settings/base-processor.ts::silent_swallowing_of_github_app_token_errors_in_bo::ba9afe93",
+      "summary": "Silent swallowing of GitHub App token errors in both processors",
+      "dimension": "authorization_consistency",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::convention_outlier::subjective::convention_outlier::src/settings/labels/index.ts::settings_subdirectories_use_consistent_internal_st::155dc0bc",
+      "summary": "Settings subdirectories use consistent internal structure",
+      "dimension": "convention_outlier",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::convention_outlier::subjective::convention_outlier::src/vcs/git-ops.ts::duplicate_validatebranchname_function_across_modul::1bb047ad",
+      "summary": "Duplicate validateBranchName function across modules",
+      "dimension": "convention_outlier",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::convention_outlier::subjective::convention_outlier::src/vcs/git-ops.ts::local_igitops_interface_defined_but_not_exported_o::482e4ef9",
+      "summary": "Local IGitOps interface defined but not exported or shared",
+      "dimension": "convention_outlier",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::convention_outlier::subjective::convention_outlier::src/vcs/index.ts::index_file_mixes_re-exports_with_factory_function_::56cdd184",
+      "summary": "Index file mixes re-exports with factory function implementation",
+      "dimension": "convention_outlier",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::cross_module_architecture::subjective::cross_module_architecture::src/vcs/index.ts::vcs_index.ts_contains_factory_logic_instead_of_pur::dc13e1af",
+      "summary": "vcs/index.ts contains factory logic instead of pure re-exports",
+      "dimension": "cross_module_architecture",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::cross_module_architecture::subjective::cross_module_architecture::src/vcs/pr-creator.ts::backwards-compatibility_re-export_blurs_module_bou::75e358c9",
+      "summary": "Backwards-compatibility re-export blurs module boundary",
+      "dimension": "cross_module_architecture",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::cross_module_architecture::subjective::cross_module_architecture::src/vcs/types.ts::vcs__types_depend_on_config__types::2142047c",
+      "summary": "vcs/ types depend on config/ types",
+      "dimension": "cross_module_architecture",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::design_coherence::subjective::design_coherence::src/config/normalizer.ts::normalizeconfig_has_deeply_nested_branching_for_co::6b952670",
+      "summary": "normalizeConfig has deeply nested branching for content merging",
+      "dimension": "design_coherence",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::error_consistency::subjective::error_consistency::src/config/file-reference-resolver.ts::consistent_error_wrapping_pattern_in_file_referenc::5180134d",
+      "summary": "Consistent error wrapping pattern in file reference resolution",
+      "dimension": "error_consistency",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::error_consistency::subjective::error_consistency::src/vcs/github-pr-strategy.ts::unsafe_cast_for_stderr_extraction_in_error_handler::39f058d1",
+      "summary": "Unsafe cast for stderr extraction in error handlers",
+      "dimension": "error_consistency",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::high_level_elegance::subjective::high_level_elegance::src/sync/types.ts::large_types-only_file_aggregates_many_unrelated_co::b04a6ae4",
+      "summary": "Large types-only file aggregates many unrelated concerns",
+      "dimension": "high_level_elegance",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::incomplete_migration::subjective::incomplete_migration::src/vcs/pr-creator.ts::backwards-compatibility_re-export_of_escapeshellar::75fea6e3",
+      "summary": "Backwards-compatibility re-export of escapeShellArg",
+      "dimension": "incomplete_migration",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::incomplete_migration::subjective::incomplete_migration::src/vcs/pr-strategy.ts::re-export_shims_for_types_that_moved_to_types.ts::506625d5",
+      "summary": "Re-export shims for types that moved to types.ts",
+      "dimension": "incomplete_migration",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::low_level_elegance::subjective::low_level_elegance::src/config/normalizer.ts::deep_nesting_in_file_content_merge_logic::7176a372",
+      "summary": "Deep nesting in file content merge logic",
+      "dimension": "low_level_elegance",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::mid_level_elegance::subjective::mid_level_elegance::src/sync/pr-merge-handler.ts::createandmerge_takes_7_positional_parameters::7b843498",
+      "summary": "createAndMerge takes 7 positional parameters",
+      "dimension": "mid_level_elegance",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::mid_level_elegance::subjective::mid_level_elegance::src/sync/repository-processor.ts::constructor_assembles_9_components_with_manual_wir::ae275fc2",
+      "summary": "Constructor assembles 9 components with manual wiring",
+      "dimension": "mid_level_elegance",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::mid_level_elegance::subjective::mid_level_elegance::src/sync/sync-workflow.ts::repeated_dryrun_??_false_coercion_at_every_boundar::98a9429c",
+      "summary": "Repeated dryRun ?? false coercion at every boundary",
+      "dimension": "mid_level_elegance",
+      "investigated": false
+    },
+    {
+      "id": "review::.::holistic::package_organization::subjective::package_organization::src/cli/settings::cli_settings__subdirectory_contains_a_single_file::fb7ba40b",
+      "summary": "cli/settings/ subdirectory contains a single file",
+      "dimension": "package_organization",
+      "investigated": false
+    }
   ],
-  "status": "fixed",
-  "resolved": [
-    "cycles::src/sync/index.ts::src/sync/index.ts::src/sync/repository-processor.ts"
-  ],
-  "count": 1,
-  "next_command": "desloppify scan",
-  "overall_score": 72.6,
-  "objective_score": 95.3,
-  "strict_score": 72.6,
-  "verified_strict_score": 94.6,
-  "prev_overall_score": 72.6,
-  "prev_objective_score": 95.2,
-  "prev_strict_score": 72.6,
-  "prev_verified_strict_score": 94.6,
-  "attestation": "I have actually replaced the barrel import from ./index.js with direct imports from individual modules in repository-processor.ts and I am not gaming the score by resolving without fixing.",
+  "next_command": "desloppify issues show 1",
   "narrative": {
-    "phase": "middle_grind",
-    "headline": "\u26a0 7 security findings \u2014 review before other cleanup. All T1 items cleared!",
+    "phase": "refinement",
+    "headline": "\u26a0 7 security findings \u2014 review before other cleanup. All T1 items cleared! (52 review findings \u2014 run `desloppify issues`)",
     "dimensions": {
       "lowest_dimensions": [
         {
           "name": "Abstraction fit",
-          "strict": 40.0,
-          "issues": 0,
+          "strict": 42.0,
+          "issues": 6,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
         },
         {
           "name": "AI generated debt",
-          "strict": 48.0,
-          "issues": 0,
+          "strict": 58.0,
+          "issues": 6,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
         },
         {
-          "name": "Mid elegance",
-          "strict": 50.0,
-          "issues": 0,
+          "name": "API coherence",
+          "strict": 62.0,
+          "issues": 4,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -61,73 +360,24 @@
           "stuck_scans": 5
         },
         {
-          "name": "Error consistency",
-          "strict": 55.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Abstraction fit",
-          "strict": 40.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "AI generated debt",
-          "strict": 48.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "High elegance",
-          "strict": 65.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Mid elegance",
-          "strict": 50.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Low elegance",
-          "strict": 68.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Cross-module arch",
-          "strict": 52.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Convention drift",
-          "strict": 78.0,
-          "stuck_scans": 5
-        },
-        {
           "name": "API coherence",
           "strict": 62.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Auth consistency",
-          "strict": 58.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Stale migration",
-          "strict": 60.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Structure nav",
-          "strict": 70.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Design coherence",
-          "strict": 52.0,
           "stuck_scans": 5
         }
       ]
     },
     "actions": [
+      {
+        "type": "issue_queue",
+        "detector": "review",
+        "count": 52,
+        "description": "52 review findings need investigation \u2014 run `desloppify issues` to see the work queue",
+        "command": "desloppify issues",
+        "impact": 0.0,
+        "dimension": "Unknown",
+        "priority": 1,
+        "lane": "refactor_0"
+      },
       {
         "type": "reorganize",
         "detector": "flat_dirs",
@@ -136,7 +386,7 @@
         "command": "desloppify show flat_dirs --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 1,
+        "priority": 2,
         "lane": "restructure"
       },
       {
@@ -147,7 +397,7 @@
         "command": "desloppify show cycles --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 2,
+        "priority": 3,
         "lane": "restructure"
       },
       {
@@ -158,8 +408,8 @@
         "command": "desloppify show structural --status open",
         "impact": 0.0,
         "dimension": "File health",
-        "priority": 3,
-        "lane": "refactor_0"
+        "priority": 4,
+        "lane": "refactor_1"
       },
       {
         "type": "refactor",
@@ -169,8 +419,8 @@
         "command": "desloppify show dupes --status open",
         "impact": 0.0,
         "dimension": "Duplication",
-        "priority": 4,
-        "lane": "refactor_0"
+        "priority": 5,
+        "lane": "refactor_1"
       },
       {
         "type": "refactor",
@@ -180,7 +430,7 @@
         "command": "desloppify show test_coverage --status open",
         "impact": 0.0,
         "dimension": "Test health",
-        "priority": 5,
+        "priority": 6,
         "lane": "test_coverage"
       },
       {
@@ -191,8 +441,8 @@
         "command": "desloppify show signature --status open",
         "impact": 0.0,
         "dimension": "Unknown",
-        "priority": 6,
-        "lane": "refactor_0"
+        "priority": 7,
+        "lane": "refactor_1"
       },
       {
         "type": "refactor",
@@ -202,8 +452,8 @@
         "command": "desloppify show responsibility_cohesion --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 7,
-        "lane": "refactor_0"
+        "priority": 8,
+        "lane": "refactor_1"
       },
       {
         "type": "refactor",
@@ -213,8 +463,8 @@
         "command": "desloppify show boilerplate_duplication --status open",
         "impact": 0.0,
         "dimension": "Duplication",
-        "priority": 8,
-        "lane": "refactor_0"
+        "priority": 9,
+        "lane": "refactor_1"
       },
       {
         "type": "manual_fix",
@@ -224,19 +474,19 @@
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 9,
-        "lane": "refactor_0"
+        "priority": 10,
+        "lane": "refactor_1"
       },
       {
         "type": "manual_fix",
         "detector": "exports",
-        "count": 3,
-        "description": "3 exports findings \u2014 run `knip --fix` to remove dead exports",
+        "count": 17,
+        "description": "17 exports findings \u2014 run `knip --fix` to remove dead exports",
         "command": "desloppify show exports --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 10,
-        "lane": "refactor_1"
+        "priority": 11,
+        "lane": "refactor_2"
       },
       {
         "type": "manual_fix",
@@ -246,14 +496,14 @@
         "command": "desloppify show security --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 11,
-        "lane": "refactor_0"
+        "priority": 12,
+        "lane": "refactor_1"
       }
     ],
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 161,
+        "total_count": 331,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -261,8 +511,8 @@
       "lanes": {
         "restructure": {
           "actions": [
-            1,
-            2
+            2,
+            3
           ],
           "file_count": 2,
           "total_impact": 0.0,
@@ -271,31 +521,40 @@
         },
         "refactor_0": {
           "actions": [
-            3,
-            4,
-            6,
-            7,
-            8,
-            9,
-            11
+            1
           ],
-          "file_count": 83,
+          "file_count": 1,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "refactor_1": {
           "actions": [
-            10
+            4,
+            5,
+            7,
+            8,
+            9,
+            10,
+            12
           ],
-          "file_count": 2,
+          "file_count": 83,
+          "total_impact": 0.0,
+          "automation": "manual",
+          "run_first": false
+        },
+        "refactor_2": {
+          "actions": [
+            11
+          ],
+          "file_count": 3,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "test_coverage": {
           "actions": [
-            5
+            6
           ],
           "file_count": 6,
           "total_impact": 0.0,
@@ -304,7 +563,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify."
+      "hint": "5 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 52 finding(s) \u2014 `desloppify issues`."
     },
     "tools": {
       "fixers": [
@@ -347,10 +606,10 @@
     },
     "milestone": "All T1 items cleared!",
     "primary_action": {
-      "command": "desloppify show flat_dirs --status open",
-      "description": "1 flat_dirs findings \u2014 create subdirectories and use `desloppify move`"
+      "command": "desloppify issues",
+      "description": "52 review findings need investigation \u2014 run `desloppify issues` to see the work queue"
     },
-    "why_now": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify.",
+    "why_now": "5 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 52 finding(s) \u2014 `desloppify issues`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -358,37 +617,29 @@
     "risk_flags": [],
     "strict_target": {
       "target": 95.0,
-      "current": 72.6,
-      "gap": 22.4,
+      "current": 80.2,
+      "gap": 14.8,
       "state": "below",
       "warning": null
     },
     "reminders": [
       {
-        "type": "rereview_needed",
-        "message": "Subjective results may be stale after resolve. Re-run `desloppify review --prepare` to refresh, or reset with `desloppify scan --reset-subjective` before a clean rerun.",
+        "type": "review_not_run",
+        "message": "Mechanical checks look good! Run a subjective design review to catch issues linters miss: desloppify review --prepare",
         "command": "desloppify review --prepare",
-        "priority": 1,
-        "severity": "high"
-      },
-      {
-        "type": "rescan_needed",
-        "message": "Rescan to verify \u2014 cascading effects may create new findings.",
-        "command": "desloppify scan",
-        "priority": 1,
-        "severity": "high"
+        "priority": 3,
+        "severity": "low"
       }
     ],
     "reminder_history": {
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 2,
-      "report_scores": 7,
+      "report_scores": 8,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
-      "rereview_needed": 1,
-      "rescan_needed": 1
+      "review_not_run": 2
     }
   },
   "config": {
