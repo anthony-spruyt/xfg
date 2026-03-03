@@ -55,7 +55,7 @@ jobs:
           git worktree remove /tmp/v3-docs
 
       - name: Build v4 docs from main
-        run: mike deploy --update-aliases 4.x latest
+        run: mike deploy --update-aliases --alias-type copy 4.x latest
 
       - name: Set default version
         run: mike set-default latest
