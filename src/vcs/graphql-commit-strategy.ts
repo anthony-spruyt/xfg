@@ -275,19 +275,22 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
 
     // Use token parameter for authentication when provided
     // This ensures the GitHub App is used as the commit author, not github-actions[bot]
-    // GH_TOKEN env var must be set for the gh command (after the pipe), not echo
-    const tokenPrefix = token ? `GH_TOKEN=${token} ` : "";
+    // Token is passed via env var to avoid shell injection
+    const tokenEnv = token ? { GH_TOKEN: token } : undefined;
 
-    const command = `echo ${escapeShellArg(requestBody)} | ${tokenPrefix}gh api graphql ${hostnameArg} --input -`;
+    const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
 
     let response: string;
     try {
-      response = await withRetry(() => this.executor.exec(command, workDir), {
-        permanentErrorPatterns: [
-          ...DEFAULT_PERMANENT_ERROR_PATTERNS,
-          ...OID_MISMATCH_PATTERNS,
-        ],
-      });
+      response = await withRetry(
+        () => this.executor.exec(command, workDir, { env: tokenEnv }),
+        {
+          permanentErrorPatterns: [
+            ...DEFAULT_PERMANENT_ERROR_PATTERNS,
+            ...OID_MISMATCH_PATTERNS,
+          ],
+        }
+      );
     } catch (error) {
       throw this.sanitizeCommandError(error, repositoryNameWithOwner);
     }
@@ -452,15 +455,18 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       repoInfo.host !== "github.com"
         ? `--hostname ${escapeShellArg(repoInfo.host)}`
         : "";
-    const tokenPrefix = token ? `GH_TOKEN=${token} ` : "";
-    const command = `echo ${escapeShellArg(requestBody)} | ${tokenPrefix}gh api graphql ${hostnameArg} --input -`;
+    const tokenEnv = token ? { GH_TOKEN: token } : undefined;
+    const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
 
     let response: string;
     try {
-      response = await withRetry(() => this.executor.exec(command, workDir), {
-        permanentErrorPatterns:
-          GraphQLCommitStrategy.GRAPHQL_PERMANENT_ERROR_PATTERNS,
-      });
+      response = await withRetry(
+        () => this.executor.exec(command, workDir, { env: tokenEnv }),
+        {
+          permanentErrorPatterns:
+            GraphQLCommitStrategy.GRAPHQL_PERMANENT_ERROR_PATTERNS,
+        }
+      );
     } catch (error) {
       throw this.sanitizeCommandError(
         error,

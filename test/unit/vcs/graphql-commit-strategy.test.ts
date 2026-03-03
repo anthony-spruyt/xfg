@@ -13,7 +13,10 @@ import {
   AzureDevOpsRepoInfo,
 } from "../../../src/shared/repo-detector.js";
 import { CommitOptions } from "../../../src/vcs/commit-strategy.js";
-import { ICommandExecutor } from "../../../src/shared/command-executor.js";
+import {
+  ICommandExecutor,
+  ExecOptions,
+} from "../../../src/shared/command-executor.js";
 import { AuthenticatedGitOps } from "../../../src/vcs/authenticated-git-ops.js";
 
 // Create a mock AuthenticatedGitOps for testing
@@ -35,18 +38,23 @@ const testDir = join(process.cwd(), "test-graphql-commit-strategy-tmp");
 
 // Mock executor for testing - implements ICommandExecutor interface
 function createMockExecutor(): ICommandExecutor & {
-  calls: Array<{ command: string; cwd: string }>;
+  calls: Array<{ command: string; cwd: string; options?: ExecOptions }>;
   responses: Map<string, string | Error | (() => string | Error)>;
   reset: () => void;
 } {
-  const calls: Array<{ command: string; cwd: string }> = [];
+  const calls: Array<{ command: string; cwd: string; options?: ExecOptions }> =
+    [];
   const responses = new Map<string, string | Error | (() => string | Error)>();
 
   return {
     calls,
     responses,
-    async exec(command: string, cwd: string): Promise<string> {
-      calls.push({ command, cwd });
+    async exec(
+      command: string,
+      cwd: string,
+      options?: ExecOptions
+    ): Promise<string> {
+      calls.push({ command, cwd, options });
 
       // Check for matching response
       for (const [pattern, response] of responses) {
@@ -703,12 +711,16 @@ describe("GraphQLCommitStrategy", () => {
       const graphqlCalls = mockExecutor.calls.filter((c) =>
         c.command.includes("gh api graphql")
       );
-      // All GraphQL calls should include the token
+      // All GraphQL calls should pass token via env, not in command string
       for (const call of graphqlCalls) {
         assert.ok(
-          call.command.includes("GH_TOKEN=ghs_test_token_from_parameter"),
-          "GraphQL command should set GH_TOKEN env var with the token from options. " +
-            `Got: ${call.command.substring(0, 200)}...`
+          !call.command.includes("GH_TOKEN"),
+          "GraphQL command should not have token in command string"
+        );
+        assert.strictEqual(
+          call.options?.env?.GH_TOKEN,
+          "ghs_test_token_from_parameter",
+          "GraphQL command should pass token via env option"
         );
       }
     });
@@ -1019,12 +1031,16 @@ describe("GraphQLCommitStrategy", () => {
         "Should have called gh api graphql at least twice"
       );
 
-      // No command should include GH_TOKEN prefix when no token provided
+      // No command should include GH_TOKEN and env should not have it
       for (const call of graphqlCalls) {
         assert.ok(
-          !call.command.startsWith("GH_TOKEN="),
-          "GraphQL command should not include GH_TOKEN prefix when no token. " +
-            `Got: ${call.command.substring(0, 200)}...`
+          !call.command.includes("GH_TOKEN"),
+          "GraphQL command should not have token in command string"
+        );
+        assert.strictEqual(
+          call.options?.env,
+          undefined,
+          "GraphQL command should not pass env when no token provided"
         );
       }
     });
@@ -1649,8 +1665,13 @@ describe("GraphQLCommitStrategy", () => {
       // First two calls are ref operations (query + create)
       for (let i = 0; i < 2; i++) {
         assert.ok(
-          graphqlCalls[i].command.includes("GH_TOKEN=ghs_my_secret_token"),
-          `GraphQL ref call ${i} should include token`
+          !graphqlCalls[i].command.includes("GH_TOKEN"),
+          `GraphQL ref call ${i} should not have token in command string`
+        );
+        assert.strictEqual(
+          graphqlCalls[i].options?.env?.GH_TOKEN,
+          "ghs_my_secret_token",
+          `GraphQL ref call ${i} should pass token via env`
         );
       }
     });
