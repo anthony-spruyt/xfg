@@ -86,7 +86,7 @@ function configToGitHubPayload(
   return payload;
 }
 
-export interface GitHubRepoSettingsStrategyOptions {
+interface GitHubRepoSettingsStrategyOptions {
   retries?: number;
 }
 

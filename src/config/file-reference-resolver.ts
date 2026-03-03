@@ -4,7 +4,7 @@ import JSON5 from "json5";
 import { parse as parseYaml } from "yaml";
 import type { ContentValue, RawConfig } from "./types.js";
 
-export interface FileReferenceOptions {
+interface FileReferenceOptions {
   configDir: string;
 }
 

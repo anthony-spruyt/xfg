@@ -93,7 +93,7 @@ function validateLabel(label: unknown, name: string, context: string): void {
 /**
  * Validates settings object containing rulesets, labels, and repo settings.
  */
-export function validateSettings(
+function validateSettings(
   settings: unknown,
   context: string,
   rootRulesetNames?: string[],

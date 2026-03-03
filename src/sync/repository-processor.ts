@@ -37,7 +37,6 @@ import {
 export class RepositoryProcessor implements IRepositoryProcessor {
   private readonly syncWorkflow: ISyncWorkflow;
   private readonly fileSyncOrchestrator: IFileSyncOrchestrator;
-  private readonly log: ILogger;
 
   constructor(
     gitOpsFactory?: GitOpsFactory,
@@ -58,7 +57,6 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       gitOpsFactory ??
       ((opts, auth) => new AuthenticatedGitOps(new GitOps(opts), auth));
     const logInstance = log ?? logger;
-    this.log = logInstance;
 
     // Initialize token manager for auth builder
     const tokenManager = hasGitHubAppCredentials()

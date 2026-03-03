@@ -1,61 +1,10 @@
 // Types
-export type {
-  PRMergeConfig,
-  MergeResult,
-  PRStrategyOptions,
-  MergeOptions,
-  CloseExistingPROptions,
-  IPRStrategy,
-  FileChange,
-  CommitOptions,
-  CommitResult,
-  ICommitStrategy,
-} from "./types.js";
-
-// Core git operations
-export {
-  GitOps,
-  sanitizeBranchName,
-  validateBranchName,
-  type IGitOps,
-  type GitOpsOptions,
-} from "./git-ops.js";
-
-// Authenticated git operations (with per-command auth)
-export {
-  AuthenticatedGitOps,
-  type IAuthenticatedGitOps,
-  type GitAuthOptions,
-} from "./authenticated-git-ops.js";
+export type { PRMergeConfig, FileChange } from "./types.js";
 
 // GitHub App token management
 export { GitHubAppTokenManager } from "./github-app-token-manager.js";
 
-// PR creation utilities
-export {
-  createPR,
-  mergePR,
-  formatPRBody,
-  formatPRTitle,
-  escapeShellArg,
-  type PROptions,
-  type PRResult,
-  type FileAction,
-  type MergePROptions,
-} from "./pr-creator.js";
-
-// PR strategies
-export { BasePRStrategy, PRWorkflowExecutor } from "./pr-strategy.js";
-export { GitHubPRStrategy } from "./github-pr-strategy.js";
-export { AzurePRStrategy } from "./azure-pr-strategy.js";
-export { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
-
 // Commit strategies
-export { GitCommitStrategy } from "./git-commit-strategy.js";
-export {
-  GraphQLCommitStrategy,
-  MAX_PAYLOAD_SIZE,
-} from "./graphql-commit-strategy.js";
 export {
   getCommitStrategy,
   hasGitHubAppCredentials,
