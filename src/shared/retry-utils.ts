@@ -37,7 +37,7 @@ export const DEFAULT_PERMANENT_ERROR_PATTERNS: RegExp[] = [
  * These typically indicate temporary network or service issues.
  * Export allows customization for different environments.
  */
-export const DEFAULT_TRANSIENT_ERROR_PATTERNS: RegExp[] = [
+const DEFAULT_TRANSIENT_ERROR_PATTERNS: RegExp[] = [
   /timed?\s*out/i,
   /ETIMEDOUT/,
   /ECONNRESET/,
@@ -62,7 +62,7 @@ export const DEFAULT_TRANSIENT_ERROR_PATTERNS: RegExp[] = [
   /unable\s*to\s*access/i,
 ];
 
-export interface RetryOptions {
+interface RetryOptions {
   /** Maximum number of retries (default: 3) */
   retries?: number;
   /** Callback when a retry attempt fails */

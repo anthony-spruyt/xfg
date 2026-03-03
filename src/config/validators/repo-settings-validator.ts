@@ -102,11 +102,3 @@ export function validateRepoSettings(repo: unknown, context: string): void {
     );
   }
 }
-
-export {
-  VALID_VISIBILITY,
-  VALID_SQUASH_MERGE_COMMIT_TITLE,
-  VALID_SQUASH_MERGE_COMMIT_MESSAGE,
-  VALID_MERGE_COMMIT_TITLE,
-  VALID_MERGE_COMMIT_MESSAGE,
-};

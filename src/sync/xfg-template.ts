@@ -16,7 +16,7 @@ export interface XfgTemplateContext {
   vars?: Record<string, string>;
 }
 
-export interface XfgInterpolationOptions {
+interface XfgInterpolationOptions {
   /**
    * If true (default), throws an error when a variable is missing.
    * If false, leaves the placeholder as-is.

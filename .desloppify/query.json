@@ -1,26 +1,47 @@
 {
-  "command": "resolve",
-  "patterns": [
-    "review::.::holistic::authorization_consistency::authorization_consistency::src/vcs/graphql-commit-strategy.ts::inconsistent_token_passing_in_shell_commands::00ff9cea"
-  ],
-  "status": "fixed",
-  "resolved": [
-    "review::.::holistic::authorization_consistency::authorization_consistency::src/vcs/graphql-commit-strategy.ts::inconsistent_token_passing_in_shell_commands::00ff9cea"
-  ],
-  "count": 1,
-  "next_command": "desloppify issues",
-  "overall_score": 71.8,
-  "objective_score": 93.3,
-  "strict_score": 71.8,
-  "verified_strict_score": 93.2,
-  "prev_overall_score": 71.8,
-  "prev_objective_score": 93.3,
-  "prev_strict_score": 71.8,
-  "prev_verified_strict_score": 93.2,
-  "attestation": "I have actually changed both executeGraphQLMutation and executeGraphQLRefOp to pass tokens via ExecOptions.env instead of shell string interpolation, matching the buildTokenEnv pattern in github-pr-strategy.ts, and I am not gaming the score by resolving without fixing.",
+  "command": "show",
+  "query": "exports",
+  "status_filter": "open",
+  "total": 2,
+  "summary": {
+    "by_tier": {
+      "T2": 2
+    },
+    "by_detector": {
+      "exports": 2
+    },
+    "files": 1
+  },
+  "by_file": {
+    "src/shared/retry-utils.ts": [
+      {
+        "id": "exports::src/shared/retry-utils.ts::DEFAULT_TRANSIENT_ERROR_PATTERNS",
+        "tier": 2,
+        "confidence": "high",
+        "summary": "Dead export: DEFAULT_TRANSIENT_ERROR_PATTERNS",
+        "detail": {
+          "line": 1329,
+          "kind": "export"
+        }
+      },
+      {
+        "id": "exports::src/shared/retry-utils.ts::RetryOptions",
+        "tier": 2,
+        "confidence": "high",
+        "summary": "Dead export: RetryOptions",
+        "detail": {
+          "line": 1900,
+          "kind": "type"
+        }
+      }
+    ]
+  },
+  "total_matching": 2,
+  "noise_budget": 10,
+  "noise_global_budget": 0,
   "narrative": {
-    "phase": "middle_grind",
-    "headline": "\u26a0 7 security findings \u2014 review before other cleanup. All T1 items cleared! (20 review findings \u2014 run `desloppify issues`)",
+    "phase": "stagnation",
+    "headline": "\u26a0 7 security findings \u2014 review before other cleanup. All T1 items cleared! (19 review findings \u2014 run `desloppify issues`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -34,7 +55,7 @@
         {
           "name": "AI generated debt",
           "strict": 48.0,
-          "issues": 4,
+          "issues": 3,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -59,6 +80,81 @@
           "name": "Duplication",
           "strict": 90.6,
           "stuck_scans": 5
+        },
+        {
+          "name": "Test health",
+          "strict": 94.2,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Security",
+          "strict": 97.3,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Error consistency",
+          "strict": 55.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Abstraction fit",
+          "strict": 40.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "AI generated debt",
+          "strict": 48.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "High elegance",
+          "strict": 65.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Mid elegance",
+          "strict": 50.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Low elegance",
+          "strict": 68.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Cross-module arch",
+          "strict": 52.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Convention drift",
+          "strict": 78.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "API coherence",
+          "strict": 62.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Auth consistency",
+          "strict": 58.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Stale migration",
+          "strict": 60.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Structure nav",
+          "strict": 70.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Design coherence",
+          "strict": 52.0,
+          "stuck_scans": 5
         }
       ]
     },
@@ -66,24 +162,13 @@
       {
         "type": "issue_queue",
         "detector": "review",
-        "count": 20,
-        "description": "20 review findings need investigation \u2014 run `desloppify issues` to see the work queue",
+        "count": 19,
+        "description": "19 review findings need investigation \u2014 run `desloppify issues` to see the work queue",
         "command": "desloppify issues",
         "impact": 0.0,
         "dimension": "Unknown",
         "priority": 1,
         "lane": "refactor_0"
-      },
-      {
-        "type": "auto_fix",
-        "detector": "unused",
-        "count": 1,
-        "description": "1 unused findings \u2014 run `desloppify fix unused-imports --dry-run` to preview, then apply",
-        "command": "desloppify fix unused-imports --dry-run",
-        "impact": 0.0,
-        "dimension": "Code quality",
-        "priority": 2,
-        "lane": "cleanup"
       },
       {
         "type": "reorganize",
@@ -93,7 +178,7 @@
         "command": "desloppify show flat_dirs --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 3,
+        "priority": 2,
         "lane": "restructure"
       },
       {
@@ -104,7 +189,7 @@
         "command": "desloppify show cycles --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 4,
+        "priority": 3,
         "lane": "restructure"
       },
       {
@@ -115,7 +200,7 @@
         "command": "desloppify show facade --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 5,
+        "priority": 4,
         "lane": "restructure"
       },
       {
@@ -126,7 +211,7 @@
         "command": "desloppify show structural --status open",
         "impact": 0.0,
         "dimension": "File health",
-        "priority": 6,
+        "priority": 5,
         "lane": "refactor_1"
       },
       {
@@ -137,7 +222,7 @@
         "command": "desloppify show dupes --status open",
         "impact": 0.0,
         "dimension": "Duplication",
-        "priority": 7,
+        "priority": 6,
         "lane": "refactor_1"
       },
       {
@@ -148,7 +233,7 @@
         "command": "desloppify show test_coverage --status open",
         "impact": 0.0,
         "dimension": "Test health",
-        "priority": 8,
+        "priority": 7,
         "lane": "test_coverage"
       },
       {
@@ -159,7 +244,7 @@
         "command": "desloppify show signature --status open",
         "impact": 0.0,
         "dimension": "Unknown",
-        "priority": 9,
+        "priority": 8,
         "lane": "refactor_1"
       },
       {
@@ -170,7 +255,7 @@
         "command": "desloppify show responsibility_cohesion --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 10,
+        "priority": 9,
         "lane": "refactor_1"
       },
       {
@@ -181,7 +266,7 @@
         "command": "desloppify show boilerplate_duplication --status open",
         "impact": 0.0,
         "dimension": "Duplication",
-        "priority": 11,
+        "priority": 10,
         "lane": "refactor_1"
       },
       {
@@ -192,19 +277,19 @@
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 12,
+        "priority": 11,
         "lane": "refactor_1"
       },
       {
         "type": "manual_fix",
         "detector": "exports",
-        "count": 49,
-        "description": "49 exports findings \u2014 run `knip --fix` to remove dead exports",
+        "count": 2,
+        "description": "2 exports findings \u2014 run `knip --fix` to remove dead exports",
         "command": "desloppify show exports --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 13,
-        "lane": "refactor_1"
+        "priority": 12,
+        "lane": "refactor_2"
       },
       {
         "type": "manual_fix",
@@ -214,33 +299,24 @@
         "command": "desloppify show security --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 14,
+        "priority": 13,
         "lane": "refactor_1"
       }
     ],
     "strategy": {
       "fixer_leverage": {
-        "auto_fixable_count": 1,
-        "total_count": 272,
-        "coverage": 0.004,
+        "auto_fixable_count": 0,
+        "total_count": 221,
+        "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
       },
       "lanes": {
-        "cleanup": {
-          "actions": [
-            2
-          ],
-          "file_count": 1,
-          "total_impact": 0.0,
-          "automation": "full",
-          "run_first": true
-        },
         "restructure": {
           "actions": [
+            2,
             3,
-            4,
-            5
+            4
           ],
           "file_count": 5,
           "total_impact": 0.0,
@@ -258,23 +334,31 @@
         },
         "refactor_1": {
           "actions": [
+            5,
             6,
-            7,
+            8,
             9,
             10,
             11,
-            12,
-            13,
-            14
+            13
           ],
-          "file_count": 93,
+          "file_count": 83,
+          "total_impact": 0.0,
+          "automation": "manual",
+          "run_first": false
+        },
+        "refactor_2": {
+          "actions": [
+            12
+          ],
+          "file_count": 1,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "test_coverage": {
           "actions": [
-            8
+            7
           ],
           "file_count": 6,
           "total_impact": 0.0,
@@ -283,28 +367,10 @@
         }
       },
       "can_parallelize": true,
-      "hint": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 20 finding(s) \u2014 `desloppify issues`."
+      "hint": "5 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 19 finding(s) \u2014 `desloppify issues`."
     },
     "tools": {
       "fixers": [
-        {
-          "name": "unused-imports",
-          "detector": "unused",
-          "open_count": 1,
-          "command": "desloppify fix unused-imports --dry-run"
-        },
-        {
-          "name": "unused-vars",
-          "detector": "unused",
-          "open_count": 1,
-          "command": "desloppify fix unused-vars --dry-run"
-        },
-        {
-          "name": "unused-params",
-          "detector": "unused",
-          "open_count": 1,
-          "command": "desloppify fix unused-params --dry-run"
-        },
         {
           "name": "dead-useeffect",
           "detector": "smells",
@@ -345,9 +411,9 @@
     "milestone": "All T1 items cleared!",
     "primary_action": {
       "command": "desloppify issues",
-      "description": "20 review findings need investigation \u2014 run `desloppify issues` to see the work queue"
+      "description": "19 review findings need investigation \u2014 run `desloppify issues` to see the work queue"
     },
-    "why_now": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 20 finding(s) \u2014 `desloppify issues`.",
+    "why_now": "5 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 19 finding(s) \u2014 `desloppify issues`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -355,37 +421,20 @@
     "risk_flags": [],
     "strict_target": {
       "target": 95.0,
-      "current": 71.8,
-      "gap": 23.2,
+      "current": 72.5,
+      "gap": 22.5,
       "state": "below",
       "warning": null
     },
-    "reminders": [
-      {
-        "type": "rereview_needed",
-        "message": "Subjective results may be stale after resolve. Re-run `desloppify review --prepare` to refresh, or reset with `desloppify scan --reset-subjective` before a clean rerun.",
-        "command": "desloppify review --prepare",
-        "priority": 1,
-        "severity": "high"
-      },
-      {
-        "type": "rescan_needed",
-        "message": "Rescan to verify \u2014 cascading effects may create new findings.",
-        "command": "desloppify scan",
-        "priority": 1,
-        "severity": "high"
-      }
-    ],
+    "reminders": [],
     "reminder_history": {
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 2,
-      "report_scores": 5,
+      "report_scores": 10,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
-      "stagnant_nudge": 3,
-      "rereview_needed": 1,
-      "rescan_needed": 1
+      "stagnant_nudge": 3
     }
   },
   "config": {

@@ -1,6 +1,6 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { escapeShellArg } from "../shared/shell-utils.js";
+import { escapeShellArg, escapeRegExp } from "../shared/shell-utils.js";
 import { isGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { PRResult } from "./pr-creator.js";
 import {
@@ -35,13 +35,6 @@ function getHostnameFlag(repoInfo: GitHubRepoInfo): string {
     return `--hostname ${escapeShellArg(repoInfo.host)}`;
   }
   return "";
-}
-
-/**
- * Escape special regex characters in a string.
- */
-function escapeRegExp(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**

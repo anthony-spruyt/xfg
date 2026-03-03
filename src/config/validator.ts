@@ -8,6 +8,7 @@ import {
 } from "./validators/file-validator.js";
 import { validateRepoSettings } from "./validators/repo-settings-validator.js";
 import { validateRuleset } from "./validators/ruleset-validator.js";
+import { escapeRegExp } from "../shared/shell-utils.js";
 
 // Pattern for valid config ID: alphanumeric, hyphens, underscores
 const CONFIG_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
@@ -27,13 +28,6 @@ function isValidGitUrl(url: string): boolean {
     return true;
   }
   return false;
-}
-
-/**
- * Escape special regex characters in a string.
- */
-function escapeRegExp(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**

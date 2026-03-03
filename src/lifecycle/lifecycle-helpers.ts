@@ -9,7 +9,7 @@ import type {
   LifecycleResult,
 } from "./types.js";
 
-export interface LifecycleCheckOptions {
+interface LifecycleCheckOptions {
   dryRun: boolean;
   /** Base work directory (combined with repoIndex to compute full path). */
   workDir?: string;
@@ -40,7 +40,7 @@ export function toCreateRepoSettings(
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-export interface LifecycleCheckResult {
+interface LifecycleCheckResult {
   lifecycleResult: LifecycleResult;
   outputLines: string[];
 }
