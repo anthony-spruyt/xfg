@@ -1,9 +1,51 @@
 import type { RepoInfo } from "../../shared/repo-detector.js";
 import type { Ruleset } from "../../config/index.js";
-import type {
-  GitHubRuleset,
-  RulesetStrategyOptions,
-} from "./github-ruleset-strategy.js";
+
+// =============================================================================
+// GitHub API Types
+// =============================================================================
+
+/**
+ * GitHub Ruleset response from API (snake_case).
+ */
+export interface GitHubRuleset {
+  id: number;
+  name: string;
+  target: "branch" | "tag";
+  enforcement: "active" | "disabled" | "evaluate";
+  bypass_actors?: GitHubBypassActor[];
+  conditions?: GitHubRulesetConditions;
+  rules?: GitHubRule[];
+  source_type?: string;
+  source?: string;
+}
+
+export interface GitHubBypassActor {
+  actor_id: number;
+  actor_type: "Team" | "User" | "Integration";
+  bypass_mode?: "always" | "pull_request";
+}
+
+export interface GitHubRulesetConditions {
+  ref_name?: {
+    include?: string[];
+    exclude?: string[];
+  };
+}
+
+export interface GitHubRule {
+  type: string;
+  parameters?: Record<string, unknown>;
+}
+
+export interface RulesetStrategyOptions {
+  token?: string;
+  host?: string;
+}
+
+// =============================================================================
+// Strategy Interface
+// =============================================================================
 
 export interface IRulesetStrategy {
   list(
