@@ -18,8 +18,6 @@ import type {
   GitHubRule,
   RulesetStrategyOptions,
 } from "./types.js";
-// Re-export for backward compatibility (tests import from here)
-export type { GitHubRuleset } from "./types.js";
 
 // =============================================================================
 // Conversion Functions

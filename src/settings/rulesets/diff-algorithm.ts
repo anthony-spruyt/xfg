@@ -113,7 +113,7 @@ export function computePropertyDiffs(
 /**
  * Diff two arrays of objects by matching items on `type` field (or by index).
  */
-export function diffObjectArrays(
+function diffObjectArrays(
   currentArr: unknown[],
   desiredArr: unknown[],
   parentPath: string[]

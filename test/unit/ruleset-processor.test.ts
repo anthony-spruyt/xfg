@@ -6,10 +6,8 @@ import type {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
 } from "../../src/shared/repo-detector.js";
-import type {
-  GitHubRuleset,
-  GitHubRulesetStrategy,
-} from "../../src/settings/rulesets/github-ruleset-strategy.js";
+import type { GitHubRulesetStrategy } from "../../src/settings/rulesets/github-ruleset-strategy.js";
+import type { GitHubRuleset } from "../../src/settings/rulesets/types.js";
 
 // Mock strategy that tracks calls and returns configured responses
 class MockRulesetStrategy {

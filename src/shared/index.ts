@@ -1,5 +1,5 @@
 // Logging
-export { Logger, logger, type ILogger, type LoggerStats } from "./logger.js";
+export { Logger, logger, type ILogger } from "./logger.js";
 
 // Retry utilities
 export {
@@ -44,10 +44,8 @@ export {
   isGitHubRepo,
   isAzureDevOpsRepo,
   isGitLabRepo,
-  type RepoType,
   type RepoInfo,
   type GitHubRepoInfo,
   type AzureDevOpsRepoInfo,
   type GitLabRepoInfo,
-  type RepoDetectorContext,
 } from "./repo-detector.js";

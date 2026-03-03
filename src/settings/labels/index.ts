@@ -6,11 +6,7 @@ export type {
 } from "./types.js";
 
 // Converter
-export {
-  normalizeColor,
-  labelConfigToPayload,
-  type GitHubLabelPayload,
-} from "./converter.js";
+export { normalizeColor, labelConfigToPayload } from "./converter.js";
 
 // Diff
 export { diffLabels, type LabelChange, type LabelAction } from "./diff.js";
