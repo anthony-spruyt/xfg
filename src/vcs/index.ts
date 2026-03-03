@@ -1,9 +1,6 @@
 // Types
 export type { PRMergeConfig, FileChange } from "./types.js";
 
-// GitHub App token management
-export { GitHubAppTokenManager } from "./github-app-token-manager.js";
-
 // Commit strategies
 export {
   getCommitStrategy,
