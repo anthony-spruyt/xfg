@@ -13,7 +13,7 @@ import {
 // Types
 // =============================================================================
 
-export interface UnifiedSummaryInput {
+interface UnifiedSummaryInput {
   lifecycle?: LifecycleReport;
   sync?: SyncReport;
   settings?: SettingsReport;
