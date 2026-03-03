@@ -53,7 +53,7 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          TREE_SHA=$(git rev-parse gh-pages^{tree})
+          TREE_SHA=$(git rev-parse "gh-pages^{tree}")
           MESSAGE=$(git log -1 --format=%s gh-pages)
 
           # Get parent commit (if gh-pages exists on remote)
