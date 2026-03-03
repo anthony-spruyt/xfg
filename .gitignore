@@ -44,4 +44,11 @@ Thumbs.db
 # Worktrees
 .worktrees/
 
+# Desloppify (ephemeral artifacts; state + query are tracked)
+.desloppify/external_review_sessions/
+.desloppify/review_packet_blind.json
+.desloppify/review_packets/
+.desloppify/state-typescript.json.bak
+.desloppify/subagents/
+
 docs/plans
