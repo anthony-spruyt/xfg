@@ -39,7 +39,7 @@ jobs:
           python-version: "3.x"
 
       - name: Install MkDocs Material
-        run: pip install 'mkdocs<2' mkdocs-material mike
+        run: pip install 'mkdocs<2' 'mkdocs-material<9.7' mike
 
       - name: Configure git for mike
         run: |
@@ -49,40 +49,54 @@ jobs:
       - name: Build docs locally (no push)
         run: mike deploy --update-aliases 4.x latest
 
-      - name: Push gh-pages via API (signed commit)
+      - name: Push git objects to remote
+        run: |
+          # Push local gh-pages objects to a temporary tag ref so GitHub
+          # has the tree/blob objects. Tags are not covered by the
+          # branch-signatures ruleset (refs/heads/**).
+          git push --force origin "gh-pages:refs/tags/_gh-pages-staging"
+
+      - name: Create signed commit via API and update gh-pages
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           TREE_SHA=$(git rev-parse "gh-pages^{tree}")
           MESSAGE=$(git log -1 --format=%s gh-pages)
 
-          # Get parent commit (if gh-pages exists on remote)
-          PARENT_SHA=$(gh api repos/${{ github.repository }}/git/ref/heads/gh-pages \
-            --jq '.object.sha' 2>/dev/null || echo "")
+          # Get parent commit SHA (empty string if gh-pages doesn't exist on remote)
+          PARENT_SHA=""
+          if gh api "repos/${{ github.repository }}/git/ref/heads/gh-pages" --jq '.object.sha' > /tmp/parent_sha 2>/dev/null; then
+            PARENT_SHA=$(cat /tmp/parent_sha)
+          fi
 
+          # Create a signed commit via the GitHub API
           if [ -n "$PARENT_SHA" ]; then
-            COMMIT_SHA=$(gh api repos/${{ github.repository }}/git/commits \
+            COMMIT_SHA=$(gh api "repos/${{ github.repository }}/git/commits" \
               --method POST \
               -f "message=$MESSAGE" \
               -f "tree=$TREE_SHA" \
               -f "parents[]=$PARENT_SHA" \
               --jq '.sha')
 
-            gh api repos/${{ github.repository }}/git/refs/heads/gh-pages \
+            gh api "repos/${{ github.repository }}/git/refs/heads/gh-pages" \
               --method PATCH \
               -f "sha=$COMMIT_SHA" \
               -F "force=true"
           else
-            COMMIT_SHA=$(gh api repos/${{ github.repository }}/git/commits \
+            COMMIT_SHA=$(gh api "repos/${{ github.repository }}/git/commits" \
               --method POST \
               -f "message=$MESSAGE" \
               -f "tree=$TREE_SHA" \
               --jq '.sha')
 
-            gh api repos/${{ github.repository }}/git/refs \
+            gh api "repos/${{ github.repository }}/git/refs" \
               --method POST \
               -f "ref=refs/heads/gh-pages" \
               -f "sha=$COMMIT_SHA"
           fi
 
           echo "Pushed verified commit $COMMIT_SHA to gh-pages"
+
+      - name: Clean up staging tag
+        if: always()
+        run: git push origin --delete refs/tags/_gh-pages-staging || true
