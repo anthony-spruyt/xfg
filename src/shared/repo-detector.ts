@@ -1,7 +1,7 @@
 export type RepoType = "github" | "azure-devops" | "gitlab";
 
 // Context for repo detection with optional GitHub Enterprise hosts
-export interface RepoDetectorContext {
+interface RepoDetectorContext {
   githubHosts?: string[];
 }
 
