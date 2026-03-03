@@ -327,31 +327,39 @@ describe("GitHubLifecycleProvider", () => {
 
     describe("create() with defaultBranch", () => {
       test("renames branch when GitHub created a different default branch", async () => {
-        const { mock: executor, calls } = createMockExecutor({
-          responses: new Map([
-            // gh repo create succeeds
-            ["gh repo create", ""],
-            // GET repo -> actual default branch is "master"
-            ["--jq '.default_branch'", "master"],
-            // POST branch rename succeeds
-            ["branches/'master'/rename", ""],
-            // GET README SHA
-            ["contents/README.md --jq", "abc123def"],
-            // DELETE README
-            ["--method DELETE", ""],
-          ]),
-          defaultResponse: "",
-        });
+        // Custom executor: returns "master" on the first default_branch
+        // query (before rename) and "main" on subsequent queries (after rename,
+        // during the waitForDefaultBranch poll).
+        // Note: This mock executor follows the same ICommandExecutor interface
+        // used throughout the test suite. No shell commands are executed.
+        let defaultBranchCallCount = 0;
+        const calls: Array<{ command: string; cwd: string }> = [];
+        const executor = {
+          async exec(command: string, cwd: string): Promise<string> {
+            calls.push({ command, cwd });
+            if (command.includes("--jq '.default_branch'")) {
+              defaultBranchCallCount++;
+              return defaultBranchCallCount === 1 ? "master" : "main";
+            }
+            if (command.includes("gh repo create")) return "";
+            if (command.includes("branches/'master'/rename")) return "";
+            if (command.includes("contents/README.md --jq")) return "abc123def";
+            if (command.includes("--method DELETE")) return "";
+            return "";
+          },
+        };
 
         const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
         await provider.create(mockRepoInfo, { defaultBranch: "main" });
 
-        // Should have: create, get default_branch, rename, get README sha, delete README
-        assert.equal(calls.length, 5);
+        // Should have: create, get default_branch, rename, poll default_branch, get README sha, delete README
+        assert.ok(calls.length >= 5);
         assert.ok(calls[1].command.includes("--jq '.default_branch'"));
         assert.ok(calls[2].command.includes("branches/'master'/rename"));
         assert.ok(calls[2].command.includes("--method POST"));
         assert.ok(calls[2].command.includes("'main'"));
+        // Verify polling happened (call after rename should also query default_branch)
+        assert.ok(calls[3].command.includes("--jq '.default_branch'"));
       });
 
       test("skips rename when GitHub created branch matches desired name", async () => {

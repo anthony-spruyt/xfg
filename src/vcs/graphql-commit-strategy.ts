@@ -79,6 +79,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     /403\b/,
     /does\s*not\s*exist/i,
     /could\s*not\s*resolve/i,
+    /already\s*exists/i,
   ];
 
   private executor: ICommandExecutor;
@@ -358,17 +359,29 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       );
     } else if (!refId) {
       // Branch doesn't exist: create from local HEAD
+      // Race condition: on newly created forks, queryRemoteRef may return null
+      // due to eventual consistency, but the branch may exist by the time we
+      // try to create it. Treat "already exists" as success.
       const sha = (
         await this.executor.exec("git rev-parse HEAD", workDir)
       ).trim();
-      await this.createRemoteRef(
-        repositoryId,
-        branchName,
-        sha,
-        workDir,
-        repoInfo,
-        token
-      );
+      try {
+        await this.createRemoteRef(
+          repositoryId,
+          branchName,
+          sha,
+          workDir,
+          repoInfo,
+          token
+        );
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        if (/already exists/i.test(msg)) {
+          // Branch was created between our query and create — that's fine
+          return;
+        }
+        throw error;
+      }
     }
     // refId exists + !force: no-op (branch already exists)
   }
