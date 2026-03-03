@@ -46,8 +46,19 @@ jobs:
           git config user.name "xfg-release[bot]"
           git config user.email "xfg-release[bot]@users.noreply.github.com"
 
-      - name: Build docs locally (no push)
+      - name: Build v3 docs from tag
+        run: |
+          # Check out v3 docs sources into a temp directory
+          git worktree add /tmp/v3-docs v3
+          # Build v3 docs using v3's mkdocs.yml
+          mike deploy --config-file /tmp/v3-docs/mkdocs.yml 3.x
+          git worktree remove /tmp/v3-docs
+
+      - name: Build v4 docs from main
         run: mike deploy --update-aliases 4.x latest
+
+      - name: Set default version
+        run: mike set-default latest
 
       - name: Push git objects to remote
         run: |
