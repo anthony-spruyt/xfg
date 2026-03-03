@@ -51,7 +51,7 @@ interface DiffHunk {
 export function generateDiff(
   oldContent: string | null,
   newContent: string,
-  fileName: string,
+  _fileName: string,
   contextLines: number = 3
 ): string[] {
   const oldLines = oldContent ? oldContent.split("\n") : [];

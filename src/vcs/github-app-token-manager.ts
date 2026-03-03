@@ -3,7 +3,7 @@ import { withRetry } from "../shared/retry-utils.js";
 import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 
 /** Duration to cache tokens (45 minutes in milliseconds) */
-export const TOKEN_CACHE_DURATION_MS = 45 * 60 * 1000;
+const TOKEN_CACHE_DURATION_MS = 45 * 60 * 1000;
 
 interface Installation {
   id: number;

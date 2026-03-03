@@ -1,11 +1,11 @@
 import { Document, stringify } from "yaml";
 
-export type OutputFormat = "json" | "json5" | "yaml";
+type OutputFormat = "json" | "json5" | "yaml";
 
 /**
  * Options for content conversion.
  */
-export interface ConvertOptions {
+interface ConvertOptions {
   header?: string[];
   schemaUrl?: string;
 }

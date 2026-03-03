@@ -17,7 +17,7 @@ import {
 // Types
 // =============================================================================
 
-export type { DiffAction, PropertyDiff } from "./index.js";
+export type { PropertyDiff } from "./index.js";
 export { computePropertyDiffs } from "./index.js";
 
 export interface RulesetPlanEntry {

@@ -179,7 +179,7 @@ function camelToSnake(str: string): string {
 // Payload Types
 // =============================================================================
 
-export interface GitHubRulesetPayload {
+interface GitHubRulesetPayload {
   name: string;
   target: "branch" | "tag";
   enforcement: "active" | "disabled" | "evaluate";
@@ -197,7 +197,7 @@ export interface RulesetStrategyOptions {
   host?: string;
 }
 
-export interface GitHubRulesetStrategyOptions {
+interface GitHubRulesetStrategyOptions {
   retries?: number;
 }
 

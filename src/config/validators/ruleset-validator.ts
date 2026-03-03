@@ -50,7 +50,7 @@ const VALID_RULE_TYPES = [
 /**
  * Validates a single ruleset rule.
  */
-export function validateRule(rule: unknown, context: string): void {
+function validateRule(rule: unknown, context: string): void {
   if (typeof rule !== "object" || rule === null || Array.isArray(rule)) {
     throw new Error(`${context}: rule must be an object`);
   }

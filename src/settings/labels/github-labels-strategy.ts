@@ -15,7 +15,7 @@ import type {
   LabelsStrategyOptions,
 } from "./types.js";
 
-export interface GitHubLabelsStrategyOptions {
+interface GitHubLabelsStrategyOptions {
   retries?: number;
 }
 

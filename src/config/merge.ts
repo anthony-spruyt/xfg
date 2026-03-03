@@ -8,16 +8,13 @@ export type ArrayMergeStrategy = "replace" | "append" | "prepend";
 /**
  * Handler function type for array merge strategies.
  */
-export type ArrayMergeHandler = (
-  base: unknown[],
-  overlay: unknown[]
-) => unknown[];
+type ArrayMergeHandler = (base: unknown[], overlay: unknown[]) => unknown[];
 
 /**
  * Strategy map for array merge operations.
  * Extensible: add new strategies by adding to this map.
  */
-export const arrayMergeStrategies: Map<ArrayMergeStrategy, ArrayMergeHandler> =
+const arrayMergeStrategies: Map<ArrayMergeStrategy, ArrayMergeHandler> =
   new Map([
     ["replace", (_base, overlay) => overlay],
     ["append", (base, overlay) => [...base, ...overlay]],
