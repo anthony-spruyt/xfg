@@ -2,7 +2,7 @@ import chalk from "chalk";
 import type { LifecycleResult } from "./types.js";
 import { getRepoDisplayName } from "../shared/repo-detector.js";
 
-export interface FormatOptions {
+interface FormatOptions {
   upstream?: string;
   source?: string;
   settings?: {

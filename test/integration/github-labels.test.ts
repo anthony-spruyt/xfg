@@ -37,6 +37,10 @@ function findLabel(labels: Label[], name: string): Label | undefined {
   return labels.find((l) => l.name.toLowerCase() === name.toLowerCase());
 }
 
+function getXfgLabels(): Label[] {
+  return getLabels().filter((l) => l.name.startsWith("xfg-test-"));
+}
+
 function runSync(configPath: string, extraArgs = ""): string {
   return exec(
     `node dist/cli.js sync --config ${configPath} ${extraArgs}`.trim(),
@@ -83,16 +87,19 @@ describe("GitHub Labels Integration Test", () => {
   });
 
   beforeEach(() => {
-    // Delete all labels to start clean each test
-    const labels = getLabels();
-    for (const label of labels) {
-      try {
-        exec(
-          `gh api --method DELETE repos/${testRepo}/labels/${encodeURIComponent(label.name)}`
-        );
-      } catch (e) {
-        // Label may already be deleted; log for debugging
-        console.warn(`Failed to delete label ${label.name}: ${e}`);
+    // Delete xfg-test-* labels to start clean each test.
+    // Retry up to 3 times since GitHub API deletions can be eventually consistent.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const labels = getLabels().filter((l) => l.name.startsWith("xfg-test-"));
+      if (labels.length === 0) break;
+      for (const label of labels) {
+        try {
+          exec(
+            `gh api --method DELETE repos/${testRepo}/labels/${encodeURIComponent(label.name)}`
+          );
+        } catch (e) {
+          console.warn(`Failed to delete label ${label.name}: ${e}`);
+        }
       }
     }
   });
@@ -100,8 +107,12 @@ describe("GitHub Labels Integration Test", () => {
   test("settings creates labels in the test repository", () => {
     const configPath = makeBaseConfig();
 
-    const labelsBefore = getLabels();
-    assert.equal(labelsBefore.length, 0);
+    const labelsBefore = getXfgLabels();
+    assert.equal(
+      labelsBefore.length,
+      0,
+      "Expected no xfg-test-* labels before sync"
+    );
 
     const output = runSync(configPath);
     console.log(output);
@@ -202,8 +213,12 @@ repos:
     const output = runSync(configPath, "--dry-run");
     assert.ok(output.includes("DRY RUN") || output.includes("dry-run"));
 
-    const labelsAfter = getLabels();
-    assert.equal(labelsAfter.length, 0, "Dry-run should not create labels");
+    const labelsAfter = getXfgLabels();
+    assert.equal(
+      labelsAfter.length,
+      0,
+      "Dry-run should not create xfg-test-* labels"
+    );
   });
 
   test("settings deletes orphaned labels when removed from config", async () => {

@@ -15,7 +15,7 @@ export interface FileAction {
   action: "create" | "update" | "skip" | "delete";
 }
 
-export interface PROptions {
+interface PROptions {
   repoInfo: RepoInfo;
   branchName: string;
   baseBranch: string;
@@ -186,7 +186,7 @@ export async function createPR(options: PROptions): Promise<PRResult> {
   });
 }
 
-export interface MergePROptions {
+interface MergePROptions {
   repoInfo: RepoInfo;
   prUrl: string;
   mergeConfig: PRMergeConfig;

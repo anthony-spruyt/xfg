@@ -1,4 +1,11 @@
 /**
+ * Escape special regex characters in a string.
+ */
+export function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
  * Escapes a string for safe use as a shell argument.
  * Uses single quotes and escapes any single quotes within the string.
  *

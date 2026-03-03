@@ -33,11 +33,7 @@ export type BypassActorType = "Team" | "User" | "Integration";
 export type BypassMode = "always" | "pull_request";
 
 /** Pattern operator for pattern-based rules */
-export type PatternOperator =
-  | "starts_with"
-  | "ends_with"
-  | "contains"
-  | "regex";
+type PatternOperator = "starts_with" | "ends_with" | "contains" | "regex";
 
 /** Allowed merge methods */
 export type MergeMethod = "merge" | "squash" | "rebase";
@@ -67,7 +63,7 @@ export interface BypassActor {
 // Conditions
 // =============================================================================
 
-export interface RefNameCondition {
+interface RefNameCondition {
   include?: string[];
   exclude?: string[];
 }
@@ -104,7 +100,7 @@ export interface CodeScanningTool {
 }
 
 /** Workflow configuration */
-export interface WorkflowConfig {
+interface WorkflowConfig {
   path: string;
   repositoryId: number;
   ref?: string;
@@ -125,53 +121,53 @@ export interface PullRequestRuleParameters {
   requiredReviewers?: RequiredReviewer[];
 }
 
-export interface RequiredStatusChecksParameters {
+interface RequiredStatusChecksParameters {
   strictRequiredStatusChecksPolicy?: boolean;
   doNotEnforceOnCreate?: boolean;
   requiredStatusChecks?: StatusCheckConfig[];
 }
 
-export interface UpdateRuleParameters {
+interface UpdateRuleParameters {
   updateAllowsFetchAndMerge?: boolean;
 }
 
-export interface RequiredDeploymentsParameters {
+interface RequiredDeploymentsParameters {
   requiredDeploymentEnvironments?: string[];
 }
 
-export interface CodeScanningParameters {
+interface CodeScanningParameters {
   codeScanningTools?: CodeScanningTool[];
 }
 
-export interface CodeQualityParameters {
+interface CodeQualityParameters {
   severity?: "errors" | "errors_and_warnings" | "all";
 }
 
-export interface WorkflowsParameters {
+interface WorkflowsParameters {
   doNotEnforceOnCreate?: boolean;
   workflows?: WorkflowConfig[];
 }
 
-export interface PatternRuleParameters {
+interface PatternRuleParameters {
   name?: string;
   negate?: boolean;
   operator: PatternOperator;
   pattern: string;
 }
 
-export interface FilePathRestrictionParameters {
+interface FilePathRestrictionParameters {
   restrictedFilePaths?: string[];
 }
 
-export interface FileExtensionRestrictionParameters {
+interface FileExtensionRestrictionParameters {
   restrictedFileExtensions?: string[];
 }
 
-export interface MaxFilePathLengthParameters {
+interface MaxFilePathLengthParameters {
   maxFilePathLength?: number;
 }
 
-export interface MaxFileSizeParameters {
+interface MaxFileSizeParameters {
   maxFileSize?: number;
 }
 
@@ -325,7 +321,7 @@ export interface Ruleset {
  * Maps Ruleset config keys (camelCase) to GitHub API keys (snake_case).
  * TypeScript enforces this stays in sync with the Ruleset interface.
  */
-export const RULESET_FIELD_MAP: Record<keyof Ruleset, string> = {
+const RULESET_FIELD_MAP: Record<keyof Ruleset, string> = {
   target: "target",
   enforcement: "enforcement",
   bypassActors: "bypass_actors",

@@ -8,9 +8,7 @@ export {
   isTransientError,
   promisify,
   DEFAULT_PERMANENT_ERROR_PATTERNS,
-  DEFAULT_TRANSIENT_ERROR_PATTERNS,
   AbortError,
-  type RetryOptions,
 } from "./retry-utils.js";
 
 // Command execution
@@ -21,7 +19,7 @@ export {
 } from "./command-executor.js";
 
 // Shell utilities
-export { escapeShellArg } from "./shell-utils.js";
+export { escapeShellArg, escapeRegExp } from "./shell-utils.js";
 
 // Sanitization
 export { sanitizeCredentials } from "./sanitize-utils.js";

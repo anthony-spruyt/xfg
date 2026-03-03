@@ -64,7 +64,7 @@ const FORK_POLL_INTERVAL_MS = 2_000;
  * GitHub implementation of IRepoLifecycleProvider.
  * Uses gh CLI for all operations.
  */
-export interface GitHubLifecycleProviderOptions {
+interface GitHubLifecycleProviderOptions {
   executor?: ICommandExecutor;
   retries?: number;
   cwd?: string;
