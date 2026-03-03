@@ -810,6 +810,303 @@ ${VALID_LABELS}
       );
     });
 
+    test("logs plan output lines for labels when changes exist", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:
+${VALID_LABELS}
+`
+      );
+
+      const mockLabelsProcessor = createMockLabelsProcessor({
+        success: true,
+        message: "1 created",
+        planOutput: {
+          lines: ["  + bug"],
+          creates: 1,
+          updates: 0,
+          deletes: 0,
+          unchanged: 0,
+          entries: [{ name: "bug", action: "create" as const }],
+        },
+      });
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => createMockProcessor(),
+          lifecycleManager: noopLifecycleManager,
+          labelsProcessorFactory: () => mockLabelsProcessor,
+        }
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(output.includes("Labels:"), "Should display labels header");
+      assert.ok(
+        output.includes("+ bug"),
+        "Should display label plan output lines"
+      );
+    });
+
+    test("logs error and appends error for labels returning success: false", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      labels:
+${VALID_LABELS}
+`
+      );
+
+      const mockLabelsProcessor = createMockLabelsProcessor({
+        success: false,
+        message: "Failed: label API error",
+      });
+
+      await assert.rejects(
+        async () =>
+          runSync(
+            { config: testConfigPath, dryRun: true, workDir: testDir },
+            {
+              processorFactory: () => createMockProcessor(),
+              lifecycleManager: noopLifecycleManager,
+              labelsProcessorFactory: () => mockLabelsProcessor,
+            }
+          ),
+        /process\.exit\(1\)/
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("Failed: label API error"),
+        "Should log error message for failed labels result"
+      );
+      assert.equal(exitCode, 1);
+    });
+
+    test("logs plan output lines for repo settings when changes exist", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      repo:
+        hasWiki: false
+`
+      );
+
+      const mockRepoSettingsProcessor = createMockRepoSettingsProcessor({
+        success: true,
+        message: "1 changed",
+        planOutput: {
+          lines: ["  ~ hasWiki: true → false"],
+          adds: 0,
+          changes: 1,
+          warnings: [],
+          entries: [
+            {
+              key: "hasWiki",
+              action: "change" as const,
+              from: "true",
+              to: "false",
+            },
+          ],
+        },
+      });
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => createMockProcessor(),
+          lifecycleManager: noopLifecycleManager,
+          repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+        }
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("Repo Settings:"),
+        "Should display repo settings header"
+      );
+      assert.ok(
+        output.includes("hasWiki"),
+        "Should display repo settings plan output lines"
+      );
+    });
+
+    test("logs plan output with warnings for repo settings", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      repo:
+        hasWiki: false
+`
+      );
+
+      const mockRepoSettingsProcessor = createMockRepoSettingsProcessor({
+        success: true,
+        message: "1 changed",
+        warnings: ["Some setting requires admin access"],
+        planOutput: {
+          lines: ["  ~ hasWiki: true → false"],
+          adds: 0,
+          changes: 1,
+          warnings: ["Some setting requires admin access"],
+          entries: [
+            {
+              key: "hasWiki",
+              action: "change" as const,
+              from: "true",
+              to: "false",
+            },
+          ],
+        },
+      });
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => createMockProcessor(),
+          lifecycleManager: noopLifecycleManager,
+          repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+        }
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("Warning: Some setting requires admin access"),
+        "Should display warnings for repo settings"
+      );
+    });
+
+    test("logs success for repo settings returning no changes needed", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      repo:
+        hasWiki: false
+`
+      );
+
+      const mockRepoSettingsProcessor = createMockRepoSettingsProcessor({
+        success: true,
+        message: "No changes needed",
+        planOutput: emptyRepoSettingsPlanOutput(),
+      });
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => createMockProcessor(),
+          lifecycleManager: noopLifecycleManager,
+          repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+        }
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("Repo settings: No changes needed"),
+        "Should log success message for repo settings with no changes"
+      );
+    });
+
+    test("logs error and appends error for repo settings returning success: false", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      repo:
+        hasWiki: false
+`
+      );
+
+      const mockRepoSettingsProcessor = createMockRepoSettingsProcessor({
+        success: false,
+        message: "Failed: insufficient permissions for repo settings",
+      });
+
+      await assert.rejects(
+        async () =>
+          runSync(
+            { config: testConfigPath, dryRun: true, workDir: testDir },
+            {
+              processorFactory: () => createMockProcessor(),
+              lifecycleManager: noopLifecycleManager,
+              repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+            }
+          ),
+        /process\.exit\(1\)/
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("Failed: insufficient permissions for repo settings"),
+        "Should log error message for failed repo settings result"
+      );
+      assert.equal(exitCode, 1);
+    });
+
+    test("catches repo settings processor error and sets exit code 1", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      repo:
+        hasWiki: false
+`
+      );
+
+      const mockRepoSettingsProcessor: IRepoSettingsProcessor = {
+        process: mock.fn(async () => {
+          throw new Error("Repo settings API failure");
+        }),
+      };
+
+      await assert.rejects(
+        async () =>
+          runSync(
+            { config: testConfigPath, dryRun: true, workDir: testDir },
+            {
+              processorFactory: () => createMockProcessor(),
+              lifecycleManager: noopLifecycleManager,
+              repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+            }
+          ),
+        /process\.exit\(1\)/
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("Repo settings API failure"),
+        "Should log caught error for repo settings"
+      );
+      assert.equal(exitCode, 1);
+    });
+
     test("no error exit when settings succeed", async () => {
       writeFileSync(
         testConfigPath,
