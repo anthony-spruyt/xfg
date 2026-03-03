@@ -1,20 +1,7 @@
 import { GitOps } from "./git-ops.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../shared/command-executor.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
-
-/**
- * Internal interface for accessing GitOps private properties.
- * Used for extracting executor/workDir/retries via reflection.
- */
-interface GitOpsInternal {
-  executor?: ICommandExecutor;
-  workDir?: string;
-  retries?: number;
-}
 
 /**
  * Options for authenticated git operations.
@@ -82,11 +69,9 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
   constructor(gitOps: GitOps, auth?: GitAuthOptions) {
     this.gitOps = gitOps;
     this.auth = auth;
-    // Extract executor and workDir from gitOps via reflection
-    const internal = gitOps as unknown as GitOpsInternal;
-    this.executor = internal.executor ?? defaultExecutor;
-    this.workDir = internal.workDir ?? ".";
-    this.retries = internal.retries ?? 3;
+    this.executor = gitOps.executor;
+    this.workDir = gitOps.workDir;
+    this.retries = gitOps.retries;
   }
   private async execWithRetry(command: string): Promise<string> {
     return withRetry(() => this.executor.exec(command, this.workDir), {

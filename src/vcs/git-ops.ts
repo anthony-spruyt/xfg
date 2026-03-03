@@ -44,20 +44,32 @@ export interface GitOpsOptions {
 }
 
 export class GitOps implements IGitOps {
-  private workDir: string;
-  private dryRun: boolean;
-  private executor: ICommandExecutor;
-  private retries: number;
+  private readonly _workDir: string;
+  private readonly dryRun: boolean;
+  private readonly _executor: ICommandExecutor;
+  private readonly _retries: number;
+
+  get workDir(): string {
+    return this._workDir;
+  }
+
+  get executor(): ICommandExecutor {
+    return this._executor;
+  }
+
+  get retries(): number {
+    return this._retries;
+  }
 
   constructor(options: GitOpsOptions) {
-    this.workDir = options.workDir;
+    this._workDir = options.workDir;
     this.dryRun = options.dryRun ?? false;
-    this.executor = options.executor ?? defaultExecutor;
-    this.retries = options.retries ?? 3;
+    this._executor = options.executor ?? defaultExecutor;
+    this._retries = options.retries ?? 3;
   }
 
   private async exec(command: string, cwd?: string): Promise<string> {
-    return this.executor.exec(command, cwd ?? this.workDir);
+    return this._executor.exec(command, cwd ?? this._workDir);
   }
 
   /**
@@ -66,7 +78,7 @@ export class GitOps implements IGitOps {
    */
   private async execWithRetry(command: string, cwd?: string): Promise<string> {
     return withRetry(() => this.exec(command, cwd), {
-      retries: this.retries,
+      retries: this._retries,
     });
   }
 
@@ -76,9 +88,9 @@ export class GitOps implements IGitOps {
    * @throws Error if path traversal is detected
    */
   private validatePath(fileName: string): string {
-    const filePath = join(this.workDir, fileName);
+    const filePath = join(this._workDir, fileName);
     const resolvedPath = resolve(filePath);
-    const resolvedWorkDir = resolve(this.workDir);
+    const resolvedWorkDir = resolve(this._workDir);
     const relativePath = relative(resolvedWorkDir, resolvedPath);
     if (relativePath.startsWith("..") || isAbsolute(relativePath)) {
       throw new Error(`Path traversal detected: ${fileName}`);
@@ -87,16 +99,16 @@ export class GitOps implements IGitOps {
   }
 
   cleanWorkspace(): void {
-    if (existsSync(this.workDir)) {
-      rmSync(this.workDir, { recursive: true, force: true });
+    if (existsSync(this._workDir)) {
+      rmSync(this._workDir, { recursive: true, force: true });
     }
-    mkdirSync(this.workDir, { recursive: true });
+    mkdirSync(this._workDir, { recursive: true });
   }
 
   async clone(gitUrl: string): Promise<void> {
     await this.execWithRetry(
       `git clone ${escapeShellArg(gitUrl)} .`,
-      this.workDir
+      this._workDir
     );
   }
 
@@ -106,7 +118,7 @@ export class GitOps implements IGitOps {
    */
   async fetch(options?: { prune?: boolean }): Promise<void> {
     const pruneFlag = options?.prune ? " --prune" : "";
-    await this.execWithRetry(`git fetch origin${pruneFlag}`, this.workDir);
+    await this.execWithRetry(`git fetch origin${pruneFlag}`, this._workDir);
   }
 
   /**
@@ -118,7 +130,7 @@ export class GitOps implements IGitOps {
     try {
       await this.exec(
         `git checkout -b ${escapeShellArg(branchName)}`,
-        this.workDir
+        this._workDir
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -156,10 +168,10 @@ export class GitOps implements IGitOps {
     chmodSync(filePath, 0o755);
 
     // Also update git's index so the executable bit is committed
-    const relativePath = relative(this.workDir, filePath);
+    const relativePath = relative(this._workDir, filePath);
     await this.exec(
       `git update-index --add --chmod=+x ${escapeShellArg(relativePath)}`,
-      this.workDir
+      this._workDir
     );
   }
 
@@ -206,7 +218,7 @@ export class GitOps implements IGitOps {
   }
 
   async hasChanges(): Promise<boolean> {
-    const status = await this.exec("git status --porcelain", this.workDir);
+    const status = await this.exec("git status --porcelain", this._workDir);
     return status.length > 0;
   }
 
@@ -216,7 +228,7 @@ export class GitOps implements IGitOps {
    * Uses the same this.exec() pattern as other methods in this class.
    */
   async getChangedFiles(): Promise<string[]> {
-    const status = await this.exec("git status --porcelain", this.workDir);
+    const status = await this.exec("git status --porcelain", this._workDir);
     if (!status) return [];
 
     return status
@@ -231,7 +243,7 @@ export class GitOps implements IGitOps {
    */
   async hasStagedChanges(): Promise<boolean> {
     try {
-      await this.exec("git diff --cached --quiet", this.workDir);
+      await this.exec("git diff --cached --quiet", this._workDir);
       return false; // Exit code 0 = no staged changes
     } catch {
       return true; // Exit code 1 = there are staged changes
@@ -246,7 +258,7 @@ export class GitOps implements IGitOps {
     try {
       await this.exec(
         `git show ${escapeShellArg(branch)}:${escapeShellArg(fileName)}`,
-        this.workDir
+        this._workDir
       );
       return true;
     } catch {
@@ -290,7 +302,7 @@ export class GitOps implements IGitOps {
     if (this.dryRun) {
       return true;
     }
-    await this.exec("git add -A", this.workDir);
+    await this.exec("git add -A", this._workDir);
 
     // Check if there are actually staged changes after git add
     if (!(await this.hasStagedChanges())) {
@@ -300,7 +312,7 @@ export class GitOps implements IGitOps {
     // Use --no-verify to skip pre-commit hooks
     await this.exec(
       `git commit --no-verify -m ${escapeShellArg(message)}`,
-      this.workDir
+      this._workDir
     );
     return true;
   }
@@ -312,7 +324,7 @@ export class GitOps implements IGitOps {
     const forceFlag = options?.force ? "--force-with-lease " : "";
     await this.execWithRetry(
       `git push ${forceFlag}-u origin ${escapeShellArg(branchName)}`,
-      this.workDir
+      this._workDir
     );
   }
 
@@ -321,7 +333,7 @@ export class GitOps implements IGitOps {
       // Try to get the default branch from remote (network operation with retry)
       const remoteInfo = await this.execWithRetry(
         "git remote show origin",
-        this.workDir
+        this._workDir
       );
       const match = remoteInfo.match(/HEAD branch: (\S+)/);
       if (match && match[1] !== "(unknown)") {
@@ -334,7 +346,7 @@ export class GitOps implements IGitOps {
 
     // Try common default branch names (local operations, no retry needed)
     try {
-      await this.exec("git rev-parse --verify origin/main", this.workDir);
+      await this.exec("git rev-parse --verify origin/main", this._workDir);
       return { branch: "main", method: "origin/main exists" };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
@@ -342,7 +354,7 @@ export class GitOps implements IGitOps {
     }
 
     try {
-      await this.exec("git rev-parse --verify origin/master", this.workDir);
+      await this.exec("git rev-parse --verify origin/master", this._workDir);
       return { branch: "master", method: "origin/master exists" };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
