@@ -15,7 +15,7 @@ import {
 import { withRetry } from "../shared/retry-utils.js";
 import { logger } from "../shared/logger.js";
 
-export interface IGitOps {
+interface IGitOps {
   cleanWorkspace(): void;
   clone(gitUrl: string): Promise<void>;
   fetch(options?: { prune?: boolean }): Promise<void>;
