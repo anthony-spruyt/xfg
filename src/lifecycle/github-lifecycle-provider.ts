@@ -251,6 +251,14 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           settings.defaultBranch,
           token
         );
+
+        // Wait for the rename to propagate — GitHub's API may still report
+        // the old default branch for a few seconds after the rename call.
+        await this.waitForDefaultBranch(
+          repoInfo,
+          settings.defaultBranch,
+          token
+        );
       }
     }
 
@@ -525,6 +533,47 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         retries: this.retries,
       }
     );
+  }
+
+  /**
+   * Poll until the GitHub API reports the expected default branch.
+   * After a branch rename, the API may lag for a few seconds.
+   *
+   * Note: Uses the same executor.exec pattern as the rest of this class.
+   * The command arguments are constructed from trusted RepoInfo values
+   * (validated during config parsing), not user input.
+   */
+  private async waitForDefaultBranch(
+    repoInfo: GitHubRepoInfo,
+    expectedBranch: string,
+    token?: string,
+    timeoutMs = 15000,
+    pollMs = 1000
+  ): Promise<void> {
+    const tokenPrefix = this.buildTokenPrefix(token);
+    const hostnameFlag = getHostnameFlag(repoInfo);
+    const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
+    const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < timeoutMs) {
+      try {
+        const branch = (
+          await this.executor.exec(
+            `${tokenPrefix}gh api ${hostnamePart}${apiPath} --jq '.default_branch'`,
+            this.cwd
+          )
+        ).trim();
+        if (branch === expectedBranch) {
+          return;
+        }
+      } catch {
+        // API call failed, continue polling
+      }
+      await new Promise((resolve) => setTimeout(resolve, pollMs));
+    }
+
+    // Don't throw — rename succeeded, this is just a best-effort wait
   }
 
   /**
