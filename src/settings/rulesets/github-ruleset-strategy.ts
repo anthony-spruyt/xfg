@@ -10,44 +10,14 @@ import {
 import { escapeShellArg } from "../../shared/shell-utils.js";
 import { withRetry } from "../../shared/retry-utils.js";
 import type { Ruleset, RulesetRule } from "../../config/index.js";
-import type { IRulesetStrategy } from "./types.js";
-
-// =============================================================================
-// GitHub API Types
-// =============================================================================
-
-/**
- * GitHub Ruleset response from API (snake_case).
- */
-export interface GitHubRuleset {
-  id: number;
-  name: string;
-  target: "branch" | "tag";
-  enforcement: "active" | "disabled" | "evaluate";
-  bypass_actors?: GitHubBypassActor[];
-  conditions?: GitHubRulesetConditions;
-  rules?: GitHubRule[];
-  source_type?: string;
-  source?: string;
-}
-
-export interface GitHubBypassActor {
-  actor_id: number;
-  actor_type: "Team" | "User" | "Integration";
-  bypass_mode?: "always" | "pull_request";
-}
-
-export interface GitHubRulesetConditions {
-  ref_name?: {
-    include?: string[];
-    exclude?: string[];
-  };
-}
-
-export interface GitHubRule {
-  type: string;
-  parameters?: Record<string, unknown>;
-}
+import type {
+  IRulesetStrategy,
+  GitHubRuleset,
+  GitHubBypassActor,
+  GitHubRulesetConditions,
+  GitHubRule,
+  RulesetStrategyOptions,
+} from "./types.js";
 
 // =============================================================================
 // Conversion Functions
@@ -191,11 +161,6 @@ interface GitHubRulesetPayload {
 // =============================================================================
 // Strategy Implementation
 // =============================================================================
-
-export interface RulesetStrategyOptions {
-  token?: string;
-  host?: string;
-}
 
 interface GitHubRulesetStrategyOptions {
   retries?: number;

@@ -8,7 +8,7 @@ import {
   normalizeRuleset,
 } from "../../src/settings/rulesets/diff.js";
 import type { Ruleset } from "../../src/config/index.js";
-import type { GitHubRuleset } from "../../src/settings/rulesets/github-ruleset-strategy.js";
+import type { GitHubRuleset } from "../../src/settings/rulesets/types.js";
 
 describe("diffRulesets", () => {
   describe("new rulesets", () => {

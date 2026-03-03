@@ -1,28 +1,23 @@
 import type { RepoConfig, GitHubRepoSettings } from "../../config/index.js";
-import type { RepoInfo, GitHubRepoInfo } from "../../shared/repo-detector.js";
-import {
-  isGitHubRepo,
-  getRepoDisplayName,
-} from "../../shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../../shared/repo-detector.js";
 import { GitHubRepoSettingsStrategy } from "./github-repo-settings-strategy.js";
 import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
 import { diffRepoSettings, hasChanges } from "./diff.js";
 import { formatRepoSettingsPlan, RepoSettingsPlanResult } from "./formatter.js";
-import { hasGitHubAppCredentials } from "../../vcs/index.js";
-import { GitHubAppTokenManager } from "../../vcs/github-app-token-manager.js";
+import {
+  BaseSettingsProcessor,
+  type BaseProcessorOptions,
+} from "../base-processor.js";
 
 export interface IRepoSettingsProcessor {
   process(
     repoConfig: RepoConfig,
-    repoInfo: RepoInfo,
+    repoInfo: import("../../shared/repo-detector.js").RepoInfo,
     options: RepoSettingsProcessorOptions
   ): Promise<RepoSettingsProcessorResult>;
 }
 
-export interface RepoSettingsProcessorOptions {
-  dryRun?: boolean;
-  token?: string;
-}
+export type RepoSettingsProcessorOptions = BaseProcessorOptions;
 
 export interface RepoSettingsProcessorResult {
   success: boolean;
@@ -38,136 +33,123 @@ export interface RepoSettingsProcessorResult {
   planOutput?: RepoSettingsPlanResult;
 }
 
-export class RepoSettingsProcessor implements IRepoSettingsProcessor {
+export class RepoSettingsProcessor
+  extends BaseSettingsProcessor<
+    RepoSettingsProcessorOptions,
+    RepoSettingsProcessorResult
+  >
+  implements IRepoSettingsProcessor
+{
   private readonly strategy: IRepoSettingsStrategy;
-  private readonly tokenManager: GitHubAppTokenManager | null;
 
   constructor(strategy?: IRepoSettingsStrategy) {
+    super();
     this.strategy = strategy ?? new GitHubRepoSettingsStrategy();
-
-    if (hasGitHubAppCredentials()) {
-      this.tokenManager = new GitHubAppTokenManager(
-        process.env.XFG_GITHUB_APP_ID!,
-        process.env.XFG_GITHUB_APP_PRIVATE_KEY!
-      );
-    } else {
-      this.tokenManager = null;
-    }
   }
 
-  async process(
-    repoConfig: RepoConfig,
-    repoInfo: RepoInfo,
-    options: RepoSettingsProcessorOptions
-  ): Promise<RepoSettingsProcessorResult> {
-    const repoName = getRepoDisplayName(repoInfo);
-    const { dryRun, token } = options;
-
-    // Check if this is a GitHub repo
-    if (!isGitHubRepo(repoInfo)) {
-      return {
-        success: true,
-        repoName,
-        message: `Skipped: ${repoName} is not a GitHub repository`,
-        skipped: true,
-      };
-    }
-
-    const githubRepo = repoInfo as GitHubRepoInfo;
+  protected hasDesiredSettings(repoConfig: RepoConfig): boolean {
     const desiredSettings = repoConfig.settings?.repo;
+    return !!desiredSettings && Object.keys(desiredSettings).length > 0;
+  }
 
-    // If no repo settings configured, skip
-    if (!desiredSettings || Object.keys(desiredSettings).length === 0) {
+  protected getEmptySettingsMessage(): string {
+    return "No repo settings configured";
+  }
+
+  protected createSkipResult(
+    repoName: string,
+    message: string
+  ): RepoSettingsProcessorResult {
+    return { success: true, repoName, message, skipped: true };
+  }
+
+  protected createErrorResult(
+    repoName: string,
+    message: string
+  ): RepoSettingsProcessorResult {
+    return { success: false, repoName, message };
+  }
+
+  protected async processSettings(
+    githubRepo: GitHubRepoInfo,
+    repoConfig: RepoConfig,
+    options: RepoSettingsProcessorOptions,
+    effectiveToken: string | undefined,
+    repoName: string
+  ): Promise<RepoSettingsProcessorResult> {
+    const { dryRun } = options;
+    const desiredSettings = repoConfig.settings!.repo!;
+
+    const strategyOptions = { token: effectiveToken, host: githubRepo.host };
+
+    // Fetch current settings
+    const currentSettings = await this.strategy.getSettings(
+      githubRepo,
+      strategyOptions
+    );
+
+    // Validate security settings compatibility
+    const securityErrors = this.validateSecuritySettings(
+      desiredSettings,
+      currentSettings
+    );
+    if (securityErrors.length > 0) {
       return {
-        success: true,
+        success: false,
         repoName,
-        message: "No repo settings configured",
-        skipped: true,
+        message: `Failed: ${securityErrors.join("; ")}`,
       };
     }
 
-    try {
-      // Resolve App token if available, fall back to provided token
-      const effectiveToken =
-        token ?? (await this.getInstallationToken(githubRepo));
-      const strategyOptions = { token: effectiveToken, host: githubRepo.host };
+    // Compute diff
+    const changes = diffRepoSettings(currentSettings, desiredSettings);
 
-      // Fetch current settings
-      const currentSettings = await this.strategy.getSettings(
-        githubRepo,
-        strategyOptions
-      );
-
-      // Validate security settings compatibility
-      const securityErrors = this.validateSecuritySettings(
-        desiredSettings,
-        currentSettings
-      );
-      if (securityErrors.length > 0) {
-        return {
-          success: false,
-          repoName,
-          message: `Failed: ${securityErrors.join("; ")}`,
-        };
-      }
-
-      // Compute diff
-      const changes = diffRepoSettings(currentSettings, desiredSettings);
-
-      if (!hasChanges(changes)) {
-        return {
-          success: true,
-          repoName,
-          message: "No changes needed",
-          changes: { adds: 0, changes: 0 },
-        };
-      }
-
-      // Format plan output
-      const planOutput = formatRepoSettingsPlan(changes);
-
-      // Dry run mode - report planned changes without applying
-      if (dryRun) {
-        return {
-          success: true,
-          repoName,
-          message: `[DRY RUN] ${planOutput.adds} to add, ${planOutput.changes} to change`,
-          dryRun: true,
-          changes: { adds: planOutput.adds, changes: planOutput.changes },
-          warnings: planOutput.warnings,
-          planOutput,
-        };
-      }
-
-      // Apply changes - only send settings that actually changed
-      const changedSettings = changes.reduce(
-        (acc, change) => {
-          if (change.action !== "unchanged") {
-            acc[change.property] = change.newValue;
-          }
-          return acc;
-        },
-        {} as Record<string, unknown>
-      ) as GitHubRepoSettings;
-
-      await this.applyChanges(githubRepo, changedSettings, strategyOptions);
-
+    if (!hasChanges(changes)) {
       return {
         success: true,
         repoName,
-        message: `Applied: ${planOutput.adds} added, ${planOutput.changes} changed`,
+        message: "No changes needed",
+        changes: { adds: 0, changes: 0 },
+      };
+    }
+
+    // Format plan output
+    const planOutput = formatRepoSettingsPlan(changes);
+
+    // Dry run mode - report planned changes without applying
+    if (dryRun) {
+      return {
+        success: true,
+        repoName,
+        message: `[DRY RUN] ${planOutput.adds} to add, ${planOutput.changes} to change`,
+        dryRun: true,
         changes: { adds: planOutput.adds, changes: planOutput.changes },
         warnings: planOutput.warnings,
         planOutput,
       };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return {
-        success: false,
-        repoName,
-        message: `Failed: ${message}`,
-      };
     }
+
+    // Apply changes - only send settings that actually changed
+    const changedSettings = changes.reduce(
+      (acc, change) => {
+        if (change.action !== "unchanged") {
+          acc[change.property] = change.newValue;
+        }
+        return acc;
+      },
+      {} as Record<string, unknown>
+    ) as GitHubRepoSettings;
+
+    await this.applyChanges(githubRepo, changedSettings, strategyOptions);
+
+    return {
+      success: true,
+      repoName,
+      message: `Applied: ${planOutput.adds} added, ${planOutput.changes} changed`,
+      changes: { adds: planOutput.adds, changes: planOutput.changes },
+      warnings: planOutput.warnings,
+      planOutput,
+    };
   }
 
   private async applyChanges(
@@ -218,10 +200,6 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     }
   }
 
-  /**
-   * Validates that desired security settings are compatible with the repo's
-   * visibility and owner type. Returns error messages for incompatible settings.
-   */
   private validateSecuritySettings(
     desiredSettings: GitHubRepoSettings,
     currentSettings: CurrentRepoSettings
@@ -264,24 +242,5 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     }
 
     return errors;
-  }
-
-  /**
-   * Resolves a GitHub App installation token for the given repo.
-   * Returns undefined if no token manager or token resolution fails.
-   */
-  private async getInstallationToken(
-    repoInfo: GitHubRepoInfo
-  ): Promise<string | undefined> {
-    if (!this.tokenManager) {
-      return undefined;
-    }
-
-    try {
-      const token = await this.tokenManager.getTokenForRepo(repoInfo);
-      return token ?? undefined;
-    } catch {
-      return undefined;
-    }
   }
 }

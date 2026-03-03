@@ -3,33 +3,32 @@ import type { RepoInfo } from "../shared/repo-detector.js";
 import { GitOps } from "../vcs/git-ops.js";
 import { AuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
 import { logger, ILogger } from "../shared/logger.js";
-import { hasGitHubAppCredentials } from "../vcs/index.js";
-import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
-import {
-  FileWriter,
-  ManifestManager,
-  BranchManager,
-  AuthOptionsBuilder,
-  RepositorySession,
-  CommitPushManager,
-  FileSyncOrchestrator,
-  PRMergeHandler,
-  FileSyncStrategy,
-  SyncWorkflow,
-  type IFileWriter,
-  type IManifestManager,
-  type IBranchManager,
-  type IAuthOptionsBuilder,
-  type IRepositorySession,
-  type ICommitPushManager,
-  type IFileSyncOrchestrator,
-  type IPRMergeHandler,
-  type ISyncWorkflow,
-  type IRepositoryProcessor,
-  type GitOpsFactory,
-  type ProcessorOptions,
-  type ProcessorResult,
-} from "./index.js";
+import { createTokenManager } from "../vcs/index.js";
+import { FileWriter } from "./file-writer.js";
+import { ManifestManager } from "./manifest-manager.js";
+import { BranchManager } from "./branch-manager.js";
+import { AuthOptionsBuilder } from "./auth-options-builder.js";
+import { RepositorySession } from "./repository-session.js";
+import { CommitPushManager } from "./commit-push-manager.js";
+import { FileSyncOrchestrator } from "./file-sync-orchestrator.js";
+import { PRMergeHandler } from "./pr-merge-handler.js";
+import { FileSyncStrategy } from "./file-sync-strategy.js";
+import { SyncWorkflow } from "./sync-workflow.js";
+import type {
+  IFileWriter,
+  IManifestManager,
+  IBranchManager,
+  IAuthOptionsBuilder,
+  IRepositorySession,
+  ICommitPushManager,
+  IFileSyncOrchestrator,
+  IPRMergeHandler,
+  ISyncWorkflow,
+  IRepositoryProcessor,
+  GitOpsFactory,
+  ProcessorOptions,
+  ProcessorResult,
+} from "./types.js";
 
 /**
  * Thin facade that delegates to SyncWorkflow with FileSyncStrategy.
@@ -59,12 +58,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     const logInstance = log ?? logger;
 
     // Initialize token manager for auth builder
-    const tokenManager = hasGitHubAppCredentials()
-      ? new GitHubAppTokenManager(
-          process.env.XFG_GITHUB_APP_ID!,
-          process.env.XFG_GITHUB_APP_PRIVATE_KEY!
-        )
-      : null;
+    const tokenManager = createTokenManager();
 
     const fileWriter = components?.fileWriter ?? new FileWriter();
     const manifestManager =

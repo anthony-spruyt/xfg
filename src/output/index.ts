@@ -25,7 +25,6 @@ export {
 export {
   formatUnifiedSummaryMarkdown,
   writeUnifiedSummary,
-  type UnifiedSummaryInput,
 } from "./unified-summary.js";
 
 // GitHub Actions summary

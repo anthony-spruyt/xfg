@@ -15,10 +15,7 @@ import {
 } from "../shared/repo-detector.js";
 import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 import { sanitizeBranchName, validateBranchName } from "../vcs/git-ops.js";
-import {
-  hasGitHubAppCredentials,
-  GitHubAppTokenManager,
-} from "../vcs/index.js";
+import { createTokenManager } from "../vcs/index.js";
 import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoInfo } from "../shared/repo-detector.js";
@@ -184,12 +181,7 @@ export async function runSync(
   const processor = processorFactory();
   const lm =
     lifecycleManager ?? new RepoLifecycleManager(undefined, options.retries);
-  const tokenManager = hasGitHubAppCredentials()
-    ? new GitHubAppTokenManager(
-        process.env.XFG_GITHUB_APP_ID!,
-        process.env.XFG_GITHUB_APP_PRIVATE_KEY!
-      )
-    : null;
+  const tokenManager = createTokenManager();
   const reportResults: SyncResultEntry[] = [];
   const lifecycleReportInputs: LifecycleReportInput[] = [];
   const settingsCollector = new ResultsCollector();

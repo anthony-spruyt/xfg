@@ -184,6 +184,3 @@ export function promisify<T>(fn: () => T): Promise<T> {
     }
   });
 }
-
-// Re-export AbortError for use in custom error handling
-export { AbortError } from "p-retry";

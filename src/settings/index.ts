@@ -1,3 +1,10 @@
+// Base processor
+export {
+  BaseSettingsProcessor,
+  type BaseProcessorOptions,
+  type BaseProcessorResult,
+} from "./base-processor.js";
+
 // Rulesets
 export * from "./rulesets/index.js";
 

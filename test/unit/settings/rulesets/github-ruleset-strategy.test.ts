@@ -3,8 +3,8 @@ import { strict as assert } from "node:assert";
 import {
   GitHubRulesetStrategy,
   configToGitHub,
-  GitHubRuleset,
 } from "../../../../src/settings/rulesets/github-ruleset-strategy.js";
+import type { GitHubRuleset } from "../../../../src/settings/rulesets/types.js";
 import type { Ruleset } from "../../../../src/config/index.js";
 import type {
   GitHubRepoInfo,

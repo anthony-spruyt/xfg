@@ -1,5 +1,5 @@
 import { RULESET_COMPARABLE_FIELDS, type Ruleset } from "../../config/index.js";
-import type { GitHubRuleset } from "./github-ruleset-strategy.js";
+import type { GitHubRuleset } from "./types.js";
 
 // =============================================================================
 // Types
