@@ -55,11 +55,4 @@ export function validateFileName(fileName: string): void {
   }
 }
 
-/**
- * Validates that merge strategy is valid
- */
-function isValidMergeStrategy(strategy: string): boolean {
-  return VALID_STRATEGIES.includes(strategy);
-}
-
 export { VALID_STRATEGIES };
