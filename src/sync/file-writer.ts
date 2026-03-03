@@ -23,7 +23,7 @@ import { hasGitHubAppCredentials } from "../vcs/commit-strategy-selector.js";
  * .sh files are auto-executable unless explicit executable: false is set.
  * Non-.sh files are executable only if executable: true is explicitly set.
  */
-export function shouldBeExecutable(file: FileContent): boolean {
+function shouldBeExecutable(file: FileContent): boolean {
   const isShellScript = file.fileName.endsWith(".sh");
 
   if (file.executable !== undefined) {
