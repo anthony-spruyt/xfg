@@ -18,14 +18,8 @@ import type {
   GitHubRule,
   RulesetStrategyOptions,
 } from "./types.js";
-// Re-export types that were moved to types.ts
-export type {
-  GitHubRuleset,
-  GitHubBypassActor,
-  GitHubRulesetConditions,
-  GitHubRule,
-  RulesetStrategyOptions,
-} from "./types.js";
+// Re-export for backward compatibility (tests import from here)
+export type { GitHubRuleset } from "./types.js";
 
 // =============================================================================
 // Conversion Functions
