@@ -3,6 +3,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { RepoInfo } from "../shared/repo-detector.js";
 import { getPRStrategy } from "./index.js";
+import { PRWorkflowExecutor } from "./pr-strategy.js";
 import type { MergeResult, PRMergeConfig } from "./types.js";
 import { interpolateXfgContent } from "../sync/xfg-template.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
@@ -171,9 +172,10 @@ export async function createPR(options: PROptions): Promise<PRResult> {
     };
   }
 
-  // Get the appropriate strategy and execute
+  // Get the appropriate strategy and execute via workflow executor
   const strategy = getPRStrategy(repoInfo, executor);
-  return strategy.execute({
+  const workflow = new PRWorkflowExecutor(strategy);
+  return workflow.execute({
     repoInfo,
     title,
     body,
