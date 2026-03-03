@@ -8,7 +8,6 @@ export {
   isTransientError,
   promisify,
   DEFAULT_PERMANENT_ERROR_PATTERNS,
-  AbortError,
 } from "./retry-utils.js";
 
 // Command execution
