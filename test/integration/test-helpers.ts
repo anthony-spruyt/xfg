@@ -185,10 +185,10 @@ export function listLabels(
 export async function waitForCommitVerified(
   repo: string,
   sha: string,
-  timeoutMs = 60000
+  timeoutMs = 120000
 ): Promise<void> {
   const startTime = Date.now();
-  const pollInterval = 3000;
+  const pollInterval = 5000;
 
   while (Date.now() - startTime < timeoutMs) {
     try {
