@@ -13,6 +13,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: pages
@@ -21,6 +23,9 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - name: Generate app token
         id: app-token
@@ -60,19 +65,36 @@ jobs:
       - name: Set default version
         run: mike set-default latest
 
-      - name: Push git objects to remote
+      - name: Extract site for deployment
         run: |
-          # Push local gh-pages objects to a temporary tag ref so GitHub
-          # has the tree/blob objects. Tags are not covered by the
-          # branch-signatures ruleset (refs/heads/**).
-          git push --force origin "gh-pages:refs/tags/_gh-pages-staging"
+          # Check out the built site from local gh-pages branch
+          git worktree add /tmp/site gh-pages
+          # Remove .git artifacts from the deployment directory
+          rm -rf /tmp/site/.git
 
-      - name: Create signed commit via API and update gh-pages
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: /tmp/site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+      - name: Save mike state to gh-pages branch
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           TREE_SHA=$(git rev-parse "gh-pages^{tree}")
           MESSAGE=$(git log -1 --format=%s gh-pages)
+
+          # Push local gh-pages objects to a temporary tag ref so GitHub
+          # has the tree/blob objects. Tags are not covered by the
+          # branch-signatures ruleset (refs/heads/**).
+          git push --force origin "gh-pages:refs/tags/_gh-pages-staging"
 
           # Get parent commit SHA (empty string if gh-pages doesn't exist on remote)
           PARENT_SHA=""
@@ -106,8 +128,12 @@ jobs:
               -f "sha=$COMMIT_SHA"
           fi
 
-          echo "Pushed verified commit $COMMIT_SHA to gh-pages"
+          echo "Saved mike state as verified commit $COMMIT_SHA to gh-pages"
 
       - name: Clean up staging tag
         if: always()
         run: git push origin --delete refs/tags/_gh-pages-staging || true
+
+      - name: Clean up worktree
+        if: always()
+        run: git worktree remove /tmp/site || true
