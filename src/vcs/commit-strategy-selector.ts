@@ -2,6 +2,7 @@ import { RepoInfo, isGitHubRepo } from "../shared/repo-detector.js";
 import type { ICommitStrategy } from "./types.js";
 import { GitCommitStrategy } from "./git-commit-strategy.js";
 import { GraphQLCommitStrategy } from "./graphql-commit-strategy.js";
+import { GitHubAppTokenManager } from "./github-app-token-manager.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 
 /**
@@ -11,6 +12,19 @@ import { ICommandExecutor } from "../shared/command-executor.js";
 export function hasGitHubAppCredentials(): boolean {
   return !!(
     process.env.XFG_GITHUB_APP_ID && process.env.XFG_GITHUB_APP_PRIVATE_KEY
+  );
+}
+
+/**
+ * Creates a GitHubAppTokenManager if credentials are configured, otherwise null.
+ */
+export function createTokenManager(): GitHubAppTokenManager | null {
+  if (!hasGitHubAppCredentials()) {
+    return null;
+  }
+  return new GitHubAppTokenManager(
+    process.env.XFG_GITHUB_APP_ID!,
+    process.env.XFG_GITHUB_APP_PRIVATE_KEY!
   );
 }
 

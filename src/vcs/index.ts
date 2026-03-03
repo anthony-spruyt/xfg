@@ -8,6 +8,7 @@ export { GitHubAppTokenManager } from "./github-app-token-manager.js";
 export {
   getCommitStrategy,
   hasGitHubAppCredentials,
+  createTokenManager,
 } from "./commit-strategy-selector.js";
 
 // PR strategy factory

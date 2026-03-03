@@ -3,8 +3,7 @@ import type { RepoInfo } from "../shared/repo-detector.js";
 import { GitOps } from "../vcs/git-ops.js";
 import { AuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
 import { logger, ILogger } from "../shared/logger.js";
-import { hasGitHubAppCredentials } from "../vcs/index.js";
-import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
+import { createTokenManager } from "../vcs/index.js";
 import {
   FileWriter,
   ManifestManager,
@@ -59,12 +58,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     const logInstance = log ?? logger;
 
     // Initialize token manager for auth builder
-    const tokenManager = hasGitHubAppCredentials()
-      ? new GitHubAppTokenManager(
-          process.env.XFG_GITHUB_APP_ID!,
-          process.env.XFG_GITHUB_APP_PRIVATE_KEY!
-        )
-      : null;
+    const tokenManager = createTokenManager();
 
     const fileWriter = components?.fileWriter ?? new FileWriter();
     const manifestManager =

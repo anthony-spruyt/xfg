@@ -1,26 +1,26 @@
 {
   "command": "resolve",
   "patterns": [
-    "review::.::holistic::authorization_consistency::authorization_consistency::src/vcs/graphql-commit-strategy.ts::inconsistent_token_passing_in_shell_commands::00ff9cea"
+    "review::.::holistic::ai_generated_debt::ai_generated_debt::src/settings/labels/processor.ts::three_near-identical_settings_processors_with_dupl::6461957d"
   ],
   "status": "fixed",
   "resolved": [
-    "review::.::holistic::authorization_consistency::authorization_consistency::src/vcs/graphql-commit-strategy.ts::inconsistent_token_passing_in_shell_commands::00ff9cea"
+    "review::.::holistic::ai_generated_debt::ai_generated_debt::src/settings/labels/processor.ts::three_near-identical_settings_processors_with_dupl::6461957d"
   ],
   "count": 1,
   "next_command": "desloppify issues",
-  "overall_score": 71.8,
-  "objective_score": 93.3,
-  "strict_score": 71.8,
-  "verified_strict_score": 93.2,
-  "prev_overall_score": 71.8,
-  "prev_objective_score": 93.3,
-  "prev_strict_score": 71.8,
-  "prev_verified_strict_score": 93.2,
-  "attestation": "I have actually changed both executeGraphQLMutation and executeGraphQLRefOp to pass tokens via ExecOptions.env instead of shell string interpolation, matching the buildTokenEnv pattern in github-pr-strategy.ts, and I am not gaming the score by resolving without fixing.",
+  "overall_score": 72.3,
+  "objective_score": 94.5,
+  "strict_score": 72.3,
+  "verified_strict_score": 94.4,
+  "prev_overall_score": 72.3,
+  "prev_objective_score": 94.5,
+  "prev_strict_score": 72.3,
+  "prev_verified_strict_score": 94.4,
+  "attestation": "I have actually extracted BaseSettingsProcessor base class in src/settings/base-processor.ts that all three processors now extend, eliminating the duplicated constructor, process(), getInstallationToken(), and formatChangeSummary() methods. I am not gaming the score.",
   "narrative": {
     "phase": "middle_grind",
-    "headline": "\u26a0 7 security findings \u2014 review before other cleanup. All T1 items cleared! (20 review findings \u2014 run `desloppify issues`)",
+    "headline": "\u26a0 7 security findings \u2014 review before other cleanup. All T1 items cleared! (19 review findings \u2014 run `desloppify issues`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -34,7 +34,7 @@
         {
           "name": "AI generated debt",
           "strict": 48.0,
-          "issues": 4,
+          "issues": 3,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -52,12 +52,72 @@
       "stagnant_dimensions": [
         {
           "name": "File health",
-          "strict": 95.6,
+          "strict": 95.7,
           "stuck_scans": 5
         },
         {
-          "name": "Duplication",
-          "strict": 90.6,
+          "name": "Error consistency",
+          "strict": 55.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Abstraction fit",
+          "strict": 40.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "AI generated debt",
+          "strict": 48.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "High elegance",
+          "strict": 65.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Mid elegance",
+          "strict": 50.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Low elegance",
+          "strict": 68.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Cross-module arch",
+          "strict": 52.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Convention drift",
+          "strict": 78.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "API coherence",
+          "strict": 62.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Auth consistency",
+          "strict": 58.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Stale migration",
+          "strict": 60.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Structure nav",
+          "strict": 70.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Design coherence",
+          "strict": 52.0,
           "stuck_scans": 5
         }
       ]
@@ -66,24 +126,13 @@
       {
         "type": "issue_queue",
         "detector": "review",
-        "count": 20,
-        "description": "20 review findings need investigation \u2014 run `desloppify issues` to see the work queue",
+        "count": 19,
+        "description": "19 review findings need investigation \u2014 run `desloppify issues` to see the work queue",
         "command": "desloppify issues",
         "impact": 0.0,
         "dimension": "Unknown",
         "priority": 1,
         "lane": "refactor_0"
-      },
-      {
-        "type": "auto_fix",
-        "detector": "unused",
-        "count": 1,
-        "description": "1 unused findings \u2014 run `desloppify fix unused-imports --dry-run` to preview, then apply",
-        "command": "desloppify fix unused-imports --dry-run",
-        "impact": 0.0,
-        "dimension": "Code quality",
-        "priority": 2,
-        "lane": "cleanup"
       },
       {
         "type": "reorganize",
@@ -93,7 +142,7 @@
         "command": "desloppify show flat_dirs --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 3,
+        "priority": 2,
         "lane": "restructure"
       },
       {
@@ -104,18 +153,7 @@
         "command": "desloppify show cycles --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 4,
-        "lane": "restructure"
-      },
-      {
-        "type": "reorganize",
-        "detector": "facade",
-        "count": 1,
-        "description": "1 facade findings \u2014 flatten re-export facades or consolidate barrel files",
-        "command": "desloppify show facade --status open",
-        "impact": 0.0,
-        "dimension": "Code quality",
-        "priority": 5,
+        "priority": 3,
         "lane": "restructure"
       },
       {
@@ -126,7 +164,7 @@
         "command": "desloppify show structural --status open",
         "impact": 0.0,
         "dimension": "File health",
-        "priority": 6,
+        "priority": 4,
         "lane": "refactor_1"
       },
       {
@@ -137,7 +175,7 @@
         "command": "desloppify show dupes --status open",
         "impact": 0.0,
         "dimension": "Duplication",
-        "priority": 7,
+        "priority": 5,
         "lane": "refactor_1"
       },
       {
@@ -148,7 +186,7 @@
         "command": "desloppify show test_coverage --status open",
         "impact": 0.0,
         "dimension": "Test health",
-        "priority": 8,
+        "priority": 6,
         "lane": "test_coverage"
       },
       {
@@ -159,51 +197,51 @@
         "command": "desloppify show signature --status open",
         "impact": 0.0,
         "dimension": "Unknown",
-        "priority": 9,
+        "priority": 7,
         "lane": "refactor_1"
       },
       {
         "type": "refactor",
         "detector": "responsibility_cohesion",
-        "count": 6,
-        "description": "6 responsibility_cohesion findings \u2014 split modules with too many responsibilities \u2014 extract focused sub-modules",
+        "count": 7,
+        "description": "7 responsibility_cohesion findings \u2014 split modules with too many responsibilities \u2014 extract focused sub-modules",
         "command": "desloppify show responsibility_cohesion --status open",
+        "impact": 0.0,
+        "dimension": "Code quality",
+        "priority": 8,
+        "lane": "refactor_1"
+      },
+      {
+        "type": "refactor",
+        "detector": "boilerplate_duplication",
+        "count": 30,
+        "description": "30 boilerplate_duplication findings \u2014 extract shared boilerplate into reusable helpers or base classes",
+        "command": "desloppify show boilerplate_duplication --status open",
+        "impact": 0.0,
+        "dimension": "Duplication",
+        "priority": 9,
+        "lane": "refactor_1"
+      },
+      {
+        "type": "manual_fix",
+        "detector": "smells",
+        "count": 65,
+        "description": "65 smells findings \u2014 inspect with `desloppify next` and fix manually",
+        "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
         "priority": 10,
         "lane": "refactor_1"
       },
       {
-        "type": "refactor",
-        "detector": "boilerplate_duplication",
-        "count": 33,
-        "description": "33 boilerplate_duplication findings \u2014 extract shared boilerplate into reusable helpers or base classes",
-        "command": "desloppify show boilerplate_duplication --status open",
-        "impact": 0.0,
-        "dimension": "Duplication",
-        "priority": 11,
-        "lane": "refactor_1"
-      },
-      {
-        "type": "manual_fix",
-        "detector": "smells",
-        "count": 63,
-        "description": "63 smells findings \u2014 inspect with `desloppify next` and fix manually",
-        "command": "desloppify show smells --status open",
-        "impact": 0.0,
-        "dimension": "Code quality",
-        "priority": 12,
-        "lane": "refactor_1"
-      },
-      {
         "type": "manual_fix",
         "detector": "exports",
-        "count": 49,
-        "description": "49 exports findings \u2014 run `knip --fix` to remove dead exports",
+        "count": 19,
+        "description": "19 exports findings \u2014 run `knip --fix` to remove dead exports",
         "command": "desloppify show exports --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 13,
+        "priority": 11,
         "lane": "refactor_1"
       },
       {
@@ -214,35 +252,25 @@
         "command": "desloppify show security --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 14,
+        "priority": 12,
         "lane": "refactor_1"
       }
     ],
     "strategy": {
       "fixer_leverage": {
-        "auto_fixable_count": 1,
-        "total_count": 272,
-        "coverage": 0.004,
+        "auto_fixable_count": 0,
+        "total_count": 237,
+        "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
       },
       "lanes": {
-        "cleanup": {
-          "actions": [
-            2
-          ],
-          "file_count": 1,
-          "total_impact": 0.0,
-          "automation": "full",
-          "run_first": true
-        },
         "restructure": {
           "actions": [
-            3,
-            4,
-            5
+            2,
+            3
           ],
-          "file_count": 5,
+          "file_count": 4,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -258,23 +286,23 @@
         },
         "refactor_1": {
           "actions": [
-            6,
+            4,
+            5,
             7,
+            8,
             9,
             10,
             11,
-            12,
-            13,
-            14
+            12
           ],
-          "file_count": 93,
+          "file_count": 94,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "test_coverage": {
           "actions": [
-            8
+            6
           ],
           "file_count": 6,
           "total_impact": 0.0,
@@ -283,38 +311,20 @@
         }
       },
       "can_parallelize": true,
-      "hint": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 20 finding(s) \u2014 `desloppify issues`."
+      "hint": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 19 finding(s) \u2014 `desloppify issues`."
     },
     "tools": {
       "fixers": [
         {
-          "name": "unused-imports",
-          "detector": "unused",
-          "open_count": 1,
-          "command": "desloppify fix unused-imports --dry-run"
-        },
-        {
-          "name": "unused-vars",
-          "detector": "unused",
-          "open_count": 1,
-          "command": "desloppify fix unused-vars --dry-run"
-        },
-        {
-          "name": "unused-params",
-          "detector": "unused",
-          "open_count": 1,
-          "command": "desloppify fix unused-params --dry-run"
-        },
-        {
           "name": "dead-useeffect",
           "detector": "smells",
-          "open_count": 63,
+          "open_count": 65,
           "command": "desloppify fix dead-useeffect --dry-run"
         },
         {
           "name": "empty-if-chain",
           "detector": "smells",
-          "open_count": 63,
+          "open_count": 65,
           "command": "desloppify fix empty-if-chain --dry-run"
         }
       ],
@@ -345,9 +355,9 @@
     "milestone": "All T1 items cleared!",
     "primary_action": {
       "command": "desloppify issues",
-      "description": "20 review findings need investigation \u2014 run `desloppify issues` to see the work queue"
+      "description": "19 review findings need investigation \u2014 run `desloppify issues` to see the work queue"
     },
-    "why_now": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 20 finding(s) \u2014 `desloppify issues`.",
+    "why_now": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 19 finding(s) \u2014 `desloppify issues`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -355,8 +365,8 @@
     "risk_flags": [],
     "strict_target": {
       "target": 95.0,
-      "current": 71.8,
-      "gap": 23.2,
+      "current": 72.3,
+      "gap": 22.7,
       "state": "below",
       "warning": null
     },
@@ -380,7 +390,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 2,
-      "report_scores": 5,
+      "report_scores": 6,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,

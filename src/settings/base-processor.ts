@@ -1,7 +1,7 @@
 import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { isGitHubRepo, getRepoDisplayName } from "../shared/repo-detector.js";
-import { hasGitHubAppCredentials } from "../vcs/index.js";
+import { createTokenManager } from "../vcs/index.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 
 // =============================================================================
@@ -37,14 +37,7 @@ export abstract class BaseSettingsProcessor<
   protected readonly tokenManager: GitHubAppTokenManager | null;
 
   constructor() {
-    if (hasGitHubAppCredentials()) {
-      this.tokenManager = new GitHubAppTokenManager(
-        process.env.XFG_GITHUB_APP_ID!,
-        process.env.XFG_GITHUB_APP_PRIVATE_KEY!
-      );
-    } else {
-      this.tokenManager = null;
-    }
+    this.tokenManager = createTokenManager();
   }
 
   async process(
