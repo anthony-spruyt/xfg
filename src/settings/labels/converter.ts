@@ -1,6 +1,6 @@
 import type { Label } from "../../config/types.js";
 
-export interface GitHubLabelPayload {
+interface GitHubLabelPayload {
   name: string;
   new_name?: string;
   color: string;
