@@ -395,6 +395,41 @@ describe("GitHubLifecycleProvider", () => {
         assert.ok(!calls.some((c) => c.command.includes("default_branch")));
       });
 
+      test("waitForDefaultBranch handles API errors during polling", async () => {
+        // Poll throws errors intermittently, then succeeds
+        let defaultBranchCallCount = 0;
+        const calls: Array<{ command: string; cwd: string }> = [];
+        const executor = {
+          async exec(command: string, cwd: string): Promise<string> {
+            calls.push({ command, cwd });
+            if (command.includes("--jq '.default_branch'")) {
+              defaultBranchCallCount++;
+              if (defaultBranchCallCount === 1) return "master";
+              if (defaultBranchCallCount === 2)
+                throw new Error("HTTP 500: Internal Server Error");
+              return "main"; // Third call succeeds
+            }
+            if (command.includes("gh repo create")) return "";
+            if (command.includes("branches/'master'/rename")) return "";
+            if (command.includes("contents/README.md --jq")) return "abc123def";
+            if (command.includes("--method DELETE")) return "";
+            return "";
+          },
+        };
+
+        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        await provider.create(mockRepoInfo, { defaultBranch: "main" });
+
+        // Should have recovered from the error and continued polling
+        const pollCalls = calls.filter((c) =>
+          c.command.includes("--jq '.default_branch'")
+        );
+        assert.ok(
+          pollCalls.length >= 3,
+          `Expected at least 3 default_branch calls (initial + error + success), got ${pollCalls.length}`
+        );
+      });
+
       test("error propagates from rename API and deleteReadme is not reached", async () => {
         const { mock: executor, calls } = createMockExecutor({
           responses: new Map([

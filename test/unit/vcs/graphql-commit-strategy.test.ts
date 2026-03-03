@@ -1395,6 +1395,75 @@ describe("GraphQLCommitStrategy", () => {
       );
     });
 
+    test("succeeds when createRef fails with 'already exists' (fork race condition)", async () => {
+      // Simulates: queryRemoteRef returns null (fork not propagated),
+      // createRef fails with "already exists" — should succeed, not throw
+      const queryResponse = JSON.stringify({
+        data: { repository: { id: "R_fork123", ref: null } },
+      });
+      const commitResponse = JSON.stringify({
+        data: { createCommitOnBranch: { commit: { oid: "forkcommitsha" } } },
+      });
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("git rev-parse HEAD", "headsha");
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin/", "headsha");
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryResponse;
+        if (graphqlCallCount === 2) {
+          // createRef fails — branch appeared between query and create
+          throw new Error(
+            'A ref named "refs/heads/main" already exists in the repository.'
+          );
+        }
+        return commitResponse;
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const result = await strategy.commit({
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Test fork sync",
+        fileChanges: [{ path: "f.txt", content: "content" }],
+        workDir: testDir,
+        token: "ghs_token",
+      });
+
+      // Should succeed — "already exists" is treated as the branch being ready
+      assert.equal(result.sha, "forkcommitsha");
+    });
+
+    test("re-throws non-'already exists' errors from createRef", async () => {
+      const queryResponse = JSON.stringify({
+        data: { repository: { id: "R_repo123", ref: null } },
+      });
+
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("git rev-parse HEAD", "headsha");
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryResponse;
+        throw new Error("Internal server error");
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      await assert.rejects(
+        () =>
+          strategy.commit({
+            repoInfo: githubRepoInfo,
+            branchName: "feature",
+            message: "Test",
+            fileChanges: [{ path: "f.txt", content: "c" }],
+            workDir: testDir,
+            token: "ghs_token",
+          }),
+        /Internal server error/,
+        "Should re-throw non-'already exists' errors"
+      );
+    });
+
     test("deleteRemoteRef uses --hostname for GitHub Enterprise", async () => {
       // force=true with existing branch triggers deleteRef + createRef
       const queryResponse = JSON.stringify({
