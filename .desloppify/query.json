@@ -1,32 +1,32 @@
 {
   "command": "resolve",
   "patterns": [
-    "review::.::holistic::ai_generated_debt::ai_generated_debt::src/settings/labels/processor.ts::three_near-identical_settings_processors_with_dupl::6461957d"
+    "cycles::src/sync/index.ts::src/sync/index.ts::src/sync/repository-processor.ts"
   ],
   "status": "fixed",
   "resolved": [
-    "review::.::holistic::ai_generated_debt::ai_generated_debt::src/settings/labels/processor.ts::three_near-identical_settings_processors_with_dupl::6461957d"
+    "cycles::src/sync/index.ts::src/sync/index.ts::src/sync/repository-processor.ts"
   ],
   "count": 1,
-  "next_command": "desloppify issues",
-  "overall_score": 72.3,
-  "objective_score": 94.5,
-  "strict_score": 72.3,
-  "verified_strict_score": 94.4,
-  "prev_overall_score": 72.3,
-  "prev_objective_score": 94.5,
-  "prev_strict_score": 72.3,
-  "prev_verified_strict_score": 94.4,
-  "attestation": "I have actually extracted BaseSettingsProcessor base class in src/settings/base-processor.ts that all three processors now extend, eliminating the duplicated constructor, process(), getInstallationToken(), and formatChangeSummary() methods. I am not gaming the score.",
+  "next_command": "desloppify scan",
+  "overall_score": 72.6,
+  "objective_score": 95.3,
+  "strict_score": 72.6,
+  "verified_strict_score": 94.6,
+  "prev_overall_score": 72.6,
+  "prev_objective_score": 95.2,
+  "prev_strict_score": 72.6,
+  "prev_verified_strict_score": 94.6,
+  "attestation": "I have actually replaced the barrel import from ./index.js with direct imports from individual modules in repository-processor.ts and I am not gaming the score by resolving without fixing.",
   "narrative": {
     "phase": "middle_grind",
-    "headline": "\u26a0 7 security findings \u2014 review before other cleanup. All T1 items cleared! (19 review findings \u2014 run `desloppify issues`)",
+    "headline": "\u26a0 7 security findings \u2014 review before other cleanup. All T1 items cleared!",
     "dimensions": {
       "lowest_dimensions": [
         {
           "name": "Abstraction fit",
           "strict": 40.0,
-          "issues": 2,
+          "issues": 0,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -34,7 +34,7 @@
         {
           "name": "AI generated debt",
           "strict": 48.0,
-          "issues": 3,
+          "issues": 0,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -42,7 +42,7 @@
         {
           "name": "Mid elegance",
           "strict": 50.0,
-          "issues": 1,
+          "issues": 0,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -53,6 +53,11 @@
         {
           "name": "File health",
           "strict": 95.7,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Test health",
+          "strict": 94.3,
           "stuck_scans": 5
         },
         {
@@ -124,17 +129,6 @@
     },
     "actions": [
       {
-        "type": "issue_queue",
-        "detector": "review",
-        "count": 19,
-        "description": "19 review findings need investigation \u2014 run `desloppify issues` to see the work queue",
-        "command": "desloppify issues",
-        "impact": 0.0,
-        "dimension": "Unknown",
-        "priority": 1,
-        "lane": "refactor_0"
-      },
-      {
         "type": "reorganize",
         "detector": "flat_dirs",
         "count": 1,
@@ -142,18 +136,18 @@
         "command": "desloppify show flat_dirs --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 2,
+        "priority": 1,
         "lane": "restructure"
       },
       {
         "type": "reorganize",
         "detector": "cycles",
-        "count": 3,
-        "description": "3 cycles findings \u2014 break cycles by extracting shared code or using `desloppify move`",
+        "count": 1,
+        "description": "1 cycles findings \u2014 break cycles by extracting shared code or using `desloppify move`",
         "command": "desloppify show cycles --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 3,
+        "priority": 2,
         "lane": "restructure"
       },
       {
@@ -164,8 +158,8 @@
         "command": "desloppify show structural --status open",
         "impact": 0.0,
         "dimension": "File health",
-        "priority": 4,
-        "lane": "refactor_1"
+        "priority": 3,
+        "lane": "refactor_0"
       },
       {
         "type": "refactor",
@@ -175,8 +169,8 @@
         "command": "desloppify show dupes --status open",
         "impact": 0.0,
         "dimension": "Duplication",
-        "priority": 5,
-        "lane": "refactor_1"
+        "priority": 4,
+        "lane": "refactor_0"
       },
       {
         "type": "refactor",
@@ -186,7 +180,7 @@
         "command": "desloppify show test_coverage --status open",
         "impact": 0.0,
         "dimension": "Test health",
-        "priority": 6,
+        "priority": 5,
         "lane": "test_coverage"
       },
       {
@@ -197,19 +191,19 @@
         "command": "desloppify show signature --status open",
         "impact": 0.0,
         "dimension": "Unknown",
-        "priority": 7,
-        "lane": "refactor_1"
+        "priority": 6,
+        "lane": "refactor_0"
       },
       {
         "type": "refactor",
         "detector": "responsibility_cohesion",
-        "count": 7,
-        "description": "7 responsibility_cohesion findings \u2014 split modules with too many responsibilities \u2014 extract focused sub-modules",
+        "count": 6,
+        "description": "6 responsibility_cohesion findings \u2014 split modules with too many responsibilities \u2014 extract focused sub-modules",
         "command": "desloppify show responsibility_cohesion --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 8,
-        "lane": "refactor_1"
+        "priority": 7,
+        "lane": "refactor_0"
       },
       {
         "type": "refactor",
@@ -219,8 +213,8 @@
         "command": "desloppify show boilerplate_duplication --status open",
         "impact": 0.0,
         "dimension": "Duplication",
-        "priority": 9,
-        "lane": "refactor_1"
+        "priority": 8,
+        "lane": "refactor_0"
       },
       {
         "type": "manual_fix",
@@ -230,18 +224,18 @@
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 10,
-        "lane": "refactor_1"
+        "priority": 9,
+        "lane": "refactor_0"
       },
       {
         "type": "manual_fix",
         "detector": "exports",
-        "count": 19,
-        "description": "19 exports findings \u2014 run `knip --fix` to remove dead exports",
+        "count": 3,
+        "description": "3 exports findings \u2014 run `knip --fix` to remove dead exports",
         "command": "desloppify show exports --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 11,
+        "priority": 10,
         "lane": "refactor_1"
       },
       {
@@ -252,14 +246,14 @@
         "command": "desloppify show security --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 12,
-        "lane": "refactor_1"
+        "priority": 11,
+        "lane": "refactor_0"
       }
     ],
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 237,
+        "total_count": 161,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -267,42 +261,41 @@
       "lanes": {
         "restructure": {
           "actions": [
-            2,
-            3
+            1,
+            2
           ],
-          "file_count": 4,
+          "file_count": 2,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "refactor_0": {
           "actions": [
-            1
+            3,
+            4,
+            6,
+            7,
+            8,
+            9,
+            11
           ],
-          "file_count": 1,
+          "file_count": 83,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "refactor_1": {
           "actions": [
-            4,
-            5,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12
+            10
           ],
-          "file_count": 94,
+          "file_count": 2,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "test_coverage": {
           "actions": [
-            6
+            5
           ],
           "file_count": 6,
           "total_impact": 0.0,
@@ -311,7 +304,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 19 finding(s) \u2014 `desloppify issues`."
+      "hint": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify."
     },
     "tools": {
       "fixers": [
@@ -354,10 +347,10 @@
     },
     "milestone": "All T1 items cleared!",
     "primary_action": {
-      "command": "desloppify issues",
-      "description": "19 review findings need investigation \u2014 run `desloppify issues` to see the work queue"
+      "command": "desloppify show flat_dirs --status open",
+      "description": "1 flat_dirs findings \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 19 finding(s) \u2014 `desloppify issues`.",
+    "why_now": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -365,8 +358,8 @@
     "risk_flags": [],
     "strict_target": {
       "target": 95.0,
-      "current": 72.3,
-      "gap": 22.7,
+      "current": 72.6,
+      "gap": 22.4,
       "state": "below",
       "warning": null
     },
@@ -390,7 +383,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 2,
-      "report_scores": 6,
+      "report_scores": 7,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
