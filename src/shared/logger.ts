@@ -19,7 +19,7 @@ export interface ILogger {
   error(current: number, repoName: string, error: string): void;
 }
 
-export interface LoggerStats {
+interface LoggerStats {
   total: number;
   succeeded: number;
   failed: number;
