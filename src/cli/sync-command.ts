@@ -346,7 +346,7 @@ export async function runSync(
       });
     }
 
-    // After file sync, apply settings via API
+    // After file sync, apply settings via API (GitHub-only — ADO and GitLab repos are skipped)
     if (repoConfig.settings && isGitHubRepo(repoInfo)) {
       const githubRepo = repoInfo as GitHubRepoInfo;
       let settingsToken: string | undefined;
@@ -369,7 +369,6 @@ export async function runSync(
             repoConfig,
             repoInfo,
             {
-              configId: config.id,
               dryRun: options.dryRun,
               noDelete: options.noDelete,
               token: settingsToken,
@@ -381,10 +380,24 @@ export async function runSync(
             for (const line of rulesetResult.planOutput.lines) {
               logger.info(line);
             }
+          } else if (!rulesetResult.skipped && rulesetResult.success) {
+            logger.success(
+              current,
+              repoName,
+              `Rulesets: ${rulesetResult.message}`
+            );
           }
           if (!rulesetResult.skipped) {
             settingsCollector.getOrCreate(repoName).rulesetResult =
               rulesetResult;
+          }
+          if (!rulesetResult.success && !rulesetResult.skipped) {
+            logger.error(
+              current,
+              repoName,
+              `Rulesets: ${rulesetResult.message}`
+            );
+            settingsCollector.appendError(repoName, rulesetResult.message);
           }
         } catch (error) {
           logger.error(current, repoName, `Rulesets: ${String(error)}`);
@@ -403,7 +416,6 @@ export async function runSync(
             repoConfig,
             repoInfo,
             {
-              configId: config.id,
               dryRun: options.dryRun,
               noDelete: options.noDelete,
               token: settingsToken,
@@ -415,9 +427,19 @@ export async function runSync(
             for (const line of labelsResult.planOutput.lines) {
               logger.info(line);
             }
+          } else if (!labelsResult.skipped && labelsResult.success) {
+            logger.success(
+              current,
+              repoName,
+              `Labels: ${labelsResult.message}`
+            );
           }
           if (!labelsResult.skipped) {
             settingsCollector.getOrCreate(repoName).labelsResult = labelsResult;
+          }
+          if (!labelsResult.success && !labelsResult.skipped) {
+            logger.error(current, repoName, `Labels: ${labelsResult.message}`);
+            settingsCollector.appendError(repoName, labelsResult.message);
           }
         } catch (error) {
           logger.error(current, repoName, `Labels: ${String(error)}`);
@@ -451,10 +473,27 @@ export async function runSync(
                 logger.info(`Warning: ${warning}`);
               }
             }
+          } else if (
+            !repoSettingsResult.skipped &&
+            repoSettingsResult.success
+          ) {
+            logger.success(
+              current,
+              repoName,
+              `Repo settings: ${repoSettingsResult.message}`
+            );
           }
           if (!repoSettingsResult.skipped) {
             settingsCollector.getOrCreate(repoName).settingsResult =
               repoSettingsResult;
+          }
+          if (!repoSettingsResult.success && !repoSettingsResult.skipped) {
+            logger.error(
+              current,
+              repoName,
+              `Repo settings: ${repoSettingsResult.message}`
+            );
+            settingsCollector.appendError(repoName, repoSettingsResult.message);
           }
         } catch (error) {
           logger.error(current, repoName, `Repo settings: ${String(error)}`);
@@ -502,9 +541,10 @@ export async function runSync(
     dryRun: options.dryRun ?? false,
   });
 
-  // Exit with error if any failures
+  // Exit with error if any failures (file sync or settings)
   const hasErrors = reportResults.some((r) => r.error);
-  if (hasErrors) {
+  const hasSettingsErrors = settingsResults.some((r) => r.error);
+  if (hasErrors || hasSettingsErrors) {
     process.exit(1);
   }
 }

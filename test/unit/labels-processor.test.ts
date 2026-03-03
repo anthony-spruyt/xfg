@@ -97,9 +97,7 @@ describe("LabelsProcessor", () => {
   test("skips non-GitHub repos", async () => {
     const config = makeRepoConfig({ bug: { color: "d73a4a" } });
 
-    const result = await processor.process(config, mockAzureRepo, {
-      configId: "test",
-    });
+    const result = await processor.process(config, mockAzureRepo, {});
 
     assert.equal(result.skipped, true);
     assert.equal(mockStrategy.calls.length, 0);
@@ -111,9 +109,7 @@ describe("LabelsProcessor", () => {
       bug: { color: "d73a4a", description: "Something isn't working" },
     });
 
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-    });
+    const result = await processor.process(config, mockGitHubRepo, {});
 
     assert.equal(result.success, true);
     assert.equal(result.changes?.create, 1);
@@ -128,8 +124,6 @@ describe("LabelsProcessor", () => {
     });
 
     const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-
       dryRun: true,
     });
 
@@ -165,9 +159,7 @@ describe("LabelsProcessor", () => {
       true
     );
 
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-    });
+    const result = await processor.process(config, mockGitHubRepo, {});
 
     assert.equal(result.success, true);
 
@@ -183,9 +175,7 @@ describe("LabelsProcessor", () => {
     mockStrategy.shouldThrow = new Error("API rate limit exceeded");
     const config = makeRepoConfig({ bug: { color: "d73a4a" } });
 
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-    });
+    const result = await processor.process(config, mockGitHubRepo, {});
 
     assert.equal(result.success, false);
     assert.ok(result.message.includes("API rate limit exceeded"));
@@ -195,9 +185,7 @@ describe("LabelsProcessor", () => {
     mockStrategy.shouldThrow = "string error" as unknown as Error;
     const config = makeRepoConfig({ bug: { color: "d73a4a" } });
 
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-    });
+    const result = await processor.process(config, mockGitHubRepo, {});
 
     assert.equal(result.success, false);
     assert.ok(result.message.includes("string error"));
@@ -212,9 +200,7 @@ describe("LabelsProcessor", () => {
       },
     };
 
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-    });
+    const result = await processor.process(config, mockGitHubRepo, {});
 
     assert.equal(result.skipped, true);
     assert.equal(result.message, "No labels configured");
@@ -236,8 +222,6 @@ describe("LabelsProcessor", () => {
     );
 
     const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-
       noDelete: true,
     });
 
@@ -264,9 +248,7 @@ describe("LabelsProcessor", () => {
       bug: { color: "d73a4a", new_name: "defect" },
     });
 
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-    });
+    const result = await processor.process(config, mockGitHubRepo, {});
 
     assert.equal(result.success, true);
     assert.equal(result.changes?.update, 1);
@@ -288,9 +270,7 @@ describe("LabelsProcessor", () => {
     ];
     const config = makeRepoConfig({ bug: { color: "d73a4a" } });
 
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-    });
+    const result = await processor.process(config, mockGitHubRepo, {});
 
     assert.equal(result.success, true);
     assert.equal(result.message, "No changes needed");
@@ -301,9 +281,7 @@ describe("LabelsProcessor", () => {
     mockStrategy.listResponse = [];
     const config = makeRepoConfig({ bug: { color: "d73a4a" } });
 
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-    });
+    const result = await processor.process(config, mockGitHubRepo, {});
 
     assert.ok(result.planOutput);
     assert.equal(result.planOutput.creates, 1);
@@ -315,9 +293,7 @@ describe("LabelsProcessor", () => {
       bug: { color: "d73a4a" },
     });
 
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-    });
+    const result = await processor.process(config, mockGitHubRepo, {});
 
     assert.equal(result.success, true);
     assert.equal(result.changes?.create, 1);
@@ -345,9 +321,7 @@ describe("LabelsProcessor", () => {
       bug: { color: "d73a4a", description: "New description" },
     });
 
-    const result = await processor.process(config, mockGitHubRepo, {
-      configId: "test",
-    });
+    const result = await processor.process(config, mockGitHubRepo, {});
 
     assert.equal(result.success, true);
     assert.equal(result.changes?.update, 1);

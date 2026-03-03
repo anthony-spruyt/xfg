@@ -107,8 +107,8 @@ Group files support `inherit: false` (discard accumulated files), `file: false` 
 
 ### PR Options
 
-| Field           | Type      | Default  | Description                           |
-| --------------- | --------- | -------- | ------------------------------------- |
+| Field           | Type       | Default  | Description                                      |
+| --------------- | ---------- | -------- | ------------------------------------------------ |
 | `merge`         | `string`   | `auto`   | `manual`, `auto`, `force`, `direct`              |
 | `mergeStrategy` | `string`   | `squash` | `merge`, `squash`, `rebase`                      |
 | `deleteBranch`  | `boolean`  | `true`   | Delete branch after merge                        |

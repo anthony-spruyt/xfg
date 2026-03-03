@@ -32,8 +32,6 @@ npm run dev      # Run CLI via ts-node
    - `npm run test:integration:ado`
    - `npm run test:integration:gitlab`
 
-**Note:** CI integration tests only run on `main` branch, not on PR branches.
-
 ## Release
 
 ```bash
@@ -75,7 +73,7 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 - **After PR merged, checkout main and pull** before any new work - don't reuse old branches
 - **Enable automerge after PR creation:** `gh pr merge <num> --auto --squash --delete-branch`
 - **Wait for CI before claiming done** - verify checks pass, don't just run local lint
-- **Check CI on main after PR merge** - integration tests only run on main; verify they pass before releasing
+- **Check CI on main after PR merge** - verify integration tests pass before releasing
 - **Do not commit plans to `docs/`** - that's GitHub Pages; use `plans/` for plans
 - **Do not commit plans to main branch** - create a new branch
 - Output format determined by file extension: `.json`/`.json5`/`.yaml`/`.yml` → object content; others → string/string[]
