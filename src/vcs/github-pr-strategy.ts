@@ -13,6 +13,7 @@ import type {
 import { logger } from "../shared/logger.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
+import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
 
 /**
@@ -79,7 +80,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
           throw error;
         }
         // Log unexpected errors for debugging (expected: empty result means no PR)
-        const stderr = (error as { stderr?: string }).stderr ?? "";
+        const stderr = getStderr(error);
         if (stderr && !stderr.includes("no pull requests match")) {
           logger.info(
             `Debug: GitHub PR check failed - ${sanitizeCredentials(stderr).trim()}`

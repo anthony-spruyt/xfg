@@ -17,6 +17,7 @@ import { logger } from "../shared/logger.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
+import { getStderr } from "../shared/command-executor.js";
 
 export class AzurePRStrategy extends BasePRStrategy {
   constructor(executor?: ICommandExecutor) {
@@ -55,7 +56,7 @@ export class AzurePRStrategy extends BasePRStrategy {
         if (isPermanentError(error)) {
           throw error;
         }
-        const stderr = (error as { stderr?: string }).stderr ?? "";
+        const stderr = getStderr(error);
         if (stderr && !stderr.includes("does not exist")) {
           logger.info(
             `Debug: Azure PR check failed - ${sanitizeCredentials(stderr).trim()}`

@@ -406,8 +406,10 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         `git -C ${escapeShellArg(sourceDir)} remote remove origin`,
         this.cwd
       );
-    } catch {
-      // No origin remote — nothing to remove
+    } catch (error) {
+      logger.info(
+        `Debug: remote remove origin skipped - ${error instanceof Error ? error.message : String(error)}`
+      );
     }
 
     // Remove all non-standard refs that GitHub rejects on push.
@@ -432,8 +434,10 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           );
         }
       }
-    } catch {
-      // No refs to remove — ignore
+    } catch (error) {
+      logger.info(
+        `Debug: ref cleanup skipped - ${error instanceof Error ? error.message : String(error)}`
+      );
     }
 
     // Rename default branch in mirror clone if requested.
