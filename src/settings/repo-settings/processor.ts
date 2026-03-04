@@ -7,6 +7,7 @@ import { formatRepoSettingsPlan, RepoSettingsPlanResult } from "./formatter.js";
 import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
+  type BaseProcessorResult,
 } from "../base-processor.js";
 
 export interface IRepoSettingsProcessor {
@@ -19,12 +20,7 @@ export interface IRepoSettingsProcessor {
 
 export type RepoSettingsProcessorOptions = BaseProcessorOptions;
 
-export interface RepoSettingsProcessorResult {
-  success: boolean;
-  repoName: string;
-  message: string;
-  skipped?: boolean;
-  dryRun?: boolean;
+export interface RepoSettingsProcessorResult extends BaseProcessorResult {
   changes?: {
     adds: number;
     changes: number;

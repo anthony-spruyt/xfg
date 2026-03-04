@@ -266,7 +266,10 @@ export async function runSync(
         lifecycleToken =
           (await tokenManager?.getTokenForRepo(repoInfo as GitHubRepoInfo)) ??
           process.env.GH_TOKEN;
-      } catch {
+      } catch (error) {
+        logger.debug(
+          `Token resolution failed for ${repoName}: ${error instanceof Error ? error.message : String(error)}`
+        );
         lifecycleToken = process.env.GH_TOKEN;
       }
     }
@@ -382,7 +385,10 @@ export async function runSync(
         settingsToken =
           (await tokenManager?.getTokenForRepo(githubRepo)) ??
           process.env.GH_TOKEN;
-      } catch {
+      } catch (error) {
+        logger.debug(
+          `Settings token resolution failed for ${repoName}: ${error instanceof Error ? error.message : String(error)}`
+        );
         settingsToken = process.env.GH_TOKEN;
       }
 

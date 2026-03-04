@@ -133,7 +133,7 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
       }
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
-      logger.info(`Debug: git remote show origin failed - ${msg}`);
+      logger.debug(`git remote show origin failed - ${msg}`);
     }
 
     // Local operations don't need auth
@@ -145,7 +145,7 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
       return { branch: "main", method: "origin/main exists" };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
-      logger.info(`Debug: origin/main check failed - ${msg}`);
+      logger.debug(`origin/main check failed - ${msg}`);
     }
 
     try {
@@ -156,7 +156,7 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
       return { branch: "master", method: "origin/master exists" };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
-      logger.info(`Debug: origin/master check failed - ${msg}`);
+      logger.debug(`origin/master check failed - ${msg}`);
     }
 
     return { branch: "main", method: "fallback default" };

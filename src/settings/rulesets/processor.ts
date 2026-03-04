@@ -7,6 +7,7 @@ import { formatRulesetPlan, RulesetPlanResult } from "./formatter.js";
 import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
+  type BaseProcessorResult,
 } from "../base-processor.js";
 
 export interface IRulesetProcessor {
@@ -21,12 +22,7 @@ export interface RulesetProcessorOptions extends BaseProcessorOptions {
   noDelete?: boolean;
 }
 
-export interface RulesetProcessorResult {
-  success: boolean;
-  repoName: string;
-  message: string;
-  skipped?: boolean;
-  dryRun?: boolean;
+export interface RulesetProcessorResult extends BaseProcessorResult {
   changes?: {
     create: number;
     update: number;

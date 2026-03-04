@@ -8,6 +8,7 @@ import type { ILabelsStrategy } from "./types.js";
 import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
+  type BaseProcessorResult,
 } from "../base-processor.js";
 
 export interface ILabelsProcessor {
@@ -22,12 +23,7 @@ export interface LabelsProcessorOptions extends BaseProcessorOptions {
   noDelete?: boolean;
 }
 
-export interface LabelsProcessorResult {
-  success: boolean;
-  repoName: string;
-  message: string;
-  skipped?: boolean;
-  dryRun?: boolean;
+export interface LabelsProcessorResult extends BaseProcessorResult {
   changes?: {
     create: number;
     update: number;
