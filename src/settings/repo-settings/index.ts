@@ -2,7 +2,6 @@
 export {
   isRepoSettingsStrategy,
   type IRepoSettingsStrategy,
-  type RepoSettingsStrategyOptions,
   type CurrentRepoSettings,
 } from "./types.js";
 

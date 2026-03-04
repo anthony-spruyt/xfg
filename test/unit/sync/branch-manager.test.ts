@@ -9,7 +9,7 @@ import {
   createMockLogger,
   createMockExecutor,
 } from "../../mocks/index.js";
-import type { GitHubRepoInfo } from "../../../src/repo-detector.js";
+import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 
 const testDir = join(tmpdir(), "branch-manager-test-" + Date.now());
 
@@ -35,11 +35,12 @@ describe("BranchManager", () => {
 
   describe("setupBranch", () => {
     test("creates branch for non-direct mode", async () => {
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({});
+      const { localOps, networkOps, localCalls } =
+        createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});
 
-      const manager = new BranchManager();
+      const manager = new BranchManager(mockLogger);
       await manager.setupBranch({
         repoInfo: mockRepoInfo,
         branchName: "chore/sync-config",
@@ -48,21 +49,22 @@ describe("BranchManager", () => {
         isDirectMode: false,
         dryRun: false,
         retries: 3,
-        gitOps: mockGitOps,
-        log: mockLogger,
+        localOps,
+        networkOps,
         executor: mockExecutor,
       });
 
-      assert.equal(calls.createBranch.length, 1);
-      assert.equal(calls.createBranch[0].branchName, "chore/sync-config");
+      assert.equal(localCalls.createBranch.length, 1);
+      assert.equal(localCalls.createBranch[0].branchName, "chore/sync-config");
     });
 
     test("skips branch creation for direct mode", async () => {
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({});
+      const { localOps, networkOps, localCalls } =
+        createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});
 
-      const manager = new BranchManager();
+      const manager = new BranchManager(mockLogger);
       await manager.setupBranch({
         repoInfo: mockRepoInfo,
         branchName: "chore/sync-config",
@@ -71,20 +73,21 @@ describe("BranchManager", () => {
         isDirectMode: true,
         dryRun: false,
         retries: 3,
-        gitOps: mockGitOps,
-        log: mockLogger,
+        localOps,
+        networkOps,
         executor: mockExecutor,
       });
 
-      assert.equal(calls.createBranch.length, 0);
+      assert.equal(localCalls.createBranch.length, 0);
     });
 
     test("skips PR cleanup in dryRun mode", async () => {
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({});
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});
 
-      const manager = new BranchManager();
+      const manager = new BranchManager(mockLogger);
       await manager.setupBranch({
         repoInfo: mockRepoInfo,
         branchName: "chore/sync-config",
@@ -93,16 +96,18 @@ describe("BranchManager", () => {
         isDirectMode: false,
         dryRun: true,
         retries: 3,
-        gitOps: mockGitOps,
-        log: mockLogger,
+        localOps,
+        networkOps,
         executor: mockExecutor,
       });
 
       // Should not have fetched with prune (which happens after PR cleanup)
-      const pruneFetches = calls.fetch.filter((c) => c.options?.prune === true);
+      const pruneFetches = networkCalls.fetch.filter(
+        (c) => c.options?.prune === true
+      );
       assert.equal(pruneFetches.length, 0);
       // Branch should still be created (needed for dry-run diff)
-      assert.equal(calls.createBranch.length, 1);
+      assert.equal(localCalls.createBranch.length, 1);
     });
   });
 });

@@ -29,8 +29,14 @@ export function createMockLogger(): LoggerMockResult {
   const diffSummaries: DiffSummaryEntry[] = [];
 
   const mock: ILogger = {
+    log(message: string): void {
+      messages.push(message);
+    },
     info(message: string): void {
       messages.push(message);
+    },
+    debug(_message: string): void {
+      // No-op in tests
     },
     warn(message: string): void {
       warnings.push(message);

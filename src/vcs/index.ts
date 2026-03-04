@@ -4,7 +4,6 @@ export type { PRMergeConfig, FileChange } from "./types.js";
 // Commit strategies
 export {
   getCommitStrategy,
-  hasGitHubAppCredentials,
   createTokenManager,
 } from "./commit-strategy-selector.js";
 

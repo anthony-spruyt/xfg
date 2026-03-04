@@ -62,7 +62,8 @@ const mockGitHubRepo: GitHubRepoInfo = {
 
 const mockAzureRepo: AzureDevOpsRepoInfo = {
   type: "azure-devops",
-  org: "test-org",
+  owner: "test-org",
+  organization: "test-org",
   project: "test-project",
   repo: "test-repo",
   gitUrl: "https://dev.azure.com/test-org/test-project/_git/test-repo",

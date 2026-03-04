@@ -4,7 +4,6 @@ import {
   isPermanentError,
   isTransientError,
   withRetry,
-  promisify,
 } from "../../src/shared/retry-utils.js";
 import { logger } from "../../src/shared/logger.js";
 
@@ -281,73 +280,5 @@ describe("withRetry", () => {
       assert.ok(!log.includes("secret123"), "Token should be sanitized");
       assert.ok(log.includes("***"), "Token should be replaced with ***");
     }
-  });
-});
-
-describe("promisify", () => {
-  test("resolves with sync return value", async () => {
-    const result = await promisify(() => "hello");
-    assert.equal(result, "hello");
-  });
-
-  test("rejects with sync thrown error", async () => {
-    await assert.rejects(async () => {
-      await promisify(() => {
-        throw new Error("sync error");
-      });
-    }, /sync error/);
-  });
-
-  test("preserves error properties", async () => {
-    const customError = new Error("custom") as Error & { code: string };
-    customError.code = "CUSTOM_CODE";
-
-    await assert.rejects(
-      async () => {
-        await promisify(() => {
-          throw customError;
-        });
-      },
-      (error: Error & { code?: string }) => {
-        assert.equal(error.message, "custom");
-        assert.equal(error.code, "CUSTOM_CODE");
-        return true;
-      }
-    );
-  });
-});
-
-describe("integration: withRetry + promisify", () => {
-  test("retries sync function wrapped in promisify", async () => {
-    let attempts = 0;
-    const result = await withRetry(
-      () =>
-        promisify(() => {
-          attempts++;
-          if (attempts < 2) {
-            throw new Error("Connection timed out");
-          }
-          return "success";
-        }),
-      { retries: 3 }
-    );
-    assert.equal(result, "success");
-    assert.equal(attempts, 2);
-  });
-
-  test("stops retrying permanent errors from sync function", async () => {
-    let attempts = 0;
-    await assert.rejects(async () => {
-      await withRetry(
-        () =>
-          promisify(() => {
-            attempts++;
-            throw new Error("Permission denied");
-          }),
-        { retries: 3 }
-      );
-    }, /Permission denied/);
-    // Key assertion: only 1 attempt, no retries for permanent errors
-    assert.equal(attempts, 1);
   });
 });

@@ -148,7 +148,7 @@ export async function withRetry<T>(
           isPermanentError(error, permanentPatterns)
         ) {
           // Wrap in AbortError to stop retrying immediately
-          throw new AbortError(error.message);
+          throw new AbortError(error);
         }
         throw error;
       }
@@ -168,19 +168,4 @@ export async function withRetry<T>(
       },
     }
   );
-}
-
-/**
- * Wraps a synchronous operation in a Promise for use with retry logic.
- * @param fn The sync function to run
- * @returns A Promise that resolves/rejects with the sync result
- */
-export function promisify<T>(fn: () => T): Promise<T> {
-  return new Promise((resolve, reject) => {
-    try {
-      resolve(fn());
-    } catch (error) {
-      reject(error);
-    }
-  });
 }

@@ -24,7 +24,10 @@ describe("AuthOptionsBuilder", () => {
         getTokenForRepo: async () => "installation-token-123",
       };
 
-      const builder = new AuthOptionsBuilder(mockTokenManager, mockLogger);
+      const builder = new AuthOptionsBuilder(
+        mockTokenManager as GitHubAppTokenManager,
+        mockLogger
+      );
       const result = await builder.resolve(mockRepoInfo, "test/repo");
 
       assert.equal(result.ok, true);
@@ -44,7 +47,10 @@ describe("AuthOptionsBuilder", () => {
         getTokenForRepo: async () => null,
       };
 
-      const builder = new AuthOptionsBuilder(mockTokenManager, mockLogger);
+      const builder = new AuthOptionsBuilder(
+        mockTokenManager as GitHubAppTokenManager,
+        mockLogger
+      );
       const result = await builder.resolve(mockRepoInfo, "test/repo");
 
       assert.equal(result.ok, false);
@@ -89,7 +95,10 @@ describe("AuthOptionsBuilder", () => {
         },
       };
 
-      const builder = new AuthOptionsBuilder(mockTokenManager, mockLogger);
+      const builder = new AuthOptionsBuilder(
+        mockTokenManager as GitHubAppTokenManager,
+        mockLogger
+      );
       const result = await builder.resolve(mockRepoInfo, "test/repo");
 
       // Should log warning via logger.warn()
@@ -104,6 +113,7 @@ describe("AuthOptionsBuilder", () => {
         type: "azure-devops" as const,
         gitUrl: "git@ssh.dev.azure.com:v3/org/project/repo",
         owner: "org",
+        organization: "org",
         repo: "repo",
         project: "project",
       };

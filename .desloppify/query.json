@@ -1,29 +1,29 @@
 {
   "command": "scan",
-  "overall_score": 80.8,
-  "objective_score": 94.7,
-  "strict_score": 80.8,
-  "verified_strict_score": 94.6,
-  "prev_overall_score": 80.8,
-  "prev_objective_score": 94.7,
-  "prev_strict_score": 80.8,
-  "prev_verified_strict_score": 94.6,
+  "overall_score": 91.0,
+  "objective_score": 95.6,
+  "strict_score": 91.0,
+  "verified_strict_score": 95.5,
+  "prev_overall_score": 91.2,
+  "prev_objective_score": 96.1,
+  "prev_strict_score": 91.2,
+  "prev_verified_strict_score": 96.0,
   "profile": "full",
   "noise_budget": 10,
   "noise_global_budget": 0,
   "hidden_by_detector": {
-    "smells": 53,
+    "smells": 52,
     "structural": 30,
-    "exports": 16,
-    "boilerplate_duplication": 12,
-    "review": 11
+    "review": 13,
+    "exports": 7,
+    "boilerplate_duplication": 6
   },
-  "hidden_total": 122,
+  "hidden_total": 108,
   "diff": {
-    "new": 0,
-    "auto_resolved": 0,
-    "reopened": 0,
-    "total_current": 184,
+    "new": 3,
+    "auto_resolved": 4,
+    "reopened": 14,
+    "total_current": 162,
     "suspect_detectors": [
       "review",
       "signature"
@@ -33,35 +33,35 @@
     "skipped_out_of_scope": 0,
     "ignored": 0,
     "ignore_patterns": 0,
-    "raw_findings": 184,
+    "raw_findings": 162,
     "suppressed_pct": 0.0
   },
   "stats": {
-    "total": 749,
-    "open": 204,
-    "fixed": 59,
-    "auto_resolved": 484,
+    "total": 842,
+    "open": 184,
+    "fixed": 15,
+    "auto_resolved": 641,
     "wontfix": 0,
     "false_positive": 2,
     "by_tier": {
       "1": {
-        "open": 4,
+        "open": 0,
         "fixed": 0,
-        "auto_resolved": 2,
+        "auto_resolved": 6,
         "wontfix": 0,
         "false_positive": 0
       },
       "2": {
-        "open": 39,
+        "open": 28,
         "fixed": 0,
-        "auto_resolved": 271,
+        "auto_resolved": 292,
         "wontfix": 0,
         "false_positive": 2
       },
       "3": {
-        "open": 160,
-        "fixed": 59,
-        "auto_resolved": 137,
+        "open": 155,
+        "fixed": 15,
+        "auto_resolved": 269,
         "wontfix": 0,
         "false_positive": 0
       },
@@ -75,11 +75,13 @@
     }
   },
   "open_scope": {
-    "in_scope": 204,
+    "in_scope": 184,
     "out_of_scope": 0,
-    "global": 204
+    "global": 184
   },
-  "warnings": [],
+  "warnings": [
+    "14 findings reopened \u2014 was a previous fix reverted? Check: git log --oneline -5"
+  ],
   "dimension_scores": {
     "File health": {
       "score": 95.8,
@@ -99,18 +101,18 @@
       "strict": 95.8
     },
     "Code quality": {
-      "score": 92.6,
-      "strict_score": 92.6,
-      "verified_strict_score": 92.6,
-      "checks": 609,
-      "issues": 59,
+      "score": 95.2,
+      "strict_score": 95.2,
+      "verified_strict_score": 95.2,
+      "checks": 604,
+      "issues": 42,
       "tier": 3,
       "detectors": {
         "unused": {
           "potential": 101,
-          "pass_rate": 0.9405940594059405,
-          "issues": 6,
-          "weighted_failures": 6.0
+          "pass_rate": 1.0,
+          "issues": 0,
+          "weighted_failures": 0.0
         },
         "logs": {
           "potential": 101,
@@ -119,22 +121,22 @@
           "weighted_failures": 0.0
         },
         "exports": {
-          "potential": 26,
+          "potential": 17,
           "pass_rate": 0.0,
-          "issues": 26,
-          "weighted_failures": 26.0
+          "issues": 17,
+          "weighted_failures": 17.0
         },
         "props": {
-          "potential": 5,
-          "pass_rate": 1.0,
-          "issues": 0,
-          "weighted_failures": 0.0
+          "potential": 6,
+          "pass_rate": 0.9500000000000001,
+          "issues": 1,
+          "weighted_failures": 0.3
         },
         "smells": {
           "potential": 104,
-          "pass_rate": 0.9076923076923078,
-          "issues": 22,
-          "weighted_failures": 9.6
+          "pass_rate": 0.9153846153846155,
+          "issues": 20,
+          "weighted_failures": 8.799999999999999
         },
         "orphaned": {
           "potential": 101,
@@ -167,54 +169,54 @@
           "weighted_failures": 0.0
         },
         "coupling": {
-          "potential": 15,
+          "potential": 19,
           "pass_rate": 1.0,
           "issues": 0,
           "weighted_failures": 0.0
         },
         "responsibility_cohesion": {
-          "potential": 6,
-          "pass_rate": 0.5333333333333333,
-          "issues": 4,
-          "weighted_failures": 2.8
+          "potential": 5,
+          "pass_rate": 0.5800000000000001,
+          "issues": 3,
+          "weighted_failures": 2.0999999999999996
         }
       },
-      "strict": 92.6
+      "strict": 95.2
     },
     "Duplication": {
-      "score": 93.5,
-      "strict_score": 93.5,
-      "verified_strict_score": 93.5,
-      "checks": 243,
-      "issues": 23,
+      "score": 95.4,
+      "strict_score": 95.4,
+      "verified_strict_score": 95.4,
+      "checks": 248,
+      "issues": 17,
       "tier": 3,
       "detectors": {
         "dupes": {
-          "potential": 224,
-          "pass_rate": 0.9986607142857142,
+          "potential": 228,
+          "pass_rate": 0.9986842105263157,
           "issues": 1,
           "weighted_failures": 0.3
         },
         "boilerplate_duplication": {
-          "potential": 19,
-          "pass_rate": 0.18947368421052668,
-          "issues": 22,
-          "weighted_failures": 15.399999999999993
+          "potential": 20,
+          "pass_rate": 0.4400000000000001,
+          "issues": 16,
+          "weighted_failures": 11.199999999999998
         }
       },
-      "strict": 93.5
+      "strict": 95.4
     },
     "Test health": {
       "score": 93.6,
       "strict_score": 93.6,
       "verified_strict_score": 93.6,
-      "checks": 1124,
+      "checks": 1123,
       "issues": 8,
       "tier": 4,
       "detectors": {
         "test_coverage": {
-          "potential": 1049,
-          "pass_rate": 0.9311905217873553,
+          "potential": 1048,
+          "pass_rate": 0.9311248638882975,
           "issues": 8,
           "weighted_failures": 72.18114264506424
         },
@@ -251,226 +253,138 @@
       "strict": 98.0
     },
     "Error consistency": {
-      "score": 65.0,
-      "strict_score": 65.0,
-      "verified_strict_score": 65.0,
+      "score": 85.0,
+      "strict_score": 85.0,
+      "verified_strict_score": 85.0,
       "checks": 10,
       "issues": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.65,
+          "pass_rate": 0.85,
           "issues": 2,
-          "weighted_failures": 3.5,
-          "assessment_score": 65.0,
+          "weighted_failures": 1.5,
+          "assessment_score": 85.0,
           "placeholder": false,
           "dimension_key": "error_consistency",
           "configured_weight": 3.0,
           "components": []
         }
       },
-      "strict": 65.0
+      "strict": 85.0
     },
     "Abstraction fit": {
-      "score": 55.0,
-      "strict_score": 55.0,
-      "verified_strict_score": 55.0,
+      "score": 85.0,
+      "strict_score": 85.0,
+      "verified_strict_score": 85.0,
       "checks": 10,
-      "issues": 3,
+      "issues": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.55,
-          "issues": 3,
-          "weighted_failures": 4.5,
-          "assessment_score": 55.0,
+          "pass_rate": 0.85,
+          "issues": 2,
+          "weighted_failures": 1.5,
+          "assessment_score": 85.0,
           "placeholder": false,
           "dimension_key": "abstraction_fitness",
           "configured_weight": 8.0,
           "components": []
         }
       },
-      "strict": 55.0
+      "strict": 85.0
     },
     "AI generated debt": {
-      "score": 78.0,
-      "strict_score": 78.0,
-      "verified_strict_score": 78.0,
+      "score": 88.0,
+      "strict_score": 88.0,
+      "verified_strict_score": 88.0,
       "checks": 10,
       "issues": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.78,
+          "pass_rate": 0.88,
           "issues": 2,
-          "weighted_failures": 2.2,
-          "assessment_score": 78.0,
+          "weighted_failures": 1.2,
+          "assessment_score": 88.0,
           "placeholder": false,
           "dimension_key": "ai_generated_debt",
           "configured_weight": 1.0,
           "components": []
         }
       },
-      "strict": 78.0
+      "strict": 88.0
     },
     "High elegance": {
-      "score": 78.0,
-      "strict_score": 78.0,
-      "verified_strict_score": 78.0,
+      "score": 92.0,
+      "strict_score": 92.0,
+      "verified_strict_score": 92.0,
       "checks": 10,
       "issues": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.78,
+          "pass_rate": 0.92,
           "issues": 1,
-          "weighted_failures": 2.2,
-          "assessment_score": 78.0,
+          "weighted_failures": 0.8,
+          "assessment_score": 92.0,
           "placeholder": false,
           "dimension_key": "high_level_elegance",
           "configured_weight": 22.0,
           "components": []
         }
       },
-      "strict": 78.0
+      "strict": 92.0
     },
     "Mid elegance": {
-      "score": 72.0,
-      "strict_score": 72.0,
-      "verified_strict_score": 72.0,
+      "score": 88.0,
+      "strict_score": 88.0,
+      "verified_strict_score": 88.0,
       "checks": 10,
-      "issues": 1,
+      "issues": 3,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.72,
-          "issues": 1,
-          "weighted_failures": 2.8,
-          "assessment_score": 72.0,
+          "pass_rate": 0.88,
+          "issues": 3,
+          "weighted_failures": 1.2,
+          "assessment_score": 88.0,
           "placeholder": false,
           "dimension_key": "mid_level_elegance",
           "configured_weight": 22.0,
           "components": []
         }
       },
-      "strict": 72.0
+      "strict": 88.0
     },
     "Low elegance": {
-      "score": 70.0,
-      "strict_score": 70.0,
-      "verified_strict_score": 70.0,
+      "score": 85.0,
+      "strict_score": 85.0,
+      "verified_strict_score": 85.0,
       "checks": 10,
-      "issues": 1,
+      "issues": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.7,
-          "issues": 1,
-          "weighted_failures": 3.0,
-          "assessment_score": 70.0,
+          "pass_rate": 0.85,
+          "issues": 2,
+          "weighted_failures": 1.5,
+          "assessment_score": 85.0,
           "placeholder": false,
           "dimension_key": "low_level_elegance",
           "configured_weight": 12.0,
           "components": []
         }
       },
-      "strict": 70.0
+      "strict": 85.0
     },
     "Cross-module arch": {
-      "score": 72.0,
-      "strict_score": 72.0,
-      "verified_strict_score": 72.0,
-      "checks": 10,
-      "issues": 2,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.72,
-          "issues": 2,
-          "weighted_failures": 2.8,
-          "assessment_score": 72.0,
-          "placeholder": false,
-          "dimension_key": "cross_module_architecture",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      },
-      "strict": 72.0
-    },
-    "Convention drift": {
-      "score": 79.0,
-      "strict_score": 79.0,
-      "verified_strict_score": 79.0,
-      "checks": 10,
-      "issues": 1,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.79,
-          "issues": 1,
-          "weighted_failures": 2.1,
-          "assessment_score": 79.0,
-          "placeholder": false,
-          "dimension_key": "convention_outlier",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      },
-      "strict": 79.0
-    },
-    "API coherence": {
-      "score": 72.0,
-      "strict_score": 72.0,
-      "verified_strict_score": 72.0,
-      "checks": 10,
-      "issues": 2,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.72,
-          "issues": 2,
-          "weighted_failures": 2.8,
-          "assessment_score": 72.0,
-          "placeholder": false,
-          "dimension_key": "api_surface_coherence",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      },
-      "strict": 72.0
-    },
-    "Auth consistency": {
-      "score": 74.0,
-      "strict_score": 74.0,
-      "verified_strict_score": 74.0,
-      "checks": 10,
-      "issues": 1,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.74,
-          "issues": 1,
-          "weighted_failures": 2.6,
-          "assessment_score": 74.0,
-          "placeholder": false,
-          "dimension_key": "authorization_consistency",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      },
-      "strict": 74.0
-    },
-    "Stale migration": {
       "score": 90.0,
       "strict_score": 90.0,
       "verified_strict_score": 90.0,
@@ -485,64 +399,152 @@
           "weighted_failures": 1.0,
           "assessment_score": 90.0,
           "placeholder": false,
-          "dimension_key": "incomplete_migration",
+          "dimension_key": "cross_module_architecture",
           "configured_weight": 1.0,
           "components": []
         }
       },
       "strict": 90.0
     },
-    "Structure nav": {
-      "score": 80.0,
-      "strict_score": 80.0,
-      "verified_strict_score": 80.0,
+    "Convention drift": {
+      "score": 88.0,
+      "strict_score": 88.0,
+      "verified_strict_score": 88.0,
+      "checks": 10,
+      "issues": 2,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.88,
+          "issues": 2,
+          "weighted_failures": 1.2,
+          "assessment_score": 88.0,
+          "placeholder": false,
+          "dimension_key": "convention_outlier",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      },
+      "strict": 88.0
+    },
+    "API coherence": {
+      "score": 90.0,
+      "strict_score": 90.0,
+      "verified_strict_score": 90.0,
       "checks": 10,
       "issues": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.8,
+          "pass_rate": 0.9,
           "issues": 1,
-          "weighted_failures": 2.0,
-          "assessment_score": 80.0,
+          "weighted_failures": 1.0,
+          "assessment_score": 90.0,
+          "placeholder": false,
+          "dimension_key": "api_surface_coherence",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      },
+      "strict": 90.0
+    },
+    "Auth consistency": {
+      "score": 82.0,
+      "strict_score": 82.0,
+      "verified_strict_score": 82.0,
+      "checks": 10,
+      "issues": 2,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.82,
+          "issues": 2,
+          "weighted_failures": 1.8,
+          "assessment_score": 82.0,
+          "placeholder": false,
+          "dimension_key": "authorization_consistency",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      },
+      "strict": 82.0
+    },
+    "Stale migration": {
+      "score": 95.0,
+      "strict_score": 95.0,
+      "verified_strict_score": 95.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.95,
+          "issues": 1,
+          "weighted_failures": 0.5,
+          "assessment_score": 95.0,
+          "placeholder": false,
+          "dimension_key": "incomplete_migration",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      },
+      "strict": 95.0
+    },
+    "Structure nav": {
+      "score": 85.0,
+      "strict_score": 85.0,
+      "verified_strict_score": 85.0,
+      "checks": 10,
+      "issues": 2,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.85,
+          "issues": 2,
+          "weighted_failures": 1.5,
+          "assessment_score": 85.0,
           "placeholder": false,
           "dimension_key": "package_organization",
           "configured_weight": 5.0,
           "components": []
         }
       },
-      "strict": 80.0
+      "strict": 85.0
     },
     "Design coherence": {
-      "score": 65.0,
-      "strict_score": 65.0,
-      "verified_strict_score": 65.0,
+      "score": 87.0,
+      "strict_score": 87.0,
+      "verified_strict_score": 87.0,
       "checks": 10,
-      "issues": 3,
+      "issues": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.65,
-          "issues": 3,
-          "weighted_failures": 3.5,
-          "assessment_score": 65.0,
+          "pass_rate": 0.87,
+          "issues": 2,
+          "weighted_failures": 1.3,
+          "assessment_score": 87.0,
           "placeholder": false,
           "dimension_key": "design_coherence",
           "configured_weight": 10.0,
           "components": []
         }
       },
-      "strict": 65.0
+      "strict": 87.0
     }
   },
   "score_breakdown": {
-    "overall_score": 80.8,
+    "overall_score": 91.0,
     "mechanical_fraction": 0.4,
     "subjective_fraction": 0.6,
-    "mechanical_avg": 94.70219560878243,
-    "subjective_avg": 71.47727272727273,
+    "mechanical_avg": 95.6003992015968,
+    "subjective_avg": 87.98863636363636,
     "entries": [
       {
         "name": "File health",
@@ -560,34 +562,34 @@
       {
         "name": "Code quality",
         "pool": "mechanical",
-        "score": 92.6,
-        "checks": 609.0,
+        "score": 95.2,
+        "checks": 604.0,
         "sample_factor": 1.0,
         "configured_weight": 1.0,
         "effective_weight": 1.0,
         "pool_share": 0.1996007984031936,
         "overall_per_point": 0.07984031936127745,
-        "overall_contribution": 7.393213572854291,
-        "overall_drag": 0.5908183632734535
+        "overall_contribution": 7.600798403193613,
+        "overall_drag": 0.38323353293413154
       },
       {
         "name": "Duplication",
         "pool": "mechanical",
-        "score": 93.5,
-        "checks": 243.0,
+        "score": 95.4,
+        "checks": 248.0,
         "sample_factor": 1.0,
         "configured_weight": 1.0,
         "effective_weight": 1.0,
         "pool_share": 0.1996007984031936,
         "overall_per_point": 0.07984031936127745,
-        "overall_contribution": 7.465069860279441,
-        "overall_drag": 0.5189620758483033
+        "overall_contribution": 7.616766467065869,
+        "overall_drag": 0.3672654690618758
       },
       {
         "name": "Test health",
         "pool": "mechanical",
         "score": 93.6,
-        "checks": 1124.0,
+        "checks": 1123.0,
         "sample_factor": 1.0,
         "configured_weight": 1.0,
         "effective_weight": 1.0,
@@ -612,135 +614,83 @@
       {
         "name": "Error consistency",
         "pool": "subjective",
-        "score": 65.0,
+        "score": 85.0,
         "checks": 0.0,
         "sample_factor": 1.0,
         "configured_weight": 3.0,
         "effective_weight": 3.0,
         "pool_share": 0.03409090909090909,
         "overall_per_point": 0.02045454545454545,
-        "overall_contribution": 1.3295454545454544,
-        "overall_drag": 0.7159090909090908
+        "overall_contribution": 1.7386363636363633,
+        "overall_drag": 0.30681818181818177
       },
       {
         "name": "Abstraction fit",
         "pool": "subjective",
-        "score": 55.0,
+        "score": 85.0,
         "checks": 0.0,
         "sample_factor": 1.0,
         "configured_weight": 8.0,
         "effective_weight": 8.0,
         "pool_share": 0.09090909090909091,
         "overall_per_point": 0.05454545454545454,
-        "overall_contribution": 3.0,
-        "overall_drag": 2.4545454545454546
+        "overall_contribution": 4.636363636363636,
+        "overall_drag": 0.8181818181818181
       },
       {
         "name": "AI generated debt",
         "pool": "subjective",
-        "score": 78.0,
+        "score": 88.0,
         "checks": 0.0,
         "sample_factor": 1.0,
         "configured_weight": 1.0,
         "effective_weight": 1.0,
         "pool_share": 0.011363636363636364,
         "overall_per_point": 0.006818181818181818,
-        "overall_contribution": 0.5318181818181817,
-        "overall_drag": 0.15
+        "overall_contribution": 0.6,
+        "overall_drag": 0.08181818181818182
       },
       {
         "name": "High elegance",
         "pool": "subjective",
-        "score": 78.0,
+        "score": 92.0,
         "checks": 0.0,
         "sample_factor": 1.0,
         "configured_weight": 22.0,
         "effective_weight": 22.0,
         "pool_share": 0.25,
         "overall_per_point": 0.15,
-        "overall_contribution": 11.7,
-        "overall_drag": 3.3
+        "overall_contribution": 13.799999999999999,
+        "overall_drag": 1.2
       },
       {
         "name": "Mid elegance",
         "pool": "subjective",
-        "score": 72.0,
+        "score": 88.0,
         "checks": 0.0,
         "sample_factor": 1.0,
         "configured_weight": 22.0,
         "effective_weight": 22.0,
         "pool_share": 0.25,
         "overall_per_point": 0.15,
-        "overall_contribution": 10.799999999999999,
-        "overall_drag": 4.2
+        "overall_contribution": 13.2,
+        "overall_drag": 1.7999999999999998
       },
       {
         "name": "Low elegance",
         "pool": "subjective",
-        "score": 70.0,
+        "score": 85.0,
         "checks": 0.0,
         "sample_factor": 1.0,
         "configured_weight": 12.0,
         "effective_weight": 12.0,
         "pool_share": 0.13636363636363635,
         "overall_per_point": 0.0818181818181818,
-        "overall_contribution": 5.727272727272727,
-        "overall_drag": 2.454545454545454
+        "overall_contribution": 6.954545454545453,
+        "overall_drag": 1.227272727272727
       },
       {
         "name": "Cross-module arch",
-        "pool": "subjective",
-        "score": 72.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.011363636363636364,
-        "overall_per_point": 0.006818181818181818,
-        "overall_contribution": 0.4909090909090909,
-        "overall_drag": 0.1909090909090909
-      },
-      {
-        "name": "Convention drift",
-        "pool": "subjective",
-        "score": 79.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.011363636363636364,
-        "overall_per_point": 0.006818181818181818,
-        "overall_contribution": 0.5386363636363636,
-        "overall_drag": 0.1431818181818182
-      },
-      {
-        "name": "API coherence",
-        "pool": "subjective",
-        "score": 72.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.011363636363636364,
-        "overall_per_point": 0.006818181818181818,
-        "overall_contribution": 0.4909090909090909,
-        "overall_drag": 0.1909090909090909
-      },
-      {
-        "name": "Auth consistency",
-        "pool": "subjective",
-        "score": 74.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.011363636363636364,
-        "overall_per_point": 0.006818181818181818,
-        "overall_contribution": 0.5045454545454545,
-        "overall_drag": 0.17727272727272728
-      },
-      {
-        "name": "Stale migration",
         "pool": "subjective",
         "score": 90.0,
         "checks": 0.0,
@@ -753,38 +703,92 @@
         "overall_drag": 0.06818181818181818
       },
       {
+        "name": "Convention drift",
+        "pool": "subjective",
+        "score": 88.0,
+        "checks": 0.0,
+        "sample_factor": 1.0,
+        "configured_weight": 1.0,
+        "effective_weight": 1.0,
+        "pool_share": 0.011363636363636364,
+        "overall_per_point": 0.006818181818181818,
+        "overall_contribution": 0.6,
+        "overall_drag": 0.08181818181818182
+      },
+      {
+        "name": "API coherence",
+        "pool": "subjective",
+        "score": 90.0,
+        "checks": 0.0,
+        "sample_factor": 1.0,
+        "configured_weight": 1.0,
+        "effective_weight": 1.0,
+        "pool_share": 0.011363636363636364,
+        "overall_per_point": 0.006818181818181818,
+        "overall_contribution": 0.6136363636363636,
+        "overall_drag": 0.06818181818181818
+      },
+      {
+        "name": "Auth consistency",
+        "pool": "subjective",
+        "score": 82.0,
+        "checks": 0.0,
+        "sample_factor": 1.0,
+        "configured_weight": 1.0,
+        "effective_weight": 1.0,
+        "pool_share": 0.011363636363636364,
+        "overall_per_point": 0.006818181818181818,
+        "overall_contribution": 0.5590909090909091,
+        "overall_drag": 0.12272727272727273
+      },
+      {
+        "name": "Stale migration",
+        "pool": "subjective",
+        "score": 95.0,
+        "checks": 0.0,
+        "sample_factor": 1.0,
+        "configured_weight": 1.0,
+        "effective_weight": 1.0,
+        "pool_share": 0.011363636363636364,
+        "overall_per_point": 0.006818181818181818,
+        "overall_contribution": 0.6477272727272727,
+        "overall_drag": 0.03409090909090909
+      },
+      {
         "name": "Structure nav",
         "pool": "subjective",
-        "score": 80.0,
+        "score": 85.0,
         "checks": 0.0,
         "sample_factor": 1.0,
         "configured_weight": 5.0,
         "effective_weight": 5.0,
         "pool_share": 0.056818181818181816,
         "overall_per_point": 0.03409090909090909,
-        "overall_contribution": 2.727272727272727,
-        "overall_drag": 0.6818181818181818
+        "overall_contribution": 2.8977272727272725,
+        "overall_drag": 0.5113636363636364
       },
       {
         "name": "Design coherence",
         "pool": "subjective",
-        "score": 65.0,
+        "score": 87.0,
         "checks": 0.0,
         "sample_factor": 1.0,
         "configured_weight": 10.0,
         "effective_weight": 10.0,
         "pool_share": 0.11363636363636363,
         "overall_per_point": 0.06818181818181818,
-        "overall_contribution": 4.431818181818182,
-        "overall_drag": 2.3863636363636362
+        "overall_contribution": 5.931818181818182,
+        "overall_drag": 0.8863636363636362
       }
     ]
   },
   "subjective_integrity": {
-    "status": "pass",
+    "status": "warn",
     "target_score": 95.0,
-    "matched_count": 0,
-    "matched_dimensions": [],
+    "matched_count": 1,
+    "matched_dimensions": [
+      "incomplete_migration"
+    ],
     "reset_dimensions": []
   },
   "score_confidence": {
@@ -797,26 +801,26 @@
     "typescript": {
       "logs": 101,
       "unused": 101,
-      "exports": 26,
+      "exports": 17,
       "deprecated": 0,
       "structural": 101,
       "flat_dirs": 23,
-      "props": 5,
+      "props": 6,
       "single_use": 0,
-      "coupling": 15,
+      "coupling": 19,
       "cycles": 101,
       "orphaned": 101,
       "patterns": 3,
       "naming": 23,
       "facade": 101,
-      "responsibility_cohesion": 6,
-      "test_coverage": 1049,
+      "responsibility_cohesion": 5,
+      "test_coverage": 1048,
       "smells": 104,
       "react": 0,
       "security": 101,
       "subjective_review": 75,
-      "boilerplate_duplication": 19,
-      "dupes": 224,
+      "boilerplate_duplication": 20,
+      "dupes": 228,
       "stale_wontfix": 0
     }
   },
@@ -837,38 +841,38 @@
         }
       },
       "warnings": [],
-      "updated_at": "2026-03-04T05:21:15+00:00"
+      "updated_at": "2026-03-04T10:48:41+00:00"
     }
   },
   "zone_distribution": {
     "production": 101,
-    "test": 94
+    "test": 95
   },
   "narrative": {
-    "phase": "stagnation",
-    "headline": "\u26a0 7 security findings \u2014 review before other cleanup. Score plateaued at 80.8 for 5 scans. Abstraction fit (55.0%) is where the breakthrough is. (21 review findings \u2014 run `desloppify issues`)",
+    "phase": "refinement",
+    "headline": "\u26a0 7 security findings \u2014 review before other cleanup. All T1 items cleared! (23 review findings \u2014 run `desloppify issues`)",
     "dimensions": {
       "lowest_dimensions": [
         {
-          "name": "Abstraction fit",
-          "strict": 55.0,
-          "issues": 3,
-          "impact": 0.0,
-          "subjective": true,
-          "impact_description": "re-review to improve"
-        },
-        {
-          "name": "Error consistency",
-          "strict": 65.0,
+          "name": "Auth consistency",
+          "strict": 82.0,
           "issues": 2,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
         },
         {
-          "name": "Design coherence",
-          "strict": 65.0,
-          "issues": 3,
+          "name": "Error consistency",
+          "strict": 85.0,
+          "issues": 2,
+          "impact": 0.0,
+          "subjective": true,
+          "impact_description": "re-review to improve"
+        },
+        {
+          "name": "Abstraction fit",
+          "strict": 85.0,
+          "issues": 2,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -882,13 +886,8 @@
           "stuck_scans": 5
         },
         {
-          "name": "Code quality",
-          "strict": 92.6,
-          "stuck_scans": 5
-        },
-        {
           "name": "Duplication",
-          "strict": 93.5,
+          "strict": 95.4,
           "stuck_scans": 5
         },
         {
@@ -900,11 +899,6 @@
           "name": "Security",
           "strict": 98.0,
           "stuck_scans": 5
-        },
-        {
-          "name": "Auth consistency",
-          "strict": 74.0,
-          "stuck_scans": 5
         }
       ]
     },
@@ -912,24 +906,13 @@
       {
         "type": "issue_queue",
         "detector": "review",
-        "count": 21,
-        "description": "21 review findings need investigation \u2014 run `desloppify issues` to see the work queue",
+        "count": 23,
+        "description": "23 review findings need investigation \u2014 run `desloppify issues` to see the work queue",
         "command": "desloppify issues",
         "impact": 0.0,
         "dimension": "Unknown",
         "priority": 1,
         "lane": "refactor_0"
-      },
-      {
-        "type": "auto_fix",
-        "detector": "unused",
-        "count": 6,
-        "description": "6 unused findings \u2014 run `desloppify fix unused-imports --dry-run` to preview, then apply",
-        "command": "desloppify fix unused-imports --dry-run",
-        "impact": 0.0,
-        "dimension": "Code quality",
-        "priority": 2,
-        "lane": "cleanup"
       },
       {
         "type": "reorganize",
@@ -939,7 +922,7 @@
         "command": "desloppify show flat_dirs --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 3,
+        "priority": 2,
         "lane": "restructure"
       },
       {
@@ -950,7 +933,7 @@
         "command": "desloppify show cycles --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 4,
+        "priority": 3,
         "lane": "restructure"
       },
       {
@@ -961,8 +944,19 @@
         "command": "desloppify show structural --status open",
         "impact": 0.0,
         "dimension": "File health",
-        "priority": 5,
+        "priority": 4,
         "lane": "refactor_1"
+      },
+      {
+        "type": "refactor",
+        "detector": "props",
+        "count": 1,
+        "description": "1 props findings \u2014 split bloated components, extract sub-components",
+        "command": "desloppify show props --status open",
+        "impact": 0.0,
+        "dimension": "Code quality",
+        "priority": 5,
+        "lane": "refactor_2"
       },
       {
         "type": "refactor",
@@ -1000,8 +994,8 @@
       {
         "type": "refactor",
         "detector": "responsibility_cohesion",
-        "count": 6,
-        "description": "6 responsibility_cohesion findings \u2014 split modules with too many responsibilities \u2014 extract focused sub-modules",
+        "count": 5,
+        "description": "5 responsibility_cohesion findings \u2014 split modules with too many responsibilities \u2014 extract focused sub-modules",
         "command": "desloppify show responsibility_cohesion --status open",
         "impact": 0.0,
         "dimension": "Code quality",
@@ -1011,8 +1005,8 @@
       {
         "type": "refactor",
         "detector": "boilerplate_duplication",
-        "count": 22,
-        "description": "22 boilerplate_duplication findings \u2014 extract shared boilerplate into reusable helpers or base classes",
+        "count": 16,
+        "description": "16 boilerplate_duplication findings \u2014 extract shared boilerplate into reusable helpers or base classes",
         "command": "desloppify show boilerplate_duplication --status open",
         "impact": 0.0,
         "dimension": "Duplication",
@@ -1022,8 +1016,8 @@
       {
         "type": "manual_fix",
         "detector": "smells",
-        "count": 63,
-        "description": "63 smells findings \u2014 inspect with `desloppify next` and fix manually",
+        "count": 62,
+        "description": "62 smells findings \u2014 inspect with `desloppify next` and fix manually",
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
@@ -1033,13 +1027,13 @@
       {
         "type": "manual_fix",
         "detector": "exports",
-        "count": 26,
-        "description": "26 exports findings \u2014 run `knip --fix` to remove dead exports",
+        "count": 17,
+        "description": "17 exports findings \u2014 run `knip --fix` to remove dead exports",
         "command": "desloppify show exports --status open",
         "impact": 0.0,
         "dimension": "Code quality",
         "priority": 12,
-        "lane": "refactor_2"
+        "lane": "refactor_1"
       },
       {
         "type": "manual_fix",
@@ -1055,26 +1049,17 @@
     ],
     "strategy": {
       "fixer_leverage": {
-        "auto_fixable_count": 6,
-        "total_count": 246,
-        "coverage": 0.024,
+        "auto_fixable_count": 0,
+        "total_count": 230,
+        "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
       },
       "lanes": {
-        "cleanup": {
-          "actions": [
-            2
-          ],
-          "file_count": 1,
-          "total_impact": 0.0,
-          "automation": "full",
-          "run_first": false
-        },
         "restructure": {
           "actions": [
-            3,
-            4
+            2,
+            3
           ],
           "file_count": 3,
           "total_impact": 0.0,
@@ -1092,24 +1077,25 @@
         },
         "refactor_1": {
           "actions": [
-            5,
+            4,
             6,
             8,
             9,
             10,
             11,
+            12,
             13
           ],
-          "file_count": 84,
+          "file_count": 85,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "refactor_2": {
           "actions": [
-            12
+            5
           ],
-          "file_count": 4,
+          "file_count": 1,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -1125,38 +1111,20 @@
         }
       },
       "can_parallelize": true,
-      "hint": "6 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 21 finding(s) \u2014 `desloppify issues`."
+      "hint": "5 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 23 finding(s) \u2014 `desloppify issues`."
     },
     "tools": {
       "fixers": [
         {
-          "name": "unused-imports",
-          "detector": "unused",
-          "open_count": 6,
-          "command": "desloppify fix unused-imports --dry-run"
-        },
-        {
-          "name": "unused-vars",
-          "detector": "unused",
-          "open_count": 6,
-          "command": "desloppify fix unused-vars --dry-run"
-        },
-        {
-          "name": "unused-params",
-          "detector": "unused",
-          "open_count": 6,
-          "command": "desloppify fix unused-params --dry-run"
-        },
-        {
           "name": "dead-useeffect",
           "detector": "smells",
-          "open_count": 63,
+          "open_count": 62,
           "command": "desloppify fix dead-useeffect --dry-run"
         },
         {
           "name": "empty-if-chain",
           "detector": "smells",
-          "open_count": 63,
+          "open_count": 62,
           "command": "desloppify fix empty-if-chain --dry-run"
         }
       ],
@@ -1184,12 +1152,12 @@
       "worst_gap": 0.0,
       "trend": "stable"
     },
-    "milestone": null,
+    "milestone": "All T1 items cleared!",
     "primary_action": {
       "command": "desloppify issues",
-      "description": "21 review findings need investigation \u2014 run `desloppify issues` to see the work queue"
+      "description": "23 review findings need investigation \u2014 run `desloppify issues` to see the work queue"
     },
-    "why_now": "6 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 21 finding(s) \u2014 `desloppify issues`.",
+    "why_now": "5 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 23 finding(s) \u2014 `desloppify issues`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -1197,12 +1165,19 @@
     "risk_flags": [],
     "strict_target": {
       "target": 95.0,
-      "current": 80.8,
-      "gap": 14.2,
+      "current": 91.0,
+      "gap": 4.0,
       "state": "below",
       "warning": null
     },
     "reminders": [
+      {
+        "type": "badge_recommendation",
+        "message": "Score is above 90! Add the scorecard to your README: <img src=\"scorecard.png\" width=\"100%\">",
+        "command": null,
+        "priority": 3,
+        "severity": "low"
+      },
       {
         "type": "report_scores",
         "message": "ALWAYS share ALL scores with the user: overall, objective, and strict, plus every dimension score (lenient + strict), including subjective dimensions. The goal is to maximize strict scores.",
@@ -1216,11 +1191,12 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 2,
-      "report_scores": 24,
+      "report_scores": 33,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
-      "review_not_run": 3
+      "review_not_run": 3,
+      "badge_recommendation": 1
     }
   },
   "config": {

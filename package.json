@@ -37,6 +37,7 @@
     "test:integration:github-labels": "npm run build && node --import tsx --test test/integration/github-labels.test.ts",
     "test:integration:github-lifecycle": "npm run build && node --import tsx --test test/integration/github-lifecycle.test.ts",
     "test:integration:github-lifecycle-app": "npm run build && node --import tsx --test test/integration/github-lifecycle-app.test.ts",
+    "test:typecheck": "tsc --project tsconfig.check-tests.json --noEmit",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

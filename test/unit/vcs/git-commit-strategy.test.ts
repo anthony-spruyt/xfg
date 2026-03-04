@@ -4,9 +4,9 @@ import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { GitCommitStrategy } from "../../../src/vcs/git-commit-strategy.js";
 import { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
-import { CommitOptions } from "../../../src/vcs/commit-strategy.js";
+import { CommitOptions } from "../../../src/vcs/types.js";
 import { ICommandExecutor } from "../../../src/shared/command-executor.js";
-import { IAuthenticatedGitOps } from "../../../src/vcs/authenticated-git-ops.js";
+import { INetworkGitOps } from "../../../src/vcs/authenticated-git-ops.js";
 
 const testDir = join(process.cwd(), "test-git-commit-strategy-tmp");
 
@@ -215,8 +215,8 @@ describe("GitCommitStrategy", () => {
       );
     });
 
-    test("uses gitOps.push() when gitOps is provided", async () => {
-      const mockGitOps = {
+    test("uses networkOps.push() when networkOps is provided", async () => {
+      const mockNetworkOps = {
         push: mock.fn(async () => {}),
       };
 
@@ -230,17 +230,17 @@ describe("GitCommitStrategy", () => {
         message: "test commit",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
-        gitOps: mockGitOps as unknown as IAuthenticatedGitOps,
+        networkOps: mockNetworkOps as unknown as INetworkGitOps,
         force: true,
       });
 
-      // Verify gitOps.push was called
+      // Verify networkOps.push was called
       assert.strictEqual(
-        mockGitOps.push.mock.calls.length,
+        mockNetworkOps.push.mock.calls.length,
         1,
-        "gitOps.push should be called once"
+        "networkOps.push should be called once"
       );
-      assert.deepStrictEqual(mockGitOps.push.mock.calls[0].arguments, [
+      assert.deepStrictEqual(mockNetworkOps.push.mock.calls[0].arguments, [
         "test-branch",
         { force: true },
       ]);
@@ -252,11 +252,11 @@ describe("GitCommitStrategy", () => {
       assert.strictEqual(
         pushCalls.length,
         0,
-        "Should not call raw git push when gitOps is provided"
+        "Should not call raw git push when networkOps is provided"
       );
     });
 
-    test("falls back to raw git push when gitOps is not provided", async () => {
+    test("falls back to raw git push when networkOps is not provided", async () => {
       mockExecutor.responses.set("git rev-parse HEAD", "abc123def456");
 
       const strategy = new GitCommitStrategy(mockExecutor);
@@ -267,7 +267,7 @@ describe("GitCommitStrategy", () => {
         message: "test commit",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
-        // gitOps NOT provided
+        // networkOps NOT provided
         force: true,
       });
 
@@ -278,7 +278,7 @@ describe("GitCommitStrategy", () => {
       assert.strictEqual(
         pushCalls.length,
         1,
-        "Should call raw git push when no gitOps"
+        "Should call raw git push when no networkOps"
       );
       assert.ok(
         pushCalls[0].command.includes("--force-with-lease"),

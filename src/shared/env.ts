@@ -157,30 +157,6 @@ export function interpolateEnvVars(
   return processValue(json, options) as Record<string, unknown>;
 }
 
-// =============================================================================
-// Text Content Interpolation
-// =============================================================================
-
-/**
- * Interpolate environment variables in a string.
- */
-export function interpolateEnvVarsInString(
-  value: string,
-  options: EnvInterpolationOptions = DEFAULT_OPTIONS
-): string {
-  return processString(value, options);
-}
-
-/**
- * Interpolate environment variables in an array of strings.
- */
-export function interpolateEnvVarsInLines(
-  lines: string[],
-  options: EnvInterpolationOptions = DEFAULT_OPTIONS
-): string[] {
-  return lines.map((line) => processString(line, options));
-}
-
 /**
  * Interpolate environment variables in content of any supported type.
  * Handles objects, strings, and string arrays.
@@ -190,10 +166,10 @@ export function interpolateContent(
   options: EnvInterpolationOptions = DEFAULT_OPTIONS
 ): Record<string, unknown> | string | string[] {
   if (typeof content === "string") {
-    return interpolateEnvVarsInString(content, options);
+    return processString(content, options);
   }
   if (Array.isArray(content)) {
-    return interpolateEnvVarsInLines(content, options);
+    return content.map((line) => processString(line, options));
   }
   return interpolateEnvVars(content, options);
 }

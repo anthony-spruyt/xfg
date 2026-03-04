@@ -1,9 +1,5 @@
 // Types
-export type {
-  ILabelsStrategy,
-  GitHubLabel,
-  LabelsStrategyOptions,
-} from "./types.js";
+export type { ILabelsStrategy, GitHubLabel } from "./types.js";
 
 // Converter
 export { normalizeColor, labelConfigToPayload } from "./converter.js";

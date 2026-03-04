@@ -48,7 +48,7 @@ describe("PRMergeHandler", () => {
         { fileName: "config.json", action: "create" },
       ];
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [],
       };
 
@@ -84,7 +84,7 @@ describe("PRMergeHandler", () => {
         { fileName: "config.json", action: "create" },
       ];
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [],
         prOptions: { merge: "manual" },
       };
@@ -120,7 +120,7 @@ describe("PRMergeHandler", () => {
       const handler = new PRMergeHandler(mockLogger);
       const changedFiles: FileAction[] = [];
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [],
         prOptions: { merge: "manual" },
       };
@@ -165,7 +165,7 @@ describe("PRMergeHandler", () => {
         { fileName: "config.json", action: "create" },
       ];
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [],
         prOptions: {
           labels: ["config-sync", "automated"],
@@ -198,7 +198,7 @@ describe("PRMergeHandler", () => {
     test("warns when merge operation fails", async () => {
       const { mock: mockLogger, warnings } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({
-        responses: new Map([
+        responses: new Map<string, string | Error>([
           ["gh pr list", ""],
           ["gh pr create", "https://github.com/test/repo/pull/1"],
           ["gh api", "true"],
@@ -211,7 +211,7 @@ describe("PRMergeHandler", () => {
         { fileName: "config.json", action: "create" },
       ];
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [],
       };
 

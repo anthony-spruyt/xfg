@@ -23,8 +23,8 @@ describe("formatRepoSettingsPlan", () => {
     assert.ok(
       result.lines.some((l) => l.includes("true") && l.includes("false"))
     );
-    assert.equal(result.changes, 1);
-    assert.equal(result.adds, 0);
+    assert.equal(result.updates, 1);
+    assert.equal(result.creates, 0);
   });
 
   test("should format added property", () => {
@@ -35,16 +35,16 @@ describe("formatRepoSettingsPlan", () => {
     const result = formatRepoSettingsPlan(changes);
 
     assert.ok(result.lines.some((l) => l.includes("allowAutoMerge")));
-    assert.equal(result.adds, 1);
-    assert.equal(result.changes, 0);
+    assert.equal(result.creates, 1);
+    assert.equal(result.updates, 0);
   });
 
   test("should return empty result for no changes", () => {
     const result = formatRepoSettingsPlan([]);
 
     assert.equal(result.lines.length, 0);
-    assert.equal(result.changes, 0);
-    assert.equal(result.adds, 0);
+    assert.equal(result.updates, 0);
+    assert.equal(result.creates, 0);
     assert.equal(result.warnings.length, 0);
   });
 
@@ -131,8 +131,8 @@ describe("formatRepoSettingsPlan", () => {
     const result = formatRepoSettingsPlan(changes);
 
     assert.equal(result.lines.length, 3);
-    assert.equal(result.adds, 1);
-    assert.equal(result.changes, 2);
+    assert.equal(result.creates, 1);
+    assert.equal(result.updates, 2);
   });
 
   describe("entries population", () => {

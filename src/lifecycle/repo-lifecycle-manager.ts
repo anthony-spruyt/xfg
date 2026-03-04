@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { rm } from "node:fs/promises";
 import { parseGitUrl, type RepoInfo } from "../shared/repo-detector.js";
 import { logger } from "../shared/logger.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import type { RepoConfig } from "../config/types.js";
 import type {
   IRepoLifecycleManager,
@@ -43,7 +44,6 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
 
     const { token } = options;
 
-    // Check if repo exists
     const exists = await provider.exists(repoInfo, token);
 
     if (exists) {
@@ -171,7 +171,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       } catch (cleanupError) {
         // Log cleanup errors at debug level for troubleshooting
         logger.debug(
-          `Failed to clean up migration source directory ${sourceDir}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`
+          `Failed to clean up migration source directory ${sourceDir}: ${toErrorMessage(cleanupError)}`
         );
       }
     }

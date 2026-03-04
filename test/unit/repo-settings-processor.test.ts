@@ -6,41 +6,42 @@ import type { RepoConfig } from "../../src/config/index.js";
 import type {
   IRepoSettingsStrategy,
   CurrentRepoSettings,
-  RepoSettingsStrategyOptions,
 } from "../../src/settings/repo-settings/types.js";
-import type { GitHubRepoSettings, RepoInfo } from "../../src/config/index.js";
+import type { GhApiOptions } from "../../src/shared/gh-api-utils.js";
+import type { GitHubRepoSettings } from "../../src/config/index.js";
+import type { RepoInfo } from "../../src/shared/repo-detector.js";
 
 // Mock strategy for testing
 class MockStrategy implements IRepoSettingsStrategy {
   getSettingsResult: CurrentRepoSettings = {};
   getSettingsCalls: Array<{
     repoInfo: RepoInfo;
-    options?: RepoSettingsStrategyOptions;
+    options?: GhApiOptions;
   }> = [];
   updateSettingsCalls: Array<{
     repoInfo: RepoInfo;
     settings: GitHubRepoSettings;
-    options?: RepoSettingsStrategyOptions;
+    options?: GhApiOptions;
   }> = [];
   vulnerabilityAlertsCalls: Array<{
     repoInfo: RepoInfo;
     enable: boolean;
-    options?: RepoSettingsStrategyOptions;
+    options?: GhApiOptions;
   }> = [];
   automatedSecurityFixesCalls: Array<{
     repoInfo: RepoInfo;
     enable: boolean;
-    options?: RepoSettingsStrategyOptions;
+    options?: GhApiOptions;
   }> = [];
   privateVulnerabilityReportingCalls: Array<{
     repoInfo: RepoInfo;
     enable: boolean;
-    options?: RepoSettingsStrategyOptions;
+    options?: GhApiOptions;
   }> = [];
 
   async getSettings(
     repoInfo: RepoInfo,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<CurrentRepoSettings> {
     this.getSettingsCalls.push({ repoInfo, options });
     return this.getSettingsResult;
@@ -49,7 +50,7 @@ class MockStrategy implements IRepoSettingsStrategy {
   async updateSettings(
     repoInfo: RepoInfo,
     settings: GitHubRepoSettings,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void> {
     this.updateSettingsCalls.push({ repoInfo, settings, options });
   }
@@ -57,7 +58,7 @@ class MockStrategy implements IRepoSettingsStrategy {
   async setVulnerabilityAlerts(
     repoInfo: RepoInfo,
     enable: boolean,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void> {
     this.vulnerabilityAlertsCalls.push({ repoInfo, enable, options });
   }
@@ -65,7 +66,7 @@ class MockStrategy implements IRepoSettingsStrategy {
   async setAutomatedSecurityFixes(
     repoInfo: RepoInfo,
     enable: boolean,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void> {
     this.automatedSecurityFixesCalls.push({ repoInfo, enable, options });
   }
@@ -73,7 +74,7 @@ class MockStrategy implements IRepoSettingsStrategy {
   async setPrivateVulnerabilityReporting(
     repoInfo: RepoInfo,
     enable: boolean,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void> {
     this.privateVulnerabilityReportingCalls.push({ repoInfo, enable, options });
   }

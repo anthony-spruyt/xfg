@@ -13,24 +13,12 @@ export {
   isArrayOfObjects,
   type DiffAction,
   type PropertyDiff,
-  type IRulesetStrategy,
-  type RulesetStrategyOptions,
-  RulesetProcessor,
-  type IRulesetProcessor,
-  type RulesetProcessorOptions,
-  type RulesetProcessorResult,
-  GitHubRulesetStrategy,
-  diffRulesets,
-  formatDiff,
-  formatRulesetPlan,
-  formatPropertyTree,
 } from "./rulesets/index.js";
 
 // Repo settings
 export {
   isRepoSettingsStrategy,
   type IRepoSettingsStrategy,
-  type RepoSettingsStrategyOptions,
   type CurrentRepoSettings,
   RepoSettingsProcessor,
   type IRepoSettingsProcessor,
@@ -50,7 +38,6 @@ export {
 export {
   type ILabelsStrategy,
   type GitHubLabel,
-  type LabelsStrategyOptions,
   normalizeColor,
   labelConfigToPayload,
   diffLabels,

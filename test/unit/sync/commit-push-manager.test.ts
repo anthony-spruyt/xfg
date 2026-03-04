@@ -36,7 +36,7 @@ describe("CommitPushManager", () => {
 
   describe("commitAndPush", () => {
     test("logs actions in dry-run mode without committing", async () => {
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({});
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger, messages } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});
 
@@ -50,7 +50,8 @@ describe("CommitPushManager", () => {
 
       const result = await manager.commitAndPush({
         repoInfo: mockRepoInfo,
-        gitOps: mockGitOps,
+        localOps,
+        networkOps,
         workDir,
         fileChanges,
         commitMessage: "chore: sync config",
@@ -67,7 +68,7 @@ describe("CommitPushManager", () => {
     });
 
     test("returns skipped when no staged changes", async () => {
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         hasStagedChanges: false,
       });
       const { mock: mockLogger, messages } = createMockLogger();
@@ -83,7 +84,8 @@ describe("CommitPushManager", () => {
 
       const result = await manager.commitAndPush({
         repoInfo: mockRepoInfo,
-        gitOps: mockGitOps,
+        localOps,
+        networkOps,
         workDir,
         fileChanges,
         commitMessage: "chore: sync config",
@@ -100,7 +102,7 @@ describe("CommitPushManager", () => {
     });
 
     test("returns error result for branch protection rejection in direct mode", async () => {
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         hasStagedChanges: true,
       });
       const { mock: mockLogger } = createMockLogger();
@@ -122,7 +124,8 @@ describe("CommitPushManager", () => {
       // This test verifies dry-run path works (commit strategy complexity avoided)
       const result = await manager.commitAndPush({
         repoInfo: mockRepoInfo,
-        gitOps: mockGitOps,
+        localOps,
+        networkOps,
         workDir,
         fileChanges,
         commitMessage: "chore: sync config",
@@ -137,7 +140,7 @@ describe("CommitPushManager", () => {
     });
 
     test("filters out skipped files from commit", async () => {
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         hasStagedChanges: true,
       });
       const { mock: mockLogger } = createMockLogger();
@@ -161,7 +164,8 @@ describe("CommitPushManager", () => {
       // Test dry-run to verify filtering logic
       const result = await manager.commitAndPush({
         repoInfo: mockRepoInfo,
-        gitOps: mockGitOps,
+        localOps,
+        networkOps,
         workDir,
         fileChanges,
         commitMessage: "chore: sync config",
@@ -176,7 +180,7 @@ describe("CommitPushManager", () => {
     });
 
     test("calls git add -A when not in dry-run mode", async () => {
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         hasStagedChanges: false, // Return false so we skip commit
       });
       const { mock: mockLogger } = createMockLogger();
@@ -192,7 +196,8 @@ describe("CommitPushManager", () => {
 
       await manager.commitAndPush({
         repoInfo: mockRepoInfo,
-        gitOps: mockGitOps,
+        localOps,
+        networkOps,
         workDir,
         fileChanges,
         commitMessage: "chore: sync config",

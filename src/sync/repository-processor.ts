@@ -26,6 +26,7 @@ import type {
   ISyncWorkflow,
   IRepositoryProcessor,
   GitOpsFactory,
+  GitOpsResult,
   ProcessorOptions,
   ProcessorResult,
 } from "./types.js";
@@ -52,9 +53,15 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       syncWorkflow?: ISyncWorkflow;
     }
   ) {
-    const factory =
+    const factory: GitOpsFactory =
       gitOpsFactory ??
-      ((opts, auth) => new AuthenticatedGitOps(new GitOps(opts), auth));
+      ((opts, auth): GitOpsResult => {
+        const gitOps = new GitOps(opts);
+        return {
+          localOps: gitOps,
+          networkOps: new AuthenticatedGitOps(gitOps, auth),
+        };
+      });
     const logInstance = log ?? logger;
 
     // Initialize token manager for auth builder
@@ -63,7 +70,8 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     const fileWriter = components?.fileWriter ?? new FileWriter();
     const manifestManager =
       components?.manifestManager ?? new ManifestManager();
-    const branchManager = components?.branchManager ?? new BranchManager();
+    const branchManager =
+      components?.branchManager ?? new BranchManager(logInstance);
     const authOptionsBuilder =
       components?.authOptionsBuilder ??
       new AuthOptionsBuilder(tokenManager, logInstance);

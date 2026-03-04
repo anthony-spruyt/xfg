@@ -1,7 +1,7 @@
 import type { PRResult } from "./pr-creator.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { MergeMode, MergeStrategy } from "../config/index.js";
-import type { IAuthenticatedGitOps } from "./authenticated-git-ops.js";
+import type { INetworkGitOps } from "./authenticated-git-ops.js";
 
 export interface PRMergeConfig {
   mode: MergeMode;
@@ -103,8 +103,8 @@ export interface CommitOptions {
   force?: boolean;
   /** GitHub App installation token (GitHub-only; used by GraphQLCommitStrategy) */
   token?: string;
-  /** Authenticated git operations wrapper (used by GraphQLCommitStrategy for fetchBranch() during OID mismatch retries) */
-  gitOps?: IAuthenticatedGitOps;
+  /** Network git operations (used by GraphQLCommitStrategy for fetchBranch() during OID mismatch retries) */
+  networkOps?: INetworkGitOps;
 }
 
 export interface CommitResult {

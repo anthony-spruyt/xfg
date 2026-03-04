@@ -69,7 +69,7 @@ describe("FileSyncOrchestrator", () => {
       calls,
       processOrphans: () => {
         calls.processOrphans++;
-        return { manifest: { version: 3, configs: {} }, filesToDelete: [] };
+        return { manifest: { version: 4, configs: {} }, filesToDelete: [] };
       },
       deleteOrphans: async () => {
         calls.deleteOrphans++;
@@ -82,7 +82,7 @@ describe("FileSyncOrchestrator", () => {
 
   describe("sync", () => {
     test("orchestrates file writing and manifest handling", async () => {
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({});
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
 
       const fileChanges = new Map([
@@ -101,14 +101,14 @@ describe("FileSyncOrchestrator", () => {
       );
 
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [{ fileName: "config.json", content: {} }],
       };
 
       const result = await orchestrator.sync(
         repoConfig,
         mockRepoInfo,
-        { gitOps: mockGitOps, baseBranch: "main", cleanup: () => {} },
+        { localOps, networkOps, baseBranch: "main", cleanup: () => {} },
         { branchName: "chore/sync", workDir, configId: "test" }
       );
 
@@ -120,7 +120,7 @@ describe("FileSyncOrchestrator", () => {
     });
 
     test("returns hasChanges false when all files skipped", async () => {
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({});
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
 
       const fileChanges = new Map([
@@ -139,14 +139,14 @@ describe("FileSyncOrchestrator", () => {
       );
 
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [{ fileName: "config.json", content: {} }],
       };
 
       const result = await orchestrator.sync(
         repoConfig,
         mockRepoInfo,
-        { gitOps: mockGitOps, baseBranch: "main", cleanup: () => {} },
+        { localOps, networkOps, baseBranch: "main", cleanup: () => {} },
         { branchName: "chore/sync", workDir, configId: "test" }
       );
 
@@ -154,7 +154,7 @@ describe("FileSyncOrchestrator", () => {
     });
 
     test("logs diff summary in dry-run mode", async () => {
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({});
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger, diffSummaries } = createMockLogger();
 
       const fileChanges = new Map([
@@ -173,14 +173,14 @@ describe("FileSyncOrchestrator", () => {
       );
 
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [{ fileName: "config.json", content: {} }],
       };
 
       await orchestrator.sync(
         repoConfig,
         mockRepoInfo,
-        { gitOps: mockGitOps, baseBranch: "main", cleanup: () => {} },
+        { localOps, networkOps, baseBranch: "main", cleanup: () => {} },
         { branchName: "chore/sync", workDir, configId: "test", dryRun: true }
       );
 
@@ -188,7 +188,7 @@ describe("FileSyncOrchestrator", () => {
     });
 
     test("calculates diff stats for non-dry-run", async () => {
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({});
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
 
       const fileChanges = new Map([
@@ -215,7 +215,7 @@ describe("FileSyncOrchestrator", () => {
       );
 
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [
           { fileName: "new.json", content: {} },
           { fileName: "updated.json", content: {} },
@@ -225,7 +225,7 @@ describe("FileSyncOrchestrator", () => {
       const result = await orchestrator.sync(
         repoConfig,
         mockRepoInfo,
-        { gitOps: mockGitOps, baseBranch: "main", cleanup: () => {} },
+        { localOps, networkOps, baseBranch: "main", cleanup: () => {} },
         { branchName: "chore/sync", workDir, configId: "test", dryRun: false }
       );
 

@@ -13,8 +13,6 @@ export {
   formatSettingsReportCLI,
   formatSettingsReportMarkdown,
   writeSettingsReportSummary,
-  formatValuePlain,
-  formatRulesetConfigPlain,
   type SettingsReport,
   type RepoChanges,
   type RulesetChange,

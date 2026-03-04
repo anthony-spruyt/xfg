@@ -28,7 +28,12 @@ describe("FileSyncStrategy", () => {
       async sync() {
         return {
           fileChanges: new Map(),
-          diffStats: { additions: 0, deletions: 0, modifications: 0 },
+          diffStats: {
+            newCount: 0,
+            modifiedCount: 0,
+            unchangedCount: 0,
+            deletedCount: 0,
+          },
           changedFiles: [],
           hasChanges: false,
         };
@@ -36,11 +41,12 @@ describe("FileSyncStrategy", () => {
     };
 
     const strategy = new FileSyncStrategy(mockOrchestrator);
-    const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+    const { localOps, networkOps } = createMockAuthenticatedGitOps({
       hasChanges: false,
     });
     const session: SessionContext = {
-      gitOps: mockGitOps,
+      localOps,
+      networkOps,
       baseBranch: "main",
       cleanup: () => {},
     };
@@ -69,7 +75,12 @@ describe("FileSyncStrategy", () => {
               },
             ],
           ]),
-          diffStats: { additions: 1, deletions: 0, modifications: 0 },
+          diffStats: {
+            newCount: 1,
+            modifiedCount: 0,
+            unchangedCount: 0,
+            deletedCount: 0,
+          },
           changedFiles: [{ fileName: "test.txt", action: "create" as const }],
           hasChanges: true,
         };
@@ -77,11 +88,12 @@ describe("FileSyncStrategy", () => {
     };
 
     const strategy = new FileSyncStrategy(mockOrchestrator);
-    const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+    const { localOps, networkOps } = createMockAuthenticatedGitOps({
       hasChanges: true,
     });
     const session: SessionContext = {
-      gitOps: mockGitOps,
+      localOps,
+      networkOps,
       baseBranch: "main",
       cleanup: () => {},
     };
@@ -115,7 +127,12 @@ describe("FileSyncStrategy", () => {
               },
             ],
           ]),
-          diffStats: { additions: 1, deletions: 0, modifications: 0 },
+          diffStats: {
+            newCount: 1,
+            modifiedCount: 0,
+            unchangedCount: 0,
+            deletedCount: 0,
+          },
           changedFiles: [
             { fileName: "test.txt", action: "create" as const },
             { fileName: "unchanged.txt", action: "skip" as const },
@@ -126,11 +143,12 @@ describe("FileSyncStrategy", () => {
     };
 
     const strategy = new FileSyncStrategy(mockOrchestrator);
-    const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+    const { localOps, networkOps } = createMockAuthenticatedGitOps({
       hasChanges: true,
     });
     const session: SessionContext = {
-      gitOps: mockGitOps,
+      localOps,
+      networkOps,
       baseBranch: "main",
       cleanup: () => {},
     };

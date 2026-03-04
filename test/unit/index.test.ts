@@ -824,7 +824,7 @@ import {
   buildRepoResult,
   buildErrorResult,
 } from "../../src/output/summary-utils.js";
-import { ProcessorResult } from "../../src/sync/repository-processor.js";
+import type { ProcessorResult } from "../../src/sync/types.js";
 import { RepoConfig } from "../../src/config/index.js";
 
 describe("getMergeOutcome", () => {

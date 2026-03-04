@@ -10,12 +10,12 @@ describe("formatRulesetPlan propertyDiffs", () => {
         name: "branch-protection",
         action: "update",
         current: {
+          id: 1,
           name: "branch-protection",
           enforcement: "active",
           target: "branch",
         },
         desired: {
-          name: "branch-protection",
           enforcement: "evaluate",
           target: "branch",
         },
@@ -42,7 +42,6 @@ describe("formatRulesetPlan propertyDiffs", () => {
         name: "new-ruleset",
         action: "create",
         desired: {
-          name: "new-ruleset",
           enforcement: "active",
           target: "branch",
         },
@@ -54,6 +53,6 @@ describe("formatRulesetPlan propertyDiffs", () => {
     assert.equal(result.entries.length, 1);
     assert.equal(result.entries[0].action, "create");
     assert.ok(result.entries[0].config);
-    assert.equal(result.entries[0].config!.name, "new-ruleset");
+    assert.equal(result.entries[0].name, "new-ruleset");
   });
 });

@@ -2,8 +2,6 @@ import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   interpolateEnvVars,
-  interpolateEnvVarsInString,
-  interpolateEnvVarsInLines,
   interpolateContent,
   type EnvInterpolationOptions,
 } from "../../src/shared/env.js";
@@ -186,7 +184,7 @@ describe("interpolateEnvVars", () => {
   });
 });
 
-describe("interpolateEnvVarsInString", () => {
+describe("interpolateContent with strings", () => {
   const originalEnv = { ...process.env };
 
   beforeEach(() => {
@@ -199,42 +197,42 @@ describe("interpolateEnvVarsInString", () => {
   });
 
   test("interpolates in plain string", () => {
-    const result = interpolateEnvVarsInString("value is ${TEST_VAR}");
+    const result = interpolateContent("value is ${TEST_VAR}");
     assert.equal(result, "value is test-value");
   });
 
   test("handles multiline string", () => {
     const input = "line1\n${TEST_VAR}\nline3";
-    const result = interpolateEnvVarsInString(input);
+    const result = interpolateContent(input);
     assert.equal(result, "line1\ntest-value\nline3");
   });
 
   test("handles multiple vars in one string", () => {
-    const result = interpolateEnvVarsInString("${TEST_VAR} and ${DIR}");
+    const result = interpolateContent("${TEST_VAR} and ${DIR}");
     assert.equal(result, "test-value and build");
   });
 
   test("handles default values", () => {
-    const result = interpolateEnvVarsInString("${MISSING:-default-val}");
+    const result = interpolateContent("${MISSING:-default-val}");
     assert.equal(result, "default-val");
   });
 
   test("throws on missing required var", () => {
     assert.throws(
-      () => interpolateEnvVarsInString("${MISSING_VAR}"),
+      () => interpolateContent("${MISSING_VAR}"),
       /Missing required environment variable: MISSING_VAR/
     );
   });
 
   test("leaves placeholder in non-strict mode", () => {
-    const result = interpolateEnvVarsInString("${MISSING_VAR}", {
+    const result = interpolateContent("${MISSING_VAR}", {
       strict: false,
     });
     assert.equal(result, "${MISSING_VAR}");
   });
 });
 
-describe("interpolateEnvVarsInLines", () => {
+describe("interpolateContent with string arrays", () => {
   const originalEnv = { ...process.env };
 
   beforeEach(() => {
@@ -247,31 +245,28 @@ describe("interpolateEnvVarsInLines", () => {
   });
 
   test("interpolates each line", () => {
-    const result = interpolateEnvVarsInLines(["${DIR}/", "other"]);
+    const result = interpolateContent(["${DIR}/", "other"]);
     assert.deepEqual(result, ["build/", "other"]);
   });
 
   test("handles multiple vars across lines", () => {
-    const result = interpolateEnvVarsInLines([
-      "${DIR}/output",
-      "${EXTRA}/files",
-    ]);
+    const result = interpolateContent(["${DIR}/output", "${EXTRA}/files"]);
     assert.deepEqual(result, ["build/output", "extra/files"]);
   });
 
   test("handles empty array", () => {
-    const result = interpolateEnvVarsInLines([]);
+    const result = interpolateContent([]);
     assert.deepEqual(result, []);
   });
 
   test("handles lines without vars", () => {
-    const result = interpolateEnvVarsInLines(["static", "content"]);
+    const result = interpolateContent(["static", "content"]);
     assert.deepEqual(result, ["static", "content"]);
   });
 
   test("throws on missing required var in any line", () => {
     assert.throws(
-      () => interpolateEnvVarsInLines(["${DIR}/", "${MISSING}"]),
+      () => interpolateContent(["${DIR}/", "${MISSING}"]),
       /Missing required environment variable: MISSING/
     );
   });
@@ -414,15 +409,15 @@ describe("escape mechanism with $$ syntax", () => {
     });
   });
 
-  // String interpolation function
-  test("interpolateEnvVarsInString handles escaped vars", () => {
-    const result = interpolateEnvVarsInString("template: $${localEnv:HOME}");
+  // String interpolation via interpolateContent
+  test("interpolateContent handles escaped vars in string", () => {
+    const result = interpolateContent("template: $${localEnv:HOME}");
     assert.equal(result, "template: ${localEnv:HOME}");
   });
 
-  // Lines array
-  test("interpolateEnvVarsInLines handles escaped vars", () => {
-    const result = interpolateEnvVarsInLines([
+  // Lines array via interpolateContent
+  test("interpolateContent handles escaped vars in lines", () => {
+    const result = interpolateContent([
       "# Use $${VAR} for local env",
       "export PATH=${HOME}",
     ]);

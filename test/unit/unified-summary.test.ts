@@ -436,7 +436,6 @@ describe("formatUnifiedSummaryMarkdown", () => {
               name: "branch-protection",
               action: "create",
               config: {
-                name: "branch-protection",
                 target: "branch",
                 enforcement: "active",
               },
@@ -663,7 +662,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
             {
               name: "protect-main",
               action: "create",
-              config: { name: "protect-main", target: "branch" },
+              config: { target: "branch" },
             },
             { name: "old-rule", action: "delete" },
           ],

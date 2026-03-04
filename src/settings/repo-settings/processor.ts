@@ -8,6 +8,9 @@ import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
   type BaseProcessorResult,
+  type ChangeCounts,
+  buildDryRunResult,
+  buildApplyResult,
 } from "../base-processor.js";
 
 export interface IRepoSettingsProcessor {
@@ -21,12 +24,7 @@ export interface IRepoSettingsProcessor {
 export type RepoSettingsProcessorOptions = BaseProcessorOptions;
 
 export interface RepoSettingsProcessorResult extends BaseProcessorResult {
-  changes?: {
-    create: number;
-    update: number;
-    delete: number;
-    unchanged: number;
-  };
+  changes?: ChangeCounts;
   warnings?: string[];
   planOutput?: RepoSettingsPlanResult;
 }
@@ -118,24 +116,18 @@ export class RepoSettingsProcessor
     const planOutput = formatRepoSettingsPlan(changes);
 
     const changeCounts = {
-      create: planOutput.adds,
-      update: planOutput.changes,
+      create: planOutput.creates,
+      update: planOutput.updates,
       delete: 0,
       unchanged: changes.filter((c) => c.action === "unchanged").length,
     };
 
-    // Dry run mode - report planned changes without applying
     if (dryRun) {
-      const summary = this.formatChangeSummary(changeCounts);
-      return {
-        success: true,
+      return buildDryRunResult<RepoSettingsProcessorResult>(
         repoName,
-        message: `[DRY RUN] ${summary}`,
-        dryRun: true,
-        changes: changeCounts,
-        warnings: planOutput.warnings,
-        planOutput,
-      };
+        changeCounts,
+        { warnings: planOutput.warnings, planOutput }
+      );
     }
 
     // Apply changes - only send settings that actually changed
@@ -151,15 +143,13 @@ export class RepoSettingsProcessor
 
     await this.applyChanges(githubRepo, changedSettings, strategyOptions);
 
-    const summary = this.formatChangeSummary(changeCounts);
-    return {
-      success: true,
+    const appliedCount = Object.keys(changedSettings).length;
+    return buildApplyResult<RepoSettingsProcessorResult>(
       repoName,
-      message: `Applied: ${summary}`,
-      changes: changeCounts,
-      warnings: planOutput.warnings,
-      planOutput,
-    };
+      changeCounts,
+      appliedCount,
+      { warnings: planOutput.warnings, planOutput }
+    );
   }
 
   private async applyChanges(

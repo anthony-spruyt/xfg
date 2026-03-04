@@ -1,4 +1,9 @@
-import type { IGitOps } from "../../src/git-ops.js";
+import type {
+  ILocalGitOps,
+  INetworkGitOps,
+} from "../../src/vcs/authenticated-git-ops.js";
+
+type IGitOps = ILocalGitOps & INetworkGitOps;
 
 export interface GitOpsMockConfig {
   // Return value overrides
@@ -130,6 +135,14 @@ export function createMockGitOps(
     async hasStagedChanges(): Promise<boolean> {
       return config.hasStagedChanges ?? true;
     },
+
+    async lsRemote(_branchName: string): Promise<string> {
+      return "";
+    },
+
+    async pushRefspec(_refspec: string): Promise<void> {},
+
+    async fetchBranch(_branchName: string): Promise<void> {},
 
     async fileExistsOnBranch(
       fileName: string,

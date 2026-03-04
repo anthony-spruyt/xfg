@@ -224,11 +224,10 @@ describe("formatSettingsReportCLI", () => {
               name: "ci-bypass",
               action: "create",
               config: {
-                name: "ci-bypass",
                 target: "branch",
                 enforcement: "active",
                 conditions: {
-                  ref_name: {
+                  refName: {
                     include: ["refs/heads/main"],
                     exclude: [],
                   },
@@ -438,7 +437,6 @@ describe("formatSettingsReportCLI", () => {
               name: "branch-protection",
               action: "create",
               config: {
-                name: "branch-protection",
                 target: "branch",
                 enforcement: "active",
                 rules: [
@@ -908,7 +906,6 @@ describe("formatSettingsReportMarkdown", () => {
               name: "branch-protection",
               action: "create",
               config: {
-                name: "branch-protection",
                 target: "branch",
                 enforcement: "active",
                 rules: [

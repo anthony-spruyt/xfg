@@ -1,6 +1,7 @@
 import type { RepoConfig } from "../config/types.js";
 import { RepoInfo, getRepoDisplayName } from "../shared/repo-detector.js";
 import type { ILogger } from "../shared/logger.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import { defaultExecutor } from "../shared/command-executor.js";
 import type {
   ISyncWorkflow,
@@ -70,8 +71,8 @@ export class SyncWorkflow implements ISyncWorkflow {
         dryRun,
         retries,
         token: authResult.token,
-        gitOps: session.gitOps,
-        log: this.log,
+        localOps: session.localOps,
+        networkOps: session.networkOps,
         executor,
       });
 
@@ -94,7 +95,8 @@ export class SyncWorkflow implements ISyncWorkflow {
       const pushBranch = isDirectMode ? session.baseBranch : branchName;
       const commitResult = await this.commitPushManager.commitAndPush({
         repoInfo,
-        gitOps: session.gitOps,
+        localOps: session.localOps,
+        networkOps: session.networkOps,
         workDir,
         fileChanges: workResult.fileChanges,
         commitMessage: workResult.commitMessage,
@@ -153,8 +155,8 @@ export class SyncWorkflow implements ISyncWorkflow {
     } finally {
       try {
         session?.cleanup();
-      } catch {
-        // Ignore cleanup errors - best effort
+      } catch (error) {
+        this.log.debug(`Cleanup failed: ${toErrorMessage(error)}`);
       }
     }
   }

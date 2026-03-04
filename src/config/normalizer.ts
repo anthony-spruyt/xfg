@@ -5,6 +5,7 @@ import {
   isTextContent,
   mergeTextContent,
 } from "./merge.js";
+import type { ArrayMergeStrategy } from "./merge.js";
 import { interpolateContent } from "../shared/env.js";
 import type {
   RawConfig,
@@ -23,6 +24,31 @@ import type {
   Label,
   GitHubRepoSettings,
 } from "./types.js";
+
+/**
+ * Merge two content values using the appropriate strategy.
+ * Handles text+text, object+object, and type mismatch cases.
+ */
+function mergeContentPair(
+  base: ContentValue,
+  overlay: ContentValue,
+  strategy: ArrayMergeStrategy
+): ContentValue {
+  if (isTextContent(base) && isTextContent(overlay)) {
+    return mergeTextContent(base, overlay, strategy);
+  }
+  if (!isTextContent(base) && !isTextContent(overlay)) {
+    const ctx = createMergeContext(strategy);
+    const merged = deepMerge(
+      structuredClone(base),
+      overlay as Record<string, unknown>,
+      ctx
+    );
+    return stripMergeDirectives(merged);
+  }
+  // Type mismatch — overlay wins
+  return overlay;
+}
 
 /**
  * Checks whether an object's `inherit` property is not explicitly set to false.
@@ -150,7 +176,6 @@ export function mergeSettings(
   const rootRulesets = root?.rulesets ?? {};
   const repoRulesets = perRepo?.rulesets ?? {};
 
-  // Check if repo opts out of all inherited rulesets
   const inheritRulesets = shouldInherit(repoRulesets);
 
   const allRulesetNames = new Set([
@@ -262,29 +287,12 @@ function mergeGroupFiles(
         if (overlay.override || !existing.content || !overlay.content) {
           // override:true or one side missing content — use overlay content
           mergedContent = overlay.content ?? existing.content;
-        } else if (
-          isTextContent(existing.content) &&
-          isTextContent(overlay.content)
-        ) {
-          mergedContent = mergeTextContent(
+        } else {
+          mergedContent = mergeContentPair(
             existing.content,
             overlay.content,
             existing.mergeStrategy ?? "replace"
           );
-        } else if (
-          !isTextContent(existing.content) &&
-          !isTextContent(overlay.content)
-        ) {
-          const ctx = createMergeContext(existing.mergeStrategy ?? "replace");
-          mergedContent = deepMerge(
-            structuredClone(existing.content),
-            overlay.content as Record<string, unknown>,
-            ctx
-          );
-          mergedContent = stripMergeDirectives(mergedContent);
-        } else {
-          // Type mismatch — overlay wins
-          mergedContent = overlay.content;
         }
 
         const { override: _override, ...restFileConfig } = fileConfig as Record<
@@ -448,7 +456,6 @@ export function normalizeConfig(raw: RawConfig): Config {
     for (const gitUrl of gitUrls) {
       const files: FileContent[] = [];
 
-      // Check if repo opts out of all inherited files
       const inheritFiles = shouldInherit(rawRepo.files);
 
       // Step 2: Process each file definition
@@ -504,28 +511,11 @@ export function normalizeConfig(raw: RawConfig): Config {
           mergedContent = structuredClone(fileConfig.content);
         } else {
           // Merge mode: handle text vs object content
-          if (isTextContent(fileConfig.content)) {
-            // Text content merging - validate overlay is also text
-            if (!isTextContent(repoOverride.content)) {
-              throw new Error(
-                `Expected text content for ${fileName}, got object`
-              );
-            }
-            mergedContent = mergeTextContent(
-              fileConfig.content,
-              repoOverride.content,
-              fileStrategy
-            );
-          } else {
-            // Object content: deep merge file base + repo overlay
-            const ctx = createMergeContext(fileStrategy);
-            mergedContent = deepMerge(
-              structuredClone(fileConfig.content),
-              repoOverride.content as Record<string, unknown>,
-              ctx
-            );
-            mergedContent = stripMergeDirectives(mergedContent);
-          }
+          mergedContent = mergeContentPair(
+            fileConfig.content,
+            repoOverride.content,
+            fileStrategy
+          );
         }
 
         // Step 4: Interpolate env vars (only if content exists)

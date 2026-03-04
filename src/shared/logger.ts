@@ -2,6 +2,7 @@ import chalk from "chalk";
 import { FileStatus, formatStatusBadge } from "./file-status.js";
 
 export interface ILogger {
+  log(message: string): void;
   info(message: string): void;
   warn(message: string): void;
   debug(message: string): void;
@@ -33,6 +34,10 @@ export class Logger implements ILogger {
     failed: 0,
     skipped: 0,
   };
+
+  log(message: string): void {
+    console.log(message);
+  }
 
   setTotal(total: number): void {
     this.stats.total = total;

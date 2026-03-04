@@ -18,7 +18,8 @@ describe("AuthenticatedGitOps", () => {
 
   beforeEach(() => {
     _execCalls = [];
-    // Create a mock GitOps with spied methods
+    // Create a mock GitOps with spied network methods
+    // AuthenticatedGitOps only wraps network operations (INetworkGitOps)
     mockGitOps = {
       clone: mock.fn(async () => {}),
       fetch: mock.fn(async () => {}),
@@ -27,19 +28,6 @@ describe("AuthenticatedGitOps", () => {
         branch: "main",
         method: "test",
       })),
-      cleanWorkspace: mock.fn(() => {}),
-      createBranch: mock.fn(async () => {}),
-      writeFile: mock.fn(() => {}),
-      setExecutable: mock.fn(async () => {}),
-      getFileContent: mock.fn(() => null),
-      wouldChange: mock.fn(() => true),
-      hasChanges: mock.fn(async () => true),
-      getChangedFiles: mock.fn(async () => []),
-      hasStagedChanges: mock.fn(async () => true),
-      fileExistsOnBranch: mock.fn(async () => false),
-      fileExists: mock.fn(() => false),
-      deleteFile: mock.fn(() => {}),
-      commit: mock.fn(async () => true),
     } as unknown as GitOps;
   });
 
@@ -206,150 +194,6 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(
         commands[0].includes("--prune"),
         `Expected --prune flag in command: ${commands[0]}`
-      );
-    });
-  });
-
-  describe("local operations pass through unchanged", () => {
-    it("cleanWorkspace delegates to GitOps", () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      authOps.cleanWorkspace();
-
-      assert.strictEqual(
-        (mockGitOps.cleanWorkspace as unknown as MockFn).mock.calls.length,
-        1
-      );
-    });
-
-    it("createBranch delegates to GitOps", async () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      await authOps.createBranch("new-branch");
-
-      assert.strictEqual(
-        (mockGitOps.createBranch as unknown as MockFn).mock.calls.length,
-        1
-      );
-      assert.deepStrictEqual(
-        (mockGitOps.createBranch as unknown as MockFn).mock.calls[0].arguments,
-        ["new-branch"]
-      );
-    });
-
-    it("writeFile delegates to GitOps", () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      authOps.writeFile("test.txt", "content");
-
-      assert.strictEqual(
-        (mockGitOps.writeFile as unknown as MockFn).mock.calls.length,
-        1
-      );
-      assert.deepStrictEqual(
-        (mockGitOps.writeFile as unknown as MockFn).mock.calls[0].arguments,
-        ["test.txt", "content"]
-      );
-    });
-
-    it("commit delegates to GitOps", async () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      await authOps.commit("test message");
-
-      assert.strictEqual(
-        (mockGitOps.commit as unknown as MockFn).mock.calls.length,
-        1
-      );
-      assert.deepStrictEqual(
-        (mockGitOps.commit as unknown as MockFn).mock.calls[0].arguments,
-        ["test message"]
-      );
-    });
-
-    it("getFileContent delegates to GitOps", () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      authOps.getFileContent("test.txt");
-
-      assert.strictEqual(
-        (mockGitOps.getFileContent as unknown as MockFn).mock.calls.length,
-        1
-      );
-    });
-
-    it("wouldChange delegates to GitOps", () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      authOps.wouldChange("test.txt", "content");
-
-      assert.strictEqual(
-        (mockGitOps.wouldChange as unknown as MockFn).mock.calls.length,
-        1
-      );
-    });
-
-    it("hasChanges delegates to GitOps", async () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      await authOps.hasChanges();
-
-      assert.strictEqual(
-        (mockGitOps.hasChanges as unknown as MockFn).mock.calls.length,
-        1
-      );
-    });
-
-    it("hasStagedChanges delegates to GitOps", async () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      await authOps.hasStagedChanges();
-
-      assert.strictEqual(
-        (mockGitOps.hasStagedChanges as unknown as MockFn).mock.calls.length,
-        1
-      );
-    });
-
-    it("fileExistsOnBranch delegates to GitOps", async () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      await authOps.fileExistsOnBranch("test.txt", "main");
-
-      assert.strictEqual(
-        (mockGitOps.fileExistsOnBranch as unknown as MockFn).mock.calls.length,
-        1
-      );
-    });
-
-    it("fileExists delegates to GitOps", () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      authOps.fileExists("test.txt");
-
-      assert.strictEqual(
-        (mockGitOps.fileExists as unknown as MockFn).mock.calls.length,
-        1
-      );
-    });
-
-    it("deleteFile delegates to GitOps", () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      authOps.deleteFile("test.txt");
-
-      assert.strictEqual(
-        (mockGitOps.deleteFile as unknown as MockFn).mock.calls.length,
-        1
-      );
-    });
-
-    it("setExecutable delegates to GitOps", async () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      await authOps.setExecutable("test.sh");
-
-      assert.strictEqual(
-        (mockGitOps.setExecutable as unknown as MockFn).mock.calls.length,
-        1
-      );
-    });
-
-    it("getChangedFiles delegates to GitOps", async () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
-      await authOps.getChangedFiles();
-
-      assert.strictEqual(
-        (mockGitOps.getChangedFiles as unknown as MockFn).mock.calls.length,
-        1
       );
     });
   });

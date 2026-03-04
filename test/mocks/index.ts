@@ -18,7 +18,8 @@ export type {
 export { createMockAuthenticatedGitOps } from "./authenticated-git-ops.mock.js";
 export type {
   AuthenticatedGitOpsMockConfig,
-  AuthenticatedGitOpsMockCalls,
+  LocalGitOpsMockCalls,
+  NetworkGitOpsMockCalls,
   AuthenticatedGitOpsMockResult,
 } from "./authenticated-git-ops.mock.js";
 

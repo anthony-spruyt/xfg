@@ -14,7 +14,8 @@ export class CommitPushManager implements ICommitPushManager {
   async commitAndPush(options: CommitPushOptions): Promise<CommitPushResult> {
     const {
       repoInfo,
-      gitOps,
+      localOps,
+      networkOps,
       workDir,
       fileChanges,
       commitMessage,
@@ -44,7 +45,7 @@ export class CommitPushManager implements ICommitPushManager {
     await executor.exec("git add -A", workDir);
 
     // Check for staged changes
-    if (!(await gitOps.hasStagedChanges())) {
+    if (!(await localOps.hasStagedChanges())) {
       this.log.info("No staged changes after git add -A, skipping commit");
       return { success: true, skipped: true };
     }
@@ -63,7 +64,7 @@ export class CommitPushManager implements ICommitPushManager {
         retries,
         force: !isDirectMode,
         token,
-        gitOps,
+        networkOps,
       });
       this.log.info(`Committed: ${result.sha} (verified: ${result.verified})`);
       return { success: true };
@@ -79,15 +80,13 @@ export class CommitPushManager implements ICommitPushManager {
     repoInfo: CommitPushOptions["repoInfo"]
   ): CommitPushResult {
     const repoName = getRepoDisplayName(repoInfo);
-    if (!isDirectMode) {
-      throw error; // Re-throw for non-direct mode
-    }
-
     const message = toErrorMessage(error);
+
     if (
-      message.includes("rejected") ||
-      message.includes("protected") ||
-      message.includes("denied")
+      isDirectMode &&
+      (message.includes("rejected") ||
+        message.includes("protected") ||
+        message.includes("denied"))
     ) {
       return {
         success: false,
@@ -102,6 +101,13 @@ export class CommitPushManager implements ICommitPushManager {
       };
     }
 
-    throw error;
+    return {
+      success: false,
+      errorResult: {
+        success: false,
+        repoName,
+        message: `Commit/push failed: ${message}`,
+      },
+    };
   }
 }

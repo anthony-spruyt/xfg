@@ -10,8 +10,8 @@ export interface RepoSettingsPlanEntry {
 
 export interface RepoSettingsPlanResult {
   lines: string[];
-  adds: number;
-  changes: number;
+  creates: number;
+  updates: number;
   warnings: string[];
   entries: RepoSettingsPlanEntry[];
 }
@@ -59,12 +59,12 @@ export function formatRepoSettingsPlan(
 ): RepoSettingsPlanResult {
   const lines: string[] = [];
   const warnings: string[] = [];
-  let adds = 0;
-  let changesCount = 0;
+  let creates = 0;
+  let updates = 0;
   const entries: RepoSettingsPlanEntry[] = [];
 
   if (changes.length === 0) {
-    return { lines, adds, changes: 0, warnings, entries };
+    return { lines, creates, updates, warnings, entries };
   }
 
   for (const change of changes) {
@@ -77,7 +77,7 @@ export function formatRepoSettingsPlan(
       lines.push(
         chalk.green(`    + ${change.property}: ${formatValue(change.newValue)}`)
       );
-      adds++;
+      creates++;
       entries.push({
         property: change.property,
         action: "add",
@@ -89,7 +89,7 @@ export function formatRepoSettingsPlan(
           `    ~ ${change.property}: ${formatValue(change.oldValue)} → ${formatValue(change.newValue)}`
         )
       );
-      changesCount++;
+      updates++;
       entries.push({
         property: change.property,
         action: "change",
@@ -99,7 +99,7 @@ export function formatRepoSettingsPlan(
     }
   }
 
-  return { lines, adds, changes: changesCount, warnings, entries };
+  return { lines, creates, updates, warnings, entries };
 }
 
 /**

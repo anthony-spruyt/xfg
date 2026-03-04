@@ -8,6 +8,10 @@ import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
   type BaseProcessorResult,
+  type ChangeCounts,
+  countActions,
+  buildDryRunResult,
+  buildApplyResult,
 } from "../base-processor.js";
 
 export interface IRulesetProcessor {
@@ -23,12 +27,7 @@ export interface RulesetProcessorOptions extends BaseProcessorOptions {
 }
 
 export interface RulesetProcessorResult extends BaseProcessorResult {
-  changes?: {
-    create: number;
-    update: number;
-    delete: number;
-    unchanged: number;
-  };
+  changes?: ChangeCounts;
   planOutput?: RulesetPlanResult;
 }
 
@@ -113,27 +112,14 @@ export class RulesetProcessor
     // Compute diff
     const changes = diffRulesets(fullRulesets, desiredMap, deleteOrphaned);
 
-    // Count changes by type
-    const changeCounts = {
-      create: changes.filter((c) => c.action === "create").length,
-      update: changes.filter((c) => c.action === "update").length,
-      delete: changes.filter((c) => c.action === "delete").length,
-      unchanged: changes.filter((c) => c.action === "unchanged").length,
-    };
+    const changeCounts = countActions(changes);
 
     const planOutput = formatRulesetPlan(changes);
 
-    // Dry run mode - report planned changes without applying
     if (dryRun) {
-      const summary = this.formatChangeSummary(changeCounts);
-      return {
-        success: true,
-        repoName,
-        message: `[DRY RUN] ${summary}`,
-        dryRun: true,
-        changes: changeCounts,
+      return buildDryRunResult<RulesetProcessorResult>(repoName, changeCounts, {
         planOutput,
-      };
+      });
     }
 
     // Apply changes
@@ -184,13 +170,11 @@ export class RulesetProcessor
       }
     }
 
-    const summary = this.formatChangeSummary(changeCounts);
-    return {
-      success: true,
+    return buildApplyResult<RulesetProcessorResult>(
       repoName,
-      message: appliedCount > 0 ? `Applied: ${summary}` : "No changes needed",
-      changes: changeCounts,
-      planOutput,
-    };
+      changeCounts,
+      appliedCount,
+      { planOutput }
+    );
   }
 }

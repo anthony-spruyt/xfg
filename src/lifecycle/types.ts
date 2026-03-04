@@ -10,11 +10,8 @@ export type LifecyclePlatform = "github" | "azure-devops" | "gitlab";
  * Result of a lifecycle operation.
  */
 export interface LifecycleResult {
-  /** The repo info (may be updated) */
   repoInfo: RepoInfo;
-  /** What action was taken */
   action: "existed" | "created" | "forked" | "migrated";
-  /** True if skipped due to dry-run */
   skipped?: boolean;
 }
 
@@ -22,11 +19,8 @@ export interface LifecycleResult {
  * Options for lifecycle operations.
  */
 export interface LifecycleOptions {
-  /** Dry-run mode - don't make changes */
   dryRun: boolean;
-  /** Working directory for git operations */
   workDir: string;
-  /** GitHub Enterprise hostnames for URL detection */
   githubHosts?: string[];
   /** Auth token (GitHub App installation token or PAT) for gh CLI commands */
   token?: string;
@@ -49,7 +43,6 @@ export interface CreateRepoSettings {
  * Implementations handle create/fork/receive for a specific platform.
  */
 export interface IRepoLifecycleProvider {
-  /** Platform this provider handles */
   readonly platform: LifecyclePlatform;
 
   /**
@@ -94,7 +87,6 @@ export interface IRepoLifecycleProvider {
  * Implementations handle cloning from a source platform.
  */
 export interface IMigrationSource {
-  /** Platform this source handles */
   readonly platform: LifecyclePlatform;
 
   /**
