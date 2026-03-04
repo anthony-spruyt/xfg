@@ -156,7 +156,9 @@ export class SyncWorkflow implements ISyncWorkflow {
       try {
         session?.cleanup();
       } catch (error) {
-        this.log.debug(`Cleanup failed: ${toErrorMessage(error)}`);
+        this.log.debug(
+          `Cleanup: session teardown failed: ${toErrorMessage(error)}`
+        );
       }
     }
   }

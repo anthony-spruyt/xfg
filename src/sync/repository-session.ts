@@ -49,7 +49,9 @@ export class RepositorySession implements IRepositorySession {
         try {
           localOps.cleanWorkspace();
         } catch (error) {
-          this.log.debug(`Workspace cleanup failed: ${toErrorMessage(error)}`);
+          this.log.debug(
+            `Cleanup: workspace removal failed: ${toErrorMessage(error)}`
+          );
         }
       },
     };

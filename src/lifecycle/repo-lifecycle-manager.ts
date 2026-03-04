@@ -169,9 +169,8 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       try {
         await rm(sourceDir, { recursive: true, force: true });
       } catch (cleanupError) {
-        // Log cleanup errors at debug level for troubleshooting
         logger.debug(
-          `Failed to clean up migration source directory ${sourceDir}: ${toErrorMessage(cleanupError)}`
+          `Cleanup: failed to remove ${sourceDir}: ${toErrorMessage(cleanupError)}`
         );
       }
     }

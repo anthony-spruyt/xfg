@@ -181,14 +181,14 @@ export class GitHubPRStrategy extends BasePRStrategy {
         message: "PR created successfully",
       };
     } finally {
-      // Clean up temp file - log warning on failure instead of throwing
+      // Cleanup: temp file removal is non-critical
       try {
         if (existsSync(bodyFile)) {
           unlinkSync(bodyFile);
         }
       } catch (cleanupError) {
-        logger.warn(
-          `Failed to clean up temp file ${bodyFile}: ${toErrorMessage(cleanupError)}`
+        logger.debug(
+          `Cleanup: failed to remove ${bodyFile}: ${toErrorMessage(cleanupError)}`
         );
       }
     }

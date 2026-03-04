@@ -170,14 +170,14 @@ export class AzurePRStrategy extends BasePRStrategy {
         message: "PR created successfully",
       };
     } finally {
-      // Clean up temp file - log warning on failure instead of throwing
+      // Cleanup: temp file removal is non-critical
       try {
         if (existsSync(descFile)) {
           unlinkSync(descFile);
         }
       } catch (cleanupError) {
-        logger.warn(
-          `Failed to clean up temp file ${descFile}: ${toErrorMessage(cleanupError)}`
+        logger.debug(
+          `Cleanup: failed to remove ${descFile}: ${toErrorMessage(cleanupError)}`
         );
       }
     }
