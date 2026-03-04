@@ -259,56 +259,7 @@ describe("SyncWorkflow", () => {
     assert.ok(messages.some((m) => m.includes("pushed directly")));
   });
 
-  test("logs warning when mergeStrategy set in direct mode", async () => {
-    const components = createMockComponents();
-    const { mock: mockLogger, messages } = createMockLogger();
-
-    const workflow = new SyncWorkflow(
-      components.authOptionsBuilder,
-      components.repositorySession,
-      components.branchManager,
-      components.commitPushManager,
-      components.prMergeHandler,
-      mockLogger
-    );
-
-    const workResult: WorkResult = {
-      fileChanges: new Map([
-        [
-          "test.txt",
-          { fileName: "test.txt", content: "test", action: "create" },
-        ],
-      ]),
-      changedFiles: [{ fileName: "test.txt", action: "create" }],
-      commitMessage: "test commit",
-      fileChangeDetails: [{ path: "test.txt", action: "create" }],
-    };
-
-    const mockStrategy: IWorkStrategy = {
-      async execute() {
-        return workResult;
-      },
-    };
-
-    const repoConfigDirectWithStrategy: RepoConfig = {
-      ...mockRepoConfig,
-      prOptions: { merge: "direct", mergeStrategy: "squash" },
-    };
-
-    await workflow.execute(
-      repoConfigDirectWithStrategy,
-      mockRepoInfo,
-      { branchName: "test", workDir, configId: "test" },
-      mockStrategy
-    );
-
-    assert.ok(
-      messages.some(
-        (m) => m.includes("mergeStrategy") && m.includes("ignored")
-      ),
-      `Expected warning about mergeStrategy being ignored, got: ${messages.join(", ")}`
-    );
-  });
+  // mergeStrategy-in-direct-mode warning moved to CLI layer (sync-command.ts)
 
   test("calls cleanup in finally block", async () => {
     const components = createMockComponents();

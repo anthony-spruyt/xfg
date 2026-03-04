@@ -589,41 +589,7 @@ describe("RepositoryProcessor", () => {
       );
     });
 
-    test("direct mode should log warning when mergeStrategy is set", async () => {
-      const { mock: mockLogger, messages } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
-        fileExists: false,
-        wouldChange: true,
-        hasChanges: true,
-        changedFiles: ["config.json"],
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
-
-      const processor = new RepositoryProcessor(mockFactory, mockLogger);
-      const localWorkDir = join(testDir, `direct-mode-warning-${Date.now()}`);
-
-      const repoConfig: RepoConfig = {
-        git: "git@github.com:test/repo.git",
-        files: [{ fileName: "config.json", content: { key: "value" } }],
-        prOptions: { merge: "direct", mergeStrategy: "squash" },
-      };
-
-      await processor.process(repoConfig, mockRepoInfo, {
-        branchName: "chore/sync-config",
-        workDir: localWorkDir,
-        configId: "test-config",
-        dryRun: true,
-        executor: createMockExecutor(),
-      });
-
-      const warningMessage = messages.find(
-        (m) => m.includes("mergeStrategy") && m.includes("ignored")
-      );
-      assert.ok(
-        warningMessage,
-        "Should log warning about mergeStrategy being ignored"
-      );
-    });
+    // mergeStrategy-in-direct-mode warning moved to CLI layer (sync-command.ts)
 
     test("direct mode should use force: false for push (issue #183)", async () => {
       const { mock: mockLogger } = createMockLogger();

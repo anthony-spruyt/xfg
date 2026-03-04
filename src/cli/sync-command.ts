@@ -236,6 +236,13 @@ export async function runSync(
       };
     }
 
+    const mergeMode = repoConfig.prOptions?.merge ?? "auto";
+    if (mergeMode === "direct" && repoConfig.prOptions?.mergeStrategy) {
+      logger.info(
+        `Warning: mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode for ${repoConfig.git}`
+      );
+    }
+
     const current = i + 1;
 
     let repoInfo: RepoInfo;

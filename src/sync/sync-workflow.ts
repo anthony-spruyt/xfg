@@ -52,13 +52,6 @@ export class SyncWorkflow implements ISyncWorkflow {
     const mergeMode = repoConfig.prOptions?.merge ?? "auto";
     const isDirectMode = mergeMode === "direct";
 
-    // Warn if mergeStrategy is set but ignored in direct mode
-    if (isDirectMode && repoConfig.prOptions?.mergeStrategy) {
-      this.log.info(
-        `Warning: mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode`
-      );
-    }
-
     let session: SessionContext | null = null;
     try {
       session = await this.repositorySession.setup(repoInfo, {
