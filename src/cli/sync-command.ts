@@ -197,9 +197,9 @@ export async function runSync(
     throw new Error(`Config file not found: ${configPath}`);
   }
 
-  console.log(`Loading config from: ${configPath}`);
+  logger.log(`Loading config from: ${configPath}`);
   if (options.dryRun) {
-    console.log("Running in DRY RUN mode - no changes will be made\n");
+    logger.log("Running in DRY RUN mode - no changes will be made\n");
   }
 
   const rawConfig = loadRawConfig(configPath);
@@ -218,9 +218,9 @@ export async function runSync(
   }
 
   logger.setTotal(config.repos.length);
-  console.log(`Found ${config.repos.length} repositories to process`);
-  console.log(`Target files: ${formatFileNames(fileNames)}`);
-  console.log(`Branch: ${branchName}\n`);
+  logger.log(`Found ${config.repos.length} repositories to process`);
+  logger.log(`Target files: ${formatFileNames(fileNames)}`);
+  logger.log(`Branch: ${branchName}\n`);
 
   const processor = processorFactory();
   const lm =
@@ -394,96 +394,80 @@ export async function runSync(
         repoName
       );
 
-      // Apply rulesets
-      if (
-        repoConfig.settings.rulesets &&
-        Object.keys(repoConfig.settings.rulesets).length > 0
-      ) {
-        try {
-          const rulesetResult = await rulesetProcessorFactory().process(
-            repoConfig,
-            repoInfo,
-            {
-              dryRun: options.dryRun,
-              noDelete: options.noDelete,
-              token: settingsToken,
+      const settingsDescriptors = [
+        {
+          key: "rulesets" as const,
+          label: "Rulesets",
+          run: async () => {
+            const result = await rulesetProcessorFactory().process(
+              repoConfig,
+              repoInfo,
+              {
+                dryRun: options.dryRun,
+                noDelete: options.noDelete,
+                token: settingsToken,
+              }
+            );
+            if (!result.skipped) {
+              settingsCollector.getOrCreate(repoName).rulesetResult = result;
             }
-          );
-          logSettingsResult(
-            rulesetResult,
-            "Rulesets",
-            current,
-            repoName,
-            settingsCollector
-          );
-          if (!rulesetResult.skipped) {
-            settingsCollector.getOrCreate(repoName).rulesetResult =
-              rulesetResult;
-          }
-        } catch (error) {
-          logger.error(current, repoName, `Rulesets: ${toErrorMessage(error)}`);
-          settingsCollector.appendError(repoName, error);
-        }
-      }
-
-      // Apply labels
-      if (
-        repoConfig.settings.labels &&
-        Object.keys(repoConfig.settings.labels).length > 0
-      ) {
-        try {
-          const labelsResult = await labelsProcessorFactory().process(
-            repoConfig,
-            repoInfo,
-            {
-              dryRun: options.dryRun,
-              noDelete: options.noDelete,
-              token: settingsToken,
+            return result;
+          },
+        },
+        {
+          key: "labels" as const,
+          label: "Labels",
+          run: async () => {
+            const result = await labelsProcessorFactory().process(
+              repoConfig,
+              repoInfo,
+              {
+                dryRun: options.dryRun,
+                noDelete: options.noDelete,
+                token: settingsToken,
+              }
+            );
+            if (!result.skipped) {
+              settingsCollector.getOrCreate(repoName).labelsResult = result;
             }
-          );
-          logSettingsResult(
-            labelsResult,
-            "Labels",
-            current,
-            repoName,
-            settingsCollector
-          );
-          if (!labelsResult.skipped) {
-            settingsCollector.getOrCreate(repoName).labelsResult = labelsResult;
-          }
-        } catch (error) {
-          logger.error(current, repoName, `Labels: ${toErrorMessage(error)}`);
-          settingsCollector.appendError(repoName, error);
-        }
-      }
+            return result;
+          },
+        },
+        {
+          key: "repo" as const,
+          label: "Repo Settings",
+          run: async () => {
+            const result = await repoSettingsProcessorFactory().process(
+              repoConfig,
+              repoInfo,
+              { dryRun: options.dryRun, token: settingsToken }
+            );
+            if (!result.skipped) {
+              settingsCollector.getOrCreate(repoName).settingsResult = result;
+            }
+            return result;
+          },
+        },
+      ];
 
-      // Apply repo settings
-      if (
-        repoConfig.settings.repo &&
-        Object.keys(repoConfig.settings.repo).length > 0
-      ) {
+      for (const desc of settingsDescriptors) {
+        const settingsValue = repoConfig.settings[desc.key];
+        if (!settingsValue || Object.keys(settingsValue).length === 0) continue;
+
         try {
-          const repoSettingsResult =
-            await repoSettingsProcessorFactory().process(repoConfig, repoInfo, {
-              dryRun: options.dryRun,
-              token: settingsToken,
-            });
+          const result = await desc.run();
           logSettingsResult(
-            repoSettingsResult,
-            "Repo Settings",
+            result,
+            desc.label,
             current,
             repoName,
             settingsCollector
           );
-          if (!repoSettingsResult.skipped) {
-            settingsCollector.getOrCreate(repoName).settingsResult =
-              repoSettingsResult;
-          }
         } catch (error) {
           logger.error(
             current,
             repoName,
-            `Repo settings: ${toErrorMessage(error)}`
+            `${desc.label}: ${toErrorMessage(error)}`
           );
           settingsCollector.appendError(repoName, error);
         }
@@ -494,17 +478,17 @@ export async function runSync(
   // Build and display lifecycle report (before sync report)
   const lifecycleReport = buildLifecycleReport(lifecycleReportInputs);
   if (hasLifecycleChanges(lifecycleReport)) {
-    console.log("");
+    logger.log("");
     for (const line of formatLifecycleReportCLI(lifecycleReport)) {
-      console.log(line);
+      logger.log(line);
     }
   }
 
   // Build and display sync report
   const report = buildSyncReport(reportResults);
-  console.log("");
+  logger.log("");
   for (const line of formatSyncReportCLI(report)) {
-    console.log(line);
+    logger.log(line);
   }
 
   // Build and display settings report (if any settings were processed)
@@ -514,9 +498,9 @@ export async function runSync(
     settingsReport = buildSettingsReport(settingsResults);
     const settingsLines = formatSettingsReportCLI(settingsReport);
     if (settingsLines.length > 0) {
-      console.log("");
+      logger.log("");
       for (const line of settingsLines) {
-        console.log(line);
+        logger.log(line);
       }
     }
   }

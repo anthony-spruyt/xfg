@@ -10,7 +10,7 @@ export interface GhApiOptions {
   host?: string;
 }
 
-export interface GhApiCallOptions {
+interface GhApiCallOptions {
   executor: ICommandExecutor;
   retries: number;
 }
