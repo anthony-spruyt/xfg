@@ -4,7 +4,11 @@
  * Use $${xfg:variable} to escape and output literal ${xfg:variable}.
  */
 
-import { isPlainObject } from "./type-guards.js";
+import {
+  interpolateString,
+  interpolateValue,
+  type InterpolationConfig,
+} from "./interpolation-engine.js";
 
 import type { RepoInfo } from "./repo-detector.js";
 import type { ContentValue } from "../config/index.js";
@@ -47,12 +51,6 @@ const XFG_VAR_REGEX = /\$\{xfg:([a-zA-Z0-9._]+)\}/g;
  * Variable names can only contain: a-z, A-Z, 0-9, dots, and underscores.
  */
 const ESCAPED_XFG_VAR_REGEX = /\$\$\{xfg:([a-zA-Z0-9._]+)\}/g;
-
-/**
- * Placeholder prefix for temporarily storing escaped sequences.
- * Uses null bytes which won't appear in normal content.
- */
-const ESCAPE_PLACEHOLDER = "\x00ESCAPED_XFG_VAR\x00";
 
 /**
  * Get the value of a built-in xfg variable.
@@ -104,86 +102,36 @@ function getBuiltinVar(
   }
 }
 
-/**
- * Process a single string value, replacing xfg template variable placeholders.
- * Supports escaping with $${xfg:var} syntax to output literal ${xfg:var}.
- */
-function processString(
-  value: string,
+function buildXfgConfig(
   ctx: XfgTemplateContext,
   options: XfgInterpolationOptions
-): string {
-  // Phase 1: Replace escaped $${xfg:...} with placeholders
-  const escapedContent: string[] = [];
-  let processed = value.replace(
-    ESCAPED_XFG_VAR_REGEX,
-    (_match, content: string) => {
-      const index = escapedContent.length;
-      escapedContent.push(content);
-      return `${ESCAPE_PLACEHOLDER}${index}\x00`;
-    }
-  );
+): InterpolationConfig {
+  return {
+    escapeRegex: ESCAPED_XFG_VAR_REGEX,
+    matchRegex: XFG_VAR_REGEX,
+    escapePlaceholder: "\x00ESCAPED_XFG_VAR\x00",
+    resolve(match, varName) {
+      // First check custom vars
+      if (ctx.vars && varName in ctx.vars) {
+        return ctx.vars[varName];
+      }
 
-  // Phase 2: Interpolate remaining ${xfg:...}
-  processed = processed.replace(XFG_VAR_REGEX, (match, varName: string) => {
-    // First check custom vars
-    if (ctx.vars && varName in ctx.vars) {
-      return ctx.vars[varName];
-    }
+      // Then check built-in vars
+      const builtinValue = getBuiltinVar(varName, ctx);
+      if (builtinValue !== undefined) {
+        return builtinValue;
+      }
 
-    // Then check built-in vars
-    const builtinValue = getBuiltinVar(varName, ctx);
-    if (builtinValue !== undefined) {
-      return builtinValue;
-    }
+      // Unknown variable
+      if (options.strict) {
+        throw new Error(`Unknown xfg template variable: ${varName}`);
+      }
 
-    // Unknown variable
-    if (options.strict) {
-      throw new Error(`Unknown xfg template variable: ${varName}`);
-    }
-
-    // Non-strict mode - leave placeholder as-is
-    return match;
-  });
-
-  // Phase 3: Restore escaped sequences as literal ${xfg:...}
-  processed = processed.replace(
-    new RegExp(`${ESCAPE_PLACEHOLDER}(\\d+)\x00`, "g"),
-    (_match, indexStr: string) => {
-      const index = parseInt(indexStr, 10);
-      return `\${xfg:${escapedContent[index]}}`;
-    }
-  );
-
-  return processed;
-}
-
-/**
- * Recursively process a value, interpolating xfg template variables in strings.
- */
-function processValue(
-  value: unknown,
-  ctx: XfgTemplateContext,
-  options: XfgInterpolationOptions
-): unknown {
-  if (typeof value === "string") {
-    return processString(value, ctx, options);
-  }
-
-  if (Array.isArray(value)) {
-    return value.map((item) => processValue(item, ctx, options));
-  }
-
-  if (isPlainObject(value)) {
-    const result: Record<string, unknown> = {};
-    for (const [key, val] of Object.entries(value)) {
-      result[key] = processValue(val, ctx, options);
-    }
-    return result;
-  }
-
-  // For numbers, booleans, null - return as-is
-  return value;
+      // Non-strict mode - leave placeholder as-is
+      return match;
+    },
+    restoreEscaped: (content) => `\${xfg:${content}}`,
+  };
 }
 
 /**
@@ -211,13 +159,14 @@ export function interpolateXfgContent(
   ctx: XfgTemplateContext,
   options: XfgInterpolationOptions = DEFAULT_OPTIONS
 ): ContentValue {
+  const config = buildXfgConfig(ctx, options);
   if (typeof content === "string") {
-    return processString(content, ctx, options);
+    return interpolateString(content, config);
   }
 
   if (Array.isArray(content)) {
-    return content.map((line) => processString(line, ctx, options));
+    return content.map((line) => interpolateString(line, config));
   }
 
-  return processValue(content, ctx, options) as Record<string, unknown>;
+  return interpolateValue(content, config) as Record<string, unknown>;
 }

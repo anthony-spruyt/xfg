@@ -4,7 +4,11 @@
  * Use $${VAR} to escape and output literal ${VAR}.
  */
 
-import { isPlainObject } from "./type-guards.js";
+import {
+  interpolateString,
+  interpolateValue,
+  type InterpolationConfig,
+} from "./interpolation-engine.js";
 
 export interface EnvInterpolationOptions {
   /**
@@ -41,35 +45,12 @@ const ENV_VAR_REGEX = /\$\{([^}:]+)(?::([?-])([^}]*))?\}/g;
  */
 const ESCAPED_VAR_REGEX = /\$\$\{((?!xfg:)[^}]+)\}/g;
 
-/**
- * Placeholder prefix for temporarily storing escaped sequences.
- * Uses null bytes which won't appear in normal content.
- */
-const ESCAPE_PLACEHOLDER = "\x00ESCAPED_VAR\x00";
-
-/**
- * Process a single string value, replacing environment variable placeholders.
- * Supports escaping with $${VAR} syntax to output literal ${VAR}.
- */
-function processString(
-  value: string,
-  options: EnvInterpolationOptions
-): string {
-  // Phase 1: Replace escaped $${...} with placeholders
-  const escapedContent: string[] = [];
-  let processed = value.replace(
-    ESCAPED_VAR_REGEX,
-    (_match, content: string) => {
-      const index = escapedContent.length;
-      escapedContent.push(content);
-      return `${ESCAPE_PLACEHOLDER}${index}\x00`;
-    }
-  );
-
-  // Phase 2: Interpolate remaining ${...}
-  processed = processed.replace(
-    ENV_VAR_REGEX,
-    (match, varName: string, modifier?: string, defaultOrMsg?: string) => {
+function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
+  return {
+    escapeRegex: ESCAPED_VAR_REGEX,
+    matchRegex: ENV_VAR_REGEX,
+    escapePlaceholder: "\x00ESCAPED_VAR\x00",
+    resolve(match, varName, modifier, defaultOrMsg) {
       const envValue = process.env[varName];
 
       // Variable exists - use its value
@@ -95,46 +76,9 @@ function processString(
 
       // Non-strict mode - leave placeholder as-is
       return match;
-    }
-  );
-
-  // Phase 3: Restore escaped sequences as literal ${...}
-  processed = processed.replace(
-    new RegExp(`${ESCAPE_PLACEHOLDER}(\\d+)\x00`, "g"),
-    (_match, indexStr: string) => {
-      const index = parseInt(indexStr, 10);
-      return `\${${escapedContent[index]}}`;
-    }
-  );
-
-  return processed;
-}
-
-/**
- * Recursively process a value, interpolating environment variables in strings.
- */
-function processValue(
-  value: unknown,
-  options: EnvInterpolationOptions
-): unknown {
-  if (typeof value === "string") {
-    return processString(value, options);
-  }
-
-  if (Array.isArray(value)) {
-    return value.map((item) => processValue(item, options));
-  }
-
-  if (isPlainObject(value)) {
-    const result: Record<string, unknown> = {};
-    for (const [key, val] of Object.entries(value)) {
-      result[key] = processValue(val, options);
-    }
-    return result;
-  }
-
-  // For numbers, booleans, null - return as-is
-  return value;
+    },
+    restoreEscaped: (content) => `\${${content}}`,
+  };
 }
 
 /**
@@ -154,7 +98,10 @@ export function interpolateEnvVars(
   json: Record<string, unknown>,
   options: EnvInterpolationOptions = DEFAULT_OPTIONS
 ): Record<string, unknown> {
-  return processValue(json, options) as Record<string, unknown>;
+  return interpolateValue(json, buildEnvConfig(options)) as Record<
+    string,
+    unknown
+  >;
 }
 
 /**
@@ -165,11 +112,12 @@ export function interpolateContent(
   content: Record<string, unknown> | string | string[],
   options: EnvInterpolationOptions = DEFAULT_OPTIONS
 ): Record<string, unknown> | string | string[] {
+  const config = buildEnvConfig(options);
   if (typeof content === "string") {
-    return processString(content, options);
+    return interpolateString(content, config);
   }
   if (Array.isArray(content)) {
-    return content.map((line) => processString(line, options));
+    return content.map((line) => interpolateString(line, config));
   }
   return interpolateEnvVars(content, options);
 }
