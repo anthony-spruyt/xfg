@@ -49,63 +49,71 @@ export interface LabelChange {
   config?: Label;
 }
 
-function formatRulesetConfig(config: Ruleset, indent: number): string[] {
+/**
+ * Shared recursive renderer for ruleset config objects.
+ * The formatLine callback controls indentation style and coloring:
+ *   formatLine(depth, text) → formatted line string
+ */
+function renderRulesetConfig(
+  config: Ruleset,
+  startDepth: number,
+  formatLine: (depth: number, text: string) => string
+): string[] {
   const lines: string[] = [];
 
-  function renderObject(
-    obj: Record<string, unknown>,
-    currentIndent: number
-  ): void {
+  function renderObject(obj: Record<string, unknown>, depth: number): void {
     for (const [k, v] of Object.entries(obj)) {
-      renderValue(k, v, currentIndent);
+      renderValue(k, v, depth);
     }
   }
 
-  function renderValue(
-    key: string,
-    value: unknown,
-    currentIndent: number
-  ): void {
-    const pad = "    ".repeat(currentIndent);
+  function renderValue(key: string, value: unknown, depth: number): void {
     if (value === null || value === undefined) return;
 
     if (Array.isArray(value)) {
       if (value.length === 0) {
-        lines.push(chalk.green(`${pad}+ ${key}: []`));
+        lines.push(formatLine(depth, `+ ${key}: []`));
       } else if (value.every((v) => typeof v !== "object")) {
         lines.push(
-          chalk.green(
-            `${pad}+ ${key}: [${value.map((v) => (typeof v === "string" ? `"${v}"` : String(v))).join(", ")}]`
+          formatLine(
+            depth,
+            `+ ${key}: [${value.map((v) => (typeof v === "string" ? `"${v}"` : String(v))).join(", ")}]`
           )
         );
       } else {
-        lines.push(chalk.green(`${pad}+ ${key}:`));
+        lines.push(formatLine(depth, `+ ${key}:`));
         for (let i = 0; i < value.length; i++) {
           const item = value[i];
           if (typeof item === "object" && item !== null) {
             const obj = item as Record<string, unknown>;
             const typeLabel = "type" in obj ? ` (${obj.type})` : "";
-            lines.push(chalk.green(`${pad}    + [${i}]${typeLabel}:`));
-            renderObject(obj, currentIndent + 2);
+            lines.push(formatLine(depth + 1, `+ [${i}]${typeLabel}:`));
+            renderObject(obj, depth + 2);
           } else {
-            lines.push(chalk.green(`${pad}    + ${formatValuePlain(item)}`));
+            lines.push(formatLine(depth + 1, `+ ${formatValuePlain(item)}`));
           }
         }
       }
     } else if (typeof value === "object") {
-      lines.push(chalk.green(`${pad}+ ${key}:`));
-      renderObject(value as Record<string, unknown>, currentIndent + 1);
+      lines.push(formatLine(depth, `+ ${key}:`));
+      renderObject(value as Record<string, unknown>, depth + 1);
     } else {
-      lines.push(chalk.green(`${pad}+ ${key}: ${formatValuePlain(value)}`));
+      lines.push(formatLine(depth, `+ ${key}: ${formatValuePlain(value)}`));
     }
   }
 
   for (const [key, value] of Object.entries(config)) {
     if (key === "name") continue;
-    renderValue(key, value, indent);
+    renderValue(key, value, startDepth);
   }
 
   return lines;
+}
+
+function formatRulesetConfig(config: Ruleset, indent: number): string[] {
+  return renderRulesetConfig(config, indent, (depth, text) =>
+    chalk.green(`${"    ".repeat(depth)}${text}`)
+  );
 }
 
 /**
@@ -280,53 +288,11 @@ export function formatValuePlain(val: unknown): string {
 }
 
 export function formatRulesetConfigPlain(config: Ruleset): string[] {
-  const lines: string[] = [];
-
-  function renderObject(obj: Record<string, unknown>, depth: number): void {
-    for (const [k, v] of Object.entries(obj)) {
-      renderValue(k, v, depth);
-    }
-  }
-
-  function renderValue(key: string, value: unknown, depth: number): void {
-    const indent = "  ".repeat(depth);
-    if (value === null || value === undefined) return;
-
-    if (Array.isArray(value)) {
-      if (value.length === 0) {
-        lines.push(`+${indent} ${key}: []`);
-      } else if (value.every((v) => typeof v !== "object")) {
-        lines.push(
-          `+${indent} ${key}: [${value.map((v) => (typeof v === "string" ? `"${v}"` : String(v))).join(", ")}]`
-        );
-      } else {
-        lines.push(`+${indent} ${key}:`);
-        for (let i = 0; i < value.length; i++) {
-          const item = value[i];
-          if (typeof item === "object" && item !== null) {
-            const obj = item as Record<string, unknown>;
-            const typeLabel = "type" in obj ? ` (${obj.type})` : "";
-            lines.push(`+${indent}   [${i}]${typeLabel}:`);
-            renderObject(obj, depth + 2);
-          } else {
-            lines.push(`+${indent}   ${formatValuePlain(item)}`);
-          }
-        }
-      }
-    } else if (typeof value === "object") {
-      lines.push(`+${indent} ${key}:`);
-      renderObject(value as Record<string, unknown>, depth + 1);
-    } else {
-      lines.push(`+${indent} ${key}: ${formatValuePlain(value)}`);
-    }
-  }
-
-  for (const [key, value] of Object.entries(config)) {
-    if (key === "name") continue;
-    renderValue(key, value, 1);
-  }
-
-  return lines;
+  return renderRulesetConfig(
+    config,
+    1,
+    (depth, text) => `+${"  ".repeat(depth)}${text.substring(1)}`
+  );
 }
 
 /**
