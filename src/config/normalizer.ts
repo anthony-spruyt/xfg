@@ -26,6 +26,49 @@ import type {
 } from "./types.js";
 
 /**
+ * Clone content, stripping merge directives from object content.
+ * Text content is cloned as-is since it has no merge directives.
+ */
+function cloneContent(content: ContentValue): ContentValue {
+  if (isTextContent(content)) {
+    return structuredClone(content);
+  }
+  return stripMergeDirectives(structuredClone(content));
+}
+
+/**
+ * Resolve the final content for a file by applying override/inherit/merge rules.
+ *
+ * Returns null when the file should be empty (e.g. override with no content,
+ * or root file with no content and no repo override).
+ */
+function resolveFileContent(
+  rootContent: ContentValue | undefined,
+  repoOverride: RawRepoFileOverride | undefined,
+  mergeStrategy: ArrayMergeStrategy
+): ContentValue | null {
+  // Override mode: use only repo content
+  if (repoOverride?.override) {
+    return repoOverride.content !== undefined
+      ? cloneContent(repoOverride.content)
+      : null;
+  }
+
+  // Root has no content — use repo content if provided, otherwise empty
+  if (rootContent === undefined) {
+    return repoOverride?.content ? cloneContent(repoOverride.content) : null;
+  }
+
+  // No repo override — use root content as-is
+  if (!repoOverride?.content) {
+    return structuredClone(rootContent);
+  }
+
+  // Both exist — merge
+  return mergeContentPair(rootContent, repoOverride.content, mergeStrategy);
+}
+
+/**
  * Merge two content values using the appropriate strategy.
  * Handles text+text, object+object, and type mismatch cases.
  */
@@ -479,44 +522,11 @@ export function normalizeConfig(raw: RawConfig): Config {
         const fileStrategy = fileConfig.mergeStrategy ?? "replace";
 
         // Step 3: Compute merged content for this file
-        let mergedContent: ContentValue | null;
-
-        if (repoOverride?.override) {
-          // Override mode: use only repo file content (may be undefined for empty file)
-          if (repoOverride.content === undefined) {
-            mergedContent = null;
-          } else if (isTextContent(repoOverride.content)) {
-            // Text content: use as-is (no merge directives to strip)
-            mergedContent = structuredClone(repoOverride.content);
-          } else {
-            mergedContent = stripMergeDirectives(
-              structuredClone(repoOverride.content)
-            );
-          }
-        } else if (fileConfig.content === undefined) {
-          // Root file has no content = empty file (unless repo provides content)
-          if (repoOverride?.content) {
-            if (isTextContent(repoOverride.content)) {
-              mergedContent = structuredClone(repoOverride.content);
-            } else {
-              mergedContent = stripMergeDirectives(
-                structuredClone(repoOverride.content)
-              );
-            }
-          } else {
-            mergedContent = null;
-          }
-        } else if (!repoOverride?.content) {
-          // No repo override: use file base content as-is
-          mergedContent = structuredClone(fileConfig.content);
-        } else {
-          // Merge mode: handle text vs object content
-          mergedContent = mergeContentPair(
-            fileConfig.content,
-            repoOverride.content,
-            fileStrategy
-          );
-        }
+        let mergedContent = resolveFileContent(
+          fileConfig.content,
+          repoOverride,
+          fileStrategy
+        );
 
         // Step 4: Interpolate env vars (only if content exists)
         if (mergedContent !== null) {
