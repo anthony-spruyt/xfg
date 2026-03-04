@@ -1,9 +1,9 @@
 {
   "command": "status",
-  "overall_score": 80.2,
-  "objective_score": 94.9,
-  "strict_score": 80.2,
-  "verified_strict_score": 94.8,
+  "overall_score": 80.1,
+  "objective_score": 94.7,
+  "strict_score": 80.1,
+  "verified_strict_score": 94.6,
   "dimension_scores": {
     "File health": {
       "score": 95.8,
@@ -106,11 +106,11 @@
       "strict": 94.8
     },
     "Duplication": {
-      "score": 91.7,
-      "strict_score": 91.7,
-      "verified_strict_score": 91.7,
-      "checks": 248,
-      "issues": 30,
+      "score": 90.9,
+      "strict_score": 90.9,
+      "verified_strict_score": 90.9,
+      "checks": 250,
+      "issues": 33,
       "tier": 3,
       "detectors": {
         "dupes": {
@@ -120,25 +120,25 @@
           "weighted_failures": 0.3
         },
         "boilerplate_duplication": {
-          "potential": 20,
+          "potential": 22,
           "pass_rate": 0.0,
-          "issues": 29,
-          "weighted_failures": 20.29999999999999
+          "issues": 32,
+          "weighted_failures": 22.399999999999988
         }
       },
-      "strict": 91.7
+      "strict": 90.9
     },
     "Test health": {
-      "score": 93.9,
-      "strict_score": 93.9,
-      "verified_strict_score": 93.9,
-      "checks": 1129,
+      "score": 93.8,
+      "strict_score": 93.8,
+      "verified_strict_score": 93.8,
+      "checks": 1123,
       "issues": 7,
       "tier": 4,
       "detectors": {
         "test_coverage": {
-          "potential": 1055,
-          "pass_rate": 0.934408461977226,
+          "potential": 1049,
+          "pass_rate": 0.9340332958874866,
           "issues": 7,
           "weighted_failures": 69.19907261402645
         },
@@ -149,7 +149,7 @@
           "weighted_failures": 0.0
         }
       },
-      "strict": 93.9
+      "strict": 93.8
     },
     "Security": {
       "score": 98.4,
@@ -179,13 +179,13 @@
       "strict_score": 72.0,
       "verified_strict_score": 72.0,
       "checks": 10,
-      "issues": 3,
+      "issues": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.72,
-          "issues": 3,
+          "issues": 1,
           "weighted_failures": 2.8,
           "assessment_score": 72.0,
           "placeholder": false,
@@ -223,13 +223,13 @@
       "strict_score": 58.0,
       "verified_strict_score": 58.0,
       "checks": 10,
-      "issues": 5,
+      "issues": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.58,
-          "issues": 5,
+          "issues": 0,
           "weighted_failures": 4.2,
           "assessment_score": 58.0,
           "placeholder": false,
@@ -267,13 +267,13 @@
       "strict_score": 72.0,
       "verified_strict_score": 72.0,
       "checks": 10,
-      "issues": 3,
+      "issues": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.72,
-          "issues": 3,
+          "issues": 1,
           "weighted_failures": 2.8,
           "assessment_score": 72.0,
           "placeholder": false,
@@ -333,13 +333,13 @@
       "strict_score": 82.0,
       "verified_strict_score": 82.0,
       "checks": 10,
-      "issues": 2,
+      "issues": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.82,
-          "issues": 2,
+          "issues": 1,
           "weighted_failures": 1.8,
           "assessment_score": 82.0,
           "placeholder": false,
@@ -355,13 +355,13 @@
       "strict_score": 62.0,
       "verified_strict_score": 62.0,
       "checks": 10,
-      "issues": 4,
+      "issues": 3,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.62,
-          "issues": 4,
+          "issues": 3,
           "weighted_failures": 3.8,
           "assessment_score": 62.0,
           "placeholder": false,
@@ -399,13 +399,13 @@
       "strict_score": 82.0,
       "verified_strict_score": 82.0,
       "checks": 10,
-      "issues": 1,
+      "issues": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.82,
-          "issues": 1,
+          "issues": 0,
           "weighted_failures": 1.8,
           "assessment_score": 82.0,
           "placeholder": false,
@@ -443,13 +443,13 @@
       "strict_score": 65.0,
       "verified_strict_score": 65.0,
       "checks": 10,
-      "issues": 4,
+      "issues": 3,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.65,
-          "issues": 4,
+          "issues": 3,
           "weighted_failures": 3.5,
           "assessment_score": 65.0,
           "placeholder": false,
@@ -476,7 +476,7 @@
       "score": 58.0,
       "strict": 58.0,
       "checks": 10,
-      "issues": 5,
+      "issues": 0,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -489,7 +489,7 @@
       "score": 62.0,
       "strict": 62.0,
       "checks": 10,
-      "issues": 4,
+      "issues": 3,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -537,7 +537,7 @@
       "score": 82.0,
       "strict": 82.0,
       "checks": 10,
-      "issues": 2,
+      "issues": 1,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -563,7 +563,7 @@
       "score": 65.0,
       "strict": 65.0,
       "checks": 10,
-      "issues": 4,
+      "issues": 3,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -573,10 +573,10 @@
     },
     {
       "name": "Duplication",
-      "score": 91.7,
-      "strict": 91.7,
-      "checks": 248,
-      "issues": 30,
+      "score": 90.9,
+      "strict": 90.9,
+      "checks": 250,
+      "issues": 33,
       "tier": 3,
       "subjective": false
     },
@@ -585,7 +585,7 @@
       "score": 74.7,
       "strict": 74.7,
       "checks": 30,
-      "issues": 6,
+      "issues": 4,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -600,7 +600,7 @@
       "score": 72.0,
       "strict": 72.0,
       "checks": 10,
-      "issues": 3,
+      "issues": 1,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -622,7 +622,7 @@
       "score": 82.0,
       "strict": 82.0,
       "checks": 10,
-      "issues": 1,
+      "issues": 0,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -645,9 +645,9 @@
     },
     {
       "name": "Test health",
-      "score": 93.9,
-      "strict": 93.9,
-      "checks": 1129,
+      "score": 93.8,
+      "strict": 93.8,
+      "checks": 1123,
       "issues": 7,
       "tier": 4,
       "subjective": false
@@ -659,7 +659,7 @@
       "score": 58.0,
       "strict": 58.0,
       "checks": 10,
-      "issues": 5,
+      "issues": 0,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -672,7 +672,7 @@
       "score": 62.0,
       "strict": 62.0,
       "checks": 10,
-      "issues": 4,
+      "issues": 3,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -711,7 +711,7 @@
       "score": 82.0,
       "strict": 82.0,
       "checks": 10,
-      "issues": 2,
+      "issues": 1,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -737,7 +737,7 @@
       "score": 65.0,
       "strict": 65.0,
       "checks": 10,
-      "issues": 4,
+      "issues": 3,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -750,7 +750,7 @@
       "score": 74.7,
       "strict": 74.7,
       "checks": 30,
-      "issues": 6,
+      "issues": 4,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -765,7 +765,7 @@
       "score": 72.0,
       "strict": 72.0,
       "checks": 10,
-      "issues": 3,
+      "issues": 1,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -778,7 +778,7 @@
       "score": 82.0,
       "strict": 82.0,
       "checks": 10,
-      "issues": 1,
+      "issues": 0,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -801,10 +801,10 @@
     }
   ],
   "stats": {
-    "total": 606,
-    "open": 210,
-    "fixed": 16,
-    "auto_resolved": 378,
+    "total": 612,
+    "open": 200,
+    "fixed": 29,
+    "auto_resolved": 381,
     "wontfix": 0,
     "false_positive": 2,
     "by_tier": {
@@ -818,13 +818,13 @@
       "2": {
         "open": 28,
         "fixed": 0,
-        "auto_resolved": 267,
+        "auto_resolved": 270,
         "wontfix": 0,
         "false_positive": 2
       },
       "3": {
-        "open": 181,
-        "fixed": 16,
+        "open": 171,
+        "fixed": 29,
         "auto_resolved": 35,
         "wontfix": 0,
         "false_positive": 0
@@ -838,8 +838,8 @@
       }
     }
   },
-  "scan_count": 12,
-  "last_scan": "2026-03-04T00:19:23+00:00",
+  "scan_count": 13,
+  "last_scan": "2026-03-04T00:42:45+00:00",
   "by_tier": {
     "1": {
       "open": 0,
@@ -851,13 +851,13 @@
     "2": {
       "open": 28,
       "fixed": 0,
-      "auto_resolved": 267,
+      "auto_resolved": 270,
       "wontfix": 0,
       "false_positive": 2
     },
     "3": {
-      "open": 181,
-      "fixed": 16,
+      "open": 171,
+      "fixed": 29,
       "auto_resolved": 35,
       "wontfix": 0,
       "false_positive": 0
@@ -873,12 +873,12 @@
   "ignores": [],
   "suppression": {
     "last_ignored": 0,
-    "last_raw_findings": 176,
+    "last_raw_findings": 179,
     "last_suppressed_pct": 0.0,
     "last_ignore_patterns": 0,
     "recent_scans": 5,
     "recent_ignored": 0,
-    "recent_raw_findings": 757,
+    "recent_raw_findings": 758,
     "recent_suppressed_pct": 0.0
   },
   "potentials": {
@@ -899,12 +899,12 @@
       "facade": 99,
       "responsibility_cohesion": 5,
       "signature": 1,
-      "test_coverage": 1055,
+      "test_coverage": 1049,
       "smells": 102,
       "react": 0,
       "security": 99,
       "subjective_review": 74,
-      "boilerplate_duplication": 20,
+      "boilerplate_duplication": 22,
       "dupes": 228,
       "stale_wontfix": 0
     }
@@ -912,20 +912,20 @@
   "codebase_metrics": {
     "typescript": {
       "total_files": 193,
-      "total_loc": 67606,
+      "total_loc": 67389,
       "total_directories": 24
     }
   },
   "open_scope": {
-    "in_scope": 210,
+    "in_scope": 200,
     "out_of_scope": 0,
-    "global": 210
+    "global": 200
   },
   "score_breakdown": {
-    "overall_score": 80.2,
+    "overall_score": 80.1,
     "mechanical_fraction": 0.4,
     "subjective_fraction": 0.6,
-    "mechanical_avg": 94.91124497991966,
+    "mechanical_avg": 94.73052208835341,
     "subjective_avg": 70.42045454545455,
     "entries": [
       {
@@ -957,28 +957,28 @@
       {
         "name": "Duplication",
         "pool": "mechanical",
-        "score": 91.7,
-        "checks": 248.0,
+        "score": 90.9,
+        "checks": 250.0,
         "sample_factor": 1.0,
         "configured_weight": 1.0,
         "effective_weight": 1.0,
         "pool_share": 0.2008032128514056,
         "overall_per_point": 0.08032128514056225,
-        "overall_contribution": 7.365461847389558,
-        "overall_drag": 0.6666666666666664
+        "overall_contribution": 7.301204819277109,
+        "overall_drag": 0.730923694779116
       },
       {
         "name": "Test health",
         "pool": "mechanical",
-        "score": 93.9,
-        "checks": 1129.0,
+        "score": 93.8,
+        "checks": 1123.0,
         "sample_factor": 1.0,
         "configured_weight": 1.0,
         "effective_weight": 1.0,
         "pool_share": 0.2008032128514056,
         "overall_per_point": 0.08032128514056225,
-        "overall_contribution": 7.542168674698796,
-        "overall_drag": 0.48995983935742926
+        "overall_contribution": 7.5341365461847385,
+        "overall_drag": 0.4979919678714862
       },
       {
         "name": "Security",
@@ -1167,7 +1167,7 @@
   "next_command": "desloppify issues",
   "narrative": {
     "phase": "stagnation",
-    "headline": "\u26a0 7 security findings \u2014 review before other cleanup. All T1 items cleared! (36 review findings \u2014 run `desloppify issues`)",
+    "headline": "\u26a0 7 security findings \u2014 review before other cleanup. All T1 items cleared! (23 review findings \u2014 run `desloppify issues`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -1181,7 +1181,7 @@
         {
           "name": "AI generated debt",
           "strict": 58.0,
-          "issues": 5,
+          "issues": 0,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -1189,7 +1189,7 @@
         {
           "name": "API coherence",
           "strict": 62.0,
-          "issues": 4,
+          "issues": 3,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -1203,13 +1203,8 @@
           "stuck_scans": 5
         },
         {
-          "name": "Duplication",
-          "strict": 91.7,
-          "stuck_scans": 5
-        },
-        {
           "name": "Test health",
-          "strict": 93.9,
+          "strict": 93.8,
           "stuck_scans": 5
         },
         {
@@ -1218,8 +1213,68 @@
           "stuck_scans": 5
         },
         {
+          "name": "Error consistency",
+          "strict": 72.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Abstraction fit",
+          "strict": 42.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "AI generated debt",
+          "strict": 58.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "High elegance",
+          "strict": 78.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Mid elegance",
+          "strict": 72.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Low elegance",
+          "strict": 74.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Cross-module arch",
+          "strict": 68.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Convention drift",
+          "strict": 82.0,
+          "stuck_scans": 5
+        },
+        {
           "name": "API coherence",
           "strict": 62.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Auth consistency",
+          "strict": 65.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Stale migration",
+          "strict": 82.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Structure nav",
+          "strict": 78.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Design coherence",
+          "strict": 65.0,
           "stuck_scans": 5
         }
       ]
@@ -1228,8 +1283,8 @@
       {
         "type": "issue_queue",
         "detector": "review",
-        "count": 36,
-        "description": "36 review findings need investigation \u2014 run `desloppify issues` to see the work queue",
+        "count": 23,
+        "description": "23 review findings need investigation \u2014 run `desloppify issues` to see the work queue",
         "command": "desloppify issues",
         "impact": 0.0,
         "dimension": "Unknown",
@@ -1327,8 +1382,8 @@
       {
         "type": "refactor",
         "detector": "boilerplate_duplication",
-        "count": 29,
-        "description": "29 boilerplate_duplication findings \u2014 extract shared boilerplate into reusable helpers or base classes",
+        "count": 32,
+        "description": "32 boilerplate_duplication findings \u2014 extract shared boilerplate into reusable helpers or base classes",
         "command": "desloppify show boilerplate_duplication --status open",
         "impact": 0.0,
         "dimension": "Duplication",
@@ -1372,8 +1427,8 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 2,
-        "total_count": 282,
-        "coverage": 0.007,
+        "total_count": 246,
+        "coverage": 0.008,
         "impact_ratio": 0.0,
         "recommendation": "none"
       },
@@ -1441,7 +1496,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "6 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 36 finding(s) \u2014 `desloppify issues`."
+      "hint": "6 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 23 finding(s) \u2014 `desloppify issues`."
     },
     "tools": {
       "fixers": [
@@ -1503,9 +1558,9 @@
     "milestone": "All T1 items cleared!",
     "primary_action": {
       "command": "desloppify issues",
-      "description": "36 review findings need investigation \u2014 run `desloppify issues` to see the work queue"
+      "description": "23 review findings need investigation \u2014 run `desloppify issues` to see the work queue"
     },
-    "why_now": "6 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 36 finding(s) \u2014 `desloppify issues`.",
+    "why_now": "6 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 23 finding(s) \u2014 `desloppify issues`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -1513,8 +1568,8 @@
     "risk_flags": [],
     "strict_target": {
       "target": 95.0,
-      "current": 80.2,
-      "gap": 14.8,
+      "current": 80.1,
+      "gap": 14.9,
       "state": "below",
       "warning": null
     },
@@ -1523,7 +1578,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 2,
-      "report_scores": 10,
+      "report_scores": 11,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
