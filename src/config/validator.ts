@@ -188,6 +188,25 @@ function validateLabel(label: unknown, name: string, context: string): void {
   }
 }
 
+interface RootSettingsContext {
+  rulesetNames: string[];
+  hasRepoSettings: boolean;
+  labelNames: string[];
+}
+
+function buildRootSettingsContext(config: RawConfig): RootSettingsContext {
+  return {
+    rulesetNames: config.settings?.rulesets
+      ? Object.keys(config.settings.rulesets).filter((k) => k !== "inherit")
+      : [],
+    hasRepoSettings:
+      config.settings?.repo !== undefined && config.settings.repo !== false,
+    labelNames: config.settings?.labels
+      ? Object.keys(config.settings.labels).filter((k) => k !== "inherit")
+      : [],
+  };
+}
+
 /**
  * Validates settings object containing rulesets, labels, and repo settings.
  */
@@ -446,14 +465,7 @@ export function validateRawConfig(config: RawConfig): void {
       throw new Error("groups must be an object");
     }
 
-    const rootRulesetNames = config.settings?.rulesets
-      ? Object.keys(config.settings.rulesets).filter((k) => k !== "inherit")
-      : [];
-    const hasRootRepoSettings =
-      config.settings?.repo !== undefined && config.settings.repo !== false;
-    const rootLabelNames = config.settings?.labels
-      ? Object.keys(config.settings.labels).filter((k) => k !== "inherit")
-      : [];
+    const rootCtx = buildRootSettingsContext(config);
 
     for (const [groupName, group] of Object.entries(config.groups)) {
       if (groupName === "inherit") {
@@ -482,9 +494,9 @@ export function validateRawConfig(config: RawConfig): void {
         validateSettings(
           group.settings,
           `groups.${groupName}`,
-          rootRulesetNames,
-          hasRootRepoSettings,
-          rootLabelNames
+          rootCtx.rulesetNames,
+          rootCtx.hasRepoSettings,
+          rootCtx.labelNames
         );
       }
     }
@@ -630,14 +642,7 @@ export function validateRawConfig(config: RawConfig): void {
 
     // Validate per-repo settings
     if (repo.settings !== undefined) {
-      const rootRulesetNames = config.settings?.rulesets
-        ? Object.keys(config.settings.rulesets).filter((k) => k !== "inherit")
-        : [];
-      const hasRootRepoSettings =
-        config.settings?.repo !== undefined && config.settings.repo !== false;
-      const rootLabelNames = config.settings?.labels
-        ? Object.keys(config.settings.labels).filter((k) => k !== "inherit")
-        : [];
+      const rootCtx = buildRootSettingsContext(config);
 
       // Augment known names with those from the repo's referenced groups
       if (repo.groups && config.groups) {
@@ -645,12 +650,12 @@ export function validateRawConfig(config: RawConfig): void {
           const group = config.groups[groupName];
           if (group?.settings?.rulesets) {
             for (const name of Object.keys(group.settings.rulesets)) {
-              if (name !== "inherit") rootRulesetNames.push(name);
+              if (name !== "inherit") rootCtx.rulesetNames.push(name);
             }
           }
           if (group?.settings?.labels) {
             for (const name of Object.keys(group.settings.labels)) {
-              if (name !== "inherit") rootLabelNames.push(name);
+              if (name !== "inherit") rootCtx.labelNames.push(name);
             }
           }
         }
@@ -659,9 +664,9 @@ export function validateRawConfig(config: RawConfig): void {
       validateSettings(
         repo.settings,
         `Repo ${getGitDisplayName(repo.git)}`,
-        rootRulesetNames,
-        hasRootRepoSettings,
-        rootLabelNames
+        rootCtx.rulesetNames,
+        rootCtx.hasRepoSettings,
+        rootCtx.labelNames
       );
     }
   }
