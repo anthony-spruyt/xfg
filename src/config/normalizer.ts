@@ -176,7 +176,6 @@ export function mergeSettings(
   const rootRulesets = root?.rulesets ?? {};
   const repoRulesets = perRepo?.rulesets ?? {};
 
-  // Check if repo opts out of all inherited rulesets
   const inheritRulesets = shouldInherit(repoRulesets);
 
   const allRulesetNames = new Set([
@@ -457,7 +456,6 @@ export function normalizeConfig(raw: RawConfig): Config {
     for (const gitUrl of gitUrls) {
       const files: FileContent[] = [];
 
-      // Check if repo opts out of all inherited files
       const inheritFiles = shouldInherit(rawRepo.files);
 
       // Step 2: Process each file definition

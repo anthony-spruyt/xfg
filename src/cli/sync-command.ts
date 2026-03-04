@@ -180,6 +180,172 @@ async function resolveGitHubToken(
   }
 }
 
+interface SettingsContext {
+  repoConfig: RepoConfig;
+  repoInfo: RepoInfo;
+  repoName: string;
+  current: number;
+  options: SyncOptions;
+  tokenManager: ReturnType<typeof createTokenManager>;
+  settingsCollector: ResultsCollector;
+  deps: {
+    rulesetProcessorFactory: NonNullable<
+      SyncDependencies["rulesetProcessorFactory"]
+    >;
+    repoSettingsProcessorFactory: NonNullable<
+      SyncDependencies["repoSettingsProcessorFactory"]
+    >;
+    labelsProcessorFactory: NonNullable<
+      SyncDependencies["labelsProcessorFactory"]
+    >;
+  };
+}
+
+async function applyRepoSettings(ctx: SettingsContext): Promise<void> {
+  const {
+    repoConfig,
+    repoInfo,
+    repoName,
+    current,
+    options,
+    settingsCollector,
+  } = ctx;
+
+  if (!repoConfig.settings || !isGitHubRepo(repoInfo)) return;
+
+  const settingsToken = await resolveGitHubToken(
+    repoInfo as GitHubRepoInfo,
+    ctx.tokenManager,
+    repoName
+  );
+
+  const settingsDescriptors = [
+    {
+      key: "rulesets" as const,
+      label: "Rulesets",
+      run: async () => {
+        const result = await ctx.deps
+          .rulesetProcessorFactory()
+          .process(repoConfig, repoInfo, {
+            dryRun: options.dryRun,
+            noDelete: options.noDelete,
+            token: settingsToken,
+          });
+        if (!result.skipped) {
+          settingsCollector.getOrCreate(repoName).rulesetResult = result;
+        }
+        return result;
+      },
+    },
+    {
+      key: "labels" as const,
+      label: "Labels",
+      run: async () => {
+        const result = await ctx.deps
+          .labelsProcessorFactory()
+          .process(repoConfig, repoInfo, {
+            dryRun: options.dryRun,
+            noDelete: options.noDelete,
+            token: settingsToken,
+          });
+        if (!result.skipped) {
+          settingsCollector.getOrCreate(repoName).labelsResult = result;
+        }
+        return result;
+      },
+    },
+    {
+      key: "repo" as const,
+      label: "Repo Settings",
+      run: async () => {
+        const result = await ctx.deps
+          .repoSettingsProcessorFactory()
+          .process(repoConfig, repoInfo, {
+            dryRun: options.dryRun,
+            token: settingsToken,
+          });
+        if (!result.skipped) {
+          settingsCollector.getOrCreate(repoName).settingsResult = result;
+        }
+        return result;
+      },
+    },
+  ];
+
+  for (const desc of settingsDescriptors) {
+    const settingsValue = repoConfig.settings[desc.key];
+    if (!settingsValue || Object.keys(settingsValue).length === 0) continue;
+
+    try {
+      const result = await desc.run();
+      logSettingsResult(
+        result,
+        desc.label,
+        current,
+        repoName,
+        settingsCollector
+      );
+    } catch (error) {
+      logger.error(
+        current,
+        repoName,
+        `${desc.label}: ${toErrorMessage(error)}`
+      );
+      settingsCollector.appendError(repoName, error);
+    }
+  }
+}
+
+interface ReportContext {
+  reportResults: SyncResultEntry[];
+  lifecycleReportInputs: LifecycleReportInput[];
+  settingsCollector: ResultsCollector;
+  dryRun: boolean;
+}
+
+function displayReports(ctx: ReportContext): void {
+  const { reportResults, lifecycleReportInputs, settingsCollector, dryRun } =
+    ctx;
+
+  // Build and display lifecycle report
+  const lifecycleReport = buildLifecycleReport(lifecycleReportInputs);
+  if (hasLifecycleChanges(lifecycleReport)) {
+    logger.log("");
+    for (const line of formatLifecycleReportCLI(lifecycleReport)) {
+      logger.log(line);
+    }
+  }
+
+  // Build and display sync report
+  const report = buildSyncReport(reportResults);
+  logger.log("");
+  for (const line of formatSyncReportCLI(report)) {
+    logger.log(line);
+  }
+
+  // Build and display settings report (if any settings were processed)
+  const settingsResults = settingsCollector.getAll();
+  let settingsReport: ReturnType<typeof buildSettingsReport> | undefined;
+  if (settingsResults.length > 0) {
+    settingsReport = buildSettingsReport(settingsResults);
+    const settingsLines = formatSettingsReportCLI(settingsReport);
+    if (settingsLines.length > 0) {
+      logger.log("");
+      for (const line of settingsLines) {
+        logger.log(line);
+      }
+    }
+  }
+
+  // Write unified summary to GITHUB_STEP_SUMMARY
+  writeUnifiedSummary({
+    lifecycle: lifecycleReport,
+    sync: report,
+    settings: settingsReport,
+    dryRun,
+  });
+}
+
 export async function runSync(
   options: SyncOptions,
   deps: SyncDependencies = {}
@@ -387,133 +553,31 @@ export async function runSync(
     }
 
     // After file sync, apply settings via API (GitHub-only — ADO and GitLab repos are skipped)
-    if (repoConfig.settings && isGitHubRepo(repoInfo)) {
-      const settingsToken = await resolveGitHubToken(
-        repoInfo as GitHubRepoInfo,
-        tokenManager,
-        repoName
-      );
-
-      const settingsDescriptors = [
-        {
-          key: "rulesets" as const,
-          label: "Rulesets",
-          run: async () => {
-            const result = await rulesetProcessorFactory().process(
-              repoConfig,
-              repoInfo,
-              {
-                dryRun: options.dryRun,
-                noDelete: options.noDelete,
-                token: settingsToken,
-              }
-            );
-            if (!result.skipped) {
-              settingsCollector.getOrCreate(repoName).rulesetResult = result;
-            }
-            return result;
-          },
-        },
-        {
-          key: "labels" as const,
-          label: "Labels",
-          run: async () => {
-            const result = await labelsProcessorFactory().process(
-              repoConfig,
-              repoInfo,
-              {
-                dryRun: options.dryRun,
-                noDelete: options.noDelete,
-                token: settingsToken,
-              }
-            );
-            if (!result.skipped) {
-              settingsCollector.getOrCreate(repoName).labelsResult = result;
-            }
-            return result;
-          },
-        },
-        {
-          key: "repo" as const,
-          label: "Repo Settings",
-          run: async () => {
-            const result = await repoSettingsProcessorFactory().process(
-              repoConfig,
-              repoInfo,
-              { dryRun: options.dryRun, token: settingsToken }
-            );
-            if (!result.skipped) {
-              settingsCollector.getOrCreate(repoName).settingsResult = result;
-            }
-            return result;
-          },
-        },
-      ];
-
-      for (const desc of settingsDescriptors) {
-        const settingsValue = repoConfig.settings[desc.key];
-        if (!settingsValue || Object.keys(settingsValue).length === 0) continue;
-
-        try {
-          const result = await desc.run();
-          logSettingsResult(
-            result,
-            desc.label,
-            current,
-            repoName,
-            settingsCollector
-          );
-        } catch (error) {
-          logger.error(
-            current,
-            repoName,
-            `${desc.label}: ${toErrorMessage(error)}`
-          );
-          settingsCollector.appendError(repoName, error);
-        }
-      }
-    }
+    await applyRepoSettings({
+      repoConfig,
+      repoInfo,
+      repoName,
+      current,
+      options,
+      tokenManager,
+      settingsCollector,
+      deps: {
+        rulesetProcessorFactory,
+        repoSettingsProcessorFactory,
+        labelsProcessorFactory,
+      },
+    });
   }
 
-  // Build and display lifecycle report (before sync report)
-  const lifecycleReport = buildLifecycleReport(lifecycleReportInputs);
-  if (hasLifecycleChanges(lifecycleReport)) {
-    logger.log("");
-    for (const line of formatLifecycleReportCLI(lifecycleReport)) {
-      logger.log(line);
-    }
-  }
-
-  // Build and display sync report
-  const report = buildSyncReport(reportResults);
-  logger.log("");
-  for (const line of formatSyncReportCLI(report)) {
-    logger.log(line);
-  }
-
-  // Build and display settings report (if any settings were processed)
-  const settingsResults = settingsCollector.getAll();
-  let settingsReport: ReturnType<typeof buildSettingsReport> | undefined;
-  if (settingsResults.length > 0) {
-    settingsReport = buildSettingsReport(settingsResults);
-    const settingsLines = formatSettingsReportCLI(settingsReport);
-    if (settingsLines.length > 0) {
-      logger.log("");
-      for (const line of settingsLines) {
-        logger.log(line);
-      }
-    }
-  }
-
-  // Write unified summary to GITHUB_STEP_SUMMARY
-  writeUnifiedSummary({
-    lifecycle: lifecycleReport,
-    sync: report,
-    settings: settingsReport,
+  displayReports({
+    reportResults,
+    lifecycleReportInputs,
+    settingsCollector,
     dryRun: options.dryRun ?? false,
   });
 
   // Propagate failures to caller (CLI entry handles process.exit)
+  const settingsResults = settingsCollector.getAll();
   const hasErrors = reportResults.some((r) => r.error);
   const hasSettingsErrors = settingsResults.some((r) => r.error);
   if (hasErrors || hasSettingsErrors) {

@@ -25,7 +25,6 @@ export class RepositorySession implements IRepositorySession {
       authOptions
     );
 
-    // Clean workspace
     this.log.info("Cleaning workspace...");
     gitOps.cleanWorkspace();
 

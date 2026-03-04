@@ -43,7 +43,6 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
 
     const { token } = options;
 
-    // Check if repo exists
     const exists = await provider.exists(repoInfo, token);
 
     if (exists) {
