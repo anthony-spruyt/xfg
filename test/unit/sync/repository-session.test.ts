@@ -9,7 +9,7 @@ import {
   createMockLogger,
 } from "../../mocks/index.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
-import type { GitOpsFactory, GitOpsResult } from "../../../src/sync/types.js";
+import type { GitOpsFactory } from "../../../src/sync/types.js";
 import type {
   GitAuthOptions,
   ILocalGitOps,
@@ -131,12 +131,12 @@ describe("RepositorySession", () => {
             throw new Error("cleanup failed");
           }
         },
-      } as ILocalGitOps;
+      } as unknown as ILocalGitOps;
 
       const mockNetworkOps = {
         clone: async () => {},
         getDefaultBranch: async () => ({ branch: "main", method: "remote" }),
-      } as INetworkGitOps;
+      } as unknown as INetworkGitOps;
 
       const session = new RepositorySession(
         () => ({

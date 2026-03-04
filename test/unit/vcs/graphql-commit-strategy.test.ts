@@ -29,7 +29,7 @@ function createMockGitOps(): INetworkGitOps & {
     async fetchBranch(branchName: string) {
       calls.push({ method: "fetchBranch", args: [branchName] });
     },
-  } as INetworkGitOps & {
+  } as unknown as INetworkGitOps & {
     calls: Array<{ method: string; args: unknown[] }>;
   };
 }
