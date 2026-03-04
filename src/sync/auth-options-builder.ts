@@ -6,10 +6,7 @@ import type { AuthResult, IAuthOptionsBuilder } from "./types.js";
 import { resolveGitHubToken } from "../shared/gh-api-utils.js";
 
 export class AuthOptionsBuilder implements IAuthOptionsBuilder {
-  constructor(
-    private readonly tokenManager: GitHubAppTokenManager | null,
-    private readonly _log: unknown
-  ) {}
+  constructor(private readonly tokenManager: GitHubAppTokenManager | null) {}
 
   async resolve(repoInfo: RepoInfo, repoName: string): Promise<AuthResult> {
     if (!isGitHubRepo(repoInfo)) {

@@ -1,7 +1,6 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import { AuthOptionsBuilder } from "../../../src/sync/auth-options-builder.js";
-import { createMockLogger } from "../../mocks/index.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import type { GitHubAppTokenManager } from "../../../src/vcs/github-app-token-manager.js";
 
@@ -19,14 +18,12 @@ describe("AuthOptionsBuilder", () => {
 
   describe("resolve", () => {
     test("returns token and auth options when token manager provides token", async () => {
-      const { mock: mockLogger } = createMockLogger();
       const mockTokenManager: MockTokenManager = {
         getTokenForRepo: async () => "installation-token-123",
       };
 
       const builder = new AuthOptionsBuilder(
-        mockTokenManager as GitHubAppTokenManager,
-        mockLogger
+        mockTokenManager as GitHubAppTokenManager
       );
       const result = await builder.resolve(mockRepoInfo, "test/repo");
 
@@ -42,14 +39,12 @@ describe("AuthOptionsBuilder", () => {
     });
 
     test("returns skip result when no installation found (null token)", async () => {
-      const { mock: mockLogger } = createMockLogger();
       const mockTokenManager: MockTokenManager = {
         getTokenForRepo: async () => null,
       };
 
       const builder = new AuthOptionsBuilder(
-        mockTokenManager as GitHubAppTokenManager,
-        mockLogger
+        mockTokenManager as GitHubAppTokenManager
       );
       const result = await builder.resolve(mockRepoInfo, "test/repo");
 
@@ -64,12 +59,11 @@ describe("AuthOptionsBuilder", () => {
     });
 
     test("falls back to GH_TOKEN when no token manager", async () => {
-      const { mock: mockLogger } = createMockLogger();
       const originalToken = process.env.GH_TOKEN;
       process.env.GH_TOKEN = "pat-token-456";
 
       try {
-        const builder = new AuthOptionsBuilder(null, mockLogger);
+        const builder = new AuthOptionsBuilder(null);
         const result = await builder.resolve(mockRepoInfo, "test/repo");
 
         assert.equal(result.ok, true);
@@ -88,7 +82,6 @@ describe("AuthOptionsBuilder", () => {
     });
 
     test("falls back gracefully on token fetch error", async () => {
-      const { mock: mockLogger } = createMockLogger();
       const mockTokenManager: MockTokenManager = {
         getTokenForRepo: async () => {
           throw new Error("API error");
@@ -96,8 +89,7 @@ describe("AuthOptionsBuilder", () => {
       };
 
       const builder = new AuthOptionsBuilder(
-        mockTokenManager as GitHubAppTokenManager,
-        mockLogger
+        mockTokenManager as GitHubAppTokenManager
       );
       const result = await builder.resolve(mockRepoInfo, "test/repo");
 
@@ -106,7 +98,6 @@ describe("AuthOptionsBuilder", () => {
     });
 
     test("returns undefined token for non-GitHub repos without token manager", async () => {
-      const { mock: mockLogger } = createMockLogger();
       const adoRepoInfo = {
         type: "azure-devops" as const,
         gitUrl: "git@ssh.dev.azure.com:v3/org/project/repo",
@@ -116,7 +107,7 @@ describe("AuthOptionsBuilder", () => {
         project: "project",
       };
 
-      const builder = new AuthOptionsBuilder(null, mockLogger);
+      const builder = new AuthOptionsBuilder(null);
       const result = await builder.resolve(adoRepoInfo, "org/project/repo");
 
       assert.equal(result.ok, true);
