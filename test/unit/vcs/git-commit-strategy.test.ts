@@ -95,12 +95,9 @@ describe("GitCommitStrategy", () => {
       assert.equal(result.verified, false);
       assert.equal(result.pushed, true);
 
-      // Verify git commands were called in order: add, commit, push, rev-parse
+      // Verify git commands were called in order: commit, push, rev-parse
+      // (staging is handled by CommitPushManager before calling commit())
       const commands = mockExecutor.calls.map((c) => c.command);
-
-      // Should have git add -A
-      const addCall = commands.find((c) => c.includes("git add -A"));
-      assert.ok(addCall, "Should have called git add -A");
 
       // Should have git commit with the message
       const commitCall = commands.find((c) => c.includes("git commit"));

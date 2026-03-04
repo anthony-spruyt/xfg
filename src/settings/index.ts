@@ -6,10 +6,62 @@ export {
 } from "./base-processor.js";
 
 // Rulesets
-export * from "./rulesets/index.js";
+export {
+  computePropertyDiffs,
+  deepEqual,
+  isObject,
+  isArrayOfObjects,
+  type DiffAction,
+  type PropertyDiff,
+  type IRulesetStrategy,
+  type RulesetStrategyOptions,
+  RulesetProcessor,
+  type IRulesetProcessor,
+  type RulesetProcessorOptions,
+  type RulesetProcessorResult,
+  GitHubRulesetStrategy,
+  diffRulesets,
+  formatDiff,
+  formatRulesetPlan,
+  formatPropertyTree,
+} from "./rulesets/index.js";
 
 // Repo settings
-export * from "./repo-settings/index.js";
+export {
+  isRepoSettingsStrategy,
+  type IRepoSettingsStrategy,
+  type RepoSettingsStrategyOptions,
+  type CurrentRepoSettings,
+  RepoSettingsProcessor,
+  type IRepoSettingsProcessor,
+  type RepoSettingsProcessorOptions,
+  type RepoSettingsProcessorResult,
+  diffRepoSettings,
+  hasChanges,
+  type RepoSettingsAction,
+  type RepoSettingsChange,
+  formatRepoSettingsPlan,
+  type RepoSettingsPlanResult,
+  type RepoSettingsPlanEntry,
+  GitHubRepoSettingsStrategy,
+} from "./repo-settings/index.js";
 
 // Labels
-export * from "./labels/index.js";
+export {
+  type ILabelsStrategy,
+  type GitHubLabel,
+  type LabelsStrategyOptions,
+  normalizeColor,
+  labelConfigToPayload,
+  diffLabels,
+  type LabelChange,
+  type LabelAction,
+  formatLabelsPlan,
+  type LabelsPlanResult,
+  type LabelsPlanEntry,
+  LabelsProcessor,
+  type ILabelsProcessor,
+  type LabelsProcessorOptions,
+  type LabelsProcessorResult,
+  GitHubLabelsStrategy,
+} from "./labels/index.js";

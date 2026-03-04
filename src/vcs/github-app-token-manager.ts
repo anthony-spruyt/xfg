@@ -94,10 +94,10 @@ export class GitHubAppTokenManager {
       });
 
       if (!res.ok) {
-        const status = res.status;
-        // Throw error with status code for retry logic
-        const error = new Error(`GitHub API error: ${status}`);
-        throw error;
+        const body = await res.text().catch(() => "");
+        throw new Error(
+          `GitHub API error: ${res.status}${body ? ` - ${body}` : ""}`
+        );
       }
 
       return res;
@@ -155,9 +155,10 @@ export class GitHubAppTokenManager {
       });
 
       if (!res.ok) {
-        const status = res.status;
-        const error = new Error(`GitHub API error: ${status}`);
-        throw error;
+        const body = await res.text().catch(() => "");
+        throw new Error(
+          `GitHub API error: ${res.status}${body ? ` - ${body}` : ""}`
+        );
       }
 
       return res;
