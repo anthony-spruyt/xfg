@@ -1,6 +1,7 @@
 import { escapeShellArg } from "../shared/shell-utils.js";
 import { withRetry } from "../shared/retry-utils.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
+import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -12,6 +13,17 @@ export interface GhApiOptions {
 export interface GhApiCallOptions {
   executor: ICommandExecutor;
   retries: number;
+}
+
+/**
+ * Get the hostname flag for gh commands.
+ * Returns "--hostname HOST" for GHE, empty string for github.com.
+ */
+export function getHostnameFlag(repoInfo: GitHubRepoInfo): string {
+  if (repoInfo.host && repoInfo.host !== "github.com") {
+    return `--hostname ${escapeShellArg(repoInfo.host)}`;
+  }
+  return "";
 }
 
 export function buildTokenEnv(

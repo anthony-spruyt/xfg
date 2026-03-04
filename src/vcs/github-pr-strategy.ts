@@ -15,7 +15,7 @@ import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
-import { buildTokenEnv } from "../settings/gh-api-utils.js";
+import { buildTokenEnv, getHostnameFlag } from "../settings/gh-api-utils.js";
 
 /**
  * Get the repo flag value for gh CLI commands.
@@ -26,17 +26,6 @@ function getRepoFlag(repoInfo: GitHubRepoInfo): string {
     return `${repoInfo.host}/${repoInfo.owner}/${repoInfo.repo}`;
   }
   return `${repoInfo.owner}/${repoInfo.repo}`;
-}
-
-/**
- * Get the hostname flag for gh api commands.
- * Returns "--hostname HOST" for GHE, empty string for github.com.
- */
-function getHostnameFlag(repoInfo: GitHubRepoInfo): string {
-  if (repoInfo.host && repoInfo.host !== "github.com") {
-    return `--hostname ${escapeShellArg(repoInfo.host)}`;
-  }
-  return "";
 }
 
 /**

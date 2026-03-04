@@ -4,6 +4,8 @@
  * Use $${VAR} to escape and output literal ${VAR}.
  */
 
+import { isPlainObject } from "./type-guards.js";
+
 export interface EnvInterpolationOptions {
   /**
    * If true (default), throws an error when a variable is missing
@@ -44,13 +46,6 @@ const ESCAPED_VAR_REGEX = /\$\$\{((?!xfg:)[^}]+)\}/g;
  * Uses null bytes which won't appear in normal content.
  */
 const ESCAPE_PLACEHOLDER = "\x00ESCAPED_VAR\x00";
-
-/**
- * Check if a value is a plain object (not null, not array).
- */
-function isPlainObject(val: unknown): val is Record<string, unknown> {
-  return typeof val === "object" && val !== null && !Array.isArray(val);
-}
 
 /**
  * Process a single string value, replacing environment variable placeholders.

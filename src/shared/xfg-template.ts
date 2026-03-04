@@ -4,6 +4,8 @@
  * Use $${xfg:variable} to escape and output literal ${xfg:variable}.
  */
 
+import { isPlainObject } from "./type-guards.js";
+
 import type { RepoInfo } from "./repo-detector.js";
 import type { ContentValue } from "../config/index.js";
 
@@ -100,13 +102,6 @@ function getBuiltinVar(
     default:
       return undefined;
   }
-}
-
-/**
- * Check if a value is a plain object (not null, not array).
- */
-function isPlainObject(val: unknown): val is Record<string, unknown> {
-  return typeof val === "object" && val !== null && !Array.isArray(val);
 }
 
 /**

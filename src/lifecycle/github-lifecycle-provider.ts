@@ -13,7 +13,7 @@ import {
   type GitHubRepoInfo,
 } from "../shared/repo-detector.js";
 import { logger } from "../shared/logger.js";
-import { buildTokenEnv } from "../settings/gh-api-utils.js";
+import { buildTokenEnv, getHostnameFlag } from "../settings/gh-api-utils.js";
 import type {
   IRepoLifecycleProvider,
   LifecyclePlatform,
@@ -38,17 +38,6 @@ function isRepoNotFoundError(error: unknown): boolean {
       ? error.message + ((error as Error & { stderr?: string }).stderr ?? "")
       : String(error);
   return REPO_NOT_FOUND_PATTERNS.some((pattern) => message.includes(pattern));
-}
-
-/**
- * Get the hostname flag for gh commands.
- * Returns "--hostname HOST" for GHE, empty string for github.com.
- */
-function getHostnameFlag(repoInfo: GitHubRepoInfo): string {
-  if (repoInfo.host && repoInfo.host !== "github.com") {
-    return `--hostname ${escapeShellArg(repoInfo.host)}`;
-  }
-  return "";
 }
 
 /**

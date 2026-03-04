@@ -1,4 +1,5 @@
 import { RULESET_COMPARABLE_FIELDS, type Ruleset } from "../../config/index.js";
+import { isPlainObject } from "../../shared/type-guards.js";
 import type { GitHubRuleset } from "./types.js";
 
 export type RulesetAction = "create" | "update" | "delete" | "unchanged";
@@ -149,10 +150,6 @@ export function projectToDesiredShape(
 
   // Scalars — return current as-is
   return current;
-}
-
-function isPlainObject(val: unknown): val is Record<string, unknown> {
-  return val !== null && typeof val === "object" && !Array.isArray(val);
 }
 
 function projectObjects(
