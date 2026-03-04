@@ -10,6 +10,7 @@ import {
 import { camelToSnake } from "../../shared/string-utils.js";
 import {
   ghApiCall,
+  parseApiJson,
   type HttpMethod,
   type GhApiOptions,
 } from "../../shared/gh-api-utils.js";
@@ -179,7 +180,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     const endpoint = `/repos/${github.owner}/${github.repo}/rulesets`;
     const result = await this.ghApi("GET", endpoint, undefined, options);
 
-    return JSON.parse(result) as GitHubRuleset[];
+    return parseApiJson<GitHubRuleset[]>(result, "rulesets response");
   }
 
   /**
@@ -196,7 +197,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     const endpoint = `/repos/${github.owner}/${github.repo}/rulesets/${rulesetId}`;
     const result = await this.ghApi("GET", endpoint, undefined, options);
 
-    return JSON.parse(result) as GitHubRuleset;
+    return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
 
   /**
@@ -215,7 +216,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     const payload = configToGitHub(name, ruleset);
     const result = await this.ghApi("POST", endpoint, payload, options);
 
-    return JSON.parse(result) as GitHubRuleset;
+    return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
 
   /**
@@ -235,7 +236,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     const payload = configToGitHub(name, ruleset);
     const result = await this.ghApi("PUT", endpoint, payload, options);
 
-    return JSON.parse(result) as GitHubRuleset;
+    return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
 
   /**

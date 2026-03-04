@@ -9,6 +9,7 @@ import {
 } from "../../shared/repo-detector.js";
 import {
   ghApiCall,
+  parseApiJson,
   type HttpMethod,
   type GhApiOptions,
 } from "../../shared/gh-api-utils.js";
@@ -111,7 +112,9 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
 
     const endpoint = `/repos/${github.owner}/${github.repo}`;
     const result = await this.ghApi("GET", endpoint, undefined, options);
-    const parsed = JSON.parse(result);
+    const parsed = parseApiJson<
+      CurrentRepoSettings & { owner?: { type?: "User" | "Organization" } }
+    >(result, "repo settings response");
     const settings = parsed as CurrentRepoSettings;
 
     // Extract owner type from nested API response
@@ -220,7 +223,10 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
       const result = await this.ghApi("GET", endpoint, undefined, options);
       // Parse JSON response - GitHub returns {"enabled": true/false}
       if (result) {
-        const data = JSON.parse(result);
+        const data = parseApiJson<{ enabled?: boolean }>(
+          result,
+          "automated security fixes response"
+        );
         return data.enabled === true;
       }
       // Empty response (204) means enabled
@@ -241,7 +247,10 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     const endpoint = `/repos/${github.owner}/${github.repo}/private-vulnerability-reporting`;
     try {
       const result = await this.ghApi("GET", endpoint, undefined, options);
-      const data = JSON.parse(result);
+      const data = parseApiJson<{ enabled?: boolean }>(
+        result,
+        "private vulnerability reporting response"
+      );
       return data.enabled === true;
     } catch (error) {
       const message = toErrorMessage(error);

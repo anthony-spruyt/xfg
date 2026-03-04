@@ -9,6 +9,7 @@ import {
 } from "../../shared/repo-detector.js";
 import {
   ghApiCall,
+  parseApiJson,
   type HttpMethod,
   type GhApiOptions,
 } from "../../shared/gh-api-utils.js";
@@ -51,7 +52,7 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     const endpoint = `/repos/${github.owner}/${github.repo}/labels`;
     const result = await this.ghApi("GET", endpoint, undefined, options, true);
 
-    return JSON.parse(result) as GitHubLabel[];
+    return parseApiJson<GitHubLabel[]>(result, "labels response");
   }
 
   /**
