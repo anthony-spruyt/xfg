@@ -2523,6 +2523,7 @@ describe("RepositoryProcessor", () => {
       const mockAuthOptionsBuilder: IAuthOptionsBuilder = {
         async resolve() {
           return {
+            ok: true as const,
             token: "ghs_test_installation_token_abc123",
             authOptions: {
               token: "ghs_test_installation_token_abc123",
@@ -2611,6 +2612,7 @@ describe("RepositoryProcessor", () => {
       const mockAuthOptionsBuilder: IAuthOptionsBuilder = {
         async resolve() {
           return {
+            ok: true as const,
             token: "ghs_enterprise_token_xyz789",
             authOptions: {
               token: "ghs_enterprise_token_xyz789",

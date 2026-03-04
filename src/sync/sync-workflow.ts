@@ -45,7 +45,7 @@ export class SyncWorkflow implements ISyncWorkflow {
       repoInfo,
       repoName
     );
-    if (authResult.skipResult) {
+    if (!authResult.ok) {
       return authResult.skipResult;
     }
 
@@ -106,7 +106,7 @@ export class SyncWorkflow implements ISyncWorkflow {
         executor,
       });
 
-      if (!commitResult.success && commitResult.errorResult) {
+      if (!commitResult.success) {
         return commitResult.errorResult;
       }
 

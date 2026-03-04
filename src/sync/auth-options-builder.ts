@@ -22,6 +22,7 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
     // 2. Handle "no installation found" case
     if (installationToken === null) {
       return {
+        ok: false,
         skipResult: {
           success: true,
           repoName,
@@ -43,7 +44,7 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
       ? this.buildAuthOptions(repoInfo, token)
       : undefined;
 
-    return { token, authOptions };
+    return { ok: true, token, authOptions };
   }
 
   private async getInstallationToken(

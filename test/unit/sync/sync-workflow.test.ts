@@ -54,7 +54,7 @@ describe("SyncWorkflow", () => {
 
     const authOptionsBuilder: IAuthOptionsBuilder = {
       async resolve() {
-        return { token: "test-token", authOptions: {} };
+        return { ok: true, token: "test-token", authOptions: {} };
       },
     };
 
@@ -104,6 +104,7 @@ describe("SyncWorkflow", () => {
   test("returns skip result when auth fails", async () => {
     const components = createMockComponents();
     components.authOptionsBuilder.resolve = async () => ({
+      ok: false as const,
       skipResult: {
         success: true,
         repoName: "test/repo",

@@ -105,17 +105,9 @@ export interface IBranchManager {
   setupBranch(options: BranchSetupOptions): Promise<void>;
 }
 
-export interface AuthResult {
-  token?: string;
-  authOptions?: GitAuthOptions;
-  /** If set, caller should return this result (e.g., no installation found) */
-  skipResult?: {
-    success: boolean;
-    repoName: string;
-    message: string;
-    skipped?: boolean;
-  };
-}
+export type AuthResult =
+  | { ok: true; token?: string; authOptions?: GitAuthOptions }
+  | { ok: false; skipResult: ProcessorResult };
 
 export interface IAuthOptionsBuilder {
   resolve(repoInfo: RepoInfo, repoName: string): Promise<AuthResult>;
@@ -152,15 +144,10 @@ export interface CommitPushOptions {
   executor: ICommandExecutor;
 }
 
-export interface CommitPushResult {
-  success: boolean;
-  errorResult?: {
-    success: boolean;
-    repoName: string;
-    message: string;
-  };
-  skipped?: boolean;
-}
+export type CommitPushResult =
+  | { success: true; skipped?: false }
+  | { success: true; skipped: true }
+  | { success: false; errorResult: ProcessorResult };
 
 export interface ICommitPushManager {
   commitAndPush(options: CommitPushOptions): Promise<CommitPushResult>;

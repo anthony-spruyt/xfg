@@ -27,13 +27,15 @@ describe("AuthOptionsBuilder", () => {
       const builder = new AuthOptionsBuilder(mockTokenManager, mockLogger);
       const result = await builder.resolve(mockRepoInfo, "test/repo");
 
-      assert.equal(result.token, "installation-token-123");
-      assert.ok(result.authOptions);
-      assert.equal(result.authOptions.token, "installation-token-123");
-      assert.equal(result.authOptions.host, "github.com");
-      assert.equal(result.authOptions.owner, "test");
-      assert.equal(result.authOptions.repo, "repo");
-      assert.equal(result.skipResult, undefined);
+      assert.equal(result.ok, true);
+      assert.equal(result.ok && result.token, "installation-token-123");
+      assert.ok(result.ok && result.authOptions);
+      if (result.ok && result.authOptions) {
+        assert.equal(result.authOptions.token, "installation-token-123");
+        assert.equal(result.authOptions.host, "github.com");
+        assert.equal(result.authOptions.owner, "test");
+        assert.equal(result.authOptions.repo, "repo");
+      }
     });
 
     test("returns skip result when no installation found (null token)", async () => {
@@ -45,12 +47,14 @@ describe("AuthOptionsBuilder", () => {
       const builder = new AuthOptionsBuilder(mockTokenManager, mockLogger);
       const result = await builder.resolve(mockRepoInfo, "test/repo");
 
-      assert.ok(result.skipResult);
-      assert.equal(result.skipResult.success, true);
-      assert.equal(result.skipResult.skipped, true);
-      assert.ok(
-        result.skipResult.message.includes("No GitHub App installation")
-      );
+      assert.equal(result.ok, false);
+      if (!result.ok) {
+        assert.equal(result.skipResult.success, true);
+        assert.equal(result.skipResult.skipped, true);
+        assert.ok(
+          result.skipResult.message.includes("No GitHub App installation")
+        );
+      }
     });
 
     test("falls back to GH_TOKEN when no token manager", async () => {
@@ -62,9 +66,12 @@ describe("AuthOptionsBuilder", () => {
         const builder = new AuthOptionsBuilder(null, mockLogger);
         const result = await builder.resolve(mockRepoInfo, "test/repo");
 
-        assert.equal(result.token, "pat-token-456");
-        assert.ok(result.authOptions);
-        assert.equal(result.authOptions.token, "pat-token-456");
+        assert.equal(result.ok, true);
+        assert.equal(result.ok && result.token, "pat-token-456");
+        assert.ok(result.ok && result.authOptions);
+        if (result.ok && result.authOptions) {
+          assert.equal(result.authOptions.token, "pat-token-456");
+        }
       } finally {
         if (originalToken === undefined) {
           delete process.env.GH_TOKEN;
@@ -87,8 +94,8 @@ describe("AuthOptionsBuilder", () => {
 
       // Should log warning via logger.warn()
       assert.ok(warnings.some((msg) => msg.includes("API error")));
-      // Should not have skipResult (graceful degradation)
-      assert.equal(result.skipResult, undefined);
+      // Should succeed with graceful degradation (no skip)
+      assert.equal(result.ok, true);
     });
 
     test("returns undefined token for non-GitHub repos without token manager", async () => {
@@ -104,9 +111,11 @@ describe("AuthOptionsBuilder", () => {
       const builder = new AuthOptionsBuilder(null, mockLogger);
       const result = await builder.resolve(adoRepoInfo, "org/project/repo");
 
-      assert.equal(result.token, undefined);
-      assert.equal(result.authOptions, undefined);
-      assert.equal(result.skipResult, undefined);
+      assert.equal(result.ok, true);
+      if (result.ok) {
+        assert.equal(result.token, undefined);
+        assert.equal(result.authOptions, undefined);
+      }
     });
   });
 });
