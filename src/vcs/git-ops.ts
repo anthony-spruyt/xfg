@@ -229,8 +229,9 @@ export class GitOps {
     try {
       await this.exec("git diff --cached --quiet", this._workDir);
       return false; // Exit code 0 = no staged changes
-    } catch {
+    } catch (error) {
       // Exit code 1 is expected when staged changes exist
+      logger.debug(`hasStagedChanges: ${toErrorMessage(error)}`);
       return true;
     }
   }
@@ -246,8 +247,11 @@ export class GitOps {
         this._workDir
       );
       return true;
-    } catch {
+    } catch (error) {
       // Expected when file doesn't exist on branch
+      logger.debug(
+        `fileExistsOnBranch(${fileName}, ${branch}): ${toErrorMessage(error)}`
+      );
       return false;
     }
   }

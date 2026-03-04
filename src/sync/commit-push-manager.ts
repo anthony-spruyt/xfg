@@ -79,15 +79,13 @@ export class CommitPushManager implements ICommitPushManager {
     repoInfo: CommitPushOptions["repoInfo"]
   ): CommitPushResult {
     const repoName = getRepoDisplayName(repoInfo);
-    if (!isDirectMode) {
-      throw error; // Re-throw for non-direct mode
-    }
-
     const message = toErrorMessage(error);
+
     if (
-      message.includes("rejected") ||
-      message.includes("protected") ||
-      message.includes("denied")
+      isDirectMode &&
+      (message.includes("rejected") ||
+        message.includes("protected") ||
+        message.includes("denied"))
     ) {
       return {
         success: false,
@@ -102,6 +100,13 @@ export class CommitPushManager implements ICommitPushManager {
       };
     }
 
-    throw error;
+    return {
+      success: false,
+      errorResult: {
+        success: false,
+        repoName,
+        message: `Commit/push failed: ${message}`,
+      },
+    };
   }
 }

@@ -153,8 +153,8 @@ export class SyncWorkflow implements ISyncWorkflow {
     } finally {
       try {
         session?.cleanup();
-      } catch {
-        // Ignore cleanup errors - best effort
+      } catch (error) {
+        this.log.debug(`Cleanup failed: ${String(error)}`);
       }
     }
   }

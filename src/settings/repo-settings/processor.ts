@@ -8,6 +8,7 @@ import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
   type BaseProcessorResult,
+  countActions,
 } from "../base-processor.js";
 
 export interface IRepoSettingsProcessor {

@@ -4,6 +4,7 @@ import { isGitHubRepo, getRepoDisplayName } from "../shared/repo-detector.js";
 import { createTokenManager } from "../vcs/index.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { logger } from "../shared/logger.js";
 
 export interface BaseProcessorOptions {
   dryRun?: boolean;
@@ -124,7 +125,11 @@ export abstract class BaseSettingsProcessor<
     try {
       const token = await this.tokenManager.getTokenForRepo(repoInfo);
       return token ?? undefined;
-    } catch {
+    } catch (error) {
+      // App token resolution is optional — fall back to provided token
+      logger.debug(
+        `App token resolution failed for ${repoInfo.owner}/${repoInfo.repo}: ${toErrorMessage(error)}`
+      );
       return undefined;
     }
   }
@@ -132,17 +137,38 @@ export abstract class BaseSettingsProcessor<
   /**
    * Format change counts into a summary string.
    */
-  protected formatChangeSummary(counts: {
-    create: number;
-    update: number;
-    delete: number;
-    unchanged: number;
-  }): string {
-    const parts: string[] = [];
-    if (counts.create > 0) parts.push(`${counts.create} created`);
-    if (counts.update > 0) parts.push(`${counts.update} updated`);
-    if (counts.delete > 0) parts.push(`${counts.delete} deleted`);
-    if (counts.unchanged > 0) parts.push(`${counts.unchanged} unchanged`);
-    return parts.length > 0 ? parts.join(", ") : "no changes";
+  protected formatChangeSummary(counts: ChangeCounts): string {
+    return formatChangeSummary(counts);
   }
+}
+
+export interface ChangeCounts {
+  create: number;
+  update: number;
+  delete: number;
+  unchanged: number;
+}
+
+/**
+ * Count actions from a diff result array.
+ * Works with any change type that has an `action` field.
+ */
+export function countActions(
+  changes: ReadonlyArray<{ action: string }>
+): ChangeCounts {
+  return {
+    create: changes.filter((c) => c.action === "create").length,
+    update: changes.filter((c) => c.action === "update").length,
+    delete: changes.filter((c) => c.action === "delete").length,
+    unchanged: changes.filter((c) => c.action === "unchanged").length,
+  };
+}
+
+export function formatChangeSummary(counts: ChangeCounts): string {
+  const parts: string[] = [];
+  if (counts.create > 0) parts.push(`${counts.create} created`);
+  if (counts.update > 0) parts.push(`${counts.update} updated`);
+  if (counts.delete > 0) parts.push(`${counts.delete} deleted`);
+  if (counts.unchanged > 0) parts.push(`${counts.unchanged} unchanged`);
+  return parts.length > 0 ? parts.join(", ") : "no changes";
 }

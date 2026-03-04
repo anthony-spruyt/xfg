@@ -2002,7 +2002,7 @@ describe("RepositoryProcessor", () => {
       }
     });
 
-    test("direct mode re-throws unrecognized errors", async () => {
+    test("direct mode returns error result for unrecognized errors", async () => {
       const originalAppId = process.env.XFG_GITHUB_APP_ID;
       const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
@@ -2019,7 +2019,6 @@ describe("RepositoryProcessor", () => {
         });
         const mockFactory: GitOpsFactory = () => mockGitOps;
 
-        // Test uses mock executor to simulate network error
         const mockExecutor: ICommandExecutor = {
           async exec(command: string): Promise<string> {
             if (command.includes("gh api graphql")) {
@@ -2046,17 +2045,18 @@ describe("RepositoryProcessor", () => {
 
         mkdirSync(localWorkDir, { recursive: true });
 
-        await assert.rejects(
-          () =>
-            processor.process(repoConfig, mockRepoInfo, {
-              branchName: "chore/sync-config",
-              workDir: localWorkDir,
-              configId: "test-config",
-              dryRun: false,
-              executor: mockExecutor,
-            }),
-          /Network timeout/,
-          "Should re-throw unrecognized errors"
+        const result = await processor.process(repoConfig, mockRepoInfo, {
+          branchName: "chore/sync-config",
+          workDir: localWorkDir,
+          configId: "test-config",
+          dryRun: false,
+          executor: mockExecutor,
+        });
+
+        assert.equal(result.success, false);
+        assert.ok(
+          result.message.includes("Network timeout"),
+          "Error message should contain the original error"
         );
       } finally {
         if (originalAppId === undefined) {

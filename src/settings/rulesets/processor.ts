@@ -8,6 +8,7 @@ import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
   type BaseProcessorResult,
+  countActions,
 } from "../base-processor.js";
 
 export interface IRulesetProcessor {
@@ -113,13 +114,7 @@ export class RulesetProcessor
     // Compute diff
     const changes = diffRulesets(fullRulesets, desiredMap, deleteOrphaned);
 
-    // Count changes by type
-    const changeCounts = {
-      create: changes.filter((c) => c.action === "create").length,
-      update: changes.filter((c) => c.action === "update").length,
-      delete: changes.filter((c) => c.action === "delete").length,
-      unchanged: changes.filter((c) => c.action === "unchanged").length,
-    };
+    const changeCounts = countActions(changes);
 
     const planOutput = formatRulesetPlan(changes);
 

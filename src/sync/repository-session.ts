@@ -47,8 +47,8 @@ export class RepositorySession implements IRepositorySession {
       cleanup: () => {
         try {
           gitOps.cleanWorkspace();
-        } catch {
-          // Ignore cleanup errors - best effort
+        } catch (error) {
+          this.log.debug(`Workspace cleanup failed: ${String(error)}`);
         }
       },
     };
