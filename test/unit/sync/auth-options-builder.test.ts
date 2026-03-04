@@ -75,7 +75,7 @@ describe("AuthOptionsBuilder", () => {
     });
 
     test("logs warning and returns undefined on token fetch error", async () => {
-      const { mock: mockLogger, messages } = createMockLogger();
+      const { mock: mockLogger, warnings } = createMockLogger();
       const mockTokenManager: MockTokenManager = {
         getTokenForRepo: async () => {
           throw new Error("API error");
@@ -85,9 +85,8 @@ describe("AuthOptionsBuilder", () => {
       const builder = new AuthOptionsBuilder(mockTokenManager, mockLogger);
       const result = await builder.resolve(mockRepoInfo, "test/repo");
 
-      // Should log warning
-      assert.ok(messages.some((msg) => msg.includes("Warning")));
-      assert.ok(messages.some((msg) => msg.includes("API error")));
+      // Should log warning via logger.warn()
+      assert.ok(warnings.some((msg) => msg.includes("API error")));
       // Should not have skipResult (graceful degradation)
       assert.equal(result.skipResult, undefined);
     });

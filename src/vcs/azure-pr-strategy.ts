@@ -95,7 +95,7 @@ export class AzurePRStrategy extends BasePRStrategy {
     // Extract PR ID from URL
     const prInfo = this.parsePRUrl(existingUrl);
     if (!prInfo) {
-      logger.info(`Warning: Could not parse PR URL: ${existingUrl}`);
+      logger.warn(`Could not parse PR URL: ${existingUrl}`);
       return false;
     }
 
@@ -108,7 +108,7 @@ export class AzurePRStrategy extends BasePRStrategy {
       });
     } catch (error) {
       const message = toErrorMessage(error);
-      logger.info(`Warning: Failed to abandon PR #${prInfo.prId}: ${message}`);
+      logger.warn(`Failed to abandon PR #${prInfo.prId}: ${message}`);
       return false;
     }
 
@@ -131,7 +131,7 @@ export class AzurePRStrategy extends BasePRStrategy {
     } catch (error) {
       // Branch deletion failure is not critical - PR is already abandoned
       const message = toErrorMessage(error);
-      logger.info(`Warning: Failed to delete branch ${branchName}: ${message}`);
+      logger.warn(`Failed to delete branch ${branchName}: ${message}`);
     }
 
     return true;
@@ -178,8 +178,8 @@ export class AzurePRStrategy extends BasePRStrategy {
           unlinkSync(descFile);
         }
       } catch (cleanupError) {
-        logger.info(
-          `Warning: Failed to clean up temp file ${descFile}: ${toErrorMessage(cleanupError)}`
+        logger.warn(
+          `Failed to clean up temp file ${descFile}: ${toErrorMessage(cleanupError)}`
         );
       }
     }

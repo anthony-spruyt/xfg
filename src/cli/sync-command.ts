@@ -152,7 +152,7 @@ function applySettingsResult(
     }
     if (result.warnings?.length) {
       for (const warning of result.warnings) {
-        logger.info(`Warning: ${warning}`);
+        logger.warn(warning);
       }
     }
   } else if (!result.skipped && result.success) {
@@ -252,8 +252,8 @@ export async function runSync(
 
     const mergeMode = repoConfig.prOptions?.merge ?? "auto";
     if (mergeMode === "direct" && repoConfig.prOptions?.mergeStrategy) {
-      logger.info(
-        `Warning: mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode for ${repoConfig.git}`
+      logger.warn(
+        `mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode for ${repoConfig.git}`
       );
     }
 

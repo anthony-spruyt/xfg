@@ -2412,7 +2412,7 @@ describe("RepositoryProcessor", () => {
       process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
       process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
 
-      const { mock: mockLogger, messages: logMessages } = createMockLogger();
+      const { mock: mockLogger, warnings: logWarnings } = createMockLogger();
 
       // Mock fetch to fail on installations discovery
       const originalFetch = globalThis.fetch;
@@ -2476,13 +2476,13 @@ describe("RepositoryProcessor", () => {
           "Should be skipped (no staged changes)"
         );
 
-        // Should have logged warning about token failure
-        const warningMessage = logMessages.find((m) =>
+        // Should have logged warning about token failure via logger.warn()
+        const warningMessage = logWarnings.find((m) =>
           m.includes("Failed to get GitHub App token")
         );
         assert.ok(
           warningMessage,
-          `Expected warning about token failure, got messages: ${logMessages.join(", ")}`
+          `Expected warning about token failure, got warnings: ${logWarnings.join(", ")}`
         );
       } finally {
         globalThis.fetch = originalFetch;

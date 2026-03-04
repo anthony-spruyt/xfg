@@ -137,30 +137,8 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
       logger.debug(`git remote show origin failed - ${msg}`);
     }
 
-    // Local operations don't need auth
-    try {
-      await this.executor.exec(
-        "git rev-parse --verify origin/main",
-        this.workDir
-      );
-      return { branch: "main", method: "origin/main exists" };
-    } catch (error) {
-      const msg = toErrorMessage(error);
-      logger.debug(`origin/main check failed - ${msg}`);
-    }
-
-    try {
-      await this.executor.exec(
-        "git rev-parse --verify origin/master",
-        this.workDir
-      );
-      return { branch: "master", method: "origin/master exists" };
-    } catch (error) {
-      const msg = toErrorMessage(error);
-      logger.debug(`origin/master check failed - ${msg}`);
-    }
-
-    return { branch: "main", method: "fallback default" };
+    // Local fallback operations don't need auth — delegate to GitOps
+    return this.gitOps.getDefaultBranchLocal();
   }
 
   /**

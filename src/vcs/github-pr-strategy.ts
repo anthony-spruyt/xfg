@@ -107,9 +107,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     // Extract PR number from URL
     const prNumber = existingUrl.match(/\/pull\/(\d+)/)?.[1];
     if (!prNumber) {
-      logger.info(
-        `Warning: Could not extract PR number from URL: ${existingUrl}`
-      );
+      logger.warn(`Could not extract PR number from URL: ${existingUrl}`);
       return false;
     }
 
@@ -127,9 +125,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       return true;
     } catch (error) {
       const message = toErrorMessage(error);
-      logger.info(
-        `Warning: Failed to close existing PR #${prNumber}: ${message}`
-      );
+      logger.warn(`Failed to close existing PR #${prNumber}: ${message}`);
       return false;
     }
   }
@@ -193,8 +189,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
           unlinkSync(bodyFile);
         }
       } catch (cleanupError) {
-        logger.info(
-          `Warning: Failed to clean up temp file ${bodyFile}: ${toErrorMessage(cleanupError)}`
+        logger.warn(
+          `Failed to clean up temp file ${bodyFile}: ${toErrorMessage(cleanupError)}`
         );
       }
     }
@@ -223,8 +219,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
       return result.trim() === "true";
     } catch (error) {
       // If we can't check, assume auto-merge is not enabled
-      logger.info(
-        `Warning: Could not check auto-merge status: ${toErrorMessage(error)}`
+      logger.warn(
+        `Could not check auto-merge status: ${toErrorMessage(error)}`
       );
       return false;
     }
@@ -246,7 +242,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
   }
 
   async merge(options: MergeOptions): Promise<MergeResult> {
-    const { prUrl, config, workDir, retries = 3, token } = options;
+    const { prUrl, repoInfo, config, workDir, retries = 3, token } = options;
 
     // Manual mode: do nothing
     if (config.mode === "manual") {
@@ -264,16 +260,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     if (config.mode === "auto") {
       // Check if auto-merge is enabled on the repo
-      // Extract host/owner/repo from PR URL (supports both github.com and GHE)
-      const match = prUrl.match(/https:\/\/([^/]+)\/([^/]+)\/([^/]+)/);
-      if (match) {
-        const repoInfo: GitHubRepoInfo = {
-          type: "github",
-          gitUrl: prUrl,
-          owner: match[2],
-          repo: match[3],
-          host: match[1],
-        };
+      if (isGitHubRepo(repoInfo)) {
         const autoMergeEnabled = await this.checkAutoMergeEnabled(
           repoInfo,
           workDir,
@@ -282,8 +269,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
         );
 
         if (!autoMergeEnabled) {
-          logger.info(
-            `Warning: Auto-merge not enabled for '${repoInfo.owner}/${repoInfo.repo}'. PR left open for manual review.`
+          logger.warn(
+            `Auto-merge not enabled for '${repoInfo.owner}/${repoInfo.repo}'. PR left open for manual review.`
           );
           logger.info(
             `To enable: gh repo edit ${getRepoFlag(repoInfo)} --enable-auto-merge (requires admin)`

@@ -110,8 +110,8 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       logger.debug(
         `Could not determine if '${owner}' is an organization, defaulting to org behavior: ${errMsg}`
       );
-      logger.info(
-        `Warning: Could not verify if '${owner}' is an organization or user account. ` +
+      logger.warn(
+        `Could not verify if '${owner}' is an organization or user account. ` +
           `If fork fails, check your authentication (gh auth status) and ensure the ` +
           `target owner is correct.`
       );

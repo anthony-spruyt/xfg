@@ -426,13 +426,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
    */
   private isHeadOidMismatchError(error: Error): boolean {
     const message = error.message.toLowerCase();
-    return (
-      message.includes("expected branch to point to") ||
-      message.includes("expectedheadoid") ||
-      message.includes("head oid") ||
-      // GitHub may return this generic error for OID mismatches
-      message.includes("was provided invalid value")
-    );
+    return OID_MISMATCH_PATTERNS.some((pattern) => pattern.test(message));
   }
 
   /**

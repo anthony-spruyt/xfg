@@ -981,7 +981,7 @@ repos:
 
       const output = consoleOutput.join("\n");
       assert.ok(
-        output.includes("Warning: Some setting requires admin access"),
+        output.includes("Some setting requires admin access"),
         "Should display warnings for repo settings"
       );
     });

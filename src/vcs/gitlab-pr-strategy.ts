@@ -153,7 +153,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     // Extract MR IID from URL
     const mrInfo = this.parseMRUrl(existingUrl);
     if (!mrInfo) {
-      logger.info(`Warning: Could not extract MR IID from URL: ${existingUrl}`);
+      logger.warn(`Could not extract MR IID from URL: ${existingUrl}`);
       return false;
     }
 
@@ -168,9 +168,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
       });
     } catch (error) {
       const message = toErrorMessage(error);
-      logger.info(
-        `Warning: Failed to close existing MR !${mrInfo.mrIid}: ${message}`
-      );
+      logger.warn(`Failed to close existing MR !${mrInfo.mrIid}: ${message}`);
       return false;
     }
 
@@ -184,7 +182,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     } catch (error) {
       // Branch deletion failure is not critical
       const message = toErrorMessage(error);
-      logger.info(`Warning: Failed to delete branch ${branchName}: ${message}`);
+      logger.warn(`Failed to delete branch ${branchName}: ${message}`);
     }
 
     return true;
@@ -249,8 +247,8 @@ export class GitLabPRStrategy extends BasePRStrategy {
           unlinkSync(descFile);
         }
       } catch (cleanupError) {
-        logger.info(
-          `Warning: Failed to clean up temp file ${descFile}: ${toErrorMessage(cleanupError)}`
+        logger.warn(
+          `Failed to clean up temp file ${descFile}: ${toErrorMessage(cleanupError)}`
         );
       }
     }

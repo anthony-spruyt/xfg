@@ -982,6 +982,7 @@ describe("GitHubPRStrategy merge", () => {
       const strategy = new GitHubPRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
         config: { mode: "manual" },
         workDir: testDir,
         retries: 0,
@@ -1002,6 +1003,7 @@ describe("GitHubPRStrategy merge", () => {
       const strategy = new GitHubPRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
         config: { mode: "auto" },
         workDir: testDir,
         retries: 0,
@@ -1024,6 +1026,7 @@ describe("GitHubPRStrategy merge", () => {
       const strategy = new GitHubPRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
         config: { mode: "auto" },
         workDir: testDir,
         retries: 0,
@@ -1045,6 +1048,7 @@ describe("GitHubPRStrategy merge", () => {
       const strategy = new GitHubPRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
         config: { mode: "auto", strategy: "squash" },
         workDir: testDir,
         retries: 0,
@@ -1064,6 +1068,7 @@ describe("GitHubPRStrategy merge", () => {
       const strategy = new GitHubPRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
         config: { mode: "auto", strategy: "rebase" },
         workDir: testDir,
         retries: 0,
@@ -1083,6 +1088,7 @@ describe("GitHubPRStrategy merge", () => {
       const strategy = new GitHubPRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
         config: { mode: "auto", deleteBranch: true },
         workDir: testDir,
         retries: 0,
@@ -1102,6 +1108,7 @@ describe("GitHubPRStrategy merge", () => {
       const strategy = new GitHubPRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
         config: { mode: "auto" },
         workDir: testDir,
         retries: 0,
@@ -1120,6 +1127,7 @@ describe("GitHubPRStrategy merge", () => {
       const strategy = new GitHubPRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
         config: { mode: "force" },
         workDir: testDir,
         retries: 0,
@@ -1140,6 +1148,7 @@ describe("GitHubPRStrategy merge", () => {
       const strategy = new GitHubPRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
         config: { mode: "force", strategy: "squash", deleteBranch: true },
         workDir: testDir,
         retries: 0,
@@ -1160,6 +1169,7 @@ describe("GitHubPRStrategy merge", () => {
       const strategy = new GitHubPRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
         config: { mode: "force" },
         workDir: testDir,
         retries: 0,
@@ -1296,6 +1306,7 @@ describe("GitHubPRStrategy with token parameter", () => {
     const strategy = new GitHubPRStrategy(mockExecutor);
     await strategy.merge({
       prUrl: "https://github.com/owner/repo/pull/123",
+      repoInfo: githubRepoInfo,
       config: { mode: "auto" },
       workDir: testDir,
       retries: 0,

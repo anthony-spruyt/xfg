@@ -1,17 +1,9 @@
 import { extname, isAbsolute } from "node:path";
+import { isTextContent } from "../merge.js";
+
+export { isTextContent };
 
 const VALID_STRATEGIES = ["replace", "append", "prepend"];
-
-/**
- * Check if content is text type (string or string[]).
- */
-export function isTextContent(content: unknown): boolean {
-  return (
-    typeof content === "string" ||
-    (Array.isArray(content) &&
-      content.every((item) => typeof item === "string"))
-  );
-}
 
 /**
  * Check if content is object type (for JSON/YAML output).

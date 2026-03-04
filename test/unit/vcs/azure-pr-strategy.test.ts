@@ -441,6 +441,15 @@ describe("AzurePRStrategy URL building", () => {
 });
 
 describe("AzurePRStrategy merge", () => {
+  const azureRepoInfo: AzureDevOpsRepoInfo = {
+    type: "azure-devops",
+    gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
+    owner: "myorg",
+    repo: "myrepo",
+    organization: "myorg",
+    project: "myproject",
+  };
+
   let mockExecutor: ReturnType<typeof createMockExecutor>;
 
   beforeEach(() => {
@@ -465,6 +474,7 @@ describe("AzurePRStrategy merge", () => {
       const strategy = new AzurePRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: validPRUrl,
+        repoInfo: azureRepoInfo,
         config: { mode: "manual" },
         workDir: testDir,
         retries: 0,
@@ -484,6 +494,7 @@ describe("AzurePRStrategy merge", () => {
       const strategy = new AzurePRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: validPRUrl,
+        repoInfo: azureRepoInfo,
         config: { mode: "auto" },
         workDir: testDir,
         retries: 0,
@@ -505,6 +516,7 @@ describe("AzurePRStrategy merge", () => {
       const strategy = new AzurePRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: validPRUrl,
+        repoInfo: azureRepoInfo,
         config: { mode: "auto", strategy: "squash" },
         workDir: testDir,
         retries: 0,
@@ -520,6 +532,7 @@ describe("AzurePRStrategy merge", () => {
       const strategy = new AzurePRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: validPRUrl,
+        repoInfo: azureRepoInfo,
         config: { mode: "auto", deleteBranch: true },
         workDir: testDir,
         retries: 0,
@@ -538,6 +551,7 @@ describe("AzurePRStrategy merge", () => {
       const strategy = new AzurePRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: validPRUrl,
+        repoInfo: azureRepoInfo,
         config: { mode: "auto" },
         workDir: testDir,
         retries: 0,
@@ -556,6 +570,7 @@ describe("AzurePRStrategy merge", () => {
       const strategy = new AzurePRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: validPRUrl,
+        repoInfo: azureRepoInfo,
         config: { mode: "force" },
         workDir: testDir,
         retries: 0,
@@ -577,6 +592,7 @@ describe("AzurePRStrategy merge", () => {
       const strategy = new AzurePRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: validPRUrl,
+        repoInfo: azureRepoInfo,
         config: { mode: "force", bypassReason: "Urgent hotfix" },
         workDir: testDir,
         retries: 0,
@@ -593,6 +609,7 @@ describe("AzurePRStrategy merge", () => {
       const strategy = new AzurePRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: validPRUrl,
+        repoInfo: azureRepoInfo,
         config: { mode: "force" },
         workDir: testDir,
         retries: 0,
@@ -609,6 +626,7 @@ describe("AzurePRStrategy merge", () => {
       const strategy = new AzurePRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: validPRUrl,
+        repoInfo: azureRepoInfo,
         config: { mode: "force", strategy: "squash", deleteBranch: true },
         workDir: testDir,
         retries: 0,
@@ -629,6 +647,7 @@ describe("AzurePRStrategy merge", () => {
       const strategy = new AzurePRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: validPRUrl,
+        repoInfo: azureRepoInfo,
         config: { mode: "force" },
         workDir: testDir,
         retries: 0,
@@ -645,6 +664,7 @@ describe("AzurePRStrategy merge", () => {
       const strategy = new AzurePRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://invalid-url.com/not-azure",
+        repoInfo: azureRepoInfo,
         config: { mode: "auto" },
         workDir: testDir,
         retries: 0,

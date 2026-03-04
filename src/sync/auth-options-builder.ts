@@ -58,9 +58,7 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
         repoInfo as GitHubRepoInfo
       );
     } catch (error) {
-      this.log.info(
-        `Warning: Failed to get GitHub App token: ${toErrorMessage(error)}`
-      );
+      this.log.warn(`Failed to get GitHub App token: ${toErrorMessage(error)}`);
       return undefined;
     }
   }

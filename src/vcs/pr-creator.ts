@@ -228,6 +228,7 @@ export async function mergePR(options: MergePROptions): Promise<MergeResult> {
   const strategy = getPRStrategy(repoInfo, executor);
   return strategy.merge({
     prUrl,
+    repoInfo,
     config: mergeConfig,
     workDir,
     retries,

@@ -66,7 +66,7 @@ export class PRMergeHandler implements IPRMergeHandler {
       };
 
       if (!result.success) {
-        this.log.info(`Warning: Merge operation failed - ${result.message}`);
+        this.log.warn(`Merge operation failed - ${result.message}`);
       } else {
         this.log.info(result.message);
       }

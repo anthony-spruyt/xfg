@@ -325,7 +325,17 @@ export class GitOps {
       logger.debug(`git remote show origin failed - ${msg}`);
     }
 
-    // Try common default branch names (local operations, no retry needed)
+    return this.getDefaultBranchLocal();
+  }
+
+  /**
+   * Fallback default branch detection using local refs only.
+   * Checks origin/main, then origin/master, then defaults to "main".
+   */
+  async getDefaultBranchLocal(): Promise<{
+    branch: string;
+    method: string;
+  }> {
     try {
       await this.exec("git rev-parse --verify origin/main", this._workDir);
       return { branch: "main", method: "origin/main exists" };

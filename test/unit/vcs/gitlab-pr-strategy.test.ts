@@ -596,6 +596,15 @@ describe("GitLabPRStrategy closeExistingPR", () => {
 });
 
 describe("GitLabPRStrategy merge", () => {
+  const gitlabRepoInfo: GitLabRepoInfo = {
+    type: "gitlab",
+    gitUrl: "git@gitlab.com:myorg/myrepo.git",
+    owner: "myorg",
+    namespace: "myorg",
+    repo: "myrepo",
+    host: "gitlab.com",
+  };
+
   let mockExecutor: ReturnType<typeof createMockExecutor>;
 
   beforeEach(() => {
@@ -617,6 +626,7 @@ describe("GitLabPRStrategy merge", () => {
       const strategy = new GitLabPRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
+        repoInfo: gitlabRepoInfo,
         config: { mode: "manual" },
         workDir: testDir,
         retries: 0,
@@ -636,6 +646,7 @@ describe("GitLabPRStrategy merge", () => {
       const strategy = new GitLabPRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
+        repoInfo: gitlabRepoInfo,
         config: { mode: "auto" },
         workDir: testDir,
         retries: 0,
@@ -659,6 +670,7 @@ describe("GitLabPRStrategy merge", () => {
       const strategy = new GitLabPRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
+        repoInfo: gitlabRepoInfo,
         config: { mode: "auto", strategy: "squash" },
         workDir: testDir,
         retries: 0,
@@ -677,6 +689,7 @@ describe("GitLabPRStrategy merge", () => {
       const strategy = new GitLabPRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
+        repoInfo: gitlabRepoInfo,
         config: { mode: "auto", strategy: "rebase" },
         workDir: testDir,
         retries: 0,
@@ -695,6 +708,7 @@ describe("GitLabPRStrategy merge", () => {
       const strategy = new GitLabPRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
+        repoInfo: gitlabRepoInfo,
         config: { mode: "auto", deleteBranch: true },
         workDir: testDir,
         retries: 0,
@@ -713,6 +727,7 @@ describe("GitLabPRStrategy merge", () => {
       const strategy = new GitLabPRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
+        repoInfo: gitlabRepoInfo,
         config: { mode: "auto" },
         workDir: testDir,
         retries: 0,
@@ -731,6 +746,7 @@ describe("GitLabPRStrategy merge", () => {
       const strategy = new GitLabPRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
+        repoInfo: gitlabRepoInfo,
         config: { mode: "force" },
         workDir: testDir,
         retries: 0,
@@ -754,6 +770,7 @@ describe("GitLabPRStrategy merge", () => {
       const strategy = new GitLabPRStrategy(mockExecutor);
       await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
+        repoInfo: gitlabRepoInfo,
         config: { mode: "force", strategy: "squash", deleteBranch: true },
         workDir: testDir,
         retries: 0,
@@ -773,6 +790,7 @@ describe("GitLabPRStrategy merge", () => {
       const strategy = new GitLabPRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
+        repoInfo: gitlabRepoInfo,
         config: { mode: "force" },
         workDir: testDir,
         retries: 0,
@@ -792,6 +810,7 @@ describe("GitLabPRStrategy merge", () => {
       const result = await strategy.merge({
         prUrl:
           "https://gitlab.com/org/group/subgroup/repo/-/merge_requests/456",
+        repoInfo: gitlabRepoInfo,
         config: { mode: "force" },
         workDir: testDir,
         retries: 0,
@@ -807,6 +826,7 @@ describe("GitLabPRStrategy merge", () => {
       const strategy = new GitLabPRStrategy(mockExecutor);
       const result = await strategy.merge({
         prUrl: "https://gitlab.com/invalid-url",
+        repoInfo: gitlabRepoInfo,
         config: { mode: "force" },
         workDir: testDir,
         retries: 0,

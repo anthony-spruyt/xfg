@@ -34,6 +34,7 @@ export interface PRStrategyOptions {
 
 export interface MergeOptions {
   prUrl: string;
+  repoInfo: RepoInfo;
   config: PRMergeConfig;
   workDir: string;
   retries?: number;
