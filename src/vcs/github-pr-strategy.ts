@@ -199,7 +199,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
   /**
    * Check if auto-merge is enabled on the repository.
    */
-  async checkAutoMergeEnabled(
+  private async checkAutoMergeEnabled(
     repoInfo: GitHubRepoInfo,
     workDir: string,
     retries: number = 3,

@@ -169,7 +169,8 @@ export class GitOps {
 
     try {
       return readFileSync(filePath, "utf-8");
-    } catch {
+    } catch (error) {
+      logger.debug(`Failed to read ${fileName}: ${toErrorMessage(error)}`);
       return null;
     }
   }
@@ -192,8 +193,10 @@ export class GitOps {
     try {
       const existingContent = readFileSync(filePath, "utf-8");
       return existingContent !== newContent;
-    } catch {
-      // If we can't read the file, assume it would change
+    } catch (error) {
+      logger.debug(
+        `Failed to read ${fileName} for comparison: ${toErrorMessage(error)}`
+      );
       return true;
     }
   }
@@ -227,7 +230,8 @@ export class GitOps {
       await this.exec("git diff --cached --quiet", this._workDir);
       return false; // Exit code 0 = no staged changes
     } catch {
-      return true; // Exit code 1 = there are staged changes
+      // Exit code 1 is expected when staged changes exist
+      return true;
     }
   }
 
@@ -243,6 +247,7 @@ export class GitOps {
       );
       return true;
     } catch {
+      // Expected when file doesn't exist on branch
       return false;
     }
   }
