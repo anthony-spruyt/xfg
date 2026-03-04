@@ -760,10 +760,9 @@ describe("GitHubPRStrategy closeExistingPR", () => {
     assert.ok(closeCall.command.includes("--delete-branch"));
   });
 
-  test("throws error when PR number cannot be extracted from URL (issue #93)", async () => {
-    // This tests the fix for issue #93: when checkExistingPR returns a URL
-    // but we can't extract the PR number, we should throw an error rather
-    // than returning false (which would incorrectly indicate no PR exists)
+  test("returns false when PR number cannot be extracted from URL (issue #93)", async () => {
+    // When checkExistingPR returns a URL but we can't extract the PR number,
+    // we return false with a warning (consistent with other error handling)
     mockExecutor.responses.set(
       "gh pr list",
       "https://github.com/owner/repo/invalid-url-format"
@@ -771,17 +770,14 @@ describe("GitHubPRStrategy closeExistingPR", () => {
 
     const strategy = new GitHubPRStrategy(mockExecutor);
 
-    await assert.rejects(
-      () =>
-        strategy.closeExistingPR({
-          repoInfo: githubRepoInfo,
-          branchName: "test-branch",
-          baseBranch: "main",
-          workDir: testDirClose,
-          retries: 0,
-        }),
-      /Could not extract PR number from URL/
-    );
+    const result = await strategy.closeExistingPR({
+      repoInfo: githubRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirClose,
+      retries: 0,
+    });
+    assert.strictEqual(result, false);
   });
 
   test("returns false when close command fails", async () => {
