@@ -3,6 +3,8 @@ import { withRetry } from "../shared/retry-utils.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 import type { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
+import { logger } from "../shared/logger.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -104,8 +106,10 @@ export async function resolveGitHubToken(
     }
     // string = app token; undefined = no manager configured
     return { token: appToken ?? process.env.GH_TOKEN, skipped: false };
-  } catch {
-    // Token resolution failed; fall back to env var
+  } catch (error) {
+    logger.debug(
+      `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}; falling back to GH_TOKEN`
+    );
     return { token: process.env.GH_TOKEN, skipped: false };
   }
 }

@@ -34,7 +34,7 @@ const DEFAULT_OPTIONS: EnvInterpolationOptions = {
  * - ${VAR:-default} -> varName=VAR, modifier=-, value=default
  * - ${VAR:?message} -> varName=VAR, modifier=?, value=message
  */
-const ENV_VAR_REGEX = /\$\{([^}:]+)(?::([?-])([^}]*))?\}/g;
+const ENV_VAR_REGEX = /\$\{([A-Za-z_][A-Za-z0-9_.]*?)(?::([?-])([^}]*))?\}/g;
 
 /**
  * Regex to match escaped environment variable placeholders.

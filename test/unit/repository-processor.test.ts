@@ -2494,7 +2494,7 @@ describe("RepositoryProcessor", () => {
       process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
       process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
 
-      const { mock: mockLogger, warnings: logWarnings } = createMockLogger();
+      const { mock: mockLogger } = createMockLogger();
 
       // Mock fetch to fail on installations discovery
       const originalFetch = globalThis.fetch;
