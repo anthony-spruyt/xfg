@@ -186,7 +186,8 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
 
         return result;
       } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
+        lastError =
+          error instanceof Error ? error : new Error(toErrorMessage(error));
 
         // Check if this is an expectedHeadOid mismatch error (retryable)
         if (this.isHeadOidMismatchError(lastError) && attempt < retries) {

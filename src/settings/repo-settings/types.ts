@@ -2,8 +2,6 @@ import type { RepoInfo } from "../../shared/repo-detector.js";
 import type { GitHubRepoSettings } from "../../config/index.js";
 import type { GhApiOptions } from "../gh-api-utils.js";
 
-export type RepoSettingsStrategyOptions = GhApiOptions;
-
 /**
  * Current repository settings from GitHub API (snake_case).
  */
@@ -47,7 +45,7 @@ export interface IRepoSettingsStrategy {
    */
   getSettings(
     repoInfo: RepoInfo,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<CurrentRepoSettings>;
 
   /**
@@ -56,7 +54,7 @@ export interface IRepoSettingsStrategy {
   updateSettings(
     repoInfo: RepoInfo,
     settings: GitHubRepoSettings,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void>;
 
   /**
@@ -65,7 +63,7 @@ export interface IRepoSettingsStrategy {
   setVulnerabilityAlerts(
     repoInfo: RepoInfo,
     enable: boolean,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void>;
 
   /**
@@ -74,7 +72,7 @@ export interface IRepoSettingsStrategy {
   setAutomatedSecurityFixes(
     repoInfo: RepoInfo,
     enable: boolean,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void>;
 
   /**
@@ -83,7 +81,7 @@ export interface IRepoSettingsStrategy {
   setPrivateVulnerabilityReporting(
     repoInfo: RepoInfo,
     enable: boolean,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void>;
 }
 

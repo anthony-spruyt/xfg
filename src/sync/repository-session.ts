@@ -1,5 +1,6 @@
 import { RepoInfo } from "../shared/repo-detector.js";
 import { ILogger } from "../shared/logger.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import type {
   GitOpsFactory,
   SessionOptions,
@@ -47,7 +48,7 @@ export class RepositorySession implements IRepositorySession {
         try {
           gitOps.cleanWorkspace();
         } catch (error) {
-          this.log.debug(`Workspace cleanup failed: ${String(error)}`);
+          this.log.debug(`Workspace cleanup failed: ${toErrorMessage(error)}`);
         }
       },
     };

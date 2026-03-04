@@ -8,6 +8,7 @@ import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
   type BaseProcessorResult,
+  type ChangeCounts,
   buildDryRunResult,
   buildApplyResult,
 } from "../base-processor.js";
@@ -23,12 +24,7 @@ export interface IRepoSettingsProcessor {
 export type RepoSettingsProcessorOptions = BaseProcessorOptions;
 
 export interface RepoSettingsProcessorResult extends BaseProcessorResult {
-  changes?: {
-    create: number;
-    update: number;
-    delete: number;
-    unchanged: number;
-  };
+  changes?: ChangeCounts;
   warnings?: string[];
   planOutput?: RepoSettingsPlanResult;
 }

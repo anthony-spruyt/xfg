@@ -1,6 +1,7 @@
 import type { RepoConfig } from "../config/types.js";
 import { RepoInfo, getRepoDisplayName } from "../shared/repo-detector.js";
 import type { ILogger } from "../shared/logger.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import { defaultExecutor } from "../shared/command-executor.js";
 import type {
   ISyncWorkflow,
@@ -153,7 +154,7 @@ export class SyncWorkflow implements ISyncWorkflow {
       try {
         session?.cleanup();
       } catch (error) {
-        this.log.debug(`Cleanup failed: ${String(error)}`);
+        this.log.debug(`Cleanup failed: ${toErrorMessage(error)}`);
       }
     }
   }

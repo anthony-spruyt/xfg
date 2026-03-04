@@ -7,7 +7,11 @@ import {
   GitHubRepoInfo,
   RepoInfo,
 } from "../../shared/repo-detector.js";
-import { ghApiCall, type HttpMethod } from "../gh-api-utils.js";
+import {
+  ghApiCall,
+  type HttpMethod,
+  type GhApiOptions,
+} from "../gh-api-utils.js";
 import type { Ruleset, RulesetRule } from "../../config/index.js";
 import type {
   IRulesetStrategy,
@@ -15,7 +19,6 @@ import type {
   GitHubBypassActor,
   GitHubRulesetConditions,
   GitHubRule,
-  RulesetStrategyOptions,
 } from "./types.js";
 
 /**
@@ -174,7 +177,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
    */
   async list(
     repoInfo: RepoInfo,
-    options?: RulesetStrategyOptions
+    options?: GhApiOptions
   ): Promise<GitHubRuleset[]> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -191,7 +194,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
   async get(
     repoInfo: RepoInfo,
     rulesetId: number,
-    options?: RulesetStrategyOptions
+    options?: GhApiOptions
   ): Promise<GitHubRuleset> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -209,7 +212,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     repoInfo: RepoInfo,
     name: string,
     ruleset: Ruleset,
-    options?: RulesetStrategyOptions
+    options?: GhApiOptions
   ): Promise<GitHubRuleset> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -229,7 +232,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     rulesetId: number,
     name: string,
     ruleset: Ruleset,
-    options?: RulesetStrategyOptions
+    options?: GhApiOptions
   ): Promise<GitHubRuleset> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -247,7 +250,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
   async delete(
     repoInfo: RepoInfo,
     rulesetId: number,
-    options?: RulesetStrategyOptions
+    options?: GhApiOptions
   ): Promise<void> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -271,7 +274,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     method: HttpMethod,
     endpoint: string,
     payload?: unknown,
-    options?: RulesetStrategyOptions
+    options?: GhApiOptions
   ): Promise<string> {
     return ghApiCall(
       method,

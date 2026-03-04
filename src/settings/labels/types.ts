@@ -1,8 +1,6 @@
 import type { RepoInfo } from "../../shared/repo-detector.js";
 import type { GhApiOptions } from "../gh-api-utils.js";
 
-export type LabelsStrategyOptions = GhApiOptions;
-
 /**
  * GitHub label as returned by the API.
  */
@@ -19,24 +17,21 @@ export interface GitHubLabel {
  * Abstracts platform-specific API calls.
  */
 export interface ILabelsStrategy {
-  list(
-    repoInfo: RepoInfo,
-    options?: LabelsStrategyOptions
-  ): Promise<GitHubLabel[]>;
+  list(repoInfo: RepoInfo, options?: GhApiOptions): Promise<GitHubLabel[]>;
   create(
     repoInfo: RepoInfo,
     label: { name: string; color: string; description?: string },
-    options?: LabelsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void>;
   update(
     repoInfo: RepoInfo,
     currentName: string,
     label: { new_name?: string; color?: string; description?: string },
-    options?: LabelsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void>;
   delete(
     repoInfo: RepoInfo,
     name: string,
-    options?: LabelsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void>;
 }

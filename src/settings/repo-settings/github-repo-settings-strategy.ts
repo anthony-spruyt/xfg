@@ -7,13 +7,13 @@ import {
   GitHubRepoInfo,
   RepoInfo,
 } from "../../shared/repo-detector.js";
-import { ghApiCall, type HttpMethod } from "../gh-api-utils.js";
+import {
+  ghApiCall,
+  type HttpMethod,
+  type GhApiOptions,
+} from "../gh-api-utils.js";
 import type { GitHubRepoSettings } from "../../config/index.js";
-import type {
-  IRepoSettingsStrategy,
-  RepoSettingsStrategyOptions,
-  CurrentRepoSettings,
-} from "./types.js";
+import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
 import { toErrorMessage } from "../../shared/type-guards.js";
 
 /**
@@ -110,7 +110,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
 
   async getSettings(
     repoInfo: RepoInfo,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<CurrentRepoSettings> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -143,7 +143,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   async updateSettings(
     repoInfo: RepoInfo,
     settings: GitHubRepoSettings,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -162,7 +162,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   async setVulnerabilityAlerts(
     repoInfo: RepoInfo,
     enable: boolean,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -175,7 +175,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   async setAutomatedSecurityFixes(
     repoInfo: RepoInfo,
     enable: boolean,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -188,7 +188,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   async setPrivateVulnerabilityReporting(
     repoInfo: RepoInfo,
     enable: boolean,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -200,7 +200,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
 
   private async getVulnerabilityAlerts(
     github: GitHubRepoInfo,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<boolean> {
     const endpoint = `/repos/${github.owner}/${github.repo}/vulnerability-alerts`;
     try {
@@ -217,7 +217,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
 
   private async getAutomatedSecurityFixes(
     github: GitHubRepoInfo,
-    options?: RepoSettingsStrategyOptions,
+    options?: GhApiOptions,
     _vulnerabilityAlertsEnabled?: boolean
   ): Promise<boolean> {
     // Note: GitHub returns JSON with {enabled: boolean} for this endpoint
@@ -242,7 +242,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
 
   private async getPrivateVulnerabilityReporting(
     github: GitHubRepoInfo,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<boolean> {
     const endpoint = `/repos/${github.owner}/${github.repo}/private-vulnerability-reporting`;
     try {
@@ -270,7 +270,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     method: HttpMethod,
     endpoint: string,
     payload?: unknown,
-    options?: RepoSettingsStrategyOptions
+    options?: GhApiOptions
   ): Promise<string> {
     return ghApiCall(
       method,

@@ -35,34 +35,29 @@ export interface GitHubRule {
   parameters?: Record<string, unknown>;
 }
 
-export type RulesetStrategyOptions = GhApiOptions;
-
 export interface IRulesetStrategy {
-  list(
-    repoInfo: RepoInfo,
-    options?: RulesetStrategyOptions
-  ): Promise<GitHubRuleset[]>;
+  list(repoInfo: RepoInfo, options?: GhApiOptions): Promise<GitHubRuleset[]>;
   get(
     repoInfo: RepoInfo,
     rulesetId: number,
-    options?: RulesetStrategyOptions
+    options?: GhApiOptions
   ): Promise<GitHubRuleset>;
   create(
     repoInfo: RepoInfo,
     name: string,
     ruleset: Ruleset,
-    options?: RulesetStrategyOptions
+    options?: GhApiOptions
   ): Promise<GitHubRuleset>;
   update(
     repoInfo: RepoInfo,
     rulesetId: number,
     name: string,
     ruleset: Ruleset,
-    options?: RulesetStrategyOptions
+    options?: GhApiOptions
   ): Promise<GitHubRuleset>;
   delete(
     repoInfo: RepoInfo,
     rulesetId: number,
-    options?: RulesetStrategyOptions
+    options?: GhApiOptions
   ): Promise<void>;
 }

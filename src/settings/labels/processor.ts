@@ -9,6 +9,7 @@ import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
   type BaseProcessorResult,
+  type ChangeCounts,
   countActions,
   buildDryRunResult,
   buildApplyResult,
@@ -27,12 +28,7 @@ export interface LabelsProcessorOptions extends BaseProcessorOptions {
 }
 
 export interface LabelsProcessorResult extends BaseProcessorResult {
-  changes?: {
-    create: number;
-    update: number;
-    delete: number;
-    unchanged: number;
-  };
+  changes?: ChangeCounts;
   planOutput?: LabelsPlanResult;
 }
 

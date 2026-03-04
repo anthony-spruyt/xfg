@@ -35,9 +35,10 @@ const REPO_NOT_FOUND_PATTERNS = [
  */
 function isRepoNotFoundError(error: unknown): boolean {
   const message =
-    error instanceof Error
-      ? error.message + ((error as Error & { stderr?: string }).stderr ?? "")
-      : String(error);
+    toErrorMessage(error) +
+    ((error instanceof Error
+      ? (error as Error & { stderr?: string }).stderr
+      : undefined) ?? "");
   return REPO_NOT_FOUND_PATTERNS.some((pattern) => message.includes(pattern));
 }
 

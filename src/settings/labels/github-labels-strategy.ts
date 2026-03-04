@@ -7,12 +7,12 @@ import {
   GitHubRepoInfo,
   RepoInfo,
 } from "../../shared/repo-detector.js";
-import { ghApiCall, type HttpMethod } from "../gh-api-utils.js";
-import type {
-  ILabelsStrategy,
-  GitHubLabel,
-  LabelsStrategyOptions,
-} from "./types.js";
+import {
+  ghApiCall,
+  type HttpMethod,
+  type GhApiOptions,
+} from "../gh-api-utils.js";
+import type { ILabelsStrategy, GitHubLabel } from "./types.js";
 
 interface GitHubLabelsStrategyOptions {
   retries?: number;
@@ -43,7 +43,7 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
    */
   async list(
     repoInfo: RepoInfo,
-    options?: LabelsStrategyOptions
+    options?: GhApiOptions
   ): Promise<GitHubLabel[]> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -60,7 +60,7 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
   async create(
     repoInfo: RepoInfo,
     label: { name: string; color: string; description?: string },
-    options?: LabelsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -77,7 +77,7 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     repoInfo: RepoInfo,
     currentName: string,
     label: { new_name?: string; color?: string; description?: string },
-    options?: LabelsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -93,7 +93,7 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
   async delete(
     repoInfo: RepoInfo,
     name: string,
-    options?: LabelsStrategyOptions
+    options?: GhApiOptions
   ): Promise<void> {
     this.validateGitHub(repoInfo);
     const github = repoInfo as GitHubRepoInfo;
@@ -117,7 +117,7 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     method: HttpMethod,
     endpoint: string,
     payload?: unknown,
-    options?: LabelsStrategyOptions,
+    options?: GhApiOptions,
     paginate?: boolean
   ): Promise<string> {
     return ghApiCall(

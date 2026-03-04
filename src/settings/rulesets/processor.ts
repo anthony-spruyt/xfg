@@ -8,6 +8,7 @@ import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
   type BaseProcessorResult,
+  type ChangeCounts,
   countActions,
   buildDryRunResult,
   buildApplyResult,
@@ -26,12 +27,7 @@ export interface RulesetProcessorOptions extends BaseProcessorOptions {
 }
 
 export interface RulesetProcessorResult extends BaseProcessorResult {
-  changes?: {
-    create: number;
-    update: number;
-    delete: number;
-    unchanged: number;
-  };
+  changes?: ChangeCounts;
   planOutput?: RulesetPlanResult;
 }
 

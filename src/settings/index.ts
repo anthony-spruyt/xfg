@@ -19,7 +19,6 @@ export {
 export {
   isRepoSettingsStrategy,
   type IRepoSettingsStrategy,
-  type RepoSettingsStrategyOptions,
   type CurrentRepoSettings,
   RepoSettingsProcessor,
   type IRepoSettingsProcessor,
@@ -39,7 +38,6 @@ export {
 export {
   type ILabelsStrategy,
   type GitHubLabel,
-  type LabelsStrategyOptions,
   normalizeColor,
   labelConfigToPayload,
   diffLabels,

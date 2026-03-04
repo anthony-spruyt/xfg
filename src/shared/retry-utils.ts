@@ -148,7 +148,7 @@ export async function withRetry<T>(
           isPermanentError(error, permanentPatterns)
         ) {
           // Wrap in AbortError to stop retrying immediately
-          throw new AbortError(error.message);
+          throw new AbortError(error);
         }
         throw error;
       }
