@@ -55,8 +55,6 @@ export class AzurePRStrategy extends BasePRStrategy {
 
       return existingPRId ? this.buildPRUrl(azureRepoInfo, existingPRId) : null;
     } catch (error) {
-      // Return null on any error — PRWorkflowExecutor catches exceptions,
-      // and the subsequent create() call will surface permanent errors.
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("does not exist")) {
         logger.debug(
@@ -151,7 +149,6 @@ export class AzurePRStrategy extends BasePRStrategy {
     const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
     const orgUrl = this.getOrgUrl(azureRepoInfo);
 
-    // Write description to temp file to avoid shell escaping issues
     const descFile = join(workDir, this.bodyFilePath);
     writeFileSync(descFile, body, "utf-8");
 
@@ -169,7 +166,6 @@ export class AzurePRStrategy extends BasePRStrategy {
         message: "PR created successfully",
       };
     } finally {
-      // Cleanup: temp file removal is non-critical
       try {
         if (existsSync(descFile)) {
           unlinkSync(descFile);

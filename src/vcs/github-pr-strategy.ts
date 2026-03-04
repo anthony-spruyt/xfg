@@ -59,8 +59,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
       return existingPR || null;
     } catch (error) {
-      // Return null on any error — PRWorkflowExecutor catches exceptions,
-      // and the subsequent create() call will surface permanent errors.
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("no pull requests match")) {
         logger.debug(
@@ -106,8 +104,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
       return false;
     }
 
-    // Close the PR and delete the branch
-    // Token is passed via env var to avoid shell injection
     const repoFlag = getRepoFlag(repoInfo);
     const tokenEnv = buildTokenEnv(token);
     const command = `gh pr close ${escapeShellArg(prNumber)} --repo ${escapeShellArg(repoFlag)} --delete-branch`;
@@ -142,11 +138,9 @@ export class GitHubPRStrategy extends BasePRStrategy {
       throw new Error("Expected GitHub repository");
     }
 
-    // Write body to temp file to avoid shell escaping issues
     const bodyFile = join(workDir, this.bodyFilePath);
     writeFileSync(bodyFile, body, "utf-8");
 
-    // Token is passed via env var to avoid shell injection
     const tokenEnv = buildTokenEnv(token);
     let command = `gh pr create --title ${escapeShellArg(title)} --body-file ${escapeShellArg(bodyFile)} --base ${escapeShellArg(baseBranch)} --head ${escapeShellArg(branchName)}`;
 
@@ -178,7 +172,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
         message: "PR created successfully",
       };
     } finally {
-      // Cleanup: temp file removal is non-critical
       try {
         if (existsSync(bodyFile)) {
           unlinkSync(bodyFile);
@@ -202,7 +195,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
   ): Promise<boolean> {
     const hostnameFlag = getHostnameFlag(repoInfo);
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
-    // Token is passed via env var to avoid shell injection
     const tokenEnv = buildTokenEnv(token);
     const command = `gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --jq '.allow_auto_merge // false'`;
 
@@ -250,7 +242,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     const strategyFlag = this.getMergeStrategyFlag(config.strategy);
     const deleteBranchFlag = config.deleteBranch ? "--delete-branch" : "";
-    // Token is passed via env var to avoid shell injection
     const tokenEnv = buildTokenEnv(token);
 
     if (config.mode === "auto") {

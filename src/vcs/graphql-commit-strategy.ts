@@ -212,23 +212,18 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
   ): Promise<CommitResult> {
     const repositoryNameWithOwner = `${repoInfo.owner}/${repoInfo.repo}`;
 
-    // Build file additions with base64 encoding
     const fileAdditions = additions.map((fc) => ({
       path: fc.path,
       contents: Buffer.from(fc.content!).toString("base64"),
     }));
 
-    // Build file deletions (path only)
     const fileDeletions = deletions.map((fc) => ({
       path: fc.path,
     }));
 
-    // Build the mutation (minified to avoid shell escaping issues with newlines)
     const mutation =
       "mutation CreateCommit($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }";
 
-    // Build the input variables
-    // Note: GitHub API doesn't accept empty arrays, so only include fields when non-empty
     const fileChanges: {
       additions?: Array<{ path: string; contents: string }>;
       deletions?: Array<{ path: string }>;
@@ -254,23 +249,16 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       },
     };
 
-    // Build the GraphQL request body
     const requestBody = JSON.stringify({
       query: mutation,
       variables,
     });
 
-    // Build the gh api graphql command
-    // Use --input - to pass the JSON body via stdin (more reliable for complex nested JSON)
-    // Use --hostname for GitHub Enterprise
     const hostnameArg =
       repoInfo.host !== "github.com"
         ? `--hostname ${escapeShellArg(repoInfo.host)}`
         : "";
 
-    // Use token parameter for authentication when provided
-    // This ensures the GitHub App is used as the commit author, not github-actions[bot]
-    // Token is passed via env var to avoid shell injection
     const tokenEnv = token ? { GH_TOKEN: token } : undefined;
 
     const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;

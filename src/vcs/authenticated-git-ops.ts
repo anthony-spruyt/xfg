@@ -37,6 +37,7 @@ export interface ILocalGitOps {
   fileExists(fileName: string): boolean;
   deleteFile(fileName: string): void;
   commit(message: string): Promise<boolean>;
+  getDefaultBranchLocal(): Promise<{ branch: string; method: string }>;
 }
 
 /**

@@ -131,6 +131,10 @@ export function createMockAuthenticatedGitOps(
       }
     },
 
+    async getDefaultBranchLocal(): Promise<{ branch: string; method: string }> {
+      return { branch: "main", method: "mock fallback" };
+    },
+
     wouldChange(fileName: string, content: string): boolean {
       if (typeof config.wouldChange === "function") {
         return config.wouldChange(fileName, content);

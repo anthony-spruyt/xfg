@@ -478,7 +478,6 @@ export function normalizeConfig(raw: RawConfig): Config {
   const expandedRepos: RepoConfig[] = [];
 
   for (const rawRepo of raw.repos) {
-    // Step 1: Expand git arrays
     const gitUrls = Array.isArray(rawRepo.git) ? rawRepo.git : [rawRepo.git];
 
     // Resolve groups: build effective root files/prOptions/settings by merging group layers
@@ -501,7 +500,6 @@ export function normalizeConfig(raw: RawConfig): Config {
 
       const inheritFiles = shouldInherit(rawRepo.files);
 
-      // Step 2: Process each file definition
       for (const fileName of fileNames) {
         // Skip reserved key
         if (fileName === "inherit") continue;
@@ -521,14 +519,12 @@ export function normalizeConfig(raw: RawConfig): Config {
         const fileConfig = effectiveRootFiles[fileName];
         const fileStrategy = fileConfig.mergeStrategy ?? "replace";
 
-        // Step 3: Compute merged content for this file
         let mergedContent = resolveFileContent(
           fileConfig.content,
           repoOverride,
           fileStrategy
         );
 
-        // Step 4: Interpolate env vars (only if content exists)
         if (mergedContent !== null) {
           mergedContent = interpolateContent(mergedContent, { strict: true });
         }

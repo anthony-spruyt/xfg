@@ -48,6 +48,14 @@ function isRepoNotFoundError(error: unknown): boolean {
 const FORK_READY_TIMEOUT_MS = 60_000;
 
 /**
+ * After repo creation, GitHub may return 404 due to eventual consistency.
+ * Exclude 404/not-found from permanent errors so withRetry retries them.
+ */
+const POST_CREATE_PERMANENT_PATTERNS = DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
+  (p) => !p.test("404 Not Found")
+);
+
+/**
  * Interval between fork readiness checks (2 seconds).
  */
 const FORK_POLL_INTERVAL_MS = 2_000;
@@ -227,13 +235,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         apiPath,
       } = this.buildGhApiPrefix(repoInfo, token);
 
-      // After repo creation, GitHub may return 404 due to eventual consistency.
-      // Exclude 404/not-found from permanent errors so withRetry retries them.
-      const postCreatePermanentPatterns =
-        DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
-          (p) => !p.test("404 Not Found")
-        );
-
       // Detect the actual default branch name
       const actualBranch = (
         await withRetry(
@@ -245,7 +246,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
             ),
           {
             retries: this.retries,
-            permanentErrorPatterns: postCreatePermanentPatterns,
+            permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
           }
         )
       ).trim();
@@ -417,8 +418,8 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         this.cwd
       );
     } catch (error) {
-      logger.info(
-        `Debug: remote remove origin skipped - ${toErrorMessage(error)}`
+      logger.debug(
+        `Cleanup: remote remove origin skipped - ${toErrorMessage(error)}`
       );
     }
 
@@ -445,7 +446,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         }
       }
     } catch (error) {
-      logger.info(`Debug: ref cleanup skipped - ${toErrorMessage(error)}`);
+      logger.debug(`Cleanup: ref cleanup skipped - ${toErrorMessage(error)}`);
     }
 
     // Rename default branch in mirror clone if requested.
@@ -607,12 +608,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       token
     );
 
-    // After repo creation, GitHub may return 404 due to eventual consistency.
-    // Exclude 404/not-found from permanent errors so withRetry retries them.
-    const postCreatePermanentPatterns = DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
-      (p) => !p.test("404 Not Found")
-    );
-
     // Get the SHA of the README.md created by --add-readme
     const fileInfo = await withRetry(
       () =>
@@ -623,7 +618,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         ),
       {
         retries: this.retries,
-        permanentErrorPatterns: postCreatePermanentPatterns,
+        permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
       }
     );
 
@@ -640,7 +635,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         ),
       {
         retries: this.retries,
-        permanentErrorPatterns: postCreatePermanentPatterns,
+        permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
       }
     );
   }

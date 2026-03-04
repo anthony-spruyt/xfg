@@ -13,6 +13,7 @@ import type {
 import { logger } from "../shared/logger.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
+import { parseApiJson } from "../shared/gh-api-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { MergeStrategy } from "../config/index.js";
@@ -106,15 +107,12 @@ export class GitLabPRStrategy extends BasePRStrategy {
         return null;
       }
 
-      // Parse JSON to get MR IID
-      const mrs = JSON.parse(result);
+      const mrs = parseApiJson<Array<{ iid?: number }>>(result, "glab mr list");
       if (Array.isArray(mrs) && mrs.length > 0 && mrs[0].iid) {
         return this.buildMRUrl(repoInfo, String(mrs[0].iid));
       }
       return null;
     } catch (error) {
-      // Return null on any error — PRWorkflowExecutor catches exceptions,
-      // and the subsequent create() call will surface permanent errors.
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("no merge requests")) {
         logger.debug(
@@ -200,7 +198,6 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
     const repoFlag = this.getRepoFlag(repoInfo);
 
-    // Write description to temp file to avoid shell escaping issues
     const descFile = join(workDir, this.bodyFilePath);
     writeFileSync(descFile, body, "utf-8");
 
@@ -236,7 +233,6 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
       throw new Error(`Could not parse MR URL from output: ${result}`);
     } finally {
-      // Cleanup: temp file removal is non-critical
       try {
         if (existsSync(descFile)) {
           unlinkSync(descFile);

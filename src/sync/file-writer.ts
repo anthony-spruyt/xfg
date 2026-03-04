@@ -55,7 +55,6 @@ export class FileWriter implements IFileWriter {
     const fileChanges = new Map<string, FileWriteResult>();
     const diffStats = createDiffStats();
 
-    // Step 1: Process each file
     for (const file of files) {
       const filePath = join(workDir, file.fileName);
       const fileExistsLocal = existsSync(filePath);
@@ -136,7 +135,6 @@ export class FileWriter implements IFileWriter {
       }
     }
 
-    // Step 2: Set executable permissions (skip skipped files)
     for (const file of files) {
       const tracked = fileChanges.get(file.fileName);
       if (tracked?.action === "skip") {
