@@ -152,7 +152,8 @@ export class GitLabPRStrategy extends BasePRStrategy {
     // Extract MR IID from URL
     const mrInfo = this.parseMRUrl(existingUrl);
     if (!mrInfo) {
-      throw new Error(`Could not extract MR IID from URL: ${existingUrl}`);
+      logger.info(`Warning: Could not extract MR IID from URL: ${existingUrl}`);
+      return false;
     }
 
     const repoFlag = this.getRepoFlag(repoInfo);
