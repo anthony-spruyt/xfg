@@ -55,16 +55,14 @@ export class AzurePRStrategy extends BasePRStrategy {
 
       return existingPRId ? this.buildPRUrl(azureRepoInfo, existingPRId) : null;
     } catch (error) {
-      if (error instanceof Error) {
-        if (isPermanentError(error)) {
-          throw error;
-        }
-        const stderr = getStderr(error);
-        if (stderr && !stderr.includes("does not exist")) {
-          logger.debug(
-            `Azure PR check failed - ${sanitizeCredentials(stderr).trim()}`
-          );
-        }
+      if (isPermanentError(error)) {
+        throw error;
+      }
+      const stderr = getStderr(error);
+      if (stderr && !stderr.includes("does not exist")) {
+        logger.debug(
+          `Azure PR check failed - ${sanitizeCredentials(stderr).trim()}`
+        );
       }
       return null;
     }

@@ -113,18 +113,16 @@ export class GitLabPRStrategy extends BasePRStrategy {
       }
       return null;
     } catch (error) {
-      if (error instanceof Error) {
-        // Throw on permanent errors (auth failures, etc.)
-        if (isPermanentError(error)) {
-          throw error;
-        }
-        // Log unexpected errors for debugging
-        const stderr = getStderr(error);
-        if (stderr && !stderr.includes("no merge requests")) {
-          logger.debug(
-            `GitLab MR check failed - ${sanitizeCredentials(stderr).trim()}`
-          );
-        }
+      // Throw on permanent errors (auth failures, etc.)
+      if (isPermanentError(error)) {
+        throw error;
+      }
+      // Log unexpected errors for debugging
+      const stderr = getStderr(error);
+      if (stderr && !stderr.includes("no merge requests")) {
+        logger.debug(
+          `GitLab MR check failed - ${sanitizeCredentials(stderr).trim()}`
+        );
       }
       return null;
     }

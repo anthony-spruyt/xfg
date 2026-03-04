@@ -80,10 +80,10 @@ interface RetryOptions {
  * @returns true if the error is permanent, false if it might be transient
  */
 export function isPermanentError(
-  error: Error,
+  error: unknown,
   patterns: RegExp[] = DEFAULT_PERMANENT_ERROR_PATTERNS
 ): boolean {
-  const message = error.message;
+  const message = error instanceof Error ? error.message : String(error ?? "");
   const stderr =
     (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
   const combined = `${message} ${stderr}`;

@@ -59,18 +59,16 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
       return existingPR || null;
     } catch (error) {
-      if (error instanceof Error) {
-        // Throw on permanent errors (auth failures, etc.)
-        if (isPermanentError(error)) {
-          throw error;
-        }
-        // Log unexpected errors for debugging (expected: empty result means no PR)
-        const stderr = getStderr(error);
-        if (stderr && !stderr.includes("no pull requests match")) {
-          logger.debug(
-            `GitHub PR check failed - ${sanitizeCredentials(stderr).trim()}`
-          );
-        }
+      // Throw on permanent errors (auth failures, etc.)
+      if (isPermanentError(error)) {
+        throw error;
+      }
+      // Log unexpected errors for debugging (expected: empty result means no PR)
+      const stderr = getStderr(error);
+      if (stderr && !stderr.includes("no pull requests match")) {
+        logger.debug(
+          `GitHub PR check failed - ${sanitizeCredentials(stderr).trim()}`
+        );
       }
       return null;
     }
