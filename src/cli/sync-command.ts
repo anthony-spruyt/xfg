@@ -181,8 +181,7 @@ export async function runSync(
   const configPath = resolve(options.config);
 
   if (!existsSync(configPath)) {
-    console.error(`Config file not found: ${configPath}`);
-    process.exit(1);
+    throw new Error(`Config file not found: ${configPath}`);
   }
 
   console.log(`Loading config from: ${configPath}`);
@@ -192,12 +191,7 @@ export async function runSync(
 
   const rawConfig = loadRawConfig(configPath);
 
-  try {
-    validateForSync(rawConfig);
-  } catch (error) {
-    console.error(toErrorMessage(error));
-    process.exit(1);
-  }
+  validateForSync(rawConfig);
 
   const config = normalizeConfig(rawConfig);
   const fileNames = getUniqueFileNames(config);
@@ -529,10 +523,10 @@ export async function runSync(
     dryRun: options.dryRun ?? false,
   });
 
-  // Exit with error if any failures (file sync or settings)
+  // Propagate failures to caller (CLI entry handles process.exit)
   const hasErrors = reportResults.some((r) => r.error);
   const hasSettingsErrors = settingsResults.some((r) => r.error);
   if (hasErrors || hasSettingsErrors) {
-    process.exit(1);
+    throw new Error("One or more repositories had errors during sync");
   }
 }
