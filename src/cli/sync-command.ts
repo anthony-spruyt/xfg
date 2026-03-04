@@ -136,13 +136,12 @@ interface SettingsResult {
   warnings?: string[];
 }
 
-function applySettingsResult(
+function logSettingsResult(
   result: SettingsResult,
   label: string,
   current: number,
   repoName: string,
-  settingsCollector: ResultsCollector,
-  field: "rulesetResult" | "labelsResult" | "settingsResult"
+  settingsCollector: ResultsCollector
 ): void {
   if (result.planOutput?.lines?.length) {
     logger.info("");
@@ -157,11 +156,6 @@ function applySettingsResult(
     }
   } else if (!result.skipped && result.success) {
     logger.success(current, repoName, `${label}: ${result.message}`);
-  }
-  if (!result.skipped) {
-    const entry = settingsCollector.getOrCreate(repoName);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (entry as any)[field] = result;
   }
   if (!result.success && !result.skipped) {
     logger.error(current, repoName, `${label}: ${result.message}`);
@@ -415,14 +409,17 @@ export async function runSync(
               token: settingsToken,
             }
           );
-          applySettingsResult(
+          logSettingsResult(
             rulesetResult,
             "Rulesets",
             current,
             repoName,
-            settingsCollector,
-            "rulesetResult"
+            settingsCollector
           );
+          if (!rulesetResult.skipped) {
+            settingsCollector.getOrCreate(repoName).rulesetResult =
+              rulesetResult;
+          }
         } catch (error) {
           logger.error(current, repoName, `Rulesets: ${toErrorMessage(error)}`);
           settingsCollector.appendError(repoName, error);
@@ -444,14 +441,16 @@ export async function runSync(
               token: settingsToken,
             }
           );
-          applySettingsResult(
+          logSettingsResult(
             labelsResult,
             "Labels",
             current,
             repoName,
-            settingsCollector,
-            "labelsResult"
+            settingsCollector
           );
+          if (!labelsResult.skipped) {
+            settingsCollector.getOrCreate(repoName).labelsResult = labelsResult;
+          }
         } catch (error) {
           logger.error(current, repoName, `Labels: ${toErrorMessage(error)}`);
           settingsCollector.appendError(repoName, error);
@@ -469,14 +468,17 @@ export async function runSync(
               dryRun: options.dryRun,
               token: settingsToken,
             });
-          applySettingsResult(
+          logSettingsResult(
             repoSettingsResult,
             "Repo Settings",
             current,
             repoName,
-            settingsCollector,
-            "settingsResult"
+            settingsCollector
           );
+          if (!repoSettingsResult.skipped) {
+            settingsCollector.getOrCreate(repoName).settingsResult =
+              repoSettingsResult;
+          }
         } catch (error) {
           logger.error(
             current,
