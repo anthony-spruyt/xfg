@@ -1023,7 +1023,7 @@ repos:
 
       const output = consoleOutput.join("\n");
       assert.ok(
-        output.includes("Repo settings: No changes needed"),
+        output.includes("Repo Settings: No changes needed"),
         "Should log success message for repo settings with no changes"
       );
     });

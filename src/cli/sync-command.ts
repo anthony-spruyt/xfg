@@ -127,9 +127,45 @@ function determineMergeOutcome(
   return "manual";
 }
 
-/**
- * Run the sync command - synchronizes files across repositories.
- */
+interface SettingsResult {
+  success: boolean;
+  message: string;
+  skipped?: boolean;
+  planOutput?: { lines?: string[] };
+  warnings?: string[];
+}
+
+function applySettingsResult(
+  result: SettingsResult,
+  label: string,
+  current: number,
+  repoName: string,
+  settingsCollector: ResultsCollector,
+  assignResult: (entry: ReturnType<ResultsCollector["getOrCreate"]>) => void
+): void {
+  if (result.planOutput?.lines?.length) {
+    logger.info("");
+    logger.info(`${repoName} - ${label}:`);
+    for (const line of result.planOutput.lines) {
+      logger.info(line);
+    }
+    if (result.warnings?.length) {
+      for (const warning of result.warnings) {
+        logger.info(`Warning: ${warning}`);
+      }
+    }
+  } else if (!result.skipped && result.success) {
+    logger.success(current, repoName, `${label}: ${result.message}`);
+  }
+  if (!result.skipped) {
+    assignResult(settingsCollector.getOrCreate(repoName));
+  }
+  if (!result.success && !result.skipped) {
+    logger.error(current, repoName, `${label}: ${result.message}`);
+    settingsCollector.appendError(repoName, result.message);
+  }
+}
+
 export async function runSync(
   options: SyncOptions,
   deps: SyncDependencies = {}
@@ -356,8 +392,7 @@ export async function runSync(
         Object.keys(repoConfig.settings.rulesets).length > 0
       ) {
         try {
-          const rulesetProcessor = rulesetProcessorFactory();
-          const rulesetResult = await rulesetProcessor.process(
+          const rulesetResult = await rulesetProcessorFactory().process(
             repoConfig,
             repoInfo,
             {
@@ -366,31 +401,16 @@ export async function runSync(
               token: settingsToken,
             }
           );
-          if (rulesetResult.planOutput?.lines?.length) {
-            logger.info("");
-            logger.info(`${repoName} - Rulesets:`);
-            for (const line of rulesetResult.planOutput.lines) {
-              logger.info(line);
+          applySettingsResult(
+            rulesetResult,
+            "Rulesets",
+            current,
+            repoName,
+            settingsCollector,
+            (e) => {
+              e.rulesetResult = rulesetResult;
             }
-          } else if (!rulesetResult.skipped && rulesetResult.success) {
-            logger.success(
-              current,
-              repoName,
-              `Rulesets: ${rulesetResult.message}`
-            );
-          }
-          if (!rulesetResult.skipped) {
-            settingsCollector.getOrCreate(repoName).rulesetResult =
-              rulesetResult;
-          }
-          if (!rulesetResult.success && !rulesetResult.skipped) {
-            logger.error(
-              current,
-              repoName,
-              `Rulesets: ${rulesetResult.message}`
-            );
-            settingsCollector.appendError(repoName, rulesetResult.message);
-          }
+          );
         } catch (error) {
           logger.error(current, repoName, `Rulesets: ${String(error)}`);
           settingsCollector.appendError(repoName, error);
@@ -403,8 +423,7 @@ export async function runSync(
         Object.keys(repoConfig.settings.labels).length > 0
       ) {
         try {
-          const labelsProcessor = labelsProcessorFactory();
-          const labelsResult = await labelsProcessor.process(
+          const labelsResult = await labelsProcessorFactory().process(
             repoConfig,
             repoInfo,
             {
@@ -413,26 +432,16 @@ export async function runSync(
               token: settingsToken,
             }
           );
-          if (labelsResult.planOutput?.lines?.length) {
-            logger.info("");
-            logger.info(`${repoName} - Labels:`);
-            for (const line of labelsResult.planOutput.lines) {
-              logger.info(line);
+          applySettingsResult(
+            labelsResult,
+            "Labels",
+            current,
+            repoName,
+            settingsCollector,
+            (e) => {
+              e.labelsResult = labelsResult;
             }
-          } else if (!labelsResult.skipped && labelsResult.success) {
-            logger.success(
-              current,
-              repoName,
-              `Labels: ${labelsResult.message}`
-            );
-          }
-          if (!labelsResult.skipped) {
-            settingsCollector.getOrCreate(repoName).labelsResult = labelsResult;
-          }
-          if (!labelsResult.success && !labelsResult.skipped) {
-            logger.error(current, repoName, `Labels: ${labelsResult.message}`);
-            settingsCollector.appendError(repoName, labelsResult.message);
-          }
+          );
         } catch (error) {
           logger.error(current, repoName, `Labels: ${String(error)}`);
           settingsCollector.appendError(repoName, error);
@@ -445,48 +454,21 @@ export async function runSync(
         Object.keys(repoConfig.settings.repo).length > 0
       ) {
         try {
-          const repoSettingsProcessor = repoSettingsProcessorFactory();
-          const repoSettingsResult = await repoSettingsProcessor.process(
-            repoConfig,
-            repoInfo,
-            {
+          const repoSettingsResult =
+            await repoSettingsProcessorFactory().process(repoConfig, repoInfo, {
               dryRun: options.dryRun,
               token: settingsToken,
+            });
+          applySettingsResult(
+            repoSettingsResult,
+            "Repo Settings",
+            current,
+            repoName,
+            settingsCollector,
+            (e) => {
+              e.settingsResult = repoSettingsResult;
             }
           );
-          if (repoSettingsResult.planOutput?.lines?.length) {
-            logger.info("");
-            logger.info(`${repoName} - Repo Settings:`);
-            for (const line of repoSettingsResult.planOutput.lines) {
-              logger.info(line);
-            }
-            if (repoSettingsResult.warnings?.length) {
-              for (const warning of repoSettingsResult.warnings) {
-                logger.info(`Warning: ${warning}`);
-              }
-            }
-          } else if (
-            !repoSettingsResult.skipped &&
-            repoSettingsResult.success
-          ) {
-            logger.success(
-              current,
-              repoName,
-              `Repo settings: ${repoSettingsResult.message}`
-            );
-          }
-          if (!repoSettingsResult.skipped) {
-            settingsCollector.getOrCreate(repoName).settingsResult =
-              repoSettingsResult;
-          }
-          if (!repoSettingsResult.success && !repoSettingsResult.skipped) {
-            logger.error(
-              current,
-              repoName,
-              `Repo settings: ${repoSettingsResult.message}`
-            );
-            settingsCollector.appendError(repoName, repoSettingsResult.message);
-          }
         } catch (error) {
           logger.error(current, repoName, `Repo settings: ${String(error)}`);
           settingsCollector.appendError(repoName, error);
