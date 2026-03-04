@@ -1048,7 +1048,7 @@ describe("normalizeConfig", () => {
   });
 
   describe("type safety", () => {
-    test("throws when merging text base with object overlay", () => {
+    test("overlay wins when merging text base with object overlay", () => {
       const raw: RawConfig = {
         id: "test-config",
         files: {
@@ -1064,10 +1064,10 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      assert.throws(
-        () => normalizeConfig(raw),
-        /Expected text content for .gitignore, got object/
-      );
+      const result = normalizeConfig(raw);
+      const repo = result.repos[0];
+      const file = repo.files.find((f) => f.fileName === ".gitignore");
+      assert.deepEqual(file?.content, { invalid: "object" });
     });
   });
 
