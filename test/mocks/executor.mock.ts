@@ -1,4 +1,7 @@
-import type { ICommandExecutor } from "../../src/command-executor.js";
+import type {
+  ICommandExecutor,
+  ExecOptions,
+} from "../../src/command-executor.js";
 
 export interface ExecutorMockConfig {
   defaultResponse?: string;
@@ -16,7 +19,7 @@ export interface GitCommandTracking {
 
 export interface ExecutorMockResult {
   mock: ICommandExecutor;
-  calls: Array<{ command: string; cwd: string }>;
+  calls: Array<{ command: string; cwd: string; options?: ExecOptions }>;
   /** Git command tracking (only populated if trackGitCommands: true) */
   git: GitCommandTracking;
   reset: () => void;
@@ -25,7 +28,8 @@ export interface ExecutorMockResult {
 export function createMockExecutor(
   config: ExecutorMockConfig = {}
 ): ExecutorMockResult {
-  const calls: Array<{ command: string; cwd: string }> = [];
+  const calls: Array<{ command: string; cwd: string; options?: ExecOptions }> =
+    [];
   const responses = config.responses ?? new Map();
   const defaultResponse = config.defaultResponse ?? "";
 
@@ -36,8 +40,12 @@ export function createMockExecutor(
   };
 
   const mock: ICommandExecutor = {
-    async exec(command: string, cwd: string): Promise<string> {
-      calls.push({ command, cwd });
+    async exec(
+      command: string,
+      cwd: string,
+      opts?: ExecOptions
+    ): Promise<string> {
+      calls.push({ command, cwd, options: opts });
 
       // Track git commands if enabled (mock only - no actual command execution)
       if (config.trackGitCommands) {
