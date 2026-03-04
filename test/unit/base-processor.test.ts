@@ -9,6 +9,7 @@ import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
   type BaseProcessorResult,
+  formatChangeSummary,
 } from "../../src/settings/base-processor.js";
 
 // =============================================================================
@@ -291,63 +292,32 @@ describe("BaseSettingsProcessor", () => {
 
   describe("formatChangeSummary", () => {
     test("formats counts correctly", () => {
-      // Access via subclass
-      const summary = (
-        processor as unknown as {
-          formatChangeSummary: (counts: {
-            create: number;
-            update: number;
-            delete: number;
-            unchanged: number;
-          }) => string;
-        }
-      ).formatChangeSummary({
+      const summary = formatChangeSummary({
         create: 2,
         update: 1,
         delete: 3,
         unchanged: 0,
       });
-
       assert.equal(summary, "2 created, 1 updated, 3 deleted");
     });
 
     test("returns 'no changes' when all counts are zero", () => {
-      const summary = (
-        processor as unknown as {
-          formatChangeSummary: (counts: {
-            create: number;
-            update: number;
-            delete: number;
-            unchanged: number;
-          }) => string;
-        }
-      ).formatChangeSummary({
+      const summary = formatChangeSummary({
         create: 0,
         update: 0,
         delete: 0,
         unchanged: 0,
       });
-
       assert.equal(summary, "no changes");
     });
 
     test("includes unchanged count", () => {
-      const summary = (
-        processor as unknown as {
-          formatChangeSummary: (counts: {
-            create: number;
-            update: number;
-            delete: number;
-            unchanged: number;
-          }) => string;
-        }
-      ).formatChangeSummary({
+      const summary = formatChangeSummary({
         create: 0,
         update: 0,
         delete: 0,
         unchanged: 5,
       });
-
       assert.equal(summary, "5 unchanged");
     });
   });

@@ -8,7 +8,8 @@ import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
   type BaseProcessorResult,
-  countActions,
+  buildDryRunResult,
+  buildApplyResult,
 } from "../base-processor.js";
 
 export interface IRepoSettingsProcessor {
@@ -125,18 +126,12 @@ export class RepoSettingsProcessor
       unchanged: changes.filter((c) => c.action === "unchanged").length,
     };
 
-    // Dry run mode - report planned changes without applying
     if (dryRun) {
-      const summary = this.formatChangeSummary(changeCounts);
-      return {
-        success: true,
+      return buildDryRunResult<RepoSettingsProcessorResult>(
         repoName,
-        message: `[DRY RUN] ${summary}`,
-        dryRun: true,
-        changes: changeCounts,
-        warnings: planOutput.warnings,
-        planOutput,
-      };
+        changeCounts,
+        { warnings: planOutput.warnings, planOutput }
+      );
     }
 
     // Apply changes - only send settings that actually changed
@@ -152,15 +147,13 @@ export class RepoSettingsProcessor
 
     await this.applyChanges(githubRepo, changedSettings, strategyOptions);
 
-    const summary = this.formatChangeSummary(changeCounts);
-    return {
-      success: true,
+    const appliedCount = Object.keys(changedSettings).length;
+    return buildApplyResult<RepoSettingsProcessorResult>(
       repoName,
-      message: `Applied: ${summary}`,
-      changes: changeCounts,
-      warnings: planOutput.warnings,
-      planOutput,
-    };
+      changeCounts,
+      appliedCount,
+      { warnings: planOutput.warnings, planOutput }
+    );
   }
 
   private async applyChanges(

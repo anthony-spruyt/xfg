@@ -9,6 +9,8 @@ import {
   type BaseProcessorOptions,
   type BaseProcessorResult,
   countActions,
+  buildDryRunResult,
+  buildApplyResult,
 } from "../base-processor.js";
 
 export interface IRulesetProcessor {
@@ -118,17 +120,10 @@ export class RulesetProcessor
 
     const planOutput = formatRulesetPlan(changes);
 
-    // Dry run mode - report planned changes without applying
     if (dryRun) {
-      const summary = this.formatChangeSummary(changeCounts);
-      return {
-        success: true,
-        repoName,
-        message: `[DRY RUN] ${summary}`,
-        dryRun: true,
-        changes: changeCounts,
+      return buildDryRunResult<RulesetProcessorResult>(repoName, changeCounts, {
         planOutput,
-      };
+      });
     }
 
     // Apply changes
@@ -179,13 +174,11 @@ export class RulesetProcessor
       }
     }
 
-    const summary = this.formatChangeSummary(changeCounts);
-    return {
-      success: true,
+    return buildApplyResult<RulesetProcessorResult>(
       repoName,
-      message: appliedCount > 0 ? `Applied: ${summary}` : "No changes needed",
-      changes: changeCounts,
-      planOutput,
-    };
+      changeCounts,
+      appliedCount,
+      { planOutput }
+    );
   }
 }

@@ -133,13 +133,6 @@ export abstract class BaseSettingsProcessor<
       return undefined;
     }
   }
-
-  /**
-   * Format change counts into a summary string.
-   */
-  protected formatChangeSummary(counts: ChangeCounts): string {
-    return formatChangeSummary(counts);
-  }
 }
 
 export interface ChangeCounts {
@@ -171,4 +164,42 @@ export function formatChangeSummary(counts: ChangeCounts): string {
   if (counts.delete > 0) parts.push(`${counts.delete} deleted`);
   if (counts.unchanged > 0) parts.push(`${counts.unchanged} unchanged`);
   return parts.length > 0 ? parts.join(", ") : "no changes";
+}
+
+/**
+ * Build a standardized dry-run result for settings processors.
+ */
+export function buildDryRunResult<T extends BaseProcessorResult>(
+  repoName: string,
+  changeCounts: ChangeCounts,
+  extra?: Partial<T>
+): T {
+  const summary = formatChangeSummary(changeCounts);
+  return {
+    success: true,
+    repoName,
+    message: `[DRY RUN] ${summary}`,
+    dryRun: true,
+    changes: changeCounts,
+    ...extra,
+  } as unknown as T;
+}
+
+/**
+ * Build a standardized apply result for settings processors.
+ */
+export function buildApplyResult<T extends BaseProcessorResult>(
+  repoName: string,
+  changeCounts: ChangeCounts,
+  appliedCount: number,
+  extra?: Partial<T>
+): T {
+  const summary = formatChangeSummary(changeCounts);
+  return {
+    success: true,
+    repoName,
+    message: appliedCount > 0 ? `Applied: ${summary}` : "No changes needed",
+    changes: changeCounts,
+    ...extra,
+  } as unknown as T;
 }

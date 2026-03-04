@@ -10,6 +10,8 @@ import {
   type BaseProcessorOptions,
   type BaseProcessorResult,
   countActions,
+  buildDryRunResult,
+  buildApplyResult,
 } from "../base-processor.js";
 
 export interface ILabelsProcessor {
@@ -99,17 +101,10 @@ export class LabelsProcessor
 
     const planOutput = formatLabelsPlan(changes);
 
-    // Dry run mode - report planned changes without applying
     if (dryRun) {
-      const summary = this.formatChangeSummary(changeCounts);
-      return {
-        success: true,
-        repoName,
-        message: `[DRY RUN] ${summary}`,
-        dryRun: true,
-        changes: changeCounts,
+      return buildDryRunResult<LabelsProcessorResult>(repoName, changeCounts, {
         planOutput,
-      };
+      });
     }
 
     // Apply changes (diff is already sorted: delete, update, create, unchanged)
@@ -178,13 +173,11 @@ export class LabelsProcessor
       }
     }
 
-    const summary = this.formatChangeSummary(changeCounts);
-    return {
-      success: true,
+    return buildApplyResult<LabelsProcessorResult>(
       repoName,
-      message: appliedCount > 0 ? `Applied: ${summary}` : "No changes needed",
-      changes: changeCounts,
-      planOutput,
-    };
+      changeCounts,
+      appliedCount,
+      { planOutput }
+    );
   }
 }
