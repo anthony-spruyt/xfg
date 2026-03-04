@@ -55,7 +55,7 @@ export function buildLifecycleReport(
   return { actions, totals };
 }
 
-function formatSummary(totals: LifecycleReport["totals"]): string {
+function formatLifecycleSummary(totals: LifecycleReport["totals"]): string {
   const total = totals.created + totals.forked + totals.migrated;
 
   if (total === 0) {
@@ -123,7 +123,7 @@ export function formatLifecycleReportCLI(report: LifecycleReport): string[] {
   lines.push("");
 
   // Summary
-  lines.push(formatSummary(report.totals));
+  lines.push(formatLifecycleSummary(report.totals));
 
   return lines;
 }
@@ -192,7 +192,7 @@ export function formatLifecycleReportMarkdown(
   }
 
   // Summary
-  lines.push(`**${formatSummary(report.totals)}**`);
+  lines.push(`**${formatLifecycleSummary(report.totals)}**`);
 
   return lines.join("\n");
 }

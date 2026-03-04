@@ -194,7 +194,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
         }
       } catch (cleanupError) {
         logger.info(
-          `Warning: Failed to clean up temp file ${bodyFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`
+          `Warning: Failed to clean up temp file ${bodyFile}: ${toErrorMessage(cleanupError)}`
         );
       }
     }

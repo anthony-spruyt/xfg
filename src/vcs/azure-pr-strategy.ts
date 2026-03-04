@@ -179,7 +179,7 @@ export class AzurePRStrategy extends BasePRStrategy {
         }
       } catch (cleanupError) {
         logger.info(
-          `Warning: Failed to clean up temp file ${descFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`
+          `Warning: Failed to clean up temp file ${descFile}: ${toErrorMessage(cleanupError)}`
         );
       }
     }

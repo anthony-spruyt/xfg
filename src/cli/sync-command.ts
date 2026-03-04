@@ -167,6 +167,23 @@ function applySettingsResult(
   }
 }
 
+async function resolveGitHubToken(
+  repoInfo: GitHubRepoInfo,
+  tokenManager: ReturnType<typeof createTokenManager>,
+  repoName: string
+): Promise<string | undefined> {
+  try {
+    return (
+      (await tokenManager?.getTokenForRepo(repoInfo)) ?? process.env.GH_TOKEN
+    );
+  } catch (error) {
+    logger.debug(
+      `Token resolution failed for ${repoName}: ${toErrorMessage(error)}`
+    );
+    return process.env.GH_TOKEN;
+  }
+}
+
 export async function runSync(
   options: SyncOptions,
   deps: SyncDependencies = {}
@@ -246,7 +263,7 @@ export async function runSync(
         githubHosts: config.githubHosts,
       });
     } catch (error) {
-      logger.error(current, repoConfig.git, String(error));
+      logger.error(current, repoConfig.git, toErrorMessage(error));
       reportResults.push({
         repoName: repoConfig.git,
         success: false,
@@ -262,19 +279,13 @@ export async function runSync(
     );
 
     // Resolve auth token for lifecycle gh commands
-    let lifecycleToken: string | undefined;
-    if (isGitHubRepo(repoInfo)) {
-      try {
-        lifecycleToken =
-          (await tokenManager?.getTokenForRepo(repoInfo as GitHubRepoInfo)) ??
-          process.env.GH_TOKEN;
-      } catch (error) {
-        logger.debug(
-          `Token resolution failed for ${repoName}: ${toErrorMessage(error)}`
-        );
-        lifecycleToken = process.env.GH_TOKEN;
-      }
-    }
+    const lifecycleToken = isGitHubRepo(repoInfo)
+      ? await resolveGitHubToken(
+          repoInfo as GitHubRepoInfo,
+          tokenManager,
+          repoName
+        )
+      : undefined;
 
     // Check if repo exists, create/fork/migrate if needed
     try {
@@ -370,7 +381,7 @@ export async function runSync(
         logger.error(current, repoName, result.message);
       }
     } catch (error) {
-      logger.error(current, repoName, String(error));
+      logger.error(current, repoName, toErrorMessage(error));
       reportResults.push({
         repoName,
         success: false,
@@ -381,18 +392,11 @@ export async function runSync(
 
     // After file sync, apply settings via API (GitHub-only — ADO and GitLab repos are skipped)
     if (repoConfig.settings && isGitHubRepo(repoInfo)) {
-      const githubRepo = repoInfo as GitHubRepoInfo;
-      let settingsToken: string | undefined;
-      try {
-        settingsToken =
-          (await tokenManager?.getTokenForRepo(githubRepo)) ??
-          process.env.GH_TOKEN;
-      } catch (error) {
-        logger.debug(
-          `Settings token resolution failed for ${repoName}: ${toErrorMessage(error)}`
-        );
-        settingsToken = process.env.GH_TOKEN;
-      }
+      const settingsToken = await resolveGitHubToken(
+        repoInfo as GitHubRepoInfo,
+        tokenManager,
+        repoName
+      );
 
       // Apply rulesets
       if (
@@ -420,7 +424,7 @@ export async function runSync(
             }
           );
         } catch (error) {
-          logger.error(current, repoName, `Rulesets: ${String(error)}`);
+          logger.error(current, repoName, `Rulesets: ${toErrorMessage(error)}`);
           settingsCollector.appendError(repoName, error);
         }
       }
@@ -451,7 +455,7 @@ export async function runSync(
             }
           );
         } catch (error) {
-          logger.error(current, repoName, `Labels: ${String(error)}`);
+          logger.error(current, repoName, `Labels: ${toErrorMessage(error)}`);
           settingsCollector.appendError(repoName, error);
         }
       }
@@ -478,7 +482,11 @@ export async function runSync(
             }
           );
         } catch (error) {
-          logger.error(current, repoName, `Repo settings: ${String(error)}`);
+          logger.error(
+            current,
+            repoName,
+            `Repo settings: ${toErrorMessage(error)}`
+          );
           settingsCollector.appendError(repoName, error);
         }
       }

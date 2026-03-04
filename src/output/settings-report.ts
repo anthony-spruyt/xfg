@@ -116,7 +116,7 @@ function formatRulesetConfig(config: Ruleset, indent: number): string[] {
   return lines;
 }
 
-function formatSummary(totals: SettingsReport["totals"]): string {
+function formatSettingsSummary(totals: SettingsReport["totals"]): string {
   const parts: string[] = [];
   const settingsTotal = totals.settings.add + totals.settings.change;
   const rulesetsTotal =
@@ -269,7 +269,7 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
   }
 
   // Summary
-  lines.push(formatSummary(report.totals));
+  lines.push(formatSettingsSummary(report.totals));
 
   return lines;
 }
@@ -453,7 +453,7 @@ export function formatSettingsReportMarkdown(
   }
 
   // Summary
-  lines.push(`**${formatSummary(report.totals)}**`);
+  lines.push(`**${formatSettingsSummary(report.totals)}**`);
 
   return lines.join("\n");
 }
