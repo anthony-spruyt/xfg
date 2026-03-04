@@ -31,7 +31,9 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
       };
     }
 
-    // 3. Build effective token (installation token or PAT fallback)
+    // 3. Build effective token:
+    //    - string  → GitHub App token from tokenManager
+    //    - undefined → no tokenManager / non-GitHub repo; fall back to GH_TOKEN env var
     const token =
       installationToken ??
       (isGitHubRepo(repoInfo) ? process.env.GH_TOKEN : undefined);

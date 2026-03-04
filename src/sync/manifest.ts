@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { logger } from "../shared/logger.js";
 
 export const MANIFEST_FILENAME = ".xfg.json";
 
@@ -158,7 +159,8 @@ export function loadManifest(workDir: string): XfgManifest | null {
 
     // Unknown format - treat as no manifest
     return null;
-  } catch {
+  } catch (error) {
+    logger.debug(`Failed to load manifest from ${manifestPath}: ${error}`);
     return null;
   }
 }
@@ -184,7 +186,8 @@ export function parseManifestContent(content: string): XfgManifest | null {
     }
 
     return null;
-  } catch {
+  } catch (error) {
+    logger.debug(`Failed to parse manifest content: ${error}`);
     return null;
   }
 }
