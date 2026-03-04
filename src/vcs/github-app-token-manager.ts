@@ -113,10 +113,6 @@ export class GitHubAppTokenManager {
     this.discoveredHosts.add(apiHost);
   }
 
-  /**
-   * Gets the installation ID for a given owner on the specified API host.
-   * Returns undefined if no installation is found.
-   */
   getInstallationId(apiHost: string, owner: string): number | undefined {
     const key = `${apiHost}:${owner}`;
     return this.installations.get(key);
