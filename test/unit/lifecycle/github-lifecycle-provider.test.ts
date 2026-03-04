@@ -432,7 +432,7 @@ describe("GitHubLifecycleProvider", () => {
 
       test("error propagates from rename API and deleteReadme is not reached", async () => {
         const { mock: executor, calls } = createMockExecutor({
-          responses: new Map([
+          responses: new Map<string, string | Error>([
             ["gh repo create", ""],
             ["--jq '.default_branch'", "master"],
             [
@@ -538,7 +538,7 @@ describe("GitHubLifecycleProvider", () => {
 
     test("defaults to org behavior when API check fails", async () => {
       const { mock: executor, calls } = createMockExecutor({
-        responses: new Map([
+        responses: new Map<string, string | Error>([
           ["users/", new Error("API error")],
           ["gh repo fork", ""],
         ]),
@@ -664,7 +664,7 @@ describe("GitHubLifecycleProvider", () => {
 
     test("throws on fork failure", async () => {
       const { mock: executor } = createMockExecutor({
-        responses: new Map([
+        responses: new Map<string, string | Error>([
           ["users/", '{"type": "Organization"}'],
           ["gh repo fork", new Error("Cannot fork private repo")],
         ]),
@@ -906,7 +906,7 @@ describe("GitHubLifecycleProvider", () => {
 
     test("continues when remote remove origin fails", async () => {
       const { mock: executor, calls } = createMockExecutor({
-        responses: new Map([
+        responses: new Map<string, string | Error>([
           [
             "remote remove origin",
             new Error("fatal: No such remote: 'origin'"),
@@ -1147,7 +1147,7 @@ describe("GitHubLifecycleProvider", () => {
       };
 
       const { mock: executor, calls } = createMockExecutor({
-        responses: new Map([
+        responses: new Map<string, string | Error>([
           ["users/", new Error("API rate limit exceeded")],
           ["gh repo fork", ""],
         ]),

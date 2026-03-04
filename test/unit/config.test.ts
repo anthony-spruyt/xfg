@@ -1055,7 +1055,8 @@ describe("RepoSettings with repo property", () => {
         visibility: "private",
       },
     };
-    assert.equal(settings.repo?.visibility, "private");
+    const repo = settings.repo;
+    assert.equal(repo ? repo.visibility : undefined, "private");
   });
 });
 

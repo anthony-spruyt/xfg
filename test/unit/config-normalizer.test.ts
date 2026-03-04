@@ -6,6 +6,7 @@ import type {
   RawRepoConfig,
   RawRepoFileOverride,
   RawFileConfig,
+  RawRepoSettings,
   PullRequestRuleParameters,
 } from "../../src/config/index.js";
 
@@ -1975,7 +1976,7 @@ describe("normalizeConfig", () => {
               git: "git@github.com:org/repo.git",
               files: {
                 inherit: true,
-              },
+              } as RawRepoConfig["files"],
             },
           ],
         };
@@ -2089,7 +2090,7 @@ describe("normalizeConfig", () => {
               settings: {
                 rulesets: {
                   inherit: true,
-                },
+                } as RawRepoSettings["rulesets"],
               },
             },
           ],

@@ -8,7 +8,8 @@ import type {
   CurrentRepoSettings,
 } from "../../src/settings/repo-settings/types.js";
 import type { GhApiOptions } from "../../src/settings/gh-api-utils.js";
-import type { GitHubRepoSettings, RepoInfo } from "../../src/config/index.js";
+import type { GitHubRepoSettings } from "../../src/config/index.js";
+import type { RepoInfo } from "../../src/shared/repo-detector.js";
 
 // Mock strategy for testing
 class MockStrategy implements IRepoSettingsStrategy {

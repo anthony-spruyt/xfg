@@ -8,8 +8,20 @@ describe("diffLabels", () => {
   describe("desired-state orphan detection", () => {
     test("deleteOrphaned: true deletes ALL current labels not in desired", () => {
       const current: GitHubLabel[] = [
-        { name: "bug", color: "d73a4a", description: "" },
-        { name: "unmanaged-label", color: "000000", description: null },
+        {
+          id: 1,
+          name: "bug",
+          color: "d73a4a",
+          description: "",
+          default: false,
+        },
+        {
+          id: 2,
+          name: "unmanaged-label",
+          color: "000000",
+          description: null,
+          default: false,
+        },
       ];
       const desired: Record<string, Label> = {
         bug: { color: "d73a4a" },
@@ -23,8 +35,20 @@ describe("diffLabels", () => {
 
     test("deleteOrphaned: false preserves unmanaged labels", () => {
       const current: GitHubLabel[] = [
-        { name: "bug", color: "d73a4a", description: "" },
-        { name: "unmanaged", color: "000000", description: null },
+        {
+          id: 1,
+          name: "bug",
+          color: "d73a4a",
+          description: "",
+          default: false,
+        },
+        {
+          id: 2,
+          name: "unmanaged",
+          color: "000000",
+          description: null,
+          default: false,
+        },
       ];
       const desired: Record<string, Label> = {
         bug: { color: "d73a4a" },
@@ -53,7 +77,13 @@ describe("diffLabels", () => {
   describe("update labels", () => {
     test("detects color changes", () => {
       const current: GitHubLabel[] = [
-        { name: "bug", color: "d73a4a", description: "" },
+        {
+          id: 1,
+          name: "bug",
+          color: "d73a4a",
+          description: "",
+          default: false,
+        },
       ];
       const desired: Record<string, Label> = {
         bug: { color: "ff0000" },
@@ -67,7 +97,13 @@ describe("diffLabels", () => {
 
     test("detects description changes", () => {
       const current: GitHubLabel[] = [
-        { name: "bug", color: "d73a4a", description: "old" },
+        {
+          id: 1,
+          name: "bug",
+          color: "d73a4a",
+          description: "old",
+          default: false,
+        },
       ];
       const desired: Record<string, Label> = {
         bug: { color: "d73a4a", description: "new" },
@@ -82,7 +118,13 @@ describe("diffLabels", () => {
   describe("unchanged labels", () => {
     test("marks matching labels as unchanged", () => {
       const current: GitHubLabel[] = [
-        { name: "bug", color: "d73a4a", description: "" },
+        {
+          id: 1,
+          name: "bug",
+          color: "d73a4a",
+          description: "",
+          default: false,
+        },
       ];
       const desired: Record<string, Label> = {
         bug: { color: "d73a4a" },
@@ -97,8 +139,20 @@ describe("diffLabels", () => {
   describe("noDelete flag", () => {
     test("noDelete suppresses deletions even when deleteOrphaned is true", () => {
       const current: GitHubLabel[] = [
-        { name: "bug", color: "d73a4a", description: "" },
-        { name: "orphan", color: "000000", description: null },
+        {
+          id: 1,
+          name: "bug",
+          color: "d73a4a",
+          description: "",
+          default: false,
+        },
+        {
+          id: 2,
+          name: "orphan",
+          color: "000000",
+          description: null,
+          default: false,
+        },
       ];
       const desired: Record<string, Label> = {
         bug: { color: "d73a4a" },
@@ -113,8 +167,20 @@ describe("diffLabels", () => {
   describe("rename collision detection", () => {
     test("throws on duplicate rename targets", () => {
       const current: GitHubLabel[] = [
-        { name: "a", color: "000000", description: null },
-        { name: "b", color: "000000", description: null },
+        {
+          id: 1,
+          name: "a",
+          color: "000000",
+          description: null,
+          default: false,
+        },
+        {
+          id: 2,
+          name: "b",
+          color: "000000",
+          description: null,
+          default: false,
+        },
       ];
       const desired: Record<string, Label> = {
         a: { color: "000000", new_name: "c" },
@@ -129,8 +195,20 @@ describe("diffLabels", () => {
 
     test("throws when rename target collides with existing label", () => {
       const current: GitHubLabel[] = [
-        { name: "a", color: "000000", description: null },
-        { name: "b", color: "111111", description: null },
+        {
+          id: 1,
+          name: "a",
+          color: "000000",
+          description: null,
+          default: false,
+        },
+        {
+          id: 2,
+          name: "b",
+          color: "111111",
+          description: null,
+          default: false,
+        },
       ];
       const desired: Record<string, Label> = {
         a: { color: "000000", new_name: "b" },
@@ -147,9 +225,27 @@ describe("diffLabels", () => {
   describe("sort order", () => {
     test("returns changes in order: delete, update, create, unchanged", () => {
       const current: GitHubLabel[] = [
-        { name: "delete-me", color: "000000", description: null },
-        { name: "update-me", color: "000000", description: null },
-        { name: "keep-me", color: "aaaaaa", description: null },
+        {
+          id: 1,
+          name: "delete-me",
+          color: "000000",
+          description: null,
+          default: false,
+        },
+        {
+          id: 2,
+          name: "update-me",
+          color: "000000",
+          description: null,
+          default: false,
+        },
+        {
+          id: 3,
+          name: "keep-me",
+          color: "aaaaaa",
+          description: null,
+          default: false,
+        },
       ];
       const desired: Record<string, Label> = {
         "update-me": { color: "ffffff" },

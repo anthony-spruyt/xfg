@@ -11,7 +11,7 @@ type MockFn = Mock<(...args: unknown[]) => unknown>;
 import { writeFileSync, rmSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { runSync, type SyncOptions } from "../../src/cli/sync-command.js";
-import type { ProcessorResult } from "../../src/sync/repository-processor.js";
+import type { ProcessorResult } from "../../src/sync/types.js";
 import type {
   IRepositoryProcessor,
   IRepoSettingsProcessor,
@@ -144,7 +144,7 @@ repos:
         message: "PR created",
         fileChanges: [
           { path: ".gitignore", action: "create" as const },
-          { path: "config.json", action: "modify" as const },
+          { path: "config.json", action: "update" as const },
         ],
       });
 
@@ -374,8 +374,8 @@ repos:
     function emptyRepoSettingsPlanOutput(): RepoSettingsPlanResult {
       return {
         lines: [],
-        adds: 0,
-        changes: 0,
+        creates: 0,
+        updates: 0,
         warnings: [],
         entries: [],
       };
@@ -903,15 +903,15 @@ repos:
         message: "1 changed",
         planOutput: {
           lines: ["  ~ hasWiki: true → false"],
-          adds: 0,
-          changes: 1,
+          creates: 0,
+          updates: 1,
           warnings: [],
           entries: [
             {
-              key: "hasWiki",
+              property: "hasWiki",
               action: "change" as const,
-              from: "true",
-              to: "false",
+              oldValue: "true",
+              newValue: "false",
             },
           ],
         },
@@ -956,15 +956,15 @@ repos:
         warnings: ["Some setting requires admin access"],
         planOutput: {
           lines: ["  ~ hasWiki: true → false"],
-          adds: 0,
-          changes: 1,
+          creates: 0,
+          updates: 1,
           warnings: ["Some setting requires admin access"],
           entries: [
             {
-              key: "hasWiki",
+              property: "hasWiki",
               action: "change" as const,
-              from: "true",
-              to: "false",
+              oldValue: "true",
+              newValue: "false",
             },
           ],
         },

@@ -893,7 +893,15 @@ describe("GitHubPRStrategy with GitHub Enterprise Server", () => {
     mockExecutor.responses.set("gh api", "true");
 
     const strategy = new GitHubPRStrategy(mockExecutor);
-    await strategy.checkAutoMergeEnabled(gheRepoInfo, testDir, 0);
+    await (
+      strategy as unknown as {
+        checkAutoMergeEnabled: (
+          repoInfo: GitHubRepoInfo,
+          cwd: string,
+          retries: number
+        ) => Promise<boolean>;
+      }
+    ).checkAutoMergeEnabled(gheRepoInfo, testDir, 0);
 
     assert.ok(mockExecutor.calls[0].command.includes("--hostname"));
     assert.ok(mockExecutor.calls[0].command.includes("'github.mycompany.com'"));
@@ -978,7 +986,8 @@ describe("GitHubPRStrategy merge", () => {
       mockExecutor.responses.set("gh api repos", "true");
 
       const strategy = new GitHubPRStrategy(mockExecutor);
-      const result = await strategy.checkAutoMergeEnabled(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (strategy as any).checkAutoMergeEnabled(
         githubRepoInfo,
         testDir,
         0
@@ -994,7 +1003,8 @@ describe("GitHubPRStrategy merge", () => {
       mockExecutor.responses.set("gh api repos", "false");
 
       const strategy = new GitHubPRStrategy(mockExecutor);
-      const result = await strategy.checkAutoMergeEnabled(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (strategy as any).checkAutoMergeEnabled(
         githubRepoInfo,
         testDir,
         0
@@ -1007,7 +1017,8 @@ describe("GitHubPRStrategy merge", () => {
       mockExecutor.responses.set("gh api repos", new Error("API error"));
 
       const strategy = new GitHubPRStrategy(mockExecutor);
-      const result = await strategy.checkAutoMergeEnabled(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await (strategy as any).checkAutoMergeEnabled(
         githubRepoInfo,
         testDir,
         0

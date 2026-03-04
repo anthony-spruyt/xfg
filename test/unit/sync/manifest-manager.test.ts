@@ -162,7 +162,7 @@ describe("ManifestManager", () => {
       const manager = new ManifestManager();
       const fileChanges = new Map<string, FileWriteResult>();
       const manifest = {
-        version: 3 as const,
+        version: 4 as const,
         configs: {
           "test-config": { files: ["file.json"] },
         },
@@ -178,7 +178,7 @@ describe("ManifestManager", () => {
       const manager = new ManifestManager();
       const fileChanges = new Map<string, FileWriteResult>();
       const manifest = {
-        version: 3 as const,
+        version: 4 as const,
         configs: {
           "test-config": { files: ["file.json"] },
         },

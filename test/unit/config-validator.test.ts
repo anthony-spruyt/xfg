@@ -8,6 +8,7 @@ import {
 import type {
   RawConfig,
   RawFileConfig,
+  RawRepoConfig,
   RawRepoSettings,
 } from "../../src/config/index.js";
 
@@ -1686,7 +1687,7 @@ describe("validateRawConfig", () => {
             git: "git@github.com:org/repo.git",
             files: {
               inherit: true,
-            },
+            } as RawRepoConfig["files"],
           },
         ],
       });
@@ -1706,7 +1707,7 @@ describe("validateRawConfig", () => {
             settings: {
               rulesets: {
                 inherit: false,
-              },
+              } as RawRepoSettings["rulesets"],
             },
           },
         ],
@@ -1721,7 +1722,7 @@ describe("validateRawConfig", () => {
             git: "git@github.com:org/repo.git",
             files: {
               inherit: "false" as unknown as boolean,
-            },
+            } as RawRepoConfig["files"],
           },
         ],
       });
@@ -2984,10 +2985,10 @@ describe("validateRepoSettings", () => {
   // Helper to create a minimal valid config with settings
   const createSettingsConfig = (
     repo: Record<string, unknown>
-  ): import("../../src/config.js").RawConfig => ({
+  ): import("../../src/config/index.js").RawConfig => ({
     id: "test-config",
     settings: {
-      repo: repo as import("../../src/config.js").GitHubRepoSettings,
+      repo: repo as import("../../src/config/index.js").GitHubRepoSettings,
     },
     repos: [{ git: "git@github.com:org/repo.git" }],
   });
@@ -3165,7 +3166,7 @@ describe("validateRepoSettings", () => {
   });
 
   test("rejects repo settings that is not an object", () => {
-    const config: import("../../src/config.js").RawConfig = {
+    const config: import("../../src/config/index.js").RawConfig = {
       id: "test-config",
       settings: {
         repo: "invalid" as never,

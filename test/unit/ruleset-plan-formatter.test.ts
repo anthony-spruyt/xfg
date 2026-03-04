@@ -2,6 +2,7 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import type { RulesetChange } from "../../src/settings/rulesets/diff.js";
+import type { RulesetRule } from "../../src/config/types.js";
 import {
   computePropertyDiffs,
   formatPropertyTree,
@@ -708,7 +709,7 @@ describe("formatRulesetPlan", () => {
           enforcement: "active",
           rules: [
             { type: "pull_request" },
-            "not-an-object" as unknown as Record<string, unknown>,
+            "not-an-object" as unknown as RulesetRule,
           ],
         },
       },
@@ -1003,7 +1004,7 @@ describe("formatRulesetPlan", () => {
           bypass_actors: [
             {
               actor_id: 5,
-              actor_type: "RepositoryRole",
+              actor_type: "User",
               bypass_mode: "always",
             },
           ],
@@ -1022,7 +1023,7 @@ describe("formatRulesetPlan", () => {
           target: "branch",
           enforcement: "active",
           bypassActors: [
-            { actorId: 5, actorType: "RepositoryRole", bypassMode: "always" },
+            { actorId: 5, actorType: "User", bypassMode: "always" },
           ],
           conditions: {
             refName: { include: ["~DEFAULT_BRANCH"], exclude: [] },

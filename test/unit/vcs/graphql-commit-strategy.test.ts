@@ -12,7 +12,7 @@ import {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
 } from "../../../src/shared/repo-detector.js";
-import { CommitOptions } from "../../../src/vcs/commit-strategy.js";
+import { CommitOptions } from "../../../src/vcs/types.js";
 import {
   ICommandExecutor,
   ExecOptions,

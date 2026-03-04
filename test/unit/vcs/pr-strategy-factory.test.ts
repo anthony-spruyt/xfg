@@ -22,10 +22,10 @@ describe("getPRStrategy", () => {
     const repoInfo: AzureDevOpsRepoInfo = {
       type: "azure-devops",
       gitUrl: "git@ssh.dev.azure.com:test/repo.git",
+      owner: "org",
       organization: "org",
       project: "proj",
-      repository: "repo",
-      host: "dev.azure.com",
+      repo: "repo",
     };
     const strategy = getPRStrategy(repoInfo);
     assert.ok(strategy);
@@ -35,8 +35,9 @@ describe("getPRStrategy", () => {
     const repoInfo: GitLabRepoInfo = {
       type: "gitlab",
       gitUrl: "git@gitlab.com:test/repo.git",
+      owner: "test",
       namespace: "test",
-      project: "repo",
+      repo: "repo",
       host: "gitlab.com",
     };
     const strategy = getPRStrategy(repoInfo);

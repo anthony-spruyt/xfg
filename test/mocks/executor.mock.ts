@@ -1,7 +1,7 @@
 import type {
   ICommandExecutor,
   ExecOptions,
-} from "../../src/command-executor.js";
+} from "../../src/shared/command-executor.js";
 
 export interface ExecutorMockConfig {
   defaultResponse?: string;

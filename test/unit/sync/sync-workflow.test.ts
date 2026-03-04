@@ -54,7 +54,16 @@ describe("SyncWorkflow", () => {
 
     const authOptionsBuilder: IAuthOptionsBuilder = {
       async resolve() {
-        return { ok: true, token: "test-token", authOptions: {} };
+        return {
+          ok: true,
+          token: "test-token",
+          authOptions: {
+            token: "test-token",
+            host: "github.com",
+            owner: "test",
+            repo: "repo",
+          },
+        };
       },
     };
 
@@ -319,7 +328,12 @@ describe("SyncWorkflow", () => {
       changedFiles: [],
       commitMessage: "test",
       fileChangeDetails: [],
-      diffStats: { additions: 0, deletions: 0, modifications: 0 },
+      diffStats: {
+        newCount: 0,
+        modifiedCount: 0,
+        unchangedCount: 0,
+        deletedCount: 0,
+      },
     };
 
     const mockStrategy: IWorkStrategy = {

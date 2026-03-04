@@ -9,7 +9,11 @@ import {
   AzureDevOpsRepoInfo,
   GitLabRepoInfo,
 } from "../../../src/shared/repo-detector.js";
-import type { PRStrategyOptions } from "../../../src/vcs/types.js";
+import type {
+  PRStrategyOptions,
+  IPRStrategy,
+  CloseExistingPROptions,
+} from "../../../src/vcs/types.js";
 import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
 import { PRResult } from "../../../src/vcs/pr-creator.js";
 
@@ -177,7 +181,7 @@ describe("AzurePRStrategy type guards", () => {
 });
 
 // Mock strategy for testing PRWorkflowExecutor
-class MockPRStrategy implements PRStrategy {
+class MockPRStrategy implements IPRStrategy {
   checkExistingPRResult: string | null = null;
   createResult: PRResult = {
     success: true,
@@ -190,7 +194,9 @@ class MockPRStrategy implements PRStrategy {
   shouldThrowOnCreate = false;
   throwMessage = "Mock error";
 
-  async checkExistingPR(_options: PRStrategyOptions): Promise<string | null> {
+  async checkExistingPR(
+    _options: CloseExistingPROptions
+  ): Promise<string | null> {
     this.checkExistingPRCalled = true;
     if (this.shouldThrowOnCheck) {
       throw new Error(this.throwMessage);
@@ -206,13 +212,13 @@ class MockPRStrategy implements PRStrategy {
     return this.createResult;
   }
 
-  async closeExistingPR(_options: PRStrategyOptions): Promise<boolean> {
+  async closeExistingPR(_options: CloseExistingPROptions): Promise<boolean> {
     return true;
   }
 
   async merge(
-    _options: import("./pr-strategy.js").MergeOptions
-  ): Promise<import("./pr-strategy.js").MergeResult> {
+    _options: import("../../../src/vcs/types.js").MergeOptions
+  ): Promise<import("../../../src/vcs/types.js").MergeResult> {
     return { success: true, merged: false, message: "Mock merge" };
   }
 

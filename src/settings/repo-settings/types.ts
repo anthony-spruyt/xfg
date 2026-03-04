@@ -6,6 +6,7 @@ import type { GhApiOptions } from "../gh-api-utils.js";
  * Current repository settings from GitHub API (snake_case).
  */
 export interface CurrentRepoSettings {
+  description?: string;
   has_issues?: boolean;
   has_projects?: boolean;
   has_wiki?: boolean;

@@ -69,7 +69,7 @@ describe("FileSyncOrchestrator", () => {
       calls,
       processOrphans: () => {
         calls.processOrphans++;
-        return { manifest: { version: 3, configs: {} }, filesToDelete: [] };
+        return { manifest: { version: 4, configs: {} }, filesToDelete: [] };
       },
       deleteOrphans: async () => {
         calls.deleteOrphans++;
@@ -101,7 +101,7 @@ describe("FileSyncOrchestrator", () => {
       );
 
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [{ fileName: "config.json", content: {} }],
       };
 
@@ -139,7 +139,7 @@ describe("FileSyncOrchestrator", () => {
       );
 
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [{ fileName: "config.json", content: {} }],
       };
 
@@ -173,7 +173,7 @@ describe("FileSyncOrchestrator", () => {
       );
 
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [{ fileName: "config.json", content: {} }],
       };
 
@@ -215,7 +215,7 @@ describe("FileSyncOrchestrator", () => {
       );
 
       const repoConfig: RepoConfig = {
-        gitUrl: mockRepoInfo.gitUrl,
+        git: mockRepoInfo.gitUrl,
         files: [
           { fileName: "new.json", content: {} },
           { fileName: "updated.json", content: {} },

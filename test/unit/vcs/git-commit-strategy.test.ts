@@ -4,7 +4,7 @@ import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { GitCommitStrategy } from "../../../src/vcs/git-commit-strategy.js";
 import { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
-import { CommitOptions } from "../../../src/vcs/commit-strategy.js";
+import { CommitOptions } from "../../../src/vcs/types.js";
 import { ICommandExecutor } from "../../../src/shared/command-executor.js";
 import { INetworkGitOps } from "../../../src/vcs/authenticated-git-ops.js";
 
