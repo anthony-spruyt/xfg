@@ -2,6 +2,7 @@ import { GitOps } from "./git-ops.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
+import { logger } from "../shared/logger.js";
 
 /**
  * Options for authenticated git operations.
@@ -130,8 +131,9 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
       if (match && match[1] !== "(unknown)") {
         return { branch: match[1], method: "remote HEAD" };
       }
-    } catch {
-      // Fall through to local checks
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      logger.info(`Debug: git remote show origin failed - ${msg}`);
     }
 
     // Local operations don't need auth
@@ -141,8 +143,9 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
         this.workDir
       );
       return { branch: "main", method: "origin/main exists" };
-    } catch {
-      // Continue
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      logger.info(`Debug: origin/main check failed - ${msg}`);
     }
 
     try {
@@ -151,8 +154,9 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
         this.workDir
       );
       return { branch: "master", method: "origin/master exists" };
-    } catch {
-      // Continue
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      logger.info(`Debug: origin/master check failed - ${msg}`);
     }
 
     return { branch: "main", method: "fallback default" };
