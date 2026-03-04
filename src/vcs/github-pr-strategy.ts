@@ -82,8 +82,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
         // Log unexpected errors for debugging (expected: empty result means no PR)
         const stderr = getStderr(error);
         if (stderr && !stderr.includes("no pull requests match")) {
-          logger.info(
-            `Debug: GitHub PR check failed - ${sanitizeCredentials(stderr).trim()}`
+          logger.debug(
+            `GitHub PR check failed - ${sanitizeCredentials(stderr).trim()}`
           );
         }
       }

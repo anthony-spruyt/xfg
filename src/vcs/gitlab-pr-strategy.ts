@@ -118,8 +118,8 @@ export class GitLabPRStrategy extends BasePRStrategy {
         // Log unexpected errors for debugging
         const stderr = getStderr(error);
         if (stderr && !stderr.includes("no merge requests")) {
-          logger.info(
-            `Debug: GitLab MR check failed - ${sanitizeCredentials(stderr).trim()}`
+          logger.debug(
+            `GitLab MR check failed - ${sanitizeCredentials(stderr).trim()}`
           );
         }
       }

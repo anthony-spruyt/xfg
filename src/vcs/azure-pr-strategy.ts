@@ -58,8 +58,8 @@ export class AzurePRStrategy extends BasePRStrategy {
         }
         const stderr = getStderr(error);
         if (stderr && !stderr.includes("does not exist")) {
-          logger.info(
-            `Debug: Azure PR check failed - ${sanitizeCredentials(stderr).trim()}`
+          logger.debug(
+            `Azure PR check failed - ${sanitizeCredentials(stderr).trim()}`
           );
         }
       }
