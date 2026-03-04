@@ -1,20 +1,29 @@
 import { RepoInfo, isGitHubRepo } from "../shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 import { GitAuthOptions } from "../vcs/authenticated-git-ops.js";
-import { ILogger } from "../shared/logger.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import type { AuthResult, IAuthOptionsBuilder } from "./types.js";
-import { toErrorMessage } from "../shared/type-guards.js";
+import { resolveGitHubToken } from "../shared/gh-api-utils.js";
 
 export class AuthOptionsBuilder implements IAuthOptionsBuilder {
   constructor(
     private readonly tokenManager: GitHubAppTokenManager | null,
-    private readonly log: ILogger
+    private readonly _log: unknown
   ) {}
 
   async resolve(repoInfo: RepoInfo, repoName: string): Promise<AuthResult> {
-    const installationToken = await this.getInstallationToken(repoInfo);
+    if (!isGitHubRepo(repoInfo)) {
+      // Non-GitHub repos don't use token-based auth
+      return { ok: true, token: undefined, authOptions: undefined };
+    }
 
-    if (installationToken === null) {
+    const { token, skipped } = await resolveGitHubToken(
+      repoInfo,
+      this.tokenManager,
+      repoName
+    );
+
+    if (skipped) {
       return {
         ok: false,
         skipResult: {
@@ -26,11 +35,6 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
       };
     }
 
-    // string → GitHub App token; undefined → fall back to GH_TOKEN env var
-    const token =
-      installationToken ??
-      (isGitHubRepo(repoInfo) ? process.env.GH_TOKEN : undefined);
-
     const authOptions = token
       ? this.buildAuthOptions(repoInfo, token)
       : undefined;
@@ -38,26 +42,13 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
     return { ok: true, token, authOptions };
   }
 
-  private async getInstallationToken(
-    repoInfo: RepoInfo
-  ): Promise<string | null | undefined> {
-    if (!this.tokenManager || !isGitHubRepo(repoInfo)) {
-      return undefined;
-    }
-
-    try {
-      return await this.tokenManager.getTokenForRepo(repoInfo);
-    } catch (error) {
-      this.log.warn(`Failed to get GitHub App token: ${toErrorMessage(error)}`);
-      return undefined;
-    }
-  }
-
-  private buildAuthOptions(repoInfo: RepoInfo, token: string): GitAuthOptions {
-    const host = isGitHubRepo(repoInfo) ? repoInfo.host : "github.com";
+  private buildAuthOptions(
+    repoInfo: GitHubRepoInfo,
+    token: string
+  ): GitAuthOptions {
     return {
       token,
-      host,
+      host: repoInfo.host,
       owner: repoInfo.owner,
       repo: repoInfo.repo,
     };

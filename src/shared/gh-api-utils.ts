@@ -2,6 +2,7 @@ import { escapeShellArg } from "../shared/shell-utils.js";
 import { withRetry } from "../shared/retry-utils.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { GitHubRepoInfo } from "../shared/repo-detector.js";
+import type { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -83,6 +84,30 @@ export async function ghApiCall(
     () => executor.exec(baseCommand, process.cwd(), { env }),
     { retries }
   );
+}
+
+/**
+ * Resolve a GitHub token for a repo: GitHub App token → GH_TOKEN env fallback.
+ * Returns { token, skipped } where skipped=true means no App installation found
+ * and no GH_TOKEN is available. Both sync and settings paths use this function.
+ */
+export async function resolveGitHubToken(
+  repoInfo: GitHubRepoInfo,
+  tokenManager: GitHubAppTokenManager | null,
+  context: string
+): Promise<{ token: string | undefined; skipped: boolean }> {
+  try {
+    const appToken = await tokenManager?.getTokenForRepo(repoInfo);
+    if (appToken === null) {
+      // null = no installation found for this owner
+      return { token: undefined, skipped: true };
+    }
+    // string = app token; undefined = no manager configured
+    return { token: appToken ?? process.env.GH_TOKEN, skipped: false };
+  } catch {
+    // Token resolution failed; fall back to env var
+    return { token: process.env.GH_TOKEN, skipped: false };
+  }
 }
 
 /**

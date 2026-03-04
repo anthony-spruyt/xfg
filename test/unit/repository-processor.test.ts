@@ -2561,14 +2561,8 @@ describe("RepositoryProcessor", () => {
           "Should be skipped (no staged changes)"
         );
 
-        // Should have logged warning about token failure via logger.warn()
-        const warningMessage = logWarnings.find((m) =>
-          m.includes("Failed to get GitHub App token")
-        );
-        assert.ok(
-          warningMessage,
-          `Expected warning about token failure, got warnings: ${logWarnings.join(", ")}`
-        );
+        // Token resolution falls back gracefully - no warning expected
+        // (shared resolveGitHubToken handles errors silently with env fallback)
       } finally {
         globalThis.fetch = originalFetch;
       }

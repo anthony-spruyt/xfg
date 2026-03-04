@@ -39,6 +39,7 @@ import {
 import { writeUnifiedSummary } from "../output/unified-summary.js";
 import type { ProcessorResult } from "../sync/index.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { resolveGitHubToken } from "../shared/gh-api-utils.js";
 import {
   RepoLifecycleManager,
   runLifecycleCheck,
@@ -118,23 +119,6 @@ function logSettingsResult(
   }
 }
 
-async function resolveGitHubToken(
-  repoInfo: GitHubRepoInfo,
-  tokenManager: ReturnType<typeof createTokenManager>,
-  repoName: string
-): Promise<string | undefined> {
-  try {
-    return (
-      (await tokenManager?.getTokenForRepo(repoInfo)) ?? process.env.GH_TOKEN
-    );
-  } catch (error) {
-    logger.debug(
-      `Token resolution failed for ${repoName}: ${toErrorMessage(error)}`
-    );
-    return process.env.GH_TOKEN;
-  }
-}
-
 async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
   const {
     repoConfig,
@@ -151,7 +135,7 @@ async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
 
   if (!repoConfig.settings || !isGitHubRepo(repoInfo)) return;
 
-  const settingsToken = await resolveGitHubToken(
+  const { token: settingsToken } = await resolveGitHubToken(
     repoInfo as GitHubRepoInfo,
     tokenManager,
     repoName
@@ -378,11 +362,13 @@ export async function runSync(
 
     // Resolve auth token for lifecycle gh commands
     const lifecycleToken = isGitHubRepo(repoInfo)
-      ? await resolveGitHubToken(
-          repoInfo as GitHubRepoInfo,
-          tokenManager,
-          repoName
-        )
+      ? (
+          await resolveGitHubToken(
+            repoInfo as GitHubRepoInfo,
+            tokenManager,
+            repoName
+          )
+        ).token
       : undefined;
 
     // Check if repo exists, create/fork/migrate if needed
