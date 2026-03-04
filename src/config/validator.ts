@@ -481,28 +481,11 @@ export function validateRawConfig(config: RawConfig): void {
           if (fileConfig === false) continue;
           if (fileConfig === undefined) continue;
 
-          const fc = fileConfig as Record<string, unknown>;
-          if (fc.content !== undefined) {
-            const hasText = isTextContent(fc.content);
-            const hasObject = isObjectContent(fc.content);
-            if (!hasText && !hasObject) {
-              throw new Error(
-                `groups.${groupName}: file '${fileName}' content must be an object, string, or array of strings`
-              );
-            }
-
-            const isStructured = isStructuredFileExtension(fileName);
-            if (isStructured && hasText) {
-              throw new Error(
-                `groups.${groupName}: file '${fileName}' has JSON/YAML extension but string content`
-              );
-            }
-            if (!isStructured && hasObject) {
-              throw new Error(
-                `groups.${groupName}: file '${fileName}' has text extension but object content`
-              );
-            }
-          }
+          validateFileConfigFields(
+            fileConfig as Record<string, unknown>,
+            fileName,
+            `groups.${groupName}:`
+          );
         }
       }
 

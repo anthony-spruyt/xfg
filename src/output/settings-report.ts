@@ -116,44 +116,47 @@ function formatRulesetConfig(config: Ruleset, indent: number): string[] {
   return lines;
 }
 
+/**
+ * Formats a summary entry like "3 files (1 to create, 2 to update)".
+ * Returns null if total is 0.
+ */
+function formatCountEntry(
+  noun: string,
+  pluralNoun: string,
+  counts: { label: string; value: number }[]
+): string | null {
+  const total = counts.reduce((sum, c) => sum + c.value, 0);
+  if (total === 0) return null;
+
+  const word = total === 1 ? noun : pluralNoun;
+  const actions = counts
+    .filter((c) => c.value > 0)
+    .map((c) => `${c.value} ${c.label}`);
+  return `${total} ${word} (${actions.join(", ")})`;
+}
+
 function formatSettingsSummary(totals: SettingsReport["totals"]): string {
   const parts: string[] = [];
-  const settingsTotal = totals.settings.add + totals.settings.change;
-  const rulesetsTotal =
-    totals.rulesets.create + totals.rulesets.update + totals.rulesets.delete;
-  const labelTotals = totals.labels;
-  const labelsTotal =
-    labelTotals.create + labelTotals.update + labelTotals.delete;
 
-  if (settingsTotal > 0) {
-    const settingWord = settingsTotal === 1 ? "setting" : "settings";
-    const actions: string[] = [];
-    if (totals.settings.add > 0) actions.push(`${totals.settings.add} to add`);
-    if (totals.settings.change > 0)
-      actions.push(`${totals.settings.change} to change`);
-    parts.push(`${settingsTotal} ${settingWord} (${actions.join(", ")})`);
-  }
+  const settingsEntry = formatCountEntry("setting", "settings", [
+    { label: "to add", value: totals.settings.add },
+    { label: "to change", value: totals.settings.change },
+  ]);
+  if (settingsEntry) parts.push(settingsEntry);
 
-  if (rulesetsTotal > 0) {
-    const rulesetWord = rulesetsTotal === 1 ? "ruleset" : "rulesets";
-    const actions: string[] = [];
-    if (totals.rulesets.create > 0)
-      actions.push(`${totals.rulesets.create} to create`);
-    if (totals.rulesets.update > 0)
-      actions.push(`${totals.rulesets.update} to update`);
-    if (totals.rulesets.delete > 0)
-      actions.push(`${totals.rulesets.delete} to delete`);
-    parts.push(`${rulesetsTotal} ${rulesetWord} (${actions.join(", ")})`);
-  }
+  const rulesetsEntry = formatCountEntry("ruleset", "rulesets", [
+    { label: "to create", value: totals.rulesets.create },
+    { label: "to update", value: totals.rulesets.update },
+    { label: "to delete", value: totals.rulesets.delete },
+  ]);
+  if (rulesetsEntry) parts.push(rulesetsEntry);
 
-  if (labelsTotal > 0) {
-    const labelWord = labelsTotal === 1 ? "label" : "labels";
-    const actions: string[] = [];
-    if (labelTotals.create > 0) actions.push(`${labelTotals.create} to create`);
-    if (labelTotals.update > 0) actions.push(`${labelTotals.update} to update`);
-    if (labelTotals.delete > 0) actions.push(`${labelTotals.delete} to delete`);
-    parts.push(`${labelsTotal} ${labelWord} (${actions.join(", ")})`);
-  }
+  const labelsEntry = formatCountEntry("label", "labels", [
+    { label: "to create", value: totals.labels.create },
+    { label: "to update", value: totals.labels.update },
+    { label: "to delete", value: totals.labels.delete },
+  ]);
+  if (labelsEntry) parts.push(labelsEntry);
 
   if (parts.length === 0) {
     return "No changes";
@@ -332,6 +335,93 @@ export function formatRulesetConfigPlain(config: Ruleset): string[] {
   return lines;
 }
 
+/**
+ * Renders a single repo's settings/rulesets/labels changes as plain-text diff lines.
+ * Shared between formatSettingsReportMarkdown and unified-summary's renderSettingsLines.
+ */
+export function renderRepoSettingsDiffLines(
+  repo: RepoChanges,
+  diffLines: string[]
+): void {
+  for (const setting of repo.settings) {
+    if (setting.oldValue === undefined && setting.newValue === undefined) {
+      continue;
+    }
+    if (setting.action === "add") {
+      diffLines.push(
+        `+ ${setting.name}: ${formatValuePlain(setting.newValue)}`
+      );
+    } else {
+      diffLines.push(
+        `! ${setting.name}: ${formatValuePlain(setting.oldValue)} → ${formatValuePlain(setting.newValue)}`
+      );
+    }
+  }
+
+  for (const ruleset of repo.rulesets) {
+    if (ruleset.action === "create") {
+      diffLines.push(`+ ruleset "${ruleset.name}"`);
+      if (ruleset.config) {
+        diffLines.push(...formatRulesetConfigPlain(ruleset.config));
+      }
+    } else if (ruleset.action === "update") {
+      diffLines.push(`! ruleset "${ruleset.name}"`);
+      if (ruleset.propertyDiffs && ruleset.propertyDiffs.length > 0) {
+        for (const diff of ruleset.propertyDiffs) {
+          const path = diff.path.join(".");
+          if (diff.action === "add") {
+            diffLines.push(`+   ${path}: ${formatValuePlain(diff.newValue)}`);
+          } else if (diff.action === "change") {
+            diffLines.push(
+              `!   ${path}: ${formatValuePlain(diff.oldValue)} → ${formatValuePlain(diff.newValue)}`
+            );
+          } else if (diff.action === "remove") {
+            diffLines.push(`-   ${path}`);
+          }
+        }
+      }
+    } else if (ruleset.action === "delete") {
+      diffLines.push(`- ruleset "${ruleset.name}"`);
+    }
+  }
+
+  for (const label of repo.labels) {
+    if (label.action === "create") {
+      diffLines.push(`+ label "${label.name}"`);
+      if (label.config) {
+        diffLines.push(`+   color: "${label.config.color}"`);
+        if (label.config.description !== undefined) {
+          diffLines.push(`+   description: "${label.config.description}"`);
+        }
+      }
+    } else if (label.action === "update") {
+      if (label.newName) {
+        diffLines.push(`! label "${label.name}" \u2192 "${label.newName}"`);
+      } else {
+        diffLines.push(`! label "${label.name}"`);
+      }
+      if (label.propertyChanges) {
+        for (const prop of label.propertyChanges) {
+          if (prop.property === "new_name") continue;
+          if (prop.oldValue !== undefined) {
+            diffLines.push(
+              `!   ${prop.property}: "${prop.oldValue}" \u2192 "${prop.newValue}"`
+            );
+          } else {
+            diffLines.push(`!   ${prop.property}: "${prop.newValue}"`);
+          }
+        }
+      }
+    } else if (label.action === "delete") {
+      diffLines.push(`- label "${label.name}"`);
+    }
+  }
+
+  if (repo.error) {
+    diffLines.push(`- Error: ${repo.error}`);
+  }
+}
+
 export function formatSettingsReportMarkdown(
   report: SettingsReport,
   dryRun: boolean
@@ -364,85 +454,7 @@ export function formatSettingsReportMarkdown(
     }
 
     diffLines.push(`@@ ${repo.repoName} @@`);
-
-    for (const setting of repo.settings) {
-      // Skip settings where both values are undefined
-      if (setting.oldValue === undefined && setting.newValue === undefined) {
-        continue;
-      }
-      if (setting.action === "add") {
-        diffLines.push(
-          `+ ${setting.name}: ${formatValuePlain(setting.newValue)}`
-        );
-      } else {
-        diffLines.push(
-          `! ${setting.name}: ${formatValuePlain(setting.oldValue)} → ${formatValuePlain(setting.newValue)}`
-        );
-      }
-    }
-
-    for (const ruleset of repo.rulesets) {
-      if (ruleset.action === "create") {
-        diffLines.push(`+ ruleset "${ruleset.name}"`);
-        if (ruleset.config) {
-          diffLines.push(...formatRulesetConfigPlain(ruleset.config));
-        }
-      } else if (ruleset.action === "update") {
-        diffLines.push(`! ruleset "${ruleset.name}"`);
-        if (ruleset.propertyDiffs && ruleset.propertyDiffs.length > 0) {
-          for (const diff of ruleset.propertyDiffs) {
-            const path = diff.path.join(".");
-            if (diff.action === "add") {
-              diffLines.push(`+   ${path}: ${formatValuePlain(diff.newValue)}`);
-            } else if (diff.action === "change") {
-              diffLines.push(
-                `!   ${path}: ${formatValuePlain(diff.oldValue)} → ${formatValuePlain(diff.newValue)}`
-              );
-            } else if (diff.action === "remove") {
-              diffLines.push(`-   ${path}`);
-            }
-          }
-        }
-      } else if (ruleset.action === "delete") {
-        diffLines.push(`- ruleset "${ruleset.name}"`);
-      }
-    }
-
-    for (const label of repo.labels) {
-      if (label.action === "create") {
-        diffLines.push(`+ label "${label.name}"`);
-        if (label.config) {
-          diffLines.push(`+   color: "${label.config.color}"`);
-          if (label.config.description !== undefined) {
-            diffLines.push(`+   description: "${label.config.description}"`);
-          }
-        }
-      } else if (label.action === "update") {
-        if (label.newName) {
-          diffLines.push(`! label "${label.name}" \u2192 "${label.newName}"`);
-        } else {
-          diffLines.push(`! label "${label.name}"`);
-        }
-        if (label.propertyChanges) {
-          for (const prop of label.propertyChanges) {
-            if (prop.property === "new_name") continue;
-            if (prop.oldValue !== undefined) {
-              diffLines.push(
-                `!   ${prop.property}: "${prop.oldValue}" \u2192 "${prop.newValue}"`
-              );
-            } else {
-              diffLines.push(`!   ${prop.property}: "${prop.newValue}"`);
-            }
-          }
-        }
-      } else if (label.action === "delete") {
-        diffLines.push(`- label "${label.name}"`);
-      }
-    }
-
-    if (repo.error) {
-      diffLines.push(`- Error: ${repo.error}`);
-    }
+    renderRepoSettingsDiffLines(repo, diffLines);
   }
 
   if (diffLines.length > 0) {

@@ -4,10 +4,7 @@ import type { LifecycleReport, LifecycleAction } from "./lifecycle-report.js";
 import { hasLifecycleChanges } from "./lifecycle-report.js";
 import type { SyncReport, RepoFileChanges } from "./sync-report.js";
 import type { SettingsReport, RepoChanges } from "./settings-report.js";
-import {
-  formatValuePlain,
-  formatRulesetConfigPlain,
-} from "./settings-report.js";
+import { renderRepoSettingsDiffLines } from "./settings-report.js";
 
 // =============================================================================
 // Types
@@ -24,85 +21,97 @@ interface UnifiedSummaryInput {
 // Helpers
 // =============================================================================
 
+/**
+ * Formats a summary entry like "3 files (1 to create, 2 to update)".
+ * Returns null if total is 0.
+ */
+function formatCountSummary(
+  noun: string,
+  pluralNoun: string,
+  counts: { label: string; dryLabel: string; value: number }[],
+  dryRun: boolean
+): string | null {
+  const total = counts.reduce((sum, c) => sum + c.value, 0);
+  if (total === 0) return null;
+
+  const word = total === 1 ? noun : pluralNoun;
+  const actions = counts
+    .filter((c) => c.value > 0)
+    .map((c) => `${c.value} ${dryRun ? c.dryLabel : c.label}`);
+  return `${total} ${word} (${actions.join(", ")})`;
+}
+
 function formatCombinedSummary(input: UnifiedSummaryInput): string {
   const parts: string[] = [];
   const dry = input.dryRun;
 
-  // Lifecycle totals
   if (input.lifecycle) {
     const t = input.lifecycle.totals;
-    const repoTotal = t.created + t.forked + t.migrated;
-    if (repoTotal > 0) {
-      const repoParts: string[] = [];
-      if (t.created > 0)
-        repoParts.push(`${t.created} ${dry ? "to create" : "created"}`);
-      if (t.forked > 0)
-        repoParts.push(`${t.forked} ${dry ? "to fork" : "forked"}`);
-      if (t.migrated > 0)
-        repoParts.push(`${t.migrated} ${dry ? "to migrate" : "migrated"}`);
-      const repoWord = repoTotal === 1 ? "repo" : "repos";
-      parts.push(`${repoTotal} ${repoWord} (${repoParts.join(", ")})`);
-    }
+    const entry = formatCountSummary(
+      "repo",
+      "repos",
+      [
+        { label: "created", dryLabel: "to create", value: t.created },
+        { label: "forked", dryLabel: "to fork", value: t.forked },
+        { label: "migrated", dryLabel: "to migrate", value: t.migrated },
+      ],
+      dry
+    );
+    if (entry) parts.push(entry);
   }
 
-  // Sync totals
   if (input.sync) {
     const t = input.sync.totals;
-    const fileTotal = t.files.create + t.files.update + t.files.delete;
-    if (fileTotal > 0) {
-      const fileParts: string[] = [];
-      if (t.files.create > 0)
-        fileParts.push(`${t.files.create} ${dry ? "to create" : "created"}`);
-      if (t.files.update > 0)
-        fileParts.push(`${t.files.update} ${dry ? "to update" : "updated"}`);
-      if (t.files.delete > 0)
-        fileParts.push(`${t.files.delete} ${dry ? "to delete" : "deleted"}`);
-      const fileWord = fileTotal === 1 ? "file" : "files";
-      parts.push(`${fileTotal} ${fileWord} (${fileParts.join(", ")})`);
-    }
+    const entry = formatCountSummary(
+      "file",
+      "files",
+      [
+        { label: "created", dryLabel: "to create", value: t.files.create },
+        { label: "updated", dryLabel: "to update", value: t.files.update },
+        { label: "deleted", dryLabel: "to delete", value: t.files.delete },
+      ],
+      dry
+    );
+    if (entry) parts.push(entry);
   }
 
-  // Settings totals
   if (input.settings) {
     const t = input.settings.totals;
-    const settingsTotal = t.settings.add + t.settings.change;
-    if (settingsTotal > 0) {
-      const settingWord = settingsTotal === 1 ? "setting" : "settings";
-      const actions: string[] = [];
-      if (t.settings.add > 0)
-        actions.push(`${t.settings.add} ${dry ? "to add" : "added"}`);
-      if (t.settings.change > 0)
-        actions.push(`${t.settings.change} ${dry ? "to change" : "changed"}`);
-      parts.push(`${settingsTotal} ${settingWord} (${actions.join(", ")})`);
-    }
 
-    const rulesetsTotal =
-      t.rulesets.create + t.rulesets.update + t.rulesets.delete;
-    if (rulesetsTotal > 0) {
-      const rulesetWord = rulesetsTotal === 1 ? "ruleset" : "rulesets";
-      const actions: string[] = [];
-      if (t.rulesets.create > 0)
-        actions.push(`${t.rulesets.create} ${dry ? "to create" : "created"}`);
-      if (t.rulesets.update > 0)
-        actions.push(`${t.rulesets.update} ${dry ? "to update" : "updated"}`);
-      if (t.rulesets.delete > 0)
-        actions.push(`${t.rulesets.delete} ${dry ? "to delete" : "deleted"}`);
-      parts.push(`${rulesetsTotal} ${rulesetWord} (${actions.join(", ")})`);
-    }
+    const settingsEntry = formatCountSummary(
+      "setting",
+      "settings",
+      [
+        { label: "added", dryLabel: "to add", value: t.settings.add },
+        { label: "changed", dryLabel: "to change", value: t.settings.change },
+      ],
+      dry
+    );
+    if (settingsEntry) parts.push(settingsEntry);
 
-    const lt = t.labels;
-    const labelsTotal = lt.create + lt.update + lt.delete;
-    if (labelsTotal > 0) {
-      const labelWord = labelsTotal === 1 ? "label" : "labels";
-      const actions: string[] = [];
-      if (lt.create > 0)
-        actions.push(`${lt.create} ${dry ? "to create" : "created"}`);
-      if (lt.update > 0)
-        actions.push(`${lt.update} ${dry ? "to update" : "updated"}`);
-      if (lt.delete > 0)
-        actions.push(`${lt.delete} ${dry ? "to delete" : "deleted"}`);
-      parts.push(`${labelsTotal} ${labelWord} (${actions.join(", ")})`);
-    }
+    const rulesetsEntry = formatCountSummary(
+      "ruleset",
+      "rulesets",
+      [
+        { label: "created", dryLabel: "to create", value: t.rulesets.create },
+        { label: "updated", dryLabel: "to update", value: t.rulesets.update },
+        { label: "deleted", dryLabel: "to delete", value: t.rulesets.delete },
+      ],
+      dry
+    );
+    if (rulesetsEntry) parts.push(rulesetsEntry);
+
+    const labelsEntry = formatCountSummary(
+      "label",
+      "labels",
+      [
+        { label: "created", dryLabel: "to create", value: t.labels.create },
+        { label: "updated", dryLabel: "to update", value: t.labels.update },
+        { label: "deleted", dryLabel: "to delete", value: t.labels.delete },
+      ],
+      dry
+    );
+    if (labelsEntry) parts.push(labelsEntry);
   }
 
   if (parts.length === 0) {
@@ -185,71 +194,7 @@ function renderSettingsLines(
   settingsRepo: RepoChanges,
   diffLines: string[]
 ): void {
-  for (const setting of settingsRepo.settings) {
-    if (setting.oldValue === undefined && setting.newValue === undefined) {
-      continue;
-    }
-    if (setting.action === "add") {
-      diffLines.push(
-        `+ ${setting.name}: ${formatValuePlain(setting.newValue)}`
-      );
-    } else {
-      diffLines.push(
-        `! ${setting.name}: ${formatValuePlain(setting.oldValue)} → ${formatValuePlain(setting.newValue)}`
-      );
-    }
-  }
-
-  for (const ruleset of settingsRepo.rulesets) {
-    if (ruleset.action === "create") {
-      diffLines.push(`+ ruleset "${ruleset.name}"`);
-      if (ruleset.config) {
-        diffLines.push(...formatRulesetConfigPlain(ruleset.config));
-      }
-    } else if (ruleset.action === "update") {
-      diffLines.push(`! ruleset "${ruleset.name}"`);
-      if (ruleset.propertyDiffs && ruleset.propertyDiffs.length > 0) {
-        for (const diff of ruleset.propertyDiffs) {
-          const path = diff.path.join(".");
-          if (diff.action === "add") {
-            diffLines.push(`+   ${path}: ${formatValuePlain(diff.newValue)}`);
-          } else if (diff.action === "change") {
-            diffLines.push(
-              `!   ${path}: ${formatValuePlain(diff.oldValue)} → ${formatValuePlain(diff.newValue)}`
-            );
-          } else if (diff.action === "remove") {
-            diffLines.push(`-   ${path}`);
-          }
-        }
-      }
-    } else if (ruleset.action === "delete") {
-      diffLines.push(`- ruleset "${ruleset.name}"`);
-    }
-  }
-
-  for (const label of settingsRepo.labels) {
-    if (label.action === "create") {
-      diffLines.push(`+ label "${label.name}"`);
-      if (label.config) {
-        diffLines.push(`+   color: "${label.config.color}"`);
-        if (label.config.description !== undefined) {
-          diffLines.push(`+   description: "${label.config.description}"`);
-        }
-      }
-    } else if (label.action === "update") {
-      if (label.newName) {
-        diffLines.push(`! label "${label.name}" \u2192 "${label.newName}"`);
-      } else {
-        diffLines.push(`! label "${label.name}"`);
-      }
-    } else if (label.action === "delete") {
-      diffLines.push(`- label "${label.name}"`);
-    }
-  }
-
-  if (settingsRepo.error) {
-    diffLines.push(`- Error: ${settingsRepo.error}`);
-  }
+  renderRepoSettingsDiffLines(settingsRepo, diffLines);
 }
 
 // =============================================================================

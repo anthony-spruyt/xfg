@@ -22,6 +22,7 @@ import {
   type SyncResultEntry,
   type SettingsResult,
   type SyncOptions,
+  type ApplyRepoSettingsContext,
 } from "./types.js";
 export type { SharedOptions, SyncOptions } from "./types.js";
 import { ResultsCollector } from "./results-collector.js";
@@ -134,24 +135,20 @@ async function resolveGitHubToken(
   }
 }
 
-async function applyRepoSettings(
-  repoConfig: RepoConfig,
-  repoInfo: RepoInfo,
-  repoName: string,
-  current: number,
-  options: SyncOptions,
-  tokenManager: ReturnType<typeof createTokenManager>,
-  settingsCollector: ResultsCollector,
-  rulesetProcessorFactory: NonNullable<
-    SyncDependencies["rulesetProcessorFactory"]
-  >,
-  repoSettingsProcessorFactory: NonNullable<
-    SyncDependencies["repoSettingsProcessorFactory"]
-  >,
-  labelsProcessorFactory: NonNullable<
-    SyncDependencies["labelsProcessorFactory"]
-  >
-): Promise<void> {
+async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
+  const {
+    repoConfig,
+    repoInfo,
+    repoName,
+    current,
+    options,
+    tokenManager,
+    settingsCollector,
+    rulesetProcessorFactory,
+    repoSettingsProcessorFactory,
+    labelsProcessorFactory,
+  } = ctx;
+
   if (!repoConfig.settings || !isGitHubRepo(repoInfo)) return;
 
   const settingsToken = await resolveGitHubToken(
@@ -492,7 +489,7 @@ export async function runSync(
     }
 
     // After file sync, apply settings via API (GitHub-only — ADO and GitLab repos are skipped)
-    await applyRepoSettings(
+    await applyRepoSettings({
       repoConfig,
       repoInfo,
       repoName,
@@ -502,8 +499,8 @@ export async function runSync(
       settingsCollector,
       rulesetProcessorFactory,
       repoSettingsProcessorFactory,
-      labelsProcessorFactory
-    );
+      labelsProcessorFactory,
+    });
   }
 
   displayReports(

@@ -103,5 +103,28 @@ export interface SettingsResult {
   warnings?: string[];
 }
 
+/**
+ * Context for applying repo settings (rulesets, labels, repo config).
+ * Groups parameters that were previously passed individually.
+ */
+export interface ApplyRepoSettingsContext {
+  repoConfig: import("../config/index.js").RepoConfig;
+  repoInfo: import("../shared/repo-detector.js").RepoInfo;
+  repoName: string;
+  current: number;
+  options: SyncOptions;
+  tokenManager: ReturnType<typeof import("../vcs/index.js").createTokenManager>;
+  settingsCollector: import("./results-collector.js").ResultsCollector;
+  rulesetProcessorFactory: NonNullable<
+    SyncDependencies["rulesetProcessorFactory"]
+  >;
+  repoSettingsProcessorFactory: NonNullable<
+    SyncDependencies["repoSettingsProcessorFactory"]
+  >;
+  labelsProcessorFactory: NonNullable<
+    SyncDependencies["labelsProcessorFactory"]
+  >;
+}
+
 // Re-export for convenience
 export type { IRepoSettingsProcessor, ILabelsProcessor };

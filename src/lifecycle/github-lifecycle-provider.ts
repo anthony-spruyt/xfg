@@ -92,10 +92,8 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     repoInfo: GitHubRepoInfo,
     token?: string
   ): Promise<boolean> {
-    const tokenEnv = buildTokenEnv(token);
-    const hostnameFlag = getHostnameFlag(repoInfo);
-    const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
-    const command = `gh api ${hostnamePart}users/${escapeShellArg(owner)}`;
+    const { tokenEnv, prefix } = this.buildGhApiPrefix(repoInfo, token);
+    const command = `${prefix}users/${escapeShellArg(owner)}`;
 
     try {
       const stdout = await withRetry(
@@ -128,13 +126,34 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     }
   }
 
-  async exists(repoInfo: RepoInfo, token?: string): Promise<boolean> {
-    this.assertGitHub(repoInfo);
-
+  /**
+   * Builds the common gh API command prefix parts for a given repo.
+   * Returns tokenEnv for exec options, and the command prefix string
+   * (e.g., "gh api --hostname host repos/owner/repo").
+   */
+  private buildGhApiPrefix(
+    repoInfo: GitHubRepoInfo,
+    token?: string
+  ): {
+    tokenEnv: Record<string, string> | undefined;
+    prefix: string;
+    apiPath: string;
+  } {
     const tokenEnv = buildTokenEnv(token);
     const hostnameFlag = getHostnameFlag(repoInfo);
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
-    const command = `gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+    const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+    return { tokenEnv, prefix: `gh api ${hostnamePart}`, apiPath };
+  }
+
+  async exists(repoInfo: RepoInfo, token?: string): Promise<boolean> {
+    this.assertGitHub(repoInfo);
+
+    const { tokenEnv, prefix, apiPath } = this.buildGhApiPrefix(
+      repoInfo,
+      token
+    );
+    const command = `${prefix}${apiPath}`;
 
     try {
       // Note: withRetry already classifies 404/not-found as permanent errors,
@@ -206,9 +225,11 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     // Rename default branch if requested and it differs from what GitHub created.
     if (settings?.defaultBranch) {
-      const hostnameFlag = getHostnameFlag(repoInfo);
-      const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
-      const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+      const {
+        tokenEnv: branchTokenEnv,
+        prefix,
+        apiPath,
+      } = this.buildGhApiPrefix(repoInfo, token);
 
       // After repo creation, GitHub may return 404 due to eventual consistency.
       // Exclude 404/not-found from permanent errors so withRetry retries them.
@@ -222,9 +243,9 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         await withRetry(
           () =>
             this.executor.exec(
-              `gh api ${hostnamePart}${apiPath} --jq '.default_branch'`,
+              `${prefix}${apiPath} --jq '.default_branch'`,
               this.cwd,
-              { env: tokenEnv }
+              { env: branchTokenEnv }
             ),
           {
             retries: this.retries,
@@ -517,15 +538,15 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     desired: string,
     token?: string
   ): Promise<void> {
-    const tokenEnv = buildTokenEnv(token);
-    const hostnameFlag = getHostnameFlag(repoInfo);
-    const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
-    const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+    const { tokenEnv, prefix, apiPath } = this.buildGhApiPrefix(
+      repoInfo,
+      token
+    );
 
     await withRetry(
       () =>
         this.executor.exec(
-          `gh api ${hostnamePart}${apiPath}/branches/${escapeShellArg(current)}/rename ` +
+          `${prefix}${apiPath}/branches/${escapeShellArg(current)}/rename ` +
             `--method POST -f new_name=${escapeShellArg(desired)}`,
           this.cwd,
           { env: tokenEnv }
@@ -551,17 +572,17 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     timeoutMs = 15000,
     pollMs = 1000
   ): Promise<void> {
-    const tokenEnv = buildTokenEnv(token);
-    const hostnameFlag = getHostnameFlag(repoInfo);
-    const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
-    const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+    const { tokenEnv, prefix, apiPath } = this.buildGhApiPrefix(
+      repoInfo,
+      token
+    );
     const startTime = Date.now();
 
     while (Date.now() - startTime < timeoutMs) {
       try {
         const branch = (
           await this.executor.exec(
-            `gh api ${hostnamePart}${apiPath} --jq '.default_branch'`,
+            `${prefix}${apiPath} --jq '.default_branch'`,
             this.cwd,
             { env: tokenEnv }
           )
@@ -587,10 +608,10 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     repoInfo: GitHubRepoInfo,
     token?: string
   ): Promise<void> {
-    const tokenEnv = buildTokenEnv(token);
-    const hostnameFlag = getHostnameFlag(repoInfo);
-    const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
-    const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
+    const { tokenEnv, prefix, apiPath } = this.buildGhApiPrefix(
+      repoInfo,
+      token
+    );
 
     // After repo creation, GitHub may return 404 due to eventual consistency.
     // Exclude 404/not-found from permanent errors so withRetry retries them.
@@ -602,7 +623,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     const fileInfo = await withRetry(
       () =>
         this.executor.exec(
-          `gh api ${hostnamePart}${apiPath}/contents/README.md --jq '.sha'`,
+          `${prefix}${apiPath}/contents/README.md --jq '.sha'`,
           this.cwd,
           { env: tokenEnv }
         ),
@@ -618,7 +639,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     await withRetry(
       () =>
         this.executor.exec(
-          `gh api ${hostnamePart}${apiPath}/contents/README.md ` +
+          `${prefix}${apiPath}/contents/README.md ` +
             `--method DELETE -f message='Remove initialization file' -f sha=${escapeShellArg(sha)}`,
           this.cwd,
           { env: tokenEnv }
