@@ -1,5 +1,6 @@
 import { ILogger } from "../shared/logger.js";
 import { getCommitStrategy, type FileChange } from "../vcs/index.js";
+import { getRepoDisplayName } from "../shared/repo-detector.js";
 import type {
   CommitPushOptions,
   CommitPushResult,
@@ -9,10 +10,7 @@ import type {
 export class CommitPushManager implements ICommitPushManager {
   constructor(private readonly log: ILogger) {}
 
-  async commitAndPush(
-    options: CommitPushOptions,
-    repoName: string
-  ): Promise<CommitPushResult> {
+  async commitAndPush(options: CommitPushOptions): Promise<CommitPushResult> {
     const {
       repoInfo,
       gitOps,
@@ -69,7 +67,7 @@ export class CommitPushManager implements ICommitPushManager {
       this.log.info(`Committed: ${result.sha} (verified: ${result.verified})`);
       return { success: true };
     } catch (error) {
-      return this.handleCommitError(error, isDirectMode, pushBranch, repoName);
+      return this.handleCommitError(error, isDirectMode, pushBranch, repoInfo);
     }
   }
 
@@ -77,8 +75,9 @@ export class CommitPushManager implements ICommitPushManager {
     error: unknown,
     isDirectMode: boolean,
     baseBranch: string,
-    repoName: string
+    repoInfo: CommitPushOptions["repoInfo"]
   ): CommitPushResult {
+    const repoName = getRepoDisplayName(repoInfo);
     if (!isDirectMode) {
       throw error; // Re-throw for non-direct mode
     }

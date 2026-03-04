@@ -163,10 +163,7 @@ export interface CommitPushResult {
 }
 
 export interface ICommitPushManager {
-  commitAndPush(
-    options: CommitPushOptions,
-    repoName: string
-  ): Promise<CommitPushResult>;
+  commitAndPush(options: CommitPushOptions): Promise<CommitPushResult>;
 }
 
 export interface ProcessorOptions {

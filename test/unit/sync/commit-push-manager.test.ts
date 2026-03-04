@@ -48,21 +48,18 @@ describe("CommitPushManager", () => {
         ],
       ]);
 
-      const result = await manager.commitAndPush(
-        {
-          repoInfo: mockRepoInfo,
-          gitOps: mockGitOps,
-          workDir,
-          fileChanges,
-          commitMessage: "chore: sync config",
-          pushBranch: "chore/sync-config",
-          isDirectMode: false,
-          dryRun: true,
-          retries: 3,
-          executor: mockExecutor,
-        },
-        "test/repo"
-      );
+      const result = await manager.commitAndPush({
+        repoInfo: mockRepoInfo,
+        gitOps: mockGitOps,
+        workDir,
+        fileChanges,
+        commitMessage: "chore: sync config",
+        pushBranch: "chore/sync-config",
+        isDirectMode: false,
+        dryRun: true,
+        retries: 3,
+        executor: mockExecutor,
+      });
 
       assert.equal(result.success, true);
       assert.ok(messages.some((msg) => msg.includes("Would commit")));
@@ -84,21 +81,18 @@ describe("CommitPushManager", () => {
         ],
       ]);
 
-      const result = await manager.commitAndPush(
-        {
-          repoInfo: mockRepoInfo,
-          gitOps: mockGitOps,
-          workDir,
-          fileChanges,
-          commitMessage: "chore: sync config",
-          pushBranch: "chore/sync-config",
-          isDirectMode: false,
-          dryRun: false,
-          retries: 3,
-          executor: mockExecutor,
-        },
-        "test/repo"
-      );
+      const result = await manager.commitAndPush({
+        repoInfo: mockRepoInfo,
+        gitOps: mockGitOps,
+        workDir,
+        fileChanges,
+        commitMessage: "chore: sync config",
+        pushBranch: "chore/sync-config",
+        isDirectMode: false,
+        dryRun: false,
+        retries: 3,
+        executor: mockExecutor,
+      });
 
       assert.equal(result.success, true);
       assert.equal(result.skipped, true);
@@ -126,21 +120,18 @@ describe("CommitPushManager", () => {
       ]);
 
       // This test verifies dry-run path works (commit strategy complexity avoided)
-      const result = await manager.commitAndPush(
-        {
-          repoInfo: mockRepoInfo,
-          gitOps: mockGitOps,
-          workDir,
-          fileChanges,
-          commitMessage: "chore: sync config",
-          pushBranch: "main",
-          isDirectMode: true,
-          dryRun: true, // Use dry-run to avoid commit strategy complexity
-          retries: 3,
-          executor: mockExecutor,
-        },
-        "test/repo"
-      );
+      const result = await manager.commitAndPush({
+        repoInfo: mockRepoInfo,
+        gitOps: mockGitOps,
+        workDir,
+        fileChanges,
+        commitMessage: "chore: sync config",
+        pushBranch: "main",
+        isDirectMode: true,
+        dryRun: true, // Use dry-run to avoid commit strategy complexity
+        retries: 3,
+        executor: mockExecutor,
+      });
 
       assert.equal(result.success, true);
     });
@@ -168,21 +159,18 @@ describe("CommitPushManager", () => {
       ]);
 
       // Test dry-run to verify filtering logic
-      const result = await manager.commitAndPush(
-        {
-          repoInfo: mockRepoInfo,
-          gitOps: mockGitOps,
-          workDir,
-          fileChanges,
-          commitMessage: "chore: sync config",
-          pushBranch: "chore/sync-config",
-          isDirectMode: false,
-          dryRun: true,
-          retries: 3,
-          executor: mockExecutor,
-        },
-        "test/repo"
-      );
+      const result = await manager.commitAndPush({
+        repoInfo: mockRepoInfo,
+        gitOps: mockGitOps,
+        workDir,
+        fileChanges,
+        commitMessage: "chore: sync config",
+        pushBranch: "chore/sync-config",
+        isDirectMode: false,
+        dryRun: true,
+        retries: 3,
+        executor: mockExecutor,
+      });
 
       assert.equal(result.success, true);
     });
@@ -202,21 +190,18 @@ describe("CommitPushManager", () => {
         ],
       ]);
 
-      await manager.commitAndPush(
-        {
-          repoInfo: mockRepoInfo,
-          gitOps: mockGitOps,
-          workDir,
-          fileChanges,
-          commitMessage: "chore: sync config",
-          pushBranch: "chore/sync-config",
-          isDirectMode: false,
-          dryRun: false,
-          retries: 3,
-          executor: mockExecutor,
-        },
-        "test/repo"
-      );
+      await manager.commitAndPush({
+        repoInfo: mockRepoInfo,
+        gitOps: mockGitOps,
+        workDir,
+        fileChanges,
+        commitMessage: "chore: sync config",
+        pushBranch: "chore/sync-config",
+        isDirectMode: false,
+        dryRun: false,
+        retries: 3,
+        executor: mockExecutor,
+      });
 
       // Verify git add -A was called
       assert.ok(calls.some((c) => c.command === "git add -A"));

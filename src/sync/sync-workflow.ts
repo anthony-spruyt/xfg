@@ -99,22 +99,19 @@ export class SyncWorkflow implements ISyncWorkflow {
       }
 
       const pushBranch = isDirectMode ? session.baseBranch : branchName;
-      const commitResult = await this.commitPushManager.commitAndPush(
-        {
-          repoInfo,
-          gitOps: session.gitOps,
-          workDir,
-          fileChanges: workResult.fileChanges,
-          commitMessage: workResult.commitMessage,
-          pushBranch,
-          isDirectMode,
-          dryRun,
-          retries,
-          token: authResult.token,
-          executor,
-        },
-        repoName
-      );
+      const commitResult = await this.commitPushManager.commitAndPush({
+        repoInfo,
+        gitOps: session.gitOps,
+        workDir,
+        fileChanges: workResult.fileChanges,
+        commitMessage: workResult.commitMessage,
+        pushBranch,
+        isDirectMode,
+        dryRun,
+        retries,
+        token: authResult.token,
+        executor,
+      });
 
       if (!commitResult.success && commitResult.errorResult) {
         return commitResult.errorResult;
