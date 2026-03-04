@@ -29,8 +29,8 @@ export abstract class BaseSettingsProcessor<
 > {
   protected readonly tokenManager: GitHubAppTokenManager | null;
 
-  constructor() {
-    this.tokenManager = createTokenManager();
+  constructor(tokenManager?: GitHubAppTokenManager | null) {
+    this.tokenManager = tokenManager ?? createTokenManager();
   }
 
   async process(
