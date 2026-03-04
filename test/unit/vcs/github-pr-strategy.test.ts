@@ -4,7 +4,7 @@ import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { GitHubPRStrategy } from "../../../src/vcs/github-pr-strategy.js";
 import { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
-import { PRStrategyOptions } from "../../../src/vcs/pr-strategy.js";
+import type { PRStrategyOptions } from "../../../src/vcs/types.js";
 import {
   ICommandExecutor,
   ExecOptions,

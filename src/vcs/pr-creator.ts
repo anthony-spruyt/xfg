@@ -8,9 +8,6 @@ import type { MergeResult, PRMergeConfig } from "./types.js";
 import { interpolateXfgContent } from "../sync/xfg-template.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 
-// Re-export for backwards compatibility and testing
-export { escapeShellArg } from "../shared/shell-utils.js";
-
 export interface FileAction {
   fileName: string;
   action: "create" | "update" | "skip" | "delete";

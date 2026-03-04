@@ -3,13 +3,13 @@ import { join } from "node:path";
 import { escapeShellArg, escapeRegExp } from "../shared/shell-utils.js";
 import { isGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { PRResult } from "./pr-creator.js";
-import {
-  BasePRStrategy,
+import { BasePRStrategy } from "./pr-strategy.js";
+import type {
   PRStrategyOptions,
   CloseExistingPROptions,
   MergeOptions,
   MergeResult,
-} from "./pr-strategy.js";
+} from "./types.js";
 import { logger } from "../shared/logger.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";

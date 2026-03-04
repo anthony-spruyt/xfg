@@ -15,26 +15,6 @@ import {
 import { withRetry } from "../shared/retry-utils.js";
 import { logger } from "../shared/logger.js";
 
-interface IGitOps {
-  cleanWorkspace(): void;
-  clone(gitUrl: string): Promise<void>;
-  fetch(options?: { prune?: boolean }): Promise<void>;
-  createBranch(branchName: string): Promise<void>;
-  commit(message: string): Promise<boolean>;
-  push(branchName: string, options?: { force?: boolean }): Promise<void>;
-  getDefaultBranch(): Promise<{ branch: string; method: string }>;
-  writeFile(fileName: string, content: string): void;
-  setExecutable(fileName: string): Promise<void>;
-  getFileContent(fileName: string): string | null;
-  deleteFile(fileName: string): void;
-  wouldChange(fileName: string, content: string): boolean;
-  hasChanges(): Promise<boolean>;
-  getChangedFiles(): Promise<string[]>;
-  hasStagedChanges(): Promise<boolean>;
-  fileExistsOnBranch(fileName: string, branch: string): Promise<boolean>;
-  fileExists(fileName: string): boolean;
-}
-
 export interface GitOpsOptions {
   workDir: string;
   dryRun?: boolean;
@@ -43,7 +23,7 @@ export interface GitOpsOptions {
   retries?: number;
 }
 
-export class GitOps implements IGitOps {
+export class GitOps {
   private readonly _workDir: string;
   private readonly dryRun: boolean;
   private readonly _executor: ICommandExecutor;

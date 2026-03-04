@@ -7,7 +7,7 @@ import {
   AzureDevOpsRepoInfo,
   GitHubRepoInfo,
 } from "../../../src/shared/repo-detector.js";
-import { PRStrategyOptions } from "../../../src/vcs/pr-strategy.js";
+import type { PRStrategyOptions } from "../../../src/vcs/types.js";
 import { ICommandExecutor } from "../../../src/shared/command-executor.js";
 
 const testDir = join(process.cwd(), "test-azure-strategy-tmp");

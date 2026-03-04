@@ -1,9 +1,6 @@
 import { execSync } from "node:child_process";
 import { sanitizeCredentials } from "./sanitize-utils.js";
 
-/**
- * Options for command execution.
- */
 export interface ExecOptions {
   /** Additional environment variables to set for the command */
   env?: Record<string, string>;
@@ -25,10 +22,6 @@ export interface ICommandExecutor {
   exec(command: string, cwd: string, options?: ExecOptions): Promise<string>;
 }
 
-/**
- * Default implementation that uses Node.js child_process.execSync.
- * Note: Commands are escaped using escapeShellArg before being passed here.
- */
 export class ShellCommandExecutor implements ICommandExecutor {
   async exec(
     command: string,
@@ -67,7 +60,4 @@ export class ShellCommandExecutor implements ICommandExecutor {
   }
 }
 
-/**
- * Default executor instance for production use.
- */
 export const defaultExecutor: ICommandExecutor = new ShellCommandExecutor();
