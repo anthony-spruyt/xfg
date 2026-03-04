@@ -276,12 +276,11 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     payload?: unknown,
     options?: GhApiOptions
   ): Promise<string> {
-    return ghApiCall(
-      method,
-      endpoint,
-      { executor: this.executor, retries: this.retries },
-      options,
-      payload
-    );
+    return ghApiCall(method, endpoint, {
+      executor: this.executor,
+      retries: this.retries,
+      apiOpts: options,
+      payload,
+    });
   }
 }

@@ -4,7 +4,10 @@ import type { LifecycleReport, LifecycleAction } from "./lifecycle-report.js";
 import { hasLifecycleChanges } from "./lifecycle-report.js";
 import type { SyncReport, RepoFileChanges } from "./sync-report.js";
 import type { SettingsReport, RepoChanges } from "./settings-report.js";
-import { renderRepoSettingsDiffLines } from "./settings-report.js";
+import {
+  renderRepoSettingsDiffLines,
+  formatCountEntry,
+} from "./settings-report.js";
 
 // =============================================================================
 // Types
@@ -21,24 +24,12 @@ interface UnifiedSummaryInput {
 // Helpers
 // =============================================================================
 
-/**
- * Formats a summary entry like "3 files (1 to create, 2 to update)".
- * Returns null if total is 0.
- */
-function formatCountSummary(
-  noun: string,
-  pluralNoun: string,
-  counts: { label: string; dryLabel: string; value: number }[],
-  dryRun: boolean
-): string | null {
-  const total = counts.reduce((sum, c) => sum + c.value, 0);
-  if (total === 0) return null;
-
-  const word = total === 1 ? noun : pluralNoun;
-  const actions = counts
-    .filter((c) => c.value > 0)
-    .map((c) => `${c.value} ${dryRun ? c.dryLabel : c.label}`);
-  return `${total} ${word} (${actions.join(", ")})`;
+function selectLabel(
+  dry: boolean,
+  pastLabel: string,
+  futureLabel: string
+): string {
+  return dry ? futureLabel : pastLabel;
 }
 
 function formatCombinedSummary(input: UnifiedSummaryInput): string {
@@ -47,70 +38,75 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
 
   if (input.lifecycle) {
     const t = input.lifecycle.totals;
-    const entry = formatCountSummary(
-      "repo",
-      "repos",
-      [
-        { label: "created", dryLabel: "to create", value: t.created },
-        { label: "forked", dryLabel: "to fork", value: t.forked },
-        { label: "migrated", dryLabel: "to migrate", value: t.migrated },
-      ],
-      dry
-    );
+    const entry = formatCountEntry("repo", "repos", [
+      { label: selectLabel(dry, "created", "to create"), value: t.created },
+      { label: selectLabel(dry, "forked", "to fork"), value: t.forked },
+      { label: selectLabel(dry, "migrated", "to migrate"), value: t.migrated },
+    ]);
     if (entry) parts.push(entry);
   }
 
   if (input.sync) {
     const t = input.sync.totals;
-    const entry = formatCountSummary(
-      "file",
-      "files",
-      [
-        { label: "created", dryLabel: "to create", value: t.files.create },
-        { label: "updated", dryLabel: "to update", value: t.files.update },
-        { label: "deleted", dryLabel: "to delete", value: t.files.delete },
-      ],
-      dry
-    );
+    const entry = formatCountEntry("file", "files", [
+      {
+        label: selectLabel(dry, "created", "to create"),
+        value: t.files.create,
+      },
+      {
+        label: selectLabel(dry, "updated", "to update"),
+        value: t.files.update,
+      },
+      {
+        label: selectLabel(dry, "deleted", "to delete"),
+        value: t.files.delete,
+      },
+    ]);
     if (entry) parts.push(entry);
   }
 
   if (input.settings) {
     const t = input.settings.totals;
 
-    const settingsEntry = formatCountSummary(
-      "setting",
-      "settings",
-      [
-        { label: "added", dryLabel: "to add", value: t.settings.add },
-        { label: "changed", dryLabel: "to change", value: t.settings.change },
-      ],
-      dry
-    );
+    const settingsEntry = formatCountEntry("setting", "settings", [
+      { label: selectLabel(dry, "added", "to add"), value: t.settings.add },
+      {
+        label: selectLabel(dry, "changed", "to change"),
+        value: t.settings.change,
+      },
+    ]);
     if (settingsEntry) parts.push(settingsEntry);
 
-    const rulesetsEntry = formatCountSummary(
-      "ruleset",
-      "rulesets",
-      [
-        { label: "created", dryLabel: "to create", value: t.rulesets.create },
-        { label: "updated", dryLabel: "to update", value: t.rulesets.update },
-        { label: "deleted", dryLabel: "to delete", value: t.rulesets.delete },
-      ],
-      dry
-    );
+    const rulesetsEntry = formatCountEntry("ruleset", "rulesets", [
+      {
+        label: selectLabel(dry, "created", "to create"),
+        value: t.rulesets.create,
+      },
+      {
+        label: selectLabel(dry, "updated", "to update"),
+        value: t.rulesets.update,
+      },
+      {
+        label: selectLabel(dry, "deleted", "to delete"),
+        value: t.rulesets.delete,
+      },
+    ]);
     if (rulesetsEntry) parts.push(rulesetsEntry);
 
-    const labelsEntry = formatCountSummary(
-      "label",
-      "labels",
-      [
-        { label: "created", dryLabel: "to create", value: t.labels.create },
-        { label: "updated", dryLabel: "to update", value: t.labels.update },
-        { label: "deleted", dryLabel: "to delete", value: t.labels.delete },
-      ],
-      dry
-    );
+    const labelsEntry = formatCountEntry("label", "labels", [
+      {
+        label: selectLabel(dry, "created", "to create"),
+        value: t.labels.create,
+      },
+      {
+        label: selectLabel(dry, "updated", "to update"),
+        value: t.labels.update,
+      },
+      {
+        label: selectLabel(dry, "deleted", "to delete"),
+        value: t.labels.delete,
+      },
+    ]);
     if (labelsEntry) parts.push(labelsEntry);
   }
 

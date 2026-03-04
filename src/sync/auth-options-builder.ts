@@ -1,8 +1,4 @@
-import {
-  RepoInfo,
-  isGitHubRepo,
-  GitHubRepoInfo,
-} from "../shared/repo-detector.js";
+import { RepoInfo, isGitHubRepo } from "../shared/repo-detector.js";
 import { GitAuthOptions } from "../vcs/authenticated-git-ops.js";
 import { ILogger } from "../shared/logger.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
@@ -16,10 +12,8 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
   ) {}
 
   async resolve(repoInfo: RepoInfo, repoName: string): Promise<AuthResult> {
-    // 1. Get installation token if GitHub App configured
     const installationToken = await this.getInstallationToken(repoInfo);
 
-    // 2. Handle "no installation found" case
     if (installationToken === null) {
       return {
         ok: false,
@@ -32,14 +26,11 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
       };
     }
 
-    // 3. Build effective token:
-    //    - string  → GitHub App token from tokenManager
-    //    - undefined → no tokenManager / non-GitHub repo; fall back to GH_TOKEN env var
+    // string → GitHub App token; undefined → fall back to GH_TOKEN env var
     const token =
       installationToken ??
       (isGitHubRepo(repoInfo) ? process.env.GH_TOKEN : undefined);
 
-    // 4. Build auth options if we have a token
     const authOptions = token
       ? this.buildAuthOptions(repoInfo, token)
       : undefined;
@@ -55,9 +46,7 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
     }
 
     try {
-      return await this.tokenManager.getTokenForRepo(
-        repoInfo as GitHubRepoInfo
-      );
+      return await this.tokenManager.getTokenForRepo(repoInfo);
     } catch (error) {
       this.log.warn(`Failed to get GitHub App token: ${toErrorMessage(error)}`);
       return undefined;
@@ -65,11 +54,10 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
   }
 
   private buildAuthOptions(repoInfo: RepoInfo, token: string): GitAuthOptions {
+    const host = isGitHubRepo(repoInfo) ? repoInfo.host : "github.com";
     return {
       token,
-      host: isGitHubRepo(repoInfo)
-        ? (repoInfo as GitHubRepoInfo).host
-        : "github.com",
+      host,
       owner: repoInfo.owner,
       repo: repoInfo.repo,
     };

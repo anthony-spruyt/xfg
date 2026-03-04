@@ -95,22 +95,33 @@ function validateFileConfigFields(
     );
   }
 
-  if (
-    fileConfig.createOnly !== undefined &&
-    typeof fileConfig.createOnly !== "boolean"
-  ) {
-    throw new Error(
-      `${context} file '${fileName}' createOnly must be a boolean`
-    );
+  const booleanFields = [
+    "createOnly",
+    "executable",
+    "template",
+    "deleteOrphaned",
+  ] as const;
+  for (const field of booleanFields) {
+    if (
+      fileConfig[field] !== undefined &&
+      typeof fileConfig[field] !== "boolean"
+    ) {
+      throw new Error(
+        `${context} file '${fileName}' ${field} must be a boolean`
+      );
+    }
   }
 
-  if (
-    fileConfig.executable !== undefined &&
-    typeof fileConfig.executable !== "boolean"
-  ) {
-    throw new Error(
-      `${context} file '${fileName}' executable must be a boolean`
-    );
+  const stringFields = ["schemaUrl"] as const;
+  for (const field of stringFields) {
+    if (
+      fileConfig[field] !== undefined &&
+      typeof fileConfig[field] !== "string"
+    ) {
+      throw new Error(
+        `${context} file '${fileName}' ${field} must be a string`
+      );
+    }
   }
 
   if (fileConfig.header !== undefined) {
@@ -123,20 +134,6 @@ function validateFileConfigFields(
         `${context} file '${fileName}' header must be a string or array of strings`
       );
     }
-  }
-
-  if (
-    fileConfig.schemaUrl !== undefined &&
-    typeof fileConfig.schemaUrl !== "string"
-  ) {
-    throw new Error(`${context} file '${fileName}' schemaUrl must be a string`);
-  }
-
-  if (
-    fileConfig.template !== undefined &&
-    typeof fileConfig.template !== "boolean"
-  ) {
-    throw new Error(`${context} file '${fileName}' template must be a boolean`);
   }
 
   if (fileConfig.vars !== undefined) {
@@ -158,15 +155,6 @@ function validateFileConfigFields(
         );
       }
     }
-  }
-
-  if (
-    fileConfig.deleteOrphaned !== undefined &&
-    typeof fileConfig.deleteOrphaned !== "boolean"
-  ) {
-    throw new Error(
-      `${context} file '${fileName}' deleteOrphaned must be a boolean`
-    );
   }
 }
 

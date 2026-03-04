@@ -10,9 +10,12 @@ export interface GhApiOptions {
   host?: string;
 }
 
-interface GhApiCallOptions {
+export interface GhApiCallOptions {
   executor: ICommandExecutor;
   retries: number;
+  apiOpts?: GhApiOptions;
+  payload?: unknown;
+  paginate?: boolean;
 }
 
 /**
@@ -42,11 +45,9 @@ export function buildTokenEnv(
 export async function ghApiCall(
   method: HttpMethod,
   endpoint: string,
-  opts: GhApiCallOptions,
-  apiOpts?: GhApiOptions,
-  payload?: unknown,
-  paginate?: boolean
+  opts: GhApiCallOptions
 ): Promise<string> {
+  const { executor, retries, apiOpts, payload, paginate } = opts;
   const args: string[] = ["gh", "api"];
 
   if (method !== "GET") {
@@ -73,13 +74,13 @@ export async function ghApiCall(
     const payloadJson = JSON.stringify(payload);
     const command = `echo ${escapeShellArg(payloadJson)} | ${baseCommand} --input -`;
     return await withRetry(
-      () => opts.executor.exec(command, process.cwd(), { env }),
-      { retries: opts.retries }
+      () => executor.exec(command, process.cwd(), { env }),
+      { retries }
     );
   }
 
   return await withRetry(
-    () => opts.executor.exec(baseCommand, process.cwd(), { env }),
-    { retries: opts.retries }
+    () => executor.exec(baseCommand, process.cwd(), { env }),
+    { retries }
   );
 }

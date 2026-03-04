@@ -120,13 +120,12 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     options?: GhApiOptions,
     paginate?: boolean
   ): Promise<string> {
-    return ghApiCall(
-      method,
-      endpoint,
-      { executor: this.executor, retries: this.retries },
-      options,
+    return ghApiCall(method, endpoint, {
+      executor: this.executor,
+      retries: this.retries,
+      apiOpts: options,
       payload,
-      paginate
-    );
+      paginate,
+    });
   }
 }

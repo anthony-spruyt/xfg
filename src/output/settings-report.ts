@@ -49,14 +49,6 @@ export interface LabelChange {
   config?: Label;
 }
 
-function formatValue(val: unknown): string {
-  if (val === null) return "null";
-  if (val === undefined) return "undefined";
-  if (typeof val === "string") return `"${val}"`;
-  if (typeof val === "boolean") return val ? "true" : "false";
-  return String(val);
-}
-
 function formatRulesetConfig(config: Ruleset, indent: number): string[] {
   const lines: string[] = [];
 
@@ -96,7 +88,7 @@ function formatRulesetConfig(config: Ruleset, indent: number): string[] {
             lines.push(chalk.green(`${pad}    + [${i}]${typeLabel}:`));
             renderObject(obj, currentIndent + 2);
           } else {
-            lines.push(chalk.green(`${pad}    + ${formatValue(item)}`));
+            lines.push(chalk.green(`${pad}    + ${formatValuePlain(item)}`));
           }
         }
       }
@@ -104,12 +96,12 @@ function formatRulesetConfig(config: Ruleset, indent: number): string[] {
       lines.push(chalk.green(`${pad}+ ${key}:`));
       renderObject(value as Record<string, unknown>, currentIndent + 1);
     } else {
-      lines.push(chalk.green(`${pad}+ ${key}: ${formatValue(value)}`));
+      lines.push(chalk.green(`${pad}+ ${key}: ${formatValuePlain(value)}`));
     }
   }
 
   for (const [key, value] of Object.entries(config)) {
-    if (key === "name") continue; // Name is in the header
+    if (key === "name") continue;
     renderValue(key, value, indent);
   }
 
@@ -120,7 +112,7 @@ function formatRulesetConfig(config: Ruleset, indent: number): string[] {
  * Formats a summary entry like "3 files (1 to create, 2 to update)".
  * Returns null if total is 0.
  */
-function formatCountEntry(
+export function formatCountEntry(
   noun: string,
   pluralNoun: string,
   counts: { label: string; value: number }[]
@@ -189,12 +181,14 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
       }
       if (setting.action === "add") {
         lines.push(
-          chalk.green(`    + ${setting.name}: ${formatValue(setting.newValue)}`)
+          chalk.green(
+            `    + ${setting.name}: ${formatValuePlain(setting.newValue)}`
+          )
         );
       } else {
         lines.push(
           chalk.yellow(
-            `    ~ ${setting.name}: ${formatValue(setting.oldValue)} → ${formatValue(setting.newValue)}`
+            `    ~ ${setting.name}: ${formatValuePlain(setting.oldValue)} → ${formatValuePlain(setting.newValue)}`
           )
         );
       }

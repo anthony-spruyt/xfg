@@ -1,4 +1,4 @@
-import type { MergeMode, MergeStrategy } from "../config/index.js";
+import type { MergeMode, MergeStrategy, RepoConfig } from "../config/index.js";
 import type { IRepoLifecycleManager } from "../lifecycle/index.js";
 import {
   RepositoryProcessor,
@@ -16,6 +16,9 @@ import {
   LabelsProcessor,
   type ILabelsProcessor,
 } from "../settings/labels/processor.js";
+import type { RepoInfo } from "../shared/repo-detector.js";
+import type { createTokenManager } from "../vcs/index.js";
+import type { ResultsCollector } from "./results-collector.js";
 
 export type { IRepositoryProcessor, IRulesetProcessor };
 
@@ -108,13 +111,13 @@ export interface SettingsResult {
  * Groups parameters that were previously passed individually.
  */
 export interface ApplyRepoSettingsContext {
-  repoConfig: import("../config/index.js").RepoConfig;
-  repoInfo: import("../shared/repo-detector.js").RepoInfo;
+  repoConfig: RepoConfig;
+  repoInfo: RepoInfo;
   repoName: string;
   current: number;
   options: SyncOptions;
-  tokenManager: ReturnType<typeof import("../vcs/index.js").createTokenManager>;
-  settingsCollector: import("./results-collector.js").ResultsCollector;
+  tokenManager: ReturnType<typeof createTokenManager>;
+  settingsCollector: ResultsCollector;
   rulesetProcessorFactory: NonNullable<
     SyncDependencies["rulesetProcessorFactory"]
   >;

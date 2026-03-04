@@ -6,7 +6,6 @@ export {
   withRetry,
   isPermanentError,
   isTransientError,
-  promisify,
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "./retry-utils.js";
 
@@ -26,8 +25,6 @@ export { sanitizeCredentials } from "./sanitize-utils.js";
 // Environment
 export {
   interpolateEnvVars,
-  interpolateEnvVarsInString,
-  interpolateEnvVarsInLines,
   interpolateContent,
   type EnvInterpolationOptions,
 } from "./env.js";
