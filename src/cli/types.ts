@@ -5,6 +5,7 @@ import {
   RepositoryProcessor,
   type ProcessorResult,
   type ProcessorOptions,
+  type IRepositoryProcessor,
 } from "../sync/index.js";
 import {
   RulesetProcessor,
@@ -20,20 +21,8 @@ import {
   type ILabelsProcessor,
 } from "../settings/labels/processor.js";
 
-/**
- * Processor interface for dependency injection in tests.
- */
-export interface IRepositoryProcessor {
-  process(
-    repoConfig: RepoConfig,
-    repoInfo: RepoInfo,
-    options: ProcessorOptions
-  ): Promise<ProcessorResult>;
-}
+export type { IRepositoryProcessor };
 
-/**
- * Factory function type for creating processors.
- */
 export type ProcessorFactory = () => IRepositoryProcessor;
 
 /**

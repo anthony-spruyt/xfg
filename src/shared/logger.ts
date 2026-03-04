@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { FileStatus, formatStatusBadge } from "../sync/diff-utils.js";
+import { FileStatus, formatStatusBadge } from "./file-status.js";
 
 export interface ILogger {
   info(message: string): void;

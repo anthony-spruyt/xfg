@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { FileContent, ContentValue } from "../config/types.js";
 import { convertContentToString } from "../config/formatter.js";
-import { interpolateXfgContent } from "./xfg-template.js";
+import { interpolateXfgContent } from "../shared/xfg-template.js";
 import {
   getFileStatus,
   generateDiff,

@@ -1,29 +1,12 @@
 import chalk from "chalk";
 
-export type FileStatus = "NEW" | "MODIFIED" | "UNCHANGED" | "DELETED";
+export type { FileStatus } from "../shared/file-status.js";
+export { formatStatusBadge } from "../shared/file-status.js";
+import type { FileStatus } from "../shared/file-status.js";
 
-/**
- * Determines file status based on existence and change detection.
- */
 export function getFileStatus(exists: boolean, changed: boolean): FileStatus {
   if (!exists) return "NEW";
   return changed ? "MODIFIED" : "UNCHANGED";
-}
-
-/**
- * Format a status badge with appropriate color.
- */
-export function formatStatusBadge(status: FileStatus): string {
-  switch (status) {
-    case "NEW":
-      return chalk.green("[NEW]");
-    case "MODIFIED":
-      return chalk.yellow("[MODIFIED]");
-    case "UNCHANGED":
-      return chalk.gray("[UNCHANGED]");
-    case "DELETED":
-      return chalk.red("[DELETED]");
-  }
 }
 
 /**
