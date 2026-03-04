@@ -6,19 +6,7 @@ export interface ExecOptions {
   env?: Record<string, string>;
 }
 
-/**
- * Interface for executing shell commands.
- * Enables dependency injection for testing and alternative implementations.
- */
 export interface ICommandExecutor {
-  /**
-   * Execute a shell command and return the output.
-   * @param command The command to execute
-   * @param cwd The working directory for the command
-   * @param options Optional execution options (env vars, etc.)
-   * @returns Promise resolving to the trimmed stdout output
-   * @throws Error if the command fails
-   */
   exec(command: string, cwd: string, options?: ExecOptions): Promise<string>;
 }
 

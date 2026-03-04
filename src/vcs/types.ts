@@ -88,12 +88,6 @@ export interface IPRStrategy {
    * @returns Result with merge status
    */
   merge(options: MergeOptions): Promise<MergeResult>;
-
-  /**
-   * Execute the full PR creation workflow
-   * @deprecated Use PRWorkflowExecutor.execute() for better SRP
-   */
-  execute(options: PRStrategyOptions): Promise<PRResult>;
 }
 
 // =============================================================================

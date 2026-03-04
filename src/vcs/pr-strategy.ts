@@ -23,19 +23,6 @@ export abstract class BasePRStrategy implements IPRStrategy {
   abstract closeExistingPR(options: CloseExistingPROptions): Promise<boolean>;
   abstract create(options: PRStrategyOptions): Promise<PRResult>;
   abstract merge(options: MergeOptions): Promise<MergeResult>;
-
-  /**
-   * Execute the full PR creation workflow:
-   * 1. Check for existing PR
-   * 2. If exists, return it
-   * 3. Otherwise, create new PR
-   *
-   * @deprecated Use PRWorkflowExecutor.execute() for better SRP
-   */
-  async execute(options: PRStrategyOptions): Promise<PRResult> {
-    const executor = new PRWorkflowExecutor(this);
-    return executor.execute(options);
-  }
 }
 
 export class PRWorkflowExecutor {

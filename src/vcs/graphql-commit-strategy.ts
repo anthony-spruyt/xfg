@@ -33,7 +33,7 @@ export const SAFE_BRANCH_NAME_PATTERN = /^[a-zA-Z0-9][-a-zA-Z0-9_./]*$/;
  * Validates that a branch name is safe for use in shell commands.
  * Throws an error if the branch name contains potentially dangerous characters.
  */
-export function validateBranchName(branchName: string): void {
+export function validateSafeBranchName(branchName: string): void {
   if (!SAFE_BRANCH_NAME_PATTERN.test(branchName)) {
     throw new Error(
       `Invalid branch name for GraphQL commit strategy: "${branchName}". ` +
@@ -114,7 +114,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     }
 
     // Validate branch name is safe for shell commands
-    validateBranchName(branchName);
+    validateSafeBranchName(branchName);
 
     const githubInfo = repoInfo as GitHubRepoInfo;
 

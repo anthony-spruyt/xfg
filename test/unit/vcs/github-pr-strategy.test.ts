@@ -3,6 +3,7 @@ import assert from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { GitHubPRStrategy } from "../../../src/vcs/github-pr-strategy.js";
+import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
 import { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import type { PRStrategyOptions } from "../../../src/vcs/types.js";
 import {
@@ -387,7 +388,7 @@ describe("GitHubPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.execute(options);
+      const result = await new PRWorkflowExecutor(strategy).execute(options);
 
       assert.equal(result.success, true);
       assert.equal(result.url, "https://github.com/owner/repo/pull/existing");
@@ -414,7 +415,7 @@ describe("GitHubPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.execute(options);
+      const result = await new PRWorkflowExecutor(strategy).execute(options);
 
       assert.equal(result.success, true);
       assert.equal(result.url, "https://github.com/owner/repo/pull/999");
@@ -437,7 +438,7 @@ describe("GitHubPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.execute(options);
+      const result = await new PRWorkflowExecutor(strategy).execute(options);
 
       assert.equal(result.success, false);
       assert.ok(result.message.includes("Failed to create PR"));

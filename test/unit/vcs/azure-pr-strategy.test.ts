@@ -3,6 +3,7 @@ import assert from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { AzurePRStrategy } from "../../../src/vcs/azure-pr-strategy.js";
+import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
 import {
   AzureDevOpsRepoInfo,
   GitHubRepoInfo,
@@ -225,7 +226,7 @@ describe("AzurePRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.execute(options);
+      const result = await new PRWorkflowExecutor(strategy).execute(options);
 
       assert.equal(result.success, true);
       assert.ok(result.message.includes("already exists"));
@@ -247,7 +248,7 @@ describe("AzurePRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.execute(options);
+      const result = await new PRWorkflowExecutor(strategy).execute(options);
 
       assert.equal(result.success, true);
       assert.equal(mockExecutor.calls.length, 2);
@@ -268,7 +269,7 @@ describe("AzurePRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.execute(options);
+      const result = await new PRWorkflowExecutor(strategy).execute(options);
 
       assert.equal(result.success, false);
       assert.ok(result.message.includes("Failed to create PR"));

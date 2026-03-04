@@ -3,6 +3,7 @@ import assert from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { GitLabPRStrategy } from "../../../src/vcs/gitlab-pr-strategy.js";
+import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
 import {
   GitLabRepoInfo,
   AzureDevOpsRepoInfo,
@@ -319,7 +320,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.execute(options);
+      const result = await new PRWorkflowExecutor(strategy).execute(options);
 
       assert.equal(result.success, true);
       assert.equal(
@@ -349,7 +350,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.execute(options);
+      const result = await new PRWorkflowExecutor(strategy).execute(options);
 
       assert.equal(result.success, true);
       assert.equal(
@@ -378,7 +379,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.execute(options);
+      const result = await new PRWorkflowExecutor(strategy).execute(options);
 
       assert.equal(result.success, false);
       assert.ok(result.message.includes("Failed to create PR"));
