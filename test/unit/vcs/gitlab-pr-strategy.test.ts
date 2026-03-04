@@ -141,7 +141,7 @@ describe("GitLabPRStrategy with mock executor", () => {
       assert.equal(result, null);
     });
 
-    test("throws on permanent error (auth failure)", async () => {
+    test("returns null on permanent error (auth failure)", async () => {
       const authError = new Error("401 Unauthorized - Bad credentials");
       mockExecutor.responses.set("glab mr list", authError);
 
@@ -156,7 +156,8 @@ describe("GitLabPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      await assert.rejects(() => strategy.checkExistingPR(options), /401/);
+      const result = await strategy.checkExistingPR(options);
+      assert.equal(result, null);
     });
 
     test("returns null on transient error", async () => {

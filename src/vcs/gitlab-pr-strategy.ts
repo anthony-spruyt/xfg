@@ -11,7 +11,7 @@ import type {
   MergeResult,
 } from "./types.js";
 import { logger } from "../shared/logger.js";
-import { withRetry, isPermanentError } from "../shared/retry-utils.js";
+import { withRetry } from "../shared/retry-utils.js";
 import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
@@ -113,11 +113,8 @@ export class GitLabPRStrategy extends BasePRStrategy {
       }
       return null;
     } catch (error) {
-      // Throw on permanent errors (auth failures, etc.)
-      if (isPermanentError(error)) {
-        throw error;
-      }
-      // Log unexpected errors for debugging
+      // Return null on any error — PRWorkflowExecutor catches exceptions,
+      // and the subsequent create() call will surface permanent errors.
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("no merge requests")) {
         logger.debug(

@@ -11,7 +11,7 @@ import type {
   MergeResult,
 } from "./types.js";
 import { logger } from "../shared/logger.js";
-import { withRetry, isPermanentError } from "../shared/retry-utils.js";
+import { withRetry } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { getStderr } from "../shared/command-executor.js";
@@ -59,11 +59,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
       return existingPR || null;
     } catch (error) {
-      // Throw on permanent errors (auth failures, etc.)
-      if (isPermanentError(error)) {
-        throw error;
-      }
-      // Log unexpected errors for debugging (expected: empty result means no PR)
+      // Return null on any error — PRWorkflowExecutor catches exceptions,
+      // and the subsequent create() call will surface permanent errors.
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("no pull requests match")) {
         logger.debug(
