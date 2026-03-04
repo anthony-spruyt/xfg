@@ -13,6 +13,7 @@ import {
   type GitHubRepoInfo,
 } from "../shared/repo-detector.js";
 import { logger } from "../shared/logger.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import { buildTokenEnv, getHostnameFlag } from "../settings/gh-api-utils.js";
 import type {
   IRepoLifecycleProvider,
@@ -105,7 +106,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     } catch (error) {
       // If we can't determine, assume it's an org (safer - uses --org flag).
       // This may cause fork to fail with a misleading error for personal accounts.
-      const errMsg = error instanceof Error ? error.message : String(error);
+      const errMsg = toErrorMessage(error);
       logger.debug(
         `Could not determine if '${owner}' is an organization, defaulting to org behavior: ${errMsg}`
       );
@@ -401,7 +402,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       );
     } catch (error) {
       logger.info(
-        `Debug: remote remove origin skipped - ${error instanceof Error ? error.message : String(error)}`
+        `Debug: remote remove origin skipped - ${toErrorMessage(error)}`
       );
     }
 
@@ -428,9 +429,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         }
       }
     } catch (error) {
-      logger.info(
-        `Debug: ref cleanup skipped - ${error instanceof Error ? error.message : String(error)}`
-      );
+      logger.info(`Debug: ref cleanup skipped - ${toErrorMessage(error)}`);
     }
 
     // Rename default branch in mirror clone if requested.

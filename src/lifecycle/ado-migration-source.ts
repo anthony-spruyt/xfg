@@ -4,6 +4,7 @@ import {
   defaultExecutor,
 } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import {
   isAzureDevOpsRepo,
   type RepoInfo,
@@ -43,7 +44,7 @@ export class AdoMigrationSource implements IMigrationSource {
         retries: this.retries,
       });
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = toErrorMessage(error);
       throw new Error(
         `Failed to clone migration source ${repoInfo.gitUrl}: ${msg}. ` +
           `Ensure you have authentication configured for Azure DevOps ` +

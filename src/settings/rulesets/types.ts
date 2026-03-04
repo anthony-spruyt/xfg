@@ -1,5 +1,6 @@
 import type { RepoInfo } from "../../shared/repo-detector.js";
 import type { Ruleset } from "../../config/index.js";
+import type { GhApiOptions } from "../gh-api-utils.js";
 
 /**
  * GitHub Ruleset response from API (snake_case).
@@ -34,10 +35,7 @@ export interface GitHubRule {
   parameters?: Record<string, unknown>;
 }
 
-export interface RulesetStrategyOptions {
-  token?: string;
-  host?: string;
-}
+export type RulesetStrategyOptions = GhApiOptions;
 
 export interface IRulesetStrategy {
   list(

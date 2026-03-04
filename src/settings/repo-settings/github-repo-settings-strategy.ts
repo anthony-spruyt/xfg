@@ -14,6 +14,7 @@ import type {
   RepoSettingsStrategyOptions,
   CurrentRepoSettings,
 } from "./types.js";
+import { toErrorMessage } from "../../shared/type-guards.js";
 
 /**
  * Converts camelCase to snake_case.
@@ -206,7 +207,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
       await this.ghApi("GET", endpoint, undefined, options);
       return true; // 204 = enabled
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       if (message.includes("HTTP 404")) {
         return false; // 404 = disabled
       }
@@ -231,7 +232,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
       // Empty response (204) means enabled
       return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       if (message.includes("HTTP 404")) {
         return false;
       }
@@ -249,7 +250,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
       const data = JSON.parse(result);
       return data.enabled === true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       if (message.includes("HTTP 404")) {
         return false; // 404 = not available (e.g. private repos)
       }

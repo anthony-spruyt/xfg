@@ -7,6 +7,7 @@ import { GitAuthOptions } from "../vcs/authenticated-git-ops.js";
 import { ILogger } from "../shared/logger.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import type { AuthResult, IAuthOptionsBuilder } from "./types.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 export class AuthOptionsBuilder implements IAuthOptionsBuilder {
   constructor(
@@ -56,7 +57,7 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
       );
     } catch (error) {
       this.log.info(
-        `Warning: Failed to get GitHub App token: ${error instanceof Error ? error.message : String(error)}`
+        `Warning: Failed to get GitHub App token: ${toErrorMessage(error)}`
       );
       return undefined;
     }

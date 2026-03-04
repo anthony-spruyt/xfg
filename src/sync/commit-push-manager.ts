@@ -6,6 +6,7 @@ import type {
   CommitPushResult,
   ICommitPushManager,
 } from "./types.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 export class CommitPushManager implements ICommitPushManager {
   constructor(private readonly log: ILogger) {}
@@ -82,7 +83,7 @@ export class CommitPushManager implements ICommitPushManager {
       throw error; // Re-throw for non-direct mode
     }
 
-    const message = error instanceof Error ? error.message : String(error);
+    const message = toErrorMessage(error);
     if (
       message.includes("rejected") ||
       message.includes("protected") ||

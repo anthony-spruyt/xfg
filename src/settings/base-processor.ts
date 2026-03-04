@@ -3,6 +3,7 @@ import type { RepoInfo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { isGitHubRepo, getRepoDisplayName } from "../shared/repo-detector.js";
 import { createTokenManager } from "../vcs/index.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 export interface BaseProcessorOptions {
   dryRun?: boolean;
@@ -67,7 +68,7 @@ export abstract class BaseSettingsProcessor<
         repoName
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       return this.createErrorResult(repoName, `Failed: ${message}`);
     }
   }

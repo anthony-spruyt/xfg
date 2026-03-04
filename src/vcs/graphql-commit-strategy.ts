@@ -9,6 +9,7 @@ import {
   withRetry,
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "../shared/retry-utils.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
@@ -378,7 +379,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
           token
         );
       } catch (error) {
-        const msg = error instanceof Error ? error.message : String(error);
+        const msg = toErrorMessage(error);
         if (/already exists/i.test(msg)) {
           // Branch was created between our query and create — that's fine
           return;
@@ -396,8 +397,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
    * of base64-encoded file contents). This extracts just the meaningful stderr.
    */
   private sanitizeCommandError(error: unknown, repo: string): Error {
-    const originalMessage =
-      error instanceof Error ? error.message : String(error);
+    const originalMessage = toErrorMessage(error);
 
     let cleanMessage: string;
 

@@ -16,6 +16,7 @@ import type {
 import { logger } from "../shared/logger.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 
@@ -106,7 +107,7 @@ export class AzurePRStrategy extends BasePRStrategy {
         retries,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       logger.info(`Warning: Failed to abandon PR #${prInfo.prId}: ${message}`);
       return false;
     }
@@ -129,7 +130,7 @@ export class AzurePRStrategy extends BasePRStrategy {
       }
     } catch (error) {
       // Branch deletion failure is not critical - PR is already abandoned
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       logger.info(`Warning: Failed to delete branch ${branchName}: ${message}`);
     }
 
@@ -253,7 +254,7 @@ export class AzurePRStrategy extends BasePRStrategy {
           autoMergeEnabled: true,
         };
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const message = toErrorMessage(error);
         return {
           success: false,
           message: `Failed to enable auto-complete: ${message}`,
@@ -281,7 +282,7 @@ export class AzurePRStrategy extends BasePRStrategy {
           merged: true,
         };
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const message = toErrorMessage(error);
         return {
           success: false,
           message: `Failed to bypass policies and complete PR: ${message}`,

@@ -2,6 +2,7 @@ import type { ProcessorResult } from "../sync/index.js";
 import { RepoConfig } from "../config/index.js";
 import { MergeOutcome, FileChanges, RepoResult } from "./github-summary.js";
 import { DiffStats } from "../sync/diff-utils.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 /**
  * Determine merge outcome from repo config and processor result
@@ -82,7 +83,7 @@ export function buildRepoResult(
  * Build a RepoResult for an error case
  */
 export function buildErrorResult(repoName: string, error: unknown): RepoResult {
-  const message = error instanceof Error ? error.message : String(error);
+  const message = toErrorMessage(error);
   return {
     repoName,
     status: "failed",

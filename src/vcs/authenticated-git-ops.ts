@@ -3,6 +3,7 @@ import { escapeShellArg } from "../shared/shell-utils.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { logger } from "../shared/logger.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 /**
  * Options for authenticated git operations.
@@ -132,7 +133,7 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
         return { branch: match[1], method: "remote HEAD" };
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = toErrorMessage(error);
       logger.debug(`git remote show origin failed - ${msg}`);
     }
 
@@ -144,7 +145,7 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
       );
       return { branch: "main", method: "origin/main exists" };
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = toErrorMessage(error);
       logger.debug(`origin/main check failed - ${msg}`);
     }
 
@@ -155,7 +156,7 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
       );
       return { branch: "master", method: "origin/master exists" };
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = toErrorMessage(error);
       logger.debug(`origin/master check failed - ${msg}`);
     }
 

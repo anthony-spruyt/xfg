@@ -14,6 +14,7 @@ import { logger } from "../shared/logger.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import type { MergeStrategy } from "../config/index.js";
 
 export class GitLabPRStrategy extends BasePRStrategy {
@@ -166,7 +167,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
         retries,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       logger.info(
         `Warning: Failed to close existing MR !${mrInfo.mrIid}: ${message}`
       );
@@ -182,7 +183,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
       });
     } catch (error) {
       // Branch deletion failure is not critical
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       logger.info(`Warning: Failed to delete branch ${branchName}: ${message}`);
     }
 
@@ -305,7 +306,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
           autoMergeEnabled: true,
         };
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const message = toErrorMessage(error);
         return {
           success: false,
           message: `Failed to enable auto-merge: ${message}`,
@@ -331,7 +332,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
           merged: true,
         };
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const message = toErrorMessage(error);
         return {
           success: false,
           message: `Failed to force merge: ${message}`,

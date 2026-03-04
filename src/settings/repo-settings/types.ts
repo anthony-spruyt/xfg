@@ -1,10 +1,8 @@
 import type { RepoInfo } from "../../shared/repo-detector.js";
 import type { GitHubRepoSettings } from "../../config/index.js";
+import type { GhApiOptions } from "../gh-api-utils.js";
 
-export interface RepoSettingsStrategyOptions {
-  token?: string;
-  host?: string;
-}
+export type RepoSettingsStrategyOptions = GhApiOptions;
 
 /**
  * Current repository settings from GitHub API (snake_case).

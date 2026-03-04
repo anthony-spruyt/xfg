@@ -13,6 +13,7 @@ import {
   defaultExecutor,
 } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import { logger } from "../shared/logger.js";
 
 export interface GitOpsOptions {
@@ -113,7 +114,7 @@ export class GitOps {
         this._workDir
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       throw new Error(`Failed to create branch '${branchName}': ${message}`);
     }
   }
@@ -320,7 +321,7 @@ export class GitOps {
         return { branch: match[1], method: "remote HEAD" };
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = toErrorMessage(error);
       logger.debug(`git remote show origin failed - ${msg}`);
     }
 
@@ -329,7 +330,7 @@ export class GitOps {
       await this.exec("git rev-parse --verify origin/main", this._workDir);
       return { branch: "main", method: "origin/main exists" };
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = toErrorMessage(error);
       logger.debug(`origin/main check failed - ${msg}`);
     }
 
@@ -337,7 +338,7 @@ export class GitOps {
       await this.exec("git rev-parse --verify origin/master", this._workDir);
       return { branch: "master", method: "origin/master exists" };
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = toErrorMessage(error);
       logger.debug(`origin/master check failed - ${msg}`);
     }
 

@@ -39,6 +39,7 @@ import {
 } from "../output/lifecycle-report.js";
 import { writeUnifiedSummary } from "../output/unified-summary.js";
 import type { ProcessorResult } from "../sync/index.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import {
   RepoLifecycleManager,
   runLifecycleCheck,
@@ -194,7 +195,7 @@ export async function runSync(
   try {
     validateForSync(rawConfig);
   } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
+    console.error(toErrorMessage(error));
     process.exit(1);
   }
 
@@ -256,7 +257,7 @@ export async function runSync(
         repoName: repoConfig.git,
         success: false,
         fileChanges: [],
-        error: error instanceof Error ? error.message : String(error),
+        error: toErrorMessage(error),
       });
       continue;
     }
@@ -275,7 +276,7 @@ export async function runSync(
           process.env.GH_TOKEN;
       } catch (error) {
         logger.debug(
-          `Token resolution failed for ${repoName}: ${error instanceof Error ? error.message : String(error)}`
+          `Token resolution failed for ${repoName}: ${toErrorMessage(error)}`
         );
         lifecycleToken = process.env.GH_TOKEN;
       }
@@ -329,13 +330,13 @@ export async function runSync(
       logger.error(
         current,
         repoName,
-        `Lifecycle error: ${error instanceof Error ? error.message : String(error)}`
+        `Lifecycle error: ${toErrorMessage(error)}`
       );
       reportResults.push({
         repoName,
         success: false,
         fileChanges: [],
-        error: error instanceof Error ? error.message : String(error),
+        error: toErrorMessage(error),
       });
       continue;
     }
@@ -380,7 +381,7 @@ export async function runSync(
         repoName,
         success: false,
         fileChanges: [],
-        error: error instanceof Error ? error.message : String(error),
+        error: toErrorMessage(error),
       });
     }
 
@@ -394,7 +395,7 @@ export async function runSync(
           process.env.GH_TOKEN;
       } catch (error) {
         logger.debug(
-          `Settings token resolution failed for ${repoName}: ${error instanceof Error ? error.message : String(error)}`
+          `Settings token resolution failed for ${repoName}: ${toErrorMessage(error)}`
         );
         settingsToken = process.env.GH_TOKEN;
       }

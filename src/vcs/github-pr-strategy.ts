@@ -13,6 +13,7 @@ import type {
 import { logger } from "../shared/logger.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
 import { buildTokenEnv, getHostnameFlag } from "../settings/gh-api-utils.js";
@@ -125,7 +126,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       );
       return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       logger.info(
         `Warning: Failed to close existing PR #${prNumber}: ${message}`
       );
@@ -223,7 +224,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     } catch (error) {
       // If we can't check, assume auto-merge is not enabled
       logger.info(
-        `Warning: Could not check auto-merge status: ${error instanceof Error ? error.message : String(error)}`
+        `Warning: Could not check auto-merge status: ${toErrorMessage(error)}`
       );
       return false;
     }
@@ -313,7 +314,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
           autoMergeEnabled: true,
         };
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const message = toErrorMessage(error);
         return {
           success: false,
           message: `Failed to enable auto-merge: ${message}`,
@@ -339,7 +340,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
           merged: true,
         };
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const message = toErrorMessage(error);
         return {
           success: false,
           message: `Failed to force merge: ${message}`,

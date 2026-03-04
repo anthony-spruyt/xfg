@@ -1,3 +1,4 @@
+import { toErrorMessage } from "../shared/type-guards.js";
 import { PRResult } from "./pr-creator.js";
 import {
   ICommandExecutor,
@@ -40,7 +41,7 @@ export class PRWorkflowExecutor {
       }
       return await this.strategy.create(options);
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       return {
         success: false,
         message: `Failed to create PR: ${message}`,

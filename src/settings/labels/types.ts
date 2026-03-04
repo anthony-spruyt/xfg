@@ -1,9 +1,7 @@
 import type { RepoInfo } from "../../shared/repo-detector.js";
+import type { GhApiOptions } from "../gh-api-utils.js";
 
-export interface LabelsStrategyOptions {
-  token?: string;
-  host?: string;
-}
+export type LabelsStrategyOptions = GhApiOptions;
 
 /**
  * GitHub label as returned by the API.
