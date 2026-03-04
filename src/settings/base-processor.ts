@@ -4,10 +4,6 @@ import { isGitHubRepo, getRepoDisplayName } from "../shared/repo-detector.js";
 import { createTokenManager } from "../vcs/index.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 
-// =============================================================================
-// Types
-// =============================================================================
-
 export interface BaseProcessorOptions {
   dryRun?: boolean;
   token?: string;
@@ -20,10 +16,6 @@ export interface BaseProcessorResult {
   skipped?: boolean;
   dryRun?: boolean;
 }
-
-// =============================================================================
-// Abstract Base Class
-// =============================================================================
 
 /**
  * Shared base class for GitHub settings processors (labels, rulesets, repo settings).

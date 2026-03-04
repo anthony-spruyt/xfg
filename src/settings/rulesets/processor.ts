@@ -9,10 +9,6 @@ import {
   type BaseProcessorOptions,
 } from "../base-processor.js";
 
-// =============================================================================
-// Interfaces
-// =============================================================================
-
 export interface IRulesetProcessor {
   process(
     repoConfig: RepoConfig,
@@ -20,10 +16,6 @@ export interface IRulesetProcessor {
     options: RulesetProcessorOptions
   ): Promise<RulesetProcessorResult>;
 }
-
-// =============================================================================
-// Types
-// =============================================================================
 
 export interface RulesetProcessorOptions extends BaseProcessorOptions {
   noDelete?: boolean;
@@ -43,10 +35,6 @@ export interface RulesetProcessorResult {
   };
   planOutput?: RulesetPlanResult;
 }
-
-// =============================================================================
-// Processor Implementation
-// =============================================================================
 
 /**
  * Processes ruleset configuration for a repository.

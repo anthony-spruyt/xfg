@@ -1,10 +1,6 @@
 import type { RepoInfo } from "../../shared/repo-detector.js";
 import type { Ruleset } from "../../config/index.js";
 
-// =============================================================================
-// GitHub API Types
-// =============================================================================
-
 /**
  * GitHub Ruleset response from API (snake_case).
  */
@@ -42,10 +38,6 @@ export interface RulesetStrategyOptions {
   token?: string;
   host?: string;
 }
-
-// =============================================================================
-// Strategy Interface
-// =============================================================================
 
 export interface IRulesetStrategy {
   list(

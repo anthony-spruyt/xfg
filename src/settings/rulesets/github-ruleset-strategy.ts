@@ -19,10 +19,6 @@ import type {
   RulesetStrategyOptions,
 } from "./types.js";
 
-// =============================================================================
-// Conversion Functions
-// =============================================================================
-
 /**
  * Converts camelCase config ruleset to snake_case GitHub API format.
  */
@@ -145,10 +141,6 @@ function camelToSnake(str: string): string {
   return str.replace(/([A-Z])/g, "_$1").toLowerCase();
 }
 
-// =============================================================================
-// Payload Types
-// =============================================================================
-
 interface GitHubRulesetPayload {
   name: string;
   target: "branch" | "tag";
@@ -157,10 +149,6 @@ interface GitHubRulesetPayload {
   conditions?: GitHubRulesetConditions;
   rules?: GitHubRule[];
 }
-
-// =============================================================================
-// Strategy Implementation
-// =============================================================================
 
 interface GitHubRulesetStrategyOptions {
   retries?: number;

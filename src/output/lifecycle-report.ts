@@ -34,10 +34,6 @@ export interface LifecycleReportInput {
   };
 }
 
-// =============================================================================
-// Builder
-// =============================================================================
-
 export function buildLifecycleReport(
   results: LifecycleReportInput[]
 ): LifecycleReport {
@@ -58,10 +54,6 @@ export function buildLifecycleReport(
 
   return { actions, totals };
 }
-
-// =============================================================================
-// Helpers
-// =============================================================================
 
 function formatSummary(totals: LifecycleReport["totals"]): string {
   const total = totals.created + totals.forked + totals.migrated;
@@ -85,10 +77,6 @@ function formatSummary(totals: LifecycleReport["totals"]): string {
 export function hasLifecycleChanges(report: LifecycleReport): boolean {
   return report.actions.some((a) => a.action !== "existed");
 }
-
-// =============================================================================
-// CLI Formatter
-// =============================================================================
 
 export function formatLifecycleReportCLI(report: LifecycleReport): string[] {
   if (!hasLifecycleChanges(report)) {
@@ -139,10 +127,6 @@ export function formatLifecycleReportCLI(report: LifecycleReport): string[] {
 
   return lines;
 }
-
-// =============================================================================
-// Markdown Formatter
-// =============================================================================
 
 export function formatLifecycleReportMarkdown(
   report: LifecycleReport,
@@ -212,10 +196,6 @@ export function formatLifecycleReportMarkdown(
 
   return lines.join("\n");
 }
-
-// =============================================================================
-// File Writer
-// =============================================================================
 
 export function writeLifecycleReportSummary(
   report: LifecycleReport,

@@ -3,10 +3,6 @@ import type { RepoInfo } from "../shared/repo-detector.js";
 import type { MergeMode, MergeStrategy } from "../config/index.js";
 import type { IAuthenticatedGitOps } from "./authenticated-git-ops.js";
 
-// =============================================================================
-// PR Strategy Types
-// =============================================================================
-
 export interface PRMergeConfig {
   mode: MergeMode;
   strategy?: MergeStrategy;
@@ -89,10 +85,6 @@ export interface IPRStrategy {
    */
   merge(options: MergeOptions): Promise<MergeResult>;
 }
-
-// =============================================================================
-// Commit Strategy Types
-// =============================================================================
 
 export interface FileChange {
   path: string;

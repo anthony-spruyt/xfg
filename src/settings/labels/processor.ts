@@ -10,10 +10,6 @@ import {
   type BaseProcessorOptions,
 } from "../base-processor.js";
 
-// =============================================================================
-// Interfaces
-// =============================================================================
-
 export interface ILabelsProcessor {
   process(
     repoConfig: RepoConfig,
@@ -21,10 +17,6 @@ export interface ILabelsProcessor {
     options: LabelsProcessorOptions
   ): Promise<LabelsProcessorResult>;
 }
-
-// =============================================================================
-// Types
-// =============================================================================
 
 export interface LabelsProcessorOptions extends BaseProcessorOptions {
   noDelete?: boolean;
@@ -44,10 +36,6 @@ export interface LabelsProcessorResult {
   };
   planOutput?: LabelsPlanResult;
 }
-
-// =============================================================================
-// Processor Implementation
-// =============================================================================
 
 /**
  * Processes label configuration for a repository.

@@ -49,10 +49,6 @@ export interface LabelChange {
   config?: Label;
 }
 
-// =============================================================================
-// Helpers
-// =============================================================================
-
 function formatValue(val: unknown): string {
   if (val === null) return "null";
   if (val === undefined) return "undefined";
@@ -166,10 +162,6 @@ function formatSummary(totals: SettingsReport["totals"]): string {
   return `Plan: ${parts.join(", ")}`;
 }
 
-// =============================================================================
-// CLI Formatter
-// =============================================================================
-
 export function formatSettingsReportCLI(report: SettingsReport): string[] {
   const lines: string[] = [];
 
@@ -281,10 +273,6 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
 
   return lines;
 }
-
-// =============================================================================
-// Markdown Formatter
-// =============================================================================
 
 export function formatValuePlain(val: unknown): string {
   if (val === null) return "null";
@@ -469,10 +457,6 @@ export function formatSettingsReportMarkdown(
 
   return lines.join("\n");
 }
-
-// =============================================================================
-// File Writer
-// =============================================================================
 
 export function writeSettingsReportSummary(
   report: SettingsReport,

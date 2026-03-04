@@ -1,10 +1,6 @@
 import { RULESET_COMPARABLE_FIELDS, type Ruleset } from "../../config/index.js";
 import type { GitHubRuleset } from "./types.js";
 
-// =============================================================================
-// Types
-// =============================================================================
-
 export type RulesetAction = "create" | "update" | "delete" | "unchanged";
 
 export interface RulesetChange {
@@ -14,10 +10,6 @@ export interface RulesetChange {
   current?: GitHubRuleset;
   desired?: Ruleset;
 }
-
-// =============================================================================
-// Normalization (for comparison)
-// =============================================================================
 
 /**
  * Converts camelCase to snake_case for comparison.
@@ -128,10 +120,6 @@ function deepEqual(a: unknown, b: unknown): boolean {
 
   return false;
 }
-
-// =============================================================================
-// Desired-Side Projection
-// =============================================================================
 
 /**
  * Projects `current` onto the shape of `desired`.
@@ -255,10 +243,6 @@ function matchByIndex(current: unknown[], desired: unknown[]): unknown[] {
   return result;
 }
 
-// =============================================================================
-// Diff Algorithm
-// =============================================================================
-
 /**
  * Compares current rulesets (from GitHub) with desired rulesets (from config).
  *
@@ -339,10 +323,6 @@ export function diffRulesets(
 
   return changes.sort((a, b) => actionOrder[a.action] - actionOrder[b.action]);
 }
-
-// =============================================================================
-// Formatting
-// =============================================================================
 
 /**
  * Formats a ruleset change for display.
