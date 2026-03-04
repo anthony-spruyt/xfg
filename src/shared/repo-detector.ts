@@ -51,6 +51,21 @@ export function isGitLabRepo(info: RepoInfo): info is GitLabRepoInfo {
 }
 
 /**
+ * Assert that a RepoInfo is a GitHub repository, narrowing the type.
+ * Use in GitHub-specific strategies to avoid duplicating validation logic.
+ */
+export function assertGitHubRepo(
+  repoInfo: RepoInfo,
+  context: string
+): asserts repoInfo is GitHubRepoInfo {
+  if (!isGitHubRepo(repoInfo)) {
+    throw new Error(
+      `${context} requires GitHub repositories. Got: ${repoInfo.type}`
+    );
+  }
+}
+
+/**
  * Extract hostname from a git URL.
  */
 function extractHostFromUrl(gitUrl: string): string | null {

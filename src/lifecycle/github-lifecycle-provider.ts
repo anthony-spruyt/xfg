@@ -8,7 +8,7 @@ import {
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "../shared/retry-utils.js";
 import {
-  isGitHubRepo,
+  assertGitHubRepo,
   type RepoInfo,
   type GitHubRepoInfo,
 } from "../shared/repo-detector.js";
@@ -119,11 +119,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   }
 
   private assertGitHub(repoInfo: RepoInfo): asserts repoInfo is GitHubRepoInfo {
-    if (!isGitHubRepo(repoInfo)) {
-      throw new Error(
-        `GitHubLifecycleProvider requires GitHub repo, got: ${repoInfo.type}`
-      );
-    }
+    assertGitHubRepo(repoInfo, "GitHubLifecycleProvider");
   }
 
   /**

@@ -3,11 +3,10 @@ import { logger } from "./logger.js";
 import { sanitizeCredentials } from "./sanitize-utils.js";
 
 /**
- * Default patterns indicating permanent errors that should NOT be retried.
- * These typically indicate configuration issues, auth failures, or invalid resources.
- * Export allows customization for different environments.
+ * Core permanent error patterns shared across all strategies (API, GraphQL, CLI).
+ * Auth failures, permission issues, and resource-not-found errors.
  */
-export const DEFAULT_PERMANENT_ERROR_PATTERNS: RegExp[] = [
+export const CORE_PERMANENT_ERROR_PATTERNS: RegExp[] = [
   /permission\s*denied/i,
   /not\s*accessible\s*by\s*integration/i,
   /authentication\s*failed/i,
@@ -20,16 +19,24 @@ export const DEFAULT_PERMANENT_ERROR_PATTERNS: RegExp[] = [
   /not\s*found/i,
   /does\s*not\s*exist/i,
   /repository\s*not\s*found/i,
+  /set\s+the\s+GH_TOKEN\s+environment\s+variable/i,
+  /GITHUB_TOKEN\s+environment\s+variable/i,
+  /set\s+the\s+AZURE_DEVOPS_EXT_PAT\s+environment\s+variable/i,
+  /GITLAB_TOKEN\s+environment\s+variable/i,
+];
+
+/**
+ * Default patterns indicating permanent errors that should NOT be retried.
+ * Extends CORE_PERMANENT_ERROR_PATTERNS with git-CLI-specific patterns.
+ */
+export const DEFAULT_PERMANENT_ERROR_PATTERNS: RegExp[] = [
+  ...CORE_PERMANENT_ERROR_PATTERNS,
   /no\s*such\s*(file|directory|remote|ref)/i,
   /couldn't\s*find\s*remote\s*ref/i,
   /invalid\s*remote/i,
   /not\s*a\s*git\s*repository/i,
   /non-fast-forward/i,
   /remote\s*rejected/i,
-  /set\s+the\s+GH_TOKEN\s+environment\s+variable/i,
-  /GITHUB_TOKEN\s+environment\s+variable/i,
-  /set\s+the\s+AZURE_DEVOPS_EXT_PAT\s+environment\s+variable/i,
-  /GITLAB_TOKEN\s+environment\s+variable/i,
 ];
 
 /**

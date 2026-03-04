@@ -7,6 +7,7 @@ import { isGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
 import {
   withRetry,
+  CORE_PERMANENT_ERROR_PATTERNS,
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
@@ -65,20 +66,11 @@ const OID_MISMATCH_PATTERNS: RegExp[] = [
 export class GraphQLCommitStrategy implements ICommitStrategy {
   /**
    * GraphQL permanent error patterns for ref operations.
-   * Differs from DEFAULT_PERMANENT_ERROR_PATTERNS which has
-   * git-CLI-specific patterns (/remote\s*rejected/i) that don't
-   * apply to GraphQL responses.
+   * Extends CORE_PERMANENT_ERROR_PATTERNS with GraphQL-specific patterns
+   * (omits git-CLI patterns like /remote\s*rejected/i).
    */
   private static readonly GRAPHQL_PERMANENT_ERROR_PATTERNS: RegExp[] = [
-    /not\s*found/i,
-    /unauthorized/i,
-    /permission\s*denied/i,
-    /not\s*accessible\s*by\s*integration/i,
-    /bad\s*credentials/i,
-    /invalid\s*(token|credentials)/i,
-    /401\b/,
-    /403\b/,
-    /does\s*not\s*exist/i,
+    ...CORE_PERMANENT_ERROR_PATTERNS,
     /could\s*not\s*resolve/i,
     /already\s*exists/i,
   ];

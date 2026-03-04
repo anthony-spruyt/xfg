@@ -2,11 +2,7 @@ import {
   ICommandExecutor,
   defaultExecutor,
 } from "../../shared/command-executor.js";
-import {
-  isGitHubRepo,
-  GitHubRepoInfo,
-  RepoInfo,
-} from "../../shared/repo-detector.js";
+import { assertGitHubRepo, RepoInfo } from "../../shared/repo-detector.js";
 import { camelToSnake } from "../../shared/string-utils.js";
 import {
   ghApiCall,
@@ -174,10 +170,9 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     repoInfo: RepoInfo,
     options?: GhApiOptions
   ): Promise<GitHubRuleset[]> {
-    this.validateGitHub(repoInfo);
-    const github = repoInfo as GitHubRepoInfo;
+    assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
-    const endpoint = `/repos/${github.owner}/${github.repo}/rulesets`;
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets`;
     const result = await this.ghApi("GET", endpoint, undefined, options);
 
     return parseApiJson<GitHubRuleset[]>(result, "rulesets response");
@@ -191,10 +186,9 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     rulesetId: number,
     options?: GhApiOptions
   ): Promise<GitHubRuleset> {
-    this.validateGitHub(repoInfo);
-    const github = repoInfo as GitHubRepoInfo;
+    assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
-    const endpoint = `/repos/${github.owner}/${github.repo}/rulesets/${rulesetId}`;
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets/${rulesetId}`;
     const result = await this.ghApi("GET", endpoint, undefined, options);
 
     return parseApiJson<GitHubRuleset>(result, "ruleset response");
@@ -209,10 +203,9 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     ruleset: Ruleset,
     options?: GhApiOptions
   ): Promise<GitHubRuleset> {
-    this.validateGitHub(repoInfo);
-    const github = repoInfo as GitHubRepoInfo;
+    assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
-    const endpoint = `/repos/${github.owner}/${github.repo}/rulesets`;
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets`;
     const payload = configToGitHub(name, ruleset);
     const result = await this.ghApi("POST", endpoint, payload, options);
 
@@ -229,10 +222,9 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     ruleset: Ruleset,
     options?: GhApiOptions
   ): Promise<GitHubRuleset> {
-    this.validateGitHub(repoInfo);
-    const github = repoInfo as GitHubRepoInfo;
+    assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
-    const endpoint = `/repos/${github.owner}/${github.repo}/rulesets/${rulesetId}`;
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets/${rulesetId}`;
     const payload = configToGitHub(name, ruleset);
     const result = await this.ghApi("PUT", endpoint, payload, options);
 
@@ -247,22 +239,10 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     rulesetId: number,
     options?: GhApiOptions
   ): Promise<void> {
-    this.validateGitHub(repoInfo);
-    const github = repoInfo as GitHubRepoInfo;
+    assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
-    const endpoint = `/repos/${github.owner}/${github.repo}/rulesets/${rulesetId}`;
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets/${rulesetId}`;
     await this.ghApi("DELETE", endpoint, undefined, options);
-  }
-
-  /**
-   * Validates that the repo is a GitHub repository.
-   */
-  private validateGitHub(repoInfo: RepoInfo): void {
-    if (!isGitHubRepo(repoInfo)) {
-      throw new Error(
-        `GitHub Ruleset strategy requires GitHub repositories. Got: ${repoInfo.type}`
-      );
-    }
   }
 
   private async ghApi(
