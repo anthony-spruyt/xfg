@@ -7,6 +7,7 @@ import {
   GitHubRepoInfo,
   RepoInfo,
 } from "../../shared/repo-detector.js";
+import { camelToSnake } from "../../shared/string-utils.js";
 import {
   ghApiCall,
   type HttpMethod,
@@ -134,13 +135,6 @@ function convertValue(value: unknown): unknown {
     });
   }
   return value;
-}
-
-/**
- * Converts camelCase to snake_case.
- */
-function camelToSnake(str: string): string {
-  return str.replace(/([A-Z])/g, "_$1").toLowerCase();
 }
 
 interface GitHubRulesetPayload {

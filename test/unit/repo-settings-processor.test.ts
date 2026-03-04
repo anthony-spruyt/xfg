@@ -378,26 +378,10 @@ describe("RepoSettingsProcessor", () => {
     assert.ok(result.message.includes("API Error"));
   });
 
-  describe("GitHub App token resolution", () => {
-    test("passes resolved App token to strategy when App credentials are set", async () => {
-      const origAppId = process.env.XFG_GITHUB_APP_ID;
-      const origPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
-      process.env.XFG_GITHUB_APP_ID = "12345";
-      process.env.XFG_GITHUB_APP_PRIVATE_KEY = "fake-key";
-
+  describe("token passthrough", () => {
+    test("passes caller-provided token directly to strategy", async () => {
       const freshStrategy = new MockStrategy();
       const freshProcessor = new RepoSettingsProcessor(freshStrategy);
-
-      // Replace tokenManager with mock (same pattern as ruleset-processor tests)
-      const mockTokenManager = {
-        async getTokenForRepo() {
-          return "ghs_mock_installation_token";
-        },
-      };
-      (
-        freshProcessor as unknown as { tokenManager: typeof mockTokenManager }
-      ).tokenManager = mockTokenManager;
-
       freshStrategy.getSettingsResult = { has_wiki: true };
 
       const repoConfig: RepoConfig = {
@@ -408,47 +392,21 @@ describe("RepoSettingsProcessor", () => {
 
       const result = await freshProcessor.process(repoConfig, githubRepo, {
         dryRun: true,
+        token: "pre-resolved-token",
       });
 
       assert.equal(freshStrategy.getSettingsCalls.length, 1);
       assert.equal(
         freshStrategy.getSettingsCalls[0].options?.token,
-        "ghs_mock_installation_token",
-        "getSettings() should receive the resolved App installation token"
+        "pre-resolved-token",
+        "getSettings() should receive the caller-provided token"
       );
       assert.equal(result.success, true);
-
-      // Restore env
-      if (origAppId !== undefined) {
-        process.env.XFG_GITHUB_APP_ID = origAppId;
-      } else {
-        delete process.env.XFG_GITHUB_APP_ID;
-      }
-      if (origPrivateKey !== undefined) {
-        process.env.XFG_GITHUB_APP_PRIVATE_KEY = origPrivateKey;
-      } else {
-        delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
-      }
     });
 
-    test("falls back gracefully when token manager returns null", async () => {
-      const origAppId = process.env.XFG_GITHUB_APP_ID;
-      const origPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
-      process.env.XFG_GITHUB_APP_ID = "12345";
-      process.env.XFG_GITHUB_APP_PRIVATE_KEY = "fake-key";
-
+    test("passes undefined token when caller provides none", async () => {
       const freshStrategy = new MockStrategy();
       const freshProcessor = new RepoSettingsProcessor(freshStrategy);
-
-      const mockTokenManager = {
-        async getTokenForRepo() {
-          return null;
-        },
-      };
-      (
-        freshProcessor as unknown as { tokenManager: typeof mockTokenManager }
-      ).tokenManager = mockTokenManager;
-
       freshStrategy.getSettingsResult = { has_wiki: true };
 
       const repoConfig: RepoConfig = {
@@ -464,72 +422,9 @@ describe("RepoSettingsProcessor", () => {
       assert.equal(
         freshStrategy.getSettingsCalls[0].options?.token,
         undefined,
-        "getSettings() should receive undefined token when manager returns null"
+        "getSettings() should receive undefined token when none provided"
       );
       assert.equal(result.success, true);
-
-      // Restore env
-      if (origAppId !== undefined) {
-        process.env.XFG_GITHUB_APP_ID = origAppId;
-      } else {
-        delete process.env.XFG_GITHUB_APP_ID;
-      }
-      if (origPrivateKey !== undefined) {
-        process.env.XFG_GITHUB_APP_PRIVATE_KEY = origPrivateKey;
-      } else {
-        delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
-      }
-    });
-
-    test("falls back gracefully when token manager throws error", async () => {
-      const origAppId = process.env.XFG_GITHUB_APP_ID;
-      const origPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
-      process.env.XFG_GITHUB_APP_ID = "12345";
-      process.env.XFG_GITHUB_APP_PRIVATE_KEY = "fake-key";
-
-      const freshStrategy = new MockStrategy();
-      const freshProcessor = new RepoSettingsProcessor(freshStrategy);
-
-      const mockTokenManager = {
-        async getTokenForRepo() {
-          throw new Error("Token generation failed");
-        },
-      };
-      (
-        freshProcessor as unknown as { tokenManager: typeof mockTokenManager }
-      ).tokenManager = mockTokenManager;
-
-      freshStrategy.getSettingsResult = { has_wiki: true };
-
-      const repoConfig: RepoConfig = {
-        git: githubRepo.gitUrl,
-        files: [],
-        settings: { repo: { hasWiki: true } },
-      };
-
-      const result = await freshProcessor.process(repoConfig, githubRepo, {
-        dryRun: true,
-      });
-
-      // Should fall back to undefined token (no crash)
-      assert.equal(
-        freshStrategy.getSettingsCalls[0].options?.token,
-        undefined,
-        "getSettings() should receive undefined token when manager throws"
-      );
-      assert.equal(result.success, true);
-
-      // Restore env
-      if (origAppId !== undefined) {
-        process.env.XFG_GITHUB_APP_ID = origAppId;
-      } else {
-        delete process.env.XFG_GITHUB_APP_ID;
-      }
-      if (origPrivateKey !== undefined) {
-        process.env.XFG_GITHUB_APP_PRIVATE_KEY = origPrivateKey;
-      } else {
-        delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
-      }
     });
   });
 

@@ -15,13 +15,7 @@ import {
 import type { GitHubRepoSettings } from "../../config/index.js";
 import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
 import { toErrorMessage } from "../../shared/type-guards.js";
-
-/**
- * Converts camelCase to snake_case.
- */
-function camelToSnake(str: string): string {
-  return str.replace(/([A-Z])/g, "_$1").toLowerCase();
-}
+import { camelToSnake } from "../../shared/string-utils.js";
 
 /**
  * Converts GitHubRepoSettings (camelCase) to GitHub API format (snake_case).

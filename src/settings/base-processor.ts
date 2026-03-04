@@ -1,10 +1,7 @@
 import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { isGitHubRepo, getRepoDisplayName } from "../shared/repo-detector.js";
-import { createTokenManager } from "../vcs/index.js";
-import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { logger } from "../shared/logger.js";
 
 export interface BaseProcessorOptions {
   dryRun?: boolean;
@@ -28,12 +25,6 @@ export abstract class BaseSettingsProcessor<
   TOptions extends BaseProcessorOptions,
   TResult extends BaseProcessorResult,
 > {
-  protected readonly tokenManager: GitHubAppTokenManager | null;
-
-  constructor(tokenManager?: GitHubAppTokenManager | null) {
-    this.tokenManager = tokenManager ?? createTokenManager();
-  }
-
   async process(
     repoConfig: RepoConfig,
     repoInfo: RepoInfo,
@@ -57,15 +48,12 @@ export abstract class BaseSettingsProcessor<
     }
 
     try {
-      // Resolve App token if available, fall back to provided token
-      const effectiveToken =
-        options.token ?? (await this.getInstallationToken(githubRepo));
-
+      // Token is pre-resolved by the caller (sync-command.ts resolveGitHubToken)
       return await this.processSettings(
         githubRepo,
         repoConfig,
         options,
-        effectiveToken,
+        options.token,
         repoName
       );
     } catch (error) {
@@ -111,28 +99,6 @@ export abstract class BaseSettingsProcessor<
     repoName: string,
     message: string
   ): TResult;
-
-  /**
-   * Resolves a GitHub App installation token for the given repo.
-   */
-  protected async getInstallationToken(
-    repoInfo: GitHubRepoInfo
-  ): Promise<string | undefined> {
-    if (!this.tokenManager) {
-      return undefined;
-    }
-
-    try {
-      const token = await this.tokenManager.getTokenForRepo(repoInfo);
-      return token ?? undefined;
-    } catch (error) {
-      // App token resolution is optional — fall back to provided token
-      logger.debug(
-        `App token resolution failed for ${repoInfo.owner}/${repoInfo.repo}: ${toErrorMessage(error)}`
-      );
-      return undefined;
-    }
-  }
 }
 
 export interface ChangeCounts {
