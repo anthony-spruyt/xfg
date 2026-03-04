@@ -177,6 +177,27 @@ describe("GitLabPRStrategy with mock executor", () => {
       const result = await strategy.checkExistingPR(options);
       assert.equal(result, null);
     });
+
+    test("returns null and logs debug on transient error with stderr", async () => {
+      const errorWithStderr = Object.assign(new Error("Command failed"), {
+        stderr: "glab: connection refused",
+      });
+      mockExecutor.responses.set("glab mr list", errorWithStderr);
+
+      const strategy = new GitLabPRStrategy(mockExecutor);
+      const options: PRStrategyOptions = {
+        repoInfo: gitlabRepoInfo,
+        title: "Test MR",
+        body: "Test body",
+        branchName: "test-branch",
+        baseBranch: "main",
+        workDir: testDir,
+        retries: 0,
+      };
+
+      const result = await strategy.checkExistingPR(options);
+      assert.equal(result, null);
+    });
   });
 
   describe("create", () => {

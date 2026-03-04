@@ -1129,4 +1129,39 @@ ${VALID_RULESET}
       assert.equal(exitCode, undefined, "Should not exit with error code");
     });
   });
+
+  describe("merge mode warnings", () => {
+    test("warns when mergeStrategy is set with direct merge mode", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+`
+      );
+
+      const mockProcessor = createMockProcessor();
+
+      await runSync(
+        {
+          config: testConfigPath,
+          dryRun: true,
+          workDir: testDir,
+          merge: "direct" as const,
+          mergeStrategy: "squash" as const,
+        },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("mergeStrategy") && output.includes("ignored"),
+        "Should warn that mergeStrategy is ignored in direct mode"
+      );
+    });
+  });
 });

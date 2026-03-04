@@ -904,6 +904,52 @@ describe("GitHubLifecycleProvider", () => {
       assert.ok(createCall.command.includes("--private"));
     });
 
+    test("continues when remote remove origin fails", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          [
+            "remote remove origin",
+            new Error("fatal: No such remote: 'origin'"),
+          ],
+          ["for-each-ref", "refs/heads/main\nrefs/tags/v1.0"],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
+
+      // Should still reach gh repo create despite remote remove failure
+      const createCall = calls.find((c) =>
+        c.command.includes("gh repo create")
+      );
+      assert.ok(
+        createCall,
+        "should proceed to create repo after remote remove failure"
+      );
+    });
+
+    test("continues when ref cleanup fails", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["for-each-ref", new Error("not a git repository")],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
+
+      // Should still reach gh repo create despite ref cleanup failure
+      const createCall = calls.find((c) =>
+        c.command.includes("gh repo create")
+      );
+      assert.ok(
+        createCall,
+        "should proceed to create repo after ref cleanup failure"
+      );
+    });
+
     describe("receiveMigration() with defaultBranch", () => {
       test("renames branch in mirror clone when source HEAD differs from desired", async () => {
         const { mock: executor, calls } = createMockExecutor({
@@ -1089,6 +1135,35 @@ describe("GitHubLifecycleProvider", () => {
       assert.ok(forkCall);
       assert.ok(forkCall.command.startsWith("gh repo fork"));
       assert.equal(forkCall.options?.env?.GH_TOKEN, "ghs_test_token");
+    });
+
+    test("defaults to org behavior when isOrganization check fails", async () => {
+      const upstreamRepoInfo: GitHubRepoInfo = {
+        type: "github",
+        gitUrl: "git@github.com:opensource/cool-tool.git",
+        owner: "opensource",
+        repo: "cool-tool",
+        host: "github.com",
+      };
+
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["users/", new Error("API rate limit exceeded")],
+          ["gh repo fork", ""],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      await provider.fork!(upstreamRepoInfo, mockRepoInfo);
+
+      // Should still fork with --org flag (defaults to org when check fails)
+      const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
+      assert.ok(forkCall);
+      assert.ok(
+        forkCall.command.includes("--org"),
+        "Should use --org flag when isOrganization check fails"
+      );
     });
   });
 });

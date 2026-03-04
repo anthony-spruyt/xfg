@@ -144,6 +144,27 @@ describe("AzurePRStrategy with mock executor", () => {
       const result = await strategy.checkExistingPR(options);
       assert.equal(result, null);
     });
+
+    test("returns null and logs debug on transient error with stderr", async () => {
+      const errorWithStderr = Object.assign(new Error("Command failed"), {
+        stderr: "az: connection refused",
+      });
+      mockExecutor.responses.set("az repos pr list", errorWithStderr);
+
+      const strategy = new AzurePRStrategy(mockExecutor);
+      const options: PRStrategyOptions = {
+        repoInfo: azureRepoInfo,
+        title: "Test PR",
+        body: "Test body",
+        branchName: "test-branch",
+        baseBranch: "main",
+        workDir: testDir,
+        retries: 0,
+      };
+
+      const result = await strategy.checkExistingPR(options);
+      assert.equal(result, null);
+    });
   });
 
   describe("create", () => {

@@ -159,6 +159,27 @@ describe("GitHubPRStrategy with mock executor", () => {
       const result = await strategy.checkExistingPR(options);
       assert.equal(result, null);
     });
+
+    test("returns null and logs debug on transient error with stderr", async () => {
+      const errorWithStderr = Object.assign(new Error("Command failed"), {
+        stderr: "gh: connection refused",
+      });
+      mockExecutor.responses.set("gh pr list", errorWithStderr);
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const options: PRStrategyOptions = {
+        repoInfo: githubRepoInfo,
+        title: "Test PR",
+        body: "Test body",
+        branchName: "test-branch",
+        baseBranch: "main",
+        workDir: testDir,
+        retries: 0,
+      };
+
+      const result = await strategy.checkExistingPR(options);
+      assert.equal(result, null);
+    });
   });
 
   describe("create", () => {
@@ -786,6 +807,25 @@ describe("GitHubPRStrategy closeExistingPR", () => {
       "https://github.com/owner/repo/pull/123"
     );
     mockExecutor.responses.set("gh pr close", new Error("Close failed"));
+
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const result = await strategy.closeExistingPR({
+      repoInfo: githubRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDirClose,
+      retries: 0,
+    });
+
+    assert.equal(result, false);
+  });
+
+  test("returns false when PR URL cannot be parsed", async () => {
+    // Return a URL that doesn't match /pull/(\d+)/
+    mockExecutor.responses.set(
+      "gh pr list",
+      "https://github.com/owner/repo/issues/999"
+    );
 
     const strategy = new GitHubPRStrategy(mockExecutor);
     const result = await strategy.closeExistingPR({

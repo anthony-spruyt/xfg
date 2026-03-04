@@ -194,5 +194,48 @@ describe("PRMergeHandler", () => {
         "gh pr create should include --label flag"
       );
     });
+
+    test("warns when merge operation fails", async () => {
+      const { mock: mockLogger, warnings } = createMockLogger();
+      const { mock: mockExecutor } = createMockExecutor({
+        responses: new Map([
+          ["gh pr list", ""],
+          ["gh pr create", "https://github.com/test/repo/pull/1"],
+          ["gh api", "true"],
+          ["gh pr merge", new Error("merge conflict")],
+        ]),
+      });
+
+      const handler = new PRMergeHandler(mockLogger);
+      const changedFiles: FileAction[] = [
+        { fileName: "config.json", action: "create" },
+      ];
+      const repoConfig: RepoConfig = {
+        gitUrl: mockRepoInfo.gitUrl,
+        files: [],
+      };
+
+      const result = await handler.createAndMerge({
+        repoInfo: mockRepoInfo,
+        repoConfig,
+        options: {
+          branchName: "chore/sync",
+          baseBranch: "main",
+          workDir,
+          dryRun: false,
+          retries: 0,
+          executor: mockExecutor,
+        },
+        changedFiles,
+        repoName: "test/repo",
+      });
+
+      assert.equal(result.success, true);
+      assert.ok(
+        warnings.some((msg) => msg.includes("Merge operation failed")),
+        `should warn about merge failure, got warnings: ${JSON.stringify(warnings)}`
+      );
+      assert.equal(result.mergeResult?.merged, false);
+    });
   });
 });
