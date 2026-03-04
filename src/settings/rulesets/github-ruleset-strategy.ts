@@ -7,8 +7,7 @@ import {
   GitHubRepoInfo,
   RepoInfo,
 } from "../../shared/repo-detector.js";
-import { escapeShellArg } from "../../shared/shell-utils.js";
-import { withRetry } from "../../shared/retry-utils.js";
+import { ghApiCall, type HttpMethod } from "../gh-api-utils.js";
 import type { Ruleset, RulesetRule } from "../../config/index.js";
 import type {
   IRulesetStrategy,
@@ -18,10 +17,6 @@ import type {
   GitHubRule,
   RulesetStrategyOptions,
 } from "./types.js";
-
-// =============================================================================
-// Conversion Functions
-// =============================================================================
 
 /**
  * Converts camelCase config ruleset to snake_case GitHub API format.
@@ -145,10 +140,6 @@ function camelToSnake(str: string): string {
   return str.replace(/([A-Z])/g, "_$1").toLowerCase();
 }
 
-// =============================================================================
-// Payload Types
-// =============================================================================
-
 interface GitHubRulesetPayload {
   name: string;
   target: "branch" | "tag";
@@ -157,10 +148,6 @@ interface GitHubRulesetPayload {
   conditions?: GitHubRulesetConditions;
   rules?: GitHubRule[];
 }
-
-// =============================================================================
-// Strategy Implementation
-// =============================================================================
 
 interface GitHubRulesetStrategyOptions {
   retries?: number;
@@ -280,53 +267,18 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     }
   }
 
-  /**
-   * Executes a GitHub API call using the gh CLI.
-   */
   private async ghApi(
-    method: "GET" | "POST" | "PUT" | "DELETE",
+    method: HttpMethod,
     endpoint: string,
     payload?: unknown,
     options?: RulesetStrategyOptions
   ): Promise<string> {
-    const args: string[] = ["gh", "api"];
-
-    // Add method flag
-    if (method !== "GET") {
-      args.push("-X", method);
-    }
-
-    // Add host flag for GitHub Enterprise
-    if (options?.host && options.host !== "github.com") {
-      args.push("--hostname", escapeShellArg(options.host));
-    }
-
-    // Add endpoint
-    args.push(escapeShellArg(endpoint));
-
-    // Build base command
-    const baseCommand = args.join(" ");
-
-    // Add GH_TOKEN environment variable prefix if token provided
-    // Token is escaped to prevent command injection
-    const tokenPrefix = options?.token
-      ? `GH_TOKEN=${escapeShellArg(options.token)} `
-      : "";
-
-    // For POST/PUT with payload, use echo pipe pattern (same as graphql-commit-strategy)
-    // This is safer than heredoc as escapeShellArg properly escapes the content
-    if (payload && (method === "POST" || method === "PUT")) {
-      const payloadJson = JSON.stringify(payload);
-      const command = `echo ${escapeShellArg(payloadJson)} | ${tokenPrefix}${baseCommand} --input -`;
-      return await withRetry(() => this.executor.exec(command, process.cwd()), {
-        retries: this.retries,
-      });
-    }
-
-    // For GET/DELETE, run command directly
-    const command = `${tokenPrefix}${baseCommand}`;
-    return await withRetry(() => this.executor.exec(command, process.cwd()), {
-      retries: this.retries,
-    });
+    return ghApiCall(
+      method,
+      endpoint,
+      { executor: this.executor, retries: this.retries },
+      options,
+      payload
+    );
   }
 }

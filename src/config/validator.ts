@@ -55,6 +55,122 @@ function getGitDisplayName(git: string | string[]): string {
 }
 
 /**
+ * Validate file config fields shared between root files and per-repo overrides.
+ */
+function validateFileConfigFields(
+  fileConfig: Record<string, unknown>,
+  fileName: string,
+  context: string
+): void {
+  // Validate content type
+  if (fileConfig.content !== undefined) {
+    const hasText = isTextContent(fileConfig.content);
+    const hasObject = isObjectContent(fileConfig.content);
+
+    if (!hasText && !hasObject) {
+      throw new Error(
+        `${context} file '${fileName}' content must be an object, string, or array of strings`
+      );
+    }
+
+    const isStructured = isStructuredFileExtension(fileName);
+    if (isStructured && hasText) {
+      throw new Error(
+        `${context} file '${fileName}' has JSON/YAML extension but string content. Use object content for structured files.`
+      );
+    }
+    if (!isStructured && hasObject) {
+      throw new Error(
+        `${context} file '${fileName}' has text extension but object content. Use string or string[] for text files, or use .json/.yaml/.yml extension.`
+      );
+    }
+  }
+
+  if (
+    fileConfig.mergeStrategy !== undefined &&
+    !VALID_STRATEGIES.includes(fileConfig.mergeStrategy as string)
+  ) {
+    throw new Error(
+      `${context} file '${fileName}' has invalid mergeStrategy: ${fileConfig.mergeStrategy}. Must be one of: ${VALID_STRATEGIES.join(", ")}`
+    );
+  }
+
+  if (
+    fileConfig.createOnly !== undefined &&
+    typeof fileConfig.createOnly !== "boolean"
+  ) {
+    throw new Error(
+      `${context} file '${fileName}' createOnly must be a boolean`
+    );
+  }
+
+  if (
+    fileConfig.executable !== undefined &&
+    typeof fileConfig.executable !== "boolean"
+  ) {
+    throw new Error(
+      `${context} file '${fileName}' executable must be a boolean`
+    );
+  }
+
+  if (fileConfig.header !== undefined) {
+    if (
+      typeof fileConfig.header !== "string" &&
+      (!Array.isArray(fileConfig.header) ||
+        !(fileConfig.header as unknown[]).every((h) => typeof h === "string"))
+    ) {
+      throw new Error(
+        `${context} file '${fileName}' header must be a string or array of strings`
+      );
+    }
+  }
+
+  if (
+    fileConfig.schemaUrl !== undefined &&
+    typeof fileConfig.schemaUrl !== "string"
+  ) {
+    throw new Error(`${context} file '${fileName}' schemaUrl must be a string`);
+  }
+
+  if (
+    fileConfig.template !== undefined &&
+    typeof fileConfig.template !== "boolean"
+  ) {
+    throw new Error(`${context} file '${fileName}' template must be a boolean`);
+  }
+
+  if (fileConfig.vars !== undefined) {
+    if (
+      typeof fileConfig.vars !== "object" ||
+      fileConfig.vars === null ||
+      Array.isArray(fileConfig.vars)
+    ) {
+      throw new Error(
+        `${context} file '${fileName}' vars must be an object with string values`
+      );
+    }
+    for (const [key, value] of Object.entries(
+      fileConfig.vars as Record<string, unknown>
+    )) {
+      if (typeof value !== "string") {
+        throw new Error(
+          `${context} file '${fileName}' vars.${key} must be a string`
+        );
+      }
+    }
+  }
+
+  if (
+    fileConfig.deleteOrphaned !== undefined &&
+    typeof fileConfig.deleteOrphaned !== "boolean"
+  ) {
+    throw new Error(
+      `${context} file '${fileName}' deleteOrphaned must be a boolean`
+    );
+  }
+}
+
+/**
  * Validates a single label configuration.
  */
 function validateLabel(label: unknown, name: string, context: string): void {
@@ -256,103 +372,11 @@ export function validateRawConfig(config: RawConfig): void {
       throw new Error(`File '${fileName}' must have a configuration object`);
     }
 
-    // Validate content type
-    if (fileConfig.content !== undefined) {
-      const hasText = isTextContent(fileConfig.content);
-      const hasObject = isObjectContent(fileConfig.content);
-
-      if (!hasText && !hasObject) {
-        throw new Error(
-          `File '${fileName}' content must be an object, string, or array of strings`
-        );
-      }
-
-      // Validate content type matches file extension
-      const isStructured = isStructuredFileExtension(fileName);
-      if (isStructured && hasText) {
-        throw new Error(
-          `File '${fileName}' has JSON/YAML extension but string content. Use object content for structured files.`
-        );
-      }
-      if (!isStructured && hasObject) {
-        throw new Error(
-          `File '${fileName}' has text extension but object content. Use string or string[] for text files, or use .json/.yaml/.yml extension.`
-        );
-      }
-    }
-
-    if (
-      fileConfig.mergeStrategy !== undefined &&
-      !VALID_STRATEGIES.includes(fileConfig.mergeStrategy)
-    ) {
-      throw new Error(
-        `File '${fileName}' has invalid mergeStrategy: ${fileConfig.mergeStrategy}. Must be one of: ${VALID_STRATEGIES.join(", ")}`
-      );
-    }
-
-    if (
-      fileConfig.createOnly !== undefined &&
-      typeof fileConfig.createOnly !== "boolean"
-    ) {
-      throw new Error(`File '${fileName}' createOnly must be a boolean`);
-    }
-
-    if (
-      fileConfig.executable !== undefined &&
-      typeof fileConfig.executable !== "boolean"
-    ) {
-      throw new Error(`File '${fileName}' executable must be a boolean`);
-    }
-
-    if (fileConfig.header !== undefined) {
-      if (
-        typeof fileConfig.header !== "string" &&
-        (!Array.isArray(fileConfig.header) ||
-          !fileConfig.header.every((h) => typeof h === "string"))
-      ) {
-        throw new Error(
-          `File '${fileName}' header must be a string or array of strings`
-        );
-      }
-    }
-
-    if (
-      fileConfig.schemaUrl !== undefined &&
-      typeof fileConfig.schemaUrl !== "string"
-    ) {
-      throw new Error(`File '${fileName}' schemaUrl must be a string`);
-    }
-
-    if (
-      fileConfig.template !== undefined &&
-      typeof fileConfig.template !== "boolean"
-    ) {
-      throw new Error(`File '${fileName}' template must be a boolean`);
-    }
-
-    if (fileConfig.vars !== undefined) {
-      if (
-        typeof fileConfig.vars !== "object" ||
-        fileConfig.vars === null ||
-        Array.isArray(fileConfig.vars)
-      ) {
-        throw new Error(
-          `File '${fileName}' vars must be an object with string values`
-        );
-      }
-      for (const [key, value] of Object.entries(fileConfig.vars)) {
-        if (typeof value !== "string") {
-          throw new Error(`File '${fileName}' vars.${key} must be a string`);
-        }
-      }
-    }
-
-    if (
-      fileConfig.deleteOrphaned !== undefined &&
-      typeof fileConfig.deleteOrphaned !== "boolean"
-    ) {
-      throw new Error(`File '${fileName}' deleteOrphaned must be a boolean`);
-    }
+    validateFileConfigFields(
+      fileConfig as Record<string, unknown>,
+      fileName,
+      `File '${fileName}':`
+    );
   }
 
   // Validate global deleteOrphaned
@@ -625,106 +649,11 @@ export function validateRawConfig(config: RawConfig): void {
           );
         }
 
-        // Validate content type
-        if (fileOverride.content !== undefined) {
-          const hasText = isTextContent(fileOverride.content);
-          const hasObject = isObjectContent(fileOverride.content);
-
-          if (!hasText && !hasObject) {
-            throw new Error(
-              `Repo at index ${i}: file '${fileName}' content must be an object, string, or array of strings`
-            );
-          }
-
-          // Validate content type matches file extension
-          const isStructured = isStructuredFileExtension(fileName);
-          if (isStructured && hasText) {
-            throw new Error(
-              `Repo at index ${i}: file '${fileName}' has JSON/YAML extension but string content. Use object content for structured files.`
-            );
-          }
-          if (!isStructured && hasObject) {
-            throw new Error(
-              `Repo at index ${i}: file '${fileName}' has text extension but object content. Use string or string[] for text files, or use .json/.yaml/.yml extension.`
-            );
-          }
-        }
-
-        if (
-          fileOverride.createOnly !== undefined &&
-          typeof fileOverride.createOnly !== "boolean"
-        ) {
-          throw new Error(
-            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' createOnly must be a boolean`
-          );
-        }
-
-        if (
-          fileOverride.executable !== undefined &&
-          typeof fileOverride.executable !== "boolean"
-        ) {
-          throw new Error(
-            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' executable must be a boolean`
-          );
-        }
-
-        if (fileOverride.header !== undefined) {
-          if (
-            typeof fileOverride.header !== "string" &&
-            (!Array.isArray(fileOverride.header) ||
-              !fileOverride.header.every((h) => typeof h === "string"))
-          ) {
-            throw new Error(
-              `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' header must be a string or array of strings`
-            );
-          }
-        }
-
-        if (
-          fileOverride.schemaUrl !== undefined &&
-          typeof fileOverride.schemaUrl !== "string"
-        ) {
-          throw new Error(
-            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' schemaUrl must be a string`
-          );
-        }
-
-        if (
-          fileOverride.template !== undefined &&
-          typeof fileOverride.template !== "boolean"
-        ) {
-          throw new Error(
-            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' template must be a boolean`
-          );
-        }
-
-        if (fileOverride.vars !== undefined) {
-          if (
-            typeof fileOverride.vars !== "object" ||
-            fileOverride.vars === null ||
-            Array.isArray(fileOverride.vars)
-          ) {
-            throw new Error(
-              `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' vars must be an object with string values`
-            );
-          }
-          for (const [key, value] of Object.entries(fileOverride.vars)) {
-            if (typeof value !== "string") {
-              throw new Error(
-                `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' vars.${key} must be a string`
-              );
-            }
-          }
-        }
-
-        if (
-          fileOverride.deleteOrphaned !== undefined &&
-          typeof fileOverride.deleteOrphaned !== "boolean"
-        ) {
-          throw new Error(
-            `Repo ${getGitDisplayName(repo.git)}: file '${fileName}' deleteOrphaned must be a boolean`
-          );
-        }
+        validateFileConfigFields(
+          fileOverride as Record<string, unknown>,
+          fileName,
+          `Repo ${getGitDisplayName(repo.git)}:`
+        );
       }
     }
 

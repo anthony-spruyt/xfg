@@ -1,9 +1,5 @@
 // src/settings/rulesets/diff-algorithm.ts
 
-// =============================================================================
-// Types
-// =============================================================================
-
 export type DiffAction = "add" | "change" | "remove";
 
 export interface PropertyDiff {
@@ -12,10 +8,6 @@ export interface PropertyDiff {
   oldValue?: unknown;
   newValue?: unknown;
 }
-
-// =============================================================================
-// Helpers
-// =============================================================================
 
 export function isObject(val: unknown): val is Record<string, unknown> {
   return val !== null && typeof val === "object" && !Array.isArray(val);
@@ -45,10 +37,6 @@ export function deepEqual(a: unknown, b: unknown): boolean {
 export function isArrayOfObjects(arr: unknown[]): boolean {
   return arr.length > 0 && arr.every((item) => isObject(item));
 }
-
-// =============================================================================
-// Property Diff Algorithm
-// =============================================================================
 
 /**
  * Recursively compute property-level diffs between two objects.
@@ -105,10 +93,6 @@ export function computePropertyDiffs(
 
   return diffs;
 }
-
-// =============================================================================
-// Array Diffing
-// =============================================================================
 
 /**
  * Diff two arrays of objects by matching items on `type` field (or by index).

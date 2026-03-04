@@ -1,10 +1,3 @@
-/**
- * Sanitizes credentials from error messages and logs.
- * Replaces sensitive tokens/passwords with '***' to prevent leakage.
- *
- * @param message The message that may contain credentials
- * @returns The sanitized message with credentials replaced by '***'
- */
 export function sanitizeCredentials(
   message: string | undefined | null
 ): string {

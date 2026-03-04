@@ -94,10 +94,10 @@ export class GitHubAppTokenManager {
       });
 
       if (!res.ok) {
-        const status = res.status;
-        // Throw error with status code for retry logic
-        const error = new Error(`GitHub API error: ${status}`);
-        throw error;
+        const body = await res.text().catch(() => "");
+        throw new Error(
+          `GitHub API error: ${res.status}${body ? ` - ${body}` : ""}`
+        );
       }
 
       return res;
@@ -113,10 +113,6 @@ export class GitHubAppTokenManager {
     this.discoveredHosts.add(apiHost);
   }
 
-  /**
-   * Gets the installation ID for a given owner on the specified API host.
-   * Returns undefined if no installation is found.
-   */
   getInstallationId(apiHost: string, owner: string): number | undefined {
     const key = `${apiHost}:${owner}`;
     return this.installations.get(key);
@@ -159,9 +155,10 @@ export class GitHubAppTokenManager {
       });
 
       if (!res.ok) {
-        const status = res.status;
-        const error = new Error(`GitHub API error: ${status}`);
-        throw error;
+        const body = await res.text().catch(() => "");
+        throw new Error(
+          `GitHub API error: ${res.status}${body ? ` - ${body}` : ""}`
+        );
       }
 
       return res;

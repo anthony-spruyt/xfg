@@ -34,10 +34,6 @@ export interface LifecycleReportInput {
   };
 }
 
-// =============================================================================
-// Builder
-// =============================================================================
-
 export function buildLifecycleReport(
   results: LifecycleReportInput[]
 ): LifecycleReport {
@@ -59,11 +55,7 @@ export function buildLifecycleReport(
   return { actions, totals };
 }
 
-// =============================================================================
-// Helpers
-// =============================================================================
-
-function formatSummary(totals: LifecycleReport["totals"]): string {
+function formatLifecycleSummary(totals: LifecycleReport["totals"]): string {
   const total = totals.created + totals.forked + totals.migrated;
 
   if (total === 0) {
@@ -85,10 +77,6 @@ function formatSummary(totals: LifecycleReport["totals"]): string {
 export function hasLifecycleChanges(report: LifecycleReport): boolean {
   return report.actions.some((a) => a.action !== "existed");
 }
-
-// =============================================================================
-// CLI Formatter
-// =============================================================================
 
 export function formatLifecycleReportCLI(report: LifecycleReport): string[] {
   if (!hasLifecycleChanges(report)) {
@@ -135,14 +123,10 @@ export function formatLifecycleReportCLI(report: LifecycleReport): string[] {
   lines.push("");
 
   // Summary
-  lines.push(formatSummary(report.totals));
+  lines.push(formatLifecycleSummary(report.totals));
 
   return lines;
 }
-
-// =============================================================================
-// Markdown Formatter
-// =============================================================================
 
 export function formatLifecycleReportMarkdown(
   report: LifecycleReport,
@@ -208,14 +192,10 @@ export function formatLifecycleReportMarkdown(
   }
 
   // Summary
-  lines.push(`**${formatSummary(report.totals)}**`);
+  lines.push(`**${formatLifecycleSummary(report.totals)}**`);
 
   return lines.join("\n");
 }
-
-// =============================================================================
-// File Writer
-// =============================================================================
 
 export function writeLifecycleReportSummary(
   report: LifecycleReport,

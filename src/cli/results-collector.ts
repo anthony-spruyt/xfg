@@ -1,4 +1,5 @@
-import type { ProcessorResults } from "../settings-report-builder.js";
+import type { ProcessorResults } from "./settings-report-builder.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 /**
  * Collects processing results for the SettingsReport.
@@ -18,7 +19,7 @@ export class ResultsCollector {
 
   appendError(repoName: string, error: unknown): void {
     const existing = this.getOrCreate(repoName);
-    const errorMsg = error instanceof Error ? error.message : String(error);
+    const errorMsg = toErrorMessage(error);
     if (existing.error) {
       existing.error += `; ${errorMsg}`;
     } else {

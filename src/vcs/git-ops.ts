@@ -13,27 +13,8 @@ import {
   defaultExecutor,
 } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import { logger } from "../shared/logger.js";
-
-interface IGitOps {
-  cleanWorkspace(): void;
-  clone(gitUrl: string): Promise<void>;
-  fetch(options?: { prune?: boolean }): Promise<void>;
-  createBranch(branchName: string): Promise<void>;
-  commit(message: string): Promise<boolean>;
-  push(branchName: string, options?: { force?: boolean }): Promise<void>;
-  getDefaultBranch(): Promise<{ branch: string; method: string }>;
-  writeFile(fileName: string, content: string): void;
-  setExecutable(fileName: string): Promise<void>;
-  getFileContent(fileName: string): string | null;
-  deleteFile(fileName: string): void;
-  wouldChange(fileName: string, content: string): boolean;
-  hasChanges(): Promise<boolean>;
-  getChangedFiles(): Promise<string[]>;
-  hasStagedChanges(): Promise<boolean>;
-  fileExistsOnBranch(fileName: string, branch: string): Promise<boolean>;
-  fileExists(fileName: string): boolean;
-}
 
 export interface GitOpsOptions {
   workDir: string;
@@ -43,7 +24,7 @@ export interface GitOpsOptions {
   retries?: number;
 }
 
-export class GitOps implements IGitOps {
+export class GitOps {
   private readonly _workDir: string;
   private readonly dryRun: boolean;
   private readonly _executor: ICommandExecutor;
@@ -133,7 +114,7 @@ export class GitOps implements IGitOps {
         this._workDir
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       throw new Error(`Failed to create branch '${branchName}': ${message}`);
     }
   }
@@ -188,7 +169,8 @@ export class GitOps implements IGitOps {
 
     try {
       return readFileSync(filePath, "utf-8");
-    } catch {
+    } catch (error) {
+      logger.debug(`Failed to read ${fileName}: ${toErrorMessage(error)}`);
       return null;
     }
   }
@@ -211,8 +193,10 @@ export class GitOps implements IGitOps {
     try {
       const existingContent = readFileSync(filePath, "utf-8");
       return existingContent !== newContent;
-    } catch {
-      // If we can't read the file, assume it would change
+    } catch (error) {
+      logger.debug(
+        `Failed to read ${fileName} for comparison: ${toErrorMessage(error)}`
+      );
       return true;
     }
   }
@@ -246,7 +230,8 @@ export class GitOps implements IGitOps {
       await this.exec("git diff --cached --quiet", this._workDir);
       return false; // Exit code 0 = no staged changes
     } catch {
-      return true; // Exit code 1 = there are staged changes
+      // Exit code 1 is expected when staged changes exist
+      return true;
     }
   }
 
@@ -262,6 +247,7 @@ export class GitOps implements IGitOps {
       );
       return true;
     } catch {
+      // Expected when file doesn't exist on branch
       return false;
     }
   }
@@ -340,25 +326,35 @@ export class GitOps implements IGitOps {
         return { branch: match[1], method: "remote HEAD" };
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      logger.info(`Debug: git remote show origin failed - ${msg}`);
+      const msg = toErrorMessage(error);
+      logger.debug(`git remote show origin failed - ${msg}`);
     }
 
-    // Try common default branch names (local operations, no retry needed)
+    return this.getDefaultBranchLocal();
+  }
+
+  /**
+   * Fallback default branch detection using local refs only.
+   * Checks origin/main, then origin/master, then defaults to "main".
+   */
+  async getDefaultBranchLocal(): Promise<{
+    branch: string;
+    method: string;
+  }> {
     try {
       await this.exec("git rev-parse --verify origin/main", this._workDir);
       return { branch: "main", method: "origin/main exists" };
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      logger.info(`Debug: origin/main check failed - ${msg}`);
+      const msg = toErrorMessage(error);
+      logger.debug(`origin/main check failed - ${msg}`);
     }
 
     try {
       await this.exec("git rev-parse --verify origin/master", this._workDir);
       return { branch: "master", method: "origin/master exists" };
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      logger.info(`Debug: origin/master check failed - ${msg}`);
+      const msg = toErrorMessage(error);
+      logger.debug(`origin/master check failed - ${msg}`);
     }
 
     return { branch: "main", method: "fallback default" };

@@ -6,17 +6,19 @@ import {
   isAzureDevOpsRepo,
 } from "../shared/repo-detector.js";
 import { PRResult } from "./pr-creator.js";
-import {
-  BasePRStrategy,
+import { BasePRStrategy } from "./pr-strategy.js";
+import type {
   PRStrategyOptions,
   CloseExistingPROptions,
   MergeOptions,
   MergeResult,
-} from "./pr-strategy.js";
+} from "./types.js";
 import { logger } from "../shared/logger.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
+import { getStderr } from "../shared/command-executor.js";
 
 export class AzurePRStrategy extends BasePRStrategy {
   constructor(executor?: ICommandExecutor) {
@@ -32,7 +34,9 @@ export class AzurePRStrategy extends BasePRStrategy {
     return `https://dev.azure.com/${encodeURIComponent(repoInfo.organization)}/${encodeURIComponent(repoInfo.project)}/_git/${encodeURIComponent(repoInfo.repo)}/pullrequest/${prId.trim()}`;
   }
 
-  async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {
+  async checkExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<string | null> {
     const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
 
     if (!isAzureDevOpsRepo(repoInfo)) {
@@ -55,10 +59,10 @@ export class AzurePRStrategy extends BasePRStrategy {
         if (isPermanentError(error)) {
           throw error;
         }
-        const stderr = (error as { stderr?: string }).stderr ?? "";
+        const stderr = getStderr(error);
         if (stderr && !stderr.includes("does not exist")) {
-          logger.info(
-            `Debug: Azure PR check failed - ${sanitizeCredentials(stderr).trim()}`
+          logger.debug(
+            `Azure PR check failed - ${sanitizeCredentials(stderr).trim()}`
           );
         }
       }
@@ -82,8 +86,6 @@ export class AzurePRStrategy extends BasePRStrategy {
       baseBranch,
       workDir,
       retries,
-      title: "", // Not used for check
-      body: "", // Not used for check
     });
 
     if (!existingUrl) {
@@ -93,7 +95,7 @@ export class AzurePRStrategy extends BasePRStrategy {
     // Extract PR ID from URL
     const prInfo = this.parsePRUrl(existingUrl);
     if (!prInfo) {
-      logger.info(`Warning: Could not parse PR URL: ${existingUrl}`);
+      logger.warn(`Could not parse PR URL: ${existingUrl}`);
       return false;
     }
 
@@ -105,8 +107,8 @@ export class AzurePRStrategy extends BasePRStrategy {
         retries,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      logger.info(`Warning: Failed to abandon PR #${prInfo.prId}: ${message}`);
+      const message = toErrorMessage(error);
+      logger.warn(`Failed to abandon PR #${prInfo.prId}: ${message}`);
       return false;
     }
 
@@ -128,8 +130,8 @@ export class AzurePRStrategy extends BasePRStrategy {
       }
     } catch (error) {
       // Branch deletion failure is not critical - PR is already abandoned
-      const message = error instanceof Error ? error.message : String(error);
-      logger.info(`Warning: Failed to delete branch ${branchName}: ${message}`);
+      const message = toErrorMessage(error);
+      logger.warn(`Failed to delete branch ${branchName}: ${message}`);
     }
 
     return true;
@@ -176,8 +178,8 @@ export class AzurePRStrategy extends BasePRStrategy {
           unlinkSync(descFile);
         }
       } catch (cleanupError) {
-        logger.info(
-          `Warning: Failed to clean up temp file ${descFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`
+        logger.warn(
+          `Failed to clean up temp file ${descFile}: ${toErrorMessage(cleanupError)}`
         );
       }
     }
@@ -235,58 +237,39 @@ export class AzurePRStrategy extends BasePRStrategy {
       : "";
 
     if (config.mode === "auto") {
-      // Enable auto-complete (no pre-check needed - always available in Azure DevOps)
-      const command =
+      const autoCommand =
         `az repos pr update --id ${escapeShellArg(prInfo.prId)} --auto-complete true ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)}`.trim();
 
-      try {
-        await withRetry(() => this.executor.exec(command, workDir), {
-          retries,
-        });
-
-        return {
+      return this.executeMergeCommand(
+        () => this.executor.exec(autoCommand, workDir),
+        retries,
+        {
           success: true,
           message:
             "Auto-complete enabled. PR will merge when all policies pass.",
           merged: false,
           autoMergeEnabled: true,
-        };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        return {
-          success: false,
-          message: `Failed to enable auto-complete: ${message}`,
-          merged: false,
-        };
-      }
+        },
+        "Failed to enable auto-complete"
+      );
     }
 
     if (config.mode === "force") {
-      // Bypass policies and complete the PR
       const bypassReason =
         config.bypassReason ?? "Automated config sync via xfg";
-
-      const command =
+      const forceCommand =
         `az repos pr update --id ${escapeShellArg(prInfo.prId)} --bypass-policy true --bypass-policy-reason ${escapeShellArg(bypassReason)} --status completed ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)}`.trim();
 
-      try {
-        await withRetry(() => this.executor.exec(command, workDir), {
-          retries,
-        });
-
-        return {
+      return this.executeMergeCommand(
+        () => this.executor.exec(forceCommand, workDir),
+        retries,
+        {
           success: true,
           message: "PR completed by bypassing policies.",
           merged: true,
-        };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        return {
-          success: false,
-          message: `Failed to bypass policies and complete PR: ${message}`,
-          merged: false,
-        };
-      }
+        },
+        "Failed to bypass policies and complete PR"
+      );
     }
 
     return {

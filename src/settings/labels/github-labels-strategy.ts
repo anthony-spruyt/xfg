@@ -7,8 +7,7 @@ import {
   GitHubRepoInfo,
   RepoInfo,
 } from "../../shared/repo-detector.js";
-import { escapeShellArg } from "../../shared/shell-utils.js";
-import { withRetry } from "../../shared/retry-utils.js";
+import { ghApiCall, type HttpMethod } from "../gh-api-utils.js";
 import type {
   ILabelsStrategy,
   GitHubLabel,
@@ -114,59 +113,20 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     }
   }
 
-  /**
-   * Executes a GitHub API call using the gh CLI.
-   * Uses the project's ICommandExecutor + escapeShellArg pattern
-   * (matching github-ruleset-strategy.ts).
-   */
   private async ghApi(
-    method: "GET" | "POST" | "PATCH" | "DELETE",
+    method: HttpMethod,
     endpoint: string,
     payload?: unknown,
     options?: LabelsStrategyOptions,
     paginate?: boolean
   ): Promise<string> {
-    const args: string[] = ["gh", "api"];
-
-    // Add method flag
-    if (method !== "GET") {
-      args.push("-X", method);
-    }
-
-    // Add pagination for list endpoint
-    if (paginate) {
-      args.push("--paginate");
-    }
-
-    // Add host flag for GitHub Enterprise
-    if (options?.host && options.host !== "github.com") {
-      args.push("--hostname", escapeShellArg(options.host));
-    }
-
-    // Add endpoint
-    args.push(escapeShellArg(endpoint));
-
-    // Build base command
-    const baseCommand = args.join(" ");
-
-    // Add GH_TOKEN environment variable prefix if token provided
-    const tokenPrefix = options?.token
-      ? `GH_TOKEN=${escapeShellArg(options.token)} `
-      : "";
-
-    // For POST/PATCH with payload, use echo pipe pattern
-    if (payload && (method === "POST" || method === "PATCH")) {
-      const payloadJson = JSON.stringify(payload);
-      const command = `echo ${escapeShellArg(payloadJson)} | ${tokenPrefix}${baseCommand} --input -`;
-      return await withRetry(() => this.executor.exec(command, process.cwd()), {
-        retries: this.retries,
-      });
-    }
-
-    // For GET/DELETE, run command directly
-    const command = `${tokenPrefix}${baseCommand}`;
-    return await withRetry(() => this.executor.exec(command, process.cwd()), {
-      retries: this.retries,
-    });
+    return ghApiCall(
+      method,
+      endpoint,
+      { executor: this.executor, retries: this.retries },
+      options,
+      payload,
+      paginate
+    );
   }
 }

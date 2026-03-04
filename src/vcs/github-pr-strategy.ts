@@ -3,17 +3,20 @@ import { join } from "node:path";
 import { escapeShellArg, escapeRegExp } from "../shared/shell-utils.js";
 import { isGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { PRResult } from "./pr-creator.js";
-import {
-  BasePRStrategy,
+import { BasePRStrategy } from "./pr-strategy.js";
+import type {
   PRStrategyOptions,
   CloseExistingPROptions,
   MergeOptions,
   MergeResult,
-} from "./pr-strategy.js";
+} from "./types.js";
 import { logger } from "../shared/logger.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
+import { toErrorMessage } from "../shared/type-guards.js";
+import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
+import { buildTokenEnv, getHostnameFlag } from "../settings/gh-api-utils.js";
 
 /**
  * Get the repo flag value for gh CLI commands.
@@ -27,17 +30,6 @@ function getRepoFlag(repoInfo: GitHubRepoInfo): string {
 }
 
 /**
- * Get the hostname flag for gh api commands.
- * Returns "--hostname HOST" for GHE, empty string for github.com.
- */
-function getHostnameFlag(repoInfo: GitHubRepoInfo): string {
-  if (repoInfo.host && repoInfo.host !== "github.com") {
-    return `--hostname ${escapeShellArg(repoInfo.host)}`;
-  }
-  return "";
-}
-
-/**
  * Build regex to match PR URLs for the given host.
  */
 function buildPRUrlRegex(host: string): RegExp {
@@ -45,16 +37,10 @@ function buildPRUrlRegex(host: string): RegExp {
   return new RegExp(`https://${escapedHost}/[\\w-]+/[\\w.-]+/pull/\\d+`);
 }
 
-/**
- * Build environment variables for gh CLI commands.
- * Uses env vars instead of command string interpolation to avoid shell injection.
- */
-function buildTokenEnv(token?: string): Record<string, string> | undefined {
-  return token ? { GH_TOKEN: token } : undefined;
-}
-
 export class GitHubPRStrategy extends BasePRStrategy {
-  async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {
+  async checkExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<string | null> {
     const { repoInfo, branchName, workDir, retries = 3, token } = options;
 
     if (!isGitHubRepo(repoInfo)) {
@@ -79,10 +65,10 @@ export class GitHubPRStrategy extends BasePRStrategy {
           throw error;
         }
         // Log unexpected errors for debugging (expected: empty result means no PR)
-        const stderr = (error as { stderr?: string }).stderr ?? "";
+        const stderr = getStderr(error);
         if (stderr && !stderr.includes("no pull requests match")) {
-          logger.info(
-            `Debug: GitHub PR check failed - ${sanitizeCredentials(stderr).trim()}`
+          logger.debug(
+            `GitHub PR check failed - ${sanitizeCredentials(stderr).trim()}`
           );
         }
       }
@@ -111,8 +97,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
       baseBranch,
       workDir,
       retries,
-      title: "", // Not used for check
-      body: "", // Not used for check
       token,
     });
 
@@ -123,7 +107,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
     // Extract PR number from URL
     const prNumber = existingUrl.match(/\/pull\/(\d+)/)?.[1];
     if (!prNumber) {
-      throw new Error(`Could not extract PR number from URL: ${existingUrl}`);
+      logger.warn(`Could not extract PR number from URL: ${existingUrl}`);
+      return false;
     }
 
     // Close the PR and delete the branch
@@ -139,10 +124,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
       );
       return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      logger.info(
-        `Warning: Failed to close existing PR #${prNumber}: ${message}`
-      );
+      const message = toErrorMessage(error);
+      logger.warn(`Failed to close existing PR #${prNumber}: ${message}`);
       return false;
     }
   }
@@ -206,8 +189,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
           unlinkSync(bodyFile);
         }
       } catch (cleanupError) {
-        logger.info(
-          `Warning: Failed to clean up temp file ${bodyFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`
+        logger.warn(
+          `Failed to clean up temp file ${bodyFile}: ${toErrorMessage(cleanupError)}`
         );
       }
     }
@@ -216,7 +199,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
   /**
    * Check if auto-merge is enabled on the repository.
    */
-  async checkAutoMergeEnabled(
+  private async checkAutoMergeEnabled(
     repoInfo: GitHubRepoInfo,
     workDir: string,
     retries: number = 3,
@@ -236,8 +219,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
       return result.trim() === "true";
     } catch (error) {
       // If we can't check, assume auto-merge is not enabled
-      logger.info(
-        `Warning: Could not check auto-merge status: ${error instanceof Error ? error.message : String(error)}`
+      logger.warn(
+        `Could not check auto-merge status: ${toErrorMessage(error)}`
       );
       return false;
     }
@@ -259,7 +242,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
   }
 
   async merge(options: MergeOptions): Promise<MergeResult> {
-    const { prUrl, config, workDir, retries = 3, token } = options;
+    const { prUrl, repoInfo, config, workDir, retries = 3, token } = options;
 
     // Manual mode: do nothing
     if (config.mode === "manual") {
@@ -277,16 +260,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     if (config.mode === "auto") {
       // Check if auto-merge is enabled on the repo
-      // Extract host/owner/repo from PR URL (supports both github.com and GHE)
-      const match = prUrl.match(/https:\/\/([^/]+)\/([^/]+)\/([^/]+)/);
-      if (match) {
-        const repoInfo: GitHubRepoInfo = {
-          type: "github",
-          gitUrl: prUrl,
-          owner: match[2],
-          repo: match[3],
-          host: match[1],
-        };
+      if (isGitHubRepo(repoInfo)) {
         const autoMergeEnabled = await this.checkAutoMergeEnabled(
           repoInfo,
           workDir,
@@ -295,8 +269,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
         );
 
         if (!autoMergeEnabled) {
-          logger.info(
-            `Warning: Auto-merge not enabled for '${repoInfo.owner}/${repoInfo.repo}'. PR left open for manual review.`
+          logger.warn(
+            `Auto-merge not enabled for '${repoInfo.owner}/${repoInfo.repo}'. PR left open for manual review.`
           );
           logger.info(
             `To enable: gh repo edit ${getRepoFlag(repoInfo)} --enable-auto-merge (requires admin)`
@@ -311,55 +285,37 @@ export class GitHubPRStrategy extends BasePRStrategy {
       }
 
       // Enable auto-merge
-      const command =
+      const autoCommand =
         `gh pr merge ${escapeShellArg(prUrl)} --auto ${strategyFlag} ${deleteBranchFlag}`.trim();
 
-      try {
-        await withRetry(
-          () => this.executor.exec(command, workDir, { env: tokenEnv }),
-          { retries }
-        );
-
-        return {
+      return this.executeMergeCommand(
+        () => this.executor.exec(autoCommand, workDir, { env: tokenEnv }),
+        retries,
+        {
           success: true,
           message: "Auto-merge enabled. PR will merge when checks pass.",
           merged: false,
           autoMergeEnabled: true,
-        };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        return {
-          success: false,
-          message: `Failed to enable auto-merge: ${message}`,
-          merged: false,
-        };
-      }
+        },
+        "Failed to enable auto-merge"
+      );
     }
 
     if (config.mode === "force") {
       // Force merge using admin privileges
-      const command =
+      const forceCommand =
         `gh pr merge ${escapeShellArg(prUrl)} --admin ${strategyFlag} ${deleteBranchFlag}`.trim();
 
-      try {
-        await withRetry(
-          () => this.executor.exec(command, workDir, { env: tokenEnv }),
-          { retries }
-        );
-
-        return {
+      return this.executeMergeCommand(
+        () => this.executor.exec(forceCommand, workDir, { env: tokenEnv }),
+        retries,
+        {
           success: true,
           message: "PR merged successfully using admin privileges.",
           merged: true,
-        };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        return {
-          success: false,
-          message: `Failed to force merge: ${message}`,
-          merged: false,
-        };
-      }
+        },
+        "Failed to force merge"
+      );
     }
 
     return {

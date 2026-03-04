@@ -26,7 +26,9 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
     session: SessionContext,
     options: ProcessorOptions
   ): Promise<FileSyncResult> {
-    const { workDir, dryRun, noDelete, configId } = options;
+    const { workDir, configId } = options;
+    const dryRun = options.dryRun ?? false;
+    const noDelete = options.noDelete ?? false;
 
     // Write files
     const { fileChanges, diffStats } = await this.fileWriter.writeFiles(
@@ -35,8 +37,8 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
         repoInfo,
         baseBranch: session.baseBranch,
         workDir,
-        dryRun: dryRun ?? false,
-        noDelete: noDelete ?? false,
+        dryRun: dryRun,
+        noDelete: noDelete,
         configId,
       },
       { gitOps: session.gitOps, log: this.log }
@@ -57,7 +59,7 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
 
     await this.manifestManager.deleteOrphans(
       filesToDelete,
-      { dryRun: dryRun ?? false, noDelete: noDelete ?? false },
+      { dryRun: dryRun, noDelete: noDelete },
       { gitOps: session.gitOps, log: this.log, fileChanges }
     );
 
@@ -75,7 +77,7 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
       workDir,
       newManifest,
       existingManifest,
-      dryRun ?? false,
+      dryRun,
       fileChanges
     );
 

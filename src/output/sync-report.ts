@@ -22,7 +22,7 @@ export interface FileChange {
   action: "create" | "update" | "delete";
 }
 
-function formatSummary(totals: SyncReport["totals"]): string {
+function formatSyncSummary(totals: SyncReport["totals"]): string {
   const total = totals.files.create + totals.files.update + totals.files.delete;
 
   if (total === 0) {
@@ -69,7 +69,7 @@ export function formatSyncReportCLI(report: SyncReport): string[] {
   }
 
   // Summary
-  lines.push(formatSummary(report.totals));
+  lines.push(formatSyncSummary(report.totals));
 
   return lines;
 }
@@ -125,7 +125,7 @@ export function formatSyncReportMarkdown(
   }
 
   // Summary
-  lines.push(`**${formatSummary(report.totals)}**`);
+  lines.push(`**${formatSyncSummary(report.totals)}**`);
 
   return lines.join("\n");
 }

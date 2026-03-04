@@ -122,12 +122,11 @@ repos:
               lifecycleManager: failingLifecycleManager,
             }
           ),
-        /process\.exit\(1\)/
+        /One or more repositories had errors during sync/
       );
 
       const output = consoleOutput.join("\n");
       assert.ok(output.includes("Lifecycle error"));
-      assert.equal(exitCode, 1);
     });
 
     test("processes repo successfully when lifecycle check passes", async () => {
@@ -213,12 +212,11 @@ repos:
               lifecycleManager: noopLifecycleManager,
             }
           ),
-        /process\.exit\(1\)/
+        /One or more repositories had errors during sync/
       );
 
       const output = consoleOutput.join("\n");
       assert.ok(output.includes("Clone failed"));
-      assert.equal(exitCode, 1);
     });
 
     test("skips repo processing in dry-run when lifecycle would create repo", async () => {
@@ -277,24 +275,25 @@ repos:
               lifecycleManager: noopLifecycleManager,
             }
           ),
-        /process\.exit\(1\)/
+        /One or more repositories had errors during sync/
       );
 
       const output = consoleOutput.join("\n");
       assert.ok(output.includes("Network error"));
-      assert.equal(exitCode, 1);
     });
   });
 
   describe("config file not found", () => {
-    test("exits with code 1 when config file does not exist", async () => {
+    test("throws when config file does not exist", async () => {
       const options: SyncOptions = {
         config: "/nonexistent/config.yaml",
         dryRun: true,
       };
 
-      await assert.rejects(async () => runSync(options), /process\.exit\(1\)/);
-      assert.equal(exitCode, 1);
+      await assert.rejects(
+        async () => runSync(options),
+        /Config file not found/
+      );
     });
   });
 
@@ -322,13 +321,12 @@ repos:
               lifecycleManager: noopLifecycleManager,
             }
           ),
-        /process\.exit\(1\)/
+        /One or more repositories had errors during sync/
       );
 
       const output = consoleOutput.join("\n");
       // Should log error for invalid URL
       assert.ok(output.includes("invalid-url-format"));
-      assert.equal(exitCode, 1);
     });
   });
 
@@ -678,12 +676,11 @@ ${VALID_RULESET}
               rulesetProcessorFactory: () => mockRulesetProcessor,
             }
           ),
-        /process\.exit\(1\)/
+        /One or more repositories had errors during sync/
       );
 
       const output = consoleOutput.join("\n");
       assert.ok(output.includes("API rate limit exceeded"));
-      assert.equal(exitCode, 1);
     });
 
     test("exits with code 1 when settings processor returns success: false without throwing", async () => {
@@ -714,7 +711,7 @@ ${VALID_RULESET}
               rulesetProcessorFactory: () => mockRulesetProcessor,
             }
           ),
-        /process\.exit\(1\)/
+        /One or more repositories had errors during sync/
       );
 
       const output = consoleOutput.join("\n");
@@ -722,7 +719,6 @@ ${VALID_RULESET}
         output.includes("Failed: insufficient permissions"),
         "Should log error message for failed settings result"
       );
-      assert.equal(exitCode, 1);
     });
 
     test("exits with code 1 when settings errors even if file sync succeeds", async () => {
@@ -755,10 +751,8 @@ ${VALID_LABELS}
               labelsProcessorFactory: () => mockLabelsProcessor,
             }
           ),
-        /process\.exit\(1\)/
+        /One or more repositories had errors during sync/
       );
-
-      assert.equal(exitCode, 1);
     });
 
     test("processes all three settings types together", async () => {
@@ -881,7 +875,7 @@ ${VALID_LABELS}
               labelsProcessorFactory: () => mockLabelsProcessor,
             }
           ),
-        /process\.exit\(1\)/
+        /One or more repositories had errors during sync/
       );
 
       const output = consoleOutput.join("\n");
@@ -889,7 +883,6 @@ ${VALID_LABELS}
         output.includes("Failed: label API error"),
         "Should log error message for failed labels result"
       );
-      assert.equal(exitCode, 1);
     });
 
     test("logs plan output lines for repo settings when changes exist", async () => {
@@ -988,7 +981,7 @@ repos:
 
       const output = consoleOutput.join("\n");
       assert.ok(
-        output.includes("Warning: Some setting requires admin access"),
+        output.includes("Some setting requires admin access"),
         "Should display warnings for repo settings"
       );
     });
@@ -1023,7 +1016,7 @@ repos:
 
       const output = consoleOutput.join("\n");
       assert.ok(
-        output.includes("Repo settings: No changes needed"),
+        output.includes("Repo Settings: No changes needed"),
         "Should log success message for repo settings with no changes"
       );
     });
@@ -1056,7 +1049,7 @@ repos:
               repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
             }
           ),
-        /process\.exit\(1\)/
+        /One or more repositories had errors during sync/
       );
 
       const output = consoleOutput.join("\n");
@@ -1064,7 +1057,6 @@ repos:
         output.includes("Failed: insufficient permissions for repo settings"),
         "Should log error message for failed repo settings result"
       );
-      assert.equal(exitCode, 1);
     });
 
     test("catches repo settings processor error and sets exit code 1", async () => {
@@ -1096,7 +1088,7 @@ repos:
               repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
             }
           ),
-        /process\.exit\(1\)/
+        /One or more repositories had errors during sync/
       );
 
       const output = consoleOutput.join("\n");
@@ -1104,7 +1096,6 @@ repos:
         output.includes("Repo settings API failure"),
         "Should log caught error for repo settings"
       );
-      assert.equal(exitCode, 1);
     });
 
     test("no error exit when settings succeed", async () => {
@@ -1136,6 +1127,41 @@ ${VALID_RULESET}
       );
 
       assert.equal(exitCode, undefined, "Should not exit with error code");
+    });
+  });
+
+  describe("merge mode warnings", () => {
+    test("warns when mergeStrategy is set with direct merge mode", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+`
+      );
+
+      const mockProcessor = createMockProcessor();
+
+      await runSync(
+        {
+          config: testConfigPath,
+          dryRun: true,
+          workDir: testDir,
+          merge: "direct" as const,
+          mergeStrategy: "squash" as const,
+        },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("mergeStrategy") && output.includes("ignored"),
+        "Should warn that mergeStrategy is ignored in direct mode"
+      );
     });
   });
 });

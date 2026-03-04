@@ -52,10 +52,10 @@ describe("PRMergeHandler", () => {
         files: [],
       };
 
-      const result = await handler.createAndMerge(
-        mockRepoInfo,
+      const result = await handler.createAndMerge({
+        repoInfo: mockRepoInfo,
         repoConfig,
-        {
+        options: {
           branchName: "chore/sync",
           baseBranch: "main",
           workDir,
@@ -64,8 +64,8 @@ describe("PRMergeHandler", () => {
           executor: mockExecutor,
         },
         changedFiles,
-        "test/repo"
-      );
+        repoName: "test/repo",
+      });
 
       assert.equal(result.success, true);
       assert.ok(messages.some((msg) => msg.includes("Creating pull request")));
@@ -89,10 +89,10 @@ describe("PRMergeHandler", () => {
         prOptions: { merge: "manual" },
       };
 
-      const result = await handler.createAndMerge(
-        mockRepoInfo,
+      const result = await handler.createAndMerge({
+        repoInfo: mockRepoInfo,
         repoConfig,
-        {
+        options: {
           branchName: "chore/sync",
           baseBranch: "main",
           workDir,
@@ -101,8 +101,8 @@ describe("PRMergeHandler", () => {
           executor: mockExecutor,
         },
         changedFiles,
-        "test/repo"
-      );
+        repoName: "test/repo",
+      });
 
       assert.equal(result.success, true);
       // Should not see "Handling merge" message
@@ -131,10 +131,10 @@ describe("PRMergeHandler", () => {
         unchangedCount: 0,
       };
 
-      const result = await handler.createAndMerge(
-        mockRepoInfo,
+      const result = await handler.createAndMerge({
+        repoInfo: mockRepoInfo,
         repoConfig,
-        {
+        options: {
           branchName: "chore/sync",
           baseBranch: "main",
           workDir,
@@ -143,9 +143,9 @@ describe("PRMergeHandler", () => {
           executor: mockExecutor,
         },
         changedFiles,
-        "test/repo",
-        diffStats
-      );
+        repoName: "test/repo",
+        diffStats,
+      });
 
       assert.deepEqual(result.diffStats, diffStats);
     });
@@ -172,10 +172,10 @@ describe("PRMergeHandler", () => {
         },
       };
 
-      await handler.createAndMerge(
-        mockRepoInfo,
+      await handler.createAndMerge({
+        repoInfo: mockRepoInfo,
         repoConfig,
-        {
+        options: {
           branchName: "chore/sync",
           baseBranch: "main",
           workDir,
@@ -184,8 +184,8 @@ describe("PRMergeHandler", () => {
           executor: mockExecutor,
         },
         changedFiles,
-        "test/repo"
-      );
+        repoName: "test/repo",
+      });
 
       const createCall = calls.find((c) => c.command.includes("gh pr create"));
       assert.ok(createCall, "gh pr create should have been called");
@@ -193,6 +193,49 @@ describe("PRMergeHandler", () => {
         createCall.command.includes("--label"),
         "gh pr create should include --label flag"
       );
+    });
+
+    test("warns when merge operation fails", async () => {
+      const { mock: mockLogger, warnings } = createMockLogger();
+      const { mock: mockExecutor } = createMockExecutor({
+        responses: new Map([
+          ["gh pr list", ""],
+          ["gh pr create", "https://github.com/test/repo/pull/1"],
+          ["gh api", "true"],
+          ["gh pr merge", new Error("merge conflict")],
+        ]),
+      });
+
+      const handler = new PRMergeHandler(mockLogger);
+      const changedFiles: FileAction[] = [
+        { fileName: "config.json", action: "create" },
+      ];
+      const repoConfig: RepoConfig = {
+        gitUrl: mockRepoInfo.gitUrl,
+        files: [],
+      };
+
+      const result = await handler.createAndMerge({
+        repoInfo: mockRepoInfo,
+        repoConfig,
+        options: {
+          branchName: "chore/sync",
+          baseBranch: "main",
+          workDir,
+          dryRun: false,
+          retries: 0,
+          executor: mockExecutor,
+        },
+        changedFiles,
+        repoName: "test/repo",
+      });
+
+      assert.equal(result.success, true);
+      assert.ok(
+        warnings.some((msg) => msg.includes("Merge operation failed")),
+        `should warn about merge failure, got warnings: ${JSON.stringify(warnings)}`
+      );
+      assert.equal(result.mergeResult?.merged, false);
     });
   });
 });

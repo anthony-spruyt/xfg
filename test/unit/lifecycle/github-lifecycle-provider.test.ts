@@ -904,6 +904,52 @@ describe("GitHubLifecycleProvider", () => {
       assert.ok(createCall.command.includes("--private"));
     });
 
+    test("continues when remote remove origin fails", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          [
+            "remote remove origin",
+            new Error("fatal: No such remote: 'origin'"),
+          ],
+          ["for-each-ref", "refs/heads/main\nrefs/tags/v1.0"],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
+
+      // Should still reach gh repo create despite remote remove failure
+      const createCall = calls.find((c) =>
+        c.command.includes("gh repo create")
+      );
+      assert.ok(
+        createCall,
+        "should proceed to create repo after remote remove failure"
+      );
+    });
+
+    test("continues when ref cleanup fails", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["for-each-ref", new Error("not a git repository")],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
+
+      // Should still reach gh repo create despite ref cleanup failure
+      const createCall = calls.find((c) =>
+        c.command.includes("gh repo create")
+      );
+      assert.ok(
+        createCall,
+        "should proceed to create repo after ref cleanup failure"
+      );
+    });
+
     describe("receiveMigration() with defaultBranch", () => {
       test("renames branch in mirror clone when source HEAD differs from desired", async () => {
         const { mock: executor, calls } = createMockExecutor({
@@ -990,8 +1036,8 @@ describe("GitHubLifecycleProvider", () => {
     });
   });
 
-  describe("token prefix", () => {
-    test("exists() prefixes command with GH_TOKEN when token provided", async () => {
+  describe("token env injection", () => {
+    test("exists() passes GH_TOKEN via env when token provided", async () => {
       const { mock: executor, calls } = createMockExecutor({
         defaultResponse: '{"id": 123}',
       });
@@ -1000,9 +1046,8 @@ describe("GitHubLifecycleProvider", () => {
       await provider.exists(mockRepoInfo, "ghs_test_token");
 
       assert.equal(calls.length, 1);
-      assert.ok(
-        calls[0].command.startsWith("GH_TOKEN='ghs_test_token' gh api")
-      );
+      assert.ok(calls[0].command.startsWith("gh api"));
+      assert.equal(calls[0].options?.env?.GH_TOKEN, "ghs_test_token");
     });
 
     test("exists() has no prefix when token not provided", async () => {
@@ -1017,7 +1062,7 @@ describe("GitHubLifecycleProvider", () => {
       assert.ok(calls[0].command.startsWith("gh api"));
     });
 
-    test("create() prefixes command with GH_TOKEN when token provided", async () => {
+    test("create() passes GH_TOKEN via env when token provided", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([["contents/README.md --jq", "abc123def"]]),
         defaultResponse: "",
@@ -1028,15 +1073,14 @@ describe("GitHubLifecycleProvider", () => {
 
       // calls[0] = gh repo create, calls[1] = GET README sha, calls[2] = DELETE README
       assert.equal(calls.length, 3);
-      assert.ok(
-        calls[0].command.startsWith("GH_TOKEN='ghs_test_token' gh repo create")
-      );
+      assert.ok(calls[0].command.startsWith("gh repo create"));
+      assert.equal(calls[0].options?.env?.GH_TOKEN, "ghs_test_token");
       // Token should also be used for the deleteReadme API calls
-      assert.ok(calls[1].command.includes("GH_TOKEN='ghs_test_token'"));
-      assert.ok(calls[2].command.includes("GH_TOKEN='ghs_test_token'"));
+      assert.equal(calls[1].options?.env?.GH_TOKEN, "ghs_test_token");
+      assert.equal(calls[2].options?.env?.GH_TOKEN, "ghs_test_token");
     });
 
-    test("receiveMigration() prefixes command with GH_TOKEN when token provided", async () => {
+    test("receiveMigration() passes GH_TOKEN via env when token provided", async () => {
       const { mock: executor, calls } = createMockExecutor({
         defaultResponse: "",
       });
@@ -1051,12 +1095,11 @@ describe("GitHubLifecycleProvider", () => {
 
       // calls[0] = git remote remove origin, calls[1] = git for-each-ref, calls[2] = gh repo create
       assert.equal(calls.length, 3);
-      assert.ok(
-        calls[2].command.startsWith("GH_TOKEN='ghs_test_token' gh repo create")
-      );
+      assert.ok(calls[2].command.startsWith("gh repo create"));
+      assert.equal(calls[2].options?.env?.GH_TOKEN, "ghs_test_token");
     });
 
-    test("fork() prefixes all gh commands with GH_TOKEN when token provided", async () => {
+    test("fork() passes GH_TOKEN via env for all gh commands when token provided", async () => {
       const upstreamRepoInfo: GitHubRepoInfo = {
         type: "github",
         gitUrl: "git@github.com:opensource/cool-tool.git",
@@ -1081,16 +1124,45 @@ describe("GitHubLifecycleProvider", () => {
         "ghs_test_token"
       );
 
-      // isOrganization API call should have token prefix
+      // isOrganization API call should have token via env
       const apiCall = calls.find((c) => c.command.includes("users/"));
       assert.ok(apiCall);
-      assert.ok(apiCall.command.startsWith("GH_TOKEN='ghs_test_token' gh api"));
+      assert.ok(apiCall.command.startsWith("gh api"));
+      assert.equal(apiCall.options?.env?.GH_TOKEN, "ghs_test_token");
 
-      // fork command should have token prefix
+      // fork command should have token via env
+      const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
+      assert.ok(forkCall);
+      assert.ok(forkCall.command.startsWith("gh repo fork"));
+      assert.equal(forkCall.options?.env?.GH_TOKEN, "ghs_test_token");
+    });
+
+    test("defaults to org behavior when isOrganization check fails", async () => {
+      const upstreamRepoInfo: GitHubRepoInfo = {
+        type: "github",
+        gitUrl: "git@github.com:opensource/cool-tool.git",
+        owner: "opensource",
+        repo: "cool-tool",
+        host: "github.com",
+      };
+
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["users/", new Error("API rate limit exceeded")],
+          ["gh repo fork", ""],
+        ]),
+        defaultResponse: "",
+      });
+
+      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      await provider.fork!(upstreamRepoInfo, mockRepoInfo);
+
+      // Should still fork with --org flag (defaults to org when check fails)
       const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
       assert.ok(forkCall);
       assert.ok(
-        forkCall.command.startsWith("GH_TOKEN='ghs_test_token' gh repo fork")
+        forkCall.command.includes("--org"),
+        "Should use --org flag when isOrganization check fails"
       );
     });
   });

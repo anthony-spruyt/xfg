@@ -4,13 +4,13 @@ import { existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  escapeShellArg,
   formatPRBody,
   formatPRTitle,
   createPR,
   mergePR,
   FileAction,
 } from "../../src/vcs/pr-creator.js";
+import { escapeShellArg } from "../../src/shared/shell-utils.js";
 import type { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
 
 // Helper to create a mock repo info for tests

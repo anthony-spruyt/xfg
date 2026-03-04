@@ -3,10 +3,6 @@ import type { RepoInfo } from "../shared/repo-detector.js";
 import type { MergeMode, MergeStrategy } from "../config/index.js";
 import type { IAuthenticatedGitOps } from "./authenticated-git-ops.js";
 
-// =============================================================================
-// PR Strategy Types
-// =============================================================================
-
 export interface PRMergeConfig {
   mode: MergeMode;
   strategy?: MergeStrategy;
@@ -30,7 +26,7 @@ export interface PRStrategyOptions {
   workDir: string;
   /** Number of retries for API operations (default: 3) */
   retries?: number;
-  /** GitHub App installation token for authentication */
+  /** GitHub App installation token (GitHub-only; ignored by GitLab/Azure strategies which use their own CLI auth) */
   token?: string;
   /** Labels to apply to the created PR */
   labels?: string[];
@@ -38,10 +34,11 @@ export interface PRStrategyOptions {
 
 export interface MergeOptions {
   prUrl: string;
+  repoInfo: RepoInfo;
   config: PRMergeConfig;
   workDir: string;
   retries?: number;
-  /** GitHub App installation token for authentication */
+  /** GitHub App installation token (GitHub-only; ignored by GitLab/Azure strategies which use their own CLI auth) */
   token?: string;
 }
 
@@ -54,7 +51,7 @@ export interface CloseExistingPROptions {
   baseBranch: string;
   workDir: string;
   retries?: number;
-  /** GitHub App installation token for authentication */
+  /** GitHub App installation token (GitHub-only; ignored by GitLab/Azure strategies which use their own CLI auth) */
   token?: string;
 }
 
@@ -68,7 +65,7 @@ export interface IPRStrategy {
    * Check if a PR already exists for the given branch
    * @returns PR URL if exists, null otherwise
    */
-  checkExistingPR(options: PRStrategyOptions): Promise<string | null>;
+  checkExistingPR(options: CloseExistingPROptions): Promise<string | null>;
 
   /**
    * Close an existing PR and delete its branch.
@@ -88,17 +85,7 @@ export interface IPRStrategy {
    * @returns Result with merge status
    */
   merge(options: MergeOptions): Promise<MergeResult>;
-
-  /**
-   * Execute the full PR creation workflow
-   * @deprecated Use PRWorkflowExecutor.execute() for better SRP
-   */
-  execute(options: PRStrategyOptions): Promise<PRResult>;
 }
-
-// =============================================================================
-// Commit Strategy Types
-// =============================================================================
 
 export interface FileChange {
   path: string;
@@ -114,7 +101,7 @@ export interface CommitOptions {
   retries?: number;
   /** Use force push (--force-with-lease). Default: true for PR branches, false for direct push to main. */
   force?: boolean;
-  /** GitHub App installation token for authentication (used by GraphQLCommitStrategy) */
+  /** GitHub App installation token (GitHub-only; used by GraphQLCommitStrategy) */
   token?: string;
   /** Authenticated git operations wrapper (used by GraphQLCommitStrategy for fetchBranch() during OID mismatch retries) */
   gitOps?: IAuthenticatedGitOps;

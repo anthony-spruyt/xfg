@@ -3,17 +3,18 @@ import { join } from "node:path";
 import { escapeShellArg } from "../shared/shell-utils.js";
 import { isGitLabRepo, GitLabRepoInfo } from "../shared/repo-detector.js";
 import { PRResult } from "./pr-creator.js";
-import {
-  BasePRStrategy,
+import { BasePRStrategy } from "./pr-strategy.js";
+import type {
   PRStrategyOptions,
   CloseExistingPROptions,
   MergeOptions,
   MergeResult,
-} from "./pr-strategy.js";
+} from "./types.js";
 import { logger } from "../shared/logger.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
-import { ICommandExecutor } from "../shared/command-executor.js";
+import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import type { MergeStrategy } from "../config/index.js";
 
 export class GitLabPRStrategy extends BasePRStrategy {
@@ -81,7 +82,9 @@ export class GitLabPRStrategy extends BasePRStrategy {
     }
   }
 
-  async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {
+  async checkExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<string | null> {
     const { repoInfo, branchName, workDir, retries = 3 } = options;
 
     if (!isGitLabRepo(repoInfo)) {
@@ -116,10 +119,10 @@ export class GitLabPRStrategy extends BasePRStrategy {
           throw error;
         }
         // Log unexpected errors for debugging
-        const stderr = (error as { stderr?: string }).stderr ?? "";
+        const stderr = getStderr(error);
         if (stderr && !stderr.includes("no merge requests")) {
-          logger.info(
-            `Debug: GitLab MR check failed - ${sanitizeCredentials(stderr).trim()}`
+          logger.debug(
+            `GitLab MR check failed - ${sanitizeCredentials(stderr).trim()}`
           );
         }
       }
@@ -141,8 +144,6 @@ export class GitLabPRStrategy extends BasePRStrategy {
       baseBranch,
       workDir,
       retries,
-      title: "", // Not used for check
-      body: "", // Not used for check
     });
 
     if (!existingUrl) {
@@ -152,7 +153,8 @@ export class GitLabPRStrategy extends BasePRStrategy {
     // Extract MR IID from URL
     const mrInfo = this.parseMRUrl(existingUrl);
     if (!mrInfo) {
-      throw new Error(`Could not extract MR IID from URL: ${existingUrl}`);
+      logger.warn(`Could not extract MR IID from URL: ${existingUrl}`);
+      return false;
     }
 
     const repoFlag = this.getRepoFlag(repoInfo);
@@ -165,10 +167,8 @@ export class GitLabPRStrategy extends BasePRStrategy {
         retries,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      logger.info(
-        `Warning: Failed to close existing MR !${mrInfo.mrIid}: ${message}`
-      );
+      const message = toErrorMessage(error);
+      logger.warn(`Failed to close existing MR !${mrInfo.mrIid}: ${message}`);
       return false;
     }
 
@@ -181,8 +181,8 @@ export class GitLabPRStrategy extends BasePRStrategy {
       });
     } catch (error) {
       // Branch deletion failure is not critical
-      const message = error instanceof Error ? error.message : String(error);
-      logger.info(`Warning: Failed to delete branch ${branchName}: ${message}`);
+      const message = toErrorMessage(error);
+      logger.warn(`Failed to delete branch ${branchName}: ${message}`);
     }
 
     return true;
@@ -247,8 +247,8 @@ export class GitLabPRStrategy extends BasePRStrategy {
           unlinkSync(descFile);
         }
       } catch (cleanupError) {
-        logger.info(
-          `Warning: Failed to clean up temp file ${descFile}: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`
+        logger.warn(
+          `Failed to clean up temp file ${descFile}: ${toErrorMessage(cleanupError)}`
         );
       }
     }
@@ -284,59 +284,41 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
     if (config.mode === "auto") {
       // Enable auto-merge when pipeline succeeds
-      // glab mr merge <id> --when-pipeline-succeeds [--squash] [--remove-source-branch]
-      const flagParts = [
+      const autoFlagParts = [
         "--when-pipeline-succeeds",
         strategyFlag,
         deleteBranchFlag,
       ].filter(Boolean);
-      const command = `glab mr merge ${escapeShellArg(mrInfo.mrIid)} ${flagParts.join(" ")} -R ${escapeShellArg(repoFlag)} -y`;
+      const autoCommand = `glab mr merge ${escapeShellArg(mrInfo.mrIid)} ${autoFlagParts.join(" ")} -R ${escapeShellArg(repoFlag)} -y`;
 
-      try {
-        await withRetry(() => this.executor.exec(command.trim(), workDir), {
-          retries,
-        });
-
-        return {
+      return this.executeMergeCommand(
+        () => this.executor.exec(autoCommand.trim(), workDir),
+        retries,
+        {
           success: true,
           message: "Auto-merge enabled. MR will merge when pipeline succeeds.",
           merged: false,
           autoMergeEnabled: true,
-        };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        return {
-          success: false,
-          message: `Failed to enable auto-merge: ${message}`,
-          merged: false,
-        };
-      }
+        },
+        "Failed to enable auto-merge"
+      );
     }
 
     if (config.mode === "force") {
       // Force merge immediately
-      // glab mr merge <id> --yes [--squash] [--remove-source-branch]
-      const flagParts = [strategyFlag, deleteBranchFlag].filter(Boolean);
-      const command = `glab mr merge ${escapeShellArg(mrInfo.mrIid)} ${flagParts.join(" ")} -R ${escapeShellArg(repoFlag)} -y`;
+      const forceFlagParts = [strategyFlag, deleteBranchFlag].filter(Boolean);
+      const forceCommand = `glab mr merge ${escapeShellArg(mrInfo.mrIid)} ${forceFlagParts.join(" ")} -R ${escapeShellArg(repoFlag)} -y`;
 
-      try {
-        await withRetry(() => this.executor.exec(command.trim(), workDir), {
-          retries,
-        });
-
-        return {
+      return this.executeMergeCommand(
+        () => this.executor.exec(forceCommand.trim(), workDir),
+        retries,
+        {
           success: true,
           message: "MR merged successfully.",
           merged: true,
-        };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        return {
-          success: false,
-          message: `Failed to force merge: ${message}`,
-          merged: false,
-        };
-      }
+        },
+        "Failed to force merge"
+      );
     }
 
     return {

@@ -49,10 +49,6 @@ export interface LabelChange {
   config?: Label;
 }
 
-// =============================================================================
-// Helpers
-// =============================================================================
-
 function formatValue(val: unknown): string {
   if (val === null) return "null";
   if (val === undefined) return "undefined";
@@ -120,7 +116,7 @@ function formatRulesetConfig(config: Ruleset, indent: number): string[] {
   return lines;
 }
 
-function formatSummary(totals: SettingsReport["totals"]): string {
+function formatSettingsSummary(totals: SettingsReport["totals"]): string {
   const parts: string[] = [];
   const settingsTotal = totals.settings.add + totals.settings.change;
   const rulesetsTotal =
@@ -165,10 +161,6 @@ function formatSummary(totals: SettingsReport["totals"]): string {
 
   return `Plan: ${parts.join(", ")}`;
 }
-
-// =============================================================================
-// CLI Formatter
-// =============================================================================
 
 export function formatSettingsReportCLI(report: SettingsReport): string[] {
   const lines: string[] = [];
@@ -277,14 +269,10 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
   }
 
   // Summary
-  lines.push(formatSummary(report.totals));
+  lines.push(formatSettingsSummary(report.totals));
 
   return lines;
 }
-
-// =============================================================================
-// Markdown Formatter
-// =============================================================================
 
 export function formatValuePlain(val: unknown): string {
   if (val === null) return "null";
@@ -465,14 +453,10 @@ export function formatSettingsReportMarkdown(
   }
 
   // Summary
-  lines.push(`**${formatSummary(report.totals)}**`);
+  lines.push(`**${formatSettingsSummary(report.totals)}**`);
 
   return lines.join("\n");
 }
-
-// =============================================================================
-// File Writer
-// =============================================================================
 
 export function writeSettingsReportSummary(
   report: SettingsReport,

@@ -1,5 +1,5 @@
 import type { RepoConfig, Ruleset } from "../../config/index.js";
-import type { GitHubRepoInfo } from "../../shared/repo-detector.js";
+import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
 import { GitHubRulesetStrategy } from "./github-ruleset-strategy.js";
 import type { GitHubRuleset } from "./types.js";
 import { diffRulesets } from "./diff.js";
@@ -7,34 +7,22 @@ import { formatRulesetPlan, RulesetPlanResult } from "./formatter.js";
 import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
+  type BaseProcessorResult,
 } from "../base-processor.js";
-
-// =============================================================================
-// Interfaces
-// =============================================================================
 
 export interface IRulesetProcessor {
   process(
     repoConfig: RepoConfig,
-    repoInfo: import("../../shared/repo-detector.js").RepoInfo,
+    repoInfo: RepoInfo,
     options: RulesetProcessorOptions
   ): Promise<RulesetProcessorResult>;
 }
-
-// =============================================================================
-// Types
-// =============================================================================
 
 export interface RulesetProcessorOptions extends BaseProcessorOptions {
   noDelete?: boolean;
 }
 
-export interface RulesetProcessorResult {
-  success: boolean;
-  repoName: string;
-  message: string;
-  skipped?: boolean;
-  dryRun?: boolean;
+export interface RulesetProcessorResult extends BaseProcessorResult {
   changes?: {
     create: number;
     update: number;
@@ -43,10 +31,6 @@ export interface RulesetProcessorResult {
   };
   planOutput?: RulesetPlanResult;
 }
-
-// =============================================================================
-// Processor Implementation
-// =============================================================================
 
 /**
  * Processes ruleset configuration for a repository.

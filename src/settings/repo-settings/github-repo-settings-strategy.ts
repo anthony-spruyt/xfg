@@ -7,14 +7,14 @@ import {
   GitHubRepoInfo,
   RepoInfo,
 } from "../../shared/repo-detector.js";
-import { escapeShellArg } from "../../shared/shell-utils.js";
-import { withRetry } from "../../shared/retry-utils.js";
+import { ghApiCall, type HttpMethod } from "../gh-api-utils.js";
 import type { GitHubRepoSettings } from "../../config/index.js";
 import type {
   IRepoSettingsStrategy,
   RepoSettingsStrategyOptions,
   CurrentRepoSettings,
 } from "./types.js";
+import { toErrorMessage } from "../../shared/type-guards.js";
 
 /**
  * Converts camelCase to snake_case.
@@ -207,7 +207,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
       await this.ghApi("GET", endpoint, undefined, options);
       return true; // 204 = enabled
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       if (message.includes("HTTP 404")) {
         return false; // 404 = disabled
       }
@@ -232,7 +232,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
       // Empty response (204) means enabled
       return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       if (message.includes("HTTP 404")) {
         return false;
       }
@@ -250,7 +250,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
       const data = JSON.parse(result);
       return data.enabled === true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       if (message.includes("HTTP 404")) {
         return false; // 404 = not available (e.g. private repos)
       }
@@ -267,43 +267,17 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   }
 
   private async ghApi(
-    method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
+    method: HttpMethod,
     endpoint: string,
     payload?: unknown,
     options?: RepoSettingsStrategyOptions
   ): Promise<string> {
-    const args: string[] = ["gh", "api"];
-
-    if (method !== "GET") {
-      args.push("-X", method);
-    }
-
-    if (options?.host && options.host !== "github.com") {
-      args.push("--hostname", escapeShellArg(options.host));
-    }
-
-    args.push(escapeShellArg(endpoint));
-
-    const baseCommand = args.join(" ");
-
-    const tokenPrefix = options?.token
-      ? `GH_TOKEN=${escapeShellArg(options.token)} `
-      : "";
-
-    if (
-      payload &&
-      (method === "POST" || method === "PUT" || method === "PATCH")
-    ) {
-      const payloadJson = JSON.stringify(payload);
-      const command = `echo ${escapeShellArg(payloadJson)} | ${tokenPrefix}${baseCommand} --input -`;
-      return await withRetry(() => this.executor.exec(command, process.cwd()), {
-        retries: this.retries,
-      });
-    }
-
-    const command = `${tokenPrefix}${baseCommand}`;
-    return await withRetry(() => this.executor.exec(command, process.cwd()), {
-      retries: this.retries,
-    });
+    return ghApiCall(
+      method,
+      endpoint,
+      { executor: this.executor, retries: this.retries },
+      options,
+      payload
+    );
   }
 }

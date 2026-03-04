@@ -1,5 +1,5 @@
 import type { RepoConfig } from "../../config/index.js";
-import type { GitHubRepoInfo } from "../../shared/repo-detector.js";
+import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
 import { GitHubLabelsStrategy } from "./github-labels-strategy.js";
 import { diffLabels } from "./diff.js";
 import { formatLabelsPlan, type LabelsPlanResult } from "./formatter.js";
@@ -8,34 +8,22 @@ import type { ILabelsStrategy } from "./types.js";
 import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
+  type BaseProcessorResult,
 } from "../base-processor.js";
-
-// =============================================================================
-// Interfaces
-// =============================================================================
 
 export interface ILabelsProcessor {
   process(
     repoConfig: RepoConfig,
-    repoInfo: import("../../shared/repo-detector.js").RepoInfo,
+    repoInfo: RepoInfo,
     options: LabelsProcessorOptions
   ): Promise<LabelsProcessorResult>;
 }
-
-// =============================================================================
-// Types
-// =============================================================================
 
 export interface LabelsProcessorOptions extends BaseProcessorOptions {
   noDelete?: boolean;
 }
 
-export interface LabelsProcessorResult {
-  success: boolean;
-  repoName: string;
-  message: string;
-  skipped?: boolean;
-  dryRun?: boolean;
+export interface LabelsProcessorResult extends BaseProcessorResult {
   changes?: {
     create: number;
     update: number;
@@ -44,10 +32,6 @@ export interface LabelsProcessorResult {
   };
   planOutput?: LabelsPlanResult;
 }
-
-// =============================================================================
-// Processor Implementation
-// =============================================================================
 
 /**
  * Processes label configuration for a repository.

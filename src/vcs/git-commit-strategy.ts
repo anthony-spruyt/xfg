@@ -34,10 +34,8 @@ export class GitCommitStrategy implements ICommitStrategy {
       gitOps,
     } = options;
 
-    // Stage all changes
-    await this.executor.exec("git add -A", workDir);
-
     // Commit with the message (--no-verify to skip pre-commit hooks)
+    // Staging is handled by CommitPushManager before calling commit()
     await this.executor.exec(
       `git commit --no-verify -m ${escapeShellArg(message)}`,
       workDir

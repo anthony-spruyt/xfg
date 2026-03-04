@@ -1,15 +1,11 @@
-import { RepoConfig } from "../config/index.js";
-import { RepoInfo } from "../shared/repo-detector.js";
 import type { IRepoLifecycleManager } from "../lifecycle/index.js";
 import {
   RepositoryProcessor,
-  type ProcessorResult,
-  type ProcessorOptions,
+  type IRepositoryProcessor,
 } from "../sync/index.js";
 import {
   RulesetProcessor,
-  RulesetProcessorOptions,
-  RulesetProcessorResult,
+  type IRulesetProcessor,
 } from "../settings/rulesets/processor.js";
 import {
   RepoSettingsProcessor,
@@ -20,20 +16,8 @@ import {
   type ILabelsProcessor,
 } from "../settings/labels/processor.js";
 
-/**
- * Processor interface for dependency injection in tests.
- */
-export interface IRepositoryProcessor {
-  process(
-    repoConfig: RepoConfig,
-    repoInfo: RepoInfo,
-    options: ProcessorOptions
-  ): Promise<ProcessorResult>;
-}
+export type { IRepositoryProcessor, IRulesetProcessor };
 
-/**
- * Factory function type for creating processors.
- */
 export type ProcessorFactory = () => IRepositoryProcessor;
 
 /**
@@ -41,17 +25,6 @@ export type ProcessorFactory = () => IRepositoryProcessor;
  */
 export const defaultProcessorFactory: ProcessorFactory = () =>
   new RepositoryProcessor();
-
-/**
- * Ruleset processor interface for dependency injection in tests.
- */
-export interface IRulesetProcessor {
-  process(
-    repoConfig: RepoConfig,
-    repoInfo: RepoInfo,
-    options: RulesetProcessorOptions
-  ): Promise<RulesetProcessorResult>;
-}
 
 /**
  * Factory function type for creating ruleset processors.

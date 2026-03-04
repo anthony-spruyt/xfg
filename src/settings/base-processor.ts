@@ -3,10 +3,7 @@ import type { RepoInfo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { isGitHubRepo, getRepoDisplayName } from "../shared/repo-detector.js";
 import { createTokenManager } from "../vcs/index.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
-
-// =============================================================================
-// Types
-// =============================================================================
+import { toErrorMessage } from "../shared/type-guards.js";
 
 export interface BaseProcessorOptions {
   dryRun?: boolean;
@@ -21,10 +18,6 @@ export interface BaseProcessorResult {
   dryRun?: boolean;
 }
 
-// =============================================================================
-// Abstract Base Class
-// =============================================================================
-
 /**
  * Shared base class for GitHub settings processors (labels, rulesets, repo settings).
  * Handles common boilerplate: GitHub-only gating, empty settings check,
@@ -36,8 +29,8 @@ export abstract class BaseSettingsProcessor<
 > {
   protected readonly tokenManager: GitHubAppTokenManager | null;
 
-  constructor() {
-    this.tokenManager = createTokenManager();
+  constructor(tokenManager?: GitHubAppTokenManager | null) {
+    this.tokenManager = tokenManager ?? createTokenManager();
   }
 
   async process(
@@ -75,7 +68,7 @@ export abstract class BaseSettingsProcessor<
         repoName
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = toErrorMessage(error);
       return this.createErrorResult(repoName, `Failed: ${message}`);
     }
   }

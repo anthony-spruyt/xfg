@@ -1,34 +1,15 @@
 import { execSync } from "node:child_process";
 import { sanitizeCredentials } from "./sanitize-utils.js";
 
-/**
- * Options for command execution.
- */
 export interface ExecOptions {
   /** Additional environment variables to set for the command */
   env?: Record<string, string>;
 }
 
-/**
- * Interface for executing shell commands.
- * Enables dependency injection for testing and alternative implementations.
- */
 export interface ICommandExecutor {
-  /**
-   * Execute a shell command and return the output.
-   * @param command The command to execute
-   * @param cwd The working directory for the command
-   * @param options Optional execution options (env vars, etc.)
-   * @returns Promise resolving to the trimmed stdout output
-   * @throws Error if the command fails
-   */
   exec(command: string, cwd: string, options?: ExecOptions): Promise<string>;
 }
 
-/**
- * Default implementation that uses Node.js child_process.execSync.
- * Note: Commands are escaped using escapeShellArg before being passed here.
- */
 export class ShellCommandExecutor implements ICommandExecutor {
   async exec(
     command: string,
@@ -67,7 +48,13 @@ export class ShellCommandExecutor implements ICommandExecutor {
   }
 }
 
-/**
- * Default executor instance for production use.
- */
 export const defaultExecutor: ICommandExecutor = new ShellCommandExecutor();
+
+/** Extract stderr string from an exec error (child_process errors attach stderr). */
+export function getStderr(error: unknown): string {
+  if (error != null && typeof error === "object" && "stderr" in error) {
+    const { stderr } = error as { stderr: unknown };
+    return typeof stderr === "string" ? stderr : "";
+  }
+  return "";
+}

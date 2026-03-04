@@ -11,27 +11,17 @@ import type { XfgManifest } from "./manifest.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { FileAction } from "../vcs/pr-creator.js";
 
-/**
- * Factory function type for creating IAuthenticatedGitOps instances.
- * Allows dependency injection for testing.
- */
 export type GitOpsFactory = (
   options: GitOpsOptions,
   auth?: GitAuthOptions
 ) => IAuthenticatedGitOps;
 
-/**
- * Result of processing a single file
- */
 export interface FileWriteResult {
   fileName: string;
   content: string | null;
   action: "create" | "update" | "delete" | "skip";
 }
 
-/**
- * Context for file writing operations
- */
 export interface FileWriteContext {
   repoInfo: RepoInfo;
   baseBranch: string;
@@ -41,29 +31,17 @@ export interface FileWriteContext {
   configId: string;
 }
 
-/**
- * Dependencies for FileWriter
- */
 export interface FileWriterDeps {
   gitOps: IAuthenticatedGitOps;
   log: ILogger;
 }
 
-/**
- * Result of writing all files
- */
 export interface FileWriteAllResult {
   fileChanges: Map<string, FileWriteResult>;
   diffStats: DiffStats;
 }
 
-/**
- * Interface for file writing operations
- */
 export interface IFileWriter {
-  /**
-   * Write all files from config to repository
-   */
   writeFiles(
     files: FileContent[],
     ctx: FileWriteContext,
@@ -71,56 +49,35 @@ export interface IFileWriter {
   ): Promise<FileWriteAllResult>;
 }
 
-/**
- * Result of processing orphans
- */
 export interface OrphanProcessResult {
   manifest: XfgManifest;
   filesToDelete: string[];
 }
 
-/**
- * Options for orphan deletion
- */
 export interface OrphanDeleteOptions {
   dryRun: boolean;
   noDelete: boolean;
 }
 
-/**
- * Dependencies for orphan deletion
- */
 export interface OrphanDeleteDeps {
   gitOps: IAuthenticatedGitOps;
   log: ILogger;
   fileChanges: Map<string, FileWriteResult>;
 }
 
-/**
- * Interface for manifest management operations
- */
 export interface IManifestManager {
-  /**
-   * Process manifest to find orphaned files
-   */
   processOrphans(
     workDir: string,
     configId: string,
     filesWithDeleteOrphaned: Map<string, boolean | undefined>
   ): OrphanProcessResult;
 
-  /**
-   * Delete orphaned files
-   */
   deleteOrphans(
     filesToDelete: string[],
     options: OrphanDeleteOptions,
     deps: OrphanDeleteDeps
   ): Promise<void>;
 
-  /**
-   * Save updated manifest
-   */
   saveUpdatedManifest(
     workDir: string,
     manifest: XfgManifest,
@@ -130,9 +87,6 @@ export interface IManifestManager {
   ): void;
 }
 
-/**
- * Options for branch setup
- */
 export interface BranchSetupOptions {
   repoInfo: RepoInfo;
   branchName: string;
@@ -147,47 +101,18 @@ export interface BranchSetupOptions {
   executor: ICommandExecutor;
 }
 
-/**
- * Interface for branch management operations
- */
 export interface IBranchManager {
-  /**
-   * Setup branch for sync (close existing PR, create fresh branch)
-   */
   setupBranch(options: BranchSetupOptions): Promise<void>;
 }
 
-/**
- * Result of resolving authentication for a repository
- */
-export interface AuthResult {
-  /** Installation token or PAT */
-  token?: string;
-  /** Auth options for git operations */
-  authOptions?: GitAuthOptions;
-  /** If set, caller should return this result (e.g., no installation found) */
-  skipResult?: {
-    success: boolean;
-    repoName: string;
-    message: string;
-    skipped?: boolean;
-  };
-}
+export type AuthResult =
+  | { ok: true; token?: string; authOptions?: GitAuthOptions }
+  | { ok: false; skipResult: ProcessorResult };
 
-/**
- * Interface for building authentication options
- */
 export interface IAuthOptionsBuilder {
-  /**
-   * Resolve authentication for a repository.
-   * Returns token and auth options, or a skip result if repo should be skipped.
-   */
   resolve(repoInfo: RepoInfo, repoName: string): Promise<AuthResult>;
 }
 
-/**
- * Options for setting up a repository session
- */
 export interface SessionOptions {
   workDir: string;
   dryRun: boolean;
@@ -195,32 +120,16 @@ export interface SessionOptions {
   authOptions?: GitAuthOptions;
 }
 
-/**
- * Context returned from session setup
- */
 export interface SessionContext {
-  /** Authenticated git operations */
   gitOps: IAuthenticatedGitOps;
-  /** Default branch name */
   baseBranch: string;
-  /** Cleanup function - call in finally block */
   cleanup: () => void;
 }
 
-/**
- * Interface for managing repository workspace lifecycle
- */
 export interface IRepositorySession {
-  /**
-   * Setup repository workspace: clean, clone, detect default branch.
-   * Returns context with gitOps and cleanup function.
-   */
   setup(repoInfo: RepoInfo, options: SessionOptions): Promise<SessionContext>;
 }
 
-/**
- * Options for commit and push operations
- */
 export interface CommitPushOptions {
   repoInfo: RepoInfo;
   gitOps: IAuthenticatedGitOps;
@@ -235,39 +144,15 @@ export interface CommitPushOptions {
   executor: ICommandExecutor;
 }
 
-/**
- * Result of commit and push operation
- */
-export interface CommitPushResult {
-  /** Whether commit/push succeeded */
-  success: boolean;
-  /** If failed, contains error result to return */
-  errorResult?: {
-    success: boolean;
-    repoName: string;
-    message: string;
-  };
-  /** If success but no changes, indicates skip */
-  skipped?: boolean;
-}
+export type CommitPushResult =
+  | { success: true; skipped?: false }
+  | { success: true; skipped: true }
+  | { success: false; errorResult: ProcessorResult };
 
-/**
- * Interface for commit and push operations
- */
 export interface ICommitPushManager {
-  /**
-   * Stage, commit, and push changes.
-   * Handles dry-run mode and branch protection errors.
-   */
-  commitAndPush(
-    options: CommitPushOptions,
-    repoName: string
-  ): Promise<CommitPushResult>;
+  commitAndPush(options: CommitPushOptions): Promise<CommitPushResult>;
 }
 
-/**
- * Options for repository processing
- */
 export interface ProcessorOptions {
   branchName: string;
   workDir: string;
@@ -279,17 +164,11 @@ export interface ProcessorOptions {
   noDelete?: boolean;
 }
 
-/**
- * Detail of a single file change for reporting
- */
 export interface FileChangeDetail {
   path: string;
   action: "create" | "update" | "delete";
 }
 
-/**
- * Result of repository processing
- */
 export interface ProcessorResult {
   success: boolean;
   repoName: string;
@@ -305,9 +184,6 @@ export interface ProcessorResult {
   fileChanges?: FileChangeDetail[];
 }
 
-/**
- * Interface for repository processing operations
- */
 export interface IRepositoryProcessor {
   process(
     repoConfig: RepoConfig,
@@ -316,9 +192,6 @@ export interface IRepositoryProcessor {
   ): Promise<ProcessorResult>;
 }
 
-/**
- * Result of file synchronization
- */
 export interface FileSyncResult {
   fileChanges: Map<string, FileWriteResult>;
   diffStats: DiffStats;
@@ -326,13 +199,7 @@ export interface FileSyncResult {
   hasChanges: boolean;
 }
 
-/**
- * Interface for file synchronization orchestration
- */
 export interface IFileSyncOrchestrator {
-  /**
-   * Write files, handle orphans, update manifest, return change summary.
-   */
   sync(
     repoConfig: RepoConfig,
     repoInfo: RepoInfo,
@@ -341,9 +208,6 @@ export interface IFileSyncOrchestrator {
   ): Promise<FileSyncResult>;
 }
 
-/**
- * Options for PR creation and merge
- */
 export interface PRHandlerOptions {
   branchName: string;
   baseBranch: string;
@@ -355,50 +219,30 @@ export interface PRHandlerOptions {
   executor: ICommandExecutor;
 }
 
-/**
- * Interface for PR creation and merge handling
- */
-export interface IPRMergeHandler {
-  /**
-   * Create PR and optionally merge based on repo config.
-   * Returns ProcessorResult with PR URL and merge status.
-   */
-  createAndMerge(
-    repoInfo: RepoInfo,
-    repoConfig: RepoConfig,
-    options: PRHandlerOptions,
-    changedFiles: FileAction[],
-    repoName: string,
-    diffStats?: DiffStats,
-    fileChanges?: FileChangeDetail[]
-  ): Promise<ProcessorResult>;
+export interface CreateAndMergeInput {
+  repoInfo: RepoInfo;
+  repoConfig: RepoConfig;
+  options: PRHandlerOptions;
+  changedFiles: FileAction[];
+  repoName: string;
+  diffStats?: DiffStats;
+  fileChanges?: FileChangeDetail[];
 }
 
-/**
- * Result of executing work within a sync workflow
- */
+export interface IPRMergeHandler {
+  createAndMerge(input: CreateAndMergeInput): Promise<ProcessorResult>;
+}
+
 export interface WorkResult {
-  /** File changes to commit */
   fileChanges: Map<string, FileWriteResult>;
-  /** Changed files for PR body */
   changedFiles: FileAction[];
-  /** Diff statistics for reporting */
   diffStats?: DiffStats;
-  /** Human-readable commit message */
   commitMessage: string;
-  /** File change details for result reporting */
   fileChangeDetails: FileChangeDetail[];
 }
 
-/**
- * Strategy for executing work within the sync workflow.
- * Implementations define what changes to make (files vs manifest).
- */
+/** Defines what changes to make within the sync workflow. Return null if no changes. */
 export interface IWorkStrategy {
-  /**
-   * Execute work and return changes to commit.
-   * Return null if no changes detected (workflow will skip).
-   */
   execute(
     repoConfig: RepoConfig,
     repoInfo: RepoInfo,
@@ -407,13 +251,8 @@ export interface IWorkStrategy {
   ): Promise<WorkResult | null>;
 }
 
-/**
- * Orchestrates the common sync workflow steps.
- */
+/** Orchestrates: auth → session → branch → work → commit → PR */
 export interface ISyncWorkflow {
-  /**
-   * Execute workflow: auth → session → branch → work → commit → PR
-   */
   execute(
     repoConfig: RepoConfig,
     repoInfo: RepoInfo,

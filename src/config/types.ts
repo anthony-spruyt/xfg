@@ -1,9 +1,5 @@
 import type { ArrayMergeStrategy } from "./merge.js";
 
-// =============================================================================
-// PR Merge Options Types
-// =============================================================================
-
 export type MergeMode = "manual" | "auto" | "force" | "direct";
 export type MergeStrategy = "merge" | "squash" | "rebase";
 
@@ -14,11 +10,6 @@ export interface PRMergeOptions {
   bypassReason?: string;
   labels?: string[];
 }
-
-// =============================================================================
-// GitHub Rulesets Types (aligned with GitHub REST API)
-// @see https://docs.github.com/en/rest/repos/rules
-// =============================================================================
 
 /** Ruleset target type */
 export type RulesetTarget = "branch" | "tag";
@@ -49,19 +40,11 @@ export type SecurityAlertsThreshold =
   | "medium_or_higher"
   | "all";
 
-// =============================================================================
-// Bypass Actors
-// =============================================================================
-
 export interface BypassActor {
   actorId: number;
   actorType: BypassActorType;
   bypassMode?: BypassMode;
 }
-
-// =============================================================================
-// Conditions
-// =============================================================================
 
 interface RefNameCondition {
   include?: string[];
@@ -71,10 +54,6 @@ interface RefNameCondition {
 export interface RulesetConditions {
   refName?: RefNameCondition;
 }
-
-// =============================================================================
-// Rule Parameters
-// =============================================================================
 
 /** Status check in required_status_checks rule */
 export interface StatusCheckConfig {
@@ -106,10 +85,6 @@ interface WorkflowConfig {
   ref?: string;
   sha?: string;
 }
-
-// =============================================================================
-// Rule Types (discriminated union)
-// =============================================================================
 
 export interface PullRequestRuleParameters {
   requiredApprovingReviewCount?: number;
@@ -296,10 +271,6 @@ export type RulesetRule =
   | MaxFilePathLengthRule
   | MaxFileSizeRule;
 
-// =============================================================================
-// Ruleset Configuration
-// =============================================================================
-
 /**
  * GitHub Ruleset configuration.
  * @see https://docs.github.com/en/rest/repos/rules
@@ -336,10 +307,6 @@ const RULESET_FIELD_MAP: Record<keyof Ruleset, string> = {
 export const RULESET_COMPARABLE_FIELDS = new Set(
   Object.values(RULESET_FIELD_MAP)
 );
-
-// =============================================================================
-// GitHub Repository Settings Types
-// =============================================================================
 
 /** Squash merge commit title format */
 export type SquashMergeCommitTitle = "PR_TITLE" | "COMMIT_OR_PR_TITLE";
@@ -395,10 +362,6 @@ export interface GitHubRepoSettings {
   privateVulnerabilityReporting?: boolean;
 }
 
-// =============================================================================
-// Labels
-// =============================================================================
-
 /**
  * GitHub label configuration.
  * @see https://docs.github.com/en/rest/issues/labels
@@ -412,10 +375,6 @@ export interface Label {
   new_name?: string;
 }
 
-// =============================================================================
-// Settings
-// =============================================================================
-
 export interface RepoSettings {
   /** GitHub rulesets keyed by name */
   rulesets?: Record<string, Ruleset>;
@@ -425,10 +384,6 @@ export interface RepoSettings {
   labels?: Record<string, Label>;
   deleteOrphaned?: boolean;
 }
-
-// =============================================================================
-// Raw Config Types (as parsed from YAML)
-// =============================================================================
 
 // Content can be object (JSON/YAML), string (text), or string[] (text lines)
 export type ContentValue = Record<string, unknown> | string | string[];
@@ -515,10 +470,6 @@ export interface RawConfig {
   deleteOrphaned?: boolean;
   settings?: RawRootSettings;
 }
-
-// =============================================================================
-// Normalized Config Types (output)
-// =============================================================================
 
 // File content for a single file in a repo
 export interface FileContent {

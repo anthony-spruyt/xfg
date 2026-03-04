@@ -18,11 +18,17 @@ import type {
 // Mock executor that records commands and returns configured responses
 class MockExecutor implements ICommandExecutor {
   commands: string[] = [];
+  execOptions: (ExecOptions | undefined)[] = [];
   responses: Map<string, string> = new Map();
   defaultResponse = "{}";
 
-  async exec(command: string, _cwd: string): Promise<string> {
+  async exec(
+    command: string,
+    _cwd: string,
+    options?: ExecOptions
+  ): Promise<string> {
     this.commands.push(command);
+    this.execOptions.push(options);
 
     // Find matching response by endpoint pattern
     for (const [pattern, response] of this.responses) {
@@ -39,6 +45,7 @@ class MockExecutor implements ICommandExecutor {
 
   reset(): void {
     this.commands = [];
+    this.execOptions = [];
     this.responses.clear();
   }
 }
@@ -109,8 +116,10 @@ describe("GitHubRulesetStrategy", () => {
 
       await strategy.list(mockGitHubRepo, { token: "test-token" });
 
-      assert.ok(mockExecutor.commands[0].includes("GH_TOKEN="));
-      assert.ok(mockExecutor.commands[0].includes("test-token"));
+      assert.ok(
+        mockExecutor.execOptions[0]?.env?.GH_TOKEN === "test-token",
+        "Should pass GH_TOKEN via env options"
+      );
     });
 
     test("uses custom host for GitHub Enterprise", async () => {

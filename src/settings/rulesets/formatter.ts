@@ -13,10 +13,6 @@ import {
   type PropertyDiff,
 } from "./index.js";
 
-// =============================================================================
-// Types
-// =============================================================================
-
 export type { PropertyDiff } from "./index.js";
 export { computePropertyDiffs } from "./index.js";
 
@@ -41,10 +37,6 @@ export interface RulesetPlanResult {
   unchanged: number;
   entries: RulesetPlanEntry[];
 }
-
-// =============================================================================
-// Tree Formatting
-// =============================================================================
 
 interface TreeNode {
   name: string;
@@ -288,10 +280,6 @@ export function formatPropertyTree(diffs: PropertyDiff[]): string[] {
   const tree = buildTree(diffs);
   return renderTree(tree);
 }
-
-// =============================================================================
-// Ruleset Plan Formatter
-// =============================================================================
 
 /**
  * Format a full ruleset config as tree lines (for create action).

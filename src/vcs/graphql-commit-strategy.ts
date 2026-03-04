@@ -9,6 +9,7 @@ import {
   withRetry,
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "../shared/retry-utils.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
@@ -33,7 +34,7 @@ export const SAFE_BRANCH_NAME_PATTERN = /^[a-zA-Z0-9][-a-zA-Z0-9_./]*$/;
  * Validates that a branch name is safe for use in shell commands.
  * Throws an error if the branch name contains potentially dangerous characters.
  */
-export function validateBranchName(branchName: string): void {
+export function validateSafeBranchName(branchName: string): void {
   if (!SAFE_BRANCH_NAME_PATTERN.test(branchName)) {
     throw new Error(
       `Invalid branch name for GraphQL commit strategy: "${branchName}". ` +
@@ -114,7 +115,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     }
 
     // Validate branch name is safe for shell commands
-    validateBranchName(branchName);
+    validateSafeBranchName(branchName);
 
     const githubInfo = repoInfo as GitHubRepoInfo;
 
@@ -378,7 +379,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
           token
         );
       } catch (error) {
-        const msg = error instanceof Error ? error.message : String(error);
+        const msg = toErrorMessage(error);
         if (/already exists/i.test(msg)) {
           // Branch was created between our query and create — that's fine
           return;
@@ -396,8 +397,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
    * of base64-encoded file contents). This extracts just the meaningful stderr.
    */
   private sanitizeCommandError(error: unknown, repo: string): Error {
-    const originalMessage =
-      error instanceof Error ? error.message : String(error);
+    const originalMessage = toErrorMessage(error);
 
     let cleanMessage: string;
 
@@ -426,13 +426,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
    */
   private isHeadOidMismatchError(error: Error): boolean {
     const message = error.message.toLowerCase();
-    return (
-      message.includes("expected branch to point to") ||
-      message.includes("expectedheadoid") ||
-      message.includes("head oid") ||
-      // GitHub may return this generic error for OID mismatches
-      message.includes("was provided invalid value")
-    );
+    return OID_MISMATCH_PATTERNS.some((pattern) => pattern.test(message));
   }
 
   /**

@@ -7,6 +7,7 @@ import { GitAuthOptions } from "../vcs/authenticated-git-ops.js";
 import { ILogger } from "../shared/logger.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import type { AuthResult, IAuthOptionsBuilder } from "./types.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 export class AuthOptionsBuilder implements IAuthOptionsBuilder {
   constructor(
@@ -21,6 +22,7 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
     // 2. Handle "no installation found" case
     if (installationToken === null) {
       return {
+        ok: false,
         skipResult: {
           success: true,
           repoName,
@@ -30,7 +32,9 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
       };
     }
 
-    // 3. Build effective token (installation token or PAT fallback)
+    // 3. Build effective token:
+    //    - string  → GitHub App token from tokenManager
+    //    - undefined → no tokenManager / non-GitHub repo; fall back to GH_TOKEN env var
     const token =
       installationToken ??
       (isGitHubRepo(repoInfo) ? process.env.GH_TOKEN : undefined);
@@ -40,7 +44,7 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
       ? this.buildAuthOptions(repoInfo, token)
       : undefined;
 
-    return { token, authOptions };
+    return { ok: true, token, authOptions };
   }
 
   private async getInstallationToken(
@@ -55,9 +59,7 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
         repoInfo as GitHubRepoInfo
       );
     } catch (error) {
-      this.log.info(
-        `Warning: Failed to get GitHub App token: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.log.warn(`Failed to get GitHub App token: ${toErrorMessage(error)}`);
       return undefined;
     }
   }

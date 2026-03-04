@@ -26,7 +26,7 @@ import {
   defaultLabelsProcessorFactory,
   type SyncDependencies,
 } from "./types.js";
-import { ResultsCollector } from "./settings/results-collector.js";
+import { ResultsCollector } from "./results-collector.js";
 import { buildSettingsReport } from "./settings-report-builder.js";
 import { formatSettingsReportCLI } from "../output/settings-report.js";
 import { buildSyncReport } from "./sync-report-builder.js";
@@ -39,6 +39,7 @@ import {
 } from "../output/lifecycle-report.js";
 import { writeUnifiedSummary } from "../output/unified-summary.js";
 import type { ProcessorResult } from "../sync/index.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 import {
   RepoLifecycleManager,
   runLifecycleCheck,
@@ -127,9 +128,58 @@ function determineMergeOutcome(
   return "manual";
 }
 
-/**
- * Run the sync command - synchronizes files across repositories.
- */
+interface SettingsResult {
+  success: boolean;
+  message: string;
+  skipped?: boolean;
+  planOutput?: { lines?: string[] };
+  warnings?: string[];
+}
+
+function logSettingsResult(
+  result: SettingsResult,
+  label: string,
+  current: number,
+  repoName: string,
+  settingsCollector: ResultsCollector
+): void {
+  if (result.planOutput?.lines?.length) {
+    logger.info("");
+    logger.info(`${repoName} - ${label}:`);
+    for (const line of result.planOutput.lines) {
+      logger.info(line);
+    }
+    if (result.warnings?.length) {
+      for (const warning of result.warnings) {
+        logger.warn(warning);
+      }
+    }
+  } else if (!result.skipped && result.success) {
+    logger.success(current, repoName, `${label}: ${result.message}`);
+  }
+  if (!result.success && !result.skipped) {
+    logger.error(current, repoName, `${label}: ${result.message}`);
+    settingsCollector.appendError(repoName, result.message);
+  }
+}
+
+async function resolveGitHubToken(
+  repoInfo: GitHubRepoInfo,
+  tokenManager: ReturnType<typeof createTokenManager>,
+  repoName: string
+): Promise<string | undefined> {
+  try {
+    return (
+      (await tokenManager?.getTokenForRepo(repoInfo)) ?? process.env.GH_TOKEN
+    );
+  } catch (error) {
+    logger.debug(
+      `Token resolution failed for ${repoName}: ${toErrorMessage(error)}`
+    );
+    return process.env.GH_TOKEN;
+  }
+}
+
 export async function runSync(
   options: SyncOptions,
   deps: SyncDependencies = {}
@@ -144,8 +194,7 @@ export async function runSync(
   const configPath = resolve(options.config);
 
   if (!existsSync(configPath)) {
-    console.error(`Config file not found: ${configPath}`);
-    process.exit(1);
+    throw new Error(`Config file not found: ${configPath}`);
   }
 
   console.log(`Loading config from: ${configPath}`);
@@ -155,12 +204,7 @@ export async function runSync(
 
   const rawConfig = loadRawConfig(configPath);
 
-  try {
-    validateForSync(rawConfig);
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exit(1);
-  }
+  validateForSync(rawConfig);
 
   const config = normalizeConfig(rawConfig);
   const fileNames = getUniqueFileNames(config);
@@ -200,6 +244,13 @@ export async function runSync(
       };
     }
 
+    const mergeMode = repoConfig.prOptions?.merge ?? "auto";
+    if (mergeMode === "direct" && repoConfig.prOptions?.mergeStrategy) {
+      logger.warn(
+        `mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode for ${repoConfig.git}`
+      );
+    }
+
     const current = i + 1;
 
     let repoInfo: RepoInfo;
@@ -208,12 +259,12 @@ export async function runSync(
         githubHosts: config.githubHosts,
       });
     } catch (error) {
-      logger.error(current, repoConfig.git, String(error));
+      logger.error(current, repoConfig.git, toErrorMessage(error));
       reportResults.push({
         repoName: repoConfig.git,
         success: false,
         fileChanges: [],
-        error: error instanceof Error ? error.message : String(error),
+        error: toErrorMessage(error),
       });
       continue;
     }
@@ -224,16 +275,13 @@ export async function runSync(
     );
 
     // Resolve auth token for lifecycle gh commands
-    let lifecycleToken: string | undefined;
-    if (isGitHubRepo(repoInfo)) {
-      try {
-        lifecycleToken =
-          (await tokenManager?.getTokenForRepo(repoInfo as GitHubRepoInfo)) ??
-          process.env.GH_TOKEN;
-      } catch {
-        lifecycleToken = process.env.GH_TOKEN;
-      }
-    }
+    const lifecycleToken = isGitHubRepo(repoInfo)
+      ? await resolveGitHubToken(
+          repoInfo as GitHubRepoInfo,
+          tokenManager,
+          repoName
+        )
+      : undefined;
 
     // Check if repo exists, create/fork/migrate if needed
     try {
@@ -283,13 +331,13 @@ export async function runSync(
       logger.error(
         current,
         repoName,
-        `Lifecycle error: ${error instanceof Error ? error.message : String(error)}`
+        `Lifecycle error: ${toErrorMessage(error)}`
       );
       reportResults.push({
         repoName,
         success: false,
         fileChanges: [],
-        error: error instanceof Error ? error.message : String(error),
+        error: toErrorMessage(error),
       });
       continue;
     }
@@ -329,26 +377,22 @@ export async function runSync(
         logger.error(current, repoName, result.message);
       }
     } catch (error) {
-      logger.error(current, repoName, String(error));
+      logger.error(current, repoName, toErrorMessage(error));
       reportResults.push({
         repoName,
         success: false,
         fileChanges: [],
-        error: error instanceof Error ? error.message : String(error),
+        error: toErrorMessage(error),
       });
     }
 
     // After file sync, apply settings via API (GitHub-only — ADO and GitLab repos are skipped)
     if (repoConfig.settings && isGitHubRepo(repoInfo)) {
-      const githubRepo = repoInfo as GitHubRepoInfo;
-      let settingsToken: string | undefined;
-      try {
-        settingsToken =
-          (await tokenManager?.getTokenForRepo(githubRepo)) ??
-          process.env.GH_TOKEN;
-      } catch {
-        settingsToken = process.env.GH_TOKEN;
-      }
+      const settingsToken = await resolveGitHubToken(
+        repoInfo as GitHubRepoInfo,
+        tokenManager,
+        repoName
+      );
 
       // Apply rulesets
       if (
@@ -356,8 +400,7 @@ export async function runSync(
         Object.keys(repoConfig.settings.rulesets).length > 0
       ) {
         try {
-          const rulesetProcessor = rulesetProcessorFactory();
-          const rulesetResult = await rulesetProcessor.process(
+          const rulesetResult = await rulesetProcessorFactory().process(
             repoConfig,
             repoInfo,
             {
@@ -366,33 +409,19 @@ export async function runSync(
               token: settingsToken,
             }
           );
-          if (rulesetResult.planOutput?.lines?.length) {
-            logger.info("");
-            logger.info(`${repoName} - Rulesets:`);
-            for (const line of rulesetResult.planOutput.lines) {
-              logger.info(line);
-            }
-          } else if (!rulesetResult.skipped && rulesetResult.success) {
-            logger.success(
-              current,
-              repoName,
-              `Rulesets: ${rulesetResult.message}`
-            );
-          }
+          logSettingsResult(
+            rulesetResult,
+            "Rulesets",
+            current,
+            repoName,
+            settingsCollector
+          );
           if (!rulesetResult.skipped) {
             settingsCollector.getOrCreate(repoName).rulesetResult =
               rulesetResult;
           }
-          if (!rulesetResult.success && !rulesetResult.skipped) {
-            logger.error(
-              current,
-              repoName,
-              `Rulesets: ${rulesetResult.message}`
-            );
-            settingsCollector.appendError(repoName, rulesetResult.message);
-          }
         } catch (error) {
-          logger.error(current, repoName, `Rulesets: ${String(error)}`);
+          logger.error(current, repoName, `Rulesets: ${toErrorMessage(error)}`);
           settingsCollector.appendError(repoName, error);
         }
       }
@@ -403,8 +432,7 @@ export async function runSync(
         Object.keys(repoConfig.settings.labels).length > 0
       ) {
         try {
-          const labelsProcessor = labelsProcessorFactory();
-          const labelsResult = await labelsProcessor.process(
+          const labelsResult = await labelsProcessorFactory().process(
             repoConfig,
             repoInfo,
             {
@@ -413,28 +441,18 @@ export async function runSync(
               token: settingsToken,
             }
           );
-          if (labelsResult.planOutput?.lines?.length) {
-            logger.info("");
-            logger.info(`${repoName} - Labels:`);
-            for (const line of labelsResult.planOutput.lines) {
-              logger.info(line);
-            }
-          } else if (!labelsResult.skipped && labelsResult.success) {
-            logger.success(
-              current,
-              repoName,
-              `Labels: ${labelsResult.message}`
-            );
-          }
+          logSettingsResult(
+            labelsResult,
+            "Labels",
+            current,
+            repoName,
+            settingsCollector
+          );
           if (!labelsResult.skipped) {
             settingsCollector.getOrCreate(repoName).labelsResult = labelsResult;
           }
-          if (!labelsResult.success && !labelsResult.skipped) {
-            logger.error(current, repoName, `Labels: ${labelsResult.message}`);
-            settingsCollector.appendError(repoName, labelsResult.message);
-          }
         } catch (error) {
-          logger.error(current, repoName, `Labels: ${String(error)}`);
+          logger.error(current, repoName, `Labels: ${toErrorMessage(error)}`);
           settingsCollector.appendError(repoName, error);
         }
       }
@@ -445,50 +463,28 @@ export async function runSync(
         Object.keys(repoConfig.settings.repo).length > 0
       ) {
         try {
-          const repoSettingsProcessor = repoSettingsProcessorFactory();
-          const repoSettingsResult = await repoSettingsProcessor.process(
-            repoConfig,
-            repoInfo,
-            {
+          const repoSettingsResult =
+            await repoSettingsProcessorFactory().process(repoConfig, repoInfo, {
               dryRun: options.dryRun,
               token: settingsToken,
-            }
+            });
+          logSettingsResult(
+            repoSettingsResult,
+            "Repo Settings",
+            current,
+            repoName,
+            settingsCollector
           );
-          if (repoSettingsResult.planOutput?.lines?.length) {
-            logger.info("");
-            logger.info(`${repoName} - Repo Settings:`);
-            for (const line of repoSettingsResult.planOutput.lines) {
-              logger.info(line);
-            }
-            if (repoSettingsResult.warnings?.length) {
-              for (const warning of repoSettingsResult.warnings) {
-                logger.info(`Warning: ${warning}`);
-              }
-            }
-          } else if (
-            !repoSettingsResult.skipped &&
-            repoSettingsResult.success
-          ) {
-            logger.success(
-              current,
-              repoName,
-              `Repo settings: ${repoSettingsResult.message}`
-            );
-          }
           if (!repoSettingsResult.skipped) {
             settingsCollector.getOrCreate(repoName).settingsResult =
               repoSettingsResult;
           }
-          if (!repoSettingsResult.success && !repoSettingsResult.skipped) {
-            logger.error(
-              current,
-              repoName,
-              `Repo settings: ${repoSettingsResult.message}`
-            );
-            settingsCollector.appendError(repoName, repoSettingsResult.message);
-          }
         } catch (error) {
-          logger.error(current, repoName, `Repo settings: ${String(error)}`);
+          logger.error(
+            current,
+            repoName,
+            `Repo settings: ${toErrorMessage(error)}`
+          );
           settingsCollector.appendError(repoName, error);
         }
       }
@@ -533,10 +529,10 @@ export async function runSync(
     dryRun: options.dryRun ?? false,
   });
 
-  // Exit with error if any failures (file sync or settings)
+  // Propagate failures to caller (CLI entry handles process.exit)
   const hasErrors = reportResults.some((r) => r.error);
   const hasSettingsErrors = settingsResults.some((r) => r.error);
   if (hasErrors || hasSettingsErrors) {
-    process.exit(1);
+    throw new Error("One or more repositories had errors during sync");
   }
 }

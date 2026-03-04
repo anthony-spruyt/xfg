@@ -589,41 +589,7 @@ describe("RepositoryProcessor", () => {
       );
     });
 
-    test("direct mode should log warning when mergeStrategy is set", async () => {
-      const { mock: mockLogger, messages } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
-        fileExists: false,
-        wouldChange: true,
-        hasChanges: true,
-        changedFiles: ["config.json"],
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
-
-      const processor = new RepositoryProcessor(mockFactory, mockLogger);
-      const localWorkDir = join(testDir, `direct-mode-warning-${Date.now()}`);
-
-      const repoConfig: RepoConfig = {
-        git: "git@github.com:test/repo.git",
-        files: [{ fileName: "config.json", content: { key: "value" } }],
-        prOptions: { merge: "direct", mergeStrategy: "squash" },
-      };
-
-      await processor.process(repoConfig, mockRepoInfo, {
-        branchName: "chore/sync-config",
-        workDir: localWorkDir,
-        configId: "test-config",
-        dryRun: true,
-        executor: createMockExecutor(),
-      });
-
-      const warningMessage = messages.find(
-        (m) => m.includes("mergeStrategy") && m.includes("ignored")
-      );
-      assert.ok(
-        warningMessage,
-        "Should log warning about mergeStrategy being ignored"
-      );
-    });
+    // mergeStrategy-in-direct-mode warning moved to CLI layer (sync-command.ts)
 
     test("direct mode should use force: false for push (issue #183)", async () => {
       const { mock: mockLogger } = createMockLogger();
@@ -2446,7 +2412,7 @@ describe("RepositoryProcessor", () => {
       process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
       process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
 
-      const { mock: mockLogger, messages: logMessages } = createMockLogger();
+      const { mock: mockLogger, warnings: logWarnings } = createMockLogger();
 
       // Mock fetch to fail on installations discovery
       const originalFetch = globalThis.fetch;
@@ -2510,13 +2476,13 @@ describe("RepositoryProcessor", () => {
           "Should be skipped (no staged changes)"
         );
 
-        // Should have logged warning about token failure
-        const warningMessage = logMessages.find((m) =>
+        // Should have logged warning about token failure via logger.warn()
+        const warningMessage = logWarnings.find((m) =>
           m.includes("Failed to get GitHub App token")
         );
         assert.ok(
           warningMessage,
-          `Expected warning about token failure, got messages: ${logMessages.join(", ")}`
+          `Expected warning about token failure, got warnings: ${logWarnings.join(", ")}`
         );
       } finally {
         globalThis.fetch = originalFetch;
@@ -2557,6 +2523,7 @@ describe("RepositoryProcessor", () => {
       const mockAuthOptionsBuilder: IAuthOptionsBuilder = {
         async resolve() {
           return {
+            ok: true as const,
             token: "ghs_test_installation_token_abc123",
             authOptions: {
               token: "ghs_test_installation_token_abc123",
@@ -2645,6 +2612,7 @@ describe("RepositoryProcessor", () => {
       const mockAuthOptionsBuilder: IAuthOptionsBuilder = {
         async resolve() {
           return {
+            ok: true as const,
             token: "ghs_enterprise_token_xyz789",
             authOptions: {
               token: "ghs_enterprise_token_xyz789",

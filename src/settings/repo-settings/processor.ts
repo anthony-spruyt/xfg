@@ -1,5 +1,5 @@
 import type { RepoConfig, GitHubRepoSettings } from "../../config/index.js";
-import type { GitHubRepoInfo } from "../../shared/repo-detector.js";
+import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
 import { GitHubRepoSettingsStrategy } from "./github-repo-settings-strategy.js";
 import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
 import { diffRepoSettings, hasChanges } from "./diff.js";
@@ -7,27 +7,25 @@ import { formatRepoSettingsPlan, RepoSettingsPlanResult } from "./formatter.js";
 import {
   BaseSettingsProcessor,
   type BaseProcessorOptions,
+  type BaseProcessorResult,
 } from "../base-processor.js";
 
 export interface IRepoSettingsProcessor {
   process(
     repoConfig: RepoConfig,
-    repoInfo: import("../../shared/repo-detector.js").RepoInfo,
+    repoInfo: RepoInfo,
     options: RepoSettingsProcessorOptions
   ): Promise<RepoSettingsProcessorResult>;
 }
 
 export type RepoSettingsProcessorOptions = BaseProcessorOptions;
 
-export interface RepoSettingsProcessorResult {
-  success: boolean;
-  repoName: string;
-  message: string;
-  skipped?: boolean;
-  dryRun?: boolean;
+export interface RepoSettingsProcessorResult extends BaseProcessorResult {
   changes?: {
-    adds: number;
-    changes: number;
+    create: number;
+    update: number;
+    delete: number;
+    unchanged: number;
   };
   warnings?: string[];
   planOutput?: RepoSettingsPlanResult;
@@ -105,25 +103,36 @@ export class RepoSettingsProcessor
     const changes = diffRepoSettings(currentSettings, desiredSettings);
 
     if (!hasChanges(changes)) {
+      const unchangedCount = changes.filter(
+        (c) => c.action === "unchanged"
+      ).length;
       return {
         success: true,
         repoName,
         message: "No changes needed",
-        changes: { adds: 0, changes: 0 },
+        changes: { create: 0, update: 0, delete: 0, unchanged: unchangedCount },
       };
     }
 
     // Format plan output
     const planOutput = formatRepoSettingsPlan(changes);
 
+    const changeCounts = {
+      create: planOutput.adds,
+      update: planOutput.changes,
+      delete: 0,
+      unchanged: changes.filter((c) => c.action === "unchanged").length,
+    };
+
     // Dry run mode - report planned changes without applying
     if (dryRun) {
+      const summary = this.formatChangeSummary(changeCounts);
       return {
         success: true,
         repoName,
-        message: `[DRY RUN] ${planOutput.adds} to add, ${planOutput.changes} to change`,
+        message: `[DRY RUN] ${summary}`,
         dryRun: true,
-        changes: { adds: planOutput.adds, changes: planOutput.changes },
+        changes: changeCounts,
         warnings: planOutput.warnings,
         planOutput,
       };
@@ -142,11 +151,12 @@ export class RepoSettingsProcessor
 
     await this.applyChanges(githubRepo, changedSettings, strategyOptions);
 
+    const summary = this.formatChangeSummary(changeCounts);
     return {
       success: true,
       repoName,
-      message: `Applied: ${planOutput.adds} added, ${planOutput.changes} changed`,
-      changes: { adds: planOutput.adds, changes: planOutput.changes },
+      message: `Applied: ${summary}`,
+      changes: changeCounts,
       warnings: planOutput.warnings,
       planOutput,
     };

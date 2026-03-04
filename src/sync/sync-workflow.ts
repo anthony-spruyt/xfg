@@ -36,48 +36,38 @@ export class SyncWorkflow implements ISyncWorkflow {
     workStrategy: IWorkStrategy
   ): Promise<ProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
-    const { branchName, workDir, dryRun } = options;
+    const { branchName, workDir } = options;
+    const dryRun = options.dryRun ?? false;
     const retries = options.retries ?? 3;
     const executor = options.executor ?? defaultExecutor;
 
-    // Step 1: Resolve auth
     const authResult = await this.authOptionsBuilder.resolve(
       repoInfo,
       repoName
     );
-    if (authResult.skipResult) {
+    if (!authResult.ok) {
       return authResult.skipResult;
     }
 
-    // Step 2: Determine merge mode
     const mergeMode = repoConfig.prOptions?.merge ?? "auto";
     const isDirectMode = mergeMode === "direct";
 
-    // Warn if mergeStrategy is set but ignored in direct mode
-    if (isDirectMode && repoConfig.prOptions?.mergeStrategy) {
-      this.log.info(
-        `Warning: mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode`
-      );
-    }
-
     let session: SessionContext | null = null;
     try {
-      // Step 3: Setup session
       session = await this.repositorySession.setup(repoInfo, {
         workDir,
-        dryRun: dryRun ?? false,
+        dryRun,
         retries,
         authOptions: authResult.authOptions,
       });
 
-      // Step 4: Setup branch
       await this.branchManager.setupBranch({
         repoInfo,
         branchName,
         baseBranch: session.baseBranch,
         workDir,
         isDirectMode,
-        dryRun: dryRun ?? false,
+        dryRun,
         retries,
         token: authResult.token,
         gitOps: session.gitOps,
@@ -85,7 +75,6 @@ export class SyncWorkflow implements ISyncWorkflow {
         executor,
       });
 
-      // Step 5: Execute work strategy
       const workResult = await workStrategy.execute(
         repoConfig,
         repoInfo,
@@ -93,7 +82,6 @@ export class SyncWorkflow implements ISyncWorkflow {
         options
       );
 
-      // Step 6: No changes - skip
       if (!workResult) {
         return {
           success: true,
@@ -103,27 +91,22 @@ export class SyncWorkflow implements ISyncWorkflow {
         };
       }
 
-      // Step 7: Commit and push
       const pushBranch = isDirectMode ? session.baseBranch : branchName;
-      const commitResult = await this.commitPushManager.commitAndPush(
-        {
-          repoInfo,
-          gitOps: session.gitOps,
-          workDir,
-          fileChanges: workResult.fileChanges,
-          commitMessage: workResult.commitMessage,
-          pushBranch,
-          isDirectMode,
-          dryRun: dryRun ?? false,
-          retries,
-          token: authResult.token,
-          executor,
-        },
-        repoName
-      );
+      const commitResult = await this.commitPushManager.commitAndPush({
+        repoInfo,
+        gitOps: session.gitOps,
+        workDir,
+        fileChanges: workResult.fileChanges,
+        commitMessage: workResult.commitMessage,
+        pushBranch,
+        isDirectMode,
+        dryRun,
+        retries,
+        token: authResult.token,
+        executor,
+      });
 
-      // Step 8: Handle commit errors
-      if (!commitResult.success && commitResult.errorResult) {
+      if (!commitResult.success) {
         return commitResult.errorResult;
       }
 
@@ -138,7 +121,6 @@ export class SyncWorkflow implements ISyncWorkflow {
         };
       }
 
-      // Step 9: Direct mode - done
       if (isDirectMode) {
         this.log.info(`Changes pushed directly to ${session.baseBranch}`);
         return {
@@ -150,25 +132,24 @@ export class SyncWorkflow implements ISyncWorkflow {
         };
       }
 
-      // Step 10: Create and merge PR
-      return await this.prMergeHandler.createAndMerge(
+      return await this.prMergeHandler.createAndMerge({
         repoInfo,
         repoConfig,
-        {
+        options: {
           branchName,
           baseBranch: session.baseBranch,
           workDir,
-          dryRun: dryRun ?? false,
+          dryRun,
           retries,
           prTemplate: options.prTemplate,
           token: authResult.token,
           executor,
         },
-        workResult.changedFiles,
+        changedFiles: workResult.changedFiles,
         repoName,
-        workResult.diffStats,
-        workResult.fileChangeDetails
-      );
+        diffStats: workResult.diffStats,
+        fileChanges: workResult.fileChangeDetails,
+      });
     } finally {
       try {
         session?.cleanup();

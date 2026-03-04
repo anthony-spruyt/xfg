@@ -2,6 +2,8 @@ import { GitOps } from "./git-ops.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
+import { logger } from "../shared/logger.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 /**
  * Options for authenticated git operations.
@@ -130,32 +132,13 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
       if (match && match[1] !== "(unknown)") {
         return { branch: match[1], method: "remote HEAD" };
       }
-    } catch {
-      // Fall through to local checks
+    } catch (error) {
+      const msg = toErrorMessage(error);
+      logger.debug(`git remote show origin failed - ${msg}`);
     }
 
-    // Local operations don't need auth
-    try {
-      await this.executor.exec(
-        "git rev-parse --verify origin/main",
-        this.workDir
-      );
-      return { branch: "main", method: "origin/main exists" };
-    } catch {
-      // Continue
-    }
-
-    try {
-      await this.executor.exec(
-        "git rev-parse --verify origin/master",
-        this.workDir
-      );
-      return { branch: "master", method: "origin/master exists" };
-    } catch {
-      // Continue
-    }
-
-    return { branch: "main", method: "fallback default" };
+    // Local fallback operations don't need auth — delegate to GitOps
+    return this.gitOps.getDefaultBranchLocal();
   }
 
   /**

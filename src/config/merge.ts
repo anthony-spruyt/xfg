@@ -3,6 +3,8 @@
  * Supports configurable array merge strategies via $arrayMerge directive.
  */
 
+import { isPlainObject } from "../shared/type-guards.js";
+
 export type ArrayMergeStrategy = "replace" | "append" | "prepend";
 
 /**
@@ -24,13 +26,6 @@ const arrayMergeStrategies: Map<ArrayMergeStrategy, ArrayMergeHandler> =
 export interface MergeContext {
   arrayStrategies: Map<string, ArrayMergeStrategy>;
   defaultArrayStrategy: ArrayMergeStrategy;
-}
-
-/**
- * Check if a value is a plain object (not null, not array).
- */
-function isPlainObject(val: unknown): val is Record<string, unknown> {
-  return typeof val === "object" && val !== null && !Array.isArray(val);
 }
 
 /**

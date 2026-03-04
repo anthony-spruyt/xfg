@@ -179,7 +179,7 @@ describe("RepoSettingsProcessor", () => {
 
     assert.equal(result.success, true);
     assert.equal(result.dryRun, true);
-    assert.equal(result.changes?.changes, 1);
+    assert.equal(result.changes?.update, 1);
     assert.equal(mockStrategy.updateSettingsCalls.length, 0);
   });
 
@@ -243,8 +243,8 @@ describe("RepoSettingsProcessor", () => {
 
     assert.equal(result.success, true);
     assert.ok(result.message.includes("No changes needed"));
-    assert.equal(result.changes?.adds, 0);
-    assert.equal(result.changes?.changes, 0);
+    assert.equal(result.changes?.create, 0);
+    assert.equal(result.changes?.update, 0);
     assert.equal(mockStrategy.updateSettingsCalls.length, 0);
   });
 

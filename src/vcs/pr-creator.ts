@@ -5,11 +5,8 @@ import { RepoInfo } from "../shared/repo-detector.js";
 import { getPRStrategy } from "./index.js";
 import { PRWorkflowExecutor } from "./pr-strategy.js";
 import type { MergeResult, PRMergeConfig } from "./types.js";
-import { interpolateXfgContent } from "../sync/xfg-template.js";
+import { interpolateXfgContent } from "../shared/xfg-template.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
-
-// Re-export for backwards compatibility and testing
-export { escapeShellArg } from "../shared/shell-utils.js";
 
 export interface FileAction {
   fileName: string;
@@ -231,6 +228,7 @@ export async function mergePR(options: MergePROptions): Promise<MergeResult> {
   const strategy = getPRStrategy(repoInfo, executor);
   return strategy.merge({
     prUrl,
+    repoInfo,
     config: mergeConfig,
     workDir,
     retries,

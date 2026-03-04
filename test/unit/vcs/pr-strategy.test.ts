@@ -9,10 +9,8 @@ import {
   AzureDevOpsRepoInfo,
   GitLabRepoInfo,
 } from "../../../src/shared/repo-detector.js";
-import {
-  PRStrategyOptions,
-  PRWorkflowExecutor,
-} from "../../../src/vcs/pr-strategy.js";
+import type { PRStrategyOptions } from "../../../src/vcs/types.js";
+import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
 import { PRResult } from "../../../src/vcs/pr-creator.js";
 
 describe("getPRStrategy", () => {

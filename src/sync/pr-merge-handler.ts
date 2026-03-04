@@ -1,33 +1,25 @@
-import type { RepoConfig } from "../config/index.js";
-import type { RepoInfo } from "../shared/repo-detector.js";
 import type { ILogger } from "../shared/logger.js";
-import {
-  createPR,
-  mergePR,
-  type PRResult,
-  type FileAction,
-} from "../vcs/pr-creator.js";
+import { createPR, mergePR, type PRResult } from "../vcs/pr-creator.js";
 import type { PRMergeConfig } from "../vcs/index.js";
-import type { DiffStats } from "./diff-utils.js";
 import type {
   ProcessorResult,
-  PRHandlerOptions,
   IPRMergeHandler,
-  FileChangeDetail,
+  CreateAndMergeInput,
 } from "./types.js";
 
 export class PRMergeHandler implements IPRMergeHandler {
   constructor(private readonly log: ILogger) {}
 
-  async createAndMerge(
-    repoInfo: RepoInfo,
-    repoConfig: RepoConfig,
-    options: PRHandlerOptions,
-    changedFiles: FileAction[],
-    repoName: string,
-    diffStats?: DiffStats,
-    fileChanges?: FileChangeDetail[]
-  ): Promise<ProcessorResult> {
+  async createAndMerge(input: CreateAndMergeInput): Promise<ProcessorResult> {
+    const {
+      repoInfo,
+      repoConfig,
+      options,
+      changedFiles,
+      repoName,
+      diffStats,
+      fileChanges,
+    } = input;
     this.log.info("Creating pull request...");
     const prResult: PRResult = await createPR({
       repoInfo,
@@ -74,7 +66,7 @@ export class PRMergeHandler implements IPRMergeHandler {
       };
 
       if (!result.success) {
-        this.log.info(`Warning: Merge operation failed - ${result.message}`);
+        this.log.warn(`Merge operation failed - ${result.message}`);
       } else {
         this.log.info(result.message);
       }

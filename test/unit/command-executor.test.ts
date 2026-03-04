@@ -11,6 +11,7 @@ import {
   ShellCommandExecutor,
   defaultExecutor,
   ICommandExecutor,
+  getStderr,
 } from "../../src/shared/command-executor.js";
 
 describe("ShellCommandExecutor", () => {
@@ -161,5 +162,35 @@ describe("credential sanitization", () => {
         "Token should be sanitized from stderr"
       );
     }
+  });
+});
+
+describe("getStderr", () => {
+  test("extracts stderr string from error object", () => {
+    const error = { stderr: "some error output" };
+    assert.strictEqual(getStderr(error), "some error output");
+  });
+
+  test("returns empty string when stderr is not a string", () => {
+    const error = { stderr: 42 };
+    assert.strictEqual(getStderr(error), "");
+  });
+
+  test("returns empty string when error has no stderr", () => {
+    const error = new Error("fail");
+    assert.strictEqual(getStderr(error), "");
+  });
+
+  test("returns empty string for null", () => {
+    assert.strictEqual(getStderr(null), "");
+  });
+
+  test("returns empty string for undefined", () => {
+    assert.strictEqual(getStderr(undefined), "");
+  });
+
+  test("returns empty string for non-object values", () => {
+    assert.strictEqual(getStderr("string"), "");
+    assert.strictEqual(getStderr(123), "");
   });
 });

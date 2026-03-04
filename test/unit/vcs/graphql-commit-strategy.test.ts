@@ -6,7 +6,7 @@ import {
   GraphQLCommitStrategy,
   MAX_PAYLOAD_SIZE,
   SAFE_BRANCH_NAME_PATTERN,
-  validateBranchName,
+  validateSafeBranchName,
 } from "../../../src/vcs/graphql-commit-strategy.js";
 import {
   GitHubRepoInfo,
@@ -120,23 +120,26 @@ describe("SAFE_BRANCH_NAME_PATTERN", () => {
   });
 });
 
-describe("validateBranchName", () => {
+describe("validateSafeBranchName", () => {
   test("does not throw for valid branch names", () => {
-    assert.doesNotThrow(() => validateBranchName("main"));
-    assert.doesNotThrow(() => validateBranchName("feature/login"));
-    assert.doesNotThrow(() => validateBranchName("fix-bug-123"));
+    assert.doesNotThrow(() => validateSafeBranchName("main"));
+    assert.doesNotThrow(() => validateSafeBranchName("feature/login"));
+    assert.doesNotThrow(() => validateSafeBranchName("fix-bug-123"));
   });
 
   test("throws for invalid branch names", () => {
     assert.throws(
-      () => validateBranchName("branch name"),
+      () => validateSafeBranchName("branch name"),
       /Invalid branch name/
     );
     assert.throws(
-      () => validateBranchName("branch;rm -rf"),
+      () => validateSafeBranchName("branch;rm -rf"),
       /Invalid branch name/
     );
-    assert.throws(() => validateBranchName("-invalid"), /Invalid branch name/);
+    assert.throws(
+      () => validateSafeBranchName("-invalid"),
+      /Invalid branch name/
+    );
   });
 });
 

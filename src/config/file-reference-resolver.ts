@@ -3,6 +3,7 @@ import { resolve, isAbsolute, normalize, extname, relative } from "node:path";
 import JSON5 from "json5";
 import { parse as parseYaml } from "yaml";
 import type { ContentValue, RawConfig } from "./types.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 interface FileReferenceOptions {
   configDir: string;
@@ -59,7 +60,7 @@ export function resolveFileReference(
   try {
     content = readFileSync(resolvedPath, "utf-8");
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
+    const msg = toErrorMessage(error);
     throw new Error(`Failed to load file reference "${reference}": ${msg}`);
   }
 
@@ -69,7 +70,7 @@ export function resolveFileReference(
     try {
       return JSON.parse(content) as Record<string, unknown>;
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = toErrorMessage(error);
       throw new Error(`Invalid JSON in "${reference}": ${msg}`);
     }
   }
@@ -77,7 +78,7 @@ export function resolveFileReference(
     try {
       return JSON5.parse(content) as Record<string, unknown>;
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = toErrorMessage(error);
       throw new Error(`Invalid JSON5 in "${reference}": ${msg}`);
     }
   }
@@ -85,7 +86,7 @@ export function resolveFileReference(
     try {
       return parseYaml(content) as Record<string, unknown>;
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = toErrorMessage(error);
       throw new Error(`Invalid YAML in "${reference}": ${msg}`);
     }
   }
