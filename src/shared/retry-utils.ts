@@ -1,6 +1,7 @@
 import pRetry, { AbortError } from "p-retry";
 import { logger } from "./logger.js";
 import { sanitizeCredentials } from "./sanitize-utils.js";
+import { ValidationError } from "../config/errors.js";
 
 /**
  * Core permanent error patterns shared across all strategies (API, GraphQL, CLI).
@@ -90,6 +91,11 @@ export function isPermanentError(
   error: unknown,
   patterns: RegExp[] = DEFAULT_PERMANENT_ERROR_PATTERNS
 ): boolean {
+  // Validation errors are always permanent — no point retrying bad input
+  if (error instanceof ValidationError) {
+    return true;
+  }
+
   const message = error instanceof Error ? error.message : String(error ?? "");
   const stderr =
     (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";

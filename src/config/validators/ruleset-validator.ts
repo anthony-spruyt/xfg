@@ -1,3 +1,5 @@
+import { ValidationError } from "../errors.js";
+
 const VALID_RULESET_TARGETS = ["branch", "tag"];
 const VALID_ENFORCEMENT_LEVELS = ["active", "disabled", "evaluate"];
 const VALID_ACTOR_TYPES = ["Team", "User", "Integration"];
@@ -52,17 +54,19 @@ const VALID_RULE_TYPES = [
  */
 function validateRule(rule: unknown, context: string): void {
   if (typeof rule !== "object" || rule === null || Array.isArray(rule)) {
-    throw new Error(`${context}: rule must be an object`);
+    throw new ValidationError(`${context}: rule must be an object`);
   }
 
   const r = rule as Record<string, unknown>;
 
   if (!r.type || typeof r.type !== "string") {
-    throw new Error(`${context}: rule must have a 'type' string field`);
+    throw new ValidationError(
+      `${context}: rule must have a 'type' string field`
+    );
   }
 
   if (!VALID_RULE_TYPES.includes(r.type)) {
-    throw new Error(
+    throw new ValidationError(
       `${context}: invalid rule type '${r.type}'. Must be one of: ${VALID_RULE_TYPES.join(", ")}`
     );
   }
@@ -74,7 +78,9 @@ function validateRule(rule: unknown, context: string): void {
       r.parameters === null ||
       Array.isArray(r.parameters)
     ) {
-      throw new Error(`${context}: rule parameters must be an object`);
+      throw new ValidationError(
+        `${context}: rule parameters must be an object`
+      );
     }
 
     const params = r.parameters as Record<string, unknown>;
@@ -85,12 +91,14 @@ function validateRule(rule: unknown, context: string): void {
         params.operator !== undefined &&
         !VALID_PATTERN_OPERATORS.includes(params.operator as string)
       ) {
-        throw new Error(
+        throw new ValidationError(
           `${context}: pattern rule operator must be one of: ${VALID_PATTERN_OPERATORS.join(", ")}`
         );
       }
       if (params.pattern !== undefined && typeof params.pattern !== "string") {
-        throw new Error(`${context}: pattern rule pattern must be a string`);
+        throw new ValidationError(
+          `${context}: pattern rule pattern must be a string`
+        );
       }
     }
 
@@ -104,18 +112,20 @@ function validateRule(rule: unknown, context: string): void {
           count < 0 ||
           count > 10
         ) {
-          throw new Error(
+          throw new ValidationError(
             `${context}: requiredApprovingReviewCount must be an integer between 0 and 10`
           );
         }
       }
       if (params.allowedMergeMethods !== undefined) {
         if (!Array.isArray(params.allowedMergeMethods)) {
-          throw new Error(`${context}: allowedMergeMethods must be an array`);
+          throw new ValidationError(
+            `${context}: allowedMergeMethods must be an array`
+          );
         }
         for (const method of params.allowedMergeMethods) {
           if (!VALID_MERGE_METHODS.includes(method as string)) {
-            throw new Error(
+            throw new ValidationError(
               `${context}: allowedMergeMethods values must be one of: ${VALID_MERGE_METHODS.join(", ")}`
             );
           }
@@ -126,11 +136,13 @@ function validateRule(rule: unknown, context: string): void {
     // Validate code_scanning parameters
     if (r.type === "code_scanning" && params.codeScanningTools !== undefined) {
       if (!Array.isArray(params.codeScanningTools)) {
-        throw new Error(`${context}: codeScanningTools must be an array`);
+        throw new ValidationError(
+          `${context}: codeScanningTools must be an array`
+        );
       }
       for (const tool of params.codeScanningTools) {
         if (typeof tool !== "object" || tool === null) {
-          throw new Error(
+          throw new ValidationError(
             `${context}: each codeScanningTool must be an object`
           );
         }
@@ -139,7 +151,7 @@ function validateRule(rule: unknown, context: string): void {
           t.alertsThreshold !== undefined &&
           !VALID_ALERTS_THRESHOLDS.includes(t.alertsThreshold as string)
         ) {
-          throw new Error(
+          throw new ValidationError(
             `${context}: alertsThreshold must be one of: ${VALID_ALERTS_THRESHOLDS.join(", ")}`
           );
         }
@@ -149,7 +161,7 @@ function validateRule(rule: unknown, context: string): void {
             t.securityAlertsThreshold as string
           )
         ) {
-          throw new Error(
+          throw new ValidationError(
             `${context}: securityAlertsThreshold must be one of: ${VALID_SECURITY_THRESHOLDS.join(", ")}`
           );
         }
@@ -171,7 +183,9 @@ export function validateRuleset(
     ruleset === null ||
     Array.isArray(ruleset)
   ) {
-    throw new Error(`${context}: ruleset '${name}' must be an object`);
+    throw new ValidationError(
+      `${context}: ruleset '${name}' must be an object`
+    );
   }
 
   const rs = ruleset as Record<string, unknown>;
@@ -180,7 +194,7 @@ export function validateRuleset(
     rs.target !== undefined &&
     !VALID_RULESET_TARGETS.includes(rs.target as string)
   ) {
-    throw new Error(
+    throw new ValidationError(
       `${context}: ruleset '${name}' target must be one of: ${VALID_RULESET_TARGETS.join(", ")}`
     );
   }
@@ -189,7 +203,7 @@ export function validateRuleset(
     rs.enforcement !== undefined &&
     !VALID_ENFORCEMENT_LEVELS.includes(rs.enforcement as string)
   ) {
-    throw new Error(
+    throw new ValidationError(
       `${context}: ruleset '${name}' enforcement must be one of: ${VALID_ENFORCEMENT_LEVELS.join(", ")}`
     );
   }
@@ -197,24 +211,24 @@ export function validateRuleset(
   // Validate bypassActors
   if (rs.bypassActors !== undefined) {
     if (!Array.isArray(rs.bypassActors)) {
-      throw new Error(
+      throw new ValidationError(
         `${context}: ruleset '${name}' bypassActors must be an array`
       );
     }
     for (let i = 0; i < rs.bypassActors.length; i++) {
       const actor = rs.bypassActors[i] as Record<string, unknown>;
       if (typeof actor !== "object" || actor === null) {
-        throw new Error(
+        throw new ValidationError(
           `${context}: ruleset '${name}' bypassActors[${i}] must be an object`
         );
       }
       if (typeof actor.actorId !== "number") {
-        throw new Error(
+        throw new ValidationError(
           `${context}: ruleset '${name}' bypassActors[${i}].actorId must be a number`
         );
       }
       if (!VALID_ACTOR_TYPES.includes(actor.actorType as string)) {
-        throw new Error(
+        throw new ValidationError(
           `${context}: ruleset '${name}' bypassActors[${i}].actorType must be one of: ${VALID_ACTOR_TYPES.join(", ")}`
         );
       }
@@ -222,7 +236,7 @@ export function validateRuleset(
         actor.bypassMode !== undefined &&
         !VALID_BYPASS_MODES.includes(actor.bypassMode as string)
       ) {
-        throw new Error(
+        throw new ValidationError(
           `${context}: ruleset '${name}' bypassActors[${i}].bypassMode must be one of: ${VALID_BYPASS_MODES.join(", ")}`
         );
       }
@@ -236,7 +250,7 @@ export function validateRuleset(
       rs.conditions === null ||
       Array.isArray(rs.conditions)
     ) {
-      throw new Error(
+      throw new ValidationError(
         `${context}: ruleset '${name}' conditions must be an object`
       );
     }
@@ -248,7 +262,7 @@ export function validateRuleset(
         refName === null ||
         Array.isArray(refName)
       ) {
-        throw new Error(
+        throw new ValidationError(
           `${context}: ruleset '${name}' conditions.refName must be an object`
         );
       }
@@ -257,7 +271,7 @@ export function validateRuleset(
         (!Array.isArray(refName.include) ||
           !refName.include.every((s) => typeof s === "string"))
       ) {
-        throw new Error(
+        throw new ValidationError(
           `${context}: ruleset '${name}' conditions.refName.include must be an array of strings`
         );
       }
@@ -266,7 +280,7 @@ export function validateRuleset(
         (!Array.isArray(refName.exclude) ||
           !refName.exclude.every((s) => typeof s === "string"))
       ) {
-        throw new Error(
+        throw new ValidationError(
           `${context}: ruleset '${name}' conditions.refName.exclude must be an array of strings`
         );
       }
@@ -276,7 +290,9 @@ export function validateRuleset(
   // Validate rules array
   if (rs.rules !== undefined) {
     if (!Array.isArray(rs.rules)) {
-      throw new Error(`${context}: ruleset '${name}' rules must be an array`);
+      throw new ValidationError(
+        `${context}: ruleset '${name}' rules must be an array`
+      );
     }
     for (let i = 0; i < rs.rules.length; i++) {
       validateRule(rs.rules[i], `${context}: ruleset '${name}' rules[${i}]`);
