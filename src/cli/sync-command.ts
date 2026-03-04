@@ -26,7 +26,7 @@ import {
   defaultLabelsProcessorFactory,
   type SyncDependencies,
 } from "./types.js";
-import { ResultsCollector } from "./settings/results-collector.js";
+import { ResultsCollector } from "./results-collector.js";
 import { buildSettingsReport } from "./settings-report-builder.js";
 import { formatSettingsReportCLI } from "../output/settings-report.js";
 import { buildSyncReport } from "./sync-report-builder.js";

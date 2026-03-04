@@ -1,4 +1,4 @@
-import type { ProcessorResults } from "../settings-report-builder.js";
+import type { ProcessorResults } from "./settings-report-builder.js";
 
 /**
  * Collects processing results for the SettingsReport.
