@@ -1,24 +1,149 @@
 {
-  "command": "issues",
-  "action": "show",
-  "number": 6,
-  "finding": {
-    "id": "review::.::holistic::design_coherence::sync_command_settings_triplication::591492c7",
-    "summary": "Three nearly identical settings processing blocks in runSync() should be data-driven",
-    "detail": {
-      "holistic": true,
-      "dimension": "design_coherence",
-      "related_files": [
-        "src/cli/sync-command.ts"
-      ],
-      "evidence": [
-        "Three blocks for rulesets, labels, and repo-settings each follow identical try/catch/applySettingsResult pattern, differing only in processor factory, label string, collector field name, and settings key check."
-      ],
-      "suggestion": "Define a settings descriptor array and iterate over it.",
-      "reasoning": ""
+  "command": "next",
+  "items": [
+    {
+      "id": "review::.::holistic::api_surface_coherence::inconsistent_result_shapes::63b9f158",
+      "kind": "finding",
+      "tier": 3,
+      "effective_tier": 1,
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "RepoSettingsProcessorResult uses adds/changes while sibling processors use create/update/delete/unchanged",
+      "detail": {
+        "holistic": true,
+        "dimension": "api_surface_coherence",
+        "related_files": [
+          "src/settings/repo-settings/processor.ts",
+          "src/settings/labels/processor.ts",
+          "src/settings/rulesets/processor.ts"
+        ],
+        "evidence": [
+          "RepoSettingsProcessorResult.changes has {adds, changes} while LabelsProcessorResult.changes and RulesetProcessorResult.changes both have {create, update, delete, unchanged}."
+        ],
+        "suggestion": "Standardize the change counts shape across all three processors to use the same property names.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "primary_command": "desloppify issues"
+    },
+    {
+      "id": "review::.::holistic::convention_outlier::mixed_console_and_logger_usage::821df9ba",
+      "kind": "finding",
+      "tier": 3,
+      "effective_tier": 1,
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "sync-command.ts uses both console.log and logger.* methods for output in the same function",
+      "detail": {
+        "holistic": true,
+        "dimension": "convention_outlier",
+        "related_files": [
+          "src/cli/sync-command.ts"
+        ],
+        "evidence": [
+          "runSync() uses console.log for initial messages and report output, but uses logger.progress/success/error/info for per-repo status."
+        ],
+        "suggestion": "Route all CLI output through the logger instance.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "primary_command": "desloppify issues"
+    },
+    {
+      "id": "review::.::holistic::cross_module_architecture::sync_command_orchestrates_multiple_concerns::ddfe7dfa",
+      "kind": "finding",
+      "tier": 3,
+      "effective_tier": 1,
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "sync-command.ts in cli/ directly orchestrates lifecycle, file sync, and three settings processors with duplicated try/catch patterns",
+      "detail": {
+        "holistic": true,
+        "dimension": "cross_module_architecture",
+        "related_files": [
+          "src/cli/sync-command.ts"
+        ],
+        "evidence": [
+          "runSync() is 350+ lines, directly managing lifecycle checks, file sync, and three separate settings processors with identical try/catch/applySettingsResult patterns."
+        ],
+        "suggestion": "Extract settings application into a SettingsOrchestrator that takes the three processor factories and applies them uniformly.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "primary_command": "desloppify issues"
+    },
+    {
+      "id": "review::.::holistic::design_coherence::branch_setup_options_param_explosion::fbace254",
+      "kind": "finding",
+      "tier": 3,
+      "effective_tier": 1,
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "BranchSetupOptions has 11 fields including injected dependencies mixed with data",
+      "detail": {
+        "holistic": true,
+        "dimension": "design_coherence",
+        "related_files": [
+          "src/sync/types.ts",
+          "src/sync/branch-manager.ts"
+        ],
+        "evidence": [
+          "BranchSetupOptions: repoInfo, branchName, baseBranch, workDir, isDirectMode, dryRun, retries, token, gitOps, log, executor. Service dependencies mixed with operation data."
+        ],
+        "suggestion": "Separate service dependencies (gitOps, log, executor) from operation data. BranchManager could receive dependencies via constructor.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "primary_command": "desloppify issues"
+    },
+    {
+      "id": "review::.::holistic::design_coherence::settings_processor_near_duplication::eea49fdc",
+      "kind": "finding",
+      "tier": 3,
+      "effective_tier": 1,
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "LabelsProcessor.processSettings() and RulesetProcessor.processSettings() have nearly identical structure despite being in different files",
+      "detail": {
+        "holistic": true,
+        "dimension": "design_coherence",
+        "related_files": [
+          "src/settings/labels/processor.ts",
+          "src/settings/rulesets/processor.ts"
+        ],
+        "evidence": [
+          "Both follow: extract desired from config -> get current from API -> compute diff -> count changes -> format plan -> if dryRun return plan -> loop over changes with switch -> format summary."
+        ],
+        "suggestion": "Extract the common diff-plan-apply lifecycle into the base class with hooks for strategy-specific operations.",
+        "reasoning": ""
+      },
+      "status": "open",
+      "primary_command": "desloppify issues"
     }
+  ],
+  "queue": {
+    "tier_counts": {
+      "1": 17,
+      "2": 11,
+      "3": 137,
+      "4": 12
+    },
+    "requested_tier": null,
+    "selected_tier": null,
+    "fallback_reason": null,
+    "available_tiers": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "total": 177
   },
-  "next_command": "desloppify resolve fixed \"review::.::holistic::design_coherence::sync_command_settings_triplication::591492c7\" --note \"<what you fixed>\"",
   "narrative": {
     "phase": "stagnation",
     "headline": "\u26a0 7 security findings \u2014 review before other cleanup. All T1 items cleared! (17 review findings \u2014 run `desloppify issues`)",
@@ -251,31 +376,20 @@
       },
       {
         "type": "manual_fix",
-        "detector": "exports",
-        "count": 1,
-        "description": "1 exports findings \u2014 run `knip --fix` to remove dead exports",
-        "command": "desloppify show exports --status open",
-        "impact": 0.0,
-        "dimension": "Code quality",
-        "priority": 11,
-        "lane": "refactor_2"
-      },
-      {
-        "type": "manual_fix",
         "detector": "security",
         "count": 7,
         "description": "7 security findings \u2014 review and fix security findings \u2014 prioritize by severity",
         "command": "desloppify show security --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 12,
+        "priority": 11,
         "lane": "refactor_1"
       }
     ],
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 201,
+        "total_count": 200,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -308,18 +422,9 @@
             8,
             9,
             10,
-            12
-          ],
-          "file_count": 84,
-          "total_impact": 0.0,
-          "automation": "manual",
-          "run_first": false
-        },
-        "refactor_2": {
-          "actions": [
             11
           ],
-          "file_count": 1,
+          "file_count": 84,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -335,7 +440,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "5 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 17 finding(s) \u2014 `desloppify issues`."
+      "hint": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 17 finding(s) \u2014 `desloppify issues`."
     },
     "tools": {
       "fixers": [
@@ -381,7 +486,7 @@
       "command": "desloppify issues",
       "description": "17 review findings need investigation \u2014 run `desloppify issues` to see the work queue"
     },
-    "why_now": "5 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 17 finding(s) \u2014 `desloppify issues`.",
+    "why_now": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 17 finding(s) \u2014 `desloppify issues`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -405,13 +510,355 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 2,
-      "report_scores": 26,
+      "report_scores": 27,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
       "review_not_run": 3
     }
   },
+  "overall_score": 81.2,
+  "objective_score": 95.8,
+  "strict_score": 81.2,
+  "scorecard_dimensions": [
+    {
+      "name": "File health",
+      "score": 95.8,
+      "strict": 95.8,
+      "checks": 101,
+      "issues": 6,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "AI generated debt",
+      "score": 78.0,
+      "strict": 78.0,
+      "checks": 10,
+      "issues": 2,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "ai_generated_debt"
+      ]
+    },
+    {
+      "name": "API coherence",
+      "score": 72.0,
+      "strict": 72.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "api_surface_coherence"
+      ]
+    },
+    {
+      "name": "Abstraction fit",
+      "score": 55.0,
+      "strict": 55.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "abstraction_fitness"
+      ]
+    },
+    {
+      "name": "Auth consistency",
+      "score": 74.0,
+      "strict": 74.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "authorization_consistency"
+      ]
+    },
+    {
+      "name": "Code quality",
+      "score": 97.8,
+      "strict": 97.8,
+      "checks": 583,
+      "issues": 26,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "Convention drift",
+      "score": 79.0,
+      "strict": 79.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "convention_outlier"
+      ]
+    },
+    {
+      "name": "Cross-module arch",
+      "score": 72.0,
+      "strict": 72.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "cross_module_architecture"
+      ]
+    },
+    {
+      "name": "Design coherence",
+      "score": 65.0,
+      "strict": 65.0,
+      "checks": 10,
+      "issues": 3,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "design_coherence"
+      ]
+    },
+    {
+      "name": "Duplication",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 243,
+      "issues": 23,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "Elegance",
+      "score": 73.3,
+      "strict": 73.3,
+      "checks": 30,
+      "issues": 3,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "high_level_elegance",
+        "mid_level_elegance",
+        "low_level_elegance"
+      ]
+    },
+    {
+      "name": "Error consistency",
+      "score": 65.0,
+      "strict": 65.0,
+      "checks": 10,
+      "issues": 2,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "error_consistency"
+      ]
+    },
+    {
+      "name": "Security",
+      "score": 98.5,
+      "strict": 98.5,
+      "checks": 202,
+      "issues": 8,
+      "tier": 4,
+      "subjective": false
+    },
+    {
+      "name": "Stale migration",
+      "score": 90.0,
+      "strict": 90.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "incomplete_migration"
+      ]
+    },
+    {
+      "name": "Structure nav",
+      "score": 80.0,
+      "strict": 80.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "package_organization"
+      ]
+    },
+    {
+      "name": "Test health",
+      "score": 93.6,
+      "strict": 93.6,
+      "checks": 1123,
+      "issues": 8,
+      "tier": 4,
+      "subjective": false
+    }
+  ],
+  "subjective_measures": [
+    {
+      "name": "AI generated debt",
+      "score": 78.0,
+      "strict": 78.0,
+      "checks": 10,
+      "issues": 2,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "ai_generated_debt"
+      ]
+    },
+    {
+      "name": "API coherence",
+      "score": 72.0,
+      "strict": 72.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "api_surface_coherence"
+      ]
+    },
+    {
+      "name": "Abstraction fit",
+      "score": 55.0,
+      "strict": 55.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "abstraction_fitness"
+      ]
+    },
+    {
+      "name": "Auth consistency",
+      "score": 74.0,
+      "strict": 74.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "authorization_consistency"
+      ]
+    },
+    {
+      "name": "Convention drift",
+      "score": 79.0,
+      "strict": 79.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "convention_outlier"
+      ]
+    },
+    {
+      "name": "Cross-module arch",
+      "score": 72.0,
+      "strict": 72.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "cross_module_architecture"
+      ]
+    },
+    {
+      "name": "Design coherence",
+      "score": 65.0,
+      "strict": 65.0,
+      "checks": 10,
+      "issues": 3,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "design_coherence"
+      ]
+    },
+    {
+      "name": "Elegance",
+      "score": 73.3,
+      "strict": 73.3,
+      "checks": 30,
+      "issues": 3,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "high_level_elegance",
+        "mid_level_elegance",
+        "low_level_elegance"
+      ]
+    },
+    {
+      "name": "Error consistency",
+      "score": 65.0,
+      "strict": 65.0,
+      "checks": 10,
+      "issues": 2,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "error_consistency"
+      ]
+    },
+    {
+      "name": "Stale migration",
+      "score": 90.0,
+      "strict": 90.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "incomplete_migration"
+      ]
+    },
+    {
+      "name": "Structure nav",
+      "score": 80.0,
+      "strict": 80.0,
+      "checks": 10,
+      "issues": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "package_organization"
+      ]
+    }
+  ],
   "config": {
     "target_strict_score": 95,
     "review_max_age_days": 30,
