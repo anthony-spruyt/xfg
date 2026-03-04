@@ -168,38 +168,46 @@ export function formatChangeSummary(counts: ChangeCounts): string {
 
 /**
  * Build a standardized dry-run result for settings processors.
+ * Returns an intersection of BaseProcessorResult with the extra fields,
+ * which is assignable to any result subtype whose extra fields are provided.
  */
-export function buildDryRunResult<T extends BaseProcessorResult>(
+export function buildDryRunResult<
+  E extends Record<string, unknown> = Record<string, never>,
+>(
   repoName: string,
   changeCounts: ChangeCounts,
-  extra?: Partial<T>
-): T {
+  extra?: E
+): BaseProcessorResult & { changes: ChangeCounts; dryRun: true } & E {
   const summary = formatChangeSummary(changeCounts);
-  return {
-    success: true,
+  const base = {
+    success: true as const,
     repoName,
     message: `[DRY RUN] ${summary}`,
-    dryRun: true,
+    dryRun: true as const,
     changes: changeCounts,
-    ...extra,
-  } as unknown as T;
+  };
+  return Object.assign(base, extra) as typeof base & E;
 }
 
 /**
  * Build a standardized apply result for settings processors.
+ * Returns an intersection of BaseProcessorResult with the extra fields,
+ * which is assignable to any result subtype whose extra fields are provided.
  */
-export function buildApplyResult<T extends BaseProcessorResult>(
+export function buildApplyResult<
+  E extends Record<string, unknown> = Record<string, never>,
+>(
   repoName: string,
   changeCounts: ChangeCounts,
   appliedCount: number,
-  extra?: Partial<T>
-): T {
+  extra?: E
+): BaseProcessorResult & { changes: ChangeCounts } & E {
   const summary = formatChangeSummary(changeCounts);
-  return {
-    success: true,
+  const base = {
+    success: true as const,
     repoName,
     message: appliedCount > 0 ? `Applied: ${summary}` : "No changes needed",
     changes: changeCounts,
-    ...extra,
-  } as unknown as T;
+  };
+  return Object.assign(base, extra) as typeof base & E;
 }

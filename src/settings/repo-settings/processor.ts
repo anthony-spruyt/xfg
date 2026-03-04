@@ -123,11 +123,10 @@ export class RepoSettingsProcessor
     };
 
     if (dryRun) {
-      return buildDryRunResult<RepoSettingsProcessorResult>(
-        repoName,
-        changeCounts,
-        { warnings: planOutput.warnings, planOutput }
-      );
+      return buildDryRunResult(repoName, changeCounts, {
+        warnings: planOutput.warnings,
+        planOutput,
+      });
     }
 
     // Apply changes - only send settings that actually changed
@@ -144,12 +143,10 @@ export class RepoSettingsProcessor
     await this.applyChanges(githubRepo, changedSettings, strategyOptions);
 
     const appliedCount = Object.keys(changedSettings).length;
-    return buildApplyResult<RepoSettingsProcessorResult>(
-      repoName,
-      changeCounts,
-      appliedCount,
-      { warnings: planOutput.warnings, planOutput }
-    );
+    return buildApplyResult(repoName, changeCounts, appliedCount, {
+      warnings: planOutput.warnings,
+      planOutput,
+    });
   }
 
   private async applyChanges(

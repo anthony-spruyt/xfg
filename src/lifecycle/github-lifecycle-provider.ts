@@ -354,9 +354,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           return;
         }
       } catch (error) {
-        logger.debug(
-          `Polling fork readiness: ${error instanceof Error ? error.message : String(error)}`
-        );
+        logger.debug(`Polling fork readiness: ${toErrorMessage(error)}`);
       }
       const remaining = deadline - Date.now();
       if (remaining <= 0) break;
@@ -593,9 +591,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           return;
         }
       } catch (error) {
-        logger.debug(
-          `Polling default branch: ${error instanceof Error ? error.message : String(error)}`
-        );
+        logger.debug(`Polling default branch: ${toErrorMessage(error)}`);
       }
       await new Promise((resolve) => setTimeout(resolve, pollMs));
     }

@@ -117,9 +117,7 @@ export class RulesetProcessor
     const planOutput = formatRulesetPlan(changes);
 
     if (dryRun) {
-      return buildDryRunResult<RulesetProcessorResult>(repoName, changeCounts, {
-        planOutput,
-      });
+      return buildDryRunResult(repoName, changeCounts, { planOutput });
     }
 
     // Apply changes
@@ -170,11 +168,8 @@ export class RulesetProcessor
       }
     }
 
-    return buildApplyResult<RulesetProcessorResult>(
-      repoName,
-      changeCounts,
-      appliedCount,
-      { planOutput }
-    );
+    return buildApplyResult(repoName, changeCounts, appliedCount, {
+      planOutput,
+    });
   }
 }

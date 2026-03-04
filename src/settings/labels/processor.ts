@@ -98,9 +98,7 @@ export class LabelsProcessor
     const planOutput = formatLabelsPlan(changes);
 
     if (dryRun) {
-      return buildDryRunResult<LabelsProcessorResult>(repoName, changeCounts, {
-        planOutput,
-      });
+      return buildDryRunResult(repoName, changeCounts, { planOutput });
     }
 
     // Apply changes (diff is already sorted: delete, update, create, unchanged)
@@ -169,11 +167,8 @@ export class LabelsProcessor
       }
     }
 
-    return buildApplyResult<LabelsProcessorResult>(
-      repoName,
-      changeCounts,
-      appliedCount,
-      { planOutput }
-    );
+    return buildApplyResult(repoName, changeCounts, appliedCount, {
+      planOutput,
+    });
   }
 }
