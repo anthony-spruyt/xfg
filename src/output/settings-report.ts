@@ -279,7 +279,7 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
   return lines;
 }
 
-export function formatValuePlain(val: unknown): string {
+function formatValuePlain(val: unknown): string {
   if (val === null) return "null";
   if (val === undefined) return "undefined";
   if (typeof val === "string") return `"${val}"`;
@@ -287,7 +287,7 @@ export function formatValuePlain(val: unknown): string {
   return String(val);
 }
 
-export function formatRulesetConfigPlain(config: Ruleset): string[] {
+function formatRulesetConfigPlain(config: Ruleset): string[] {
   return renderRulesetConfig(
     config,
     1,
