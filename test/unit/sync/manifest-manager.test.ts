@@ -102,7 +102,7 @@ describe("ManifestManager", () => {
   describe("deleteOrphans", () => {
     test("deletes files that exist and tracks in fileChanges", async () => {
       const deletedFiles: string[] = [];
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps: mockGitOps } = createMockAuthenticatedGitOps({
         fileExists: (fileName) => fileName === "orphan.json",
         onDeleteFile: (fileName) => deletedFiles.push(fileName),
       });
@@ -131,7 +131,7 @@ describe("ManifestManager", () => {
 
     test("does not delete when noDelete is true", async () => {
       const deletedFiles: string[] = [];
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps: mockGitOps } = createMockAuthenticatedGitOps({
         fileExists: () => true,
         onDeleteFile: (fileName) => deletedFiles.push(fileName),
       });

@@ -41,7 +41,7 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
         noDelete: noDelete,
         configId,
       },
-      { gitOps: session.gitOps, log: this.log }
+      { gitOps: session.localOps, log: this.log }
     );
 
     // Handle orphans
@@ -60,13 +60,13 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
     await this.manifestManager.deleteOrphans(
       filesToDelete,
       { dryRun: dryRun, noDelete: noDelete },
-      { gitOps: session.gitOps, log: this.log, fileChanges }
+      { gitOps: session.localOps, log: this.log, fileChanges }
     );
 
     // Update diff stats for deletions in dry-run
     if (dryRun && filesToDelete.length > 0 && !noDelete) {
       for (const fileName of filesToDelete) {
-        if (session.gitOps.fileExists(fileName)) {
+        if (session.localOps.fileExists(fileName)) {
           incrementDiffStats(diffStats, "DELETED");
         }
       }

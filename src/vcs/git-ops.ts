@@ -15,6 +15,7 @@ import {
 import { withRetry } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { logger } from "../shared/logger.js";
+import type { ILocalGitOps } from "./authenticated-git-ops.js";
 
 export interface GitOpsOptions {
   workDir: string;
@@ -24,7 +25,7 @@ export interface GitOpsOptions {
   retries?: number;
 }
 
-export class GitOps {
+export class GitOps implements ILocalGitOps {
   private readonly _workDir: string;
   private readonly dryRun: boolean;
   private readonly _executor: ICommandExecutor;

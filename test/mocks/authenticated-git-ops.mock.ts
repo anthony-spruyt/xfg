@@ -1,4 +1,7 @@
-import type { IAuthenticatedGitOps } from "../../src/authenticated-git-ops.js";
+import type {
+  ILocalGitOps,
+  INetworkGitOps,
+} from "../../src/vcs/authenticated-git-ops.js";
 
 export interface AuthenticatedGitOpsMockConfig {
   // Return value overrides
@@ -28,52 +31,59 @@ export interface AuthenticatedGitOpsMockConfig {
   onSetExecutable?: (fileName: string) => void;
 }
 
-export interface AuthenticatedGitOpsMockCalls {
+export interface LocalGitOpsMockCalls {
   cleanWorkspace: Array<Record<string, never>>;
-  clone: Array<{ gitUrl: string }>;
-  fetch: Array<{ options?: { prune?: boolean } }>;
   createBranch: Array<{ branchName: string }>;
   commit: Array<{ message: string }>;
-  push: Array<{ branchName: string; force?: boolean }>;
   writeFile: Array<{ fileName: string; content: string }>;
   deleteFile: Array<{ fileName: string }>;
   setExecutable: Array<{ fileName: string }>;
+}
+
+export interface NetworkGitOpsMockCalls {
+  clone: Array<{ gitUrl: string }>;
+  fetch: Array<{ options?: { prune?: boolean } }>;
+  push: Array<{ branchName: string; force?: boolean }>;
   lsRemote: Array<{ branchName: string; options?: { skipRetry?: boolean } }>;
   pushRefspec: Array<{ refspec: string; options?: { delete?: boolean } }>;
   fetchBranch: Array<{ branchName: string }>;
 }
 
 export interface AuthenticatedGitOpsMockResult {
-  mock: IAuthenticatedGitOps;
-  calls: AuthenticatedGitOpsMockCalls;
+  localOps: ILocalGitOps;
+  networkOps: INetworkGitOps;
+  localCalls: LocalGitOpsMockCalls;
+  networkCalls: NetworkGitOpsMockCalls;
   reset: () => void;
 }
 
 export function createMockAuthenticatedGitOps(
   config: AuthenticatedGitOpsMockConfig = {}
 ): AuthenticatedGitOpsMockResult {
-  const calls: AuthenticatedGitOpsMockCalls = {
+  const localCalls: LocalGitOpsMockCalls = {
     cleanWorkspace: [],
-    clone: [],
-    fetch: [],
     createBranch: [],
     commit: [],
-    push: [],
     writeFile: [],
     deleteFile: [],
     setExecutable: [],
+  };
+
+  const networkCalls: NetworkGitOpsMockCalls = {
+    clone: [],
+    fetch: [],
+    push: [],
     lsRemote: [],
     pushRefspec: [],
     fetchBranch: [],
   };
 
-  const mock: IAuthenticatedGitOps = {
+  const localOps: ILocalGitOps = {
     cleanWorkspace(): void {
-      calls.cleanWorkspace.push({});
+      localCalls.cleanWorkspace.push({});
       if (config.cleanupError) {
-        // Support conditional cleanup error (e.g., only on 2nd call)
         if (typeof config.cleanupError === "function") {
-          const error = config.cleanupError(calls.cleanWorkspace.length);
+          const error = config.cleanupError(localCalls.cleanWorkspace.length);
           if (error) throw error;
         } else {
           throw config.cleanupError;
@@ -81,52 +91,27 @@ export function createMockAuthenticatedGitOps(
       }
     },
 
-    async clone(gitUrl: string): Promise<void> {
-      calls.clone.push({ gitUrl });
-      if (config.cloneError) {
-        throw config.cloneError;
-      }
-    },
-
-    async fetch(options?: { prune?: boolean }): Promise<void> {
-      calls.fetch.push({ options });
-    },
-
     async createBranch(branchName: string): Promise<void> {
-      calls.createBranch.push({ branchName });
+      localCalls.createBranch.push({ branchName });
     },
 
     async commit(message: string): Promise<boolean> {
-      calls.commit.push({ message });
+      localCalls.commit.push({ message });
       if (config.commitError) {
         throw config.commitError;
       }
       return config.commitResult ?? true;
     },
 
-    async push(
-      branchName: string,
-      options?: { force?: boolean }
-    ): Promise<void> {
-      calls.push.push({ branchName, force: options?.force });
-      if (config.pushError) {
-        throw config.pushError;
-      }
-    },
-
-    async getDefaultBranch(): Promise<{ branch: string; method: string }> {
-      return config.defaultBranch ?? { branch: "main", method: "mock" };
-    },
-
     writeFile(fileName: string, content: string): void {
-      calls.writeFile.push({ fileName, content });
+      localCalls.writeFile.push({ fileName, content });
       if (config.onWriteFile) {
         config.onWriteFile(fileName, content);
       }
     },
 
     async setExecutable(fileName: string): Promise<void> {
-      calls.setExecutable.push({ fileName });
+      localCalls.setExecutable.push({ fileName });
       if (config.onSetExecutable) {
         config.onSetExecutable(fileName);
       }
@@ -140,7 +125,7 @@ export function createMockAuthenticatedGitOps(
     },
 
     deleteFile(fileName: string): void {
-      calls.deleteFile.push({ fileName });
+      localCalls.deleteFile.push({ fileName });
       if (config.onDeleteFile) {
         config.onDeleteFile(fileName);
       }
@@ -181,13 +166,39 @@ export function createMockAuthenticatedGitOps(
       }
       return config.fileExists ?? false;
     },
+  };
 
-    // Additional IAuthenticatedGitOps methods
+  const networkOps: INetworkGitOps = {
+    async clone(gitUrl: string): Promise<void> {
+      networkCalls.clone.push({ gitUrl });
+      if (config.cloneError) {
+        throw config.cloneError;
+      }
+    },
+
+    async fetch(options?: { prune?: boolean }): Promise<void> {
+      networkCalls.fetch.push({ options });
+    },
+
+    async push(
+      branchName: string,
+      options?: { force?: boolean }
+    ): Promise<void> {
+      networkCalls.push.push({ branchName, force: options?.force });
+      if (config.pushError) {
+        throw config.pushError;
+      }
+    },
+
+    async getDefaultBranch(): Promise<{ branch: string; method: string }> {
+      return config.defaultBranch ?? { branch: "main", method: "mock" };
+    },
+
     async lsRemote(
       branchName: string,
       options?: { skipRetry?: boolean }
     ): Promise<string> {
-      calls.lsRemote.push({ branchName, options });
+      networkCalls.lsRemote.push({ branchName, options });
       if (config.lsRemoteError) {
         throw config.lsRemoteError;
       }
@@ -198,33 +209,35 @@ export function createMockAuthenticatedGitOps(
       refspec: string,
       options?: { delete?: boolean }
     ): Promise<void> {
-      calls.pushRefspec.push({ refspec, options });
+      networkCalls.pushRefspec.push({ refspec, options });
       if (config.pushError) {
         throw config.pushError;
       }
     },
 
     async fetchBranch(branchName: string): Promise<void> {
-      calls.fetchBranch.push({ branchName });
+      networkCalls.fetchBranch.push({ branchName });
     },
   };
 
   return {
-    mock,
-    calls,
+    localOps,
+    networkOps,
+    localCalls,
+    networkCalls,
     reset: () => {
-      calls.cleanWorkspace.length = 0;
-      calls.clone.length = 0;
-      calls.fetch.length = 0;
-      calls.createBranch.length = 0;
-      calls.commit.length = 0;
-      calls.push.length = 0;
-      calls.writeFile.length = 0;
-      calls.deleteFile.length = 0;
-      calls.setExecutable.length = 0;
-      calls.lsRemote.length = 0;
-      calls.pushRefspec.length = 0;
-      calls.fetchBranch.length = 0;
+      localCalls.cleanWorkspace.length = 0;
+      localCalls.createBranch.length = 0;
+      localCalls.commit.length = 0;
+      localCalls.writeFile.length = 0;
+      localCalls.deleteFile.length = 0;
+      localCalls.setExecutable.length = 0;
+      networkCalls.clone.length = 0;
+      networkCalls.fetch.length = 0;
+      networkCalls.push.length = 0;
+      networkCalls.lsRemote.length = 0;
+      networkCalls.pushRefspec.length = 0;
+      networkCalls.fetchBranch.length = 0;
     },
   };
 }

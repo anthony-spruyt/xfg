@@ -17,10 +17,10 @@ import {
   ICommandExecutor,
   ExecOptions,
 } from "../../../src/shared/command-executor.js";
-import { AuthenticatedGitOps } from "../../../src/vcs/authenticated-git-ops.js";
+import type { INetworkGitOps } from "../../../src/vcs/authenticated-git-ops.js";
 
-// Create a mock AuthenticatedGitOps for testing
-function createMockGitOps(): AuthenticatedGitOps & {
+// Create a mock INetworkGitOps for testing
+function createMockGitOps(): INetworkGitOps & {
   calls: Array<{ method: string; args: unknown[] }>;
 } {
   const calls: Array<{ method: string; args: unknown[] }> = [];
@@ -29,7 +29,7 @@ function createMockGitOps(): AuthenticatedGitOps & {
     async fetchBranch(branchName: string) {
       calls.push({ method: "fetchBranch", args: [branchName] });
     },
-  } as AuthenticatedGitOps & {
+  } as INetworkGitOps & {
     calls: Array<{ method: string; args: unknown[] }>;
   };
 }
@@ -752,7 +752,7 @@ describe("GraphQLCommitStrategy", () => {
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
         token: "ghs_app_token_123",
-        gitOps: mockGitOps,
+        networkOps: mockGitOps,
       });
 
       // fetchBranch is still used (OID mismatch retry loop)

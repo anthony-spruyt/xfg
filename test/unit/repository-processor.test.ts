@@ -131,13 +131,13 @@ describe("RepositoryProcessor", () => {
   describe("action detection behavior", () => {
     test("should correctly skip when existing file has identical content", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: true,
         wouldChange: false,
         hasChanges: false,
       });
 
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `action-test-skip-${Date.now()}`);
@@ -156,13 +156,13 @@ describe("RepositoryProcessor", () => {
 
     test("should correctly report 'update' action when file exists but content differs", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: true,
         wouldChange: true,
         hasChanges: true,
       });
 
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `action-test-update-${Date.now()}`);
@@ -186,13 +186,13 @@ describe("RepositoryProcessor", () => {
 
     test("should correctly report 'create' action when file does not exist", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         hasChanges: true,
       });
 
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `action-test-create-${Date.now()}`);
@@ -216,7 +216,7 @@ describe("RepositoryProcessor", () => {
 
     test("should skip when commit returns false (no staged changes after git add)", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         hasChanges: true,
@@ -224,7 +224,7 @@ describe("RepositoryProcessor", () => {
         hasStagedChanges: false, // No staged changes after git add -A
       });
 
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `action-test-no-staged-${Date.now()}`);
@@ -250,13 +250,14 @@ describe("RepositoryProcessor", () => {
   describe("executable file handling", () => {
     test("should call setExecutable for .sh files by default", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: false,
-        wouldChange: true,
-        hasChanges: true,
-      });
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+        });
 
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `exec-test-sh-${Date.now()}`);
@@ -275,20 +276,21 @@ describe("RepositoryProcessor", () => {
       });
 
       assert.ok(
-        calls.setExecutable.some((c) => c.fileName === "deploy.sh"),
+        localCalls.setExecutable.some((c) => c.fileName === "deploy.sh"),
         "setExecutable should be called for deploy.sh"
       );
     });
 
     test("should not call setExecutable for non-.sh files by default", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: false,
-        wouldChange: true,
-        hasChanges: true,
-      });
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+        });
 
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `exec-test-json-${Date.now()}`);
@@ -307,20 +309,21 @@ describe("RepositoryProcessor", () => {
       });
 
       assert.ok(
-        !calls.setExecutable.some((c) => c.fileName === "config.json"),
+        !localCalls.setExecutable.some((c) => c.fileName === "config.json"),
         "setExecutable should not be called for config.json"
       );
     });
 
     test("should respect executable: false for .sh files", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: false,
-        wouldChange: true,
-        hasChanges: true,
-      });
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+        });
 
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `exec-test-false-${Date.now()}`);
@@ -341,20 +344,21 @@ describe("RepositoryProcessor", () => {
       });
 
       assert.ok(
-        !calls.setExecutable.some((c) => c.fileName === "script.sh"),
+        !localCalls.setExecutable.some((c) => c.fileName === "script.sh"),
         "setExecutable should not be called when executable: false"
       );
     });
 
     test("should call setExecutable for non-.sh files when executable: true", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: false,
-        wouldChange: true,
-        hasChanges: true,
-      });
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+        });
 
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `exec-test-true-${Date.now()}`);
@@ -373,7 +377,7 @@ describe("RepositoryProcessor", () => {
       });
 
       assert.ok(
-        calls.setExecutable.some((c) => c.fileName === "run"),
+        localCalls.setExecutable.some((c) => c.fileName === "run"),
         "setExecutable should be called when executable: true"
       );
     });
@@ -471,13 +475,14 @@ describe("RepositoryProcessor", () => {
   describe("direct mode", () => {
     test("direct mode should not create a sync branch", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: false,
-        wouldChange: true,
-        hasChanges: true,
-        changedFiles: ["config.json"],
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+          changedFiles: ["config.json"],
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `direct-mode-no-branch-${Date.now()}`);
@@ -497,7 +502,7 @@ describe("RepositoryProcessor", () => {
       });
 
       assert.equal(
-        calls.createBranch.length,
+        localCalls.createBranch.length,
         0,
         "Should not create a sync branch in direct mode"
       );
@@ -505,13 +510,14 @@ describe("RepositoryProcessor", () => {
 
     test("direct mode should push to default branch", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: false,
-        wouldChange: true,
-        hasChanges: true,
-        changedFiles: ["config.json"],
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+          changedFiles: ["config.json"],
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `direct-mode-push-${Date.now()}`);
@@ -531,7 +537,7 @@ describe("RepositoryProcessor", () => {
       });
 
       assert.equal(
-        calls.push[0]?.branchName,
+        networkCalls.push[0]?.branchName,
         "main",
         "Should push to default branch (main)"
       );
@@ -545,14 +551,14 @@ describe("RepositoryProcessor", () => {
 
     test("direct mode should return helpful error on branch protection", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         hasChanges: true,
         changedFiles: ["config.json"],
         pushError: new Error("Push rejected (branch protection)"),
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(
@@ -593,13 +599,14 @@ describe("RepositoryProcessor", () => {
 
     test("direct mode should use force: false for push (issue #183)", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: false,
-        wouldChange: true,
-        hasChanges: true,
-        changedFiles: ["config.json"],
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+          changedFiles: ["config.json"],
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `direct-mode-force-${Date.now()}`);
@@ -619,7 +626,7 @@ describe("RepositoryProcessor", () => {
       });
 
       assert.equal(
-        calls.push[0]?.force,
+        networkCalls.push[0]?.force,
         false,
         "Direct mode should use force: false (never force push to default branch)"
       );
@@ -627,13 +634,14 @@ describe("RepositoryProcessor", () => {
 
     test("PR mode should use force: true for push (issue #183)", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: false,
-        wouldChange: true,
-        hasChanges: true,
-        changedFiles: ["config.json"],
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: false,
+          wouldChange: true,
+          hasChanges: true,
+          changedFiles: ["config.json"],
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `pr-mode-force-${Date.now()}`);
@@ -653,7 +661,7 @@ describe("RepositoryProcessor", () => {
       });
 
       assert.equal(
-        calls.push[0]?.force,
+        networkCalls.push[0]?.force,
         true,
         "PR mode should use force: true (--force-with-lease for sync branch)"
       );
@@ -663,13 +671,13 @@ describe("RepositoryProcessor", () => {
   describe("PR creation with executor", () => {
     test("should pass executor to createPR when not in direct mode", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         hasChanges: true,
         changedFiles: ["config.json"],
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       // Mock executor that returns a PR URL - this is a mock interface, not subprocess execution
       const mockExecutor: {
@@ -705,13 +713,13 @@ describe("RepositoryProcessor", () => {
   describe("createOnly handling", () => {
     test("should skip file with createOnly when file exists on base branch", async () => {
       const { mock: mockLogger, messages } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         hasChanges: false, // No changes because file exists and is skipped
         fileExistsOnBranch: true, // File exists on base branch
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `createonly-exists-${Date.now()}`);
@@ -745,13 +753,13 @@ describe("RepositoryProcessor", () => {
 
     test("should create file with createOnly when file does not exist on base branch", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         hasChanges: true,
         fileExistsOnBranch: false, // File does not exist on base branch
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `createonly-new-${Date.now()}`);
@@ -781,13 +789,14 @@ describe("RepositoryProcessor", () => {
 
     test("should not delete createOnly file when tracked in manifest and exists on base branch (issue #199)", async () => {
       const { mock: mockLogger, messages } = createMockLogger();
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: (fileName) => fileName === "config.json", // File exists locally
-        wouldChange: true,
-        hasChanges: false, // File exists, so skipped, no changes
-        fileExistsOnBranch: true, // File exists on base branch
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: (fileName) => fileName === "config.json", // File exists locally
+          wouldChange: true,
+          hasChanges: false, // File exists, so skipped, no changes
+          fileExistsOnBranch: true, // File exists on base branch
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `createonly-no-delete-${Date.now()}`);
@@ -824,9 +833,9 @@ describe("RepositoryProcessor", () => {
 
       // The file should NOT be deleted - it's still in the config, just skipped due to createOnly
       assert.equal(
-        calls.deleteFile.length,
+        localCalls.deleteFile.length,
         0,
-        `Should not delete createOnly file that exists on base branch, but deleted: ${calls.deleteFile.map((c) => c.fileName).join(", ")}`
+        `Should not delete createOnly file that exists on base branch, but deleted: ${localCalls.deleteFile.map((c) => c.fileName).join(", ")}`
       );
 
       // Verify the skip message was logged
@@ -840,13 +849,14 @@ describe("RepositoryProcessor", () => {
   describe("template handling", () => {
     test("should interpolate xfg template variables when template is enabled", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: false,
-        fileContent: null,
-        wouldChange: true,
-        hasChanges: true,
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: false,
+          fileContent: null,
+          wouldChange: true,
+          hasChanges: true,
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `template-test-${Date.now()}`);
@@ -870,7 +880,7 @@ describe("RepositoryProcessor", () => {
         executor: createMockExecutor(),
       });
 
-      const writtenContent = calls.writeFile.find(
+      const writtenContent = localCalls.writeFile.find(
         (c) => c.fileName === "README.md"
       )?.content;
       assert.ok(writtenContent, "Should have written README.md");
@@ -886,13 +896,14 @@ describe("RepositoryProcessor", () => {
 
     test("should use custom vars in template when provided", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: false,
-        fileContent: null,
-        wouldChange: true,
-        hasChanges: true,
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: false,
+          fileContent: null,
+          wouldChange: true,
+          hasChanges: true,
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `template-vars-${Date.now()}`);
@@ -917,7 +928,7 @@ describe("RepositoryProcessor", () => {
         executor: createMockExecutor(),
       });
 
-      const writtenContent = calls.writeFile.find(
+      const writtenContent = localCalls.writeFile.find(
         (c) => c.fileName === "config.txt"
       )?.content;
       assert.ok(writtenContent, "Should have written config.txt");
@@ -931,13 +942,13 @@ describe("RepositoryProcessor", () => {
   describe("commit message formatting", () => {
     test("should format commit message for 2-3 files with file names", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         hasChanges: true,
         changedFiles: ["config1.json", "config2.json", "config3.json"],
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `commit-msg-23-${Date.now()}`);
@@ -976,7 +987,7 @@ describe("RepositoryProcessor", () => {
 
     test("should format commit message for more than 3 files with count", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         hasChanges: true,
@@ -987,7 +998,7 @@ describe("RepositoryProcessor", () => {
           "config4.json",
         ],
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `commit-msg-many-${Date.now()}`);
@@ -1029,7 +1040,7 @@ describe("RepositoryProcessor", () => {
       mkdirSync(localWorkDir, { recursive: true });
 
       let cleanupCallCount = 0;
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         hasStagedChanges: true,
       });
 
@@ -1037,7 +1048,8 @@ describe("RepositoryProcessor", () => {
       const mockRepositorySession: IRepositorySession = {
         async setup() {
           return {
-            gitOps: mockGitOps,
+            localOps,
+            networkOps,
             baseBranch: "main",
             cleanup: () => {
               cleanupCallCount++;
@@ -1094,13 +1106,14 @@ describe("RepositoryProcessor", () => {
       const { mock: mockLogger } = createMockLogger();
       // Track which files "exist" in the mock
       const existingFiles = new Set(["orphaned.json"]);
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: (fileName) => existingFiles.has(fileName),
-        wouldChange: true,
-        hasChanges: true,
-        onDeleteFile: (fileName) => existingFiles.delete(fileName),
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: (fileName) => existingFiles.has(fileName),
+          wouldChange: true,
+          hasChanges: true,
+          onDeleteFile: (fileName) => existingFiles.delete(fileName),
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `delete-orphaned-${Date.now()}`);
@@ -1137,7 +1150,7 @@ describe("RepositoryProcessor", () => {
 
       // Should have deleted orphaned.json
       assert.ok(
-        calls.deleteFile.some((c) => c.fileName === "orphaned.json"),
+        localCalls.deleteFile.some((c) => c.fileName === "orphaned.json"),
         "Should delete orphaned file"
       );
     });
@@ -1145,12 +1158,13 @@ describe("RepositoryProcessor", () => {
     test("should skip deletion with noDelete option", async () => {
       const { mock: mockLogger, messages } = createMockLogger();
       const existingFiles = new Set(["orphaned.json"]);
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: (fileName) => existingFiles.has(fileName),
-        wouldChange: true,
-        hasChanges: true,
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: (fileName) => existingFiles.has(fileName),
+          wouldChange: true,
+          hasChanges: true,
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `nodelete-${Date.now()}`);
@@ -1181,7 +1195,7 @@ describe("RepositoryProcessor", () => {
 
       // Should NOT have deleted anything
       assert.equal(
-        calls.deleteFile.length,
+        localCalls.deleteFile.length,
         0,
         "Should not delete files with noDelete flag"
       );
@@ -1194,12 +1208,13 @@ describe("RepositoryProcessor", () => {
     test("should show DELETED status in dry-run mode", async () => {
       const { mock: mockLogger, diffStatuses } = createMockLogger();
       const existingFiles = new Set(["orphaned.json"]);
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: (fileName) => existingFiles.has(fileName),
-        wouldChange: true,
-        hasChanges: true,
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: (fileName) => existingFiles.has(fileName),
+          wouldChange: true,
+          hasChanges: true,
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `dryrun-delete-${Date.now()}`);
@@ -1235,7 +1250,7 @@ describe("RepositoryProcessor", () => {
 
       // Should NOT actually delete file
       assert.equal(
-        calls.deleteFile.length,
+        localCalls.deleteFile.length,
         0,
         "Should not delete files in dry-run"
       );
@@ -1252,13 +1267,14 @@ describe("RepositoryProcessor", () => {
     test("should track deleted file in changed files list", async () => {
       const { mock: mockLogger } = createMockLogger();
       const existingFiles = new Set(["orphaned.json"]);
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        fileExists: (fileName) => existingFiles.has(fileName),
-        wouldChange: true,
-        hasChanges: true,
-        onDeleteFile: (fileName) => existingFiles.delete(fileName),
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          fileExists: (fileName) => existingFiles.has(fileName),
+          wouldChange: true,
+          hasChanges: true,
+          onDeleteFile: (fileName) => existingFiles.delete(fileName),
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `track-delete-${Date.now()}`);
@@ -1295,7 +1311,7 @@ describe("RepositoryProcessor", () => {
 
       // orphaned.json should have been deleted
       assert.ok(
-        calls.deleteFile.some((c) => c.fileName === "orphaned.json"),
+        localCalls.deleteFile.some((c) => c.fileName === "orphaned.json"),
         "Should delete orphaned file"
       );
       // Commit message should include the deleted file
@@ -1309,12 +1325,12 @@ describe("RepositoryProcessor", () => {
   describe("file count in changedFiles (issue #184)", () => {
     test("should include manifest file in changedFiles when content changes", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         hasChanges: true,
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `file-count-manifest-${Date.now()}`);
@@ -1360,13 +1376,13 @@ describe("RepositoryProcessor", () => {
 
     test("should skip config files when wouldChange returns false", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         // config1.json would change, config2.json would not
         wouldChange: (fileName) => fileName !== "config2.json",
         hasChanges: true,
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(
@@ -1409,14 +1425,14 @@ describe("RepositoryProcessor", () => {
 
     test("should not double-count skipped files in config loop", async () => {
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         hasChanges: true,
         // skipped.json exists on base branch (triggers createOnly skip)
         fileExistsOnBranch: (fileName) => fileName === "skipped.json",
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `file-count-no-double-${Date.now()}`);
@@ -1465,14 +1481,14 @@ describe("RepositoryProcessor", () => {
       // This test reproduces the bug where the manifest file .xfg.json
       // was being counted twice - once correctly and once without the leading dot.
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         hasChanges: true,
         // .xfg.json exists (manifest), .xfg-test is new
         fileExistsOnBranch: (fileName) => fileName === ".xfg.json",
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(
@@ -1562,14 +1578,14 @@ describe("RepositoryProcessor", () => {
       // - Seeded manifest had ["action-test.json"]
       // - Config has action-test.json AND action-test-2.yaml (both deleteOrphaned: true)
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         hasChanges: true,
         // Only action-test.json exists on base
         fileExistsOnBranch: (fileName) => fileName === "action-test.json",
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(
@@ -1671,13 +1687,13 @@ describe("RepositoryProcessor", () => {
 
         const { mock: mockLogger, messages: loggerMessages } =
           createMockLogger();
-        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        const { localOps, networkOps } = createMockAuthenticatedGitOps({
           fileExists: false,
           wouldChange: true,
           hasChanges: true,
           fileExistsOnBranch: false,
         });
-        const mockFactory: GitOpsFactory = () => mockGitOps;
+        const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
         // Track executor calls to verify GraphQL vs git commit
         const executorCalls: string[] = [];
@@ -1792,13 +1808,13 @@ describe("RepositoryProcessor", () => {
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const { mock: mockLogger } = createMockLogger();
-        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        const { localOps, networkOps } = createMockAuthenticatedGitOps({
           fileExists: false,
           wouldChange: true,
           hasChanges: true,
           fileExistsOnBranch: false,
         });
-        const mockFactory: GitOpsFactory = () => mockGitOps;
+        const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
         // Mock executor with ICommandExecutor interface
         const mockExecutor: ICommandExecutor = {
@@ -1869,13 +1885,13 @@ describe("RepositoryProcessor", () => {
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const { mock: mockLogger } = createMockLogger();
-        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        const { localOps, networkOps } = createMockAuthenticatedGitOps({
           fileExists: false,
           wouldChange: true,
           hasChanges: true,
           fileExistsOnBranch: false,
         });
-        const mockFactory: GitOpsFactory = () => mockGitOps;
+        const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
         // Test uses mock executor to simulate protected branch error
         const mockExecutor: ICommandExecutor = {
@@ -1940,13 +1956,13 @@ describe("RepositoryProcessor", () => {
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const { mock: mockLogger } = createMockLogger();
-        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        const { localOps, networkOps } = createMockAuthenticatedGitOps({
           fileExists: false,
           wouldChange: true,
           hasChanges: true,
           fileExistsOnBranch: false,
         });
-        const mockFactory: GitOpsFactory = () => mockGitOps;
+        const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
         // Test uses mock executor to simulate permission denied error
         const mockExecutor: ICommandExecutor = {
@@ -2011,13 +2027,13 @@ describe("RepositoryProcessor", () => {
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const { mock: mockLogger } = createMockLogger();
-        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        const { localOps, networkOps } = createMockAuthenticatedGitOps({
           fileExists: false,
           wouldChange: true,
           hasChanges: true,
           fileExistsOnBranch: false,
         });
-        const mockFactory: GitOpsFactory = () => mockGitOps;
+        const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
         const mockExecutor: ICommandExecutor = {
           async exec(command: string): Promise<string> {
@@ -2090,7 +2106,7 @@ describe("RepositoryProcessor", () => {
       // Pre-create existing.json so existsSync returns true for it
       writeFileSync(join(localWorkDir, "existing.json"), '{"old": true}');
 
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         // existing.json exists (update), new-file.json doesn't (create)
         fileExists: (fileName) => fileName === "existing.json",
         wouldChange: true,
@@ -2100,7 +2116,7 @@ describe("RepositoryProcessor", () => {
           writeFileSync(join(localWorkDir, fileName), content, "utf-8");
         },
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
 
@@ -2140,7 +2156,7 @@ describe("RepositoryProcessor", () => {
       const localWorkDir = join(testDir, `diffstats-delete-${Date.now()}`);
       mkdirSync(localWorkDir, { recursive: true });
 
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         // orphaned.json exists (will be deleted), config.json doesn't (new)
         fileExists: (fileName) => fileName === "orphaned.json",
         wouldChange: true,
@@ -2150,7 +2166,7 @@ describe("RepositoryProcessor", () => {
           writeFileSync(join(localWorkDir, fileName), content, "utf-8");
         },
       });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
 
@@ -2259,7 +2275,10 @@ describe("RepositoryProcessor", () => {
           setExecutable: async () => {},
           fileExists: () => false,
         });
-        return new AuthenticatedGitOps(mockGitOps);
+        return {
+          localOps: mockGitOps,
+          networkOps: new AuthenticatedGitOps(mockGitOps),
+        };
       };
 
       const processor = new RepositoryProcessor(mockGitOpsFactory, mockLogger);
@@ -2365,7 +2384,10 @@ describe("RepositoryProcessor", () => {
             setExecutable: async () => {},
             fileExists: () => false,
           });
-          return new AuthenticatedGitOps(mockGitOps);
+          return {
+            localOps: mockGitOps,
+            networkOps: new AuthenticatedGitOps(mockGitOps),
+          };
         };
 
         const processor = new RepositoryProcessor(
@@ -2441,7 +2463,10 @@ describe("RepositoryProcessor", () => {
             setExecutable: async () => {},
             fileExists: () => false,
           });
-          return new AuthenticatedGitOps(mockGitOps);
+          return {
+            localOps: mockGitOps,
+            networkOps: new AuthenticatedGitOps(mockGitOps),
+          };
         };
 
         const processor = new RepositoryProcessor(
@@ -2516,7 +2541,10 @@ describe("RepositoryProcessor", () => {
           setExecutable: async () => {},
           fileExists: () => false,
         });
-        return new AuthenticatedGitOps(mockGitOps);
+        return {
+          localOps: mockGitOps,
+          networkOps: new AuthenticatedGitOps(mockGitOps),
+        };
       };
 
       // Create mock authOptionsBuilder that returns a specific token
@@ -2605,7 +2633,10 @@ describe("RepositoryProcessor", () => {
           setExecutable: async () => {},
           fileExists: () => false,
         });
-        return new AuthenticatedGitOps(mockGitOps);
+        return {
+          localOps: mockGitOps,
+          networkOps: new AuthenticatedGitOps(mockGitOps),
+        };
       };
 
       // Create mock authOptionsBuilder that returns a specific token for GHE
@@ -2696,7 +2727,10 @@ describe("RepositoryProcessor", () => {
             setExecutable: async () => {},
             fileExists: () => false,
           });
-          return new AuthenticatedGitOps(mockGitOps);
+          return {
+            localOps: mockGitOps,
+            networkOps: new AuthenticatedGitOps(mockGitOps),
+          };
         };
 
         const processor = new RepositoryProcessor(
@@ -2781,29 +2815,30 @@ describe("RepositoryProcessor", () => {
       // Create the orphaned file so it can be deleted
       writeFileSync(join(localWorkDir, "orphaned.json"), "{}");
 
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        hasStagedChanges: true,
-        wouldChange: false, // No new files changing
-        fileContent: (fileName) => {
-          if (fileName === ".xfg.json") return manifestContent;
-          if (fileName === "orphaned.json") return "{}";
-          return null;
-        },
-        fileExists: (fileName) => {
-          return (
-            fileName === ".xfg.json" ||
-            fileName === "orphaned.json" ||
-            readdirSync(localWorkDir).includes(fileName)
-          );
-        },
-        onWriteFile: (fileName, content) => {
-          writeFileSync(join(localWorkDir, fileName), content, "utf-8");
-        },
-        onDeleteFile: () => {
-          // Allow deletion
-        },
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          hasStagedChanges: true,
+          wouldChange: false, // No new files changing
+          fileContent: (fileName) => {
+            if (fileName === ".xfg.json") return manifestContent;
+            if (fileName === "orphaned.json") return "{}";
+            return null;
+          },
+          fileExists: (fileName) => {
+            return (
+              fileName === ".xfg.json" ||
+              fileName === "orphaned.json" ||
+              readdirSync(localWorkDir).includes(fileName)
+            );
+          },
+          onWriteFile: (fileName, content) => {
+            writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+          },
+          onDeleteFile: () => {
+            // Allow deletion
+          },
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       // Mock executor
       const trackingExecutor: ICommandExecutor = {
@@ -2833,7 +2868,7 @@ describe("RepositoryProcessor", () => {
 
       // Verify the orphaned file was deleted
       assert.ok(
-        calls.deleteFile.some((c) => c.fileName === "orphaned.json"),
+        localCalls.deleteFile.some((c) => c.fileName === "orphaned.json"),
         "Should delete orphaned file"
       );
     });
@@ -2862,35 +2897,36 @@ describe("RepositoryProcessor", () => {
       writeFileSync(join(localWorkDir, "orphaned2.json"), "{}");
       writeFileSync(join(localWorkDir, "orphaned3.json"), "{}");
 
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        hasStagedChanges: true,
-        wouldChange: false, // No new files changing
-        fileContent: (fileName) => {
-          if (fileName === ".xfg.json") return manifestContent;
-          if (
-            fileName === "orphaned1.json" ||
-            fileName === "orphaned2.json" ||
-            fileName === "orphaned3.json"
-          ) {
-            return "{}";
-          }
-          return null;
-        },
-        fileExists: (fileName) => {
-          return (
-            fileName === ".xfg.json" ||
-            fileName.startsWith("orphaned") ||
-            readdirSync(localWorkDir).includes(fileName)
-          );
-        },
-        onWriteFile: (fileName, content) => {
-          writeFileSync(join(localWorkDir, fileName), content, "utf-8");
-        },
-        onDeleteFile: () => {
-          // Allow deletion
-        },
-      });
-      const mockFactory: GitOpsFactory = () => mockGitOps;
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          hasStagedChanges: true,
+          wouldChange: false, // No new files changing
+          fileContent: (fileName) => {
+            if (fileName === ".xfg.json") return manifestContent;
+            if (
+              fileName === "orphaned1.json" ||
+              fileName === "orphaned2.json" ||
+              fileName === "orphaned3.json"
+            ) {
+              return "{}";
+            }
+            return null;
+          },
+          fileExists: (fileName) => {
+            return (
+              fileName === ".xfg.json" ||
+              fileName.startsWith("orphaned") ||
+              readdirSync(localWorkDir).includes(fileName)
+            );
+          },
+          onWriteFile: (fileName, content) => {
+            writeFileSync(join(localWorkDir, fileName), content, "utf-8");
+          },
+          onDeleteFile: () => {
+            // Allow deletion
+          },
+        });
+      const mockFactory: GitOpsFactory = () => ({ localOps, networkOps });
 
       // Mock executor
       const trackingExecutor: ICommandExecutor = {
@@ -2920,15 +2956,15 @@ describe("RepositoryProcessor", () => {
 
       // Verify the orphaned files were deleted
       assert.ok(
-        calls.deleteFile.some((c) => c.fileName === "orphaned1.json"),
+        localCalls.deleteFile.some((c) => c.fileName === "orphaned1.json"),
         "Should delete first orphaned file"
       );
       assert.ok(
-        calls.deleteFile.some((c) => c.fileName === "orphaned2.json"),
+        localCalls.deleteFile.some((c) => c.fileName === "orphaned2.json"),
         "Should delete second orphaned file"
       );
       assert.ok(
-        calls.deleteFile.some((c) => c.fileName === "orphaned3.json"),
+        localCalls.deleteFile.some((c) => c.fileName === "orphaned3.json"),
         "Should delete third orphaned file"
       );
     });

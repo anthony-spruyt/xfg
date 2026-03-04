@@ -69,7 +69,7 @@ describe("FileWriter", () => {
 
   describe("writeFiles", () => {
     test("skips file when createOnly and file exists on base branch", async () => {
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps: mockGitOps } = createMockAuthenticatedGitOps({
         fileExistsOnBranch: true,
         fileExists: true,
         wouldChange: true,
@@ -107,7 +107,7 @@ describe("FileWriter", () => {
 
     test("writes file and returns create action for new files", async () => {
       const writtenFiles: Array<{ fileName: string; content: string }> = [];
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps: mockGitOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         onWriteFile: (fileName, content) => {
@@ -147,7 +147,7 @@ describe("FileWriter", () => {
 
     test("applies xfg template interpolation when template: true", async () => {
       const writtenFiles: Array<{ fileName: string; content: string }> = [];
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps: mockGitOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         onWriteFile: (fileName, content) => {
@@ -186,7 +186,7 @@ describe("FileWriter", () => {
 
     test("does not write files in dryRun mode", async () => {
       const writtenFiles: Array<{ fileName: string; content: string }> = [];
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps: mockGitOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         onWriteFile: (fileName, content) => {
@@ -224,7 +224,7 @@ describe("FileWriter", () => {
 
     test("sets executable permission for .sh files", async () => {
       const executableFiles: string[] = [];
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps: mockGitOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
         onSetExecutable: (fileName) => {
@@ -268,7 +268,7 @@ describe("FileWriter", () => {
       process.env.XFG_GITHUB_APP_PRIVATE_KEY = "fake-key";
 
       try {
-        const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+        const { localOps: mockGitOps } = createMockAuthenticatedGitOps({
           fileExists: false,
           wouldChange: true,
         });

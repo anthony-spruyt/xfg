@@ -71,7 +71,8 @@ export class SyncWorkflow implements ISyncWorkflow {
         dryRun,
         retries,
         token: authResult.token,
-        gitOps: session.gitOps,
+        localOps: session.localOps,
+        networkOps: session.networkOps,
         executor,
       });
 
@@ -94,7 +95,8 @@ export class SyncWorkflow implements ISyncWorkflow {
       const pushBranch = isDirectMode ? session.baseBranch : branchName;
       const commitResult = await this.commitPushManager.commitAndPush({
         repoInfo,
-        gitOps: session.gitOps,
+        localOps: session.localOps,
+        networkOps: session.networkOps,
         workDir,
         fileChanges: workResult.fileChanges,
         commitMessage: workResult.commitMessage,

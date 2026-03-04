@@ -136,8 +136,8 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       );
     }
 
-    // Get gitOps for authenticated network operations
-    const gitOps = options.gitOps;
+    // Get networkOps for authenticated network operations
+    const networkOps = options.networkOps;
 
     // Ensure the branch exists on remote and is up-to-date with local HEAD
     // createCommitOnBranch requires the branch to already exist
@@ -157,8 +157,8 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
         // Fetch from remote to ensure we have the latest HEAD
         // This is critical for expectedHeadOid to match
         const safeBranch = escapeShellArg(branchName);
-        if (gitOps) {
-          await gitOps.fetchBranch(branchName);
+        if (networkOps) {
+          await networkOps.fetchBranch(branchName);
         } else {
           await this.executor.exec(
             `git fetch origin +${safeBranch}:refs/remotes/origin/${safeBranch}`,

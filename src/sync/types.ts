@@ -1,7 +1,8 @@
 import type { FileContent, RepoConfig } from "../config/types.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type {
-  IAuthenticatedGitOps,
+  ILocalGitOps,
+  INetworkGitOps,
   GitAuthOptions,
 } from "../vcs/authenticated-git-ops.js";
 import type { GitOpsOptions } from "../vcs/git-ops.js";
@@ -11,10 +12,15 @@ import type { XfgManifest } from "./manifest.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { FileAction } from "../vcs/pr-creator.js";
 
+export interface GitOpsResult {
+  localOps: ILocalGitOps;
+  networkOps: INetworkGitOps;
+}
+
 export type GitOpsFactory = (
   options: GitOpsOptions,
   auth?: GitAuthOptions
-) => IAuthenticatedGitOps;
+) => GitOpsResult;
 
 export interface FileWriteResult {
   fileName: string;
@@ -32,7 +38,7 @@ export interface FileWriteContext {
 }
 
 export interface FileWriterDeps {
-  gitOps: IAuthenticatedGitOps;
+  gitOps: ILocalGitOps;
   log: ILogger;
 }
 
@@ -60,7 +66,7 @@ export interface OrphanDeleteOptions {
 }
 
 export interface OrphanDeleteDeps {
-  gitOps: IAuthenticatedGitOps;
+  gitOps: ILocalGitOps;
   log: ILogger;
   fileChanges: Map<string, FileWriteResult>;
 }
@@ -96,7 +102,8 @@ export interface BranchSetupOptions {
   dryRun: boolean;
   retries: number;
   token?: string;
-  gitOps: IAuthenticatedGitOps;
+  localOps: ILocalGitOps;
+  networkOps: INetworkGitOps;
   executor: ICommandExecutor;
 }
 
@@ -120,7 +127,8 @@ export interface SessionOptions {
 }
 
 export interface SessionContext {
-  gitOps: IAuthenticatedGitOps;
+  localOps: ILocalGitOps;
+  networkOps: INetworkGitOps;
   baseBranch: string;
   cleanup: () => void;
 }
@@ -131,7 +139,8 @@ export interface IRepositorySession {
 
 export interface CommitPushOptions {
   repoInfo: RepoInfo;
-  gitOps: IAuthenticatedGitOps;
+  localOps: ILocalGitOps;
+  networkOps: INetworkGitOps;
   workDir: string;
   fileChanges: Map<string, FileWriteResult>;
   commitMessage: string;

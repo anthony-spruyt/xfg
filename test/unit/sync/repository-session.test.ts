@@ -9,9 +9,12 @@ import {
   createMockLogger,
 } from "../../mocks/index.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
-import type { GitOpsFactory } from "../../../src/sync/types.js";
-import type { GitAuthOptions } from "../../../src/vcs/authenticated-git-ops.js";
-import type { IAuthenticatedGitOps } from "../../../src/vcs/authenticated-git-ops.js";
+import type { GitOpsFactory, GitOpsResult } from "../../../src/sync/types.js";
+import type {
+  GitAuthOptions,
+  ILocalGitOps,
+  INetworkGitOps,
+} from "../../../src/vcs/authenticated-git-ops.js";
 
 const testDir = join(tmpdir(), "repository-session-test-" + Date.now());
 
@@ -37,12 +40,13 @@ describe("RepositorySession", () => {
 
   describe("setup", () => {
     test("cleans, clones, and returns context with baseBranch", async () => {
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({
-        defaultBranch: { branch: "main", method: "mock" },
-      });
+      const { localOps, networkOps, localCalls, networkCalls } =
+        createMockAuthenticatedGitOps({
+          defaultBranch: { branch: "main", method: "mock" },
+        });
       const { mock: mockLogger } = createMockLogger();
 
-      const gitOpsFactory = () => mockGitOps;
+      const gitOpsFactory: GitOpsFactory = () => ({ localOps, networkOps });
       const session = new RepositorySession(gitOpsFactory, mockLogger);
 
       const context = await session.setup(mockRepoInfo, {
@@ -52,24 +56,25 @@ describe("RepositorySession", () => {
       });
 
       // Verify sequence: clean -> clone
-      assert.equal(calls.cleanWorkspace.length, 1);
-      assert.equal(calls.clone.length, 1);
-      assert.equal(calls.clone[0].gitUrl, mockRepoInfo.gitUrl);
+      assert.equal(localCalls.cleanWorkspace.length, 1);
+      assert.equal(networkCalls.clone.length, 1);
+      assert.equal(networkCalls.clone[0].gitUrl, mockRepoInfo.gitUrl);
 
       // Verify returned context
       assert.equal(context.baseBranch, "main");
-      assert.equal(context.gitOps, mockGitOps);
+      assert.equal(context.localOps, localOps);
+      assert.equal(context.networkOps, networkOps);
       assert.equal(typeof context.cleanup, "function");
     });
 
     test("passes auth options to factory", async () => {
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({});
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
 
       let receivedAuth: GitAuthOptions | undefined;
       const gitOpsFactory: GitOpsFactory = (_opts, auth) => {
         receivedAuth = auth;
-        return mockGitOps;
+        return { localOps, networkOps };
       };
 
       const session = new RepositorySession(gitOpsFactory, mockLogger);
@@ -91,10 +96,14 @@ describe("RepositorySession", () => {
     });
 
     test("cleanup function calls cleanWorkspace", async () => {
-      const { mock: mockGitOps, calls } = createMockAuthenticatedGitOps({});
+      const { localOps, networkOps, localCalls } =
+        createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
 
-      const session = new RepositorySession(() => mockGitOps, mockLogger);
+      const session = new RepositorySession(
+        () => ({ localOps, networkOps }),
+        mockLogger
+      );
       const context = await session.setup(mockRepoInfo, {
         workDir,
         dryRun: false,
@@ -102,19 +111,19 @@ describe("RepositorySession", () => {
       });
 
       // Reset call count
-      calls.cleanWorkspace.length = 0;
+      localCalls.cleanWorkspace.length = 0;
 
       // Call cleanup
       context.cleanup();
 
-      assert.equal(calls.cleanWorkspace.length, 1);
+      assert.equal(localCalls.cleanWorkspace.length, 1);
     });
 
     test("cleanup function ignores errors", async () => {
       const { mock: mockLogger } = createMockLogger();
       let cleanupCallCount = 0;
 
-      const mockGitOps = {
+      const mockLocalOps = {
         cleanWorkspace: () => {
           cleanupCallCount++;
           // Only throw on second call (the cleanup call, not the initial setup call)
@@ -122,12 +131,18 @@ describe("RepositorySession", () => {
             throw new Error("cleanup failed");
           }
         },
+      } as ILocalGitOps;
+
+      const mockNetworkOps = {
         clone: async () => {},
         getDefaultBranch: async () => ({ branch: "main", method: "remote" }),
-      };
+      } as INetworkGitOps;
 
       const session = new RepositorySession(
-        () => mockGitOps as IAuthenticatedGitOps,
+        () => ({
+          localOps: mockLocalOps,
+          networkOps: mockNetworkOps,
+        }),
         mockLogger
       );
       const context = await session.setup(mockRepoInfo, {
@@ -142,12 +157,15 @@ describe("RepositorySession", () => {
     });
 
     test("logs workspace operations", async () => {
-      const { mock: mockGitOps } = createMockAuthenticatedGitOps({
+      const { localOps, networkOps } = createMockAuthenticatedGitOps({
         defaultBranch: { branch: "develop", method: "mock" },
       });
       const { mock: mockLogger, messages } = createMockLogger();
 
-      const session = new RepositorySession(() => mockGitOps, mockLogger);
+      const session = new RepositorySession(
+        () => ({ localOps, networkOps }),
+        mockLogger
+      );
       await session.setup(mockRepoInfo, {
         workDir,
         dryRun: false,

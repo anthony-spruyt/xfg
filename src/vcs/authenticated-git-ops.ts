@@ -20,23 +20,10 @@ export interface GitAuthOptions {
 }
 
 /**
- * Interface for authenticated git operations.
- * Enables proper mocking in tests without relying on class inheritance.
+ * Local filesystem and git operations that don't require authentication.
+ * Implemented by GitOps directly — no wrapping needed.
  */
-export interface IAuthenticatedGitOps {
-  // Network operations
-  clone(gitUrl: string): Promise<void>;
-  fetch(options?: { prune?: boolean }): Promise<void>;
-  push(branchName: string, options?: { force?: boolean }): Promise<void>;
-  getDefaultBranch(): Promise<{ branch: string; method: string }>;
-  lsRemote(
-    branchName: string,
-    options?: { skipRetry?: boolean }
-  ): Promise<string>;
-  pushRefspec(refspec: string, options?: { delete?: boolean }): Promise<void>;
-  fetchBranch(branchName: string): Promise<void>;
-
-  // Local operations
+export interface ILocalGitOps {
   cleanWorkspace(): void;
   createBranch(branchName: string): Promise<void>;
   writeFile(fileName: string, content: string): void;
@@ -53,15 +40,31 @@ export interface IAuthenticatedGitOps {
 }
 
 /**
- * Wrapper around GitOps that adds authentication to network operations.
+ * Network git operations that may require authentication.
+ * Implemented by AuthenticatedGitOps which adds token-based auth.
+ */
+export interface INetworkGitOps {
+  clone(gitUrl: string): Promise<void>;
+  fetch(options?: { prune?: boolean }): Promise<void>;
+  push(branchName: string, options?: { force?: boolean }): Promise<void>;
+  getDefaultBranch(): Promise<{ branch: string; method: string }>;
+  lsRemote(
+    branchName: string,
+    options?: { skipRetry?: boolean }
+  ): Promise<string>;
+  pushRefspec(refspec: string, options?: { delete?: boolean }): Promise<void>;
+  fetchBranch(branchName: string): Promise<void>;
+}
+
+/**
+ * Adds authentication to network git operations.
  *
  * When auth options are provided, network operations (clone, fetch, push,
- * getDefaultBranch) use `-c url.insteadOf` to override credentials per-command.
- * This allows different tokens for different repos without global git config.
+ * getDefaultBranch) use embedded token URLs for per-command credentials.
  *
- * Local operations (commit, writeFile, etc.) pass through unchanged.
+ * Local operations live on GitOps (ILocalGitOps) — no wrapping needed.
  */
-export class AuthenticatedGitOps implements IAuthenticatedGitOps {
+export class AuthenticatedGitOps implements INetworkGitOps {
   private gitOps: GitOps;
   private auth?: GitAuthOptions;
   private executor: ICommandExecutor;
@@ -186,61 +189,5 @@ export class AuthenticatedGitOps implements IAuthenticatedGitOps {
     await this.execWithRetry(
       `git fetch origin +${safeBranch}:refs/remotes/origin/${safeBranch}`
     );
-  }
-
-  // ============================================================
-  // Local operations - delegate directly to GitOps
-  // ============================================================
-
-  cleanWorkspace(): void {
-    return this.gitOps.cleanWorkspace();
-  }
-
-  async createBranch(branchName: string): Promise<void> {
-    return this.gitOps.createBranch(branchName);
-  }
-
-  writeFile(fileName: string, content: string): void {
-    return this.gitOps.writeFile(fileName, content);
-  }
-
-  async setExecutable(fileName: string): Promise<void> {
-    return this.gitOps.setExecutable(fileName);
-  }
-
-  getFileContent(fileName: string): string | null {
-    return this.gitOps.getFileContent(fileName);
-  }
-
-  wouldChange(fileName: string, content: string): boolean {
-    return this.gitOps.wouldChange(fileName, content);
-  }
-
-  async hasChanges(): Promise<boolean> {
-    return this.gitOps.hasChanges();
-  }
-
-  async getChangedFiles(): Promise<string[]> {
-    return this.gitOps.getChangedFiles();
-  }
-
-  async hasStagedChanges(): Promise<boolean> {
-    return this.gitOps.hasStagedChanges();
-  }
-
-  async fileExistsOnBranch(fileName: string, branch: string): Promise<boolean> {
-    return this.gitOps.fileExistsOnBranch(fileName, branch);
-  }
-
-  fileExists(fileName: string): boolean {
-    return this.gitOps.fileExists(fileName);
-  }
-
-  deleteFile(fileName: string): void {
-    return this.gitOps.deleteFile(fileName);
-  }
-
-  async commit(message: string): Promise<boolean> {
-    return this.gitOps.commit(message);
   }
 }
