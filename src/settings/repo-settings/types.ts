@@ -1,6 +1,6 @@
 import type { RepoInfo } from "../../shared/repo-detector.js";
 import type { GitHubRepoSettings } from "../../config/index.js";
-import type { GhApiOptions } from "../gh-api-utils.js";
+import type { GhApiOptions } from "../../shared/gh-api-utils.js";
 
 /**
  * Current repository settings from GitHub API (snake_case).

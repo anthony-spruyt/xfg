@@ -16,7 +16,7 @@ import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
-import { buildTokenEnv, getHostnameFlag } from "../settings/gh-api-utils.js";
+import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
 
 /**
  * Get the repo flag value for gh CLI commands.

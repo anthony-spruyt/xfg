@@ -14,7 +14,7 @@ import {
 } from "../shared/repo-detector.js";
 import { logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { buildTokenEnv, getHostnameFlag } from "../settings/gh-api-utils.js";
+import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
 import type {
   IRepoLifecycleProvider,
   LifecyclePlatform,

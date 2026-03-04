@@ -981,50 +981,58 @@ describe("GitHubPRStrategy merge", () => {
     }
   });
 
-  describe("checkAutoMergeEnabled", () => {
-    test("returns true when auto-merge is enabled", async () => {
-      mockExecutor.responses.set("gh api repos", "true");
-
-      const strategy = new GitHubPRStrategy(mockExecutor);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (strategy as any).checkAutoMergeEnabled(
-        githubRepoInfo,
-        testDir,
-        0
-      );
-
-      assert.equal(result, true);
-      assert.equal(mockExecutor.calls.length, 1);
-      assert.ok(mockExecutor.calls[0].command.includes("gh api repos"));
-      assert.ok(mockExecutor.calls[0].command.includes("allow_auto_merge"));
-    });
-
-    test("returns false when auto-merge is disabled", async () => {
+  describe("merge auto mode checks auto-merge status", () => {
+    test("skips merge when auto-merge is not enabled on repo", async () => {
       mockExecutor.responses.set("gh api repos", "false");
 
       const strategy = new GitHubPRStrategy(mockExecutor);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (strategy as any).checkAutoMergeEnabled(
-        githubRepoInfo,
-        testDir,
-        0
-      );
+      const result = await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
+        config: { mode: "auto" },
+        workDir: testDir,
+        retries: 0,
+      });
 
-      assert.equal(result, false);
+      assert.equal(result.success, true);
+      assert.equal(result.merged, false);
+      assert.equal(result.autoMergeEnabled, false);
+      assert.ok(result.message.includes("Auto-merge not enabled"));
     });
 
-    test("returns false on API error", async () => {
+    test("enables auto-merge when repo supports it", async () => {
+      mockExecutor.responses.set("gh api repos", "true");
+      mockExecutor.responses.set("gh pr merge", "");
+
+      const strategy = new GitHubPRStrategy(mockExecutor);
+      const result = await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
+        config: { mode: "auto" },
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(result.success, true);
+      assert.equal(result.autoMergeEnabled, true);
+    });
+
+    test("gracefully handles API error when checking auto-merge", async () => {
       mockExecutor.responses.set("gh api repos", new Error("API error"));
 
       const strategy = new GitHubPRStrategy(mockExecutor);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = await (strategy as any).checkAutoMergeEnabled(
-        githubRepoInfo,
-        testDir,
-        0
-      );
+      const result = await strategy.merge({
+        prUrl: "https://github.com/owner/repo/pull/123",
+        repoInfo: githubRepoInfo,
+        config: { mode: "auto" },
+        workDir: testDir,
+        retries: 0,
+      });
 
-      assert.equal(result, false);
+      // checkAutoMergeEnabled returns false on error, so merge reports not enabled
+      assert.equal(result.success, true);
+      assert.equal(result.merged, false);
+      assert.equal(result.autoMergeEnabled, false);
     });
   });
 

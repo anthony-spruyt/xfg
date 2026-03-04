@@ -46,6 +46,11 @@ export function formatLifecycleAction(
         )
       );
       break;
+
+    default: {
+      const _exhaustive: never = result.action;
+      throw new Error(`Unknown lifecycle action: ${_exhaustive}`);
+    }
   }
 
   // Add settings details if provided

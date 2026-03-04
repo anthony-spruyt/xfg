@@ -7,7 +7,7 @@ import type {
   IRepoSettingsStrategy,
   CurrentRepoSettings,
 } from "../../src/settings/repo-settings/types.js";
-import type { GhApiOptions } from "../../src/settings/gh-api-utils.js";
+import type { GhApiOptions } from "../../src/shared/gh-api-utils.js";
 import type { GitHubRepoSettings } from "../../src/config/index.js";
 import type { RepoInfo } from "../../src/shared/repo-detector.js";
 

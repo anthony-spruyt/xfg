@@ -11,7 +11,7 @@ import {
   ghApiCall,
   type HttpMethod,
   type GhApiOptions,
-} from "../gh-api-utils.js";
+} from "../../shared/gh-api-utils.js";
 import type { Ruleset, RulesetRule } from "../../config/index.js";
 import type {
   IRulesetStrategy,

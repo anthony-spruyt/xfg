@@ -1,6 +1,6 @@
 import type { RepoInfo } from "../../shared/repo-detector.js";
 import type { Ruleset } from "../../config/index.js";
-import type { GhApiOptions } from "../gh-api-utils.js";
+import type { GhApiOptions } from "../../shared/gh-api-utils.js";
 
 /**
  * GitHub Ruleset response from API (snake_case).
