@@ -1,5 +1,5 @@
 import type { RepoConfig } from "../../config/index.js";
-import type { GitHubRepoInfo } from "../../shared/repo-detector.js";
+import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
 import { GitHubLabelsStrategy } from "./github-labels-strategy.js";
 import { diffLabels } from "./diff.js";
 import { formatLabelsPlan, type LabelsPlanResult } from "./formatter.js";
@@ -14,7 +14,7 @@ import {
 export interface ILabelsProcessor {
   process(
     repoConfig: RepoConfig,
-    repoInfo: import("../../shared/repo-detector.js").RepoInfo,
+    repoInfo: RepoInfo,
     options: LabelsProcessorOptions
   ): Promise<LabelsProcessorResult>;
 }

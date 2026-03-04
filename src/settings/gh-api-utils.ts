@@ -14,7 +14,9 @@ export interface GhApiCallOptions {
   retries: number;
 }
 
-function buildTokenEnv(token?: string): Record<string, string> | undefined {
+export function buildTokenEnv(
+  token?: string
+): Record<string, string> | undefined {
   return token ? { GH_TOKEN: token } : undefined;
 }
 

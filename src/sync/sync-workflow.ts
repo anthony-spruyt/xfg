@@ -41,7 +41,6 @@ export class SyncWorkflow implements ISyncWorkflow {
     const retries = options.retries ?? 3;
     const executor = options.executor ?? defaultExecutor;
 
-    // Step 1: Resolve auth
     const authResult = await this.authOptionsBuilder.resolve(
       repoInfo,
       repoName
@@ -50,7 +49,6 @@ export class SyncWorkflow implements ISyncWorkflow {
       return authResult.skipResult;
     }
 
-    // Step 2: Determine merge mode
     const mergeMode = repoConfig.prOptions?.merge ?? "auto";
     const isDirectMode = mergeMode === "direct";
 
@@ -63,7 +61,6 @@ export class SyncWorkflow implements ISyncWorkflow {
 
     let session: SessionContext | null = null;
     try {
-      // Step 3: Setup session
       session = await this.repositorySession.setup(repoInfo, {
         workDir,
         dryRun,
@@ -71,7 +68,6 @@ export class SyncWorkflow implements ISyncWorkflow {
         authOptions: authResult.authOptions,
       });
 
-      // Step 4: Setup branch
       await this.branchManager.setupBranch({
         repoInfo,
         branchName,
@@ -86,7 +82,6 @@ export class SyncWorkflow implements ISyncWorkflow {
         executor,
       });
 
-      // Step 5: Execute work strategy
       const workResult = await workStrategy.execute(
         repoConfig,
         repoInfo,
@@ -94,7 +89,6 @@ export class SyncWorkflow implements ISyncWorkflow {
         options
       );
 
-      // Step 6: No changes - skip
       if (!workResult) {
         return {
           success: true,
@@ -104,7 +98,6 @@ export class SyncWorkflow implements ISyncWorkflow {
         };
       }
 
-      // Step 7: Commit and push
       const pushBranch = isDirectMode ? session.baseBranch : branchName;
       const commitResult = await this.commitPushManager.commitAndPush(
         {
@@ -123,7 +116,6 @@ export class SyncWorkflow implements ISyncWorkflow {
         repoName
       );
 
-      // Step 8: Handle commit errors
       if (!commitResult.success && commitResult.errorResult) {
         return commitResult.errorResult;
       }
@@ -139,7 +131,6 @@ export class SyncWorkflow implements ISyncWorkflow {
         };
       }
 
-      // Step 9: Direct mode - done
       if (isDirectMode) {
         this.log.info(`Changes pushed directly to ${session.baseBranch}`);
         return {
@@ -151,7 +142,6 @@ export class SyncWorkflow implements ISyncWorkflow {
         };
       }
 
-      // Step 10: Create and merge PR
       return await this.prMergeHandler.createAndMerge({
         repoInfo,
         repoConfig,

@@ -1,5 +1,5 @@
 import type { RepoConfig, Ruleset } from "../../config/index.js";
-import type { GitHubRepoInfo } from "../../shared/repo-detector.js";
+import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
 import { GitHubRulesetStrategy } from "./github-ruleset-strategy.js";
 import type { GitHubRuleset } from "./types.js";
 import { diffRulesets } from "./diff.js";
@@ -13,7 +13,7 @@ import {
 export interface IRulesetProcessor {
   process(
     repoConfig: RepoConfig,
-    repoInfo: import("../../shared/repo-detector.js").RepoInfo,
+    repoInfo: RepoInfo,
     options: RulesetProcessorOptions
   ): Promise<RulesetProcessorResult>;
 }

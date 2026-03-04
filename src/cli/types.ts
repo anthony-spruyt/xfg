@@ -9,6 +9,7 @@ import {
 } from "../sync/index.js";
 import {
   RulesetProcessor,
+  type IRulesetProcessor,
   RulesetProcessorOptions,
   RulesetProcessorResult,
 } from "../settings/rulesets/processor.js";
@@ -21,7 +22,7 @@ import {
   type ILabelsProcessor,
 } from "../settings/labels/processor.js";
 
-export type { IRepositoryProcessor };
+export type { IRepositoryProcessor, IRulesetProcessor };
 
 export type ProcessorFactory = () => IRepositoryProcessor;
 
@@ -30,17 +31,6 @@ export type ProcessorFactory = () => IRepositoryProcessor;
  */
 export const defaultProcessorFactory: ProcessorFactory = () =>
   new RepositoryProcessor();
-
-/**
- * Ruleset processor interface for dependency injection in tests.
- */
-export interface IRulesetProcessor {
-  process(
-    repoConfig: RepoConfig,
-    repoInfo: RepoInfo,
-    options: RulesetProcessorOptions
-  ): Promise<RulesetProcessorResult>;
-}
 
 /**
  * Factory function type for creating ruleset processors.

@@ -1,5 +1,5 @@
 import type { RepoConfig, GitHubRepoSettings } from "../../config/index.js";
-import type { GitHubRepoInfo } from "../../shared/repo-detector.js";
+import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
 import { GitHubRepoSettingsStrategy } from "./github-repo-settings-strategy.js";
 import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
 import { diffRepoSettings, hasChanges } from "./diff.js";
@@ -13,7 +13,7 @@ import {
 export interface IRepoSettingsProcessor {
   process(
     repoConfig: RepoConfig,
-    repoInfo: import("../../shared/repo-detector.js").RepoInfo,
+    repoInfo: RepoInfo,
     options: RepoSettingsProcessorOptions
   ): Promise<RepoSettingsProcessorResult>;
 }

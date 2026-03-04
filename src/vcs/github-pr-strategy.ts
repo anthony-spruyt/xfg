@@ -15,6 +15,7 @@ import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
+import { buildTokenEnv } from "../settings/gh-api-utils.js";
 
 /**
  * Get the repo flag value for gh CLI commands.
@@ -44,14 +45,6 @@ function getHostnameFlag(repoInfo: GitHubRepoInfo): string {
 function buildPRUrlRegex(host: string): RegExp {
   const escapedHost = escapeRegExp(host);
   return new RegExp(`https://${escapedHost}/[\\w-]+/[\\w.-]+/pull/\\d+`);
-}
-
-/**
- * Build environment variables for gh CLI commands.
- * Uses env vars instead of command string interpolation to avoid shell injection.
- */
-function buildTokenEnv(token?: string): Record<string, string> | undefined {
-  return token ? { GH_TOKEN: token } : undefined;
 }
 
 export class GitHubPRStrategy extends BasePRStrategy {
