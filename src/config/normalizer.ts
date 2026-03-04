@@ -576,44 +576,11 @@ export function normalizeConfig(raw: RawConfig): Config {
     }
   }
 
-  // Normalize root settings (filter out inherit key if present)
-  let normalizedRootSettings: RepoSettings | undefined;
-  if (raw.settings) {
-    normalizedRootSettings = {};
-    if (raw.settings.rulesets) {
-      const filteredRulesets: Record<string, Ruleset> = {};
-      for (const [name, ruleset] of Object.entries(raw.settings.rulesets)) {
-        if (name === "inherit" || ruleset === false) continue;
-        filteredRulesets[name] = ruleset as Ruleset;
-      }
-      if (Object.keys(filteredRulesets).length > 0) {
-        normalizedRootSettings.rulesets = filteredRulesets;
-      }
-    }
-    if (raw.settings.repo) {
-      normalizedRootSettings.repo = raw.settings.repo as GitHubRepoSettings;
-    }
-    if (raw.settings.labels) {
-      const filteredLabels: Record<string, Label> = {};
-      for (const [name, label] of Object.entries(raw.settings.labels)) {
-        if (name === "inherit" || label === false) continue;
-        const l = label as Label;
-        filteredLabels[name] = {
-          ...l,
-          color: l.color.replace(/^#/, "").toLowerCase(),
-        };
-      }
-      if (Object.keys(filteredLabels).length > 0) {
-        normalizedRootSettings.labels = filteredLabels;
-      }
-    }
-    if (raw.settings.deleteOrphaned !== undefined) {
-      normalizedRootSettings.deleteOrphaned = raw.settings.deleteOrphaned;
-    }
-    if (Object.keys(normalizedRootSettings).length === 0) {
-      normalizedRootSettings = undefined;
-    }
-  }
+  // Normalize root settings by reusing mergeSettings with no per-repo overlay.
+  // This filters out inherit/false entries from rulesets/labels, normalizes
+  // label colors, and handles deleteOrphaned — the same logic that per-repo
+  // merging already applies.
+  const normalizedRootSettings = mergeSettings(raw.settings, undefined);
 
   return {
     id: raw.id,
