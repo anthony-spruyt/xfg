@@ -235,16 +235,18 @@ export interface PRHandlerOptions {
   executor: ICommandExecutor;
 }
 
+export interface CreateAndMergeInput {
+  repoInfo: RepoInfo;
+  repoConfig: RepoConfig;
+  options: PRHandlerOptions;
+  changedFiles: FileAction[];
+  repoName: string;
+  diffStats?: DiffStats;
+  fileChanges?: FileChangeDetail[];
+}
+
 export interface IPRMergeHandler {
-  createAndMerge(
-    repoInfo: RepoInfo,
-    repoConfig: RepoConfig,
-    options: PRHandlerOptions,
-    changedFiles: FileAction[],
-    repoName: string,
-    diffStats?: DiffStats,
-    fileChanges?: FileChangeDetail[]
-  ): Promise<ProcessorResult>;
+  createAndMerge(input: CreateAndMergeInput): Promise<ProcessorResult>;
 }
 
 export interface WorkResult {

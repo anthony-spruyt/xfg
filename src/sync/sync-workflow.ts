@@ -151,10 +151,10 @@ export class SyncWorkflow implements ISyncWorkflow {
       }
 
       // Step 10: Create and merge PR
-      return await this.prMergeHandler.createAndMerge(
+      return await this.prMergeHandler.createAndMerge({
         repoInfo,
         repoConfig,
-        {
+        options: {
           branchName,
           baseBranch: session.baseBranch,
           workDir,
@@ -164,11 +164,11 @@ export class SyncWorkflow implements ISyncWorkflow {
           token: authResult.token,
           executor,
         },
-        workResult.changedFiles,
+        changedFiles: workResult.changedFiles,
         repoName,
-        workResult.diffStats,
-        workResult.fileChangeDetails
-      );
+        diffStats: workResult.diffStats,
+        fileChanges: workResult.fileChangeDetails,
+      });
     } finally {
       try {
         session?.cleanup();
