@@ -286,59 +286,41 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
     if (config.mode === "auto") {
       // Enable auto-merge when pipeline succeeds
-      // glab mr merge <id> --when-pipeline-succeeds [--squash] [--remove-source-branch]
-      const flagParts = [
+      const autoFlagParts = [
         "--when-pipeline-succeeds",
         strategyFlag,
         deleteBranchFlag,
       ].filter(Boolean);
-      const command = `glab mr merge ${escapeShellArg(mrInfo.mrIid)} ${flagParts.join(" ")} -R ${escapeShellArg(repoFlag)} -y`;
+      const autoCommand = `glab mr merge ${escapeShellArg(mrInfo.mrIid)} ${autoFlagParts.join(" ")} -R ${escapeShellArg(repoFlag)} -y`;
 
-      try {
-        await withRetry(() => this.executor.exec(command.trim(), workDir), {
-          retries,
-        });
-
-        return {
+      return this.executeMergeCommand(
+        () => this.executor.exec(autoCommand.trim(), workDir),
+        retries,
+        {
           success: true,
           message: "Auto-merge enabled. MR will merge when pipeline succeeds.",
           merged: false,
           autoMergeEnabled: true,
-        };
-      } catch (error) {
-        const message = toErrorMessage(error);
-        return {
-          success: false,
-          message: `Failed to enable auto-merge: ${message}`,
-          merged: false,
-        };
-      }
+        },
+        "Failed to enable auto-merge"
+      );
     }
 
     if (config.mode === "force") {
       // Force merge immediately
-      // glab mr merge <id> --yes [--squash] [--remove-source-branch]
-      const flagParts = [strategyFlag, deleteBranchFlag].filter(Boolean);
-      const command = `glab mr merge ${escapeShellArg(mrInfo.mrIid)} ${flagParts.join(" ")} -R ${escapeShellArg(repoFlag)} -y`;
+      const forceFlagParts = [strategyFlag, deleteBranchFlag].filter(Boolean);
+      const forceCommand = `glab mr merge ${escapeShellArg(mrInfo.mrIid)} ${forceFlagParts.join(" ")} -R ${escapeShellArg(repoFlag)} -y`;
 
-      try {
-        await withRetry(() => this.executor.exec(command.trim(), workDir), {
-          retries,
-        });
-
-        return {
+      return this.executeMergeCommand(
+        () => this.executor.exec(forceCommand.trim(), workDir),
+        retries,
+        {
           success: true,
           message: "MR merged successfully.",
           merged: true,
-        };
-      } catch (error) {
-        const message = toErrorMessage(error);
-        return {
-          success: false,
-          message: `Failed to force merge: ${message}`,
-          merged: false,
-        };
-      }
+        },
+        "Failed to force merge"
+      );
     }
 
     return {

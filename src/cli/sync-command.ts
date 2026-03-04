@@ -142,7 +142,7 @@ function applySettingsResult(
   current: number,
   repoName: string,
   settingsCollector: ResultsCollector,
-  assignResult: (entry: ReturnType<ResultsCollector["getOrCreate"]>) => void
+  field: "rulesetResult" | "labelsResult" | "settingsResult"
 ): void {
   if (result.planOutput?.lines?.length) {
     logger.info("");
@@ -159,7 +159,9 @@ function applySettingsResult(
     logger.success(current, repoName, `${label}: ${result.message}`);
   }
   if (!result.skipped) {
-    assignResult(settingsCollector.getOrCreate(repoName));
+    const entry = settingsCollector.getOrCreate(repoName);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (entry as any)[field] = result;
   }
   if (!result.success && !result.skipped) {
     logger.error(current, repoName, `${label}: ${result.message}`);
@@ -419,9 +421,7 @@ export async function runSync(
             current,
             repoName,
             settingsCollector,
-            (e) => {
-              e.rulesetResult = rulesetResult;
-            }
+            "rulesetResult"
           );
         } catch (error) {
           logger.error(current, repoName, `Rulesets: ${toErrorMessage(error)}`);
@@ -450,9 +450,7 @@ export async function runSync(
             current,
             repoName,
             settingsCollector,
-            (e) => {
-              e.labelsResult = labelsResult;
-            }
+            "labelsResult"
           );
         } catch (error) {
           logger.error(current, repoName, `Labels: ${toErrorMessage(error)}`);
@@ -477,9 +475,7 @@ export async function runSync(
             current,
             repoName,
             settingsCollector,
-            (e) => {
-              e.settingsResult = repoSettingsResult;
-            }
+            "settingsResult"
           );
         } catch (error) {
           logger.error(

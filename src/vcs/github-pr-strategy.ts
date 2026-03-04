@@ -298,55 +298,37 @@ export class GitHubPRStrategy extends BasePRStrategy {
       }
 
       // Enable auto-merge
-      const command =
+      const autoCommand =
         `gh pr merge ${escapeShellArg(prUrl)} --auto ${strategyFlag} ${deleteBranchFlag}`.trim();
 
-      try {
-        await withRetry(
-          () => this.executor.exec(command, workDir, { env: tokenEnv }),
-          { retries }
-        );
-
-        return {
+      return this.executeMergeCommand(
+        () => this.executor.exec(autoCommand, workDir, { env: tokenEnv }),
+        retries,
+        {
           success: true,
           message: "Auto-merge enabled. PR will merge when checks pass.",
           merged: false,
           autoMergeEnabled: true,
-        };
-      } catch (error) {
-        const message = toErrorMessage(error);
-        return {
-          success: false,
-          message: `Failed to enable auto-merge: ${message}`,
-          merged: false,
-        };
-      }
+        },
+        "Failed to enable auto-merge"
+      );
     }
 
     if (config.mode === "force") {
       // Force merge using admin privileges
-      const command =
+      const forceCommand =
         `gh pr merge ${escapeShellArg(prUrl)} --admin ${strategyFlag} ${deleteBranchFlag}`.trim();
 
-      try {
-        await withRetry(
-          () => this.executor.exec(command, workDir, { env: tokenEnv }),
-          { retries }
-        );
-
-        return {
+      return this.executeMergeCommand(
+        () => this.executor.exec(forceCommand, workDir, { env: tokenEnv }),
+        retries,
+        {
           success: true,
           message: "PR merged successfully using admin privileges.",
           merged: true,
-        };
-      } catch (error) {
-        const message = toErrorMessage(error);
-        return {
-          success: false,
-          message: `Failed to force merge: ${message}`,
-          merged: false,
-        };
-      }
+        },
+        "Failed to force merge"
+      );
     }
 
     return {

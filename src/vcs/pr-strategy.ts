@@ -1,4 +1,5 @@
 import { toErrorMessage } from "../shared/type-guards.js";
+import { withRetry } from "../shared/retry-utils.js";
 import { PRResult } from "./pr-creator.js";
 import {
   ICommandExecutor,
@@ -26,6 +27,28 @@ export abstract class BasePRStrategy implements IPRStrategy {
   abstract closeExistingPR(options: CloseExistingPROptions): Promise<boolean>;
   abstract create(options: PRStrategyOptions): Promise<PRResult>;
   abstract merge(options: MergeOptions): Promise<MergeResult>;
+
+  /**
+   * Execute a merge command with retries, returning a standardized MergeResult.
+   * Shared by all platform strategies to eliminate duplicated try/catch patterns.
+   */
+  protected async executeMergeCommand(
+    execFn: () => Promise<unknown>,
+    retries: number,
+    successResult: MergeResult,
+    errorPrefix: string
+  ): Promise<MergeResult> {
+    try {
+      await withRetry(execFn, { retries });
+      return successResult;
+    } catch (error) {
+      return {
+        success: false,
+        message: `${errorPrefix}: ${toErrorMessage(error)}`,
+        merged: false,
+      };
+    }
+  }
 }
 
 export class PRWorkflowExecutor {

@@ -237,58 +237,39 @@ export class AzurePRStrategy extends BasePRStrategy {
       : "";
 
     if (config.mode === "auto") {
-      // Enable auto-complete (no pre-check needed - always available in Azure DevOps)
-      const command =
+      const autoCommand =
         `az repos pr update --id ${escapeShellArg(prInfo.prId)} --auto-complete true ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)}`.trim();
 
-      try {
-        await withRetry(() => this.executor.exec(command, workDir), {
-          retries,
-        });
-
-        return {
+      return this.executeMergeCommand(
+        () => this.executor.exec(autoCommand, workDir),
+        retries,
+        {
           success: true,
           message:
             "Auto-complete enabled. PR will merge when all policies pass.",
           merged: false,
           autoMergeEnabled: true,
-        };
-      } catch (error) {
-        const message = toErrorMessage(error);
-        return {
-          success: false,
-          message: `Failed to enable auto-complete: ${message}`,
-          merged: false,
-        };
-      }
+        },
+        "Failed to enable auto-complete"
+      );
     }
 
     if (config.mode === "force") {
-      // Bypass policies and complete the PR
       const bypassReason =
         config.bypassReason ?? "Automated config sync via xfg";
-
-      const command =
+      const forceCommand =
         `az repos pr update --id ${escapeShellArg(prInfo.prId)} --bypass-policy true --bypass-policy-reason ${escapeShellArg(bypassReason)} --status completed ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)}`.trim();
 
-      try {
-        await withRetry(() => this.executor.exec(command, workDir), {
-          retries,
-        });
-
-        return {
+      return this.executeMergeCommand(
+        () => this.executor.exec(forceCommand, workDir),
+        retries,
+        {
           success: true,
           message: "PR completed by bypassing policies.",
           merged: true,
-        };
-      } catch (error) {
-        const message = toErrorMessage(error);
-        return {
-          success: false,
-          message: `Failed to bypass policies and complete PR: ${message}`,
-          merged: false,
-        };
-      }
+        },
+        "Failed to bypass policies and complete PR"
+      );
     }
 
     return {
