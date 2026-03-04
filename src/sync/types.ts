@@ -97,7 +97,6 @@ export interface BranchSetupOptions {
   retries: number;
   token?: string;
   gitOps: IAuthenticatedGitOps;
-  log: ILogger;
   executor: ICommandExecutor;
 }
 

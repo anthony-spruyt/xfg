@@ -63,7 +63,8 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     const fileWriter = components?.fileWriter ?? new FileWriter();
     const manifestManager =
       components?.manifestManager ?? new ManifestManager();
-    const branchManager = components?.branchManager ?? new BranchManager();
+    const branchManager =
+      components?.branchManager ?? new BranchManager(logInstance);
     const authOptionsBuilder =
       components?.authOptionsBuilder ??
       new AuthOptionsBuilder(tokenManager, logInstance);

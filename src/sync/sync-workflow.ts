@@ -71,7 +71,6 @@ export class SyncWorkflow implements ISyncWorkflow {
         retries,
         token: authResult.token,
         gitOps: session.gitOps,
-        log: this.log,
         executor,
       });
 

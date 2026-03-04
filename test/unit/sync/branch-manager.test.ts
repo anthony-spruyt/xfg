@@ -39,7 +39,7 @@ describe("BranchManager", () => {
       const { mock: mockLogger } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});
 
-      const manager = new BranchManager();
+      const manager = new BranchManager(mockLogger);
       await manager.setupBranch({
         repoInfo: mockRepoInfo,
         branchName: "chore/sync-config",
@@ -49,7 +49,6 @@ describe("BranchManager", () => {
         dryRun: false,
         retries: 3,
         gitOps: mockGitOps,
-        log: mockLogger,
         executor: mockExecutor,
       });
 
@@ -62,7 +61,7 @@ describe("BranchManager", () => {
       const { mock: mockLogger } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});
 
-      const manager = new BranchManager();
+      const manager = new BranchManager(mockLogger);
       await manager.setupBranch({
         repoInfo: mockRepoInfo,
         branchName: "chore/sync-config",
@@ -72,7 +71,6 @@ describe("BranchManager", () => {
         dryRun: false,
         retries: 3,
         gitOps: mockGitOps,
-        log: mockLogger,
         executor: mockExecutor,
       });
 
@@ -84,7 +82,7 @@ describe("BranchManager", () => {
       const { mock: mockLogger } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});
 
-      const manager = new BranchManager();
+      const manager = new BranchManager(mockLogger);
       await manager.setupBranch({
         repoInfo: mockRepoInfo,
         branchName: "chore/sync-config",
@@ -94,7 +92,6 @@ describe("BranchManager", () => {
         dryRun: true,
         retries: 3,
         gitOps: mockGitOps,
-        log: mockLogger,
         executor: mockExecutor,
       });
 

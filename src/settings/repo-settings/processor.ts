@@ -119,8 +119,8 @@ export class RepoSettingsProcessor
     const planOutput = formatRepoSettingsPlan(changes);
 
     const changeCounts = {
-      create: planOutput.adds,
-      update: planOutput.changes,
+      create: planOutput.creates,
+      update: planOutput.updates,
       delete: 0,
       unchanged: changes.filter((c) => c.action === "unchanged").length,
     };
