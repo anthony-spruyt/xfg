@@ -13,16 +13,14 @@ import { isPlainObject } from "./type-guards.js";
 export interface InterpolationConfig {
   /** Regex to match escaped placeholders (e.g. $${VAR}) — captured group becomes the restore content */
   escapeRegex: RegExp;
-  /** Regex to match interpolation placeholders (e.g. ${VAR}) */
-  matchRegex: RegExp;
   /** Unique placeholder string for escape phase (should not appear in normal content) */
   escapePlaceholder: string;
   /**
-   * Resolve a match to its replacement value.
-   * Receives the full match string plus all capture groups.
-   * Return undefined to leave the match as-is (non-strict mode).
+   * Apply interpolation replacements to the processed string.
+   * Implementations use their own regex internally to avoid
+   * passing dynamic regex through the config (CodeQL polynomial-redos).
    */
-  resolve: (match: string, ...groups: string[]) => string;
+  applyInterpolation: (value: string) => string;
   /** Reconstruct the escaped literal from the captured content */
   restoreEscaped: (content: string) => string;
 }
@@ -46,14 +44,7 @@ export function interpolateString(
   );
 
   // Phase 2: Interpolate remaining matches
-  processed = processed.replace(
-    config.matchRegex,
-    (match: string, ...args: unknown[]) => {
-      // Filter out offset and full string args that replace passes
-      const groups = args.filter((a) => typeof a === "string") as string[];
-      return config.resolve(match, ...groups);
-    }
-  );
+  processed = config.applyInterpolation(processed);
 
   // Phase 3: Restore escaped sequences as literal text
   processed = processed.replace(

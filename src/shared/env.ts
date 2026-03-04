@@ -34,7 +34,7 @@ const DEFAULT_OPTIONS: EnvInterpolationOptions = {
  * - ${VAR:-default} -> varName=VAR, modifier=-, value=default
  * - ${VAR:?message} -> varName=VAR, modifier=?, value=message
  */
-const ENV_VAR_REGEX = /\$\{([A-Za-z_][A-Za-z0-9_.]*?)(?::([?-])([^}]*))?\}/g;
+const ENV_VAR_REGEX = /\$\{([A-Za-z_][A-Za-z0-9_.]*)(?::([?-])([^}]*))?\}/g;
 
 /**
  * Regex to match escaped environment variable placeholders.
@@ -46,37 +46,43 @@ const ENV_VAR_REGEX = /\$\{([A-Za-z_][A-Za-z0-9_.]*?)(?::([?-])([^}]*))?\}/g;
 const ESCAPED_VAR_REGEX = /\$\$\{((?!xfg:)[^}]+)\}/g;
 
 function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
+  function resolveEnvVar(
+    match: string,
+    varName: string,
+    modifier: string | undefined,
+    defaultOrMsg: string | undefined
+  ): string {
+    const envValue = process.env[varName];
+
+    // Variable exists - use its value
+    if (envValue !== undefined) {
+      return envValue;
+    }
+
+    // Has default value (:-default)
+    if (modifier === "-") {
+      return defaultOrMsg ?? "";
+    }
+
+    // Required with message (:?message)
+    if (modifier === "?") {
+      const message = defaultOrMsg || `is required`;
+      throw new Error(`${varName}: ${message}`);
+    }
+
+    // No modifier - check strictness
+    if (options.strict) {
+      throw new Error(`Missing required environment variable: ${varName}`);
+    }
+
+    // Non-strict mode - leave placeholder as-is
+    return match;
+  }
+
   return {
     escapeRegex: ESCAPED_VAR_REGEX,
-    matchRegex: ENV_VAR_REGEX,
     escapePlaceholder: "\x00ESCAPED_VAR\x00",
-    resolve(match, varName, modifier, defaultOrMsg) {
-      const envValue = process.env[varName];
-
-      // Variable exists - use its value
-      if (envValue !== undefined) {
-        return envValue;
-      }
-
-      // Has default value (:-default)
-      if (modifier === "-") {
-        return defaultOrMsg ?? "";
-      }
-
-      // Required with message (:?message)
-      if (modifier === "?") {
-        const message = defaultOrMsg || `is required`;
-        throw new Error(`${varName}: ${message}`);
-      }
-
-      // No modifier - check strictness
-      if (options.strict) {
-        throw new Error(`Missing required environment variable: ${varName}`);
-      }
-
-      // Non-strict mode - leave placeholder as-is
-      return match;
-    },
+    applyInterpolation: (value) => value.replace(ENV_VAR_REGEX, resolveEnvVar),
     restoreEscaped: (content) => `\${${content}}`,
   };
 }

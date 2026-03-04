@@ -106,30 +106,31 @@ function buildXfgConfig(
   ctx: XfgTemplateContext,
   options: XfgInterpolationOptions
 ): InterpolationConfig {
+  function resolveXfgVar(match: string, varName: string): string {
+    // First check custom vars
+    if (ctx.vars && varName in ctx.vars) {
+      return ctx.vars[varName];
+    }
+
+    // Then check built-in vars
+    const builtinValue = getBuiltinVar(varName, ctx);
+    if (builtinValue !== undefined) {
+      return builtinValue;
+    }
+
+    // Unknown variable
+    if (options.strict) {
+      throw new Error(`Unknown xfg template variable: ${varName}`);
+    }
+
+    // Non-strict mode - leave placeholder as-is
+    return match;
+  }
+
   return {
     escapeRegex: ESCAPED_XFG_VAR_REGEX,
-    matchRegex: XFG_VAR_REGEX,
     escapePlaceholder: "\x00ESCAPED_XFG_VAR\x00",
-    resolve(match, varName) {
-      // First check custom vars
-      if (ctx.vars && varName in ctx.vars) {
-        return ctx.vars[varName];
-      }
-
-      // Then check built-in vars
-      const builtinValue = getBuiltinVar(varName, ctx);
-      if (builtinValue !== undefined) {
-        return builtinValue;
-      }
-
-      // Unknown variable
-      if (options.strict) {
-        throw new Error(`Unknown xfg template variable: ${varName}`);
-      }
-
-      // Non-strict mode - leave placeholder as-is
-      return match;
-    },
+    applyInterpolation: (value) => value.replace(XFG_VAR_REGEX, resolveXfgVar),
     restoreEscaped: (content) => `\${xfg:${content}}`,
   };
 }
