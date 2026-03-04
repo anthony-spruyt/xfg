@@ -1,12 +1,6 @@
 import { resolve, join } from "node:path";
 import { existsSync } from "node:fs";
-import {
-  loadRawConfig,
-  normalizeConfig,
-  MergeMode,
-  MergeStrategy,
-  RepoConfig,
-} from "../config/index.js";
+import { loadRawConfig, normalizeConfig, RepoConfig } from "../config/index.js";
 import { validateForSync } from "../config/validator.js";
 import {
   parseGitUrl,
@@ -25,7 +19,11 @@ import {
   defaultRepoSettingsProcessorFactory,
   defaultLabelsProcessorFactory,
   type SyncDependencies,
+  type SyncResultEntry,
+  type SettingsResult,
+  type SyncOptions,
 } from "./types.js";
+export type { SharedOptions, SyncOptions } from "./types.js";
 import { ResultsCollector } from "./results-collector.js";
 import { buildSettingsReport } from "./settings-report-builder.js";
 import { formatSettingsReportCLI } from "../output/settings-report.js";
@@ -45,27 +43,6 @@ import {
   runLifecycleCheck,
   toCreateRepoSettings,
 } from "../lifecycle/index.js";
-
-/**
- * Shared options common to all commands.
- */
-export interface SharedOptions {
-  config: string;
-  dryRun?: boolean;
-  workDir?: string;
-  retries?: number;
-  noDelete?: boolean;
-}
-
-/**
- * Options specific to the sync command.
- */
-export interface SyncOptions extends SharedOptions {
-  branch?: string;
-  merge?: MergeMode;
-  mergeStrategy?: MergeStrategy;
-  deleteBranch?: boolean;
-}
 
 /**
  * Get unique file names from all repos in the config
@@ -103,21 +80,6 @@ function formatFileNames(fileNames: string[]): string {
   return `${fileNames.length} files`;
 }
 
-/**
- * Entry for collecting sync results
- */
-interface SyncResultEntry {
-  repoName: string;
-  success: boolean;
-  fileChanges: Array<{ path: string; action: "create" | "update" | "delete" }>;
-  prUrl?: string;
-  mergeOutcome?: "manual" | "auto" | "force" | "direct";
-  error?: string;
-}
-
-/**
- * Determine merge outcome from processor result
- */
 function determineMergeOutcome(
   result: ProcessorResult
 ): "manual" | "auto" | "force" | "direct" | undefined {
@@ -126,14 +88,6 @@ function determineMergeOutcome(
   if (result.mergeResult?.merged) return "force";
   if (result.mergeResult?.autoMergeEnabled) return "auto";
   return "manual";
-}
-
-interface SettingsResult {
-  success: boolean;
-  message: string;
-  skipped?: boolean;
-  planOutput?: { lines?: string[] };
-  warnings?: string[];
 }
 
 function logSettingsResult(
@@ -180,42 +134,29 @@ async function resolveGitHubToken(
   }
 }
 
-interface SettingsContext {
-  repoConfig: RepoConfig;
-  repoInfo: RepoInfo;
-  repoName: string;
-  current: number;
-  options: SyncOptions;
-  tokenManager: ReturnType<typeof createTokenManager>;
-  settingsCollector: ResultsCollector;
-  deps: {
-    rulesetProcessorFactory: NonNullable<
-      SyncDependencies["rulesetProcessorFactory"]
-    >;
-    repoSettingsProcessorFactory: NonNullable<
-      SyncDependencies["repoSettingsProcessorFactory"]
-    >;
-    labelsProcessorFactory: NonNullable<
-      SyncDependencies["labelsProcessorFactory"]
-    >;
-  };
-}
-
-async function applyRepoSettings(ctx: SettingsContext): Promise<void> {
-  const {
-    repoConfig,
-    repoInfo,
-    repoName,
-    current,
-    options,
-    settingsCollector,
-  } = ctx;
-
+async function applyRepoSettings(
+  repoConfig: RepoConfig,
+  repoInfo: RepoInfo,
+  repoName: string,
+  current: number,
+  options: SyncOptions,
+  tokenManager: ReturnType<typeof createTokenManager>,
+  settingsCollector: ResultsCollector,
+  rulesetProcessorFactory: NonNullable<
+    SyncDependencies["rulesetProcessorFactory"]
+  >,
+  repoSettingsProcessorFactory: NonNullable<
+    SyncDependencies["repoSettingsProcessorFactory"]
+  >,
+  labelsProcessorFactory: NonNullable<
+    SyncDependencies["labelsProcessorFactory"]
+  >
+): Promise<void> {
   if (!repoConfig.settings || !isGitHubRepo(repoInfo)) return;
 
   const settingsToken = await resolveGitHubToken(
     repoInfo as GitHubRepoInfo,
-    ctx.tokenManager,
+    tokenManager,
     repoName
   );
 
@@ -224,13 +165,15 @@ async function applyRepoSettings(ctx: SettingsContext): Promise<void> {
       key: "rulesets" as const,
       label: "Rulesets",
       run: async () => {
-        const result = await ctx.deps
-          .rulesetProcessorFactory()
-          .process(repoConfig, repoInfo, {
+        const result = await rulesetProcessorFactory().process(
+          repoConfig,
+          repoInfo,
+          {
             dryRun: options.dryRun,
             noDelete: options.noDelete,
             token: settingsToken,
-          });
+          }
+        );
         if (!result.skipped) {
           settingsCollector.getOrCreate(repoName).rulesetResult = result;
         }
@@ -241,13 +184,15 @@ async function applyRepoSettings(ctx: SettingsContext): Promise<void> {
       key: "labels" as const,
       label: "Labels",
       run: async () => {
-        const result = await ctx.deps
-          .labelsProcessorFactory()
-          .process(repoConfig, repoInfo, {
+        const result = await labelsProcessorFactory().process(
+          repoConfig,
+          repoInfo,
+          {
             dryRun: options.dryRun,
             noDelete: options.noDelete,
             token: settingsToken,
-          });
+          }
+        );
         if (!result.skipped) {
           settingsCollector.getOrCreate(repoName).labelsResult = result;
         }
@@ -258,12 +203,11 @@ async function applyRepoSettings(ctx: SettingsContext): Promise<void> {
       key: "repo" as const,
       label: "Repo Settings",
       run: async () => {
-        const result = await ctx.deps
-          .repoSettingsProcessorFactory()
-          .process(repoConfig, repoInfo, {
-            dryRun: options.dryRun,
-            token: settingsToken,
-          });
+        const result = await repoSettingsProcessorFactory().process(
+          repoConfig,
+          repoInfo,
+          { dryRun: options.dryRun, token: settingsToken }
+        );
         if (!result.skipped) {
           settingsCollector.getOrCreate(repoName).settingsResult = result;
         }
@@ -296,17 +240,12 @@ async function applyRepoSettings(ctx: SettingsContext): Promise<void> {
   }
 }
 
-interface ReportContext {
-  reportResults: SyncResultEntry[];
-  lifecycleReportInputs: LifecycleReportInput[];
-  settingsCollector: ResultsCollector;
-  dryRun: boolean;
-}
-
-function displayReports(ctx: ReportContext): void {
-  const { reportResults, lifecycleReportInputs, settingsCollector, dryRun } =
-    ctx;
-
+function displayReports(
+  reportResults: SyncResultEntry[],
+  lifecycleReportInputs: LifecycleReportInput[],
+  settingsCollector: ResultsCollector,
+  dryRun: boolean
+): void {
   // Build and display lifecycle report
   const lifecycleReport = buildLifecycleReport(lifecycleReportInputs);
   if (hasLifecycleChanges(lifecycleReport)) {
@@ -553,7 +492,7 @@ export async function runSync(
     }
 
     // After file sync, apply settings via API (GitHub-only — ADO and GitLab repos are skipped)
-    await applyRepoSettings({
+    await applyRepoSettings(
       repoConfig,
       repoInfo,
       repoName,
@@ -561,20 +500,18 @@ export async function runSync(
       options,
       tokenManager,
       settingsCollector,
-      deps: {
-        rulesetProcessorFactory,
-        repoSettingsProcessorFactory,
-        labelsProcessorFactory,
-      },
-    });
+      rulesetProcessorFactory,
+      repoSettingsProcessorFactory,
+      labelsProcessorFactory
+    );
   }
 
-  displayReports({
+  displayReports(
     reportResults,
     lifecycleReportInputs,
     settingsCollector,
-    dryRun: options.dryRun ?? false,
-  });
+    options.dryRun ?? false
+  );
 
   // Propagate failures to caller (CLI entry handles process.exit)
   const settingsResults = settingsCollector.getAll();

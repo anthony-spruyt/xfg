@@ -1,3 +1,4 @@
+import type { MergeMode, MergeStrategy } from "../config/index.js";
 import type { IRepoLifecycleManager } from "../lifecycle/index.js";
 import {
   RepositoryProcessor,
@@ -68,6 +69,38 @@ export interface SyncDependencies {
   rulesetProcessorFactory?: RulesetProcessorFactory;
   repoSettingsProcessorFactory?: RepoSettingsProcessorFactory;
   labelsProcessorFactory?: LabelsProcessorFactory;
+}
+
+export interface SharedOptions {
+  config: string;
+  dryRun?: boolean;
+  workDir?: string;
+  retries?: number;
+  noDelete?: boolean;
+}
+
+export interface SyncOptions extends SharedOptions {
+  branch?: string;
+  merge?: MergeMode;
+  mergeStrategy?: MergeStrategy;
+  deleteBranch?: boolean;
+}
+
+export interface SyncResultEntry {
+  repoName: string;
+  success: boolean;
+  fileChanges: Array<{ path: string; action: "create" | "update" | "delete" }>;
+  prUrl?: string;
+  mergeOutcome?: "manual" | "auto" | "force" | "direct";
+  error?: string;
+}
+
+export interface SettingsResult {
+  success: boolean;
+  message: string;
+  skipped?: boolean;
+  planOutput?: { lines?: string[] };
+  warnings?: string[];
 }
 
 // Re-export for convenience
