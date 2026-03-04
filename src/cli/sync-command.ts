@@ -23,8 +23,10 @@ import {
   type SettingsResult,
   type SyncOptions,
   type ApplyRepoSettingsContext,
+  type IRepositoryProcessor,
 } from "./types.js";
 export type { SharedOptions, SyncOptions } from "./types.js";
+import type { Config } from "../config/types.js";
 import { ResultsCollector } from "./results-collector.js";
 import { buildSettingsReport } from "./settings-report-builder.js";
 import { formatSettingsReportCLI } from "../output/settings-report.js";
@@ -44,6 +46,7 @@ import {
   RepoLifecycleManager,
   runLifecycleCheck,
   toCreateRepoSettings,
+  type IRepoLifecycleManager,
 } from "../lifecycle/index.js";
 
 /**
@@ -266,6 +269,255 @@ function displayReports(
   });
 }
 
+/**
+ * Shared context for processing a single repository within the sync loop.
+ * Groups the per-run state so processSingleRepo doesn't need 15+ parameters.
+ */
+interface RepoIterationContext {
+  config: Config;
+  options: SyncOptions;
+  branchName: string;
+  processor: IRepositoryProcessor;
+  lifecycleManager: IRepoLifecycleManager;
+  tokenManager: ReturnType<typeof createTokenManager>;
+  reportResults: SyncResultEntry[];
+  lifecycleReportInputs: LifecycleReportInput[];
+  settingsCollector: ResultsCollector;
+  rulesetProcessorFactory: NonNullable<
+    SyncDependencies["rulesetProcessorFactory"]
+  >;
+  repoSettingsProcessorFactory: NonNullable<
+    SyncDependencies["repoSettingsProcessorFactory"]
+  >;
+  labelsProcessorFactory: NonNullable<
+    SyncDependencies["labelsProcessorFactory"]
+  >;
+}
+
+/**
+ * Process a single repository: resolve URL, run lifecycle check, sync files, apply settings.
+ * Pushes results into ctx.reportResults, ctx.lifecycleReportInputs, and ctx.settingsCollector.
+ */
+async function processSingleRepo(
+  repoConfig: RepoConfig,
+  index: number,
+  ctx: RepoIterationContext
+): Promise<void> {
+  const { config, options } = ctx;
+  const current = index + 1;
+
+  // Apply CLI-level PR option overrides
+  if (options.merge || options.mergeStrategy || options.deleteBranch) {
+    repoConfig.prOptions = {
+      ...repoConfig.prOptions,
+      merge: options.merge ?? repoConfig.prOptions?.merge,
+      mergeStrategy:
+        options.mergeStrategy ?? repoConfig.prOptions?.mergeStrategy,
+      deleteBranch: options.deleteBranch ?? repoConfig.prOptions?.deleteBranch,
+    };
+  }
+
+  const mergeMode = repoConfig.prOptions?.merge ?? "auto";
+  if (mergeMode === "direct" && repoConfig.prOptions?.mergeStrategy) {
+    logger.warn(
+      `mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode for ${repoConfig.git}`
+    );
+  }
+
+  // Parse git URL
+  let repoInfo: RepoInfo;
+  try {
+    repoInfo = parseGitUrl(repoConfig.git, {
+      githubHosts: config.githubHosts,
+    });
+  } catch (error) {
+    logger.error(current, repoConfig.git, toErrorMessage(error));
+    ctx.reportResults.push({
+      repoName: repoConfig.git,
+      success: false,
+      fileChanges: [],
+      error: toErrorMessage(error),
+    });
+    return;
+  }
+
+  const repoName = getRepoDisplayName(repoInfo);
+  const workDir = resolve(
+    join(options.workDir ?? "./tmp", generateWorkspaceName(index))
+  );
+
+  // Resolve auth token for lifecycle gh commands
+  const lifecycleToken = isGitHubRepo(repoInfo)
+    ? (
+        await resolveGitHubToken(
+          repoInfo as GitHubRepoInfo,
+          ctx.tokenManager,
+          repoName
+        )
+      ).token
+    : undefined;
+
+  // Check if repo exists, create/fork/migrate if needed
+  const skipFileSync = await runLifecyclePhase(
+    repoConfig,
+    repoInfo,
+    repoName,
+    index,
+    workDir,
+    lifecycleToken,
+    ctx
+  );
+  if (skipFileSync) return;
+
+  // Sync files via processor
+  await runFileSyncPhase(repoConfig, repoInfo, repoName, current, workDir, ctx);
+
+  // Apply settings via API (GitHub-only — ADO and GitLab repos are skipped)
+  await applyRepoSettings({
+    repoConfig,
+    repoInfo,
+    repoName,
+    current,
+    options,
+    tokenManager: ctx.tokenManager,
+    settingsCollector: ctx.settingsCollector,
+    rulesetProcessorFactory: ctx.rulesetProcessorFactory,
+    repoSettingsProcessorFactory: ctx.repoSettingsProcessorFactory,
+    labelsProcessorFactory: ctx.labelsProcessorFactory,
+  });
+}
+
+/**
+ * Run lifecycle check (repo existence, creation, forking).
+ * Returns true if the main loop should skip file sync for this repo.
+ */
+async function runLifecyclePhase(
+  repoConfig: RepoConfig,
+  repoInfo: RepoInfo,
+  repoName: string,
+  index: number,
+  workDir: string,
+  lifecycleToken: string | undefined,
+  ctx: RepoIterationContext
+): Promise<boolean> {
+  const current = index + 1;
+
+  try {
+    const { outputLines, lifecycleResult } = await runLifecycleCheck(
+      repoConfig,
+      repoInfo,
+      index,
+      {
+        dryRun: ctx.options.dryRun ?? false,
+        resolvedWorkDir: workDir,
+        githubHosts: ctx.config.githubHosts,
+        token: lifecycleToken,
+      },
+      ctx.lifecycleManager,
+      ctx.config.settings?.repo
+    );
+
+    for (const line of outputLines) {
+      logger.info(line);
+    }
+
+    const createSettings = toCreateRepoSettings(ctx.config.settings?.repo);
+    ctx.lifecycleReportInputs.push({
+      repoName,
+      action: lifecycleResult.action,
+      upstream: repoConfig.upstream,
+      source: repoConfig.source,
+      settings: createSettings
+        ? {
+            visibility: createSettings.visibility,
+            description: createSettings.description,
+          }
+        : undefined,
+    });
+
+    // In dry-run, skip processing repos that don't exist yet
+    if (ctx.options.dryRun && lifecycleResult.action !== "existed") {
+      ctx.reportResults.push({
+        repoName,
+        success: true,
+        fileChanges: [],
+      });
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    logger.error(
+      current,
+      repoName,
+      `Lifecycle error: ${toErrorMessage(error)}`
+    );
+    ctx.reportResults.push({
+      repoName,
+      success: false,
+      fileChanges: [],
+      error: toErrorMessage(error),
+    });
+    return true;
+  }
+}
+
+/**
+ * Run the file sync processor for a single repo and collect results.
+ */
+async function runFileSyncPhase(
+  repoConfig: RepoConfig,
+  repoInfo: RepoInfo,
+  repoName: string,
+  current: number,
+  workDir: string,
+  ctx: RepoIterationContext
+): Promise<void> {
+  try {
+    logger.progress(current, repoName, "Processing...");
+
+    const result = await ctx.processor.process(repoConfig, repoInfo, {
+      branchName: ctx.branchName,
+      workDir,
+      configId: ctx.config.id,
+      dryRun: ctx.options.dryRun,
+      retries: ctx.options.retries,
+      prTemplate: ctx.config.prTemplate,
+      noDelete: ctx.options.noDelete,
+    });
+
+    const mergeOutcome = determineMergeOutcome(result);
+
+    ctx.reportResults.push({
+      repoName,
+      success: result.success,
+      fileChanges: (result.fileChanges ?? []).map((f) => ({
+        path: f.path,
+        action: f.action,
+      })),
+      prUrl: result.prUrl,
+      mergeOutcome,
+      error: result.success ? undefined : result.message,
+    });
+
+    if (result.skipped) {
+      logger.skip(current, repoName, result.message);
+    } else if (result.success) {
+      logger.success(current, repoName, result.message);
+    } else {
+      logger.error(current, repoName, result.message);
+    }
+  } catch (error) {
+    logger.error(current, repoName, toErrorMessage(error));
+    ctx.reportResults.push({
+      repoName,
+      success: false,
+      fileChanges: [],
+      error: toErrorMessage(error),
+    });
+  }
+}
+
 export async function runSync(
   options: SyncOptions,
   deps: SyncDependencies = {}
@@ -308,197 +560,36 @@ export async function runSync(
   logger.log(`Target files: ${formatFileNames(fileNames)}`);
   logger.log(`Branch: ${branchName}\n`);
 
-  const processor = processorFactory();
-  const lm =
-    lifecycleManager ?? new RepoLifecycleManager(undefined, options.retries);
-  const tokenManager = createTokenManager();
-  const reportResults: SyncResultEntry[] = [];
-  const lifecycleReportInputs: LifecycleReportInput[] = [];
-  const settingsCollector = new ResultsCollector();
+  const ctx: RepoIterationContext = {
+    config,
+    options,
+    branchName,
+    processor: processorFactory(),
+    lifecycleManager:
+      lifecycleManager ?? new RepoLifecycleManager(undefined, options.retries),
+    tokenManager: createTokenManager(),
+    reportResults: [],
+    lifecycleReportInputs: [],
+    settingsCollector: new ResultsCollector(),
+    rulesetProcessorFactory,
+    repoSettingsProcessorFactory,
+    labelsProcessorFactory,
+  };
 
   for (let i = 0; i < config.repos.length; i++) {
-    const repoConfig = config.repos[i];
-
-    if (options.merge || options.mergeStrategy || options.deleteBranch) {
-      repoConfig.prOptions = {
-        ...repoConfig.prOptions,
-        merge: options.merge ?? repoConfig.prOptions?.merge,
-        mergeStrategy:
-          options.mergeStrategy ?? repoConfig.prOptions?.mergeStrategy,
-        deleteBranch:
-          options.deleteBranch ?? repoConfig.prOptions?.deleteBranch,
-      };
-    }
-
-    const mergeMode = repoConfig.prOptions?.merge ?? "auto";
-    if (mergeMode === "direct" && repoConfig.prOptions?.mergeStrategy) {
-      logger.warn(
-        `mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode for ${repoConfig.git}`
-      );
-    }
-
-    const current = i + 1;
-
-    let repoInfo: RepoInfo;
-    try {
-      repoInfo = parseGitUrl(repoConfig.git, {
-        githubHosts: config.githubHosts,
-      });
-    } catch (error) {
-      logger.error(current, repoConfig.git, toErrorMessage(error));
-      reportResults.push({
-        repoName: repoConfig.git,
-        success: false,
-        fileChanges: [],
-        error: toErrorMessage(error),
-      });
-      continue;
-    }
-
-    const repoName = getRepoDisplayName(repoInfo);
-    const workDir = resolve(
-      join(options.workDir ?? "./tmp", generateWorkspaceName(i))
-    );
-
-    // Resolve auth token for lifecycle gh commands
-    const lifecycleToken = isGitHubRepo(repoInfo)
-      ? (
-          await resolveGitHubToken(
-            repoInfo as GitHubRepoInfo,
-            tokenManager,
-            repoName
-          )
-        ).token
-      : undefined;
-
-    // Check if repo exists, create/fork/migrate if needed
-    try {
-      const { outputLines, lifecycleResult } = await runLifecycleCheck(
-        repoConfig,
-        repoInfo,
-        i,
-        {
-          dryRun: options.dryRun ?? false,
-          resolvedWorkDir: workDir,
-          githubHosts: config.githubHosts,
-          token: lifecycleToken,
-        },
-        lm,
-        config.settings?.repo
-      );
-
-      for (const line of outputLines) {
-        logger.info(line);
-      }
-
-      // Collect lifecycle result for report
-      const createSettings = toCreateRepoSettings(config.settings?.repo);
-      lifecycleReportInputs.push({
-        repoName,
-        action: lifecycleResult.action,
-        upstream: repoConfig.upstream,
-        source: repoConfig.source,
-        settings: createSettings
-          ? {
-              visibility: createSettings.visibility,
-              description: createSettings.description,
-            }
-          : undefined,
-      });
-
-      // In dry-run, skip processing repos that don't exist yet
-      if (options.dryRun && lifecycleResult.action !== "existed") {
-        reportResults.push({
-          repoName,
-          success: true,
-          fileChanges: [],
-        });
-        continue;
-      }
-    } catch (error) {
-      logger.error(
-        current,
-        repoName,
-        `Lifecycle error: ${toErrorMessage(error)}`
-      );
-      reportResults.push({
-        repoName,
-        success: false,
-        fileChanges: [],
-        error: toErrorMessage(error),
-      });
-      continue;
-    }
-
-    try {
-      logger.progress(current, repoName, "Processing...");
-
-      const result = await processor.process(repoConfig, repoInfo, {
-        branchName,
-        workDir,
-        configId: config.id,
-        dryRun: options.dryRun,
-        retries: options.retries,
-        prTemplate: config.prTemplate,
-        noDelete: options.noDelete,
-      });
-
-      const mergeOutcome = determineMergeOutcome(result);
-
-      reportResults.push({
-        repoName,
-        success: result.success,
-        fileChanges: (result.fileChanges ?? []).map((f) => ({
-          path: f.path,
-          action: f.action,
-        })),
-        prUrl: result.prUrl,
-        mergeOutcome,
-        error: result.success ? undefined : result.message,
-      });
-
-      if (result.skipped) {
-        logger.skip(current, repoName, result.message);
-      } else if (result.success) {
-        logger.success(current, repoName, result.message);
-      } else {
-        logger.error(current, repoName, result.message);
-      }
-    } catch (error) {
-      logger.error(current, repoName, toErrorMessage(error));
-      reportResults.push({
-        repoName,
-        success: false,
-        fileChanges: [],
-        error: toErrorMessage(error),
-      });
-    }
-
-    // After file sync, apply settings via API (GitHub-only — ADO and GitLab repos are skipped)
-    await applyRepoSettings({
-      repoConfig,
-      repoInfo,
-      repoName,
-      current,
-      options,
-      tokenManager,
-      settingsCollector,
-      rulesetProcessorFactory,
-      repoSettingsProcessorFactory,
-      labelsProcessorFactory,
-    });
+    await processSingleRepo(config.repos[i], i, ctx);
   }
 
   displayReports(
-    reportResults,
-    lifecycleReportInputs,
-    settingsCollector,
+    ctx.reportResults,
+    ctx.lifecycleReportInputs,
+    ctx.settingsCollector,
     options.dryRun ?? false
   );
 
   // Propagate failures to caller (CLI entry handles process.exit)
-  const settingsResults = settingsCollector.getAll();
-  const hasErrors = reportResults.some((r) => r.error);
+  const settingsResults = ctx.settingsCollector.getAll();
+  const hasErrors = ctx.reportResults.some((r) => r.error);
   const hasSettingsErrors = settingsResults.some((r) => r.error);
   if (hasErrors || hasSettingsErrors) {
     throw new Error("One or more repositories had errors during sync");

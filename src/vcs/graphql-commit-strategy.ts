@@ -11,6 +11,7 @@ import {
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { parseApiJson } from "../shared/gh-api-utils.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
@@ -290,15 +291,23 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     }
 
     // Parse the response
-    const parsed = JSON.parse(response);
+    const parsed = parseApiJson<Record<string, unknown>>(
+      response,
+      "GraphQL createCommitOnBranch response"
+    );
 
     if (parsed.errors) {
+      const errors = parsed.errors as Array<{ message: string }>;
       throw new Error(
-        `GraphQL error: ${parsed.errors.map((e: { message: string }) => e.message).join(", ")}`
+        `GraphQL error: ${errors.map((e) => e.message).join(", ")}`
       );
     }
 
-    const oid = parsed.data?.createCommitOnBranch?.commit?.oid;
+    const data = parsed.data as Record<string, unknown> | undefined;
+    const commit = (
+      data?.createCommitOnBranch as Record<string, unknown> | undefined
+    )?.commit as Record<string, unknown> | undefined;
+    const oid = commit?.oid as string | undefined;
     if (!oid) {
       throw new Error("GraphQL response missing commit OID");
     }
@@ -461,10 +470,13 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       );
     }
 
-    const parsed = JSON.parse(response);
+    const parsed = parseApiJson<{
+      data?: Record<string, unknown>;
+      errors?: Array<{ message: string }>;
+    }>(response, "GraphQL API response");
     if (parsed.errors) {
       throw new Error(
-        `GraphQL error: ${parsed.errors.map((e: { message: string }) => e.message).join(", ")}`
+        `GraphQL error: ${parsed.errors.map((e) => e.message).join(", ")}`
       );
     }
 

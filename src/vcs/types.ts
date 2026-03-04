@@ -59,30 +59,34 @@ export interface CloseExistingPROptions {
  * Interface for PR creation strategies (platform-specific implementations).
  * Strategies focus on platform-specific logic (checkExistingPR, create, merge).
  * Use PRWorkflowExecutor for full workflow orchestration with error handling.
+ *
+ * Error contract: create() and merge() may throw on infrastructure failures
+ * (network errors, API failures). PRWorkflowExecutor wraps all calls in
+ * try-catch, converting throws into PRResult with success:false.
+ * Callers should not rely on throw-vs-return for control flow.
  */
 export interface IPRStrategy {
   /**
-   * Check if a PR already exists for the given branch
-   * @returns PR URL if exists, null otherwise
+   * Check if a PR already exists for the given branch.
+   * @returns PR URL if exists, null if not found or on error
    */
   checkExistingPR(options: CloseExistingPROptions): Promise<string | null>;
 
   /**
    * Close an existing PR and delete its branch.
-   * Used for fresh start approach - always create new PR from clean state.
    * @returns true if PR was closed, false if no PR existed
    */
   closeExistingPR(options: CloseExistingPROptions): Promise<boolean>;
 
   /**
-   * Create a new PR
-   * @returns Result with URL and status
+   * Create a new PR. Throws on infrastructure failures; PRWorkflowExecutor
+   * catches and converts to PRResult.
    */
   create(options: PRStrategyOptions): Promise<PRResult>;
 
   /**
-   * Merge or enable auto-merge for a PR
-   * @returns Result with merge status
+   * Merge or enable auto-merge for a PR. Returns MergeResult for all outcomes
+   * including failures. May throw on unexpected infrastructure errors.
    */
   merge(options: MergeOptions): Promise<MergeResult>;
 }

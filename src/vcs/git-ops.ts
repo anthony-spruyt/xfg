@@ -278,7 +278,7 @@ export class GitOps implements ILocalGitOps {
     const filePath = this.validatePath(fileName);
 
     if (!existsSync(filePath)) {
-      return; // File doesn't exist, nothing to delete
+      return;
     }
 
     rmSync(filePath);

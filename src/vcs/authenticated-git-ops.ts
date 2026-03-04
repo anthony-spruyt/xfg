@@ -59,8 +59,9 @@ export interface INetworkGitOps {
 /**
  * Adds authentication to network git operations.
  *
- * When auth options are provided, network operations (clone, fetch, push,
- * getDefaultBranch) use embedded token URLs for per-command credentials.
+ * When auth options are provided, clone uses an embedded token URL which sets
+ * the remote origin. Subsequent operations (fetch, push, getDefaultBranch)
+ * reuse that authenticated remote URL — no extra auth setup per operation.
  *
  * Local operations live on GitOps (ILocalGitOps) — no wrapping needed.
  */
@@ -84,10 +85,6 @@ export class AuthenticatedGitOps implements INetworkGitOps {
     });
   }
 
-  // ============================================================
-  // Network operations - use authenticated command when token provided
-  // ============================================================
-
   /**
    * Build the authenticated remote URL.
    */
@@ -100,7 +97,6 @@ export class AuthenticatedGitOps implements INetworkGitOps {
     if (!this.auth) {
       return this.gitOps.clone(gitUrl);
     }
-    // Clone using authenticated URL directly - no insteadOf needed
     const authUrl = escapeShellArg(this.getAuthenticatedUrl());
     await this.execWithRetry(`git clone ${authUrl} .`);
   }
@@ -109,7 +105,6 @@ export class AuthenticatedGitOps implements INetworkGitOps {
     if (!this.auth) {
       return this.gitOps.fetch(options);
     }
-    // Remote URL already has auth from clone, just fetch
     const pruneFlag = options?.prune ? " --prune" : "";
     await this.execWithRetry(`git fetch origin${pruneFlag}`);
   }
@@ -118,7 +113,6 @@ export class AuthenticatedGitOps implements INetworkGitOps {
     if (!this.auth) {
       return this.gitOps.push(branchName, options);
     }
-    // Remote URL already has auth from clone, just push
     const forceFlag = options?.force ? "--force-with-lease " : "";
     const safeBranch = escapeShellArg(branchName);
     await this.execWithRetry(`git push ${forceFlag}-u origin ${safeBranch}`);
@@ -128,7 +122,6 @@ export class AuthenticatedGitOps implements INetworkGitOps {
     if (!this.auth) {
       return this.gitOps.getDefaultBranch();
     }
-    // Network operation - remote URL already has auth from clone
     try {
       const remoteInfo = await this.execWithRetry(`git remote show origin`);
       const match = remoteInfo.match(/HEAD branch: (\S+)/);
@@ -155,7 +148,6 @@ export class AuthenticatedGitOps implements INetworkGitOps {
     branchName: string,
     options?: { skipRetry?: boolean }
   ): Promise<string> {
-    // Remote URL already has auth from clone
     const safeBranch = escapeShellArg(branchName);
     const command = `git ls-remote --exit-code --heads origin ${safeBranch}`;
 
@@ -173,7 +165,6 @@ export class AuthenticatedGitOps implements INetworkGitOps {
     refspec: string,
     options?: { delete?: boolean }
   ): Promise<void> {
-    // Remote URL already has auth from clone
     const deleteFlag = options?.delete ? "--delete " : "";
     const safeRefspec = escapeShellArg(refspec);
     await this.execWithRetry(`git push ${deleteFlag}-u origin ${safeRefspec}`);
@@ -184,7 +175,6 @@ export class AuthenticatedGitOps implements INetworkGitOps {
    * Used by GraphQLCommitStrategy to update local refs.
    */
   async fetchBranch(branchName: string): Promise<void> {
-    // Remote URL already has auth from clone
     const safeBranch = escapeShellArg(branchName);
     await this.execWithRetry(
       `git fetch origin +${safeBranch}:refs/remotes/origin/${safeBranch}`

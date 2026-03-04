@@ -52,20 +52,6 @@ export class RepoSettingsProcessor
     return "No repo settings configured";
   }
 
-  protected createSkipResult(
-    repoName: string,
-    message: string
-  ): RepoSettingsProcessorResult {
-    return { success: true, repoName, message, skipped: true };
-  }
-
-  protected createErrorResult(
-    repoName: string,
-    message: string
-  ): RepoSettingsProcessorResult {
-    return { success: false, repoName, message };
-  }
-
   protected async processSettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,

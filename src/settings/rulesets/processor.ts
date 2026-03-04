@@ -55,20 +55,6 @@ export class RulesetProcessor
     return "No rulesets configured";
   }
 
-  protected createSkipResult(
-    repoName: string,
-    message: string
-  ): RulesetProcessorResult {
-    return { success: true, repoName, message, skipped: true };
-  }
-
-  protected createErrorResult(
-    repoName: string,
-    message: string
-  ): RulesetProcessorResult {
-    return { success: false, repoName, message };
-  }
-
   protected async processSettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,

@@ -85,20 +85,20 @@ export abstract class BaseSettingsProcessor<
   ): Promise<TResult>;
 
   /**
-   * Create a skip result for this processor type.
+   * Create a skip result. Default returns a BaseProcessorResult-compatible object.
+   * Subclasses can override when their TResult has required extra fields.
    */
-  protected abstract createSkipResult(
-    repoName: string,
-    message: string
-  ): TResult;
+  protected createSkipResult(repoName: string, message: string): TResult {
+    return { success: true, repoName, message, skipped: true } as TResult;
+  }
 
   /**
-   * Create an error result for this processor type.
+   * Create an error result. Default returns a BaseProcessorResult-compatible object.
+   * Subclasses can override when their TResult has required extra fields.
    */
-  protected abstract createErrorResult(
-    repoName: string,
-    message: string
-  ): TResult;
+  protected createErrorResult(repoName: string, message: string): TResult {
+    return { success: false, repoName, message } as TResult;
+  }
 }
 
 export interface ChangeCounts {

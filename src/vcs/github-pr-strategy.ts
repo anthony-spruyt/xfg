@@ -164,7 +164,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       );
 
       // Extract URL from output - use strict regex for valid PR URLs only
-      const host = repoInfo.host || "github.com";
+      const host = repoInfo.host;
       const urlRegex = buildPRUrlRegex(host);
       const urlMatch = result.match(urlRegex);
 

@@ -56,20 +56,6 @@ export class LabelsProcessor
     return "No labels configured";
   }
 
-  protected createSkipResult(
-    repoName: string,
-    message: string
-  ): LabelsProcessorResult {
-    return { success: true, repoName, message, skipped: true };
-  }
-
-  protected createErrorResult(
-    repoName: string,
-    message: string
-  ): LabelsProcessorResult {
-    return { success: false, repoName, message };
-  }
-
   protected async processSettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
