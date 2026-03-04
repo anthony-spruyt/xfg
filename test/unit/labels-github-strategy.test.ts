@@ -15,11 +15,17 @@ import type {
 // Mock executor that records commands and returns configured responses
 class MockExecutor implements ICommandExecutor {
   commands: string[] = [];
+  execOptions: (ExecOptions | undefined)[] = [];
   responses: Map<string, string> = new Map();
   defaultResponse = "[]";
 
-  async exec(command: string, _cwd: string): Promise<string> {
+  async exec(
+    command: string,
+    _cwd: string,
+    options?: ExecOptions
+  ): Promise<string> {
     this.commands.push(command);
+    this.execOptions.push(options);
 
     // Find matching response by endpoint pattern
     for (const [pattern, response] of this.responses) {
@@ -36,6 +42,7 @@ class MockExecutor implements ICommandExecutor {
 
   reset(): void {
     this.commands = [];
+    this.execOptions = [];
     this.responses.clear();
   }
 }
@@ -163,12 +170,8 @@ describe("GitHubLabelsStrategy", () => {
       await strategy.list(mockGitHubRepo, { token: "test-token" });
 
       assert.ok(
-        mockExecutor.commands[0].includes("GH_TOKEN="),
-        "Should include GH_TOKEN prefix"
-      );
-      assert.ok(
-        mockExecutor.commands[0].includes("test-token"),
-        "Should include the token value"
+        mockExecutor.execOptions[0]?.env?.GH_TOKEN === "test-token",
+        "Should pass GH_TOKEN via env options"
       );
     });
 
@@ -186,12 +189,8 @@ describe("GitHubLabelsStrategy", () => {
 
       const command = mockExecutor.commands[0];
       assert.ok(
-        command.includes("GH_TOKEN="),
-        "Should include GH_TOKEN prefix"
-      );
-      assert.ok(
-        command.includes("ghe-token"),
-        "Should include the token value"
+        mockExecutor.execOptions[0]?.env?.GH_TOKEN === "ghe-token",
+        "Should pass GH_TOKEN via env options"
       );
       assert.ok(
         command.includes("--hostname"),

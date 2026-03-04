@@ -14,12 +14,16 @@ export interface GhApiCallOptions {
   retries: number;
 }
 
+function buildTokenEnv(token?: string): Record<string, string> | undefined {
+  return token ? { GH_TOKEN: token } : undefined;
+}
+
 /**
  * Executes a GitHub API call using the gh CLI.
  * Shared by labels, rulesets, and repo-settings strategies.
  *
- * Note: Uses ICommandExecutor.exec() which delegates to the gh CLI shell
- * command. Token injection is safe via escapeShellArg.
+ * Token is injected via ExecOptions.env (matching the PR strategy pattern)
+ * rather than shell-prefix string interpolation.
  */
 export async function ghApiCall(
   method: HttpMethod,
@@ -46,24 +50,22 @@ export async function ghApiCall(
   args.push(escapeShellArg(endpoint));
 
   const baseCommand = args.join(" ");
-
-  const tokenPrefix = apiOpts?.token
-    ? `GH_TOKEN=${escapeShellArg(apiOpts.token)} `
-    : "";
+  const env = buildTokenEnv(apiOpts?.token);
 
   if (
     payload &&
     (method === "POST" || method === "PUT" || method === "PATCH")
   ) {
     const payloadJson = JSON.stringify(payload);
-    const command = `echo ${escapeShellArg(payloadJson)} | ${tokenPrefix}${baseCommand} --input -`;
-    return await withRetry(() => opts.executor.exec(command, process.cwd()), {
-      retries: opts.retries,
-    });
+    const command = `echo ${escapeShellArg(payloadJson)} | ${baseCommand} --input -`;
+    return await withRetry(
+      () => opts.executor.exec(command, process.cwd(), { env }),
+      { retries: opts.retries }
+    );
   }
 
-  const command = `${tokenPrefix}${baseCommand}`;
-  return await withRetry(() => opts.executor.exec(command, process.cwd()), {
-    retries: opts.retries,
-  });
+  return await withRetry(
+    () => opts.executor.exec(baseCommand, process.cwd(), { env }),
+    { retries: opts.retries }
+  );
 }
