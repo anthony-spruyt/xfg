@@ -36,7 +36,8 @@ export class SyncWorkflow implements ISyncWorkflow {
     workStrategy: IWorkStrategy
   ): Promise<ProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
-    const { branchName, workDir, dryRun } = options;
+    const { branchName, workDir } = options;
+    const dryRun = options.dryRun ?? false;
     const retries = options.retries ?? 3;
     const executor = options.executor ?? defaultExecutor;
 
@@ -65,7 +66,7 @@ export class SyncWorkflow implements ISyncWorkflow {
       // Step 3: Setup session
       session = await this.repositorySession.setup(repoInfo, {
         workDir,
-        dryRun: dryRun ?? false,
+        dryRun,
         retries,
         authOptions: authResult.authOptions,
       });
@@ -77,7 +78,7 @@ export class SyncWorkflow implements ISyncWorkflow {
         baseBranch: session.baseBranch,
         workDir,
         isDirectMode,
-        dryRun: dryRun ?? false,
+        dryRun,
         retries,
         token: authResult.token,
         gitOps: session.gitOps,
@@ -114,7 +115,7 @@ export class SyncWorkflow implements ISyncWorkflow {
           commitMessage: workResult.commitMessage,
           pushBranch,
           isDirectMode,
-          dryRun: dryRun ?? false,
+          dryRun,
           retries,
           token: authResult.token,
           executor,
@@ -158,7 +159,7 @@ export class SyncWorkflow implements ISyncWorkflow {
           branchName,
           baseBranch: session.baseBranch,
           workDir,
-          dryRun: dryRun ?? false,
+          dryRun,
           retries,
           prTemplate: options.prTemplate,
           token: authResult.token,
