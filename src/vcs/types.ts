@@ -26,7 +26,7 @@ export interface PRStrategyOptions {
   workDir: string;
   /** Number of retries for API operations (default: 3) */
   retries?: number;
-  /** GitHub App installation token for authentication */
+  /** GitHub App installation token (GitHub-only; ignored by GitLab/Azure strategies which use their own CLI auth) */
   token?: string;
   /** Labels to apply to the created PR */
   labels?: string[];
@@ -37,7 +37,7 @@ export interface MergeOptions {
   config: PRMergeConfig;
   workDir: string;
   retries?: number;
-  /** GitHub App installation token for authentication */
+  /** GitHub App installation token (GitHub-only; ignored by GitLab/Azure strategies which use their own CLI auth) */
   token?: string;
 }
 
@@ -50,7 +50,7 @@ export interface CloseExistingPROptions {
   baseBranch: string;
   workDir: string;
   retries?: number;
-  /** GitHub App installation token for authentication */
+  /** GitHub App installation token (GitHub-only; ignored by GitLab/Azure strategies which use their own CLI auth) */
   token?: string;
 }
 
@@ -100,7 +100,7 @@ export interface CommitOptions {
   retries?: number;
   /** Use force push (--force-with-lease). Default: true for PR branches, false for direct push to main. */
   force?: boolean;
-  /** GitHub App installation token for authentication (used by GraphQLCommitStrategy) */
+  /** GitHub App installation token (GitHub-only; used by GraphQLCommitStrategy) */
   token?: string;
   /** Authenticated git operations wrapper (used by GraphQLCommitStrategy for fetchBranch() during OID mismatch retries) */
   gitOps?: IAuthenticatedGitOps;
