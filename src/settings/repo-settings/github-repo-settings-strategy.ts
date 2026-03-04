@@ -7,8 +7,7 @@ import {
   GitHubRepoInfo,
   RepoInfo,
 } from "../../shared/repo-detector.js";
-import { escapeShellArg } from "../../shared/shell-utils.js";
-import { withRetry } from "../../shared/retry-utils.js";
+import { ghApiCall, type HttpMethod } from "../gh-api-utils.js";
 import type { GitHubRepoSettings } from "../../config/index.js";
 import type {
   IRepoSettingsStrategy,
@@ -267,43 +266,17 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   }
 
   private async ghApi(
-    method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
+    method: HttpMethod,
     endpoint: string,
     payload?: unknown,
     options?: RepoSettingsStrategyOptions
   ): Promise<string> {
-    const args: string[] = ["gh", "api"];
-
-    if (method !== "GET") {
-      args.push("-X", method);
-    }
-
-    if (options?.host && options.host !== "github.com") {
-      args.push("--hostname", escapeShellArg(options.host));
-    }
-
-    args.push(escapeShellArg(endpoint));
-
-    const baseCommand = args.join(" ");
-
-    const tokenPrefix = options?.token
-      ? `GH_TOKEN=${escapeShellArg(options.token)} `
-      : "";
-
-    if (
-      payload &&
-      (method === "POST" || method === "PUT" || method === "PATCH")
-    ) {
-      const payloadJson = JSON.stringify(payload);
-      const command = `echo ${escapeShellArg(payloadJson)} | ${tokenPrefix}${baseCommand} --input -`;
-      return await withRetry(() => this.executor.exec(command, process.cwd()), {
-        retries: this.retries,
-      });
-    }
-
-    const command = `${tokenPrefix}${baseCommand}`;
-    return await withRetry(() => this.executor.exec(command, process.cwd()), {
-      retries: this.retries,
-    });
+    return ghApiCall(
+      method,
+      endpoint,
+      { executor: this.executor, retries: this.retries },
+      options,
+      payload
+    );
   }
 }
