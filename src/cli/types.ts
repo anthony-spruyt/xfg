@@ -1,17 +1,11 @@
-import { RepoConfig } from "../config/index.js";
-import { RepoInfo } from "../shared/repo-detector.js";
 import type { IRepoLifecycleManager } from "../lifecycle/index.js";
 import {
   RepositoryProcessor,
-  type ProcessorResult,
-  type ProcessorOptions,
   type IRepositoryProcessor,
 } from "../sync/index.js";
 import {
   RulesetProcessor,
   type IRulesetProcessor,
-  RulesetProcessorOptions,
-  RulesetProcessorResult,
 } from "../settings/rulesets/processor.js";
 import {
   RepoSettingsProcessor,
