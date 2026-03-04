@@ -64,7 +64,7 @@ export interface IPRStrategy {
    * Check if a PR already exists for the given branch
    * @returns PR URL if exists, null otherwise
    */
-  checkExistingPR(options: PRStrategyOptions): Promise<string | null>;
+  checkExistingPR(options: CloseExistingPROptions): Promise<string | null>;
 
   /**
    * Close an existing PR and delete its branch.

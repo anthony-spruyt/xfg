@@ -20,7 +20,9 @@ export abstract class BasePRStrategy implements IPRStrategy {
     this.executor = executor ?? defaultExecutor;
   }
 
-  abstract checkExistingPR(options: PRStrategyOptions): Promise<string | null>;
+  abstract checkExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<string | null>;
   abstract closeExistingPR(options: CloseExistingPROptions): Promise<boolean>;
   abstract create(options: PRStrategyOptions): Promise<PRResult>;
   abstract merge(options: MergeOptions): Promise<MergeResult>;

@@ -34,7 +34,9 @@ export class AzurePRStrategy extends BasePRStrategy {
     return `https://dev.azure.com/${encodeURIComponent(repoInfo.organization)}/${encodeURIComponent(repoInfo.project)}/_git/${encodeURIComponent(repoInfo.repo)}/pullrequest/${prId.trim()}`;
   }
 
-  async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {
+  async checkExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<string | null> {
     const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
 
     if (!isAzureDevOpsRepo(repoInfo)) {
@@ -84,8 +86,6 @@ export class AzurePRStrategy extends BasePRStrategy {
       baseBranch,
       workDir,
       retries,
-      title: "", // Not used for check
-      body: "", // Not used for check
     });
 
     if (!existingUrl) {

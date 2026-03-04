@@ -38,7 +38,9 @@ function buildPRUrlRegex(host: string): RegExp {
 }
 
 export class GitHubPRStrategy extends BasePRStrategy {
-  async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {
+  async checkExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<string | null> {
     const { repoInfo, branchName, workDir, retries = 3, token } = options;
 
     if (!isGitHubRepo(repoInfo)) {
@@ -95,8 +97,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
       baseBranch,
       workDir,
       retries,
-      title: "", // Not used for check
-      body: "", // Not used for check
       token,
     });
 

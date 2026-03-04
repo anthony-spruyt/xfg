@@ -82,7 +82,9 @@ export class GitLabPRStrategy extends BasePRStrategy {
     }
   }
 
-  async checkExistingPR(options: PRStrategyOptions): Promise<string | null> {
+  async checkExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<string | null> {
     const { repoInfo, branchName, workDir, retries = 3 } = options;
 
     if (!isGitLabRepo(repoInfo)) {
@@ -142,8 +144,6 @@ export class GitLabPRStrategy extends BasePRStrategy {
       baseBranch,
       workDir,
       retries,
-      title: "", // Not used for check
-      body: "", // Not used for check
     });
 
     if (!existingUrl) {
