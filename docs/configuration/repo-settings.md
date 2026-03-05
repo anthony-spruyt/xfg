@@ -1,6 +1,6 @@
 # Repository Settings
 
-xfg can manage GitHub repository settings declaratively using the `settings` command. Configure features, merge options, and security settings in your config file, and xfg will update repositories to match your desired state.
+xfg can manage GitHub repository settings declaratively using the `sync` command. Configure features, merge options, and security settings in your config file, and xfg will update repositories to match your desired state.
 
 !!! note "GitHub-Only Feature"
     Repository settings are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg sync`.
