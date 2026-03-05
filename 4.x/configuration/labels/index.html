@@ -2227,7 +2227,7 @@
 
 
 <h1 id="github-labels">GitHub Labels<a class="headerlink" href="#github-labels" title="Permanent link">&para;</a></h1>
-<p>xfg can manage GitHub labels declaratively using the <code>settings</code> command. Define labels in your config file, and xfg will create, update, rename, or delete them to match your desired state.</p>
+<p>xfg can manage GitHub labels declaratively using the <code>sync</code> command. Define labels in your config file, and xfg will create, update, rename, or delete them to match your desired state.</p>
 <div class="admonition note">
 <p class="admonition-title">GitHub-Only Feature</p>
 <p>Labels are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running <code>xfg sync</code>.</p>
@@ -2350,7 +2350,7 @@
 </span><span id="__span-6-31"><a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a><span class="w">        </span><span class="nt">enhancement</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">       </span><span class="c1"># Opt out of a single root label</span>
 </span></code></pre></div>
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
-<p>The <code>settings</code> command:</p>
+<p>The <code>xfg sync</code> command:</p>
 <ol>
 <li>Fetches current labels from the GitHub API</li>
 <li>Compares them against the desired state in config (case-insensitive matching)</li>

@@ -2521,7 +2521,7 @@
 
 
 <h1 id="github-rulesets">GitHub Rulesets<a class="headerlink" href="#github-rulesets" title="Permanent link">&para;</a></h1>
-<p>xfg can manage GitHub Rulesets declaratively using the <code>settings</code> command. Define rulesets in your config file, and xfg will create, update, or delete them to match your desired state.</p>
+<p>xfg can manage GitHub Rulesets declaratively using the <code>sync</code> command. Define rulesets in your config file, and xfg will create, update, or delete them to match your desired state.</p>
 <div class="admonition note">
 <p class="admonition-title">GitHub-Only Feature</p>
 <p>Rulesets are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running <code>xfg sync</code>.</p>
@@ -2890,14 +2890,13 @@
 </span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a>[2/2] ✓ your-org/repo2: [DRY RUN] 0 created, 1 updated, 0 deleted
 </span></code></pre></div>
 <h2 id="combining-with-file-sync">Combining with File Sync<a class="headerlink" href="#combining-with-file-sync" title="Permanent link">&para;</a></h2>
-<p>The <code>sync</code> and <code>settings</code> commands are independent. Run them together or separately:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># Sync files and apply rulesets</span>
-</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>xfg<span class="w"> </span>sync<span class="w"> </span>-c<span class="w"> </span>config.yaml<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>xfg<span class="w"> </span>sync<span class="w"> </span>-c<span class="w"> </span>config.yaml
+<p>File sync and settings are handled together by a single command:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># Sync files and apply rulesets in one run</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>xfg<span class="w"> </span>sync<span class="w"> </span>-c<span class="w"> </span>config.yaml
 </span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
-</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="c1"># Or run separately</span>
-</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>xfg<span class="w"> </span>sync<span class="w"> </span>-c<span class="w"> </span>config.yaml
-</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>xfg<span class="w"> </span>sync<span class="w"> </span>-c<span class="w"> </span>config.yaml<span class="w"> </span>--dry-run<span class="w">  </span><span class="c1"># Preview first</span>
-</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>xfg<span class="w"> </span>sync<span class="w"> </span>-c<span class="w"> </span>config.yaml<span class="w">            </span><span class="c1"># Apply</span>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="c1"># Preview first, then apply</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>xfg<span class="w"> </span>sync<span class="w"> </span>-c<span class="w"> </span>config.yaml<span class="w"> </span>--dry-run<span class="w">  </span><span class="c1"># Preview first</span>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>xfg<span class="w"> </span>sync<span class="w"> </span>-c<span class="w"> </span>config.yaml<span class="w">            </span><span class="c1"># Apply</span>
 </span></code></pre></div>
 <h2 id="complete-example">Complete Example<a class="headerlink" href="#complete-example" title="Permanent link">&para;</a></h2>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">org-standards</span>
