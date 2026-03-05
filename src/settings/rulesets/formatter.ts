@@ -11,10 +11,7 @@ import {
   isObject,
   type DiffAction,
   type PropertyDiff,
-} from "./index.js";
-
-export type { PropertyDiff } from "./index.js";
-export { computePropertyDiffs } from "./index.js";
+} from "./diff-algorithm.js";
 
 export interface RulesetPlanEntry {
   name: string;
@@ -350,7 +347,6 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
   deletes = deleteChanges.length;
   unchanged = unchangedChanges.length;
 
-  // Format creates
   if (createChanges.length > 0) {
     lines.push(chalk.bold("  Create:"));
     for (const change of createChanges) {
@@ -371,7 +367,6 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     }
   }
 
-  // Format updates
   if (updateChanges.length > 0) {
     lines.push(chalk.bold("  Update:"));
     for (const change of updateChanges) {
@@ -405,7 +400,6 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     }
   }
 
-  // Format deletes
   if (deleteChanges.length > 0) {
     lines.push(chalk.bold("  Delete:"));
     for (const change of deleteChanges) {

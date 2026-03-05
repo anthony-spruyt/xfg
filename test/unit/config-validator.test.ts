@@ -5,6 +5,7 @@ import {
   validateForSync,
   hasActionableSettings,
 } from "../../src/config/validator.js";
+import { ValidationError } from "../../src/config/errors.js";
 import type {
   RawConfig,
   RawFileConfig,
@@ -24,6 +25,23 @@ describe("validateRawConfig", () => {
   });
 
   describe("id validation", () => {
+    test("throws ValidationError (not bare Error) on invalid config", () => {
+      const config = {
+        files: { "config.json": { content: {} } },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      } as unknown as RawConfig;
+
+      assert.throws(
+        () => validateRawConfig(config),
+        (err: unknown) => {
+          assert.ok(err instanceof ValidationError, "Expected ValidationError");
+          assert.ok(err instanceof Error, "ValidationError extends Error");
+          assert.equal(err.name, "ValidationError");
+          return true;
+        }
+      );
+    });
+
     test("throws when id is missing", () => {
       const config = {
         files: { "config.json": { content: {} } },

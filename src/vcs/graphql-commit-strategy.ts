@@ -7,9 +7,11 @@ import { isGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
 import {
   withRetry,
+  CORE_PERMANENT_ERROR_PATTERNS,
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { parseApiJson } from "../shared/gh-api-utils.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
@@ -65,20 +67,11 @@ const OID_MISMATCH_PATTERNS: RegExp[] = [
 export class GraphQLCommitStrategy implements ICommitStrategy {
   /**
    * GraphQL permanent error patterns for ref operations.
-   * Differs from DEFAULT_PERMANENT_ERROR_PATTERNS which has
-   * git-CLI-specific patterns (/remote\s*rejected/i) that don't
-   * apply to GraphQL responses.
+   * Extends CORE_PERMANENT_ERROR_PATTERNS with GraphQL-specific patterns
+   * (omits git-CLI patterns like /remote\s*rejected/i).
    */
   private static readonly GRAPHQL_PERMANENT_ERROR_PATTERNS: RegExp[] = [
-    /not\s*found/i,
-    /unauthorized/i,
-    /permission\s*denied/i,
-    /not\s*accessible\s*by\s*integration/i,
-    /bad\s*credentials/i,
-    /invalid\s*(token|credentials)/i,
-    /401\b/,
-    /403\b/,
-    /does\s*not\s*exist/i,
+    ...CORE_PERMANENT_ERROR_PATTERNS,
     /could\s*not\s*resolve/i,
     /already\s*exists/i,
   ];
@@ -107,23 +100,20 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       token,
     } = options;
 
-    // Validate this is a GitHub repo
     if (!isGitHubRepo(repoInfo)) {
       throw new Error(
         `GraphQL commit strategy requires GitHub repositories. Got: ${repoInfo.type}`
       );
     }
 
-    // Validate branch name is safe for shell commands
     validateSafeBranchName(branchName);
 
     const githubInfo = repoInfo as GitHubRepoInfo;
 
-    // Separate additions from deletions
     const additions = fileChanges.filter((fc) => fc.content !== null);
     const deletions = fileChanges.filter((fc) => fc.content === null);
 
-    // Calculate payload size (base64 adds ~33% overhead)
+    // Base64 encoding adds ~33% overhead to raw content size
     const totalSize = additions.reduce((sum, fc) => {
       const base64Size = Math.ceil((fc.content!.length * 4) / 3);
       return sum + base64Size;
@@ -136,12 +126,10 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       );
     }
 
-    // Get networkOps for authenticated network operations
     const networkOps = options.networkOps;
 
-    // Ensure the branch exists on remote and is up-to-date with local HEAD
-    // createCommitOnBranch requires the branch to already exist
-    // For PR branches (force=true), we force-update to ensure fresh start from main
+    // createCommitOnBranch requires the branch to already exist on remote.
+    // For PR branches (force=true), force-update ensures a fresh start from main.
     await this.ensureBranchExistsOnRemote(
       branchName,
       workDir,
@@ -150,12 +138,11 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       token
     );
 
-    // Retry loop for expectedHeadOid mismatch
+    // Outer retry loop for expectedHeadOid mismatch — each iteration re-fetches
+    // the remote HEAD so the next mutation uses a fresh OID.
     let lastError: Error | null = null;
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        // Fetch from remote to ensure we have the latest HEAD
-        // This is critical for expectedHeadOid to match
         const safeBranch = escapeShellArg(branchName);
         if (networkOps) {
           await networkOps.fetchBranch(branchName);
@@ -172,7 +159,6 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
           workDir
         );
 
-        // Build and execute the GraphQL mutation
         const result = await this.executeGraphQLMutation(
           githubInfo,
           branchName,
@@ -189,18 +175,14 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
         lastError =
           error instanceof Error ? error : new Error(toErrorMessage(error));
 
-        // Check if this is an expectedHeadOid mismatch error (retryable)
         if (this.isHeadOidMismatchError(lastError) && attempt < retries) {
-          // Retry - the next iteration will fetch and get fresh HEAD SHA
           continue;
         }
 
-        // For other errors, throw immediately
         throw lastError;
       }
     }
 
-    // Should not reach here, but just in case
     throw lastError ?? new Error("Unexpected error in GraphQL commit");
   }
 
@@ -219,23 +201,18 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
   ): Promise<CommitResult> {
     const repositoryNameWithOwner = `${repoInfo.owner}/${repoInfo.repo}`;
 
-    // Build file additions with base64 encoding
     const fileAdditions = additions.map((fc) => ({
       path: fc.path,
       contents: Buffer.from(fc.content!).toString("base64"),
     }));
 
-    // Build file deletions (path only)
     const fileDeletions = deletions.map((fc) => ({
       path: fc.path,
     }));
 
-    // Build the mutation (minified to avoid shell escaping issues with newlines)
     const mutation =
       "mutation CreateCommit($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }";
 
-    // Build the input variables
-    // Note: GitHub API doesn't accept empty arrays, so only include fields when non-empty
     const fileChanges: {
       additions?: Array<{ path: string; contents: string }>;
       deletions?: Array<{ path: string }>;
@@ -261,23 +238,16 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       },
     };
 
-    // Build the GraphQL request body
     const requestBody = JSON.stringify({
       query: mutation,
       variables,
     });
 
-    // Build the gh api graphql command
-    // Use --input - to pass the JSON body via stdin (more reliable for complex nested JSON)
-    // Use --hostname for GitHub Enterprise
     const hostnameArg =
       repoInfo.host !== "github.com"
         ? `--hostname ${escapeShellArg(repoInfo.host)}`
         : "";
 
-    // Use token parameter for authentication when provided
-    // This ensures the GitHub App is used as the commit author, not github-actions[bot]
-    // Token is passed via env var to avoid shell injection
     const tokenEnv = token ? { GH_TOKEN: token } : undefined;
 
     const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
@@ -297,16 +267,23 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       throw this.sanitizeCommandError(error, repositoryNameWithOwner);
     }
 
-    // Parse the response
-    const parsed = JSON.parse(response);
+    const parsed = parseApiJson<Record<string, unknown>>(
+      response,
+      "GraphQL createCommitOnBranch response"
+    );
 
     if (parsed.errors) {
+      const errors = parsed.errors as Array<{ message: string }>;
       throw new Error(
-        `GraphQL error: ${parsed.errors.map((e: { message: string }) => e.message).join(", ")}`
+        `GraphQL error: ${errors.map((e) => e.message).join(", ")}`
       );
     }
 
-    const oid = parsed.data?.createCommitOnBranch?.commit?.oid;
+    const data = parsed.data as Record<string, unknown> | undefined;
+    const commit = (
+      data?.createCommitOnBranch as Record<string, unknown> | undefined
+    )?.commit as Record<string, unknown> | undefined;
+    const oid = commit?.oid as string | undefined;
     if (!oid) {
       throw new Error("GraphQL response missing commit OID");
     }
@@ -388,7 +365,6 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
         throw error;
       }
     }
-    // refId exists + !force: no-op (branch already exists)
   }
 
   /**
@@ -469,10 +445,13 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       );
     }
 
-    const parsed = JSON.parse(response);
+    const parsed = parseApiJson<{
+      data?: Record<string, unknown>;
+      errors?: Array<{ message: string }>;
+    }>(response, "GraphQL API response");
     if (parsed.errors) {
       throw new Error(
-        `GraphQL error: ${parsed.errors.map((e: { message: string }) => e.message).join(", ")}`
+        `GraphQL error: ${parsed.errors.map((e) => e.message).join(", ")}`
       );
     }
 

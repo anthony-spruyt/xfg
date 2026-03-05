@@ -160,6 +160,10 @@ export function createMockGitOps(
       }
       return config.fileExists ?? false;
     },
+
+    async getDefaultBranchLocal(): Promise<{ branch: string; method: string }> {
+      return { branch: "main", method: "mock fallback" };
+    },
   };
 
   return {

@@ -1,6 +1,6 @@
 // src/output/sync-report.ts
-import { appendFileSync } from "node:fs";
 import chalk from "chalk";
+import { writeGitHubStepSummary } from "./github-summary.js";
 
 export interface SyncReport {
   repos: RepoFileChanges[];
@@ -134,9 +134,6 @@ export function writeSyncReportSummary(
   report: SyncReport,
   dryRun: boolean
 ): void {
-  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
-  if (!summaryPath) return;
-
   const markdown = formatSyncReportMarkdown(report, dryRun);
-  appendFileSync(summaryPath, "\n" + markdown + "\n");
+  writeGitHubStepSummary(markdown);
 }

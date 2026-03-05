@@ -22,3 +22,7 @@ https://x-access-token/
 
 # Trivy schema URL (repo was emptied, schema no longer accessible)
 https://raw.githubusercontent.com/aquasecurity/trivy/main/schema/trivy-config.json
+
+# Codecov badge and dashboard (intermittent 502s)
+https://codecov.io/gh/anthony-spruyt/xfg
+https://codecov.io/gh/anthony-spruyt/xfg/graph/badge.svg

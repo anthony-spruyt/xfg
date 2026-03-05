@@ -6,6 +6,7 @@ import { normalizeConfig as normalizeConfigInternal } from "./normalizer.js";
 import { resolveFileReferencesInConfig } from "./file-reference-resolver.js";
 import type { RawConfig, Config } from "./types.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { ValidationError } from "./errors.js";
 
 export { normalizeConfigInternal as normalizeConfig };
 
@@ -22,7 +23,9 @@ export function loadRawConfig(filePath: string): RawConfig {
     rawConfig = parse(content) as RawConfig;
   } catch (error) {
     const message = toErrorMessage(error);
-    throw new Error(`Failed to parse YAML config at ${filePath}: ${message}`);
+    throw new ValidationError(
+      `Failed to parse YAML config at ${filePath}: ${message}`
+    );
   }
 
   // Resolve file references before validation so content type checking works

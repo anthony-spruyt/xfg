@@ -1,4 +1,4 @@
-import { test, describe, beforeEach } from "node:test";
+import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import type { RepoConfig } from "../../src/config/index.js";
 import type {
@@ -6,77 +6,19 @@ import type {
   AzureDevOpsRepoInfo,
 } from "../../src/shared/repo-detector.js";
 import {
-  BaseSettingsProcessor,
+  withGitHubGuards,
   type BaseProcessorOptions,
   type BaseProcessorResult,
   formatChangeSummary,
 } from "../../src/settings/base-processor.js";
 
 // =============================================================================
-// Concrete test implementation
-// =============================================================================
-
-interface TestProcessorResult extends BaseProcessorResult {
-  data?: string;
-}
-
-class TestProcessor extends BaseSettingsProcessor<
-  BaseProcessorOptions,
-  TestProcessorResult
-> {
-  hasSettingsReturn = true;
-  processSettingsResult: TestProcessorResult = {
-    success: true,
-    repoName: "test",
-    message: "OK",
-    data: "processed",
-  };
-  processSettingsError: Error | null = null;
-  processSettingsCalls: Array<{
-    githubRepo: GitHubRepoInfo;
-    effectiveToken: string | undefined;
-  }> = [];
-
-  protected hasDesiredSettings(_repoConfig: RepoConfig): boolean {
-    return this.hasSettingsReturn;
-  }
-
-  protected getEmptySettingsMessage(): string {
-    return "No test settings configured";
-  }
-
-  protected createSkipResult(
-    repoName: string,
-    message: string
-  ): TestProcessorResult {
-    return { success: true, repoName, message, skipped: true };
-  }
-
-  protected createErrorResult(
-    repoName: string,
-    message: string
-  ): TestProcessorResult {
-    return { success: false, repoName, message };
-  }
-
-  protected async processSettings(
-    githubRepo: GitHubRepoInfo,
-    _repoConfig: RepoConfig,
-    _options: BaseProcessorOptions,
-    effectiveToken: string | undefined,
-    repoName: string
-  ): Promise<TestProcessorResult> {
-    this.processSettingsCalls.push({ githubRepo, effectiveToken });
-    if (this.processSettingsError) {
-      throw this.processSettingsError;
-    }
-    return { ...this.processSettingsResult, repoName };
-  }
-}
-
-// =============================================================================
 // Test fixtures
 // =============================================================================
+
+interface TestResult extends BaseProcessorResult {
+  data?: string;
+}
 
 const mockGitHubRepo: GitHubRepoInfo = {
   type: "github",
@@ -101,175 +43,139 @@ const baseRepoConfig: RepoConfig = {
   settings: {},
 };
 
+function defaultGuards(overrides?: {
+  hasSettings?: boolean;
+  result?: TestResult;
+  error?: Error;
+}) {
+  const calls: Array<{
+    githubRepo: GitHubRepoInfo;
+    effectiveToken: string | undefined;
+  }> = [];
+
+  const guards = {
+    hasDesiredSettings: () => overrides?.hasSettings ?? true,
+    emptySettingsMessage: "No test settings configured",
+    processSettings: async (
+      githubRepo: GitHubRepoInfo,
+      _rc: RepoConfig,
+      _opts: BaseProcessorOptions,
+      effectiveToken: string | undefined,
+      repoName: string
+    ): Promise<TestResult> => {
+      calls.push({ githubRepo, effectiveToken });
+      if (overrides?.error) throw overrides.error;
+      return (
+        overrides?.result ?? {
+          success: true,
+          repoName,
+          message: "OK",
+          data: "processed",
+        }
+      );
+    },
+  };
+
+  return { guards, calls };
+}
+
 // =============================================================================
 // Tests
 // =============================================================================
 
-describe("BaseSettingsProcessor", () => {
-  let processor: TestProcessor;
-
-  beforeEach(() => {
-    processor = new TestProcessor();
-  });
-
+describe("withGitHubGuards", () => {
   describe("GitHub-only gating", () => {
     test("skips non-GitHub repos", async () => {
-      const result = await processor.process(baseRepoConfig, mockAzureRepo, {});
+      const { guards, calls } = defaultGuards();
+
+      const result = await withGitHubGuards(
+        baseRepoConfig,
+        mockAzureRepo,
+        {},
+        guards
+      );
 
       assert.equal(result.success, true);
       assert.equal(result.skipped, true);
       assert.ok(result.message.includes("not a GitHub repository"));
-      assert.equal(processor.processSettingsCalls.length, 0);
+      assert.equal(calls.length, 0);
     });
 
     test("processes GitHub repos", async () => {
-      const result = await processor.process(
+      const { guards, calls } = defaultGuards();
+
+      const result = await withGitHubGuards(
         baseRepoConfig,
         mockGitHubRepo,
-        {}
+        {},
+        guards
       );
 
       assert.equal(result.success, true);
       assert.equal(result.skipped, undefined);
-      assert.equal(processor.processSettingsCalls.length, 1);
+      assert.equal(calls.length, 1);
     });
   });
 
   describe("empty settings check", () => {
     test("skips when hasDesiredSettings returns false", async () => {
-      processor.hasSettingsReturn = false;
+      const { guards, calls } = defaultGuards({ hasSettings: false });
 
-      const result = await processor.process(
+      const result = await withGitHubGuards(
         baseRepoConfig,
         mockGitHubRepo,
-        {}
+        {},
+        guards
       );
 
       assert.equal(result.success, true);
       assert.equal(result.skipped, true);
       assert.equal(result.message, "No test settings configured");
-      assert.equal(processor.processSettingsCalls.length, 0);
+      assert.equal(calls.length, 0);
     });
   });
 
   describe("token resolution", () => {
     test("passes provided token to processSettings", async () => {
-      const result = await processor.process(baseRepoConfig, mockGitHubRepo, {
-        token: "provided-token",
-      });
+      const { guards, calls } = defaultGuards();
 
-      assert.equal(result.success, true);
-      assert.equal(
-        processor.processSettingsCalls[0].effectiveToken,
-        "provided-token"
-      );
-    });
-
-    test("falls back to undefined when no token provided and no token manager", async () => {
-      const result = await processor.process(
+      const result = await withGitHubGuards(
         baseRepoConfig,
         mockGitHubRepo,
-        {}
+        { token: "provided-token" },
+        guards
       );
 
       assert.equal(result.success, true);
-      assert.equal(processor.processSettingsCalls[0].effectiveToken, undefined);
+      assert.equal(calls[0].effectiveToken, "provided-token");
     });
 
-    test("uses App token when token manager is available", async () => {
-      const origAppId = process.env.XFG_GITHUB_APP_ID;
-      const origPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
-      process.env.XFG_GITHUB_APP_ID = "12345";
-      process.env.XFG_GITHUB_APP_PRIVATE_KEY = "fake-key";
+    test("falls back to undefined when no token provided", async () => {
+      const { guards, calls } = defaultGuards();
 
-      const freshProcessor = new TestProcessor();
-
-      // Replace tokenManager with mock
-      const mockTokenManager = {
-        async getTokenForRepo() {
-          return "ghs_mock_token";
-        },
-      };
-      (
-        freshProcessor as unknown as { tokenManager: typeof mockTokenManager }
-      ).tokenManager = mockTokenManager;
-
-      const result = await freshProcessor.process(
+      const result = await withGitHubGuards(
         baseRepoConfig,
         mockGitHubRepo,
-        {}
+        {},
+        guards
       );
 
       assert.equal(result.success, true);
-      assert.equal(
-        freshProcessor.processSettingsCalls[0].effectiveToken,
-        "ghs_mock_token"
-      );
-
-      // Restore env
-      if (origAppId !== undefined) {
-        process.env.XFG_GITHUB_APP_ID = origAppId;
-      } else {
-        delete process.env.XFG_GITHUB_APP_ID;
-      }
-      if (origPrivateKey !== undefined) {
-        process.env.XFG_GITHUB_APP_PRIVATE_KEY = origPrivateKey;
-      } else {
-        delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
-      }
-    });
-
-    test("falls back gracefully when token manager throws", async () => {
-      const origAppId = process.env.XFG_GITHUB_APP_ID;
-      const origPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
-      process.env.XFG_GITHUB_APP_ID = "12345";
-      process.env.XFG_GITHUB_APP_PRIVATE_KEY = "fake-key";
-
-      const freshProcessor = new TestProcessor();
-
-      const mockTokenManager = {
-        async getTokenForRepo() {
-          throw new Error("Token generation failed");
-        },
-      };
-      (
-        freshProcessor as unknown as { tokenManager: typeof mockTokenManager }
-      ).tokenManager = mockTokenManager;
-
-      const result = await freshProcessor.process(
-        baseRepoConfig,
-        mockGitHubRepo,
-        {}
-      );
-
-      assert.equal(result.success, true);
-      assert.equal(
-        freshProcessor.processSettingsCalls[0].effectiveToken,
-        undefined
-      );
-
-      // Restore env
-      if (origAppId !== undefined) {
-        process.env.XFG_GITHUB_APP_ID = origAppId;
-      } else {
-        delete process.env.XFG_GITHUB_APP_ID;
-      }
-      if (origPrivateKey !== undefined) {
-        process.env.XFG_GITHUB_APP_PRIVATE_KEY = origPrivateKey;
-      } else {
-        delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
-      }
+      assert.equal(calls[0].effectiveToken, undefined);
     });
   });
 
   describe("error wrapping", () => {
     test("catches Error objects and returns failure result", async () => {
-      processor.processSettingsError = new Error("API rate limit exceeded");
+      const { guards } = defaultGuards({
+        error: new Error("API rate limit exceeded"),
+      });
 
-      const result = await processor.process(
+      const result = await withGitHubGuards(
         baseRepoConfig,
         mockGitHubRepo,
-        {}
+        {},
+        guards
       );
 
       assert.equal(result.success, false);
@@ -277,48 +183,51 @@ describe("BaseSettingsProcessor", () => {
     });
 
     test("catches non-Error thrown values and returns failure result", async () => {
-      processor.processSettingsError = "string error" as unknown as Error;
+      const { guards } = defaultGuards({
+        error: "string error" as unknown as Error,
+      });
 
-      const result = await processor.process(
+      const result = await withGitHubGuards(
         baseRepoConfig,
         mockGitHubRepo,
-        {}
+        {},
+        guards
       );
 
       assert.equal(result.success, false);
       assert.ok(result.message.includes("string error"));
     });
   });
+});
 
-  describe("formatChangeSummary", () => {
-    test("formats counts correctly", () => {
-      const summary = formatChangeSummary({
-        create: 2,
-        update: 1,
-        delete: 3,
-        unchanged: 0,
-      });
-      assert.equal(summary, "2 created, 1 updated, 3 deleted");
+describe("formatChangeSummary", () => {
+  test("formats counts correctly", () => {
+    const summary = formatChangeSummary({
+      create: 2,
+      update: 1,
+      delete: 3,
+      unchanged: 0,
     });
+    assert.equal(summary, "2 created, 1 updated, 3 deleted");
+  });
 
-    test("returns 'no changes' when all counts are zero", () => {
-      const summary = formatChangeSummary({
-        create: 0,
-        update: 0,
-        delete: 0,
-        unchanged: 0,
-      });
-      assert.equal(summary, "no changes");
+  test("returns 'no changes' when all counts are zero", () => {
+    const summary = formatChangeSummary({
+      create: 0,
+      update: 0,
+      delete: 0,
+      unchanged: 0,
     });
+    assert.equal(summary, "no changes");
+  });
 
-    test("includes unchanged count", () => {
-      const summary = formatChangeSummary({
-        create: 0,
-        update: 0,
-        delete: 0,
-        unchanged: 5,
-      });
-      assert.equal(summary, "5 unchanged");
+  test("includes unchanged count", () => {
+    const summary = formatChangeSummary({
+      create: 0,
+      update: 0,
+      delete: 0,
+      unchanged: 5,
     });
+    assert.equal(summary, "5 unchanged");
   });
 });

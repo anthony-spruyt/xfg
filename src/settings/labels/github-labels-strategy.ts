@@ -2,14 +2,10 @@ import {
   ICommandExecutor,
   defaultExecutor,
 } from "../../shared/command-executor.js";
+import { assertGitHubRepo, RepoInfo } from "../../shared/repo-detector.js";
 import {
-  isGitHubRepo,
-  GitHubRepoInfo,
-  RepoInfo,
-} from "../../shared/repo-detector.js";
-import {
-  ghApiCall,
-  type HttpMethod,
+  GhApiClient,
+  parseApiJson,
   type GhApiOptions,
 } from "../../shared/gh-api-utils.js";
 import type { ILabelsStrategy, GitHubLabel } from "./types.js";
@@ -26,15 +22,16 @@ interface GitHubLabelsStrategyOptions {
  * escapeShellArg for input sanitization, matching the rulesets strategy pattern.
  */
 export class GitHubLabelsStrategy implements ILabelsStrategy {
-  private executor: ICommandExecutor;
-  private retries: number;
+  private api: GhApiClient;
 
   constructor(
     executor?: ICommandExecutor,
     options?: GitHubLabelsStrategyOptions
   ) {
-    this.executor = executor ?? defaultExecutor;
-    this.retries = options?.retries ?? 3;
+    this.api = new GhApiClient(
+      executor ?? defaultExecutor,
+      options?.retries ?? 3
+    );
   }
 
   /**
@@ -45,13 +42,18 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     repoInfo: RepoInfo,
     options?: GhApiOptions
   ): Promise<GitHubLabel[]> {
-    this.validateGitHub(repoInfo);
-    const github = repoInfo as GitHubRepoInfo;
+    assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
-    const endpoint = `/repos/${github.owner}/${github.repo}/labels`;
-    const result = await this.ghApi("GET", endpoint, undefined, options, true);
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels`;
+    const result = await this.api.call(
+      "GET",
+      endpoint,
+      undefined,
+      options,
+      true
+    );
 
-    return JSON.parse(result) as GitHubLabel[];
+    return parseApiJson<GitHubLabel[]>(result, "labels response");
   }
 
   /**
@@ -62,11 +64,10 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     label: { name: string; color: string; description?: string },
     options?: GhApiOptions
   ): Promise<void> {
-    this.validateGitHub(repoInfo);
-    const github = repoInfo as GitHubRepoInfo;
+    assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
-    const endpoint = `/repos/${github.owner}/${github.repo}/labels`;
-    await this.ghApi("POST", endpoint, label, options);
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels`;
+    await this.api.call("POST", endpoint, label, options);
   }
 
   /**
@@ -79,11 +80,10 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     label: { new_name?: string; color?: string; description?: string },
     options?: GhApiOptions
   ): Promise<void> {
-    this.validateGitHub(repoInfo);
-    const github = repoInfo as GitHubRepoInfo;
+    assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
-    const endpoint = `/repos/${github.owner}/${github.repo}/labels/${encodeURIComponent(currentName)}`;
-    await this.ghApi("PATCH", endpoint, label, options);
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels/${encodeURIComponent(currentName)}`;
+    await this.api.call("PATCH", endpoint, label, options);
   }
 
   /**
@@ -95,37 +95,9 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     name: string,
     options?: GhApiOptions
   ): Promise<void> {
-    this.validateGitHub(repoInfo);
-    const github = repoInfo as GitHubRepoInfo;
+    assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
-    const endpoint = `/repos/${github.owner}/${github.repo}/labels/${encodeURIComponent(name)}`;
-    await this.ghApi("DELETE", endpoint, undefined, options);
-  }
-
-  /**
-   * Validates that the repo is a GitHub repository.
-   */
-  private validateGitHub(repoInfo: RepoInfo): void {
-    if (!isGitHubRepo(repoInfo)) {
-      throw new Error(
-        `GitHub Labels strategy requires GitHub repositories. Got: ${repoInfo.type}`
-      );
-    }
-  }
-
-  private async ghApi(
-    method: HttpMethod,
-    endpoint: string,
-    payload?: unknown,
-    options?: GhApiOptions,
-    paginate?: boolean
-  ): Promise<string> {
-    return ghApiCall(method, endpoint, {
-      executor: this.executor,
-      retries: this.retries,
-      apiOpts: options,
-      payload,
-      paginate,
-    });
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels/${encodeURIComponent(name)}`;
+    await this.api.call("DELETE", endpoint, undefined, options);
   }
 }

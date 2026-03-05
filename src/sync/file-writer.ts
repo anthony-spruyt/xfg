@@ -16,7 +16,6 @@ import type {
   FileWriteAllResult,
   FileWriteResult,
 } from "./types.js";
-import { hasGitHubAppCredentials } from "../vcs/commit-strategy-selector.js";
 
 /**
  * Determines if a file should be marked as executable.
@@ -55,7 +54,6 @@ export class FileWriter implements IFileWriter {
     const fileChanges = new Map<string, FileWriteResult>();
     const diffStats = createDiffStats();
 
-    // Step 1: Process each file
     for (const file of files) {
       const filePath = join(workDir, file.fileName);
       const fileExistsLocal = existsSync(filePath);
@@ -136,7 +134,6 @@ export class FileWriter implements IFileWriter {
       }
     }
 
-    // Step 2: Set executable permissions (skip skipped files)
     for (const file of files) {
       const tracked = fileChanges.get(file.fileName);
       if (tracked?.action === "skip") {
@@ -144,7 +141,7 @@ export class FileWriter implements IFileWriter {
       }
 
       if (shouldBeExecutable(file)) {
-        if (tracked?.action === "create" && hasGitHubAppCredentials()) {
+        if (tracked?.action === "create" && ctx.isGraphQLCommitMode) {
           log.warn(
             `${file.fileName}: GitHub App commits cannot set executable mode on new files. ` +
               `The file will be created as non-executable (100644). ` +

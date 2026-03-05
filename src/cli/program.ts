@@ -6,12 +6,17 @@ import { MergeMode, MergeStrategy } from "../config/index.js";
 import { runSync } from "./sync-command.js";
 import type { SyncOptions } from "./sync-command.js";
 
-// Get version from package.json
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const packageJson = JSON.parse(
-  readFileSync(join(__dirname, "../..", "package.json"), "utf-8")
-) as { version: string };
+
+let packageJson: { version: string };
+try {
+  packageJson = JSON.parse(
+    readFileSync(join(__dirname, "../..", "package.json"), "utf-8")
+  ) as { version: string };
+} catch {
+  packageJson = { version: "0.0.0" };
+}
 
 // =============================================================================
 // Shared CLI Options

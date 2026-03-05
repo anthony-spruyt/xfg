@@ -51,6 +51,51 @@ export function isGitLabRepo(info: RepoInfo): info is GitLabRepoInfo {
 }
 
 /**
+ * Assert that a RepoInfo is a GitHub repository, narrowing the type.
+ * Use in GitHub-specific strategies to avoid duplicating validation logic.
+ */
+export function assertGitHubRepo(
+  repoInfo: RepoInfo,
+  context: string
+): asserts repoInfo is GitHubRepoInfo {
+  if (!isGitHubRepo(repoInfo)) {
+    throw new Error(
+      `${context} requires GitHub repositories. Got: ${repoInfo.type}`
+    );
+  }
+}
+
+/**
+ * Assert that a RepoInfo is an Azure DevOps repository, narrowing the type.
+ * Use in Azure-specific strategies to avoid duplicating validation logic.
+ */
+export function assertAzureDevOpsRepo(
+  repoInfo: RepoInfo,
+  context: string
+): asserts repoInfo is AzureDevOpsRepoInfo {
+  if (!isAzureDevOpsRepo(repoInfo)) {
+    throw new Error(
+      `${context} requires Azure DevOps repositories. Got: ${repoInfo.type}`
+    );
+  }
+}
+
+/**
+ * Assert that a RepoInfo is a GitLab repository, narrowing the type.
+ * Use in GitLab-specific strategies to avoid duplicating validation logic.
+ */
+export function assertGitLabRepo(
+  repoInfo: RepoInfo,
+  context: string
+): asserts repoInfo is GitLabRepoInfo {
+  if (!isGitLabRepo(repoInfo)) {
+    throw new Error(
+      `${context} requires GitLab repositories. Got: ${repoInfo.type}`
+    );
+  }
+}
+
+/**
  * Extract hostname from a git URL.
  */
 function extractHostFromUrl(gitUrl: string): string | null {

@@ -8,7 +8,7 @@ import {
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "../shared/retry-utils.js";
 import {
-  isGitHubRepo,
+  assertGitHubRepo,
   type RepoInfo,
   type GitHubRepoInfo,
 } from "../shared/repo-detector.js";
@@ -46,6 +46,14 @@ function isRepoNotFoundError(error: unknown): boolean {
  * Default timeout for waiting for fork readiness (60 seconds).
  */
 const FORK_READY_TIMEOUT_MS = 60_000;
+
+/**
+ * After repo creation, GitHub may return 404 due to eventual consistency.
+ * Exclude 404/not-found from permanent errors so withRetry retries them.
+ */
+const POST_CREATE_PERMANENT_PATTERNS = DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
+  (p) => !p.test("404 Not Found")
+);
 
 /**
  * Interval between fork readiness checks (2 seconds).
@@ -119,11 +127,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   }
 
   private assertGitHub(repoInfo: RepoInfo): asserts repoInfo is GitHubRepoInfo {
-    if (!isGitHubRepo(repoInfo)) {
-      throw new Error(
-        `GitHubLifecycleProvider requires GitHub repo, got: ${repoInfo.type}`
-      );
-    }
+    assertGitHubRepo(repoInfo, "GitHubLifecycleProvider");
   }
 
   /**
@@ -231,13 +235,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         apiPath,
       } = this.buildGhApiPrefix(repoInfo, token);
 
-      // After repo creation, GitHub may return 404 due to eventual consistency.
-      // Exclude 404/not-found from permanent errors so withRetry retries them.
-      const postCreatePermanentPatterns =
-        DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
-          (p) => !p.test("404 Not Found")
-        );
-
       // Detect the actual default branch name
       const actualBranch = (
         await withRetry(
@@ -249,7 +246,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
             ),
           {
             retries: this.retries,
-            permanentErrorPatterns: postCreatePermanentPatterns,
+            permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
           }
         )
       ).trim();
@@ -264,11 +261,9 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
         // Wait for the rename to propagate — GitHub's API may still report
         // the old default branch for a few seconds after the rename call.
-        await this.waitForDefaultBranch(
-          repoInfo,
-          settings.defaultBranch,
-          token
-        );
+        await this.waitForDefaultBranch(repoInfo, settings.defaultBranch, {
+          token,
+        });
       }
     }
 
@@ -322,12 +317,11 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     );
 
     // GitHub forks are async - wait for the fork to be ready for git operations
-    await this.waitForForkReady(
-      target,
-      this.forkReadyTimeoutMs,
-      this.forkPollIntervalMs,
-      token
-    );
+    await this.waitForForkReady(target, {
+      timeoutMs: this.forkReadyTimeoutMs,
+      pollMs: this.forkPollIntervalMs,
+      token,
+    });
 
     // Apply settings after fork (visibility, description, etc.)
     if (settings?.visibility || settings?.description) {
@@ -341,10 +335,11 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
    */
   private async waitForForkReady(
     repoInfo: GitHubRepoInfo,
-    timeoutMs: number = FORK_READY_TIMEOUT_MS,
-    intervalMs: number = FORK_POLL_INTERVAL_MS,
-    token?: string
+    options?: { timeoutMs?: number; pollMs?: number; token?: string }
   ): Promise<void> {
+    const timeoutMs = options?.timeoutMs ?? FORK_READY_TIMEOUT_MS;
+    const intervalMs = options?.pollMs ?? FORK_POLL_INTERVAL_MS;
+    const token = options?.token;
     const deadline = Date.now() + timeoutMs;
 
     while (Date.now() < deadline) {
@@ -354,9 +349,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           return;
         }
       } catch (error) {
-        logger.debug(
-          `Polling fork readiness: ${error instanceof Error ? error.message : String(error)}`
-        );
+        logger.debug(`Polling fork readiness: ${toErrorMessage(error)}`);
       }
       const remaining = deadline - Date.now();
       if (remaining <= 0) break;
@@ -425,8 +418,8 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         this.cwd
       );
     } catch (error) {
-      logger.info(
-        `Debug: remote remove origin skipped - ${toErrorMessage(error)}`
+      logger.debug(
+        `Cleanup: remote remove origin skipped - ${toErrorMessage(error)}`
       );
     }
 
@@ -453,7 +446,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         }
       }
     } catch (error) {
-      logger.info(`Debug: ref cleanup skipped - ${toErrorMessage(error)}`);
+      logger.debug(`Cleanup: ref cleanup skipped - ${toErrorMessage(error)}`);
     }
 
     // Rename default branch in mirror clone if requested.
@@ -570,13 +563,13 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   private async waitForDefaultBranch(
     repoInfo: GitHubRepoInfo,
     expectedBranch: string,
-    token?: string,
-    timeoutMs = 15000,
-    pollMs = 1000
+    options?: { timeoutMs?: number; pollMs?: number; token?: string }
   ): Promise<void> {
+    const timeoutMs = options?.timeoutMs ?? 15000;
+    const pollMs = options?.pollMs ?? 1000;
     const { tokenEnv, prefix, apiPath } = this.buildGhApiPrefix(
       repoInfo,
-      token
+      options?.token
     );
     const startTime = Date.now();
 
@@ -593,9 +586,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           return;
         }
       } catch (error) {
-        logger.debug(
-          `Polling default branch: ${error instanceof Error ? error.message : String(error)}`
-        );
+        logger.debug(`Polling default branch: ${toErrorMessage(error)}`);
       }
       await new Promise((resolve) => setTimeout(resolve, pollMs));
     }
@@ -617,12 +608,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       token
     );
 
-    // After repo creation, GitHub may return 404 due to eventual consistency.
-    // Exclude 404/not-found from permanent errors so withRetry retries them.
-    const postCreatePermanentPatterns = DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
-      (p) => !p.test("404 Not Found")
-    );
-
     // Get the SHA of the README.md created by --add-readme
     const fileInfo = await withRetry(
       () =>
@@ -633,7 +618,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         ),
       {
         retries: this.retries,
-        permanentErrorPatterns: postCreatePermanentPatterns,
+        permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
       }
     );
 
@@ -650,7 +635,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         ),
       {
         retries: this.retries,
-        permanentErrorPatterns: postCreatePermanentPatterns,
+        permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
       }
     );
   }

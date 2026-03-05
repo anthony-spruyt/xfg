@@ -1,7 +1,7 @@
 // src/output/unified-summary.ts
-import { appendFileSync } from "node:fs";
 import type { LifecycleReport, LifecycleAction } from "./lifecycle-report.js";
 import { hasLifecycleChanges } from "./lifecycle-report.js";
+import { writeGitHubStepSummary } from "./github-summary.js";
 import type { SyncReport, RepoFileChanges } from "./sync-report.js";
 import type { SettingsReport, RepoChanges } from "./settings-report.js";
 import {
@@ -283,11 +283,7 @@ export function formatUnifiedSummaryMarkdown(
 // =============================================================================
 
 export function writeUnifiedSummary(input: UnifiedSummaryInput): void {
-  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
-  if (!summaryPath) return;
-
   const markdown = formatUnifiedSummaryMarkdown(input);
   if (!markdown) return;
-
-  appendFileSync(summaryPath, "\n" + markdown + "\n");
+  writeGitHubStepSummary(markdown);
 }

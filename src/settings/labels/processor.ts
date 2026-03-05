@@ -6,22 +6,20 @@ import { formatLabelsPlan, type LabelsPlanResult } from "./formatter.js";
 import { labelConfigToPayload } from "./converter.js";
 import type { ILabelsStrategy } from "./types.js";
 import {
-  BaseSettingsProcessor,
+  withGitHubGuards,
   type BaseProcessorOptions,
   type BaseProcessorResult,
+  type ISettingsProcessor,
   type ChangeCounts,
   countActions,
   buildDryRunResult,
   buildApplyResult,
 } from "../base-processor.js";
 
-export interface ILabelsProcessor {
-  process(
-    repoConfig: RepoConfig,
-    repoInfo: RepoInfo,
-    options: LabelsProcessorOptions
-  ): Promise<LabelsProcessorResult>;
-}
+export type ILabelsProcessor = ISettingsProcessor<
+  LabelsProcessorOptions,
+  LabelsProcessorResult
+>;
 
 export interface LabelsProcessorOptions extends BaseProcessorOptions {
   noDelete?: boolean;
@@ -36,41 +34,28 @@ export interface LabelsProcessorResult extends BaseProcessorResult {
  * Processes label configuration for a repository.
  * Handles create/update/delete operations via GitHub Labels API.
  */
-export class LabelsProcessor
-  extends BaseSettingsProcessor<LabelsProcessorOptions, LabelsProcessorResult>
-  implements ILabelsProcessor
-{
+export class LabelsProcessor implements ILabelsProcessor {
   private readonly strategy: ILabelsStrategy;
 
   constructor(strategy?: ILabelsStrategy) {
-    super();
     this.strategy = strategy ?? new GitHubLabelsStrategy();
   }
 
-  protected hasDesiredSettings(repoConfig: RepoConfig): boolean {
-    const desiredLabels = repoConfig.settings?.labels ?? {};
-    return Object.keys(desiredLabels).length > 0;
+  async process(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: LabelsProcessorOptions
+  ): Promise<LabelsProcessorResult> {
+    return withGitHubGuards(repoConfig, repoInfo, options, {
+      hasDesiredSettings: (rc) =>
+        Object.keys(rc.settings?.labels ?? {}).length > 0,
+      emptySettingsMessage: "No labels configured",
+      processSettings: (githubRepo, rc, opts, token, repoName) =>
+        this.processSettings(githubRepo, rc, opts, token, repoName),
+    });
   }
 
-  protected getEmptySettingsMessage(): string {
-    return "No labels configured";
-  }
-
-  protected createSkipResult(
-    repoName: string,
-    message: string
-  ): LabelsProcessorResult {
-    return { success: true, repoName, message, skipped: true };
-  }
-
-  protected createErrorResult(
-    repoName: string,
-    message: string
-  ): LabelsProcessorResult {
-    return { success: false, repoName, message };
-  }
-
-  protected async processSettings(
+  private async processSettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
     options: LabelsProcessorOptions,
@@ -98,9 +83,7 @@ export class LabelsProcessor
     const planOutput = formatLabelsPlan(changes);
 
     if (dryRun) {
-      return buildDryRunResult<LabelsProcessorResult>(repoName, changeCounts, {
-        planOutput,
-      });
+      return buildDryRunResult(repoName, changeCounts, { planOutput });
     }
 
     // Apply changes (diff is already sorted: delete, update, create, unchanged)
@@ -169,11 +152,8 @@ export class LabelsProcessor
       }
     }
 
-    return buildApplyResult<LabelsProcessorResult>(
-      repoName,
-      changeCounts,
-      appliedCount,
-      { planOutput }
-    );
+    return buildApplyResult(repoName, changeCounts, appliedCount, {
+      planOutput,
+    });
   }
 }

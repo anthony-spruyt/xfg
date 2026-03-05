@@ -44,6 +44,16 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 - Node.js >= 18
 - `git`, `gh`, `az`, `glab` CLIs (platform-specific, must be authenticated)
 
+## Architecture Principles
+
+This codebase follows SOLID principles strictly. Do NOT violate these:
+
+- **Dependency Injection**: Never import singletons (e.g. `logger`) in shared utilities or library code. Accept dependencies via constructor or function parameters. Only CLI entry points and composition roots may import singletons directly.
+- **Interfaces for testability**: Every collaborator is injected via an interface. Single-impl interfaces are correct and intentional — do NOT inline them or couple to concrete classes.
+- **Composition over inheritance**: Use strategy pattern, delegation, and interface-based injection. Do NOT flatten abstractions or suggest inheritance.
+- **Interface Segregation**: Keep interfaces focused. A class needing only `{ debug(msg: string): void }` should accept that, not the full `ILogger`.
+- **No static coupling in libraries**: `src/shared/` and `src/sync/` modules must not import global singletons. Pass them in.
+
 ## Key Modules
 
 | Module                     | Purpose                                                                       |
@@ -82,3 +92,13 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 - Escape `${xfg:var}` as `$${xfg:var}` similarly
 - `.sh` files auto-marked executable unless `executable: false`
 - PR branch default: `chore/sync-config` (reuses existing branch/PR if found)
+
+## Desloppify Reviews
+
+When running blind subjective reviews (subagent reviewers), ALWAYS instruct them to follow SOLID principles and composition over inheritance:
+
+- **Dependency Inversion**: Single-impl interfaces for DI/testability are CORRECT — do NOT penalize them
+- **Composition over Inheritance**: Strategy pattern, delegation, interface-based injection are BETTER than inlining or using concrete classes directly — do NOT suggest removing interfaces in favor of jest.spyOn or coupling to implementations
+- **Interface Segregation**: Focused interfaces are good even if there's one implementation
+- **Named type aliases** add semantic clarity at zero cost — do NOT penalize them
+- **Do NOT encourage inheritance** by suggesting inlining composed strategies or removing abstraction layers that enable DI

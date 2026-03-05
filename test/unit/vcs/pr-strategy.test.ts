@@ -97,7 +97,7 @@ describe("GitHubPRStrategy type guards", () => {
 
     await assert.rejects(
       () => strategy.checkExistingPR(options),
-      /Expected GitHub repository/
+      /requires GitHub repositories/
     );
   });
 
@@ -123,7 +123,7 @@ describe("GitHubPRStrategy type guards", () => {
 
     await assert.rejects(
       () => strategy.create(options),
-      /Expected GitHub repository/
+      /requires GitHub repositories/
     );
   });
 });
@@ -150,7 +150,7 @@ describe("AzurePRStrategy type guards", () => {
 
     await assert.rejects(
       () => strategy.checkExistingPR(options),
-      /Expected Azure DevOps repository/
+      /requires Azure DevOps repositories/
     );
   });
 
@@ -175,7 +175,7 @@ describe("AzurePRStrategy type guards", () => {
 
     await assert.rejects(
       () => strategy.create(options),
-      /Expected Azure DevOps repository/
+      /requires Azure DevOps repositories/
     );
   });
 });

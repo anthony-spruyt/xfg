@@ -30,21 +30,20 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
     const dryRun = options.dryRun ?? false;
     const noDelete = options.noDelete ?? false;
 
-    // Write files
     const { fileChanges, diffStats } = await this.fileWriter.writeFiles(
       repoConfig.files,
       {
         repoInfo,
         baseBranch: session.baseBranch,
         workDir,
-        dryRun: dryRun,
-        noDelete: noDelete,
+        dryRun,
+        noDelete,
         configId,
+        isGraphQLCommitMode: options.isGraphQLCommitMode,
       },
       { gitOps: session.localOps, log: this.log }
     );
 
-    // Handle orphans
     const existingManifest = loadManifest(workDir);
     const filesWithDeleteOrphaned = new Map<string, boolean | undefined>(
       repoConfig.files.map((f) => [f.fileName, f.deleteOrphaned])

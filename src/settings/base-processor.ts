@@ -1,13 +1,11 @@
 import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { isGitHubRepo, getRepoDisplayName } from "../shared/repo-detector.js";
-import { createTokenManager } from "../vcs/index.js";
-import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { logger } from "../shared/logger.js";
 
 export interface BaseProcessorOptions {
   dryRun?: boolean;
+  /** Pre-resolved auth token. Callers (e.g. sync-command) must resolve via resolveGitHubToken before passing. */
   token?: string;
 }
 
@@ -20,118 +18,87 @@ export interface BaseProcessorResult {
 }
 
 /**
- * Shared base class for GitHub settings processors (labels, rulesets, repo settings).
- * Handles common boilerplate: GitHub-only gating, empty settings check,
- * token resolution, and error wrapping.
+ * Generic settings processor interface for dependency injection.
+ * All three settings processors (rulesets, labels, repo-settings)
+ * share this contract — specific interfaces extend it for type safety.
  */
-export abstract class BaseSettingsProcessor<
-  TOptions extends BaseProcessorOptions,
-  TResult extends BaseProcessorResult,
+export interface ISettingsProcessor<
+  TOptions extends BaseProcessorOptions = BaseProcessorOptions,
+  TResult extends BaseProcessorResult = BaseProcessorResult,
 > {
-  protected readonly tokenManager: GitHubAppTokenManager | null;
-
-  constructor(tokenManager?: GitHubAppTokenManager | null) {
-    this.tokenManager = tokenManager ?? createTokenManager();
-  }
-
-  async process(
+  process(
     repoConfig: RepoConfig,
     repoInfo: RepoInfo,
     options: TOptions
-  ): Promise<TResult> {
-    const repoName = getRepoDisplayName(repoInfo);
+  ): Promise<TResult>;
+}
 
-    // GitHub-only gating
-    if (!isGitHubRepo(repoInfo)) {
-      return this.createSkipResult(
-        repoName,
-        `Skipped: ${repoName} is not a GitHub repository`
-      );
-    }
-
-    const githubRepo = repoInfo as GitHubRepoInfo;
-
-    // Empty settings check
-    if (!this.hasDesiredSettings(repoConfig)) {
-      return this.createSkipResult(repoName, this.getEmptySettingsMessage());
-    }
-
-    try {
-      // Resolve App token if available, fall back to provided token
-      const effectiveToken =
-        options.token ?? (await this.getInstallationToken(githubRepo));
-
-      return await this.processSettings(
-        githubRepo,
-        repoConfig,
-        options,
-        effectiveToken,
-        repoName
-      );
-    } catch (error) {
-      const message = toErrorMessage(error);
-      return this.createErrorResult(repoName, `Failed: ${message}`);
-    }
-  }
-
-  /**
-   * Check whether the repo config contains any settings for this processor.
-   */
-  protected abstract hasDesiredSettings(repoConfig: RepoConfig): boolean;
-
-  /**
-   * Message to return when no settings are configured.
-   */
-  protected abstract getEmptySettingsMessage(): string;
-
-  /**
-   * Execute the processor-specific business logic.
-   * Called after GitHub-only gating, empty settings check, and token resolution.
-   */
-  protected abstract processSettings(
+/**
+ * Guards for GitHub settings processing — passed to withGitHubGuards.
+ */
+interface SettingsGuards<
+  TOptions extends BaseProcessorOptions,
+  TResult extends BaseProcessorResult,
+> {
+  hasDesiredSettings(repoConfig: RepoConfig): boolean;
+  emptySettingsMessage: string;
+  processSettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
     options: TOptions,
     effectiveToken: string | undefined,
     repoName: string
   ): Promise<TResult>;
+}
 
-  /**
-   * Create a skip result for this processor type.
-   */
-  protected abstract createSkipResult(
-    repoName: string,
-    message: string
-  ): TResult;
+/**
+ * Common boilerplate for GitHub settings processors: GitHub-only gating,
+ * empty settings check, token resolution, and error wrapping.
+ */
+export async function withGitHubGuards<
+  TOptions extends BaseProcessorOptions,
+  TResult extends BaseProcessorResult,
+>(
+  repoConfig: RepoConfig,
+  repoInfo: RepoInfo,
+  options: TOptions,
+  guards: SettingsGuards<TOptions, TResult>
+): Promise<TResult> {
+  const repoName = getRepoDisplayName(repoInfo);
 
-  /**
-   * Create an error result for this processor type.
-   */
-  protected abstract createErrorResult(
-    repoName: string,
-    message: string
-  ): TResult;
+  if (!isGitHubRepo(repoInfo)) {
+    return {
+      success: true,
+      repoName,
+      message: `Skipped: ${repoName} is not a GitHub repository`,
+      skipped: true,
+    } as TResult;
+  }
 
-  /**
-   * Resolves a GitHub App installation token for the given repo.
-   */
-  protected async getInstallationToken(
-    repoInfo: GitHubRepoInfo
-  ): Promise<string | undefined> {
-    if (!this.tokenManager) {
-      return undefined;
-    }
+  if (!guards.hasDesiredSettings(repoConfig)) {
+    return {
+      success: true,
+      repoName,
+      message: guards.emptySettingsMessage,
+      skipped: true,
+    } as TResult;
+  }
 
-    try {
-      const token = await this.tokenManager.getTokenForRepo(repoInfo);
-      return token ?? undefined;
-    } catch (error) {
-      // App token resolution is optional — fall back to provided token
-      logger.debug(
-        `App token resolution failed for ${repoInfo.owner}/${repoInfo.repo}: ${toErrorMessage(error)}`
-      );
-      return undefined;
-    }
+  try {
+    return await guards.processSettings(
+      repoInfo as GitHubRepoInfo,
+      repoConfig,
+      options,
+      options.token,
+      repoName
+    );
+  } catch (error) {
+    const message = toErrorMessage(error);
+    return {
+      success: false,
+      repoName,
+      message: `Failed: ${message}`,
+    } as TResult;
   }
 }
 
@@ -168,38 +135,46 @@ export function formatChangeSummary(counts: ChangeCounts): string {
 
 /**
  * Build a standardized dry-run result for settings processors.
+ * Returns an intersection of BaseProcessorResult with the extra fields,
+ * which is assignable to any result subtype whose extra fields are provided.
  */
-export function buildDryRunResult<T extends BaseProcessorResult>(
+export function buildDryRunResult<
+  E extends Record<string, unknown> = Record<string, never>,
+>(
   repoName: string,
   changeCounts: ChangeCounts,
-  extra?: Partial<T>
-): T {
+  extra?: E
+): BaseProcessorResult & { changes: ChangeCounts; dryRun: true } & E {
   const summary = formatChangeSummary(changeCounts);
-  return {
-    success: true,
+  const base = {
+    success: true as const,
     repoName,
     message: `[DRY RUN] ${summary}`,
-    dryRun: true,
+    dryRun: true as const,
     changes: changeCounts,
-    ...extra,
-  } as unknown as T;
+  };
+  return Object.assign(base, extra) as typeof base & E;
 }
 
 /**
  * Build a standardized apply result for settings processors.
+ * Returns an intersection of BaseProcessorResult with the extra fields,
+ * which is assignable to any result subtype whose extra fields are provided.
  */
-export function buildApplyResult<T extends BaseProcessorResult>(
+export function buildApplyResult<
+  E extends Record<string, unknown> = Record<string, never>,
+>(
   repoName: string,
   changeCounts: ChangeCounts,
   appliedCount: number,
-  extra?: Partial<T>
-): T {
+  extra?: E
+): BaseProcessorResult & { changes: ChangeCounts } & E {
   const summary = formatChangeSummary(changeCounts);
-  return {
-    success: true,
+  const base = {
+    success: true as const,
     repoName,
     message: appliedCount > 0 ? `Applied: ${summary}` : "No changes needed",
     changes: changeCounts,
-    ...extra,
-  } as unknown as T;
+  };
+  return Object.assign(base, extra) as typeof base & E;
 }

@@ -26,6 +26,49 @@ import type {
 } from "./types.js";
 
 /**
+ * Clone content, stripping merge directives from object content.
+ * Text content is cloned as-is since it has no merge directives.
+ */
+function cloneContent(content: ContentValue): ContentValue {
+  if (isTextContent(content)) {
+    return structuredClone(content);
+  }
+  return stripMergeDirectives(structuredClone(content));
+}
+
+/**
+ * Resolve the final content for a file by applying override/inherit/merge rules.
+ *
+ * Returns null when the file should be empty (e.g. override with no content,
+ * or root file with no content and no repo override).
+ */
+function resolveFileContent(
+  rootContent: ContentValue | undefined,
+  repoOverride: RawRepoFileOverride | undefined,
+  mergeStrategy: ArrayMergeStrategy
+): ContentValue | null {
+  // Override mode: use only repo content
+  if (repoOverride?.override) {
+    return repoOverride.content !== undefined
+      ? cloneContent(repoOverride.content)
+      : null;
+  }
+
+  // Root has no content — use repo content if provided, otherwise empty
+  if (rootContent === undefined) {
+    return repoOverride?.content ? cloneContent(repoOverride.content) : null;
+  }
+
+  // No repo override — use root content as-is
+  if (!repoOverride?.content) {
+    return structuredClone(rootContent);
+  }
+
+  // Both exist — merge
+  return mergeContentPair(rootContent, repoOverride.content, mergeStrategy);
+}
+
+/**
  * Merge two content values using the appropriate strategy.
  * Handles text+text, object+object, and type mismatch cases.
  */
@@ -118,10 +161,6 @@ function mergeRuleset(
 }
 
 /**
- * Merges settings: per-repo settings deep merge with root settings.
- * Returns undefined if no settings are defined.
- */
-/**
  * Merges root and per-repo label configs.
  * Per-repo labels override root labels by name.
  * inherit: false skips all root labels.
@@ -164,6 +203,10 @@ function mergeLabels(
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
+/**
+ * Merges settings: per-repo settings deep merge with root settings.
+ * Returns undefined if no settings are defined.
+ */
 export function mergeSettings(
   root: RawRootSettings | undefined,
   perRepo: RawRepoSettings | undefined
@@ -435,7 +478,6 @@ export function normalizeConfig(raw: RawConfig): Config {
   const expandedRepos: RepoConfig[] = [];
 
   for (const rawRepo of raw.repos) {
-    // Step 1: Expand git arrays
     const gitUrls = Array.isArray(rawRepo.git) ? rawRepo.git : [rawRepo.git];
 
     // Resolve groups: build effective root files/prOptions/settings by merging group layers
@@ -458,7 +500,6 @@ export function normalizeConfig(raw: RawConfig): Config {
 
       const inheritFiles = shouldInherit(rawRepo.files);
 
-      // Step 2: Process each file definition
       for (const fileName of fileNames) {
         // Skip reserved key
         if (fileName === "inherit") continue;
@@ -478,47 +519,12 @@ export function normalizeConfig(raw: RawConfig): Config {
         const fileConfig = effectiveRootFiles[fileName];
         const fileStrategy = fileConfig.mergeStrategy ?? "replace";
 
-        // Step 3: Compute merged content for this file
-        let mergedContent: ContentValue | null;
+        let mergedContent = resolveFileContent(
+          fileConfig.content,
+          repoOverride,
+          fileStrategy
+        );
 
-        if (repoOverride?.override) {
-          // Override mode: use only repo file content (may be undefined for empty file)
-          if (repoOverride.content === undefined) {
-            mergedContent = null;
-          } else if (isTextContent(repoOverride.content)) {
-            // Text content: use as-is (no merge directives to strip)
-            mergedContent = structuredClone(repoOverride.content);
-          } else {
-            mergedContent = stripMergeDirectives(
-              structuredClone(repoOverride.content)
-            );
-          }
-        } else if (fileConfig.content === undefined) {
-          // Root file has no content = empty file (unless repo provides content)
-          if (repoOverride?.content) {
-            if (isTextContent(repoOverride.content)) {
-              mergedContent = structuredClone(repoOverride.content);
-            } else {
-              mergedContent = stripMergeDirectives(
-                structuredClone(repoOverride.content)
-              );
-            }
-          } else {
-            mergedContent = null;
-          }
-        } else if (!repoOverride?.content) {
-          // No repo override: use file base content as-is
-          mergedContent = structuredClone(fileConfig.content);
-        } else {
-          // Merge mode: handle text vs object content
-          mergedContent = mergeContentPair(
-            fileConfig.content,
-            repoOverride.content,
-            fileStrategy
-          );
-        }
-
-        // Step 4: Interpolate env vars (only if content exists)
         if (mergedContent !== null) {
           mergedContent = interpolateContent(mergedContent, { strict: true });
         }
@@ -576,44 +582,11 @@ export function normalizeConfig(raw: RawConfig): Config {
     }
   }
 
-  // Normalize root settings (filter out inherit key if present)
-  let normalizedRootSettings: RepoSettings | undefined;
-  if (raw.settings) {
-    normalizedRootSettings = {};
-    if (raw.settings.rulesets) {
-      const filteredRulesets: Record<string, Ruleset> = {};
-      for (const [name, ruleset] of Object.entries(raw.settings.rulesets)) {
-        if (name === "inherit" || ruleset === false) continue;
-        filteredRulesets[name] = ruleset as Ruleset;
-      }
-      if (Object.keys(filteredRulesets).length > 0) {
-        normalizedRootSettings.rulesets = filteredRulesets;
-      }
-    }
-    if (raw.settings.repo) {
-      normalizedRootSettings.repo = raw.settings.repo as GitHubRepoSettings;
-    }
-    if (raw.settings.labels) {
-      const filteredLabels: Record<string, Label> = {};
-      for (const [name, label] of Object.entries(raw.settings.labels)) {
-        if (name === "inherit" || label === false) continue;
-        const l = label as Label;
-        filteredLabels[name] = {
-          ...l,
-          color: l.color.replace(/^#/, "").toLowerCase(),
-        };
-      }
-      if (Object.keys(filteredLabels).length > 0) {
-        normalizedRootSettings.labels = filteredLabels;
-      }
-    }
-    if (raw.settings.deleteOrphaned !== undefined) {
-      normalizedRootSettings.deleteOrphaned = raw.settings.deleteOrphaned;
-    }
-    if (Object.keys(normalizedRootSettings).length === 0) {
-      normalizedRootSettings = undefined;
-    }
-  }
+  // Normalize root settings by reusing mergeSettings with no per-repo overlay.
+  // This filters out inherit/false entries from rulesets/labels, normalizes
+  // label colors, and handles deleteOrphaned — the same logic that per-repo
+  // merging already applies.
+  const normalizedRootSettings = mergeSettings(raw.settings, undefined);
 
   return {
     id: raw.id,

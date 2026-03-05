@@ -246,7 +246,9 @@ export function updateManifest(
   };
 
   // Update this config's managed files
-  const sortedManaged = Array.from(newManaged).sort();
+  const sortedManaged = Array.from(newManaged).sort((a, b) =>
+    a.localeCompare(b)
+  );
   if (sortedManaged.length > 0) {
     updatedConfigs[configId] = { files: sortedManaged };
   } else {

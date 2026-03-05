@@ -1,5 +1,6 @@
 import { extname, isAbsolute } from "node:path";
 import { isTextContent } from "../merge.js";
+import { ValidationError } from "../errors.js";
 
 export { isTextContent };
 
@@ -29,19 +30,19 @@ export function isStructuredFileExtension(fileName: string): boolean {
  */
 export function validateFileName(fileName: string): void {
   if (!fileName || typeof fileName !== "string") {
-    throw new Error("File name must be a non-empty string");
+    throw new ValidationError("File name must be a non-empty string");
   }
 
   // Validate fileName doesn't allow path traversal
   if (fileName.includes("..") || isAbsolute(fileName)) {
-    throw new Error(
+    throw new ValidationError(
       `Invalid fileName '${fileName}': must be a relative path without '..' components`
     );
   }
 
   // Validate fileName doesn't contain control characters that could bypass shell escaping
   if (/[\n\r\0]/.test(fileName)) {
-    throw new Error(
+    throw new ValidationError(
       `Invalid fileName '${fileName}': cannot contain newlines or null bytes`
     );
   }

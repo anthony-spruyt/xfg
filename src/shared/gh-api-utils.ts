@@ -2,8 +2,10 @@ import { escapeShellArg } from "../shared/shell-utils.js";
 import { withRetry } from "../shared/retry-utils.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { GitHubRepoInfo } from "../shared/repo-detector.js";
+import type { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
+import { toErrorMessage } from "../shared/type-guards.js";
 
-export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export interface GhApiOptions {
   token?: string;
@@ -42,7 +44,7 @@ export function buildTokenEnv(
  * Token is injected via ExecOptions.env (matching the PR strategy pattern)
  * rather than shell-prefix string interpolation.
  */
-export async function ghApiCall(
+async function ghApiCall(
   method: HttpMethod,
   endpoint: string,
   opts: GhApiCallOptions
@@ -83,4 +85,79 @@ export async function ghApiCall(
     () => executor.exec(baseCommand, process.cwd(), { env }),
     { retries }
   );
+}
+
+/**
+ * Encapsulates executor + retries for GitHub API calls.
+ * Strategies compose with this instead of duplicating ghApi wrappers.
+ */
+export class GhApiClient {
+  constructor(
+    private readonly executor: ICommandExecutor,
+    private readonly retries: number
+  ) {}
+
+  async call(
+    method: HttpMethod,
+    endpoint: string,
+    payload?: unknown,
+    options?: GhApiOptions,
+    paginate?: boolean
+  ): Promise<string> {
+    return ghApiCall(method, endpoint, {
+      executor: this.executor,
+      retries: this.retries,
+      apiOpts: options,
+      payload,
+      paginate,
+    });
+  }
+}
+
+/**
+ * Resolve a GitHub token for a repo: GitHub App token → GH_TOKEN env fallback.
+ * Returns { token, skipped } where skipped=true means no App installation found
+ * and no GH_TOKEN is available. Both sync and settings paths use this function.
+ */
+export async function resolveGitHubToken(
+  repoInfo: GitHubRepoInfo,
+  tokenManager: GitHubAppTokenManager | null,
+  context: string,
+  log?: { debug(msg: string): void }
+): Promise<{ token: string | undefined; skipped: boolean }> {
+  try {
+    const appToken = await tokenManager?.getTokenForRepo(repoInfo);
+    if (appToken === null) {
+      // null = no installation found for this owner
+      return { token: undefined, skipped: true };
+    }
+    // string = app token; undefined = no manager configured
+    return { token: appToken ?? process.env.GH_TOKEN, skipped: false };
+  } catch (error) {
+    log?.debug(
+      `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}; falling back to GH_TOKEN`
+    );
+    return { token: process.env.GH_TOKEN, skipped: false };
+  }
+}
+
+/**
+ * Parse a JSON API response with a contextual error message.
+ * Wraps JSON.parse so callers get "Failed to parse <context>: ..." instead of
+ * a bare "Unexpected token" SyntaxError.
+ */
+/**
+ * Check if an error message indicates an HTTP 404 response from the GitHub API.
+ */
+export function isHttp404Error(error: unknown): boolean {
+  return toErrorMessage(error).includes("HTTP 404");
+}
+
+export function parseApiJson<T>(response: string, context: string): T {
+  try {
+    return JSON.parse(response) as T;
+  } catch {
+    const preview = response.slice(0, 200);
+    throw new Error(`Failed to parse ${context}: ${preview}`);
+  }
 }

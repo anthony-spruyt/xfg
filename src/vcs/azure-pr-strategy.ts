@@ -3,9 +3,9 @@ import { join } from "node:path";
 import { escapeShellArg } from "../shared/shell-utils.js";
 import {
   AzureDevOpsRepoInfo,
-  isAzureDevOpsRepo,
+  assertAzureDevOpsRepo,
 } from "../shared/repo-detector.js";
-import { PRResult } from "./pr-creator.js";
+import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
@@ -14,9 +14,9 @@ import type {
   MergeResult,
 } from "./types.js";
 import { logger } from "../shared/logger.js";
-import { withRetry, isPermanentError } from "../shared/retry-utils.js";
+import { withRetry } from "../shared/retry-utils.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
-import { toErrorMessage } from "../shared/type-guards.js";
+import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 
@@ -39,9 +39,7 @@ export class AzurePRStrategy extends BasePRStrategy {
   ): Promise<string | null> {
     const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
 
-    if (!isAzureDevOpsRepo(repoInfo)) {
-      throw new Error("Expected Azure DevOps repository");
-    }
+    assertAzureDevOpsRepo(repoInfo, "Azure PR strategy");
     const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
     const orgUrl = this.getOrgUrl(azureRepoInfo);
 
@@ -55,16 +53,11 @@ export class AzurePRStrategy extends BasePRStrategy {
 
       return existingPRId ? this.buildPRUrl(azureRepoInfo, existingPRId) : null;
     } catch (error) {
-      if (error instanceof Error) {
-        if (isPermanentError(error)) {
-          throw error;
-        }
-        const stderr = getStderr(error);
-        if (stderr && !stderr.includes("does not exist")) {
-          logger.debug(
-            `Azure PR check failed - ${sanitizeCredentials(stderr).trim()}`
-          );
-        }
+      const stderr = getStderr(error);
+      if (stderr && !stderr.includes("does not exist")) {
+        logger.debug(
+          `Azure PR check failed - ${sanitizeCredentials(stderr).trim()}`
+        );
       }
       return null;
     }
@@ -73,9 +66,7 @@ export class AzurePRStrategy extends BasePRStrategy {
   async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
     const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
 
-    if (!isAzureDevOpsRepo(repoInfo)) {
-      throw new Error("Expected Azure DevOps repository");
-    }
+    assertAzureDevOpsRepo(repoInfo, "Azure PR strategy");
     const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
     const orgUrl = this.getOrgUrl(azureRepoInfo);
 
@@ -112,9 +103,7 @@ export class AzurePRStrategy extends BasePRStrategy {
       return false;
     }
 
-    // Delete the source branch - need to get object_id first
     try {
-      // Get the branch's object_id
       const getRefCommand = `az repos ref list --repository ${escapeShellArg(azureRepoInfo.repo)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --filter heads/${escapeShellArg(branchName)} --query "[0].objectId" -o tsv`;
       const objectId = await withRetry(
         () => this.executor.exec(getRefCommand, workDir),
@@ -148,13 +137,10 @@ export class AzurePRStrategy extends BasePRStrategy {
       retries = 3,
     } = options;
 
-    if (!isAzureDevOpsRepo(repoInfo)) {
-      throw new Error("Expected Azure DevOps repository");
-    }
+    assertAzureDevOpsRepo(repoInfo, "Azure PR strategy");
     const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
     const orgUrl = this.getOrgUrl(azureRepoInfo);
 
-    // Write description to temp file to avoid shell escaping issues
     const descFile = join(workDir, this.bodyFilePath);
     writeFileSync(descFile, body, "utf-8");
 
@@ -172,16 +158,13 @@ export class AzurePRStrategy extends BasePRStrategy {
         message: "PR created successfully",
       };
     } finally {
-      // Clean up temp file - log warning on failure instead of throwing
-      try {
-        if (existsSync(descFile)) {
-          unlinkSync(descFile);
-        }
-      } catch (cleanupError) {
-        logger.warn(
-          `Failed to clean up temp file ${descFile}: ${toErrorMessage(cleanupError)}`
-        );
-      }
+      safeCleanup(
+        () => {
+          if (existsSync(descFile)) unlinkSync(descFile);
+        },
+        `failed to remove ${descFile}`,
+        logger
+      );
     }
   }
 

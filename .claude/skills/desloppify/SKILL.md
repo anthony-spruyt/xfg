@@ -130,6 +130,16 @@ When desloppify itself appears wrong or inconsistent:
 
 Use Claude subagents for subjective scoring work that should be context-isolated.
 
+### Desloppify Reviews
+
+When running blind subjective reviews (subagent reviewers), ALWAYS instruct them to follow SOLID principles and composition over inheritance:
+
+- **Dependency Inversion**: Single-impl interfaces for DI/testability are CORRECT — do NOT penalize them
+- **Composition over Inheritance**: Strategy pattern, delegation, interface-based injection are BETTER than inlining or using concrete classes directly — do NOT suggest removing interfaces in favor of jest.spyOn or coupling to implementations
+- **Interface Segregation**: Focused interfaces are good even if there's one implementation
+- **Named type aliases** add semantic clarity at zero cost — do NOT penalize them
+- **Do NOT encourage inheritance** by suggesting inlining composed strategies or removing abstraction layers that enable DI
+
 ### Subjective review
 
 1. **Preferred**: `desloppify review --run-batches --runner codex --parallel --scan-after-import` — does everything in one command.

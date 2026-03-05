@@ -1,8 +1,8 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { escapeShellArg } from "../shared/shell-utils.js";
-import { isGitLabRepo, GitLabRepoInfo } from "../shared/repo-detector.js";
-import { PRResult } from "./pr-creator.js";
+import { assertGitLabRepo, GitLabRepoInfo } from "../shared/repo-detector.js";
+import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
@@ -11,10 +11,11 @@ import type {
   MergeResult,
 } from "./types.js";
 import { logger } from "../shared/logger.js";
-import { withRetry, isPermanentError } from "../shared/retry-utils.js";
+import { withRetry } from "../shared/retry-utils.js";
 import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
+import { parseApiJson } from "../shared/gh-api-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
-import { toErrorMessage } from "../shared/type-guards.js";
+import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
 import type { MergeStrategy } from "../config/index.js";
 
 export class GitLabPRStrategy extends BasePRStrategy {
@@ -87,9 +88,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
   ): Promise<string | null> {
     const { repoInfo, branchName, workDir, retries = 3 } = options;
 
-    if (!isGitLabRepo(repoInfo)) {
-      throw new Error("Expected GitLab repository");
-    }
+    assertGitLabRepo(repoInfo, "GitLab PR strategy");
 
     const repoFlag = this.getRepoFlag(repoInfo);
     // Use glab mr list with JSON output for reliable parsing
@@ -106,25 +105,17 @@ export class GitLabPRStrategy extends BasePRStrategy {
         return null;
       }
 
-      // Parse JSON to get MR IID
-      const mrs = JSON.parse(result);
+      const mrs = parseApiJson<Array<{ iid?: number }>>(result, "glab mr list");
       if (Array.isArray(mrs) && mrs.length > 0 && mrs[0].iid) {
         return this.buildMRUrl(repoInfo, String(mrs[0].iid));
       }
       return null;
     } catch (error) {
-      if (error instanceof Error) {
-        // Throw on permanent errors (auth failures, etc.)
-        if (isPermanentError(error)) {
-          throw error;
-        }
-        // Log unexpected errors for debugging
-        const stderr = getStderr(error);
-        if (stderr && !stderr.includes("no merge requests")) {
-          logger.debug(
-            `GitLab MR check failed - ${sanitizeCredentials(stderr).trim()}`
-          );
-        }
+      const stderr = getStderr(error);
+      if (stderr && !stderr.includes("no merge requests")) {
+        logger.debug(
+          `GitLab MR check failed - ${sanitizeCredentials(stderr).trim()}`
+        );
       }
       return null;
     }
@@ -133,9 +124,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
   async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
     const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
 
-    if (!isGitLabRepo(repoInfo)) {
-      throw new Error("Expected GitLab repository");
-    }
+    assertGitLabRepo(repoInfo, "GitLab PR strategy");
 
     // First check if there's an existing MR
     const existingUrl = await this.checkExistingPR({
@@ -172,7 +161,6 @@ export class GitLabPRStrategy extends BasePRStrategy {
       return false;
     }
 
-    // Delete the source branch via git
     const deleteBranchCommand = `git push origin --delete ${escapeShellArg(branchName)}`;
 
     try {
@@ -199,13 +187,10 @@ export class GitLabPRStrategy extends BasePRStrategy {
       retries = 3,
     } = options;
 
-    if (!isGitLabRepo(repoInfo)) {
-      throw new Error("Expected GitLab repository");
-    }
+    assertGitLabRepo(repoInfo, "GitLab PR strategy");
 
     const repoFlag = this.getRepoFlag(repoInfo);
 
-    // Write description to temp file to avoid shell escaping issues
     const descFile = join(workDir, this.bodyFilePath);
     writeFileSync(descFile, body, "utf-8");
 
@@ -241,16 +226,13 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
       throw new Error(`Could not parse MR URL from output: ${result}`);
     } finally {
-      // Clean up temp file - log warning on failure instead of throwing
-      try {
-        if (existsSync(descFile)) {
-          unlinkSync(descFile);
-        }
-      } catch (cleanupError) {
-        logger.warn(
-          `Failed to clean up temp file ${descFile}: ${toErrorMessage(cleanupError)}`
-        );
-      }
+      safeCleanup(
+        () => {
+          if (existsSync(descFile)) unlinkSync(descFile);
+        },
+        `failed to remove ${descFile}`,
+        logger
+      );
     }
   }
 

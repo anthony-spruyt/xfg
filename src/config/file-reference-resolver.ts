@@ -4,6 +4,7 @@ import JSON5 from "json5";
 import { parse as parseYaml } from "yaml";
 import type { ContentValue, RawConfig } from "./types.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { ValidationError } from "./errors.js";
 
 interface FileReferenceOptions {
   configDir: string;
@@ -29,12 +30,14 @@ export function resolveFileReference(
   const relativePath = reference.slice(1); // Remove @ prefix
 
   if (relativePath.length === 0) {
-    throw new Error(`Invalid file reference "${reference}": path is empty`);
+    throw new ValidationError(
+      `Invalid file reference "${reference}": path is empty`
+    );
   }
 
   // Security: block absolute paths
   if (isAbsolute(relativePath)) {
-    throw new Error(
+    throw new ValidationError(
       `File reference "${reference}" uses absolute path. Use relative paths only.`
     );
   }
@@ -49,7 +52,7 @@ export function resolveFileReference(
   // where normalize() returns paths with backslash separators.
   const pathFromConfig = relative(normalizedConfigDir, normalizedResolved);
   if (pathFromConfig.startsWith("..") || isAbsolute(pathFromConfig)) {
-    throw new Error(
+    throw new ValidationError(
       `File reference "${reference}" escapes config directory. ` +
         `References must be within "${configDir}".`
     );
@@ -133,7 +136,7 @@ export function resolveFileReferencesInConfig(
   if (result.prTemplate && isFileReference(result.prTemplate)) {
     const resolved = resolveFileReference(result.prTemplate, configDir);
     if (typeof resolved !== "string") {
-      throw new Error(
+      throw new ValidationError(
         `prTemplate file reference "${result.prTemplate}" must resolve to a text file, not JSON/YAML`
       );
     }
