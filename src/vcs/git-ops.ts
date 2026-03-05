@@ -15,7 +15,7 @@ import {
 import { withRetry } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { logger } from "../shared/logger.js";
-import type { ILocalGitOps } from "./git-ops-types.js";
+import type { ILocalGitOps } from "./types.js";
 
 export interface GitOpsOptions {
   workDir: string;

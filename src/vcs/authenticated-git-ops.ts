@@ -3,13 +3,9 @@ import { escapeShellArg } from "../shared/shell-utils.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import type { GitAuthOptions, INetworkGitOps } from "./git-ops-types.js";
+import type { GitAuthOptions, INetworkGitOps } from "./types.js";
 
-export type {
-  GitAuthOptions,
-  ILocalGitOps,
-  INetworkGitOps,
-} from "./git-ops-types.js";
+export type { GitAuthOptions, ILocalGitOps, INetworkGitOps } from "./types.js";
 
 /**
  * Adds authentication to network git operations.
