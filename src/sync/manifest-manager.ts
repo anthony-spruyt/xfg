@@ -19,12 +19,14 @@ import type {
  * Handles manifest loading, saving, and orphan detection.
  */
 export class ManifestManager implements IManifestManager {
+  constructor(private readonly log?: { debug(msg: string): void }) {}
+
   processOrphans(
     workDir: string,
     configId: string,
     filesWithDeleteOrphaned: Map<string, boolean | undefined>
   ): OrphanProcessResult {
-    const existingManifest = loadManifest(workDir);
+    const existingManifest = loadManifest(workDir, this.log);
 
     const { manifest, filesToDelete } = updateManifest(
       existingManifest,

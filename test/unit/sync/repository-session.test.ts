@@ -10,10 +10,7 @@ import {
 } from "../../mocks/index.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import type { GitOpsFactory } from "../../../src/sync/types.js";
-import type {
-  GitAuthOptions,
-  IGitOps,
-} from "../../../src/vcs/authenticated-git-ops.js";
+import type { GitAuthOptions } from "../../../src/vcs/authenticated-git-ops.js";
 
 const testDir = join(tmpdir(), "repository-session-test-" + Date.now());
 
@@ -117,17 +114,16 @@ describe("RepositorySession", () => {
       const { mock: mockLogger } = createMockLogger();
       let cleanupCallCount = 0;
 
-      const mockGitOps = {
-        cleanWorkspace: () => {
-          cleanupCallCount++;
+      const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
+        cleanupError: (callCount: number) => {
+          cleanupCallCount = callCount;
           // Only throw on second call (the cleanup call, not the initial setup call)
-          if (cleanupCallCount > 1) {
-            throw new Error("cleanup failed");
+          if (callCount > 1) {
+            return new Error("cleanup failed");
           }
+          return undefined;
         },
-        clone: async () => {},
-        getDefaultBranch: async () => ({ branch: "main", method: "remote" }),
-      } as unknown as IGitOps;
+      });
 
       const session = new RepositorySession(() => mockGitOps, mockLogger);
       const context = await session.setup(mockRepoInfo, {

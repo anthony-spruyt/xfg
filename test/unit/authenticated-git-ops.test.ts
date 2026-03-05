@@ -693,6 +693,41 @@ describe("AuthenticatedGitOps", () => {
       assert.equal(result.branch, "main");
       assert.equal(result.method, "mock fallback");
     });
+
+    it("getDefaultBranch logs debug message when remote show fails", async () => {
+      const debugMessages: string[] = [];
+      const mockLogger = {
+        debug(msg: string) {
+          debugMessages.push(msg);
+        },
+      };
+      const mockExecutor = {
+        exec: async () => {
+          throw new Error("remote not available");
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        0,
+        {
+          token: "test-token",
+          host: "github.com",
+          owner: "owner",
+          repo: "repo",
+        },
+        mockLogger
+      );
+
+      const result = await authOps.getDefaultBranch();
+
+      assert.equal(result.branch, "main");
+      assert.equal(result.method, "mock fallback");
+      assert.ok(
+        debugMessages.some((m) => m.includes("git remote show origin failed"))
+      );
+    });
   });
 
   describe("ILocalGitOps delegation", () => {

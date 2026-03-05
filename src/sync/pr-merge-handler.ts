@@ -33,6 +33,7 @@ export class PRMergeHandler implements IPRMergeHandler {
       executor: options.executor,
       token: options.token,
       labels: repoConfig.prOptions?.labels,
+      log: this.log,
     });
 
     const mergeMode = repoConfig.prOptions?.merge ?? "auto";
@@ -57,6 +58,7 @@ export class PRMergeHandler implements IPRMergeHandler {
         retries: options.retries,
         executor: options.executor,
         token: options.token,
+        log: this.log,
       });
 
       mergeResult = {

@@ -1393,6 +1393,152 @@ describe("GitHubPRStrategy with token parameter", () => {
   });
 });
 
+describe("GitHubPRStrategy logger coverage", () => {
+  const githubRepoInfo: GitHubRepoInfo = {
+    type: "github",
+    gitUrl: "git@github.com:owner/repo.git",
+    owner: "owner",
+    repo: "repo",
+    host: "github.com",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  test("checkExistingPR logs debug on error with stderr", async () => {
+    const debugMessages: string[] = [];
+    const mockLogger = {
+      debug(msg: string) {
+        debugMessages.push(msg);
+      },
+      warn() {},
+      info() {},
+    };
+
+    const errorWithStderr = Object.assign(new Error("Command failed"), {
+      stderr: "gh: connection refused",
+    });
+    mockExecutor.responses.set("gh pr list", errorWithStderr);
+
+    const strategy = new GitHubPRStrategy(mockExecutor, mockLogger);
+    const result = await strategy.checkExistingPR({
+      repoInfo: githubRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result, null);
+    assert.ok(debugMessages.some((m) => m.includes("GitHub PR check failed")));
+  });
+
+  test("closeExistingPR logs warn on close error", async () => {
+    const warnMessages: string[] = [];
+    const mockLogger = {
+      debug() {},
+      warn(msg: string) {
+        warnMessages.push(msg);
+      },
+      info() {},
+    };
+
+    // First call returns a PR URL, second call (close) throws
+    mockExecutor.responses.set(
+      "gh pr list",
+      "https://github.com/owner/repo/pull/42"
+    );
+    mockExecutor.responses.set("gh pr close", new Error("Permission denied"));
+
+    const strategy = new GitHubPRStrategy(mockExecutor, mockLogger);
+    const result = await strategy.closeExistingPR({
+      repoInfo: githubRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result, false);
+    assert.ok(
+      warnMessages.some((m) => m.includes("Failed to close existing PR"))
+    );
+  });
+
+  test("merge auto mode logs warn when auto-merge not enabled", async () => {
+    const warnMessages: string[] = [];
+    const infoMessages: string[] = [];
+    const mockLogger = {
+      debug() {},
+      warn(msg: string) {
+        warnMessages.push(msg);
+      },
+      info(msg: string) {
+        infoMessages.push(msg);
+      },
+    };
+
+    // gh api returns false for allow_auto_merge
+    mockExecutor.responses.set("gh api", "false");
+
+    const strategy = new GitHubPRStrategy(mockExecutor, mockLogger);
+    const result = await strategy.merge({
+      prUrl: "https://github.com/owner/repo/pull/1",
+      repoInfo: githubRepoInfo,
+      config: { mode: "auto" },
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(result.merged, false);
+    assert.ok(warnMessages.some((m) => m.includes("Auto-merge not enabled")));
+    assert.ok(infoMessages.some((m) => m.includes("--enable-auto-merge")));
+  });
+
+  test("checkAutoMergeEnabled logs warn on error", async () => {
+    const warnMessages: string[] = [];
+    const mockLogger = {
+      debug() {},
+      warn(msg: string) {
+        warnMessages.push(msg);
+      },
+      info() {},
+    };
+
+    mockExecutor.responses.set("gh api", new Error("API error"));
+
+    const strategy = new GitHubPRStrategy(mockExecutor, mockLogger);
+    const result = await strategy.merge({
+      prUrl: "https://github.com/owner/repo/pull/1",
+      repoInfo: githubRepoInfo,
+      config: { mode: "auto" },
+      workDir: testDir,
+      retries: 0,
+    });
+
+    // When check fails, auto-merge is assumed not enabled
+    assert.equal(result.success, true);
+    assert.equal(result.merged, false);
+    assert.ok(
+      warnMessages.some((m) => m.includes("Could not check auto-merge status"))
+    );
+  });
+});
+
 describe("GitHubPRStrategy merge unknown mode", () => {
   const githubRepoInfo: GitHubRepoInfo = {
     type: "github",

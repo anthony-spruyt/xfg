@@ -715,325 +715,6 @@ describe("GitOps", () => {
     });
   });
 
-  describe("push", () => {
-    beforeEach(() => {
-      mkdirSync(workDir, { recursive: true });
-    });
-
-    test("does nothing in dry-run mode", async () => {
-      const commands: string[] = [];
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        dryRun: true,
-        executor: mockExecutor,
-      });
-      await gitOps.push("feature-branch");
-
-      assert.equal(commands.length, 0);
-    });
-
-    test("pushes to origin with -u flag", async () => {
-      const commands: string[] = [];
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      await gitOps.push("feature-branch");
-
-      assert.equal(commands.length, 1);
-      assert.ok(commands[0].includes("git push -u origin"));
-      assert.ok(commands[0].includes("feature-branch"));
-    });
-
-    test("uses --force-with-lease when force option is true", async () => {
-      const commands: string[] = [];
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      await gitOps.push("sync-branch", { force: true });
-
-      assert.equal(commands.length, 1);
-      assert.ok(
-        commands[0].includes("--force-with-lease"),
-        "Should include --force-with-lease flag"
-      );
-      assert.ok(commands[0].includes("-u origin"));
-      assert.ok(commands[0].includes("sync-branch"));
-    });
-
-    test("does not use force flag when force option is false", async () => {
-      const commands: string[] = [];
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      await gitOps.push("main", { force: false });
-
-      assert.equal(commands.length, 1);
-      assert.ok(
-        !commands[0].includes("--force"),
-        "Should NOT include any force flag"
-      );
-      assert.ok(commands[0].includes("git push -u origin"));
-      assert.ok(commands[0].includes("main"));
-    });
-
-    test("does not use force flag when options is undefined", async () => {
-      const commands: string[] = [];
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      await gitOps.push("main");
-
-      assert.equal(commands.length, 1);
-      assert.ok(
-        !commands[0].includes("--force"),
-        "Should NOT include any force flag when options undefined"
-      );
-    });
-  });
-
-  describe("fetch", () => {
-    beforeEach(() => {
-      mkdirSync(workDir, { recursive: true });
-    });
-
-    test("fetches from origin without prune by default", async () => {
-      const commands: string[] = [];
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      await gitOps.fetch();
-
-      assert.equal(commands.length, 1);
-      assert.ok(commands[0].includes("git fetch origin"));
-      assert.ok(!commands[0].includes("--prune"));
-    });
-
-    test("fetches with prune flag when prune option is true", async () => {
-      const commands: string[] = [];
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      await gitOps.fetch({ prune: true });
-
-      assert.equal(commands.length, 1);
-      assert.ok(commands[0].includes("git fetch origin --prune"));
-    });
-
-    test("does not include prune when prune option is false", async () => {
-      const commands: string[] = [];
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      await gitOps.fetch({ prune: false });
-
-      assert.equal(commands.length, 1);
-      assert.ok(commands[0].includes("git fetch origin"));
-      assert.ok(!commands[0].includes("--prune"));
-    });
-  });
-
-  describe("getDefaultBranch", () => {
-    beforeEach(() => {
-      mkdirSync(workDir, { recursive: true });
-    });
-
-    test("returns branch from remote HEAD when available", async () => {
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          if (command.includes("git remote show origin")) {
-            return "HEAD branch: main\n  Remote branches:";
-          }
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      const result = await gitOps.getDefaultBranch();
-
-      assert.equal(result.branch, "main");
-      assert.equal(result.method, "remote HEAD");
-    });
-
-    test("falls back to origin/main when remote show fails", async () => {
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          if (command.includes("git remote show origin")) {
-            throw new Error("remote show failed");
-          }
-          if (command.includes("git rev-parse --verify origin/main")) {
-            return "abc123"; // main exists
-          }
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      const result = await gitOps.getDefaultBranch();
-
-      assert.equal(result.branch, "main");
-      assert.equal(result.method, "origin/main exists");
-    });
-
-    test("falls back to origin/master when main does not exist", async () => {
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          if (command.includes("git remote show origin")) {
-            throw new Error("remote show failed");
-          }
-          if (command.includes("git rev-parse --verify origin/main")) {
-            throw new Error("main does not exist");
-          }
-          if (command.includes("git rev-parse --verify origin/master")) {
-            return "abc123"; // master exists
-          }
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      const result = await gitOps.getDefaultBranch();
-
-      assert.equal(result.branch, "master");
-      assert.equal(result.method, "origin/master exists");
-    });
-
-    test("falls back to main when remote HEAD is (unknown) for empty repo", async () => {
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          if (command.includes("git remote show origin")) {
-            return "HEAD branch: (unknown)\n  Remote branches:";
-          }
-          if (command.includes("git rev-parse --verify origin/main")) {
-            throw new Error("main does not exist");
-          }
-          if (command.includes("git rev-parse --verify origin/master")) {
-            throw new Error("master does not exist");
-          }
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      const result = await gitOps.getDefaultBranch();
-
-      assert.equal(result.branch, "main");
-      assert.equal(result.method, "fallback default");
-    });
-
-    test("falls back to main as default when nothing works", async () => {
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          if (command.includes("git remote show origin")) {
-            throw new Error("remote show failed");
-          }
-          if (command.includes("git rev-parse --verify origin/main")) {
-            throw new Error("main does not exist");
-          }
-          if (command.includes("git rev-parse --verify origin/master")) {
-            throw new Error("master does not exist");
-          }
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      const result = await gitOps.getDefaultBranch();
-
-      assert.equal(result.branch, "main");
-      assert.equal(result.method, "fallback default");
-    });
-  });
-
   describe("getFileContent", () => {
     beforeEach(() => {
       mkdirSync(workDir, { recursive: true });
@@ -1076,34 +757,6 @@ describe("GitOps", () => {
       assert.equal(content, null);
       assert.ok(debugMessages.length > 0, "Should have logged a debug message");
       assert.ok(debugMessages[0].includes("Failed to read"));
-    });
-  });
-
-  describe("clone", () => {
-    beforeEach(() => {
-      mkdirSync(workDir, { recursive: true });
-    });
-
-    test("runs git clone command", async () => {
-      const commands: string[] = [];
-      const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
-          return "";
-        },
-      };
-
-      const gitOps = new GitOps({
-        workDir,
-        executor: mockExecutor,
-        retries: 0,
-      });
-      await gitOps.clone("https://github.com/owner/repo.git");
-
-      assert.equal(commands.length, 1);
-      assert.ok(commands[0].includes("git clone"));
-      assert.ok(commands[0].includes("https://github.com/owner/repo.git"));
-      assert.ok(commands[0].includes(" ."));
     });
   });
 
@@ -1264,6 +917,100 @@ describe("GitOps", () => {
       gitOps.deleteFile("subdir/nested.json");
 
       assert.ok(!existsSync(filePath));
+    });
+  });
+
+  describe("getDefaultBranchLocal", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("returns main when origin/main exists", async () => {
+      const mockExecutor: ICommandExecutor = {
+        async exec(command: string): Promise<string> {
+          if (command.includes("git rev-parse --verify origin/main")) {
+            return "abc123";
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      const result = await gitOps.getDefaultBranchLocal();
+
+      assert.equal(result.branch, "main");
+      assert.equal(result.method, "origin/main exists");
+    });
+
+    test("falls back to master when main does not exist", async () => {
+      const mockExecutor: ICommandExecutor = {
+        async exec(command: string): Promise<string> {
+          if (command.includes("git rev-parse --verify origin/main")) {
+            throw new Error("main does not exist");
+          }
+          if (command.includes("git rev-parse --verify origin/master")) {
+            return "abc123";
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      const result = await gitOps.getDefaultBranchLocal();
+
+      assert.equal(result.branch, "master");
+      assert.equal(result.method, "origin/master exists");
+    });
+
+    test("falls back to main when neither main nor master exist", async () => {
+      const mockExecutor: ICommandExecutor = {
+        async exec(command: string): Promise<string> {
+          if (command.includes("git rev-parse --verify origin/main")) {
+            throw new Error("main does not exist");
+          }
+          if (command.includes("git rev-parse --verify origin/master")) {
+            throw new Error("master does not exist");
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({ workDir, executor: mockExecutor });
+      const result = await gitOps.getDefaultBranchLocal();
+
+      assert.equal(result.branch, "main");
+      assert.equal(result.method, "fallback default");
+    });
+
+    test("logs debug messages when branches are not found", async () => {
+      const debugMessages: string[] = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(command: string): Promise<string> {
+          if (command.includes("git rev-parse --verify origin/main")) {
+            throw new Error("main does not exist");
+          }
+          if (command.includes("git rev-parse --verify origin/master")) {
+            throw new Error("master does not exist");
+          }
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        log: { debug: (msg: string) => debugMessages.push(msg) },
+      });
+      await gitOps.getDefaultBranchLocal();
+
+      assert.ok(
+        debugMessages.some((m) => m.includes("origin/main check failed")),
+        "Should log origin/main failure"
+      );
+      assert.ok(
+        debugMessages.some((m) => m.includes("origin/master check failed")),
+        "Should log origin/master failure"
+      );
     });
   });
 });

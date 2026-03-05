@@ -979,6 +979,122 @@ describe("AzurePRStrategy merge unknown mode", () => {
   });
 });
 
+describe("AzurePRStrategy logger coverage", () => {
+  const azureRepoInfo: AzureDevOpsRepoInfo = {
+    type: "azure-devops",
+    gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
+    owner: "myorg",
+    repo: "myrepo",
+    organization: "myorg",
+    project: "myproject",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  test("checkExistingPR logs debug on error with stderr", async () => {
+    const debugMessages: string[] = [];
+    const mockLogger = {
+      debug(msg: string) {
+        debugMessages.push(msg);
+      },
+      warn() {},
+      info() {},
+    };
+
+    const errorWithStderr = Object.assign(new Error("Command failed"), {
+      stderr: "az: connection refused",
+    });
+    mockExecutor.responses.set("az repos pr list", errorWithStderr);
+
+    const strategy = new AzurePRStrategy(mockExecutor, mockLogger);
+    const result = await strategy.checkExistingPR({
+      repoInfo: azureRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result, null);
+    assert.ok(debugMessages.some((m) => m.includes("Azure PR check failed")));
+  });
+
+  test("closeExistingPR logs warn on abandon error", async () => {
+    const warnMessages: string[] = [];
+    const mockLogger = {
+      debug() {},
+      warn(msg: string) {
+        warnMessages.push(msg);
+      },
+      info() {},
+    };
+
+    mockExecutor.responses.set("az repos pr list", "123");
+    mockExecutor.responses.set(
+      "az repos pr update",
+      new Error("Abandon failed")
+    );
+
+    const strategy = new AzurePRStrategy(mockExecutor, mockLogger);
+    const result = await strategy.closeExistingPR({
+      repoInfo: azureRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result, false);
+    assert.ok(warnMessages.some((m) => m.includes("Failed to abandon PR")));
+  });
+
+  test("closeExistingPR logs warn on branch deletion failure", async () => {
+    const warnMessages: string[] = [];
+    const mockLogger = {
+      debug() {},
+      warn(msg: string) {
+        warnMessages.push(msg);
+      },
+      info() {},
+    };
+
+    mockExecutor.responses.set("az repos pr list", "123");
+    mockExecutor.responses.set("az repos pr update", "");
+    mockExecutor.responses.set("az repos ref list", "abc123def456");
+    mockExecutor.responses.set(
+      "az repos ref delete",
+      new Error("Branch deletion failed")
+    );
+
+    const strategy = new AzurePRStrategy(mockExecutor, mockLogger);
+    const result = await strategy.closeExistingPR({
+      repoInfo: azureRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+
+    // PR was abandoned successfully, branch deletion failed but is non-critical
+    assert.equal(result, true);
+    assert.ok(warnMessages.some((m) => m.includes("Failed to delete branch")));
+  });
+});
+
 describe("AzurePRStrategy closeExistingPR with unparseable URL", () => {
   const azureRepoInfo: AzureDevOpsRepoInfo = {
     type: "azure-devops",

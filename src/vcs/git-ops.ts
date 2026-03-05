@@ -12,7 +12,6 @@ import {
   ICommandExecutor,
   defaultExecutor,
 } from "../shared/command-executor.js";
-import { withRetry } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { ILocalGitOps } from "./types.js";
 
@@ -30,29 +29,17 @@ export class GitOps implements ILocalGitOps {
   private readonly _workDir: string;
   private readonly dryRun: boolean;
   private readonly _executor: ICommandExecutor;
-  private readonly _retries: number;
   private readonly log?: { debug(msg: string): void };
 
   constructor(options: GitOpsOptions) {
     this._workDir = options.workDir;
     this.dryRun = options.dryRun ?? false;
     this._executor = options.executor ?? defaultExecutor;
-    this._retries = options.retries ?? 3;
     this.log = options.log;
   }
 
   private async exec(command: string, cwd?: string): Promise<string> {
     return this._executor.exec(command, cwd ?? this._workDir);
-  }
-
-  /**
-   * Run a command with retry logic for transient failures.
-   * Used for network operations like clone, fetch, push.
-   */
-  private async execWithRetry(command: string, cwd?: string): Promise<string> {
-    return withRetry(() => this.exec(command, cwd), {
-      retries: this._retries,
-    });
   }
 
   /**
@@ -76,22 +63,6 @@ export class GitOps implements ILocalGitOps {
       rmSync(this._workDir, { recursive: true, force: true });
     }
     mkdirSync(this._workDir, { recursive: true });
-  }
-
-  async clone(gitUrl: string): Promise<void> {
-    await this.execWithRetry(
-      `git clone ${escapeShellArg(gitUrl)} .`,
-      this._workDir
-    );
-  }
-
-  /**
-   * Fetch from remote with optional pruning of stale refs.
-   * Used to update local tracking refs after remote branch deletion.
-   */
-  async fetch(options?: { prune?: boolean }): Promise<void> {
-    const pruneFlag = options?.prune ? " --prune" : "";
-    await this.execWithRetry(`git fetch origin${pruneFlag}`, this._workDir);
   }
 
   /**
@@ -294,36 +265,6 @@ export class GitOps implements ILocalGitOps {
       this._workDir
     );
     return true;
-  }
-
-  async push(branchName: string, options?: { force?: boolean }): Promise<void> {
-    if (this.dryRun) {
-      return;
-    }
-    const forceFlag = options?.force ? "--force-with-lease " : "";
-    await this.execWithRetry(
-      `git push ${forceFlag}-u origin ${escapeShellArg(branchName)}`,
-      this._workDir
-    );
-  }
-
-  async getDefaultBranch(): Promise<{ branch: string; method: string }> {
-    try {
-      // Try to get the default branch from remote (network operation with retry)
-      const remoteInfo = await this.execWithRetry(
-        "git remote show origin",
-        this._workDir
-      );
-      const match = remoteInfo.match(/HEAD branch: (\S+)/);
-      if (match && match[1] !== "(unknown)") {
-        return { branch: match[1], method: "remote HEAD" };
-      }
-    } catch (error) {
-      const msg = toErrorMessage(error);
-      this.log?.debug(`git remote show origin failed - ${msg}`);
-    }
-
-    return this.getDefaultBranchLocal();
   }
 
   /**

@@ -12,8 +12,9 @@ import type {
 } from "../../src/sync/index.js";
 import { RepoConfig } from "../../src/config/index.js";
 import { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
-import { GitOps } from "../../src/vcs/git-ops.js";
 import { ICommandExecutor } from "../../src/shared/command-executor.js";
+import type { GitAuthOptions } from "../../src/vcs/types.js";
+import type { AuthenticatedGitOpsMockConfig } from "../mocks/index.js";
 import {
   createMockLogger,
   createMockAuthenticatedGitOps,
@@ -49,6 +50,32 @@ function createTrackingMockExecutor() {
     get pushForce() {
       return result.git.pushForce;
     },
+  };
+}
+
+/**
+ * Creates a typed GitOpsFactory that uses createMockAuthenticatedGitOps
+ * instead of unsafe `as unknown as IGitOps` casts.
+ * Optionally captures auth options passed to the factory.
+ */
+function createTypedGitOpsFactory(
+  config?: AuthenticatedGitOpsMockConfig & {
+    onAuth?: (auth: GitAuthOptions | undefined) => void;
+  }
+): GitOpsFactory {
+  return (opts, auth) => {
+    config?.onAuth?.(auth);
+    const { gitOps } = createMockAuthenticatedGitOps({
+      hasStagedChanges: false,
+      ...config,
+    });
+    // Wrap cleanWorkspace to create the workDir (tests expect this)
+    const origCleanWorkspace = gitOps.cleanWorkspace.bind(gitOps);
+    gitOps.cleanWorkspace = () => {
+      origCleanWorkspace();
+      mkdirSync(opts.workDir, { recursive: true });
+    };
+    return gitOps;
   };
 }
 
@@ -2296,35 +2323,7 @@ describe("RepositoryProcessor", () => {
 
       const { mock: mockLogger } = createMockLogger();
 
-      // Create a minimal mock GitOps that simulates a working repository
-      const mockGitOpsFactory: GitOpsFactory = (opts, _auth) => {
-        const gitOps = new GitOps(opts);
-        // Override methods for testing using Object.assign to avoid 'any' type
-        const mockGitOps = Object.assign(gitOps, {
-          cleanWorkspace: () => {
-            mkdirSync(opts.workDir, { recursive: true });
-          },
-          clone: async () => {},
-          fetch: async () => {},
-          push: async () => {},
-          lsRemote: async () => "",
-          pushRefspec: async () => {},
-          fetchBranch: async () => {},
-          getDefaultBranch: async () => ({
-            branch: "main",
-            method: "remote" as const,
-          }),
-          createBranch: async () => {},
-          fileExistsOnBranch: async () => false,
-          writeFile: () => {},
-          getFileContent: () => null,
-          wouldChange: () => true,
-          hasStagedChanges: async () => false,
-          setExecutable: async () => {},
-          fileExists: () => false,
-        });
-        return mockGitOps as unknown as import("../../src/vcs/types.js").IGitOps;
-      };
+      const mockGitOpsFactory = createTypedGitOpsFactory();
 
       const processor = new RepositoryProcessor(mockGitOpsFactory, mockLogger);
       const result = await processor.process(
@@ -2409,33 +2408,9 @@ describe("RepositoryProcessor", () => {
       };
 
       try {
-        const mockGitOpsFactory: GitOpsFactory = (opts, _auth) => {
-          const gitOps = new GitOps(opts);
-          const mockGitOps = Object.assign(gitOps, {
-            cleanWorkspace: () => {
-              mkdirSync(opts.workDir, { recursive: true });
-            },
-            clone: async () => {},
-            fetch: async () => {},
-            push: async () => {},
-            lsRemote: async () => "",
-            pushRefspec: async () => {},
-            fetchBranch: async () => {},
-            getDefaultBranch: async () => ({
-              branch: "main",
-              method: "remote" as const,
-            }),
-            createBranch: async () => {},
-            fileExistsOnBranch: async () => false,
-            writeFile: () => {},
-            getFileContent: () => null,
-            wouldChange: () => true,
-            hasStagedChanges: async () => true,
-            setExecutable: async () => {},
-            fileExists: () => false,
-          });
-          return mockGitOps as unknown as import("../../src/vcs/types.js").IGitOps;
-        };
+        const mockGitOpsFactory = createTypedGitOpsFactory({
+          hasStagedChanges: true,
+        });
 
         const processor = new RepositoryProcessor(
           mockGitOpsFactory,
@@ -2490,33 +2465,7 @@ describe("RepositoryProcessor", () => {
       };
 
       try {
-        const mockGitOpsFactory: GitOpsFactory = (opts, _auth) => {
-          const gitOps = new GitOps(opts);
-          const mockGitOps = Object.assign(gitOps, {
-            cleanWorkspace: () => {
-              mkdirSync(opts.workDir, { recursive: true });
-            },
-            clone: async () => {},
-            fetch: async () => {},
-            push: async () => {},
-            lsRemote: async () => "",
-            pushRefspec: async () => {},
-            fetchBranch: async () => {},
-            getDefaultBranch: async () => ({
-              branch: "main",
-              method: "remote" as const,
-            }),
-            createBranch: async () => {},
-            fileExistsOnBranch: async () => false,
-            writeFile: () => {},
-            getFileContent: () => null,
-            wouldChange: () => true,
-            hasStagedChanges: async () => false,
-            setExecutable: async () => {},
-            fileExists: () => false,
-          });
-          return mockGitOps as unknown as import("../../src/vcs/types.js").IGitOps;
-        };
+        const mockGitOpsFactory = createTypedGitOpsFactory();
 
         const processor = new RepositoryProcessor(
           mockGitOpsFactory,
@@ -2563,34 +2512,11 @@ describe("RepositoryProcessor", () => {
       // Track the auth options passed to factory
       let capturedAuth: unknown = undefined;
 
-      const mockGitOpsFactory: GitOpsFactory = (opts, auth) => {
-        capturedAuth = auth;
-        const gitOps = new GitOps(opts);
-        const mockGitOps = Object.assign(gitOps, {
-          cleanWorkspace: () => {
-            mkdirSync(opts.workDir, { recursive: true });
-          },
-          clone: async () => {},
-          fetch: async () => {},
-          push: async () => {},
-          lsRemote: async () => "",
-          pushRefspec: async () => {},
-          fetchBranch: async () => {},
-          getDefaultBranch: async () => ({
-            branch: "main",
-            method: "remote" as const,
-          }),
-          createBranch: async () => {},
-          fileExistsOnBranch: async () => false,
-          writeFile: () => {},
-          getFileContent: () => null,
-          wouldChange: () => true,
-          hasStagedChanges: async () => false, // Skip actual commit
-          setExecutable: async () => {},
-          fileExists: () => false,
-        });
-        return mockGitOps as unknown as import("../../src/vcs/types.js").IGitOps;
-      };
+      const mockGitOpsFactory = createTypedGitOpsFactory({
+        onAuth: (auth) => {
+          capturedAuth = auth;
+        },
+      });
 
       // Create mock authOptionsBuilder that returns a specific token
       const mockAuthOptionsBuilder: IAuthOptionsBuilder = {
@@ -2657,34 +2583,11 @@ describe("RepositoryProcessor", () => {
       // Track the auth options passed to factory
       let capturedAuth: unknown = undefined;
 
-      const mockGitOpsFactory: GitOpsFactory = (opts, auth) => {
-        capturedAuth = auth;
-        const gitOps = new GitOps(opts);
-        const mockGitOps = Object.assign(gitOps, {
-          cleanWorkspace: () => {
-            mkdirSync(opts.workDir, { recursive: true });
-          },
-          clone: async () => {},
-          fetch: async () => {},
-          push: async () => {},
-          lsRemote: async () => "",
-          pushRefspec: async () => {},
-          fetchBranch: async () => {},
-          getDefaultBranch: async () => ({
-            branch: "main",
-            method: "remote" as const,
-          }),
-          createBranch: async () => {},
-          fileExistsOnBranch: async () => false,
-          writeFile: () => {},
-          getFileContent: () => null,
-          wouldChange: () => true,
-          hasStagedChanges: async () => false,
-          setExecutable: async () => {},
-          fileExists: () => false,
-        });
-        return mockGitOps as unknown as import("../../src/vcs/types.js").IGitOps;
-      };
+      const mockGitOpsFactory = createTypedGitOpsFactory({
+        onAuth: (auth) => {
+          capturedAuth = auth;
+        },
+      });
 
       // Create mock authOptionsBuilder that returns a specific token for GHE
       const mockAuthOptionsBuilder: IAuthOptionsBuilder = {
@@ -2753,34 +2656,11 @@ describe("RepositoryProcessor", () => {
         // Track the auth options passed to factory
         let capturedAuth: unknown = undefined;
 
-        const mockGitOpsFactory: GitOpsFactory = (opts, auth) => {
-          capturedAuth = auth;
-          const gitOps = new GitOps(opts);
-          const mockGitOps = Object.assign(gitOps, {
-            cleanWorkspace: () => {
-              mkdirSync(opts.workDir, { recursive: true });
-            },
-            clone: async () => {},
-            fetch: async () => {},
-            push: async () => {},
-            lsRemote: async () => "",
-            pushRefspec: async () => {},
-            fetchBranch: async () => {},
-            getDefaultBranch: async () => ({
-              branch: "main",
-              method: "remote" as const,
-            }),
-            createBranch: async () => {},
-            fileExistsOnBranch: async () => false,
-            writeFile: () => {},
-            getFileContent: () => null,
-            wouldChange: () => true,
-            hasStagedChanges: async () => false, // Skip actual commit
-            setExecutable: async () => {},
-            fileExists: () => false,
-          });
-          return mockGitOps as unknown as import("../../src/vcs/types.js").IGitOps;
-        };
+        const mockGitOpsFactory = createTypedGitOpsFactory({
+          onAuth: (auth) => {
+            capturedAuth = auth;
+          },
+        });
 
         const processor = new RepositoryProcessor(
           mockGitOpsFactory,

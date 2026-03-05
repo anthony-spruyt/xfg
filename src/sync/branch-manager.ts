@@ -31,7 +31,7 @@ export class BranchManager implements IBranchManager {
 
     if (!dryRun) {
       this.log.debug("Checking for existing PR...");
-      const strategy = getPRStrategy(repoInfo, executor);
+      const strategy = getPRStrategy(repoInfo, executor, this.log);
       const closed = await strategy.closeExistingPR({
         repoInfo,
         branchName,

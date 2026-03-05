@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { RepoInfo } from "../shared/repo-detector.js";
 import { getPRStrategy } from "./pr-strategy-factory.js";
 import { PRWorkflowExecutor } from "./pr-strategy.js";
+import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type { MergeResult, PRMergeConfig, PRResult } from "./types.js";
 import { interpolateXfgContent } from "../shared/xfg-template.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
@@ -30,6 +31,8 @@ interface PROptions {
   token?: string;
   /** Labels to apply to the created PR */
   labels?: string[];
+  /** Optional logger for PR strategy debug/warn/info messages */
+  log?: IPRStrategyLogger;
 }
 
 export type { PRResult } from "./types.js";
@@ -153,6 +156,7 @@ export async function createPR(options: PROptions): Promise<PRResult> {
     executor,
     token,
     labels,
+    log,
   } = options;
 
   const title = formatPRTitle(files);
@@ -166,7 +170,7 @@ export async function createPR(options: PROptions): Promise<PRResult> {
   }
 
   // Get the appropriate strategy and execute via workflow executor
-  const strategy = getPRStrategy(repoInfo, executor);
+  const strategy = getPRStrategy(repoInfo, executor, log);
   const workflow = new PRWorkflowExecutor(strategy);
   return workflow.execute({
     repoInfo,
@@ -192,6 +196,8 @@ interface MergePROptions {
   executor?: ICommandExecutor;
   /** GitHub App installation token for authentication */
   token?: string;
+  /** Optional logger for PR strategy debug/warn/info messages */
+  log?: IPRStrategyLogger;
 }
 
 export async function mergePR(options: MergePROptions): Promise<MergeResult> {
@@ -204,6 +210,7 @@ export async function mergePR(options: MergePROptions): Promise<MergeResult> {
     retries,
     executor,
     token,
+    log,
   } = options;
 
   if (dryRun) {
@@ -221,7 +228,7 @@ export async function mergePR(options: MergePROptions): Promise<MergeResult> {
   }
 
   // Get the appropriate strategy and execute merge
-  const strategy = getPRStrategy(repoInfo, executor);
+  const strategy = getPRStrategy(repoInfo, executor, log);
   return strategy.merge({
     prUrl,
     repoInfo,
