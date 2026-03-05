@@ -14,7 +14,6 @@ import {
 } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { logger } from "../shared/logger.js";
 import type { ILocalGitOps } from "./types.js";
 
 export interface GitOpsOptions {
@@ -23,6 +22,8 @@ export interface GitOpsOptions {
   executor?: ICommandExecutor;
   /** Number of retries for network operations (default: 3) */
   retries?: number;
+  /** Optional logger for debug messages */
+  log?: { debug(msg: string): void };
 }
 
 export class GitOps implements ILocalGitOps {
@@ -30,24 +31,14 @@ export class GitOps implements ILocalGitOps {
   private readonly dryRun: boolean;
   private readonly _executor: ICommandExecutor;
   private readonly _retries: number;
-
-  get workDir(): string {
-    return this._workDir;
-  }
-
-  get executor(): ICommandExecutor {
-    return this._executor;
-  }
-
-  get retries(): number {
-    return this._retries;
-  }
+  private readonly log?: { debug(msg: string): void };
 
   constructor(options: GitOpsOptions) {
     this._workDir = options.workDir;
     this.dryRun = options.dryRun ?? false;
     this._executor = options.executor ?? defaultExecutor;
     this._retries = options.retries ?? 3;
+    this.log = options.log;
   }
 
   private async exec(command: string, cwd?: string): Promise<string> {
@@ -171,7 +162,7 @@ export class GitOps implements ILocalGitOps {
     try {
       return readFileSync(filePath, "utf-8");
     } catch (error) {
-      logger.debug(`Failed to read ${fileName}: ${toErrorMessage(error)}`);
+      this.log?.debug(`Failed to read ${fileName}: ${toErrorMessage(error)}`);
       return null;
     }
   }
@@ -195,7 +186,7 @@ export class GitOps implements ILocalGitOps {
       const existingContent = readFileSync(filePath, "utf-8");
       return existingContent !== newContent;
     } catch (error) {
-      logger.debug(
+      this.log?.debug(
         `Failed to read ${fileName} for comparison: ${toErrorMessage(error)}`
       );
       return true;
@@ -232,7 +223,7 @@ export class GitOps implements ILocalGitOps {
       return false; // Exit code 0 = no staged changes
     } catch (error) {
       // Exit code 1 is expected when staged changes exist
-      logger.debug(`hasStagedChanges: ${toErrorMessage(error)}`);
+      this.log?.debug(`hasStagedChanges: ${toErrorMessage(error)}`);
       return true;
     }
   }
@@ -250,7 +241,7 @@ export class GitOps implements ILocalGitOps {
       return true;
     } catch (error) {
       // Expected when file doesn't exist on branch
-      logger.debug(
+      this.log?.debug(
         `fileExistsOnBranch(${fileName}, ${branch}): ${toErrorMessage(error)}`
       );
       return false;
@@ -329,7 +320,7 @@ export class GitOps implements ILocalGitOps {
       }
     } catch (error) {
       const msg = toErrorMessage(error);
-      logger.debug(`git remote show origin failed - ${msg}`);
+      this.log?.debug(`git remote show origin failed - ${msg}`);
     }
 
     return this.getDefaultBranchLocal();
@@ -348,7 +339,7 @@ export class GitOps implements ILocalGitOps {
       return { branch: "main", method: "origin/main exists" };
     } catch (error) {
       const msg = toErrorMessage(error);
-      logger.debug(`origin/main check failed - ${msg}`);
+      this.log?.debug(`origin/main check failed - ${msg}`);
     }
 
     try {
@@ -356,7 +347,7 @@ export class GitOps implements ILocalGitOps {
       return { branch: "master", method: "origin/master exists" };
     } catch (error) {
       const msg = toErrorMessage(error);
-      logger.debug(`origin/master check failed - ${msg}`);
+      this.log?.debug(`origin/master check failed - ${msg}`);
     }
 
     return { branch: "main", method: "fallback default" };

@@ -13,12 +13,20 @@ import type {
   IPRStrategy,
 } from "./types.js";
 
+export interface IPRStrategyLogger {
+  debug(msg: string): void;
+  warn(msg: string): void;
+  info(msg: string): void;
+}
+
 export abstract class BasePRStrategy implements IPRStrategy {
   protected bodyFilePath: string = ".pr-body.md";
   protected executor: ICommandExecutor;
+  protected log?: IPRStrategyLogger;
 
-  constructor(executor?: ICommandExecutor) {
+  constructor(executor?: ICommandExecutor, log?: IPRStrategyLogger) {
     this.executor = executor ?? defaultExecutor;
+    this.log = log;
   }
 
   abstract checkExistingPR(

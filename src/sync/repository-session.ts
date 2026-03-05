@@ -20,30 +20,29 @@ export class RepositorySession implements IRepositorySession {
   ): Promise<SessionContext> {
     const { workDir, dryRun, retries, authOptions } = options;
 
-    const { localOps, networkOps } = this.gitOpsFactory(
+    const gitOps = this.gitOpsFactory(
       { workDir, dryRun, retries },
       authOptions
     );
 
     this.log.debug("Cleaning workspace...");
-    localOps.cleanWorkspace();
+    gitOps.cleanWorkspace();
 
     this.log.debug("Cloning repository...");
-    await networkOps.clone(repoInfo.gitUrl);
+    await gitOps.clone(repoInfo.gitUrl);
 
     const { branch: baseBranch, method: detectionMethod } =
-      await networkOps.getDefaultBranch();
+      await gitOps.getDefaultBranch();
     this.log.info(
       `Default branch: ${baseBranch} (detected via ${detectionMethod})`
     );
 
     return {
-      localOps,
-      networkOps,
+      gitOps,
       baseBranch,
       cleanup: () => {
         safeCleanup(
-          () => localOps.cleanWorkspace(),
+          () => gitOps.cleanWorkspace(),
           "workspace removal failed",
           this.log
         );

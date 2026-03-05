@@ -30,7 +30,8 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
       repoInfo,
       this.tokenManager,
       repoName,
-      this.log
+      this.log,
+      process.env.GH_TOKEN
     );
 
     if (skipped) {

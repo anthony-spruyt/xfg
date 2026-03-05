@@ -4,13 +4,13 @@ import { escapeShellArg } from "../shared/shell-utils.js";
 import { assertGitLabRepo, GitLabRepoInfo } from "../shared/repo-detector.js";
 import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
+import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
   CloseExistingPROptions,
   MergeOptions,
   MergeResult,
 } from "./types.js";
-import { logger } from "../shared/logger.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
 import { parseApiJson } from "../shared/gh-api-utils.js";
@@ -19,8 +19,8 @@ import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
 import type { MergeStrategy } from "../config/index.js";
 
 export class GitLabPRStrategy extends BasePRStrategy {
-  constructor(executor?: ICommandExecutor) {
-    super(executor);
+  constructor(executor?: ICommandExecutor, log?: IPRStrategyLogger) {
+    super(executor, log);
     this.bodyFilePath = ".mr-description.md";
   }
 
@@ -113,7 +113,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     } catch (error) {
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("no merge requests")) {
-        logger.debug(
+        this.log?.debug(
           `GitLab MR check failed - ${sanitizeCredentials(stderr).trim()}`
         );
       }
@@ -142,7 +142,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     // Extract MR IID from URL
     const mrInfo = this.parseMRUrl(existingUrl);
     if (!mrInfo) {
-      logger.warn(`Could not extract MR IID from URL: ${existingUrl}`);
+      this.log?.warn(`Could not extract MR IID from URL: ${existingUrl}`);
       return false;
     }
 
@@ -157,7 +157,9 @@ export class GitLabPRStrategy extends BasePRStrategy {
       });
     } catch (error) {
       const message = toErrorMessage(error);
-      logger.warn(`Failed to close existing MR !${mrInfo.mrIid}: ${message}`);
+      this.log?.warn(
+        `Failed to close existing MR !${mrInfo.mrIid}: ${message}`
+      );
       return false;
     }
 
@@ -170,7 +172,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     } catch (error) {
       // Branch deletion failure is not critical
       const message = toErrorMessage(error);
-      logger.warn(`Failed to delete branch ${branchName}: ${message}`);
+      this.log?.warn(`Failed to delete branch ${branchName}: ${message}`);
     }
 
     return true;
@@ -231,7 +233,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
           if (existsSync(descFile)) unlinkSync(descFile);
         },
         `failed to remove ${descFile}`,
-        logger
+        this.log ?? { debug() {} }
       );
     }
   }

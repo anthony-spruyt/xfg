@@ -1,7 +1,4 @@
-import type {
-  ILocalGitOps,
-  INetworkGitOps,
-} from "../../src/vcs/authenticated-git-ops.js";
+import type { IGitOps } from "../../src/vcs/authenticated-git-ops.js";
 
 export interface AuthenticatedGitOpsMockConfig {
   // Return value overrides
@@ -50,8 +47,7 @@ export interface NetworkGitOpsMockCalls {
 }
 
 export interface AuthenticatedGitOpsMockResult {
-  localOps: ILocalGitOps;
-  networkOps: INetworkGitOps;
+  gitOps: IGitOps;
   localCalls: LocalGitOpsMockCalls;
   networkCalls: NetworkGitOpsMockCalls;
   reset: () => void;
@@ -78,7 +74,9 @@ export function createMockAuthenticatedGitOps(
     fetchBranch: [],
   };
 
-  const localOps: ILocalGitOps = {
+  const gitOps: IGitOps = {
+    // --- ILocalGitOps methods ---
+
     cleanWorkspace(): void {
       localCalls.cleanWorkspace.push({});
       if (config.cleanupError) {
@@ -170,9 +168,9 @@ export function createMockAuthenticatedGitOps(
       }
       return config.fileExists ?? false;
     },
-  };
 
-  const networkOps: INetworkGitOps = {
+    // --- INetworkGitOps methods ---
+
     async clone(gitUrl: string): Promise<void> {
       networkCalls.clone.push({ gitUrl });
       if (config.cloneError) {
@@ -225,8 +223,7 @@ export function createMockAuthenticatedGitOps(
   };
 
   return {
-    localOps,
-    networkOps,
+    gitOps,
     localCalls,
     networkCalls,
     reset: () => {

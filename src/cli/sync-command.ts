@@ -343,7 +343,8 @@ async function processSingleRepo(
           repoInfo as GitHubRepoInfo,
           ctx.tokenManager,
           repoName,
-          logger
+          logger,
+          process.env.GH_TOKEN
         )
       ).token
     : undefined;

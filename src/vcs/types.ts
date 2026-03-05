@@ -53,6 +53,9 @@ export interface INetworkGitOps {
   fetchBranch(branchName: string): Promise<void>;
 }
 
+/** Unified git operations interface for consumers that need both local and network ops. */
+export interface IGitOps extends ILocalGitOps, INetworkGitOps {}
+
 export interface PRResult {
   url?: string;
   success: boolean;

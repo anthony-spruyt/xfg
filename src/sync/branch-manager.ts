@@ -20,8 +20,7 @@ export class BranchManager implements IBranchManager {
       dryRun,
       retries,
       token,
-      localOps,
-      networkOps,
+      gitOps,
       executor,
     } = options;
 
@@ -45,11 +44,11 @@ export class BranchManager implements IBranchManager {
       if (closed) {
         this.log.info("Closed existing PR and deleted branch for fresh sync");
         // Prune stale remote tracking refs so --force-with-lease works correctly
-        await networkOps.fetch({ prune: true });
+        await gitOps.fetch({ prune: true });
       }
     }
 
     this.log.debug(`Creating branch: ${branchName}`);
-    await localOps.createBranch(branchName);
+    await gitOps.createBranch(branchName);
   }
 }

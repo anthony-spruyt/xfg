@@ -41,12 +41,11 @@ describe("FileSyncStrategy", () => {
     };
 
     const strategy = new FileSyncStrategy(mockOrchestrator);
-    const { localOps, networkOps } = createMockAuthenticatedGitOps({
+    const { gitOps } = createMockAuthenticatedGitOps({
       hasChanges: false,
     });
     const session: SessionContext = {
-      localOps,
-      networkOps,
+      gitOps,
       baseBranch: "main",
       cleanup: () => {},
     };
@@ -88,12 +87,11 @@ describe("FileSyncStrategy", () => {
     };
 
     const strategy = new FileSyncStrategy(mockOrchestrator);
-    const { localOps, networkOps } = createMockAuthenticatedGitOps({
+    const { gitOps } = createMockAuthenticatedGitOps({
       hasChanges: true,
     });
     const session: SessionContext = {
-      localOps,
-      networkOps,
+      gitOps,
       baseBranch: "main",
       cleanup: () => {},
     };
@@ -143,12 +141,11 @@ describe("FileSyncStrategy", () => {
     };
 
     const strategy = new FileSyncStrategy(mockOrchestrator);
-    const { localOps, networkOps } = createMockAuthenticatedGitOps({
+    const { gitOps } = createMockAuthenticatedGitOps({
       hasChanges: true,
     });
     const session: SessionContext = {
-      localOps,
-      networkOps,
+      gitOps,
       baseBranch: "main",
       cleanup: () => {},
     };

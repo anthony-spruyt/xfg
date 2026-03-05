@@ -41,10 +41,10 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
         configId,
         isGraphQLCommitMode: options.isGraphQLCommitMode,
       },
-      { gitOps: session.localOps, log: this.log }
+      { gitOps: session.gitOps, log: this.log }
     );
 
-    const existingManifest = loadManifest(workDir);
+    const existingManifest = loadManifest(workDir, this.log);
     const filesWithDeleteOrphaned = new Map<string, boolean | undefined>(
       repoConfig.files.map((f) => [f.fileName, f.deleteOrphaned])
     );
@@ -59,13 +59,13 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
     await this.manifestManager.deleteOrphans(
       filesToDelete,
       { dryRun: dryRun, noDelete: noDelete },
-      { gitOps: session.localOps, log: this.log, fileChanges }
+      { gitOps: session.gitOps, log: this.log, fileChanges }
     );
 
     // Update diff stats for deletions in dry-run
     if (dryRun && filesToDelete.length > 0 && !noDelete) {
       for (const fileName of filesToDelete) {
-        if (session.localOps.fileExists(fileName)) {
+        if (session.gitOps.fileExists(fileName)) {
           incrementDiffStats(diffStats, "DELETED");
         }
       }

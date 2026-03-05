@@ -1,6 +1,5 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { logger } from "../shared/logger.js";
 
 export const MANIFEST_FILENAME = ".xfg.json";
 
@@ -126,7 +125,10 @@ export function createEmptyManifest(): XfgManifest {
  * Loads and migrates manifest from workDir. V1 returns null (no config-ID namespace);
  * V2/V3 are auto-migrated to V4.
  */
-export function loadManifest(workDir: string): XfgManifest | null {
+export function loadManifest(
+  workDir: string,
+  log?: { debug(msg: string): void }
+): XfgManifest | null {
   const manifestPath = join(workDir, MANIFEST_FILENAME);
 
   if (!existsSync(manifestPath)) {
@@ -160,7 +162,7 @@ export function loadManifest(workDir: string): XfgManifest | null {
     // Unknown format - treat as no manifest
     return null;
   } catch (error) {
-    logger.debug(`Failed to load manifest from ${manifestPath}: ${error}`);
+    log?.debug(`Failed to load manifest from ${manifestPath}: ${error}`);
     return null;
   }
 }
@@ -169,7 +171,10 @@ export function loadManifest(workDir: string): XfgManifest | null {
  * Parses manifest content from a string (e.g., fetched from a remote API).
  * Handles V2→V3 migration, returns null for V1/unknown/invalid formats.
  */
-export function parseManifestContent(content: string): XfgManifest | null {
+export function parseManifestContent(
+  content: string,
+  log?: { debug(msg: string): void }
+): XfgManifest | null {
   try {
     const parsed = JSON.parse(content) as unknown;
 
@@ -187,7 +192,7 @@ export function parseManifestContent(content: string): XfgManifest | null {
 
     return null;
   } catch (error) {
-    logger.debug(`Failed to parse manifest content: ${error}`);
+    log?.debug(`Failed to parse manifest content: ${error}`);
     return null;
   }
 }

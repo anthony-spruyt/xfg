@@ -47,7 +47,7 @@ describe("SyncWorkflow", () => {
   });
 
   function createMockComponents() {
-    const { localOps, networkOps } = createMockAuthenticatedGitOps({
+    const { gitOps } = createMockAuthenticatedGitOps({
       hasChanges: true,
     });
     let cleanupCalled = false;
@@ -70,8 +70,7 @@ describe("SyncWorkflow", () => {
     const repositorySession: IRepositorySession = {
       async setup() {
         return {
-          localOps,
-          networkOps,
+          gitOps,
           baseBranch: "main",
           cleanup: () => {
             cleanupCalled = true;

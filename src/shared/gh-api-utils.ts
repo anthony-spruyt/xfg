@@ -123,7 +123,8 @@ export async function resolveGitHubToken(
   repoInfo: GitHubRepoInfo,
   tokenManager: GitHubAppTokenManager | null,
   context: string,
-  log?: { debug(msg: string): void }
+  log?: { debug(msg: string): void },
+  envToken?: string
 ): Promise<{ token: string | undefined; skipped: boolean }> {
   try {
     const appToken = await tokenManager?.getTokenForRepo(repoInfo);
@@ -132,12 +133,12 @@ export async function resolveGitHubToken(
       return { token: undefined, skipped: true };
     }
     // string = app token; undefined = no manager configured
-    return { token: appToken ?? process.env.GH_TOKEN, skipped: false };
+    return { token: appToken ?? envToken, skipped: false };
   } catch (error) {
     log?.debug(
       `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}; falling back to GH_TOKEN`
     );
-    return { token: process.env.GH_TOKEN, skipped: false };
+    return { token: envToken, skipped: false };
   }
 }
 

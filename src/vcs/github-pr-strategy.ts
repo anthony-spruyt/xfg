@@ -4,17 +4,17 @@ import { escapeShellArg, escapeRegExp } from "../shared/shell-utils.js";
 import { assertGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
+import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
   CloseExistingPROptions,
   MergeOptions,
   MergeResult,
 } from "./types.js";
-import { logger } from "../shared/logger.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
-import { getStderr } from "../shared/command-executor.js";
+import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
 import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
 
@@ -38,6 +38,9 @@ function buildPRUrlRegex(host: string): RegExp {
 }
 
 export class GitHubPRStrategy extends BasePRStrategy {
+  constructor(executor?: ICommandExecutor, log?: IPRStrategyLogger) {
+    super(executor, log);
+  }
   async checkExistingPR(
     options: CloseExistingPROptions
   ): Promise<string | null> {
@@ -59,7 +62,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     } catch (error) {
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("no pull requests match")) {
-        logger.debug(
+        this.log?.debug(
           `GitHub PR check failed - ${sanitizeCredentials(stderr).trim()}`
         );
       }
@@ -96,7 +99,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     // Extract PR number from URL
     const prNumber = existingUrl.match(/\/pull\/(\d+)/)?.[1];
     if (!prNumber) {
-      logger.warn(`Could not extract PR number from URL: ${existingUrl}`);
+      this.log?.warn(`Could not extract PR number from URL: ${existingUrl}`);
       return false;
     }
 
@@ -112,7 +115,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       return true;
     } catch (error) {
       const message = toErrorMessage(error);
-      logger.warn(`Failed to close existing PR #${prNumber}: ${message}`);
+      this.log?.warn(`Failed to close existing PR #${prNumber}: ${message}`);
       return false;
     }
   }
@@ -171,7 +174,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
           if (existsSync(bodyFile)) unlinkSync(bodyFile);
         },
         `failed to remove ${bodyFile}`,
-        logger
+        this.log ?? { debug() {} }
       );
     }
   }
@@ -198,7 +201,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       return result.trim() === "true";
     } catch (error) {
       // If we can't check, assume auto-merge is not enabled
-      logger.warn(
+      this.log?.warn(
         `Could not check auto-merge status: ${toErrorMessage(error)}`
       );
       return false;
@@ -247,10 +250,10 @@ export class GitHubPRStrategy extends BasePRStrategy {
       );
 
       if (!autoMergeEnabled) {
-        logger.warn(
+        this.log?.warn(
           `Auto-merge not enabled for '${repoInfo.owner}/${repoInfo.repo}'. PR left open for manual review.`
         );
-        logger.info(
+        this.log?.info(
           `To enable: gh repo edit ${getRepoFlag(repoInfo)} --enable-auto-merge (requires admin)`
         );
         return {
