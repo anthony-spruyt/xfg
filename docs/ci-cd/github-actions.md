@@ -7,7 +7,7 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 ```yaml
 - uses: actions/checkout@v4
 
-- uses: anthony-spruyt/xfg@v3
+- uses: anthony-spruyt/xfg@v4
   with:
     config: ./sync-config.yml
     github-token: ${{ secrets.GH_PAT }} # PAT with repo scope for cross-repo access
@@ -17,7 +17,6 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 
 | Input                    | Required | Default               | Description                                                |
 | ------------------------ | -------- | --------------------- | ---------------------------------------------------------- |
-| `command`                | No       | `sync`                | Command to run (`sync` or `settings`)                      |
 | `config`                 | Yes      | -                     | Path to YAML config file                                   |
 | `dry-run`                | No       | `false`               | Preview mode - show what would change without creating PRs |
 | `work-dir`               | No       | `./tmp`               | Directory for cloning repositories                         |
@@ -38,7 +37,7 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 Sync configs across GitHub, Azure DevOps, and GitLab repositories:
 
 ```yaml
-- uses: anthony-spruyt/xfg@v3
+- uses: anthony-spruyt/xfg@v4
   with:
     config: ./sync-config.yml
     github-token: ${{ secrets.GH_PAT }}
@@ -54,7 +53,7 @@ Sync configs across GitHub, Azure DevOps, and GitLab repositories:
 Automatically merge PRs when CI passes:
 
 ```yaml
-- uses: anthony-spruyt/xfg@v3
+- uses: anthony-spruyt/xfg@v4
   with:
     config: ./sync-config.yml
     github-token: ${{ secrets.GH_PAT }}
@@ -66,7 +65,7 @@ Automatically merge PRs when CI passes:
 Push directly to the default branch without creating PRs:
 
 ```yaml
-- uses: anthony-spruyt/xfg@v3
+- uses: anthony-spruyt/xfg@v4
   with:
     config: ./sync-config.yml
     github-token: ${{ secrets.GH_PAT }}
@@ -97,7 +96,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: anthony-spruyt/xfg@v3
+      - uses: anthony-spruyt/xfg@v4
         with:
           config: ./sync-config.yml
           github-app-id: ${{ vars.APP_ID }}

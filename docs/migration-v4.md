@@ -30,7 +30,7 @@ The `command` input has been removed from the GitHub Action. The action always r
 **Before (v3):**
 
 ```yaml
-- uses: anthony-spruyt/xfg@v3
+- uses: anthony-spruyt/xfg@v4
   with:
     command: settings
     config: ./config.yaml

@@ -1,6 +1,6 @@
 # GitHub Labels
 
-xfg can manage GitHub labels declaratively using the `settings` command. Define labels in your config file, and xfg will create, update, rename, or delete them to match your desired state.
+xfg can manage GitHub labels declaratively using the `sync` command. Define labels in your config file, and xfg will create, update, rename, or delete them to match your desired state.
 
 !!! note "GitHub-Only Feature"
     Labels are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg sync`.
@@ -128,7 +128,7 @@ repos:
 
 ## How It Works
 
-The `settings` command:
+The `xfg sync` command:
 
 1. Fetches current labels from the GitHub API
 2. Compares them against the desired state in config (case-insensitive matching)

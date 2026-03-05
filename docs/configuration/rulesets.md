@@ -1,6 +1,6 @@
 # GitHub Rulesets
 
-xfg can manage GitHub Rulesets declaratively using the `settings` command. Define rulesets in your config file, and xfg will create, update, or delete them to match your desired state.
+xfg can manage GitHub Rulesets declaratively using the `sync` command. Define rulesets in your config file, and xfg will create, update, or delete them to match your desired state.
 
 !!! note "GitHub-Only Feature"
     Rulesets are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg sync`.
@@ -422,14 +422,13 @@ Found 2 repositories with rulesets
 
 ## Combining with File Sync
 
-The `sync` and `settings` commands are independent. Run them together or separately:
+File sync and settings are handled together by a single command:
 
 ```bash
-# Sync files and apply rulesets
-xfg sync -c config.yaml && xfg sync -c config.yaml
-
-# Or run separately
+# Sync files and apply rulesets in one run
 xfg sync -c config.yaml
+
+# Preview first, then apply
 xfg sync -c config.yaml --dry-run  # Preview first
 xfg sync -c config.yaml            # Apply
 ```
