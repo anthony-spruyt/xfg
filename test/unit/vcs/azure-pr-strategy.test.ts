@@ -945,3 +945,81 @@ describe("AzurePRStrategy type guards", () => {
     );
   });
 });
+
+describe("AzurePRStrategy merge unknown mode", () => {
+  const azureRepoInfo: AzureDevOpsRepoInfo = {
+    type: "azure-devops",
+    gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
+    owner: "myorg",
+    repo: "myrepo",
+    organization: "myorg",
+    project: "myproject",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+  });
+
+  test("returns failure for unknown merge mode", async () => {
+    const strategy = new AzurePRStrategy(mockExecutor);
+    const result = await strategy.merge({
+      prUrl:
+        "https://dev.azure.com/myorg/myproject/_git/myrepo/pullrequest/123",
+      repoInfo: azureRepoInfo,
+      config: { mode: "unknown" as "manual" },
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(result.merged, false);
+    assert.ok(result.message.includes("Unknown merge mode"));
+  });
+});
+
+describe("AzurePRStrategy closeExistingPR with unparseable URL", () => {
+  const azureRepoInfo: AzureDevOpsRepoInfo = {
+    type: "azure-devops",
+    gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
+    owner: "myorg",
+    repo: "myrepo",
+    organization: "myorg",
+    project: "myproject",
+  };
+
+  test("returns false when checkExistingPR returns unparseable URL", async () => {
+    // Mock checkExistingPR to return a non-empty but unparseable string
+    // by making az repos pr list return a non-numeric value
+    const mockExecutor = createMockExecutor();
+    // The checkExistingPR builds a URL via buildPRUrl, which uses the ID from the command.
+    // We need to override checkExistingPR behavior. Since we cannot easily make buildPRUrl
+    // produce an unparseable URL, we extend the strategy to override checkExistingPR.
+    class TestableAzurePRStrategy extends AzurePRStrategy {
+      override async checkExistingPR(): Promise<string | null> {
+        // Return a URL that parsePRUrl cannot parse
+        return "https://not-azure-devops.com/invalid-url";
+      }
+    }
+
+    const warnings: string[] = [];
+    const strategy = new TestableAzurePRStrategy(mockExecutor, {
+      debug() {},
+      warn(msg: string) {
+        warnings.push(msg);
+      },
+      info() {},
+    });
+    const result = await strategy.closeExistingPR({
+      repoInfo: azureRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result, false);
+    assert.ok(warnings.some((w) => w.includes("Could not parse PR URL")));
+  });
+});

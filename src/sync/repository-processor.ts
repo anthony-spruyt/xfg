@@ -53,6 +53,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       syncWorkflow?: ISyncWorkflow;
     }
   ) {
+    const logInstance = log ?? logger;
     const factory: GitOpsFactory =
       gitOpsFactory ??
       ((opts, auth) => {
@@ -66,7 +67,6 @@ export class RepositoryProcessor implements IRepositoryProcessor {
           logInstance
         );
       });
-    const logInstance = log ?? logger;
 
     // Initialize token manager for auth builder
     const tokenManager = createTokenManager();

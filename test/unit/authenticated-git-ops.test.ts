@@ -694,4 +694,243 @@ describe("AuthenticatedGitOps", () => {
       assert.equal(result.method, "mock fallback");
     });
   });
+
+  describe("ILocalGitOps delegation", () => {
+    it("createBranch delegates to localOps", async () => {
+      let branchCreated = "";
+      const localOps = {
+        ...createMockLocalOps(),
+        async createBranch(branchName: string) {
+          branchCreated = branchName;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      await authOps.createBranch("feature-branch");
+      assert.strictEqual(branchCreated, "feature-branch");
+    });
+
+    it("writeFile delegates to localOps", () => {
+      const calls: string[] = [];
+      const localOps = {
+        ...createMockLocalOps(),
+        writeFile(fileName: string, content: string) {
+          calls.push(`writeFile:${fileName}:${content}`);
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      authOps.writeFile("test.json", '{"key":"value"}');
+      assert.strictEqual(calls.length, 1);
+      assert.ok(calls[0].startsWith("writeFile:test.json:"));
+    });
+
+    it("setExecutable delegates to localOps", async () => {
+      let called = false;
+      const localOps = {
+        ...createMockLocalOps(),
+        async setExecutable(_fileName: string) {
+          called = true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      await authOps.setExecutable("script.sh");
+      assert.ok(called);
+    });
+
+    it("getFileContent delegates to localOps", () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        getFileContent(_fileName: string) {
+          return "file-content";
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(authOps.getFileContent("test.json"), "file-content");
+    });
+
+    it("wouldChange delegates to localOps", () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        wouldChange(_fileName: string, _content: string) {
+          return false;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(authOps.wouldChange("test.json", "content"), false);
+    });
+
+    it("hasChanges delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async hasChanges() {
+          return true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(await authOps.hasChanges(), true);
+    });
+
+    it("getChangedFiles delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async getChangedFiles() {
+          return ["file1.ts", "file2.ts"];
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.deepStrictEqual(await authOps.getChangedFiles(), [
+        "file1.ts",
+        "file2.ts",
+      ]);
+    });
+
+    it("hasStagedChanges delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async hasStagedChanges() {
+          return true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(await authOps.hasStagedChanges(), true);
+    });
+
+    it("fileExistsOnBranch delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async fileExistsOnBranch(_fileName: string, _branch: string) {
+          return true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(
+        await authOps.fileExistsOnBranch("test.json", "main"),
+        true
+      );
+    });
+
+    it("fileExists delegates to localOps", () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        fileExists(_fileName: string) {
+          return true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(authOps.fileExists("test.json"), true);
+    });
+
+    it("deleteFile delegates to localOps", () => {
+      let deleted = false;
+      const localOps = {
+        ...createMockLocalOps(),
+        deleteFile(_fileName: string) {
+          deleted = true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      authOps.deleteFile("test.json");
+      assert.ok(deleted);
+    });
+
+    it("commit delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async commit(_message: string) {
+          return true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(await authOps.commit("test commit"), true);
+    });
+
+    it("getDefaultBranchLocal delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async getDefaultBranchLocal() {
+          return { branch: "develop", method: "custom" };
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      const result = await authOps.getDefaultBranchLocal();
+      assert.deepStrictEqual(result, { branch: "develop", method: "custom" });
+    });
+  });
 });

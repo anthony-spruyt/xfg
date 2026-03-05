@@ -4,7 +4,6 @@ import { escapeShellArg, escapeRegExp } from "../shared/shell-utils.js";
 import { assertGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
-import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
   CloseExistingPROptions,
@@ -14,7 +13,7 @@ import type {
 import { withRetry } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
-import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
+import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
 import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
 
@@ -38,9 +37,6 @@ function buildPRUrlRegex(host: string): RegExp {
 }
 
 export class GitHubPRStrategy extends BasePRStrategy {
-  constructor(executor?: ICommandExecutor, log?: IPRStrategyLogger) {
-    super(executor, log);
-  }
   async checkExistingPR(
     options: CloseExistingPROptions
   ): Promise<string | null> {

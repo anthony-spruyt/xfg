@@ -609,5 +609,26 @@ describe("manifest", () => {
       // Config entry should be removed since no files
       assert.deepStrictEqual(loaded?.configs, {});
     });
+
+    test("loadManifest logs debug when JSON parsing fails", () => {
+      writeFileSync(join(testDir, MANIFEST_FILENAME), "not valid json{{{");
+      const debugMessages: string[] = [];
+      const loaded = loadManifest(testDir, {
+        debug: (msg: string) => debugMessages.push(msg),
+      });
+      assert.equal(loaded, null);
+      assert.ok(debugMessages.length > 0, "Should have logged a debug message");
+      assert.ok(debugMessages[0].includes("Failed to load manifest"));
+    });
+
+    test("parseManifestContent logs debug when JSON parsing fails", () => {
+      const debugMessages: string[] = [];
+      const result = parseManifestContent("not valid json{{{", {
+        debug: (msg: string) => debugMessages.push(msg),
+      });
+      assert.equal(result, null);
+      assert.ok(debugMessages.length > 0, "Should have logged a debug message");
+      assert.ok(debugMessages[0].includes("Failed to parse manifest content"));
+    });
   });
 });

@@ -1115,3 +1115,71 @@ describe("GitLabPRStrategy self-hosted", () => {
     );
   });
 });
+
+describe("GitLabPRStrategy merge unknown mode", () => {
+  const gitlabRepoInfo: GitLabRepoInfo = {
+    type: "gitlab",
+    gitUrl: "git@gitlab.com:myorg/myrepo.git",
+    owner: "myorg",
+    namespace: "myorg",
+    repo: "myrepo",
+    host: "gitlab.com",
+  };
+
+  test("returns failure for unknown merge mode", async () => {
+    const mockExecutor = createMockExecutor();
+    const strategy = new GitLabPRStrategy(mockExecutor);
+    const result = await strategy.merge({
+      prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/1",
+      repoInfo: gitlabRepoInfo,
+      config: { mode: "unknown" as "manual" },
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(result.merged, false);
+    assert.ok(result.message.includes("Unknown merge mode"));
+  });
+});
+
+describe("GitLabPRStrategy closeExistingPR with unparseable URL", () => {
+  const gitlabRepoInfo: GitLabRepoInfo = {
+    type: "gitlab",
+    gitUrl: "git@gitlab.com:myorg/myrepo.git",
+    owner: "myorg",
+    namespace: "myorg",
+    repo: "myrepo",
+    host: "gitlab.com",
+  };
+
+  test("returns false when checkExistingPR returns unparseable URL", async () => {
+    class TestableGitLabPRStrategy extends GitLabPRStrategy {
+      override async checkExistingPR(): Promise<string | null> {
+        return "https://not-a-gitlab-url.com/invalid";
+      }
+    }
+
+    const warnings: string[] = [];
+    const mockExecutor = createMockExecutor();
+    const strategy = new TestableGitLabPRStrategy(mockExecutor, {
+      debug() {},
+      warn(msg: string) {
+        warnings.push(msg);
+      },
+      info() {},
+    });
+    const result = await strategy.closeExistingPR({
+      repoInfo: gitlabRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result, false);
+    assert.ok(
+      warnings.some((w) => w.includes("Could not extract MR IID from URL"))
+    );
+  });
+});

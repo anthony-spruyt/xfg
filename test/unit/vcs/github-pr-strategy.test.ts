@@ -1392,3 +1392,29 @@ describe("GitHubPRStrategy with token parameter", () => {
     );
   });
 });
+
+describe("GitHubPRStrategy merge unknown mode", () => {
+  const githubRepoInfo: GitHubRepoInfo = {
+    type: "github",
+    gitUrl: "git@github.com:owner/repo.git",
+    owner: "owner",
+    repo: "repo",
+    host: "github.com",
+  };
+
+  test("returns failure for unknown merge mode", async () => {
+    const mockExecutor = createMockExecutor();
+    const strategy = new GitHubPRStrategy(mockExecutor);
+    const result = await strategy.merge({
+      prUrl: "https://github.com/owner/repo/pull/1",
+      repoInfo: githubRepoInfo,
+      config: { mode: "unknown" as "manual" },
+      workDir: "/tmp/test",
+      retries: 0,
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(result.merged, false);
+    assert.ok(result.message.includes("Unknown merge mode"));
+  });
+});

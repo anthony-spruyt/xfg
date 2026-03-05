@@ -366,6 +366,21 @@ describe("GitOps", () => {
       assert.equal(resultSame, false);
       assert.equal(resultDiff, true);
     });
+
+    test("returns true and logs when readFileSync throws during comparison", () => {
+      // Create a directory where a file would be expected - readFileSync on a directory throws
+      mkdirSync(join(workDir, "is-a-dir"), { recursive: true });
+      const debugMessages: string[] = [];
+      const gitOps = new GitOps({
+        workDir,
+        log: { debug: (msg: string) => debugMessages.push(msg) },
+      });
+
+      const result = gitOps.wouldChange("is-a-dir", "some content");
+      assert.equal(result, true);
+      assert.ok(debugMessages.length > 0, "Should have logged a debug message");
+      assert.ok(debugMessages[0].includes("Failed to read"));
+    });
   });
 
   describe("dryRun mode", () => {
@@ -1046,6 +1061,49 @@ describe("GitOps", () => {
         () => gitOps.getFileContent("../escape.json"),
         /Path traversal detected/
       );
+    });
+
+    test("returns null and logs when readFileSync throws", () => {
+      // Create a directory where a file would be expected - readFileSync on a directory throws
+      mkdirSync(join(workDir, "is-a-dir"), { recursive: true });
+      const debugMessages: string[] = [];
+      const gitOps = new GitOps({
+        workDir,
+        log: { debug: (msg: string) => debugMessages.push(msg) },
+      });
+
+      const content = gitOps.getFileContent("is-a-dir");
+      assert.equal(content, null);
+      assert.ok(debugMessages.length > 0, "Should have logged a debug message");
+      assert.ok(debugMessages[0].includes("Failed to read"));
+    });
+  });
+
+  describe("clone", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("runs git clone command", async () => {
+      const commands: string[] = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(command: string, _cwd: string): Promise<string> {
+          commands.push(command);
+          return "";
+        },
+      };
+
+      const gitOps = new GitOps({
+        workDir,
+        executor: mockExecutor,
+        retries: 0,
+      });
+      await gitOps.clone("https://github.com/owner/repo.git");
+
+      assert.equal(commands.length, 1);
+      assert.ok(commands[0].includes("git clone"));
+      assert.ok(commands[0].includes("https://github.com/owner/repo.git"));
+      assert.ok(commands[0].includes(" ."));
     });
   });
 
