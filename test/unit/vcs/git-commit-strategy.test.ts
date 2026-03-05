@@ -215,7 +215,7 @@ describe("GitCommitStrategy", () => {
       );
     });
 
-    test("uses networkOps.push() when networkOps is provided", async () => {
+    test("uses gitOps.push() when gitOps is provided", async () => {
       const mockNetworkOps = {
         push: mock.fn(async () => {}),
       };
@@ -230,15 +230,15 @@ describe("GitCommitStrategy", () => {
         message: "test commit",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
-        networkOps: mockNetworkOps as unknown as INetworkGitOps,
+        gitOps: mockNetworkOps as unknown as INetworkGitOps,
         force: true,
       });
 
-      // Verify networkOps.push was called
+      // Verify gitOps.push was called
       assert.strictEqual(
         mockNetworkOps.push.mock.calls.length,
         1,
-        "networkOps.push should be called once"
+        "gitOps.push should be called once"
       );
       assert.deepStrictEqual(mockNetworkOps.push.mock.calls[0].arguments, [
         "test-branch",
@@ -252,11 +252,11 @@ describe("GitCommitStrategy", () => {
       assert.strictEqual(
         pushCalls.length,
         0,
-        "Should not call raw git push when networkOps is provided"
+        "Should not call raw git push when gitOps is provided"
       );
     });
 
-    test("falls back to raw git push when networkOps is not provided", async () => {
+    test("falls back to raw git push when gitOps is not provided", async () => {
       mockExecutor.responses.set("git rev-parse HEAD", "abc123def456");
 
       const strategy = new GitCommitStrategy(mockExecutor);
@@ -267,7 +267,7 @@ describe("GitCommitStrategy", () => {
         message: "test commit",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
-        // networkOps NOT provided
+        // gitOps NOT provided
         force: true,
       });
 
@@ -278,7 +278,7 @@ describe("GitCommitStrategy", () => {
       assert.strictEqual(
         pushCalls.length,
         1,
-        "Should call raw git push when no networkOps"
+        "Should call raw git push when no gitOps"
       );
       assert.ok(
         pushCalls[0].command.includes("--force-with-lease"),

@@ -2,7 +2,7 @@ import type { FileContent, RepoConfig } from "../config/types.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type {
   ILocalGitOps,
-  INetworkGitOps,
+  IGitOps,
   GitAuthOptions,
 } from "../vcs/authenticated-git-ops.js";
 import type { GitOpsOptions } from "../vcs/git-ops.js";
@@ -12,15 +12,11 @@ import type { XfgManifest } from "./manifest.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { FileAction } from "../vcs/pr-creator.js";
 
-export interface GitOpsResult {
-  localOps: ILocalGitOps;
-  networkOps: INetworkGitOps;
-}
-
 export type GitOpsFactory = (
   options: GitOpsOptions,
-  auth?: GitAuthOptions
-) => GitOpsResult;
+  auth?: GitAuthOptions,
+  retries?: number
+) => IGitOps;
 
 export interface FileWriteResult {
   fileName: string;
@@ -104,8 +100,7 @@ export interface BranchSetupOptions {
   dryRun: boolean;
   retries: number;
   token?: string;
-  localOps: ILocalGitOps;
-  networkOps: INetworkGitOps;
+  gitOps: IGitOps;
   executor: ICommandExecutor;
 }
 
@@ -133,8 +128,7 @@ export interface SessionOptions {
 }
 
 export interface SessionContext {
-  localOps: ILocalGitOps;
-  networkOps: INetworkGitOps;
+  gitOps: IGitOps;
   baseBranch: string;
   cleanup: () => void;
 }
@@ -145,8 +139,7 @@ export interface IRepositorySession {
 
 export interface CommitPushOptions {
   repoInfo: RepoInfo;
-  localOps: ILocalGitOps;
-  networkOps: INetworkGitOps;
+  gitOps: IGitOps;
   workDir: string;
   fileChanges: Map<string, FileWriteResult>;
   commitMessage: string;

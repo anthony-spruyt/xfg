@@ -12,56 +12,32 @@ import {
   ICommandExecutor,
   defaultExecutor,
 } from "../shared/command-executor.js";
-import { withRetry } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { logger } from "../shared/logger.js";
 import type { ILocalGitOps } from "./types.js";
 
 export interface GitOpsOptions {
   workDir: string;
   dryRun?: boolean;
   executor?: ICommandExecutor;
-  /** Number of retries for network operations (default: 3) */
-  retries?: number;
+  /** Optional logger for debug messages */
+  log?: { debug(msg: string): void };
 }
 
 export class GitOps implements ILocalGitOps {
   private readonly _workDir: string;
   private readonly dryRun: boolean;
   private readonly _executor: ICommandExecutor;
-  private readonly _retries: number;
-
-  get workDir(): string {
-    return this._workDir;
-  }
-
-  get executor(): ICommandExecutor {
-    return this._executor;
-  }
-
-  get retries(): number {
-    return this._retries;
-  }
+  private readonly log?: { debug(msg: string): void };
 
   constructor(options: GitOpsOptions) {
     this._workDir = options.workDir;
     this.dryRun = options.dryRun ?? false;
     this._executor = options.executor ?? defaultExecutor;
-    this._retries = options.retries ?? 3;
+    this.log = options.log;
   }
 
   private async exec(command: string, cwd?: string): Promise<string> {
     return this._executor.exec(command, cwd ?? this._workDir);
-  }
-
-  /**
-   * Run a command with retry logic for transient failures.
-   * Used for network operations like clone, fetch, push.
-   */
-  private async execWithRetry(command: string, cwd?: string): Promise<string> {
-    return withRetry(() => this.exec(command, cwd), {
-      retries: this._retries,
-    });
   }
 
   /**
@@ -85,22 +61,6 @@ export class GitOps implements ILocalGitOps {
       rmSync(this._workDir, { recursive: true, force: true });
     }
     mkdirSync(this._workDir, { recursive: true });
-  }
-
-  async clone(gitUrl: string): Promise<void> {
-    await this.execWithRetry(
-      `git clone ${escapeShellArg(gitUrl)} .`,
-      this._workDir
-    );
-  }
-
-  /**
-   * Fetch from remote with optional pruning of stale refs.
-   * Used to update local tracking refs after remote branch deletion.
-   */
-  async fetch(options?: { prune?: boolean }): Promise<void> {
-    const pruneFlag = options?.prune ? " --prune" : "";
-    await this.execWithRetry(`git fetch origin${pruneFlag}`, this._workDir);
   }
 
   /**
@@ -171,7 +131,7 @@ export class GitOps implements ILocalGitOps {
     try {
       return readFileSync(filePath, "utf-8");
     } catch (error) {
-      logger.debug(`Failed to read ${fileName}: ${toErrorMessage(error)}`);
+      this.log?.debug(`Failed to read ${fileName}: ${toErrorMessage(error)}`);
       return null;
     }
   }
@@ -195,7 +155,7 @@ export class GitOps implements ILocalGitOps {
       const existingContent = readFileSync(filePath, "utf-8");
       return existingContent !== newContent;
     } catch (error) {
-      logger.debug(
+      this.log?.debug(
         `Failed to read ${fileName} for comparison: ${toErrorMessage(error)}`
       );
       return true;
@@ -232,7 +192,7 @@ export class GitOps implements ILocalGitOps {
       return false; // Exit code 0 = no staged changes
     } catch (error) {
       // Exit code 1 is expected when staged changes exist
-      logger.debug(`hasStagedChanges: ${toErrorMessage(error)}`);
+      this.log?.debug(`hasStagedChanges: ${toErrorMessage(error)}`);
       return true;
     }
   }
@@ -250,7 +210,7 @@ export class GitOps implements ILocalGitOps {
       return true;
     } catch (error) {
       // Expected when file doesn't exist on branch
-      logger.debug(
+      this.log?.debug(
         `fileExistsOnBranch(${fileName}, ${branch}): ${toErrorMessage(error)}`
       );
       return false;
@@ -305,36 +265,6 @@ export class GitOps implements ILocalGitOps {
     return true;
   }
 
-  async push(branchName: string, options?: { force?: boolean }): Promise<void> {
-    if (this.dryRun) {
-      return;
-    }
-    const forceFlag = options?.force ? "--force-with-lease " : "";
-    await this.execWithRetry(
-      `git push ${forceFlag}-u origin ${escapeShellArg(branchName)}`,
-      this._workDir
-    );
-  }
-
-  async getDefaultBranch(): Promise<{ branch: string; method: string }> {
-    try {
-      // Try to get the default branch from remote (network operation with retry)
-      const remoteInfo = await this.execWithRetry(
-        "git remote show origin",
-        this._workDir
-      );
-      const match = remoteInfo.match(/HEAD branch: (\S+)/);
-      if (match && match[1] !== "(unknown)") {
-        return { branch: match[1], method: "remote HEAD" };
-      }
-    } catch (error) {
-      const msg = toErrorMessage(error);
-      logger.debug(`git remote show origin failed - ${msg}`);
-    }
-
-    return this.getDefaultBranchLocal();
-  }
-
   /**
    * Fallback default branch detection using local refs only.
    * Checks origin/main, then origin/master, then defaults to "main".
@@ -348,7 +278,7 @@ export class GitOps implements ILocalGitOps {
       return { branch: "main", method: "origin/main exists" };
     } catch (error) {
       const msg = toErrorMessage(error);
-      logger.debug(`origin/main check failed - ${msg}`);
+      this.log?.debug(`origin/main check failed - ${msg}`);
     }
 
     try {
@@ -356,7 +286,7 @@ export class GitOps implements ILocalGitOps {
       return { branch: "master", method: "origin/master exists" };
     } catch (error) {
       const msg = toErrorMessage(error);
-      logger.debug(`origin/master check failed - ${msg}`);
+      this.log?.debug(`origin/master check failed - ${msg}`);
     }
 
     return { branch: "main", method: "fallback default" };

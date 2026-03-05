@@ -14,8 +14,7 @@ export class CommitPushManager implements ICommitPushManager {
   async commitAndPush(options: CommitPushOptions): Promise<CommitPushResult> {
     const {
       repoInfo,
-      localOps,
-      networkOps,
+      gitOps,
       workDir,
       fileChanges,
       commitMessage,
@@ -42,7 +41,7 @@ export class CommitPushManager implements ICommitPushManager {
     this.log.info("Staging changes...");
     await executor.exec("git add -A", workDir);
 
-    if (!(await localOps.hasStagedChanges())) {
+    if (!(await gitOps.hasStagedChanges())) {
       this.log.info("No staged changes after git add -A, skipping commit");
       return { success: true, skipped: true };
     }
@@ -60,7 +59,7 @@ export class CommitPushManager implements ICommitPushManager {
         retries,
         force: !isDirectMode,
         token,
-        networkOps,
+        gitOps,
       });
       this.log.info(`Committed: ${result.sha} (verified: ${result.verified})`);
       return { success: true };

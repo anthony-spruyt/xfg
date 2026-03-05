@@ -82,7 +82,7 @@ describe("FileSyncOrchestrator", () => {
 
   describe("sync", () => {
     test("orchestrates file writing and manifest handling", async () => {
-      const { localOps, networkOps } = createMockAuthenticatedGitOps({});
+      const { gitOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
 
       const fileChanges = new Map([
@@ -108,7 +108,7 @@ describe("FileSyncOrchestrator", () => {
       const result = await orchestrator.sync(
         repoConfig,
         mockRepoInfo,
-        { localOps, networkOps, baseBranch: "main", cleanup: () => {} },
+        { gitOps, baseBranch: "main", cleanup: () => {} },
         { branchName: "chore/sync", workDir, configId: "test" }
       );
 
@@ -120,7 +120,7 @@ describe("FileSyncOrchestrator", () => {
     });
 
     test("returns hasChanges false when all files skipped", async () => {
-      const { localOps, networkOps } = createMockAuthenticatedGitOps({});
+      const { gitOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
 
       const fileChanges = new Map([
@@ -146,7 +146,7 @@ describe("FileSyncOrchestrator", () => {
       const result = await orchestrator.sync(
         repoConfig,
         mockRepoInfo,
-        { localOps, networkOps, baseBranch: "main", cleanup: () => {} },
+        { gitOps, baseBranch: "main", cleanup: () => {} },
         { branchName: "chore/sync", workDir, configId: "test" }
       );
 
@@ -154,7 +154,7 @@ describe("FileSyncOrchestrator", () => {
     });
 
     test("logs diff summary in dry-run mode", async () => {
-      const { localOps, networkOps } = createMockAuthenticatedGitOps({});
+      const { gitOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger, diffSummaries } = createMockLogger();
 
       const fileChanges = new Map([
@@ -180,7 +180,7 @@ describe("FileSyncOrchestrator", () => {
       await orchestrator.sync(
         repoConfig,
         mockRepoInfo,
-        { localOps, networkOps, baseBranch: "main", cleanup: () => {} },
+        { gitOps, baseBranch: "main", cleanup: () => {} },
         { branchName: "chore/sync", workDir, configId: "test", dryRun: true }
       );
 
@@ -188,7 +188,7 @@ describe("FileSyncOrchestrator", () => {
     });
 
     test("calculates diff stats for non-dry-run", async () => {
-      const { localOps, networkOps } = createMockAuthenticatedGitOps({});
+      const { gitOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
 
       const fileChanges = new Map([
@@ -225,7 +225,7 @@ describe("FileSyncOrchestrator", () => {
       const result = await orchestrator.sync(
         repoConfig,
         mockRepoInfo,
-        { localOps, networkOps, baseBranch: "main", cleanup: () => {} },
+        { gitOps, baseBranch: "main", cleanup: () => {} },
         { branchName: "chore/sync", workDir, configId: "test", dryRun: false }
       );
 

@@ -1115,3 +1115,191 @@ describe("GitLabPRStrategy self-hosted", () => {
     );
   });
 });
+
+describe("GitLabPRStrategy merge unknown mode", () => {
+  const gitlabRepoInfo: GitLabRepoInfo = {
+    type: "gitlab",
+    gitUrl: "git@gitlab.com:myorg/myrepo.git",
+    owner: "myorg",
+    namespace: "myorg",
+    repo: "myrepo",
+    host: "gitlab.com",
+  };
+
+  test("returns failure for unknown merge mode", async () => {
+    const mockExecutor = createMockExecutor();
+    const strategy = new GitLabPRStrategy(mockExecutor);
+    const result = await strategy.merge({
+      prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/1",
+      repoInfo: gitlabRepoInfo,
+      config: { mode: "unknown" as "manual" },
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(result.merged, false);
+    assert.ok(result.message.includes("Unknown merge mode"));
+  });
+});
+
+describe("GitLabPRStrategy logger coverage", () => {
+  const gitlabRepoInfo: GitLabRepoInfo = {
+    type: "gitlab",
+    gitUrl: "git@gitlab.com:myorg/myrepo.git",
+    owner: "myorg",
+    namespace: "myorg",
+    repo: "myrepo",
+    host: "gitlab.com",
+  };
+
+  let mockExecutor: ReturnType<typeof createMockExecutor>;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+    mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  test("checkExistingPR logs debug on error with stderr", async () => {
+    const debugMessages: string[] = [];
+    const mockLogger = {
+      debug(msg: string) {
+        debugMessages.push(msg);
+      },
+      warn() {},
+      info() {},
+    };
+
+    const errorWithStderr = Object.assign(new Error("Command failed"), {
+      stderr: "glab: connection refused",
+    });
+    mockExecutor.responses.set("glab mr list", errorWithStderr);
+
+    const strategy = new GitLabPRStrategy(mockExecutor, mockLogger);
+    const result = await strategy.checkExistingPR({
+      repoInfo: gitlabRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result, null);
+    assert.ok(debugMessages.some((m) => m.includes("GitLab MR check failed")));
+  });
+
+  test("closeExistingPR logs warn on close error", async () => {
+    const warnMessages: string[] = [];
+    const mockLogger = {
+      debug() {},
+      warn(msg: string) {
+        warnMessages.push(msg);
+      },
+      info() {},
+    };
+
+    mockExecutor.responses.set(
+      "glab mr list",
+      '[{"iid": 123, "title": "Test MR"}]'
+    );
+    mockExecutor.responses.set("glab mr close", new Error("Close failed"));
+
+    const strategy = new GitLabPRStrategy(mockExecutor, mockLogger);
+    const result = await strategy.closeExistingPR({
+      repoInfo: gitlabRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result, false);
+    assert.ok(
+      warnMessages.some((m) => m.includes("Failed to close existing MR"))
+    );
+  });
+
+  test("closeExistingPR logs warn on branch deletion failure", async () => {
+    const warnMessages: string[] = [];
+    const mockLogger = {
+      debug() {},
+      warn(msg: string) {
+        warnMessages.push(msg);
+      },
+      info() {},
+    };
+
+    mockExecutor.responses.set(
+      "glab mr list",
+      '[{"iid": 123, "title": "Test MR"}]'
+    );
+    mockExecutor.responses.set("glab mr close", "");
+    mockExecutor.responses.set(
+      "git push origin --delete",
+      new Error("Branch deletion failed")
+    );
+
+    const strategy = new GitLabPRStrategy(mockExecutor, mockLogger);
+    const result = await strategy.closeExistingPR({
+      repoInfo: gitlabRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+
+    // MR was closed successfully, branch deletion is non-critical
+    assert.equal(result, true);
+    assert.ok(warnMessages.some((m) => m.includes("Failed to delete branch")));
+  });
+});
+
+describe("GitLabPRStrategy closeExistingPR with unparseable URL", () => {
+  const gitlabRepoInfo: GitLabRepoInfo = {
+    type: "gitlab",
+    gitUrl: "git@gitlab.com:myorg/myrepo.git",
+    owner: "myorg",
+    namespace: "myorg",
+    repo: "myrepo",
+    host: "gitlab.com",
+  };
+
+  test("returns false when checkExistingPR returns unparseable URL", async () => {
+    class TestableGitLabPRStrategy extends GitLabPRStrategy {
+      override async checkExistingPR(): Promise<string | null> {
+        return "https://not-a-gitlab-url.com/invalid";
+      }
+    }
+
+    const warnings: string[] = [];
+    const mockExecutor = createMockExecutor();
+    const strategy = new TestableGitLabPRStrategy(mockExecutor, {
+      debug() {},
+      warn(msg: string) {
+        warnings.push(msg);
+      },
+      info() {},
+    });
+    const result = await strategy.closeExistingPR({
+      repoInfo: gitlabRepoInfo,
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+
+    assert.equal(result, false);
+    assert.ok(
+      warnings.some((w) => w.includes("Could not extract MR IID from URL"))
+    );
+  });
+});

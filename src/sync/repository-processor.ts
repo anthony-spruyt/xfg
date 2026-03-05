@@ -2,6 +2,7 @@ import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import { GitOps } from "../vcs/git-ops.js";
 import { AuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
+import { defaultExecutor } from "../shared/command-executor.js";
 import { logger, ILogger } from "../shared/logger.js";
 import { createTokenManager } from "../vcs/index.js";
 import { FileWriter } from "./file-writer.js";
@@ -26,7 +27,6 @@ import type {
   ISyncWorkflow,
   IRepositoryProcessor,
   GitOpsFactory,
-  GitOpsResult,
   ProcessorOptions,
   ProcessorResult,
 } from "./types.js";
@@ -53,23 +53,27 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       syncWorkflow?: ISyncWorkflow;
     }
   ) {
+    const logInstance = log ?? logger;
     const factory: GitOpsFactory =
       gitOpsFactory ??
-      ((opts, auth): GitOpsResult => {
-        const gitOps = new GitOps(opts);
-        return {
-          localOps: gitOps,
-          networkOps: new AuthenticatedGitOps(gitOps, auth),
-        };
+      ((opts, auth, retries) => {
+        const gitOps = new GitOps({ ...opts, log: logInstance });
+        return new AuthenticatedGitOps(
+          gitOps,
+          opts.executor ?? defaultExecutor,
+          opts.workDir,
+          retries ?? 3,
+          auth,
+          logInstance
+        );
       });
-    const logInstance = log ?? logger;
 
     // Initialize token manager for auth builder
     const tokenManager = createTokenManager();
 
     const fileWriter = components?.fileWriter ?? new FileWriter();
     const manifestManager =
-      components?.manifestManager ?? new ManifestManager();
+      components?.manifestManager ?? new ManifestManager(logInstance);
     const branchManager =
       components?.branchManager ?? new BranchManager(logInstance);
     const authOptionsBuilder =

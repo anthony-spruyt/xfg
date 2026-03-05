@@ -35,8 +35,7 @@ describe("BranchManager", () => {
 
   describe("setupBranch", () => {
     test("creates branch for non-direct mode", async () => {
-      const { localOps, networkOps, localCalls } =
-        createMockAuthenticatedGitOps({});
+      const { gitOps, localCalls } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});
 
@@ -49,8 +48,7 @@ describe("BranchManager", () => {
         isDirectMode: false,
         dryRun: false,
         retries: 3,
-        localOps,
-        networkOps,
+        gitOps,
         executor: mockExecutor,
       });
 
@@ -59,8 +57,7 @@ describe("BranchManager", () => {
     });
 
     test("skips branch creation for direct mode", async () => {
-      const { localOps, networkOps, localCalls } =
-        createMockAuthenticatedGitOps({});
+      const { gitOps, localCalls } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});
 
@@ -73,8 +70,7 @@ describe("BranchManager", () => {
         isDirectMode: true,
         dryRun: false,
         retries: 3,
-        localOps,
-        networkOps,
+        gitOps,
         executor: mockExecutor,
       });
 
@@ -82,7 +78,7 @@ describe("BranchManager", () => {
     });
 
     test("skips PR cleanup in dryRun mode", async () => {
-      const { localOps, networkOps, localCalls, networkCalls } =
+      const { gitOps, localCalls, networkCalls } =
         createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});
@@ -96,8 +92,7 @@ describe("BranchManager", () => {
         isDirectMode: false,
         dryRun: true,
         retries: 3,
-        localOps,
-        networkOps,
+        gitOps,
         executor: mockExecutor,
       });
 

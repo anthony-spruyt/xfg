@@ -1,88 +1,160 @@
-import { describe, it, mock, beforeEach, type Mock } from "node:test";
+import { describe, it } from "node:test";
 import { strict as assert } from "node:assert";
 
-// Helper type for mock function - avoids verbose casting
-type MockFn = Mock<(...args: unknown[]) => unknown>;
 import {
   AuthenticatedGitOps,
   GitAuthOptions,
 } from "../../src/vcs/authenticated-git-ops.js";
-import {
-  GitOps,
-  GitOpsOptions as _GitOpsOptions,
-} from "../../src/vcs/git-ops.js";
+import type { ILocalGitOps } from "../../src/vcs/types.js";
+
+// Minimal ILocalGitOps mock for tests that only exercise network methods
+function createMockLocalOps(): ILocalGitOps {
+  return {
+    cleanWorkspace() {},
+    async createBranch() {},
+    async commit() {
+      return true;
+    },
+    writeFile() {},
+    async setExecutable() {},
+    getFileContent() {
+      return null;
+    },
+    wouldChange() {
+      return true;
+    },
+    async hasChanges() {
+      return false;
+    },
+    async getChangedFiles() {
+      return [];
+    },
+    async hasStagedChanges() {
+      return false;
+    },
+    async fileExistsOnBranch() {
+      return false;
+    },
+    fileExists() {
+      return false;
+    },
+    deleteFile() {},
+    async getDefaultBranchLocal() {
+      return { branch: "main", method: "mock fallback" };
+    },
+  };
+}
 
 describe("AuthenticatedGitOps", () => {
-  let mockGitOps: GitOps;
-  let _execCalls: Array<{ command: string; cwd?: string }>;
-
-  beforeEach(() => {
-    _execCalls = [];
-    // Create a mock GitOps with spied network methods
-    // AuthenticatedGitOps only wraps network operations (INetworkGitOps)
-    mockGitOps = {
-      clone: mock.fn(async () => {}),
-      fetch: mock.fn(async () => {}),
-      push: mock.fn(async () => {}),
-      getDefaultBranch: mock.fn(async () => ({
-        branch: "main",
-        method: "test",
-      })),
-    } as unknown as GitOps;
-  });
-
   describe("without auth", () => {
-    it("clone delegates directly to GitOps", async () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
+    it("clone runs plain git clone", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          return "";
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3
+      );
+
       await authOps.clone("https://github.com/owner/repo.git");
 
-      assert.strictEqual(
-        (mockGitOps.clone as unknown as MockFn).mock.calls.length,
-        1
+      assert.strictEqual(commands.length, 1);
+      assert.ok(
+        commands[0].includes("clone"),
+        `Expected clone in command: ${commands[0]}`
       );
-      assert.deepStrictEqual(
-        (mockGitOps.clone as unknown as MockFn).mock.calls[0].arguments,
-        ["https://github.com/owner/repo.git"]
+      assert.ok(
+        !commands[0].includes("x-access-token"),
+        `Should not have auth token: ${commands[0]}`
       );
     });
 
-    it("push delegates directly to GitOps", async () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
+    it("push runs plain git push", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          return "";
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3
+      );
+
       await authOps.push("feature-branch", { force: true });
 
-      assert.strictEqual(
-        (mockGitOps.push as unknown as MockFn).mock.calls.length,
-        1
+      assert.strictEqual(commands.length, 1);
+      assert.ok(
+        commands[0].startsWith("git push"),
+        `Expected git push command: ${commands[0]}`
       );
-      assert.deepStrictEqual(
-        (mockGitOps.push as unknown as MockFn).mock.calls[0].arguments,
-        ["feature-branch", { force: true }]
+      assert.ok(
+        commands[0].includes("feature-branch"),
+        `Expected branch name: ${commands[0]}`
+      );
+      assert.ok(
+        commands[0].includes("--force-with-lease"),
+        `Expected force flag: ${commands[0]}`
       );
     });
 
-    it("fetch delegates directly to GitOps", async () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
+    it("fetch runs plain git fetch", async () => {
+      const commands: string[] = [];
+      const mockExecutor = {
+        exec: async (cmd: string) => {
+          commands.push(cmd);
+          return "";
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3
+      );
+
       await authOps.fetch({ prune: true });
 
-      assert.strictEqual(
-        (mockGitOps.fetch as unknown as MockFn).mock.calls.length,
-        1
+      assert.strictEqual(commands.length, 1);
+      assert.ok(
+        commands[0].startsWith("git fetch"),
+        `Expected git fetch command: ${commands[0]}`
       );
-      assert.deepStrictEqual(
-        (mockGitOps.fetch as unknown as MockFn).mock.calls[0].arguments,
-        [{ prune: true }]
+      assert.ok(
+        commands[0].includes("--prune"),
+        `Expected --prune flag: ${commands[0]}`
       );
     });
 
-    it("getDefaultBranch delegates directly to GitOps", async () => {
-      const authOps = new AuthenticatedGitOps(mockGitOps);
+    it("getDefaultBranch delegates to localOps fallback when remote show fails", async () => {
+      const mockExecutor = {
+        exec: async () => {
+          throw new Error("remote not available");
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        0
+      );
+
       const result = await authOps.getDefaultBranch();
 
-      assert.strictEqual(
-        (mockGitOps.getDefaultBranch as unknown as MockFn).mock.calls.length,
-        1
-      );
-      assert.deepStrictEqual(result, { branch: "main", method: "test" });
+      // Falls back to localOps.getDefaultBranchLocal()
+      assert.deepStrictEqual(result, {
+        branch: "main",
+        method: "mock fallback",
+      });
     });
   });
 
@@ -95,7 +167,6 @@ describe("AuthenticatedGitOps", () => {
     };
 
     it("clone uses authenticated URL directly", async () => {
-      // Create a real GitOps with mock executor to verify command
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -103,11 +174,13 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, authOptions);
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3,
+        authOptions
+      );
 
       await authOps.clone("https://github.com/test-owner/test-repo.git");
 
@@ -141,11 +214,13 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, authOptions);
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3,
+        authOptions
+      );
 
       await authOps.push("feature-branch");
 
@@ -173,11 +248,13 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, authOptions);
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3,
+        authOptions
+      );
 
       await authOps.fetch({ prune: true });
 
@@ -207,16 +284,18 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "my-token",
-        host: "github.com",
-        owner: "myorg",
-        repo: "myrepo",
-      });
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3,
+        {
+          token: "my-token",
+          host: "github.com",
+          owner: "myorg",
+          repo: "myrepo",
+        }
+      );
 
       await authOps.clone("https://github.com/myorg/myrepo.git");
 
@@ -239,16 +318,18 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "my-token",
-        host: "github.mycompany.com",
-        owner: "org",
-        repo: "repo",
-      });
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3,
+        {
+          token: "my-token",
+          host: "github.mycompany.com",
+          owner: "org",
+          repo: "repo",
+        }
+      );
 
       await authOps.clone("https://github.mycompany.com/org/repo.git");
 
@@ -271,16 +352,18 @@ describe("AuthenticatedGitOps", () => {
           return "abc123\trefs/heads/main\n";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "test-token",
-        host: "github.com",
-        owner: "owner",
-        repo: "repo",
-      });
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3,
+        {
+          token: "test-token",
+          host: "github.com",
+          owner: "owner",
+          repo: "repo",
+        }
+      );
 
       const result = await authOps.lsRemote("main");
 
@@ -302,16 +385,18 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "test-token",
-        host: "github.com",
-        owner: "owner",
-        repo: "repo",
-      });
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3,
+        {
+          token: "test-token",
+          host: "github.com",
+          owner: "owner",
+          repo: "repo",
+        }
+      );
 
       await authOps.pushRefspec("HEAD:feature-branch");
 
@@ -328,16 +413,18 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "test-token",
-        host: "github.com",
-        owner: "owner",
-        repo: "repo",
-      });
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3,
+        {
+          token: "test-token",
+          host: "github.com",
+          owner: "owner",
+          repo: "repo",
+        }
+      );
 
       await authOps.pushRefspec("feature-branch", { delete: true });
 
@@ -353,16 +440,18 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "test-token",
-        host: "github.com",
-        owner: "owner",
-        repo: "repo",
-      });
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3,
+        {
+          token: "test-token",
+          host: "github.com",
+          owner: "owner",
+          repo: "repo",
+        }
+      );
 
       await authOps.fetchBranch("feature-branch");
 
@@ -384,16 +473,18 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "test-token",
-        host: "github.com",
-        owner: "owner",
-        repo: "repo",
-      });
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3,
+        {
+          token: "test-token",
+          host: "github.com",
+          owner: "owner",
+          repo: "repo",
+        }
+      );
 
       await authOps.fetchBranch("chore/sync-config");
 
@@ -414,11 +505,12 @@ describe("AuthenticatedGitOps", () => {
           return "abc123\trefs/heads/main\n";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps); // No auth
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3
+      ); // No auth
 
       await authOps.lsRemote("main");
 
@@ -441,17 +533,18 @@ describe("AuthenticatedGitOps", () => {
           throw new Error("Command failed: git ls-remote");
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-        retries: 3, // Would normally retry 3 times
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "test-token",
-        host: "github.com",
-        owner: "owner",
-        repo: "repo",
-      });
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3, // Would normally retry 3 times
+        {
+          token: "test-token",
+          host: "github.com",
+          owner: "owner",
+          repo: "repo",
+        }
+      );
 
       await assert.rejects(
         async () => authOps.lsRemote("nonexistent-branch", { skipRetry: true }),
@@ -474,11 +567,12 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps); // No auth
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3
+      ); // No auth
 
       await authOps.pushRefspec("HEAD:feature-branch");
 
@@ -494,11 +588,12 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps); // No auth
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3
+      ); // No auth
 
       await authOps.fetchBranch("feature-branch");
 
@@ -517,16 +612,18 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "test-token",
-        host: "github.com",
-        owner: "owner",
-        repo: "repo",
-      });
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        3,
+        {
+          token: "test-token",
+          host: "github.com",
+          owner: "owner",
+          repo: "repo",
+        }
+      );
 
       const result = await authOps.getDefaultBranch();
 
@@ -551,110 +648,324 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "test-token",
-        host: "github.com",
-        owner: "owner",
-        repo: "repo",
-      });
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        0,
+        {
+          token: "test-token",
+          host: "github.com",
+          owner: "owner",
+          repo: "repo",
+        }
+      );
 
       const result = await authOps.getDefaultBranch();
 
+      // Falls back to localOps.getDefaultBranchLocal() when HEAD is (unknown)
       assert.equal(result.branch, "main");
-      assert.equal(result.method, "fallback default");
+      assert.equal(result.method, "mock fallback");
     });
 
-    it("getDefaultBranch falls back to origin/main when remote show fails", async () => {
-      let _callCount = 0;
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          _callCount++;
-          if (cmd.includes("remote show origin")) {
-            throw new Error("remote not available");
-          }
-          if (cmd.includes("rev-parse --verify origin/main")) {
-            return "abc123";
-          }
-          throw new Error("unexpected command");
-        },
-      };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-        retries: 0,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "test-token",
-        host: "github.com",
-        owner: "owner",
-        repo: "repo",
-      });
-
-      const result = await authOps.getDefaultBranch();
-
-      assert.equal(result.branch, "main");
-      assert.equal(result.method, "origin/main exists");
-    });
-
-    it("getDefaultBranch falls back to origin/master when main not found", async () => {
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          if (cmd.includes("remote show origin")) {
-            throw new Error("remote not available");
-          }
-          if (cmd.includes("rev-parse --verify origin/main")) {
-            throw new Error("not found");
-          }
-          if (cmd.includes("rev-parse --verify origin/master")) {
-            return "abc123";
-          }
-          throw new Error("unexpected command");
-        },
-      };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-        retries: 0,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "test-token",
-        host: "github.com",
-        owner: "owner",
-        repo: "repo",
-      });
-
-      const result = await authOps.getDefaultBranch();
-
-      assert.equal(result.branch, "master");
-      assert.equal(result.method, "origin/master exists");
-    });
-
-    it("getDefaultBranch returns fallback default when all methods fail", async () => {
+    it("getDefaultBranch delegates to localOps.getDefaultBranchLocal when remote show fails", async () => {
       const mockExecutor = {
         exec: async () => {
-          throw new Error("all methods fail");
+          throw new Error("remote not available");
         },
       };
-      const gitOps = new GitOps({
-        workDir: "/tmp/test",
-        executor: mockExecutor,
-        retries: 0,
-      });
-      const authOps = new AuthenticatedGitOps(gitOps, {
-        token: "test-token",
-        host: "github.com",
-        owner: "owner",
-        repo: "repo",
-      });
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        0,
+        {
+          token: "test-token",
+          host: "github.com",
+          owner: "owner",
+          repo: "repo",
+        }
+      );
+
+      const result = await authOps.getDefaultBranch();
+
+      // Falls back to localOps.getDefaultBranchLocal()
+      assert.equal(result.branch, "main");
+      assert.equal(result.method, "mock fallback");
+    });
+
+    it("getDefaultBranch logs debug message when remote show fails", async () => {
+      const debugMessages: string[] = [];
+      const mockLogger = {
+        debug(msg: string) {
+          debugMessages.push(msg);
+        },
+      };
+      const mockExecutor = {
+        exec: async () => {
+          throw new Error("remote not available");
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        createMockLocalOps(),
+        mockExecutor,
+        "/tmp/test",
+        0,
+        {
+          token: "test-token",
+          host: "github.com",
+          owner: "owner",
+          repo: "repo",
+        },
+        mockLogger
+      );
 
       const result = await authOps.getDefaultBranch();
 
       assert.equal(result.branch, "main");
-      assert.equal(result.method, "fallback default");
+      assert.equal(result.method, "mock fallback");
+      assert.ok(
+        debugMessages.some((m) => m.includes("git remote show origin failed"))
+      );
+    });
+  });
+
+  describe("ILocalGitOps delegation", () => {
+    it("createBranch delegates to localOps", async () => {
+      let branchCreated = "";
+      const localOps = {
+        ...createMockLocalOps(),
+        async createBranch(branchName: string) {
+          branchCreated = branchName;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      await authOps.createBranch("feature-branch");
+      assert.strictEqual(branchCreated, "feature-branch");
+    });
+
+    it("writeFile delegates to localOps", () => {
+      const calls: string[] = [];
+      const localOps = {
+        ...createMockLocalOps(),
+        writeFile(fileName: string, content: string) {
+          calls.push(`writeFile:${fileName}:${content}`);
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      authOps.writeFile("test.json", '{"key":"value"}');
+      assert.strictEqual(calls.length, 1);
+      assert.ok(calls[0].startsWith("writeFile:test.json:"));
+    });
+
+    it("setExecutable delegates to localOps", async () => {
+      let called = false;
+      const localOps = {
+        ...createMockLocalOps(),
+        async setExecutable(_fileName: string) {
+          called = true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      await authOps.setExecutable("script.sh");
+      assert.ok(called);
+    });
+
+    it("getFileContent delegates to localOps", () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        getFileContent(_fileName: string) {
+          return "file-content";
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(authOps.getFileContent("test.json"), "file-content");
+    });
+
+    it("wouldChange delegates to localOps", () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        wouldChange(_fileName: string, _content: string) {
+          return false;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(authOps.wouldChange("test.json", "content"), false);
+    });
+
+    it("hasChanges delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async hasChanges() {
+          return true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(await authOps.hasChanges(), true);
+    });
+
+    it("getChangedFiles delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async getChangedFiles() {
+          return ["file1.ts", "file2.ts"];
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.deepStrictEqual(await authOps.getChangedFiles(), [
+        "file1.ts",
+        "file2.ts",
+      ]);
+    });
+
+    it("hasStagedChanges delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async hasStagedChanges() {
+          return true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(await authOps.hasStagedChanges(), true);
+    });
+
+    it("fileExistsOnBranch delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async fileExistsOnBranch(_fileName: string, _branch: string) {
+          return true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(
+        await authOps.fileExistsOnBranch("test.json", "main"),
+        true
+      );
+    });
+
+    it("fileExists delegates to localOps", () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        fileExists(_fileName: string) {
+          return true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(authOps.fileExists("test.json"), true);
+    });
+
+    it("deleteFile delegates to localOps", () => {
+      let deleted = false;
+      const localOps = {
+        ...createMockLocalOps(),
+        deleteFile(_fileName: string) {
+          deleted = true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      authOps.deleteFile("test.json");
+      assert.ok(deleted);
+    });
+
+    it("commit delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async commit(_message: string) {
+          return true;
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      assert.strictEqual(await authOps.commit("test commit"), true);
+    });
+
+    it("getDefaultBranchLocal delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async getDefaultBranchLocal() {
+          return { branch: "develop", method: "custom" };
+        },
+      };
+      const authOps = new AuthenticatedGitOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+
+      const result = await authOps.getDefaultBranchLocal();
+      assert.deepStrictEqual(result, { branch: "develop", method: "custom" });
     });
   });
 });

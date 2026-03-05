@@ -7,13 +7,13 @@ import {
 } from "../shared/repo-detector.js";
 import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
+import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
   CloseExistingPROptions,
   MergeOptions,
   MergeResult,
 } from "./types.js";
-import { logger } from "../shared/logger.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
@@ -21,8 +21,8 @@ import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 
 export class AzurePRStrategy extends BasePRStrategy {
-  constructor(executor?: ICommandExecutor) {
-    super(executor);
+  constructor(executor?: ICommandExecutor, log?: IPRStrategyLogger) {
+    super(executor, log);
     this.bodyFilePath = ".pr-description.md";
   }
 
@@ -55,7 +55,7 @@ export class AzurePRStrategy extends BasePRStrategy {
     } catch (error) {
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("does not exist")) {
-        logger.debug(
+        this.log?.debug(
           `Azure PR check failed - ${sanitizeCredentials(stderr).trim()}`
         );
       }
@@ -86,7 +86,7 @@ export class AzurePRStrategy extends BasePRStrategy {
     // Extract PR ID from URL
     const prInfo = this.parsePRUrl(existingUrl);
     if (!prInfo) {
-      logger.warn(`Could not parse PR URL: ${existingUrl}`);
+      this.log?.warn(`Could not parse PR URL: ${existingUrl}`);
       return false;
     }
 
@@ -99,7 +99,7 @@ export class AzurePRStrategy extends BasePRStrategy {
       });
     } catch (error) {
       const message = toErrorMessage(error);
-      logger.warn(`Failed to abandon PR #${prInfo.prId}: ${message}`);
+      this.log?.warn(`Failed to abandon PR #${prInfo.prId}: ${message}`);
       return false;
     }
 
@@ -120,7 +120,7 @@ export class AzurePRStrategy extends BasePRStrategy {
     } catch (error) {
       // Branch deletion failure is not critical - PR is already abandoned
       const message = toErrorMessage(error);
-      logger.warn(`Failed to delete branch ${branchName}: ${message}`);
+      this.log?.warn(`Failed to delete branch ${branchName}: ${message}`);
     }
 
     return true;
@@ -163,7 +163,7 @@ export class AzurePRStrategy extends BasePRStrategy {
           if (existsSync(descFile)) unlinkSync(descFile);
         },
         `failed to remove ${descFile}`,
-        logger
+        this.log ?? { debug() {} }
       );
     }
   }
