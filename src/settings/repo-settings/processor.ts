@@ -5,21 +5,19 @@ import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
 import { diffRepoSettings, hasChanges } from "./diff.js";
 import { formatRepoSettingsPlan, RepoSettingsPlanResult } from "./formatter.js";
 import {
-  BaseSettingsProcessor,
+  withGitHubGuards,
   type BaseProcessorOptions,
   type BaseProcessorResult,
+  type ISettingsProcessor,
   type ChangeCounts,
   buildDryRunResult,
   buildApplyResult,
 } from "../base-processor.js";
 
-export interface IRepoSettingsProcessor {
-  process(
-    repoConfig: RepoConfig,
-    repoInfo: RepoInfo,
-    options: RepoSettingsProcessorOptions
-  ): Promise<RepoSettingsProcessorResult>;
-}
+export type IRepoSettingsProcessor = ISettingsProcessor<
+  RepoSettingsProcessorOptions,
+  RepoSettingsProcessorResult
+>;
 
 export type RepoSettingsProcessorOptions = BaseProcessorOptions;
 
@@ -29,30 +27,30 @@ export interface RepoSettingsProcessorResult extends BaseProcessorResult {
   planOutput?: RepoSettingsPlanResult;
 }
 
-export class RepoSettingsProcessor
-  extends BaseSettingsProcessor<
-    RepoSettingsProcessorOptions,
-    RepoSettingsProcessorResult
-  >
-  implements IRepoSettingsProcessor
-{
+export class RepoSettingsProcessor implements IRepoSettingsProcessor {
   private readonly strategy: IRepoSettingsStrategy;
 
   constructor(strategy?: IRepoSettingsStrategy) {
-    super();
     this.strategy = strategy ?? new GitHubRepoSettingsStrategy();
   }
 
-  protected hasDesiredSettings(repoConfig: RepoConfig): boolean {
-    const desiredSettings = repoConfig.settings?.repo;
-    return !!desiredSettings && Object.keys(desiredSettings).length > 0;
+  async process(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: RepoSettingsProcessorOptions
+  ): Promise<RepoSettingsProcessorResult> {
+    return withGitHubGuards(repoConfig, repoInfo, options, {
+      hasDesiredSettings: (rc) => {
+        const s = rc.settings?.repo;
+        return !!s && Object.keys(s).length > 0;
+      },
+      emptySettingsMessage: "No repo settings configured",
+      processSettings: (githubRepo, rc, opts, token, repoName) =>
+        this.processSettings(githubRepo, rc, opts, token, repoName),
+    });
   }
 
-  protected getEmptySettingsMessage(): string {
-    return "No repo settings configured";
-  }
-
-  protected async processSettings(
+  private async processSettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
     options: RepoSettingsProcessorOptions,

@@ -5,22 +5,20 @@ import type { IRulesetStrategy, GitHubRuleset } from "./types.js";
 import { diffRulesets } from "./diff.js";
 import { formatRulesetPlan, RulesetPlanResult } from "./formatter.js";
 import {
-  BaseSettingsProcessor,
+  withGitHubGuards,
   type BaseProcessorOptions,
   type BaseProcessorResult,
+  type ISettingsProcessor,
   type ChangeCounts,
   countActions,
   buildDryRunResult,
   buildApplyResult,
 } from "../base-processor.js";
 
-export interface IRulesetProcessor {
-  process(
-    repoConfig: RepoConfig,
-    repoInfo: RepoInfo,
-    options: RulesetProcessorOptions
-  ): Promise<RulesetProcessorResult>;
-}
+export type IRulesetProcessor = ISettingsProcessor<
+  RulesetProcessorOptions,
+  RulesetProcessorResult
+>;
 
 export interface RulesetProcessorOptions extends BaseProcessorOptions {
   noDelete?: boolean;
@@ -35,27 +33,28 @@ export interface RulesetProcessorResult extends BaseProcessorResult {
  * Processes ruleset configuration for a repository.
  * Handles create/update/delete operations via GitHub Rulesets API.
  */
-export class RulesetProcessor
-  extends BaseSettingsProcessor<RulesetProcessorOptions, RulesetProcessorResult>
-  implements IRulesetProcessor
-{
+export class RulesetProcessor implements IRulesetProcessor {
   private readonly strategy: IRulesetStrategy;
 
   constructor(strategy?: IRulesetStrategy) {
-    super();
     this.strategy = strategy ?? new GitHubRulesetStrategy();
   }
 
-  protected hasDesiredSettings(repoConfig: RepoConfig): boolean {
-    const desiredRulesets = repoConfig.settings?.rulesets ?? {};
-    return Object.keys(desiredRulesets).length > 0;
+  async process(
+    repoConfig: RepoConfig,
+    repoInfo: RepoInfo,
+    options: RulesetProcessorOptions
+  ): Promise<RulesetProcessorResult> {
+    return withGitHubGuards(repoConfig, repoInfo, options, {
+      hasDesiredSettings: (rc) =>
+        Object.keys(rc.settings?.rulesets ?? {}).length > 0,
+      emptySettingsMessage: "No rulesets configured",
+      processSettings: (githubRepo, rc, opts, token, repoName) =>
+        this.processSettings(githubRepo, rc, opts, token, repoName),
+    });
   }
 
-  protected getEmptySettingsMessage(): string {
-    return "No rulesets configured";
-  }
-
-  protected async processSettings(
+  private async processSettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
     options: RulesetProcessorOptions,
@@ -73,7 +72,6 @@ export class RulesetProcessor
       strategyOptions
     );
 
-    // Convert desired rulesets to Map
     const desiredMap = new Map<string, Ruleset>(
       Object.entries(desiredRulesets)
     );
@@ -95,7 +93,6 @@ export class RulesetProcessor
       }
     }
 
-    // Compute diff
     const changes = diffRulesets(fullRulesets, desiredMap, deleteOrphaned);
 
     const changeCounts = countActions(changes);
