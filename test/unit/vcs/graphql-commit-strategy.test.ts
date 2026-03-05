@@ -752,7 +752,7 @@ describe("GraphQLCommitStrategy", () => {
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
         token: "ghs_app_token_123",
-        networkOps: mockGitOps,
+        gitOps: mockGitOps,
       });
 
       // fetchBranch is still used (OID mismatch retry loop)

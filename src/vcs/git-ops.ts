@@ -19,8 +19,6 @@ export interface GitOpsOptions {
   workDir: string;
   dryRun?: boolean;
   executor?: ICommandExecutor;
-  /** Number of retries for network operations (default: 3) */
-  retries?: number;
   /** Optional logger for debug messages */
   log?: { debug(msg: string): void };
 }

@@ -485,7 +485,6 @@ describe("GitOps", () => {
             return "";
           },
         },
-        retries: 0,
       });
       await gitOps.createBranch("feature-branch");
 
@@ -505,7 +504,6 @@ describe("GitOps", () => {
             return "";
           },
         },
-        retries: 0,
       });
 
       await assert.rejects(

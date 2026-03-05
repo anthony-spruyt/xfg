@@ -21,8 +21,9 @@ export class RepositorySession implements IRepositorySession {
     const { workDir, dryRun, retries, authOptions } = options;
 
     const gitOps = this.gitOpsFactory(
-      { workDir, dryRun, retries },
-      authOptions
+      { workDir, dryRun },
+      authOptions,
+      retries
     );
 
     this.log.debug("Cleaning workspace...");

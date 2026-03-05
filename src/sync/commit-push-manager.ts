@@ -59,7 +59,7 @@ export class CommitPushManager implements ICommitPushManager {
         retries,
         force: !isDirectMode,
         token,
-        networkOps: gitOps,
+        gitOps,
       });
       this.log.info(`Committed: ${result.sha} (verified: ${result.verified})`);
       return { success: true };

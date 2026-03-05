@@ -56,13 +56,13 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     const logInstance = log ?? logger;
     const factory: GitOpsFactory =
       gitOpsFactory ??
-      ((opts, auth) => {
+      ((opts, auth, retries) => {
         const gitOps = new GitOps({ ...opts, log: logInstance });
         return new AuthenticatedGitOps(
           gitOps,
           opts.executor ?? defaultExecutor,
           opts.workDir,
-          opts.retries ?? 3,
+          retries ?? 3,
           auth,
           logInstance
         );

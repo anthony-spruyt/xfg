@@ -126,7 +126,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       );
     }
 
-    const networkOps = options.networkOps;
+    const gitOps = options.gitOps;
 
     // createCommitOnBranch requires the branch to already exist on remote.
     // For PR branches (force=true), force-update ensures a fresh start from main.
@@ -144,8 +144,8 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const safeBranch = escapeShellArg(branchName);
-        if (networkOps) {
-          await networkOps.fetchBranch(branchName);
+        if (gitOps) {
+          await gitOps.fetchBranch(branchName);
         } else {
           await this.executor.exec(
             `git fetch origin +${safeBranch}:refs/remotes/origin/${safeBranch}`,

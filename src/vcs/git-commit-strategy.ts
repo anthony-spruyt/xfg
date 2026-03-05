@@ -31,7 +31,7 @@ export class GitCommitStrategy implements ICommitStrategy {
       workDir,
       retries = 3,
       force = true,
-      networkOps,
+      gitOps,
     } = options;
 
     // Commit with the message (--no-verify to skip pre-commit hooks)
@@ -41,9 +41,9 @@ export class GitCommitStrategy implements ICommitStrategy {
       workDir
     );
 
-    // Push with authentication via networkOps if available
-    if (networkOps) {
-      await networkOps.push(branchName, { force });
+    // Push with authentication via gitOps if available
+    if (gitOps) {
+      await gitOps.push(branchName, { force });
     } else {
       // Fallback for non-authenticated scenarios (shouldn't happen in practice)
       const forceFlag = force ? "--force-with-lease " : "";

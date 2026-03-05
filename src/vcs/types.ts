@@ -166,8 +166,8 @@ export interface CommitOptions {
   force?: boolean;
   /** GitHub App installation token (GitHub-only; used by GraphQLCommitStrategy) */
   token?: string;
-  /** Network git operations (used by GraphQLCommitStrategy for fetchBranch() during OID mismatch retries) */
-  networkOps?: INetworkGitOps;
+  /** Git operations for network commands (push, fetchBranch) during commit strategies */
+  gitOps?: INetworkGitOps;
 }
 
 export interface CommitResult {

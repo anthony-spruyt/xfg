@@ -14,7 +14,8 @@ import type { FileAction } from "../vcs/pr-creator.js";
 
 export type GitOpsFactory = (
   options: GitOpsOptions,
-  auth?: GitAuthOptions
+  auth?: GitAuthOptions,
+  retries?: number
 ) => IGitOps;
 
 export interface FileWriteResult {

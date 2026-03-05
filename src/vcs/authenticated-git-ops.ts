@@ -38,7 +38,10 @@ export class AuthenticatedGitOps implements IGitOps {
    * Build the authenticated remote URL.
    */
   private getAuthenticatedUrl(): string {
-    const { token, host, owner, repo } = this.auth!;
+    if (!this.auth) {
+      throw new Error("getAuthenticatedUrl() called without auth options");
+    }
+    const { token, host, owner, repo } = this.auth;
     return `https://x-access-token:${token}@${host}/${owner}/${repo}`;
   }
 
