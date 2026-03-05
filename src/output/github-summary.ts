@@ -309,10 +309,17 @@ export function isGitHubActions(): boolean {
   return !!process.env.GITHUB_STEP_SUMMARY;
 }
 
-export function writeSummary(data: SummaryData): void {
+/**
+ * Append markdown content to GITHUB_STEP_SUMMARY.
+ * No-op outside GitHub Actions.
+ */
+export function writeGitHubStepSummary(markdown: string): void {
   const summaryPath = process.env.GITHUB_STEP_SUMMARY;
   if (!summaryPath) return;
-
-  const markdown = formatSummary(data);
   appendFileSync(summaryPath, "\n" + markdown + "\n");
+}
+
+export function writeSummary(data: SummaryData): void {
+  const markdown = formatSummary(data);
+  writeGitHubStepSummary(markdown);
 }

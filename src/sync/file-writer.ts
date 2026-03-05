@@ -16,7 +16,6 @@ import type {
   FileWriteAllResult,
   FileWriteResult,
 } from "./types.js";
-import { hasGitHubAppCredentials } from "../vcs/commit-strategy-selector.js";
 
 /**
  * Determines if a file should be marked as executable.
@@ -142,7 +141,7 @@ export class FileWriter implements IFileWriter {
       }
 
       if (shouldBeExecutable(file)) {
-        if (tracked?.action === "create" && hasGitHubAppCredentials()) {
+        if (tracked?.action === "create" && ctx.isGraphQLCommitMode) {
           log.warn(
             `${file.fileName}: GitHub App commits cannot set executable mode on new files. ` +
               `The file will be created as non-executable (100644). ` +

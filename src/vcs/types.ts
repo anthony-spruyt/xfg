@@ -1,7 +1,12 @@
-import type { PRResult } from "./pr-creator.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { MergeMode, MergeStrategy } from "../config/index.js";
-import type { INetworkGitOps } from "./authenticated-git-ops.js";
+import type { INetworkGitOps } from "./git-ops-types.js";
+
+export interface PRResult {
+  url?: string;
+  success: boolean;
+  message: string;
+}
 
 export interface PRMergeConfig {
   mode: MergeMode;

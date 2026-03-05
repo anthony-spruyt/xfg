@@ -63,7 +63,6 @@ function validateFileConfigFields(
   fileName: string,
   context: string
 ): void {
-  // Validate content type
   if (fileConfig.content !== undefined) {
     const hasText = isTextContent(fileConfig.content);
     const hasObject = isObjectContent(fileConfig.content);
@@ -244,7 +243,6 @@ function validateSettings(
       // Skip reserved key
       if (name === "inherit") continue;
 
-      // Check for opt-out of non-existent root ruleset
       if (ruleset === false) {
         if (rootRulesetNames && !rootRulesetNames.includes(name)) {
           throw new ValidationError(
@@ -258,7 +256,6 @@ function validateSettings(
     }
   }
 
-  // Validate labels
   if (s.labels !== undefined) {
     if (
       typeof s.labels !== "object" ||
@@ -288,7 +285,6 @@ function validateSettings(
     );
   }
 
-  // Validate repo settings
   if (s.repo !== undefined) {
     if (s.repo === false) {
       if (!rootRulesetNames) {
@@ -310,12 +306,7 @@ function validateSettings(
   }
 }
 
-/**
- * Validates raw config structure before normalization.
- * @throws Error if validation fails
- */
-export function validateRawConfig(config: RawConfig): void {
-  // Validate required id field
+function validateConfigId(config: RawConfig): void {
   if (!config.id || typeof config.id !== "string") {
     throw new ValidationError(
       "Config requires an 'id' field. This unique identifier is used to namespace managed files in .xfg.json"
@@ -333,8 +324,318 @@ export function validateRawConfig(config: RawConfig): void {
       `Config 'id' exceeds maximum length of ${CONFIG_ID_MAX_LENGTH} characters`
     );
   }
+}
 
-  // Validate at least one of files or settings exists (including in groups)
+function validateRootFiles(config: RawConfig): void {
+  if (!config.files || Object.keys(config.files).length === 0) return;
+
+  if ("inherit" in config.files) {
+    throw new ValidationError(
+      "'inherit' is a reserved key and cannot be used as a filename"
+    );
+  }
+
+  for (const fileName of Object.keys(config.files)) {
+    validateFileName(fileName);
+
+    const fileConfig = config.files[fileName];
+    if (!fileConfig || typeof fileConfig !== "object") {
+      throw new ValidationError(
+        `File '${fileName}' must have a configuration object`
+      );
+    }
+
+    validateFileConfigFields(
+      fileConfig as Record<string, unknown>,
+      fileName,
+      `File '${fileName}':`
+    );
+  }
+}
+
+function validateRootSettings(config: RawConfig): void {
+  if (config.settings === undefined) return;
+
+  validateSettings(config.settings, "Root");
+
+  if (config.settings.rulesets && "inherit" in config.settings.rulesets) {
+    throw new ValidationError(
+      "'inherit' is a reserved key and cannot be used as a ruleset name"
+    );
+  }
+
+  if (config.settings.labels && "inherit" in config.settings.labels) {
+    throw new ValidationError(
+      "'inherit' is a reserved key and cannot be used as a label name"
+    );
+  }
+}
+
+function validateGithubHosts(config: RawConfig): void {
+  if (config.githubHosts === undefined) return;
+
+  if (
+    !Array.isArray(config.githubHosts) ||
+    !config.githubHosts.every((h) => typeof h === "string")
+  ) {
+    throw new ValidationError("githubHosts must be an array of strings");
+  }
+
+  for (const host of config.githubHosts) {
+    if (!host) {
+      throw new ValidationError(
+        "githubHosts entries must be non-empty hostnames"
+      );
+    }
+    if (host.includes("://")) {
+      throw new ValidationError(
+        `githubHosts entries must be hostnames only, not URLs. Got: ${host}`
+      );
+    }
+    if (host.includes("/")) {
+      throw new ValidationError(
+        `githubHosts entries must be hostnames only, not paths. Got: ${host}`
+      );
+    }
+  }
+}
+
+function validatePrOptions(config: RawConfig): void {
+  if (config.prOptions?.labels === undefined) return;
+
+  if (!Array.isArray(config.prOptions.labels)) {
+    throw new ValidationError("prOptions.labels must be an array of strings");
+  }
+  for (const label of config.prOptions.labels) {
+    if (typeof label !== "string" || label.length === 0) {
+      throw new ValidationError(
+        "prOptions.labels entries must be non-empty strings"
+      );
+    }
+  }
+}
+
+function validateGroups(config: RawConfig): void {
+  if (config.groups === undefined) return;
+
+  if (
+    typeof config.groups !== "object" ||
+    config.groups === null ||
+    Array.isArray(config.groups)
+  ) {
+    throw new ValidationError("groups must be an object");
+  }
+
+  const rootCtx = buildRootSettingsContext(config);
+
+  for (const [groupName, group] of Object.entries(config.groups)) {
+    if (groupName === "inherit") {
+      throw new ValidationError(
+        "'inherit' is a reserved key and cannot be used as a group name"
+      );
+    }
+
+    if (group.files) {
+      for (const [fileName, fileConfig] of Object.entries(group.files)) {
+        if (fileName === "inherit") continue;
+        if (fileConfig === false) continue;
+        if (fileConfig === undefined) continue;
+
+        validateFileConfigFields(
+          fileConfig as Record<string, unknown>,
+          fileName,
+          `groups.${groupName}:`
+        );
+      }
+    }
+
+    if (group.settings !== undefined) {
+      validateSettings(
+        group.settings,
+        `groups.${groupName}`,
+        rootCtx.rulesetNames,
+        rootCtx.hasRepoSettings,
+        rootCtx.labelNames
+      );
+    }
+  }
+}
+
+function validateRepoEntry(
+  config: RawConfig,
+  repo: RawConfig["repos"][number],
+  index: number
+): void {
+  if (!repo.git) {
+    throw new ValidationError(
+      `Repo at index ${index} missing required field: git`
+    );
+  }
+  if (Array.isArray(repo.git) && repo.git.length === 0) {
+    throw new ValidationError(`Repo at index ${index} has empty git array`);
+  }
+
+  const repoLabel = getGitDisplayName(repo.git);
+
+  if (repo.upstream !== undefined && repo.source !== undefined) {
+    throw new ValidationError(
+      `Repo ${repoLabel}: 'upstream' and 'source' are mutually exclusive. ` +
+        `Use 'upstream' to fork, or 'source' to migrate, not both.`
+    );
+  }
+
+  if (repo.upstream !== undefined) {
+    if (typeof repo.upstream !== "string") {
+      throw new ValidationError(
+        `Repo ${repoLabel}: 'upstream' must be a string`
+      );
+    }
+    if (!isValidGitUrl(repo.upstream)) {
+      throw new ValidationError(
+        `Repo ${repoLabel}: 'upstream' must be a valid git URL ` +
+          `(SSH: git@host:path or HTTPS: https://host/path)`
+      );
+    }
+  }
+
+  if (repo.source !== undefined) {
+    if (typeof repo.source !== "string") {
+      throw new ValidationError(`Repo ${repoLabel}: 'source' must be a string`);
+    }
+    if (!isValidGitUrl(repo.source)) {
+      throw new ValidationError(
+        `Repo ${repoLabel}: 'source' must be a valid git URL ` +
+          `(SSH: git@host:path or HTTPS: https://host/path)`
+      );
+    }
+    if (isGitHubUrl(repo.source, config.githubHosts)) {
+      throw new ValidationError(
+        `Repo ${repoLabel}: 'source' cannot be a GitHub URL. ` +
+          `Migration from GitHub is not supported. Currently supported sources: Azure DevOps`
+      );
+    }
+  }
+
+  if (repo.groups !== undefined) {
+    if (
+      !Array.isArray(repo.groups) ||
+      !repo.groups.every((g: unknown) => typeof g === "string")
+    ) {
+      throw new ValidationError(
+        `Repo at index ${index}: groups must be an array of strings`
+      );
+    }
+    const seen = new Set<string>();
+    for (const groupName of repo.groups) {
+      if (!config.groups || !config.groups[groupName]) {
+        throw new ValidationError(
+          `Repo at index ${index}: group '${groupName}' is not defined in root 'groups'`
+        );
+      }
+      if (seen.has(groupName)) {
+        throw new ValidationError(
+          `Repo at index ${index}: duplicate group '${groupName}'`
+        );
+      }
+      seen.add(groupName);
+    }
+  }
+
+  if (repo.files) {
+    if (typeof repo.files !== "object" || Array.isArray(repo.files)) {
+      throw new ValidationError(
+        `Repo at index ${index}: files must be an object`
+      );
+    }
+
+    const knownFiles = new Set<string>(
+      config.files ? Object.keys(config.files) : []
+    );
+    if (repo.groups && config.groups) {
+      for (const groupName of repo.groups) {
+        const group = config.groups[groupName];
+        if (group?.files) {
+          for (const fn of Object.keys(group.files)) {
+            if (fn !== "inherit") knownFiles.add(fn);
+          }
+        }
+      }
+    }
+
+    for (const fileName of Object.keys(repo.files)) {
+      if (fileName === "inherit") {
+        const inheritValue = (repo.files as Record<string, unknown>).inherit;
+        if (typeof inheritValue !== "boolean") {
+          throw new ValidationError(
+            `Repo at index ${index}: files.inherit must be a boolean`
+          );
+        }
+        continue;
+      }
+
+      if (!knownFiles.has(fileName)) {
+        throw new ValidationError(
+          `Repo at index ${index} references undefined file '${fileName}'. File must be defined in root 'files' object or in a referenced group.`
+        );
+      }
+
+      const fileOverride = repo.files[fileName];
+
+      if (fileOverride === false) {
+        continue;
+      }
+
+      if (fileOverride.override && !fileOverride.content) {
+        throw new ValidationError(
+          `Repo ${repoLabel} has override: true for file '${fileName}' but no content defined. ` +
+            `Use content: "" for an empty text file override, or content: {} for an empty JSON/YAML override.`
+        );
+      }
+
+      validateFileConfigFields(
+        fileOverride as Record<string, unknown>,
+        fileName,
+        `Repo ${repoLabel}:`
+      );
+    }
+  }
+
+  if (repo.settings !== undefined) {
+    const rootCtx = buildRootSettingsContext(config);
+
+    if (repo.groups && config.groups) {
+      for (const groupName of repo.groups) {
+        const group = config.groups[groupName];
+        if (group?.settings?.rulesets) {
+          for (const name of Object.keys(group.settings.rulesets)) {
+            if (name !== "inherit") rootCtx.rulesetNames.push(name);
+          }
+        }
+        if (group?.settings?.labels) {
+          for (const name of Object.keys(group.settings.labels)) {
+            if (name !== "inherit") rootCtx.labelNames.push(name);
+          }
+        }
+      }
+    }
+
+    validateSettings(
+      repo.settings,
+      `Repo ${repoLabel}`,
+      rootCtx.rulesetNames,
+      rootCtx.hasRepoSettings,
+      rootCtx.labelNames
+    );
+  }
+}
+
+/**
+ * Validates raw config structure before normalization.
+ * @throws Error if validation fails
+ */
+export function validateRawConfig(config: RawConfig): void {
+  validateConfigId(config);
+
   const hasFiles =
     config.files &&
     typeof config.files === "object" &&
@@ -366,34 +667,8 @@ export function validateRawConfig(config: RawConfig): void {
     );
   }
 
-  const fileNames = hasFiles ? Object.keys(config.files!) : [];
+  validateRootFiles(config);
 
-  // Check for reserved key 'inherit' at root files level
-  if (hasFiles && "inherit" in config.files!) {
-    throw new ValidationError(
-      "'inherit' is a reserved key and cannot be used as a filename"
-    );
-  }
-
-  // Validate each file definition
-  for (const fileName of fileNames) {
-    validateFileName(fileName);
-
-    const fileConfig = config.files![fileName];
-    if (!fileConfig || typeof fileConfig !== "object") {
-      throw new ValidationError(
-        `File '${fileName}' must have a configuration object`
-      );
-    }
-
-    validateFileConfigFields(
-      fileConfig as Record<string, unknown>,
-      fileName,
-      `File '${fileName}':`
-    );
-  }
-
-  // Validate global deleteOrphaned
   if (
     config.deleteOrphaned !== undefined &&
     typeof config.deleteOrphaned !== "boolean"
@@ -407,287 +682,13 @@ export function validateRawConfig(config: RawConfig): void {
     );
   }
 
-  // Validate root settings
-  if (config.settings !== undefined) {
-    validateSettings(config.settings, "Root");
+  validateRootSettings(config);
+  validateGithubHosts(config);
+  validatePrOptions(config);
+  validateGroups(config);
 
-    // Check for reserved key 'inherit' at root rulesets level
-    if (config.settings.rulesets && "inherit" in config.settings.rulesets) {
-      throw new ValidationError(
-        "'inherit' is a reserved key and cannot be used as a ruleset name"
-      );
-    }
-
-    // Check for reserved key 'inherit' at root labels level
-    if (config.settings.labels && "inherit" in config.settings.labels) {
-      throw new ValidationError(
-        "'inherit' is a reserved key and cannot be used as a label name"
-      );
-    }
-  }
-
-  // Validate githubHosts if provided
-  if (config.githubHosts !== undefined) {
-    if (
-      !Array.isArray(config.githubHosts) ||
-      !config.githubHosts.every((h) => typeof h === "string")
-    ) {
-      throw new ValidationError("githubHosts must be an array of strings");
-    }
-
-    for (const host of config.githubHosts) {
-      if (!host) {
-        throw new ValidationError(
-          "githubHosts entries must be non-empty hostnames"
-        );
-      }
-      if (host.includes("://")) {
-        throw new ValidationError(
-          `githubHosts entries must be hostnames only, not URLs. Got: ${host}`
-        );
-      }
-      if (host.includes("/")) {
-        throw new ValidationError(
-          `githubHosts entries must be hostnames only, not paths. Got: ${host}`
-        );
-      }
-    }
-  }
-
-  // Validate prOptions.labels if present
-  if (config.prOptions?.labels !== undefined) {
-    if (!Array.isArray(config.prOptions.labels)) {
-      throw new ValidationError("prOptions.labels must be an array of strings");
-    }
-    for (const label of config.prOptions.labels) {
-      if (typeof label !== "string" || label.length === 0) {
-        throw new ValidationError(
-          "prOptions.labels entries must be non-empty strings"
-        );
-      }
-    }
-  }
-
-  // Validate groups
-  if (config.groups !== undefined) {
-    if (
-      typeof config.groups !== "object" ||
-      config.groups === null ||
-      Array.isArray(config.groups)
-    ) {
-      throw new ValidationError("groups must be an object");
-    }
-
-    const rootCtx = buildRootSettingsContext(config);
-
-    for (const [groupName, group] of Object.entries(config.groups)) {
-      if (groupName === "inherit") {
-        throw new ValidationError(
-          "'inherit' is a reserved key and cannot be used as a group name"
-        );
-      }
-
-      // Validate group files
-      if (group.files) {
-        for (const [fileName, fileConfig] of Object.entries(group.files)) {
-          if (fileName === "inherit") continue;
-          if (fileConfig === false) continue;
-          if (fileConfig === undefined) continue;
-
-          validateFileConfigFields(
-            fileConfig as Record<string, unknown>,
-            fileName,
-            `groups.${groupName}:`
-          );
-        }
-      }
-
-      // Validate group settings
-      if (group.settings !== undefined) {
-        validateSettings(
-          group.settings,
-          `groups.${groupName}`,
-          rootCtx.rulesetNames,
-          rootCtx.hasRepoSettings,
-          rootCtx.labelNames
-        );
-      }
-    }
-  }
-
-  // Validate each repo
   for (let i = 0; i < config.repos.length; i++) {
-    const repo = config.repos[i];
-    if (!repo.git) {
-      throw new ValidationError(
-        `Repo at index ${i} missing required field: git`
-      );
-    }
-    if (Array.isArray(repo.git) && repo.git.length === 0) {
-      throw new ValidationError(`Repo at index ${i} has empty git array`);
-    }
-
-    // Validate lifecycle fields (upstream/source)
-    if (repo.upstream !== undefined && repo.source !== undefined) {
-      throw new ValidationError(
-        `Repo ${getGitDisplayName(repo.git)}: 'upstream' and 'source' are mutually exclusive. ` +
-          `Use 'upstream' to fork, or 'source' to migrate, not both.`
-      );
-    }
-
-    if (repo.upstream !== undefined) {
-      if (typeof repo.upstream !== "string") {
-        throw new ValidationError(
-          `Repo ${getGitDisplayName(repo.git)}: 'upstream' must be a string`
-        );
-      }
-      if (!isValidGitUrl(repo.upstream)) {
-        throw new ValidationError(
-          `Repo ${getGitDisplayName(repo.git)}: 'upstream' must be a valid git URL ` +
-            `(SSH: git@host:path or HTTPS: https://host/path)`
-        );
-      }
-    }
-
-    if (repo.source !== undefined) {
-      if (typeof repo.source !== "string") {
-        throw new ValidationError(
-          `Repo ${getGitDisplayName(repo.git)}: 'source' must be a string`
-        );
-      }
-      if (!isValidGitUrl(repo.source)) {
-        throw new ValidationError(
-          `Repo ${getGitDisplayName(repo.git)}: 'source' must be a valid git URL ` +
-            `(SSH: git@host:path or HTTPS: https://host/path)`
-        );
-      }
-      if (isGitHubUrl(repo.source, config.githubHosts)) {
-        throw new ValidationError(
-          `Repo ${getGitDisplayName(repo.git)}: 'source' cannot be a GitHub URL. ` +
-            `Migration from GitHub is not supported. Currently supported sources: Azure DevOps`
-        );
-      }
-    }
-
-    // Validate per-repo groups
-    if (repo.groups !== undefined) {
-      if (
-        !Array.isArray(repo.groups) ||
-        !repo.groups.every((g: unknown) => typeof g === "string")
-      ) {
-        throw new ValidationError(
-          `Repo at index ${i}: groups must be an array of strings`
-        );
-      }
-      const seen = new Set<string>();
-      for (const groupName of repo.groups) {
-        if (!config.groups || !config.groups[groupName]) {
-          throw new ValidationError(
-            `Repo at index ${i}: group '${groupName}' is not defined in root 'groups'`
-          );
-        }
-        if (seen.has(groupName)) {
-          throw new ValidationError(
-            `Repo at index ${i}: duplicate group '${groupName}'`
-          );
-        }
-        seen.add(groupName);
-      }
-    }
-
-    // Validate per-repo file overrides
-    if (repo.files) {
-      if (typeof repo.files !== "object" || Array.isArray(repo.files)) {
-        throw new ValidationError(
-          `Repo at index ${i}: files must be an object`
-        );
-      }
-
-      // Build the set of known files once per repo (root + referenced groups)
-      const knownFiles = new Set<string>(
-        config.files ? Object.keys(config.files) : []
-      );
-      if (repo.groups && config.groups) {
-        for (const groupName of repo.groups) {
-          const group = config.groups[groupName];
-          if (group?.files) {
-            for (const fn of Object.keys(group.files)) {
-              if (fn !== "inherit") knownFiles.add(fn);
-            }
-          }
-        }
-      }
-
-      for (const fileName of Object.keys(repo.files)) {
-        // Skip reserved key 'inherit'
-        if (fileName === "inherit") {
-          const inheritValue = (repo.files as Record<string, unknown>).inherit;
-          if (typeof inheritValue !== "boolean") {
-            throw new ValidationError(
-              `Repo at index ${i}: files.inherit must be a boolean`
-            );
-          }
-          continue;
-        }
-
-        // Ensure the file is defined at root level or in a referenced group
-        if (!knownFiles.has(fileName)) {
-          throw new ValidationError(
-            `Repo at index ${i} references undefined file '${fileName}'. File must be defined in root 'files' object or in a referenced group.`
-          );
-        }
-
-        const fileOverride = repo.files[fileName];
-
-        // false means exclude this file for this repo - no further validation needed
-        if (fileOverride === false) {
-          continue;
-        }
-
-        if (fileOverride.override && !fileOverride.content) {
-          throw new ValidationError(
-            `Repo ${getGitDisplayName(repo.git)} has override: true for file '${fileName}' but no content defined. ` +
-              `Use content: "" for an empty text file override, or content: {} for an empty JSON/YAML override.`
-          );
-        }
-
-        validateFileConfigFields(
-          fileOverride as Record<string, unknown>,
-          fileName,
-          `Repo ${getGitDisplayName(repo.git)}:`
-        );
-      }
-    }
-
-    // Validate per-repo settings
-    if (repo.settings !== undefined) {
-      const rootCtx = buildRootSettingsContext(config);
-
-      // Augment known names with those from the repo's referenced groups
-      if (repo.groups && config.groups) {
-        for (const groupName of repo.groups) {
-          const group = config.groups[groupName];
-          if (group?.settings?.rulesets) {
-            for (const name of Object.keys(group.settings.rulesets)) {
-              if (name !== "inherit") rootCtx.rulesetNames.push(name);
-            }
-          }
-          if (group?.settings?.labels) {
-            for (const name of Object.keys(group.settings.labels)) {
-              if (name !== "inherit") rootCtx.labelNames.push(name);
-            }
-          }
-        }
-      }
-
-      validateSettings(
-        repo.settings,
-        `Repo ${getGitDisplayName(repo.git)}`,
-        rootCtx.rulesetNames,
-        rootCtx.hasRepoSettings,
-        rootCtx.labelNames
-      );
-    }
+    validateRepoEntry(config, config.repos[i], i);
   }
 }
 
@@ -744,7 +745,6 @@ export function hasActionableSettings(
 ): boolean {
   if (!settings) return false;
 
-  // Check for rulesets (filter out inherit key)
   if (
     settings.rulesets &&
     Object.keys(settings.rulesets).filter((k) => k !== "inherit").length > 0
@@ -752,12 +752,10 @@ export function hasActionableSettings(
     return true;
   }
 
-  // Check for repo settings
   if (settings.repo && Object.keys(settings.repo).length > 0) {
     return true;
   }
 
-  // Check for labels (filter out inherit key)
   if (
     settings.labels &&
     Object.keys(settings.labels).filter((k) => k !== "inherit").length > 0

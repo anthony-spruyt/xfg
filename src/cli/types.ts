@@ -5,19 +5,15 @@ import {
   type IRepositoryProcessor,
 } from "../sync/index.js";
 import {
+  type ISettingsProcessor,
   RulesetProcessor,
   type IRulesetProcessor,
-} from "../settings/rulesets/processor.js";
-import {
   RepoSettingsProcessor,
   type IRepoSettingsProcessor,
-} from "../settings/repo-settings/processor.js";
-import {
   LabelsProcessor,
   type ILabelsProcessor,
-} from "../settings/labels/processor.js";
+} from "../settings/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
-import type { createTokenManager } from "../vcs/index.js";
 import type { ResultsCollector } from "./results-collector.js";
 
 export type { IRepositoryProcessor, IRulesetProcessor };
@@ -31,35 +27,22 @@ export const defaultProcessorFactory: ProcessorFactory = () =>
   new RepositoryProcessor();
 
 /**
- * Factory function type for creating ruleset processors.
+ * Generic factory type for settings processors.
  */
-export type RulesetProcessorFactory = () => IRulesetProcessor;
+export type SettingsProcessorFactory<T extends ISettingsProcessor> = () => T;
 
-/**
- * Default factory that creates a real RulesetProcessor.
- */
+export type RulesetProcessorFactory =
+  SettingsProcessorFactory<IRulesetProcessor>;
+export type RepoSettingsProcessorFactory =
+  SettingsProcessorFactory<IRepoSettingsProcessor>;
+export type LabelsProcessorFactory = SettingsProcessorFactory<ILabelsProcessor>;
+
 export const defaultRulesetProcessorFactory: RulesetProcessorFactory = () =>
   new RulesetProcessor();
 
-/**
- * Repo settings processor factory function type.
- */
-export type RepoSettingsProcessorFactory = () => IRepoSettingsProcessor;
-
-/**
- * Default factory that creates a real RepoSettingsProcessor.
- */
 export const defaultRepoSettingsProcessorFactory: RepoSettingsProcessorFactory =
   () => new RepoSettingsProcessor();
 
-/**
- * Labels processor interface for dependency injection in tests.
- */
-export type LabelsProcessorFactory = () => ILabelsProcessor;
-
-/**
- * Default factory that creates a real LabelsProcessor.
- */
 export const defaultLabelsProcessorFactory: LabelsProcessorFactory = () =>
   new LabelsProcessor();
 
@@ -116,7 +99,7 @@ export interface ApplyRepoSettingsContext {
   repoName: string;
   current: number;
   options: SyncOptions;
-  tokenManager: ReturnType<typeof createTokenManager>;
+  token: string | undefined;
   settingsCollector: ResultsCollector;
   rulesetProcessorFactory: NonNullable<
     SyncDependencies["rulesetProcessorFactory"]

@@ -1,7 +1,7 @@
 import type { ProcessorResult } from "../sync/index.js";
 import { RepoConfig } from "../config/index.js";
 import { MergeOutcome, FileChanges, RepoResult } from "./github-summary.js";
-import { DiffStats } from "../sync/diff-utils.js";
+import type { DiffStats } from "../sync/index.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 
 /**

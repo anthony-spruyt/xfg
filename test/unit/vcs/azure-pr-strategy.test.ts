@@ -941,7 +941,7 @@ describe("AzurePRStrategy type guards", () => {
           workDir: testDir,
           retries: 0,
         }),
-      /Expected Azure DevOps repository/
+      /requires Azure DevOps repositories/
     );
   });
 });

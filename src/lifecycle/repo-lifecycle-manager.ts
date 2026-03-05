@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { rm } from "node:fs/promises";
 import { parseGitUrl, type RepoInfo } from "../shared/repo-detector.js";
 import { logger } from "../shared/logger.js";
-import { toErrorMessage } from "../shared/type-guards.js";
+import { safeCleanup } from "../shared/type-guards.js";
 import type { RepoConfig } from "../config/types.js";
 import type {
   IRepoLifecycleManager,
@@ -38,7 +38,10 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       if (repoConfig.upstream || repoConfig.source) {
         throw error;
       }
-      // Platform doesn't support lifecycle operations yet - skip silently
+      // Platform doesn't support lifecycle operations yet - log and skip
+      logger.debug(
+        `Lifecycle: skipping unsupported platform "${repoInfo.type}"`
+      );
       return { repoInfo, action: "existed" };
     }
 
@@ -111,7 +114,6 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       throw new Error(`Platform '${repoInfo.type}' does not support forking`);
     }
 
-    // Parse upstream URL to get repo info
     const upstreamInfo = parseGitUrl(repoConfig.upstream!, {
       githubHosts: options.githubHosts,
     });
@@ -165,14 +167,11 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
         action: "migrated",
       };
     } finally {
-      // Clean up migration source directory
-      try {
-        await rm(sourceDir, { recursive: true, force: true });
-      } catch (cleanupError) {
-        logger.debug(
-          `Cleanup: failed to remove ${sourceDir}: ${toErrorMessage(cleanupError)}`
-        );
-      }
+      await safeCleanup(
+        () => rm(sourceDir, { recursive: true, force: true }),
+        `failed to remove ${sourceDir}`,
+        logger
+      );
     }
   }
 

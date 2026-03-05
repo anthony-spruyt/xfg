@@ -35,8 +35,8 @@ export function createMockLogger(): LoggerMockResult {
     info(message: string): void {
       messages.push(message);
     },
-    debug(_message: string): void {
-      // No-op in tests
+    debug(message: string): void {
+      messages.push(message);
     },
     warn(message: string): void {
       warnings.push(message);

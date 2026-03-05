@@ -1,8 +1,8 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { escapeShellArg } from "../shared/shell-utils.js";
-import { isGitLabRepo, GitLabRepoInfo } from "../shared/repo-detector.js";
-import { PRResult } from "./pr-creator.js";
+import { assertGitLabRepo, GitLabRepoInfo } from "../shared/repo-detector.js";
+import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
@@ -15,7 +15,7 @@ import { withRetry } from "../shared/retry-utils.js";
 import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
 import { parseApiJson } from "../shared/gh-api-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
-import { toErrorMessage } from "../shared/type-guards.js";
+import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
 import type { MergeStrategy } from "../config/index.js";
 
 export class GitLabPRStrategy extends BasePRStrategy {
@@ -88,9 +88,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
   ): Promise<string | null> {
     const { repoInfo, branchName, workDir, retries = 3 } = options;
 
-    if (!isGitLabRepo(repoInfo)) {
-      throw new Error("Expected GitLab repository");
-    }
+    assertGitLabRepo(repoInfo, "GitLab PR strategy");
 
     const repoFlag = this.getRepoFlag(repoInfo);
     // Use glab mr list with JSON output for reliable parsing
@@ -126,9 +124,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
   async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
     const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
 
-    if (!isGitLabRepo(repoInfo)) {
-      throw new Error("Expected GitLab repository");
-    }
+    assertGitLabRepo(repoInfo, "GitLab PR strategy");
 
     // First check if there's an existing MR
     const existingUrl = await this.checkExistingPR({
@@ -165,7 +161,6 @@ export class GitLabPRStrategy extends BasePRStrategy {
       return false;
     }
 
-    // Delete the source branch via git
     const deleteBranchCommand = `git push origin --delete ${escapeShellArg(branchName)}`;
 
     try {
@@ -192,9 +187,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
       retries = 3,
     } = options;
 
-    if (!isGitLabRepo(repoInfo)) {
-      throw new Error("Expected GitLab repository");
-    }
+    assertGitLabRepo(repoInfo, "GitLab PR strategy");
 
     const repoFlag = this.getRepoFlag(repoInfo);
 
@@ -233,15 +226,13 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
       throw new Error(`Could not parse MR URL from output: ${result}`);
     } finally {
-      try {
-        if (existsSync(descFile)) {
-          unlinkSync(descFile);
-        }
-      } catch (cleanupError) {
-        logger.debug(
-          `Cleanup: failed to remove ${descFile}: ${toErrorMessage(cleanupError)}`
-        );
-      }
+      safeCleanup(
+        () => {
+          if (existsSync(descFile)) unlinkSync(descFile);
+        },
+        `failed to remove ${descFile}`,
+        logger
+      );
     }
   }
 

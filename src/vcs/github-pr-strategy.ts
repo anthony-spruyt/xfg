@@ -1,8 +1,8 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { escapeShellArg, escapeRegExp } from "../shared/shell-utils.js";
-import { isGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
-import { PRResult } from "./pr-creator.js";
+import { assertGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
+import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
@@ -13,7 +13,7 @@ import type {
 import { logger } from "../shared/logger.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
-import { toErrorMessage } from "../shared/type-guards.js";
+import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
 import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
 import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
@@ -43,9 +43,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
   ): Promise<string | null> {
     const { repoInfo, branchName, workDir, retries = 3, token } = options;
 
-    if (!isGitHubRepo(repoInfo)) {
-      throw new Error("Expected GitHub repository");
-    }
+    assertGitHubRepo(repoInfo, "GitHub PR strategy");
 
     const repoFlag = getRepoFlag(repoInfo);
     const tokenEnv = buildTokenEnv(token);
@@ -79,9 +77,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       token,
     } = options;
 
-    if (!isGitHubRepo(repoInfo)) {
-      throw new Error("Expected GitHub repository");
-    }
+    assertGitHubRepo(repoInfo, "GitHub PR strategy");
 
     // First check if there's an existing PR (pass token through)
     const existingUrl = await this.checkExistingPR({
@@ -134,9 +130,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       labels,
     } = options;
 
-    if (!isGitHubRepo(repoInfo)) {
-      throw new Error("Expected GitHub repository");
-    }
+    assertGitHubRepo(repoInfo, "GitHub PR strategy");
 
     const bodyFile = join(workDir, this.bodyFilePath);
     writeFileSync(bodyFile, body, "utf-8");
@@ -172,15 +166,13 @@ export class GitHubPRStrategy extends BasePRStrategy {
         message: "PR created successfully",
       };
     } finally {
-      try {
-        if (existsSync(bodyFile)) {
-          unlinkSync(bodyFile);
-        }
-      } catch (cleanupError) {
-        logger.debug(
-          `Cleanup: failed to remove ${bodyFile}: ${toErrorMessage(cleanupError)}`
-        );
-      }
+      safeCleanup(
+        () => {
+          if (existsSync(bodyFile)) unlinkSync(bodyFile);
+        },
+        `failed to remove ${bodyFile}`,
+        logger
+      );
     }
   }
 
@@ -246,28 +238,27 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     if (config.mode === "auto") {
       // Check if auto-merge is enabled on the repo
-      if (isGitHubRepo(repoInfo)) {
-        const autoMergeEnabled = await this.checkAutoMergeEnabled(
-          repoInfo,
-          workDir,
-          retries,
-          token
-        );
+      assertGitHubRepo(repoInfo, "GitHub PR strategy");
+      const autoMergeEnabled = await this.checkAutoMergeEnabled(
+        repoInfo,
+        workDir,
+        retries,
+        token
+      );
 
-        if (!autoMergeEnabled) {
-          logger.warn(
-            `Auto-merge not enabled for '${repoInfo.owner}/${repoInfo.repo}'. PR left open for manual review.`
-          );
-          logger.info(
-            `To enable: gh repo edit ${getRepoFlag(repoInfo)} --enable-auto-merge (requires admin)`
-          );
-          return {
-            success: true,
-            message: `Auto-merge not enabled for repository. PR left open for manual review.`,
-            merged: false,
-            autoMergeEnabled: false,
-          };
-        }
+      if (!autoMergeEnabled) {
+        logger.warn(
+          `Auto-merge not enabled for '${repoInfo.owner}/${repoInfo.repo}'. PR left open for manual review.`
+        );
+        logger.info(
+          `To enable: gh repo edit ${getRepoFlag(repoInfo)} --enable-auto-merge (requires admin)`
+        );
+        return {
+          success: true,
+          message: `Auto-merge not enabled for repository. PR left open for manual review.`,
+          merged: false,
+          autoMergeEnabled: false,
+        };
       }
 
       // Enable auto-merge

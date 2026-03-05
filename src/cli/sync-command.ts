@@ -8,7 +8,7 @@ import {
   isGitHubRepo,
 } from "../shared/repo-detector.js";
 import type { GitHubRepoInfo } from "../shared/repo-detector.js";
-import { sanitizeBranchName, validateBranchName } from "../vcs/git-ops.js";
+import { sanitizeBranchName, validateBranchName } from "../vcs/branch-utils.js";
 import { createTokenManager } from "../vcs/index.js";
 import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
@@ -129,7 +129,7 @@ async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
     repoName,
     current,
     options,
-    tokenManager,
+    token,
     settingsCollector,
     rulesetProcessorFactory,
     repoSettingsProcessorFactory,
@@ -137,12 +137,6 @@ async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
   } = ctx;
 
   if (!repoConfig.settings || !isGitHubRepo(repoInfo)) return;
-
-  const { token: settingsToken } = await resolveGitHubToken(
-    repoInfo as GitHubRepoInfo,
-    tokenManager,
-    repoName
-  );
 
   const settingsDescriptors = [
     {
@@ -155,7 +149,7 @@ async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
           {
             dryRun: options.dryRun,
             noDelete: options.noDelete,
-            token: settingsToken,
+            token,
           }
         );
         if (!result.skipped) {
@@ -174,7 +168,7 @@ async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
           {
             dryRun: options.dryRun,
             noDelete: options.noDelete,
-            token: settingsToken,
+            token,
           }
         );
         if (!result.skipped) {
@@ -190,7 +184,7 @@ async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
         const result = await repoSettingsProcessorFactory().process(
           repoConfig,
           repoInfo,
-          { dryRun: options.dryRun, token: settingsToken }
+          { dryRun: options.dryRun, token }
         );
         if (!result.skipped) {
           settingsCollector.getOrCreate(repoName).settingsResult = result;
@@ -230,7 +224,6 @@ function displayReports(
   settingsCollector: ResultsCollector,
   dryRun: boolean
 ): void {
-  // Build and display lifecycle report
   const lifecycleReport = buildLifecycleReport(lifecycleReportInputs);
   if (hasLifecycleChanges(lifecycleReport)) {
     logger.log("");
@@ -239,7 +232,6 @@ function displayReports(
     }
   }
 
-  // Build and display sync report
   const report = buildSyncReport(reportResults);
   logger.log("");
   for (const line of formatSyncReportCLI(report)) {
@@ -324,7 +316,6 @@ async function processSingleRepo(
     );
   }
 
-  // Parse git URL
   let repoInfo: RepoInfo;
   try {
     repoInfo = parseGitUrl(repoConfig.git, {
@@ -346,31 +337,38 @@ async function processSingleRepo(
     join(options.workDir ?? "./tmp", generateWorkspaceName(index))
   );
 
-  // Resolve auth token for lifecycle gh commands
-  const lifecycleToken = isGitHubRepo(repoInfo)
+  const repoToken = isGitHubRepo(repoInfo)
     ? (
         await resolveGitHubToken(
           repoInfo as GitHubRepoInfo,
           ctx.tokenManager,
-          repoName
+          repoName,
+          logger
         )
       ).token
     : undefined;
 
-  // Check if repo exists, create/fork/migrate if needed
   const skipFileSync = await runLifecyclePhase(
     repoConfig,
     repoInfo,
     repoName,
     index,
     workDir,
-    lifecycleToken,
+    repoToken,
     ctx
   );
   if (skipFileSync) return;
 
   // Sync files via processor
-  await runFileSyncPhase(repoConfig, repoInfo, repoName, current, workDir, ctx);
+  await runFileSyncPhase(
+    repoConfig,
+    repoInfo,
+    repoName,
+    current,
+    workDir,
+    repoToken,
+    ctx
+  );
 
   // Apply settings via API (GitHub-only — ADO and GitLab repos are skipped)
   await applyRepoSettings({
@@ -379,7 +377,7 @@ async function processSingleRepo(
     repoName,
     current,
     options,
-    tokenManager: ctx.tokenManager,
+    token: repoToken,
     settingsCollector: ctx.settingsCollector,
     rulesetProcessorFactory: ctx.rulesetProcessorFactory,
     repoSettingsProcessorFactory: ctx.repoSettingsProcessorFactory,
@@ -471,6 +469,7 @@ async function runFileSyncPhase(
   repoName: string,
   current: number,
   workDir: string,
+  token: string | undefined,
   ctx: RepoIterationContext
 ): Promise<void> {
   try {
@@ -484,6 +483,8 @@ async function runFileSyncPhase(
       retries: ctx.options.retries,
       prTemplate: ctx.config.prTemplate,
       noDelete: ctx.options.noDelete,
+      token,
+      isGraphQLCommitMode: isGitHubRepo(repoInfo) && ctx.tokenManager !== null,
     });
 
     const mergeOutcome = determineMergeOutcome(result);

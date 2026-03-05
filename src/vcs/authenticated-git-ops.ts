@@ -1,61 +1,15 @@
 import { GitOps } from "./git-ops.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
-import { ICommandExecutor } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import type { GitAuthOptions, INetworkGitOps } from "./git-ops-types.js";
 
-/**
- * Options for authenticated git operations.
- */
-export interface GitAuthOptions {
-  /** Access token for authentication */
-  token: string;
-  /** Git host (e.g., "github.com", "github.mycompany.com") */
-  host: string;
-  /** Repository owner */
-  owner: string;
-  /** Repository name */
-  repo: string;
-}
-
-/**
- * Local filesystem and git operations that don't require authentication.
- * Implemented by GitOps directly — no wrapping needed.
- */
-export interface ILocalGitOps {
-  cleanWorkspace(): void;
-  createBranch(branchName: string): Promise<void>;
-  writeFile(fileName: string, content: string): void;
-  setExecutable(fileName: string): Promise<void>;
-  getFileContent(fileName: string): string | null;
-  wouldChange(fileName: string, content: string): boolean;
-  hasChanges(): Promise<boolean>;
-  getChangedFiles(): Promise<string[]>;
-  hasStagedChanges(): Promise<boolean>;
-  fileExistsOnBranch(fileName: string, branch: string): Promise<boolean>;
-  fileExists(fileName: string): boolean;
-  deleteFile(fileName: string): void;
-  commit(message: string): Promise<boolean>;
-  getDefaultBranchLocal(): Promise<{ branch: string; method: string }>;
-}
-
-/**
- * Network git operations that may require authentication.
- * Implemented by AuthenticatedGitOps which adds token-based auth.
- */
-export interface INetworkGitOps {
-  clone(gitUrl: string): Promise<void>;
-  fetch(options?: { prune?: boolean }): Promise<void>;
-  push(branchName: string, options?: { force?: boolean }): Promise<void>;
-  getDefaultBranch(): Promise<{ branch: string; method: string }>;
-  lsRemote(
-    branchName: string,
-    options?: { skipRetry?: boolean }
-  ): Promise<string>;
-  pushRefspec(refspec: string, options?: { delete?: boolean }): Promise<void>;
-  fetchBranch(branchName: string): Promise<void>;
-}
+export type {
+  GitAuthOptions,
+  ILocalGitOps,
+  INetworkGitOps,
+} from "./git-ops-types.js";
 
 /**
  * Adds authentication to network git operations.
@@ -67,23 +21,19 @@ export interface INetworkGitOps {
  * Local operations live on GitOps (ILocalGitOps) — no wrapping needed.
  */
 export class AuthenticatedGitOps implements INetworkGitOps {
-  private gitOps: GitOps;
-  private auth?: GitAuthOptions;
-  private executor: ICommandExecutor;
-  private workDir: string;
-  private retries: number;
+  private readonly gitOps: GitOps;
+  private readonly auth?: GitAuthOptions;
 
   constructor(gitOps: GitOps, auth?: GitAuthOptions) {
     this.gitOps = gitOps;
     this.auth = auth;
-    this.executor = gitOps.executor;
-    this.workDir = gitOps.workDir;
-    this.retries = gitOps.retries;
   }
+
   private async execWithRetry(command: string): Promise<string> {
-    return withRetry(() => this.executor.exec(command, this.workDir), {
-      retries: this.retries,
-    });
+    return withRetry(
+      () => this.gitOps.executor.exec(command, this.gitOps.workDir),
+      { retries: this.gitOps.retries }
+    );
   }
 
   /**
@@ -153,7 +103,7 @@ export class AuthenticatedGitOps implements INetworkGitOps {
     const command = `git ls-remote --exit-code --heads origin ${safeBranch}`;
 
     if (options?.skipRetry) {
-      return this.executor.exec(command, this.workDir);
+      return this.gitOps.executor.exec(command, this.gitOps.workDir);
     }
     return this.execWithRetry(command);
   }

@@ -100,23 +100,20 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       token,
     } = options;
 
-    // Validate this is a GitHub repo
     if (!isGitHubRepo(repoInfo)) {
       throw new Error(
         `GraphQL commit strategy requires GitHub repositories. Got: ${repoInfo.type}`
       );
     }
 
-    // Validate branch name is safe for shell commands
     validateSafeBranchName(branchName);
 
     const githubInfo = repoInfo as GitHubRepoInfo;
 
-    // Separate additions from deletions
     const additions = fileChanges.filter((fc) => fc.content !== null);
     const deletions = fileChanges.filter((fc) => fc.content === null);
 
-    // Calculate payload size (base64 adds ~33% overhead)
+    // Base64 encoding adds ~33% overhead to raw content size
     const totalSize = additions.reduce((sum, fc) => {
       const base64Size = Math.ceil((fc.content!.length * 4) / 3);
       return sum + base64Size;
@@ -129,12 +126,10 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       );
     }
 
-    // Get networkOps for authenticated network operations
     const networkOps = options.networkOps;
 
-    // Ensure the branch exists on remote and is up-to-date with local HEAD
-    // createCommitOnBranch requires the branch to already exist
-    // For PR branches (force=true), we force-update to ensure fresh start from main
+    // createCommitOnBranch requires the branch to already exist on remote.
+    // For PR branches (force=true), force-update ensures a fresh start from main.
     await this.ensureBranchExistsOnRemote(
       branchName,
       workDir,
@@ -143,12 +138,11 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       token
     );
 
-    // Retry loop for expectedHeadOid mismatch
+    // Outer retry loop for expectedHeadOid mismatch — each iteration re-fetches
+    // the remote HEAD so the next mutation uses a fresh OID.
     let lastError: Error | null = null;
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        // Fetch from remote to ensure we have the latest HEAD
-        // This is critical for expectedHeadOid to match
         const safeBranch = escapeShellArg(branchName);
         if (networkOps) {
           await networkOps.fetchBranch(branchName);
@@ -165,7 +159,6 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
           workDir
         );
 
-        // Build and execute the GraphQL mutation
         const result = await this.executeGraphQLMutation(
           githubInfo,
           branchName,
@@ -182,18 +175,14 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
         lastError =
           error instanceof Error ? error : new Error(toErrorMessage(error));
 
-        // Check if this is an expectedHeadOid mismatch error (retryable)
         if (this.isHeadOidMismatchError(lastError) && attempt < retries) {
-          // Retry - the next iteration will fetch and get fresh HEAD SHA
           continue;
         }
 
-        // For other errors, throw immediately
         throw lastError;
       }
     }
 
-    // Should not reach here, but just in case
     throw lastError ?? new Error("Unexpected error in GraphQL commit");
   }
 
@@ -278,7 +267,6 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       throw this.sanitizeCommandError(error, repositoryNameWithOwner);
     }
 
-    // Parse the response
     const parsed = parseApiJson<Record<string, unknown>>(
       response,
       "GraphQL createCommitOnBranch response"
@@ -377,7 +365,6 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
         throw error;
       }
     }
-    // refId exists + !force: no-op (branch already exists)
   }
 
   /**

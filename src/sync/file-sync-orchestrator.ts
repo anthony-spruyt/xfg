@@ -36,9 +36,10 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
         repoInfo,
         baseBranch: session.baseBranch,
         workDir,
-        dryRun: dryRun,
-        noDelete: noDelete,
+        dryRun,
+        noDelete,
         configId,
+        isGraphQLCommitMode: options.isGraphQLCommitMode,
       },
       { gitOps: session.localOps, log: this.log }
     );

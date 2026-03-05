@@ -5,9 +5,11 @@ import type {
   RulesetChange,
   LabelChange,
 } from "../output/settings-report.js";
-import type { RepoSettingsPlanEntry } from "../settings/repo-settings/formatter.js";
-import type { RulesetPlanEntry } from "../settings/rulesets/formatter.js";
-import type { LabelsPlanEntry } from "../settings/labels/formatter.js";
+import type {
+  RepoSettingsPlanEntry,
+  RulesetPlanEntry,
+  LabelsPlanEntry,
+} from "../settings/index.js";
 
 /**
  * Result from processing a repository's settings and rulesets.

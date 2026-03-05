@@ -1,10 +1,7 @@
-import { appendFileSync } from "node:fs";
 import chalk from "chalk";
-import {
-  formatPropertyTree,
-  type PropertyDiff,
-} from "../settings/rulesets/formatter.js";
+import { formatPropertyTree, type PropertyDiff } from "../settings/index.js";
 import type { Ruleset, Label } from "../config/index.js";
+import { writeGitHubStepSummary } from "./github-summary.js";
 
 export interface SettingsReport {
   repos: RepoChanges[];
@@ -434,9 +431,6 @@ export function writeSettingsReportSummary(
   report: SettingsReport,
   dryRun: boolean
 ): void {
-  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
-  if (!summaryPath) return;
-
   const markdown = formatSettingsReportMarkdown(report, dryRun);
-  appendFileSync(summaryPath, "\n" + markdown + "\n");
+  writeGitHubStepSummary(markdown);
 }

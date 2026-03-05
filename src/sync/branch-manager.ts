@@ -25,16 +25,13 @@ export class BranchManager implements IBranchManager {
       executor,
     } = options;
 
-    // Direct mode: stay on default branch, no PR cleanup needed
     if (isDirectMode) {
-      this.log.info(`Direct mode: staying on ${baseBranch}`);
+      this.log.debug(`Direct mode: staying on ${baseBranch}`);
       return;
     }
 
-    // Close existing PR if exists (fresh start approach)
-    // Skip for dry-run mode
     if (!dryRun) {
-      this.log.info("Checking for existing PR...");
+      this.log.debug("Checking for existing PR...");
       const strategy = getPRStrategy(repoInfo, executor);
       const closed = await strategy.closeExistingPR({
         repoInfo,
@@ -52,8 +49,7 @@ export class BranchManager implements IBranchManager {
       }
     }
 
-    // Create branch (always fresh from base branch)
-    this.log.info(`Creating branch: ${branchName}`);
+    this.log.debug(`Creating branch: ${branchName}`);
     await localOps.createBranch(branchName);
   }
 }

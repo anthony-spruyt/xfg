@@ -44,6 +44,16 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 - Node.js >= 18
 - `git`, `gh`, `az`, `glab` CLIs (platform-specific, must be authenticated)
 
+## Architecture Principles
+
+This codebase follows SOLID principles strictly. Do NOT violate these:
+
+- **Dependency Injection**: Never import singletons (e.g. `logger`) in shared utilities or library code. Accept dependencies via constructor or function parameters. Only CLI entry points and composition roots may import singletons directly.
+- **Interfaces for testability**: Every collaborator is injected via an interface. Single-impl interfaces are correct and intentional — do NOT inline them or couple to concrete classes.
+- **Composition over inheritance**: Use strategy pattern, delegation, and interface-based injection. Do NOT flatten abstractions or suggest inheritance.
+- **Interface Segregation**: Keep interfaces focused. A class needing only `{ debug(msg: string): void }` should accept that, not the full `ILogger`.
+- **No static coupling in libraries**: `src/shared/` and `src/sync/` modules must not import global singletons. Pass them in.
+
 ## Key Modules
 
 | Module                     | Purpose                                                                       |

@@ -161,10 +161,6 @@ function mergeRuleset(
 }
 
 /**
- * Merges settings: per-repo settings deep merge with root settings.
- * Returns undefined if no settings are defined.
- */
-/**
  * Merges root and per-repo label configs.
  * Per-repo labels override root labels by name.
  * inherit: false skips all root labels.
@@ -207,6 +203,10 @@ function mergeLabels(
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
+/**
+ * Merges settings: per-repo settings deep merge with root settings.
+ * Returns undefined if no settings are defined.
+ */
 export function mergeSettings(
   root: RawRootSettings | undefined,
   perRepo: RawRepoSettings | undefined

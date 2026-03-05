@@ -3,21 +3,34 @@ import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 import { GitAuthOptions } from "../vcs/authenticated-git-ops.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import type { AuthResult, IAuthOptionsBuilder } from "./types.js";
+import type { ILogger } from "../shared/logger.js";
 import { resolveGitHubToken } from "../shared/gh-api-utils.js";
 
 export class AuthOptionsBuilder implements IAuthOptionsBuilder {
-  constructor(private readonly tokenManager: GitHubAppTokenManager | null) {}
+  constructor(
+    private readonly tokenManager: GitHubAppTokenManager | null,
+    private readonly log?: ILogger
+  ) {}
 
-  async resolve(repoInfo: RepoInfo, repoName: string): Promise<AuthResult> {
+  async resolve(
+    repoInfo: RepoInfo,
+    repoName: string,
+    preResolvedToken?: string
+  ): Promise<AuthResult> {
     if (!isGitHubRepo(repoInfo)) {
-      // Non-GitHub repos don't use token-based auth
       return { ok: true, token: undefined, authOptions: undefined };
+    }
+
+    if (preResolvedToken !== undefined) {
+      const authOptions = this.buildAuthOptions(repoInfo, preResolvedToken);
+      return { ok: true, token: preResolvedToken, authOptions };
     }
 
     const { token, skipped } = await resolveGitHubToken(
       repoInfo,
       this.tokenManager,
-      repoName
+      repoName,
+      this.log
     );
 
     if (skipped) {

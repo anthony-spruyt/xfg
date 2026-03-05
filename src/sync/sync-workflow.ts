@@ -1,7 +1,7 @@
 import type { RepoConfig } from "../config/types.js";
 import { RepoInfo, getRepoDisplayName } from "../shared/repo-detector.js";
 import type { ILogger } from "../shared/logger.js";
-import { toErrorMessage } from "../shared/type-guards.js";
+import { safeCleanup } from "../shared/type-guards.js";
 import { defaultExecutor } from "../shared/command-executor.js";
 import type {
   ISyncWorkflow,
@@ -44,7 +44,8 @@ export class SyncWorkflow implements ISyncWorkflow {
 
     const authResult = await this.authOptionsBuilder.resolve(
       repoInfo,
-      repoName
+      repoName,
+      options.token
     );
     if (!authResult.ok) {
       return authResult.skipResult;
@@ -153,12 +154,9 @@ export class SyncWorkflow implements ISyncWorkflow {
         fileChanges: workResult.fileChangeDetails,
       });
     } finally {
-      try {
-        session?.cleanup();
-      } catch (error) {
-        this.log.debug(
-          `Cleanup: session teardown failed: ${toErrorMessage(error)}`
-        );
+      if (session) {
+        const s = session;
+        safeCleanup(() => s.cleanup(), "session teardown failed", this.log);
       }
     }
   }

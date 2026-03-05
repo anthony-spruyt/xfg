@@ -1025,7 +1025,7 @@ describe("GitLabPRStrategy type guards", () => {
 
     await assert.rejects(
       () => strategy.checkExistingPR(options),
-      /Expected GitLab repository/
+      /requires GitLab repositories/
     );
   });
 
@@ -1043,7 +1043,7 @@ describe("GitLabPRStrategy type guards", () => {
 
     await assert.rejects(
       () => strategy.create(options),
-      /Expected GitLab repository/
+      /requires GitLab repositories/
     );
   });
 
@@ -1059,7 +1059,7 @@ describe("GitLabPRStrategy type guards", () => {
           workDir: testDir,
           retries: 0,
         }),
-      /Expected GitLab repository/
+      /requires GitLab repositories/
     );
   });
 });

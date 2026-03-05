@@ -4,11 +4,13 @@ import { strict as assert } from "node:assert";
 import type { RulesetChange } from "../../src/settings/rulesets/diff.js";
 import type { RulesetRule } from "../../src/config/types.js";
 import {
-  computePropertyDiffs,
   formatPropertyTree,
   formatRulesetPlan,
-  PropertyDiff,
 } from "../../src/settings/rulesets/formatter.js";
+import {
+  computePropertyDiffs,
+  type PropertyDiff,
+} from "../../src/settings/rulesets/diff-algorithm.js";
 
 describe("computePropertyDiffs", () => {
   describe("scalar changes", () => {

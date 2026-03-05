@@ -4,9 +4,8 @@ import {
 } from "../../shared/command-executor.js";
 import { assertGitHubRepo, RepoInfo } from "../../shared/repo-detector.js";
 import {
-  ghApiCall,
+  GhApiClient,
   parseApiJson,
-  type HttpMethod,
   type GhApiOptions,
 } from "../../shared/gh-api-utils.js";
 import type { ILabelsStrategy, GitHubLabel } from "./types.js";
@@ -23,15 +22,16 @@ interface GitHubLabelsStrategyOptions {
  * escapeShellArg for input sanitization, matching the rulesets strategy pattern.
  */
 export class GitHubLabelsStrategy implements ILabelsStrategy {
-  private executor: ICommandExecutor;
-  private retries: number;
+  private api: GhApiClient;
 
   constructor(
     executor?: ICommandExecutor,
     options?: GitHubLabelsStrategyOptions
   ) {
-    this.executor = executor ?? defaultExecutor;
-    this.retries = options?.retries ?? 3;
+    this.api = new GhApiClient(
+      executor ?? defaultExecutor,
+      options?.retries ?? 3
+    );
   }
 
   /**
@@ -45,7 +45,13 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels`;
-    const result = await this.ghApi("GET", endpoint, undefined, options, true);
+    const result = await this.api.call(
+      "GET",
+      endpoint,
+      undefined,
+      options,
+      true
+    );
 
     return parseApiJson<GitHubLabel[]>(result, "labels response");
   }
@@ -61,7 +67,7 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels`;
-    await this.ghApi("POST", endpoint, label, options);
+    await this.api.call("POST", endpoint, label, options);
   }
 
   /**
@@ -77,7 +83,7 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels/${encodeURIComponent(currentName)}`;
-    await this.ghApi("PATCH", endpoint, label, options);
+    await this.api.call("PATCH", endpoint, label, options);
   }
 
   /**
@@ -92,22 +98,6 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels/${encodeURIComponent(name)}`;
-    await this.ghApi("DELETE", endpoint, undefined, options);
-  }
-
-  private async ghApi(
-    method: HttpMethod,
-    endpoint: string,
-    payload?: unknown,
-    options?: GhApiOptions,
-    paginate?: boolean
-  ): Promise<string> {
-    return ghApiCall(method, endpoint, {
-      executor: this.executor,
-      retries: this.retries,
-      apiOpts: options,
-      payload,
-      paginate,
-    });
+    await this.api.call("DELETE", endpoint, undefined, options);
   }
 }

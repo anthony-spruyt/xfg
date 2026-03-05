@@ -1,6 +1,6 @@
 import { toErrorMessage } from "../shared/type-guards.js";
 import { withRetry } from "../shared/retry-utils.js";
-import { PRResult } from "./pr-creator.js";
+import type { PRResult } from "./types.js";
 import {
   ICommandExecutor,
   defaultExecutor,

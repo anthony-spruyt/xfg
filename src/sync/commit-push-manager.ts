@@ -27,15 +27,13 @@ export class CommitPushManager implements ICommitPushManager {
       executor,
     } = options;
 
-    // Dry-run mode: just log
     if (dryRun) {
-      this.log.info("Staging changes...");
+      this.log.debug("Staging changes...");
       this.log.info(`Would commit: ${commitMessage}`);
-      this.log.info(`Would push to ${pushBranch}...`);
+      this.log.info(`Would push to ${pushBranch}`);
       return { success: true };
     }
 
-    // Build file changes for commit strategy
     const changes: FileChange[] = Array.from(fileChanges.entries())
       .filter(([, info]) => info.action !== "skip")
       .map(([path, info]) => ({ path, content: info.content }));
@@ -44,15 +42,13 @@ export class CommitPushManager implements ICommitPushManager {
     this.log.info("Staging changes...");
     await executor.exec("git add -A", workDir);
 
-    // Check for staged changes
     if (!(await localOps.hasStagedChanges())) {
       this.log.info("No staged changes after git add -A, skipping commit");
       return { success: true, skipped: true };
     }
 
-    // Commit and push
     const commitStrategy = getCommitStrategy(repoInfo, executor);
-    this.log.info("Committing and pushing changes...");
+    this.log.debug("Committing and pushing changes...");
 
     try {
       const result = await commitStrategy.commit({

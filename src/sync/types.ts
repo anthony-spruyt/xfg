@@ -35,6 +35,8 @@ export interface FileWriteContext {
   dryRun: boolean;
   noDelete: boolean;
   configId: string;
+  /** True when using GraphQL commit strategy (GitHub App) which cannot set file modes */
+  isGraphQLCommitMode?: boolean;
 }
 
 export interface FileWriterDeps {
@@ -116,7 +118,11 @@ export type AuthResult =
   | { ok: false; skipResult: ProcessorResult };
 
 export interface IAuthOptionsBuilder {
-  resolve(repoInfo: RepoInfo, repoName: string): Promise<AuthResult>;
+  resolve(
+    repoInfo: RepoInfo,
+    repoName: string,
+    preResolvedToken?: string
+  ): Promise<AuthResult>;
 }
 
 export interface SessionOptions {
@@ -170,6 +176,10 @@ export interface ProcessorOptions {
   executor?: ICommandExecutor;
   prTemplate?: string;
   noDelete?: boolean;
+  /** Pre-resolved GitHub token — avoids duplicate resolution in AuthOptionsBuilder */
+  token?: string;
+  /** True when using GraphQL commit strategy (GitHub App) which cannot set file modes */
+  isGraphQLCommitMode?: boolean;
 }
 
 export interface FileChangeDetail {

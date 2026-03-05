@@ -1,6 +1,6 @@
 // src/output/lifecycle-report.ts
-import { appendFileSync } from "node:fs";
 import chalk from "chalk";
+import { writeGitHubStepSummary } from "./github-summary.js";
 
 export interface LifecycleReport {
   actions: LifecycleAction[];
@@ -201,11 +201,7 @@ export function writeLifecycleReportSummary(
   report: LifecycleReport,
   dryRun: boolean
 ): void {
-  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
-  if (!summaryPath) return;
-
   const markdown = formatLifecycleReportMarkdown(report, dryRun);
   if (!markdown) return;
-
-  appendFileSync(summaryPath, "\n" + markdown + "\n");
+  writeGitHubStepSummary(markdown);
 }

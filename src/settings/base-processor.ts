@@ -5,6 +5,7 @@ import { toErrorMessage } from "../shared/type-guards.js";
 
 export interface BaseProcessorOptions {
   dryRun?: boolean;
+  /** Pre-resolved auth token. Callers (e.g. sync-command) must resolve via resolveGitHubToken before passing. */
   token?: string;
 }
 
@@ -17,87 +18,87 @@ export interface BaseProcessorResult {
 }
 
 /**
- * Shared base class for GitHub settings processors (labels, rulesets, repo settings).
- * Handles common boilerplate: GitHub-only gating, empty settings check,
- * token resolution, and error wrapping.
+ * Generic settings processor interface for dependency injection.
+ * All three settings processors (rulesets, labels, repo-settings)
+ * share this contract — specific interfaces extend it for type safety.
  */
-export abstract class BaseSettingsProcessor<
-  TOptions extends BaseProcessorOptions,
-  TResult extends BaseProcessorResult,
+export interface ISettingsProcessor<
+  TOptions extends BaseProcessorOptions = BaseProcessorOptions,
+  TResult extends BaseProcessorResult = BaseProcessorResult,
 > {
-  async process(
+  process(
     repoConfig: RepoConfig,
     repoInfo: RepoInfo,
     options: TOptions
-  ): Promise<TResult> {
-    const repoName = getRepoDisplayName(repoInfo);
+  ): Promise<TResult>;
+}
 
-    // GitHub-only gating
-    if (!isGitHubRepo(repoInfo)) {
-      return this.createSkipResult(
-        repoName,
-        `Skipped: ${repoName} is not a GitHub repository`
-      );
-    }
-
-    const githubRepo = repoInfo as GitHubRepoInfo;
-
-    // Empty settings check
-    if (!this.hasDesiredSettings(repoConfig)) {
-      return this.createSkipResult(repoName, this.getEmptySettingsMessage());
-    }
-
-    try {
-      // Token is pre-resolved by the caller (sync-command.ts resolveGitHubToken)
-      return await this.processSettings(
-        githubRepo,
-        repoConfig,
-        options,
-        options.token,
-        repoName
-      );
-    } catch (error) {
-      const message = toErrorMessage(error);
-      return this.createErrorResult(repoName, `Failed: ${message}`);
-    }
-  }
-
-  /**
-   * Check whether the repo config contains any settings for this processor.
-   */
-  protected abstract hasDesiredSettings(repoConfig: RepoConfig): boolean;
-
-  /**
-   * Message to return when no settings are configured.
-   */
-  protected abstract getEmptySettingsMessage(): string;
-
-  /**
-   * Execute the processor-specific business logic.
-   * Called after GitHub-only gating, empty settings check, and token resolution.
-   */
-  protected abstract processSettings(
+/**
+ * Guards for GitHub settings processing — passed to withGitHubGuards.
+ */
+interface SettingsGuards<
+  TOptions extends BaseProcessorOptions,
+  TResult extends BaseProcessorResult,
+> {
+  hasDesiredSettings(repoConfig: RepoConfig): boolean;
+  emptySettingsMessage: string;
+  processSettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
     options: TOptions,
     effectiveToken: string | undefined,
     repoName: string
   ): Promise<TResult>;
+}
 
-  /**
-   * Create a skip result. Default returns a BaseProcessorResult-compatible object.
-   * Subclasses can override when their TResult has required extra fields.
-   */
-  protected createSkipResult(repoName: string, message: string): TResult {
-    return { success: true, repoName, message, skipped: true } as TResult;
+/**
+ * Common boilerplate for GitHub settings processors: GitHub-only gating,
+ * empty settings check, token resolution, and error wrapping.
+ */
+export async function withGitHubGuards<
+  TOptions extends BaseProcessorOptions,
+  TResult extends BaseProcessorResult,
+>(
+  repoConfig: RepoConfig,
+  repoInfo: RepoInfo,
+  options: TOptions,
+  guards: SettingsGuards<TOptions, TResult>
+): Promise<TResult> {
+  const repoName = getRepoDisplayName(repoInfo);
+
+  if (!isGitHubRepo(repoInfo)) {
+    return {
+      success: true,
+      repoName,
+      message: `Skipped: ${repoName} is not a GitHub repository`,
+      skipped: true,
+    } as TResult;
   }
 
-  /**
-   * Create an error result. Default returns a BaseProcessorResult-compatible object.
-   * Subclasses can override when their TResult has required extra fields.
-   */
-  protected createErrorResult(repoName: string, message: string): TResult {
-    return { success: false, repoName, message } as TResult;
+  if (!guards.hasDesiredSettings(repoConfig)) {
+    return {
+      success: true,
+      repoName,
+      message: guards.emptySettingsMessage,
+      skipped: true,
+    } as TResult;
+  }
+
+  try {
+    return await guards.processSettings(
+      repoInfo as GitHubRepoInfo,
+      repoConfig,
+      options,
+      options.token,
+      repoName
+    );
+  } catch (error) {
+    const message = toErrorMessage(error);
+    return {
+      success: false,
+      repoName,
+      message: `Failed: ${message}`,
+    } as TResult;
   }
 }
 

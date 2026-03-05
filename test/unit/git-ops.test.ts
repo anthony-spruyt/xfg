@@ -10,11 +10,11 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { GitOps } from "../../src/vcs/git-ops.js";
 import {
-  GitOps,
   sanitizeBranchName,
   validateBranchName,
-} from "../../src/vcs/git-ops.js";
+} from "../../src/vcs/branch-utils.js";
 import { ICommandExecutor } from "../../src/shared/command-executor.js";
 
 const testDir = join(tmpdir(), "git-ops-test-" + Date.now());
