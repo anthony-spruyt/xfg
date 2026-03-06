@@ -35,6 +35,3 @@ export { loadRawConfig, loadConfig, normalizeConfig } from "./loader.js";
 
 // Config formatting
 export { convertContentToString } from "./formatter.js";
-
-// Errors
-export { ValidationError } from "./errors.js";

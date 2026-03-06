@@ -1,6 +1,7 @@
 import { resolve, join } from "node:path";
 import { existsSync } from "node:fs";
 import { loadRawConfig, normalizeConfig, RepoConfig } from "../config/index.js";
+import { ValidationError } from "../config/errors.js";
 import { validateForSync } from "../config/validator.js";
 import {
   parseGitUrl,
@@ -534,7 +535,7 @@ export async function runSync(
   const configPath = resolve(options.config);
 
   if (!existsSync(configPath)) {
-    throw new Error(`Config file not found: ${configPath}`);
+    throw new ValidationError(`Config file not found: ${configPath}`);
   }
 
   logger.log(`Loading config from: ${configPath}`);

@@ -12,6 +12,7 @@ import {
 } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { parseApiJson } from "../shared/gh-api-utils.js";
+import { ValidationError } from "../config/errors.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
@@ -38,7 +39,7 @@ export const SAFE_BRANCH_NAME_PATTERN = /^[a-zA-Z0-9][-a-zA-Z0-9_./]*$/;
  */
 export function validateSafeBranchName(branchName: string): void {
   if (!SAFE_BRANCH_NAME_PATTERN.test(branchName)) {
-    throw new Error(
+    throw new ValidationError(
       `Invalid branch name for GraphQL commit strategy: "${branchName}". ` +
         `Branch names must start with alphanumeric and contain only ` +
         `alphanumeric characters, hyphens, underscores, dots, and forward slashes.`

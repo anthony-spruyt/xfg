@@ -8,7 +8,6 @@ export type {
   IPRMergeHandler,
   IRepositoryProcessor,
   IRepositorySession,
-  ISyncWorkflow,
   IWorkStrategy,
   ProcessorResult,
   SessionContext,

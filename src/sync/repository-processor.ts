@@ -78,7 +78,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       components?.branchManager ?? new BranchManager(logInstance);
     const authOptionsBuilder =
       components?.authOptionsBuilder ??
-      new AuthOptionsBuilder(tokenManager, logInstance);
+      new AuthOptionsBuilder(tokenManager, logInstance, process.env.GH_TOKEN);
     const repositorySession =
       components?.repositorySession ??
       new RepositorySession(factory, logInstance);

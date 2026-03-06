@@ -9,7 +9,8 @@ import { resolveGitHubToken } from "../shared/gh-api-utils.js";
 export class AuthOptionsBuilder implements IAuthOptionsBuilder {
   constructor(
     private readonly tokenManager: GitHubAppTokenManager | null,
-    private readonly log?: ILogger
+    private readonly log?: ILogger,
+    private readonly envToken?: string
   ) {}
 
   async resolve(
@@ -31,7 +32,7 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
       this.tokenManager,
       repoName,
       this.log,
-      process.env.GH_TOKEN
+      this.envToken
     );
 
     if (skipped) {

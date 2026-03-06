@@ -1,6 +1,7 @@
 import type { Label } from "../../config/types.js";
 import type { GitHubLabel } from "./types.js";
 import { normalizeColor } from "./converter.js";
+import { ValidationError } from "../../config/errors.js";
 
 export type LabelAction = "create" | "update" | "delete" | "unchanged";
 
@@ -54,7 +55,7 @@ export function diffLabels(
     if (label.new_name) {
       const targetLower = label.new_name.toLowerCase();
       if (renameTargets.has(targetLower)) {
-        throw new Error(
+        throw new ValidationError(
           `Rename collision: both '${renameTargets.get(targetLower)}' and '${name}' rename to '${label.new_name}'`
         );
       }
@@ -99,7 +100,7 @@ export function diffLabels(
         ([n]) => n.toLowerCase() === targetLower
       );
       if (!collidingDesired || !collidingDesired[1].new_name) {
-        throw new Error(
+        throw new ValidationError(
           `Rename collision: '${name}' would rename to '${label.new_name}', but that label already exists`
         );
       }

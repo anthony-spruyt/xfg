@@ -58,26 +58,15 @@ describe("AuthOptionsBuilder", () => {
       }
     });
 
-    test("falls back to GH_TOKEN when no token manager", async () => {
-      const originalToken = process.env.GH_TOKEN;
-      process.env.GH_TOKEN = "pat-token-456";
+    test("falls back to envToken when no token manager", async () => {
+      const builder = new AuthOptionsBuilder(null, undefined, "pat-token-456");
+      const result = await builder.resolve(mockRepoInfo, "test/repo");
 
-      try {
-        const builder = new AuthOptionsBuilder(null);
-        const result = await builder.resolve(mockRepoInfo, "test/repo");
-
-        assert.equal(result.ok, true);
-        assert.equal(result.ok && result.token, "pat-token-456");
-        assert.ok(result.ok && result.authOptions);
-        if (result.ok && result.authOptions) {
-          assert.equal(result.authOptions.token, "pat-token-456");
-        }
-      } finally {
-        if (originalToken === undefined) {
-          delete process.env.GH_TOKEN;
-        } else {
-          process.env.GH_TOKEN = originalToken;
-        }
+      assert.equal(result.ok, true);
+      assert.equal(result.ok && result.token, "pat-token-456");
+      assert.ok(result.ok && result.authOptions);
+      if (result.ok && result.authOptions) {
+        assert.equal(result.authOptions.token, "pat-token-456");
       }
     });
 

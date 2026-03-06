@@ -1,3 +1,5 @@
+import { ValidationError } from "../config/errors.js";
+
 export function sanitizeBranchName(fileName: string): string {
   return fileName
     .toLowerCase()
@@ -13,16 +15,16 @@ export function sanitizeBranchName(fileName: string): string {
  */
 export function validateBranchName(branchName: string): void {
   if (!branchName || branchName.trim() === "") {
-    throw new Error("Branch name cannot be empty");
+    throw new ValidationError("Branch name cannot be empty");
   }
 
   if (branchName.startsWith(".") || branchName.startsWith("-")) {
-    throw new Error('Branch name cannot start with "." or "-"');
+    throw new ValidationError('Branch name cannot start with "." or "-"');
   }
 
   // Git disallows: space, ~, ^, :, ?, *, [, \, and consecutive dots (..)
   if (/[\s~^:?*[\\]/.test(branchName) || branchName.includes("..")) {
-    throw new Error("Branch name contains invalid characters");
+    throw new ValidationError("Branch name contains invalid characters");
   }
 
   if (
@@ -30,6 +32,6 @@ export function validateBranchName(branchName: string): void {
     branchName.endsWith(".lock") ||
     branchName.endsWith(".")
   ) {
-    throw new Error("Branch name has invalid ending");
+    throw new ValidationError("Branch name has invalid ending");
   }
 }
