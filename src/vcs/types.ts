@@ -28,6 +28,7 @@ export interface ILocalGitOps {
   wouldChange(fileName: string, content: string): boolean;
   hasChanges(): Promise<boolean>;
   getChangedFiles(): Promise<string[]>;
+  stageAll(): Promise<void>;
   hasStagedChanges(): Promise<boolean>;
   fileExistsOnBranch(fileName: string, branch: string): Promise<boolean>;
   fileExists(fileName: string): boolean;

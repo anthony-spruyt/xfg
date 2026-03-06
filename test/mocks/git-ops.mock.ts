@@ -129,6 +129,8 @@ export function createMockGitOps(
       return config.changedFiles ?? [];
     },
 
+    async stageAll(): Promise<void> {},
+
     async hasStagedChanges(): Promise<boolean> {
       return config.hasStagedChanges ?? true;
     },

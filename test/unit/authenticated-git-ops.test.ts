@@ -27,6 +27,7 @@ function createMockLocalOps(): ILocalGitOps {
     async getChangedFiles() {
       return [];
     },
+    async stageAll() {},
     async hasStagedChanges() {
       return false;
     },

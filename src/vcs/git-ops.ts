@@ -178,10 +178,10 @@ export class GitOps implements ILocalGitOps {
       .map((line) => line.slice(3)); // Remove status prefix (e.g., " M ", "?? ", "A  ")
   }
 
-  /**
-   * Check if there are staged changes ready to commit.
-   * Uses `git diff --cached --quiet` which exits with 1 if there are staged changes.
-   */
+  async stageAll(): Promise<void> {
+    await this.exec("git add -A", this._workDir);
+  }
+
   async hasStagedChanges(): Promise<boolean> {
     try {
       await this.exec("git diff --cached --quiet", this._workDir);

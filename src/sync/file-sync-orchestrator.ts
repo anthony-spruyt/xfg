@@ -71,19 +71,15 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
       fileChanges
     );
 
-    // Update diff stats from fileChanges.
-    // In dry-run, writeFiles already counted create/update/unchanged — only add deletions
-    // and manifest changes. In non-dry-run, count all actions from fileChanges.
-    for (const [, info] of fileChanges) {
-      if (dryRun) {
-        if (info.action === "delete") incrementDiffStats(diffStats, "DELETED");
-      } else {
-        if (info.action === "create") incrementDiffStats(diffStats, "NEW");
-        else if (info.action === "update")
-          incrementDiffStats(diffStats, "MODIFIED");
-        else if (info.action === "delete")
-          incrementDiffStats(diffStats, "DELETED");
-      }
+    // Count stats for entries added after writeFiles (orphan deletes + manifest)
+    const writerFiles = new Set(repoConfig.files.map((f) => f.fileName));
+    for (const [name, info] of fileChanges) {
+      if (writerFiles.has(name)) continue;
+      if (info.action === "create") incrementDiffStats(diffStats, "NEW");
+      else if (info.action === "update")
+        incrementDiffStats(diffStats, "MODIFIED");
+      else if (info.action === "delete")
+        incrementDiffStats(diffStats, "DELETED");
     }
 
     // Show diff summary in dry-run

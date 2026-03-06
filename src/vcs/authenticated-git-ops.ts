@@ -72,6 +72,10 @@ export class AuthenticatedGitOps implements IGitOps {
     return this.localOps.getChangedFiles();
   }
 
+  stageAll(): Promise<void> {
+    return this.localOps.stageAll();
+  }
+
   hasStagedChanges(): Promise<boolean> {
     return this.localOps.hasStagedChanges();
   }

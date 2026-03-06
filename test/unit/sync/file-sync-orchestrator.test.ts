@@ -8,7 +8,10 @@ import {
   createMockAuthenticatedGitOps,
   createMockLogger,
 } from "../../mocks/index.js";
-import { createDiffStats } from "../../../src/sync/diff-utils.js";
+import {
+  createDiffStats,
+  incrementDiffStats,
+} from "../../../src/sync/diff-utils.js";
 import type { IFileWriter, IManifestManager } from "../../../src/sync/types.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import type { RepoConfig } from "../../../src/config/types.js";
@@ -45,10 +48,16 @@ describe("FileSyncOrchestrator", () => {
       }
     >
   ): IFileWriter {
+    const diffStats = createDiffStats();
+    for (const [, info] of fileChanges) {
+      if (info.action === "create") incrementDiffStats(diffStats, "NEW");
+      else if (info.action === "update")
+        incrementDiffStats(diffStats, "MODIFIED");
+    }
     return {
       writeFiles: async () => ({
         fileChanges,
-        diffStats: createDiffStats(),
+        diffStats,
       }),
     };
   }

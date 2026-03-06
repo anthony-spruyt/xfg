@@ -117,7 +117,6 @@ export class FileWriter implements IFileWriter {
       }
 
       if (dryRun) {
-        // In dry-run, show diff but don't write
         const status = getFileStatus(existingContent !== null, changed);
         incrementDiffStats(diffStats, status);
 
@@ -128,7 +127,12 @@ export class FileWriter implements IFileWriter {
         );
         log.fileDiff(file.fileName, status, diffLines);
       } else {
-        // Write the file
+        if (changed) {
+          incrementDiffStats(
+            diffStats,
+            action === "create" ? "NEW" : "MODIFIED"
+          );
+        }
         gitOps.writeFile(file.fileName, fileContent);
       }
     }

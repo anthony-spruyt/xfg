@@ -48,9 +48,8 @@ export class CommitPushManager implements ICommitPushManager {
       .filter(([, info]) => info.action !== "skip")
       .map(([path, info]) => ({ path, content: info.content }));
 
-    // Stage changes using injected executor (existing pattern in codebase)
     this.log.info("Staging changes...");
-    await executor.exec("git add -A", workDir);
+    await gitOps.stageAll();
 
     if (!(await gitOps.hasStagedChanges())) {
       this.log.info("No staged changes after git add -A, skipping commit");

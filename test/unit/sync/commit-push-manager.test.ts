@@ -175,12 +175,18 @@ describe("CommitPushManager", () => {
       assert.equal(result.success, true);
     });
 
-    test("calls git add -A when not in dry-run mode", async () => {
+    test("calls gitOps.stageAll when not in dry-run mode", async () => {
+      let stageAllCalled = false;
       const { gitOps } = createMockAuthenticatedGitOps({
         hasStagedChanges: false, // Return false so we skip commit
       });
+      const originalStageAll = gitOps.stageAll.bind(gitOps);
+      gitOps.stageAll = async () => {
+        stageAllCalled = true;
+        return originalStageAll();
+      };
       const { mock: mockLogger } = createMockLogger();
-      const { mock: mockExecutor, calls } = createMockExecutor({});
+      const { mock: mockExecutor } = createMockExecutor({});
 
       const manager = new CommitPushManager(mockLogger);
       const fileChanges = new Map<string, FileWriteResult>([
@@ -203,9 +209,7 @@ describe("CommitPushManager", () => {
         executor: mockExecutor,
       });
 
-      // Verify git add -A was called
-      assert.ok(calls.some((c) => c.command === "git add -A"));
-      assert.ok(calls.some((c) => c.cwd === workDir));
+      assert.ok(stageAllCalled, "gitOps.stageAll() should have been called");
     });
   });
 });
