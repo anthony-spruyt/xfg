@@ -14,6 +14,7 @@ import { RepoConfig } from "../../src/config/index.js";
 import { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
 import { ICommandExecutor } from "../../src/shared/command-executor.js";
 import type { GitAuthOptions } from "../../src/vcs/types.js";
+import { GitHubAppTokenManager } from "../../src/vcs/github-app-token-manager.js";
 import type { AuthenticatedGitOpsMockConfig } from "../mocks/index.js";
 import {
   createMockLogger,
@@ -2390,10 +2391,6 @@ describe("RepositoryProcessor", () => {
       const { TEST_PRIVATE_KEY, TEST_APP_ID } =
         await import("../fixtures/test-fixtures.js");
 
-      // Set GitHub App credentials
-      process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
-      process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
-
       const { mock: mockLogger } = createMockLogger();
 
       // Mock fetch to return empty installations array
@@ -2415,9 +2412,14 @@ describe("RepositoryProcessor", () => {
           hasStagedChanges: true,
         });
 
+        const tokenManager = new GitHubAppTokenManager(
+          TEST_APP_ID,
+          TEST_PRIVATE_KEY
+        );
         const processor = new RepositoryProcessor(
           mockGitOpsFactory,
-          mockLogger
+          mockLogger,
+          { tokenManager }
         );
         const result = await processor.process(
           {
@@ -2649,78 +2651,61 @@ describe("RepositoryProcessor", () => {
     });
 
     test("uses GH_TOKEN for git auth when no GitHub App token", async () => {
-      // Set up GH_TOKEN in environment (no GitHub App credentials)
-      const originalGhToken = process.env.GH_TOKEN;
-      process.env.GH_TOKEN = "ghp_test_pat_token";
+      const { mock: mockLogger } = createMockLogger();
 
-      try {
-        const { mock: mockLogger } = createMockLogger();
+      // Track the auth options passed to factory
+      let capturedAuth: unknown = undefined;
 
-        // Track the auth options passed to factory
-        let capturedAuth: unknown = undefined;
+      const mockGitOpsFactory = createTypedGitOpsFactory({
+        onAuth: (auth) => {
+          capturedAuth = auth;
+        },
+      });
 
-        const mockGitOpsFactory = createTypedGitOpsFactory({
-          onAuth: (auth) => {
-            capturedAuth = auth;
-          },
-        });
+      const processor = new RepositoryProcessor(mockGitOpsFactory, mockLogger, {
+        envToken: "ghp_test_pat_token",
+      });
 
-        const processor = new RepositoryProcessor(
-          mockGitOpsFactory,
-          mockLogger
-        );
-
-        await processor.process(
-          {
-            git: "git@github.com:test-owner/repo.git",
-            files: [{ fileName: "test.json", content: { key: "value" } }],
-          },
-          {
-            type: "github",
-            gitUrl: "git@github.com:test-owner/repo.git",
-            owner: "test-owner",
-            repo: "repo",
-            host: "github.com",
-          },
-          {
-            branchName: "chore/sync-config",
-            workDir: join(testDir, "gh-token-test"),
-            configId: "test-config",
-            dryRun: false,
-            executor: createMockExecutor(),
-          }
-        );
-
-        // Verify gitOpsFactory was called with auth options containing GH_TOKEN
-        assert.ok(
-          capturedAuth,
-          "authOptions should be defined when GH_TOKEN is set"
-        );
-        const auth = capturedAuth as {
-          token: string;
-          host: string;
-          owner: string;
-          repo: string;
-        };
-        assert.strictEqual(
-          auth.token,
-          "ghp_test_pat_token",
-          "Should use GH_TOKEN"
-        );
-        assert.strictEqual(
-          auth.host,
-          "github.com",
-          "Host should be github.com"
-        );
-        assert.strictEqual(auth.owner, "test-owner", "Owner should match");
-        assert.strictEqual(auth.repo, "repo", "Repo should match");
-      } finally {
-        if (originalGhToken) {
-          process.env.GH_TOKEN = originalGhToken;
-        } else {
-          delete process.env.GH_TOKEN;
+      await processor.process(
+        {
+          git: "git@github.com:test-owner/repo.git",
+          files: [{ fileName: "test.json", content: { key: "value" } }],
+        },
+        {
+          type: "github",
+          gitUrl: "git@github.com:test-owner/repo.git",
+          owner: "test-owner",
+          repo: "repo",
+          host: "github.com",
+        },
+        {
+          branchName: "chore/sync-config",
+          workDir: join(testDir, "gh-token-test"),
+          configId: "test-config",
+          dryRun: false,
+          executor: createMockExecutor(),
         }
-      }
+      );
+
+      // Verify gitOpsFactory was called with auth options containing GH_TOKEN
+      assert.ok(
+        capturedAuth,
+        "authOptions should be defined when GH_TOKEN is set"
+      );
+      const auth = capturedAuth as {
+        token: string;
+        host: string;
+        owner: string;
+        repo: string;
+      };
+      assert.strictEqual(
+        auth.token,
+        "ghp_test_pat_token",
+        "Should use GH_TOKEN"
+      );
+      assert.strictEqual(auth.host, "github.com", "Host should be github.com");
+      assert.strictEqual(auth.owner, "test-owner", "Owner should match");
+      assert.strictEqual(auth.repo, "repo", "Repo should match");
     });
   });
 

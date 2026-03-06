@@ -585,7 +585,10 @@ export async function runSync(
 
   const processor = deps.processorFactory
     ? deps.processorFactory()
-    : new RepositoryProcessor(undefined, undefined, { tokenManager });
+    : new RepositoryProcessor(undefined, undefined, {
+        tokenManager,
+        envToken: process.env.GH_TOKEN,
+      });
 
   const ctx: RepoIterationContext = {
     config,

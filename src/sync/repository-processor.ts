@@ -4,7 +4,6 @@ import { GitOps } from "../vcs/git-ops.js";
 import { AuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
 import { defaultExecutor } from "../shared/command-executor.js";
 import { logger, ILogger } from "../shared/logger.js";
-import { createTokenManager } from "../vcs/index.js";
 import type { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import { FileWriter } from "./file-writer.js";
 import { ManifestManager } from "./manifest-manager.js";
@@ -53,6 +52,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       prMergeHandler?: IPRMergeHandler;
       syncWorkflow?: ISyncWorkflow;
       tokenManager?: GitHubAppTokenManager | null;
+      envToken?: string;
     }
   ) {
     const logInstance = log ?? logger;
@@ -70,18 +70,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         );
       });
 
-    const tokenManager =
-      components?.tokenManager !== undefined
-        ? components.tokenManager
-        : createTokenManager(
-            process.env.XFG_GITHUB_APP_ID &&
-              process.env.XFG_GITHUB_APP_PRIVATE_KEY
-              ? {
-                  appId: process.env.XFG_GITHUB_APP_ID,
-                  privateKey: process.env.XFG_GITHUB_APP_PRIVATE_KEY,
-                }
-              : undefined
-          );
+    const tokenManager = components?.tokenManager ?? null;
 
     const fileWriter = components?.fileWriter ?? new FileWriter();
     const manifestManager =
@@ -90,7 +79,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       components?.branchManager ?? new BranchManager(logInstance);
     const authOptionsBuilder =
       components?.authOptionsBuilder ??
-      new AuthOptionsBuilder(tokenManager, logInstance, process.env.GH_TOKEN);
+      new AuthOptionsBuilder(tokenManager, logInstance, components?.envToken);
     const repositorySession =
       components?.repositorySession ??
       new RepositorySession(factory, logInstance);
