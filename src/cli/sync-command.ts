@@ -299,6 +299,15 @@ interface RepoIterationContext {
   >;
 }
 
+interface RepoPhaseParams {
+  repoConfig: RepoConfig;
+  repoInfo: RepoInfo;
+  repoName: string;
+  index: number;
+  workDir: string;
+  token: string | undefined;
+}
+
 /**
  * Process a single repository: resolve URL, run lifecycle check, sync files, apply settings.
  * Pushes results into ctx.reportResults, ctx.lifecycleReportInputs, and ctx.settingsCollector.
@@ -362,27 +371,20 @@ async function processSingleRepo(
       ).token
     : undefined;
 
-  const skipFileSync = await runLifecyclePhase(
+  const repo: RepoPhaseParams = {
     repoConfig,
     repoInfo,
     repoName,
     index,
     workDir,
-    repoToken,
-    ctx
-  );
+    token: repoToken,
+  };
+
+  const skipFileSync = await runLifecyclePhase(repo, ctx);
   if (skipFileSync) return;
 
   // Sync files via processor
-  await runFileSyncPhase(
-    repoConfig,
-    repoInfo,
-    repoName,
-    current,
-    workDir,
-    repoToken,
-    ctx
-  );
+  await runFileSyncPhase(repo, ctx);
 
   // Apply settings via API (GitHub-only — ADO and GitLab repos are skipped)
   await applyRepoSettings({
@@ -404,29 +406,24 @@ async function processSingleRepo(
  * Returns true if the main loop should skip file sync for this repo.
  */
 async function runLifecyclePhase(
-  repoConfig: RepoConfig,
-  repoInfo: RepoInfo,
-  repoName: string,
-  index: number,
-  workDir: string,
-  lifecycleToken: string | undefined,
+  repo: RepoPhaseParams,
   ctx: RepoIterationContext
 ): Promise<boolean> {
-  const current = index + 1;
+  const current = repo.index + 1;
 
   try {
     const { outputLines, lifecycleResult } = await runLifecycleCheck(
-      repoConfig,
-      repoInfo,
-      index,
+      repo.repoConfig,
+      repo.repoInfo,
       {
         dryRun: ctx.options.dryRun ?? false,
-        resolvedWorkDir: workDir,
+        resolvedWorkDir: repo.workDir,
         githubHosts: ctx.config.githubHosts,
-        token: lifecycleToken,
-      },
-      ctx.lifecycleManager,
-      ctx.config.settings?.repo
+        token: repo.token,
+        repoIndex: repo.index,
+        lifecycleManager: ctx.lifecycleManager,
+        repoSettings: ctx.config.settings?.repo,
+      }
     );
 
     for (const line of outputLines) {
@@ -435,10 +432,10 @@ async function runLifecyclePhase(
 
     const createSettings = toCreateRepoSettings(ctx.config.settings?.repo);
     ctx.lifecycleReportInputs.push({
-      repoName,
+      repoName: repo.repoName,
       action: lifecycleResult.action,
-      upstream: repoConfig.upstream,
-      source: repoConfig.source,
+      upstream: repo.repoConfig.upstream,
+      source: repo.repoConfig.source,
       settings: createSettings
         ? {
             visibility: createSettings.visibility,
@@ -450,7 +447,7 @@ async function runLifecyclePhase(
     // In dry-run, skip processing repos that don't exist yet
     if (ctx.options.dryRun && lifecycleResult.action !== "existed") {
       ctx.reportResults.push({
-        repoName,
+        repoName: repo.repoName,
         success: true,
         fileChanges: [],
       });
@@ -461,11 +458,11 @@ async function runLifecyclePhase(
   } catch (error) {
     logger.error(
       current,
-      repoName,
+      repo.repoName,
       `Lifecycle error: ${toErrorMessage(error)}`
     );
     ctx.reportResults.push({
-      repoName,
+      repoName: repo.repoName,
       success: false,
       fileChanges: [],
       error: toErrorMessage(error),
@@ -478,33 +475,30 @@ async function runLifecyclePhase(
  * Run the file sync processor for a single repo and collect results.
  */
 async function runFileSyncPhase(
-  repoConfig: RepoConfig,
-  repoInfo: RepoInfo,
-  repoName: string,
-  current: number,
-  workDir: string,
-  token: string | undefined,
+  repo: RepoPhaseParams,
   ctx: RepoIterationContext
 ): Promise<void> {
+  const current = repo.index + 1;
   try {
-    logger.progress(current, repoName, "Processing...");
+    logger.progress(current, repo.repoName, "Processing...");
 
-    const result = await ctx.processor.process(repoConfig, repoInfo, {
+    const result = await ctx.processor.process(repo.repoConfig, repo.repoInfo, {
       branchName: ctx.branchName,
-      workDir,
+      workDir: repo.workDir,
       configId: ctx.config.id,
       dryRun: ctx.options.dryRun,
       retries: ctx.options.retries,
       prTemplate: ctx.config.prTemplate,
       noDelete: ctx.options.noDelete,
-      token,
-      isGraphQLCommitMode: isGitHubRepo(repoInfo) && ctx.tokenManager !== null,
+      token: repo.token,
+      isGraphQLCommitMode:
+        isGitHubRepo(repo.repoInfo) && ctx.tokenManager !== null,
     });
 
     const mergeOutcome = determineMergeOutcome(result);
 
     ctx.reportResults.push({
-      repoName,
+      repoName: repo.repoName,
       success: result.success,
       fileChanges: (result.fileChanges ?? []).map((f) => ({
         path: f.path,
@@ -516,16 +510,16 @@ async function runFileSyncPhase(
     });
 
     if (result.skipped) {
-      logger.skip(current, repoName, result.message);
+      logger.skip(current, repo.repoName, result.message);
     } else if (result.success) {
-      logger.success(current, repoName, result.message);
+      logger.success(current, repo.repoName, result.message);
     } else {
-      logger.error(current, repoName, result.message);
+      logger.error(current, repo.repoName, result.message);
     }
   } catch (error) {
-    logger.error(current, repoName, toErrorMessage(error));
+    logger.error(current, repo.repoName, toErrorMessage(error));
     ctx.reportResults.push({
-      repoName,
+      repoName: repo.repoName,
       success: false,
       fileChanges: [],
       error: toErrorMessage(error),

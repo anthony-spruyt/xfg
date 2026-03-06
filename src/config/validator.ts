@@ -212,9 +212,7 @@ function buildRootSettingsContext(config: RawConfig): RootSettingsContext {
 function validateSettings(
   settings: unknown,
   context: string,
-  rootRulesetNames?: string[],
-  hasRootRepoSettings?: boolean,
-  rootLabelNames?: string[]
+  rootCtx?: RootSettingsContext
 ): void {
   if (!isPlainObject(settings)) {
     throw new ValidationError(`${context}: settings must be an object`);
@@ -233,7 +231,7 @@ function validateSettings(
       if (name === "inherit") continue;
 
       if (ruleset === false) {
-        if (rootRulesetNames && !rootRulesetNames.includes(name)) {
+        if (rootCtx && !rootCtx.rulesetNames.includes(name)) {
           throw new ValidationError(
             `${context}: Cannot opt out of '${name}' - not defined in root settings.rulesets`
           );
@@ -253,7 +251,7 @@ function validateSettings(
     for (const [name, label] of Object.entries(labels)) {
       if (name === "inherit") continue;
       if (label === false) {
-        if (rootLabelNames && !rootLabelNames.includes(name)) {
+        if (rootCtx && !rootCtx.labelNames.includes(name)) {
           throw new ValidationError(
             `${context}: Cannot opt out of label '${name}' - not defined in root settings.labels`
           );
@@ -272,14 +270,14 @@ function validateSettings(
 
   if (s.repo !== undefined) {
     if (s.repo === false) {
-      if (!rootRulesetNames) {
+      if (!rootCtx) {
         // Root level — repo: false not valid here
         throw new ValidationError(
           `${context}: repo: false is not valid at root level. Define repo settings or remove the field.`
         );
       }
       // Per-repo level — check root has repo settings to opt out of
-      if (!hasRootRepoSettings) {
+      if (!rootCtx.hasRepoSettings) {
         throw new ValidationError(
           `${context}: Cannot opt out of repo settings — not defined in root settings.repo`
         );
@@ -431,13 +429,7 @@ function validateGroups(config: RawConfig): void {
     }
 
     if (group.settings !== undefined) {
-      validateSettings(
-        group.settings,
-        `groups.${groupName}`,
-        rootCtx.rulesetNames,
-        rootCtx.hasRepoSettings,
-        rootCtx.labelNames
-      );
+      validateSettings(group.settings, `groups.${groupName}`, rootCtx);
     }
   }
 }
@@ -624,13 +616,7 @@ function validateRepoSettingsEntry(
     }
   }
 
-  validateSettings(
-    repo.settings,
-    `Repo ${repoLabel}`,
-    rootCtx.rulesetNames,
-    rootCtx.hasRepoSettings,
-    rootCtx.labelNames
-  );
+  validateSettings(repo.settings, `Repo ${repoLabel}`, rootCtx);
 }
 
 function validateRepoEntry(

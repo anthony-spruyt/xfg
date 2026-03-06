@@ -18,6 +18,10 @@ interface LifecycleCheckOptions {
   resolvedWorkDir?: string;
   /** Auth token (GitHub App installation token or PAT) for gh CLI commands */
   token?: string;
+  /** Index used to generate workspace directory name when resolvedWorkDir is not provided. */
+  repoIndex: number;
+  lifecycleManager: IRepoLifecycleManager;
+  repoSettings?: GitHubRepoSettings;
 }
 
 /**
@@ -52,18 +56,17 @@ interface LifecycleCheckResult {
 export async function runLifecycleCheck(
   repoConfig: RepoConfig,
   repoInfo: RepoInfo,
-  repoIndex: number,
-  options: LifecycleCheckOptions,
-  lifecycleManager: IRepoLifecycleManager,
-  repoSettings?: GitHubRepoSettings
+  options: LifecycleCheckOptions
 ): Promise<LifecycleCheckResult> {
   const workDir =
     options.resolvedWorkDir ??
-    resolve(join(options.workDir ?? "./tmp", generateWorkspaceName(repoIndex)));
+    resolve(
+      join(options.workDir ?? "./tmp", generateWorkspaceName(options.repoIndex))
+    );
 
-  const createSettings = toCreateRepoSettings(repoSettings);
+  const createSettings = toCreateRepoSettings(options.repoSettings);
 
-  const lifecycleResult = await lifecycleManager.ensureRepo(
+  const lifecycleResult = await options.lifecycleManager.ensureRepo(
     repoConfig,
     repoInfo,
     {
