@@ -113,6 +113,15 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     options: ProcessorOptions
   ): Promise<ProcessorResult> {
     const strategy = new FileSyncStrategy(this.fileSyncOrchestrator);
-    return this.syncWorkflow.execute(repoConfig, repoInfo, options, strategy);
+    const resolvedOptions = {
+      ...options,
+      executor: options.executor ?? defaultExecutor,
+    };
+    return this.syncWorkflow.execute(
+      repoConfig,
+      repoInfo,
+      resolvedOptions,
+      strategy
+    );
   }
 }

@@ -2,7 +2,7 @@ import type { RepoConfig } from "../config/types.js";
 import { RepoInfo, getRepoDisplayName } from "../shared/repo-detector.js";
 import type { ILogger } from "../shared/logger.js";
 import { safeCleanup } from "../shared/type-guards.js";
-import { defaultExecutor } from "../shared/command-executor.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import type {
   ISyncWorkflow,
   IWorkStrategy,
@@ -40,7 +40,7 @@ export class SyncWorkflow implements ISyncWorkflow {
     const { branchName, workDir } = options;
     const dryRun = options.dryRun ?? false;
     const retries = options.retries ?? 3;
-    const executor = options.executor ?? defaultExecutor;
+    const executor = options.executor as ICommandExecutor;
 
     const authResult = await this.authOptionsBuilder.resolve(
       repoInfo,
