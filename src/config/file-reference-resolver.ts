@@ -72,32 +72,37 @@ export function resolveFileReference(
   // Parse based on extension
   const ext = extname(relativePath).toLowerCase();
   if (ext === ".json") {
-    try {
-      return JSON.parse(content) as Record<string, unknown>;
-    } catch (error) {
-      const msg = toErrorMessage(error);
-      throw new ValidationError(`Invalid JSON in "${reference}": ${msg}`);
-    }
+    return parseWithContext(
+      () => JSON.parse(content),
+      `Invalid JSON in "${reference}"`
+    );
   }
   if (ext === ".json5") {
-    try {
-      return JSON5.parse(content) as Record<string, unknown>;
-    } catch (error) {
-      const msg = toErrorMessage(error);
-      throw new ValidationError(`Invalid JSON5 in "${reference}": ${msg}`);
-    }
+    return parseWithContext(
+      () => JSON5.parse(content),
+      `Invalid JSON5 in "${reference}"`
+    );
   }
   if (ext === ".yaml" || ext === ".yml") {
-    try {
-      return parseYaml(content) as Record<string, unknown>;
-    } catch (error) {
-      const msg = toErrorMessage(error);
-      throw new ValidationError(`Invalid YAML in "${reference}": ${msg}`);
-    }
+    return parseWithContext(
+      () => parseYaml(content),
+      `Invalid YAML in "${reference}"`
+    );
   }
 
   // Text file - return as string
   return content;
+}
+
+function parseWithContext(
+  fn: () => ContentValue,
+  errorPrefix: string
+): ContentValue {
+  try {
+    return fn();
+  } catch (error) {
+    throw new ValidationError(`${errorPrefix}: ${toErrorMessage(error)}`);
+  }
 }
 
 /**
