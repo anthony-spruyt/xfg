@@ -34,13 +34,10 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels`;
-    const result = await this.api.call(
-      "GET",
-      endpoint,
-      undefined,
+    const result = await this.api.call("GET", endpoint, {
       options,
-      true
-    );
+      paginate: true,
+    });
 
     return parseApiJson<GitHubLabel[]>(result, "labels response");
   }
@@ -53,7 +50,7 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels`;
-    await this.api.call("POST", endpoint, label, options);
+    await this.api.call("POST", endpoint, { payload: label, options });
   }
 
   async update(
@@ -65,7 +62,7 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels/${encodeURIComponent(currentName)}`;
-    await this.api.call("PATCH", endpoint, label, options);
+    await this.api.call("PATCH", endpoint, { payload: label, options });
   }
 
   async delete(
@@ -76,6 +73,6 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels/${encodeURIComponent(name)}`;
-    await this.api.call("DELETE", endpoint, undefined, options);
+    await this.api.call("DELETE", endpoint, { options });
   }
 }

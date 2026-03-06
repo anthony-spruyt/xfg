@@ -16,6 +16,12 @@ export interface GhApiOptions {
   host?: string;
 }
 
+export interface GhApiCallParams {
+  payload?: unknown;
+  options?: GhApiOptions;
+  paginate?: boolean;
+}
+
 interface GhApiCallOptions {
   executor: ICommandExecutor;
   retries: number;
@@ -104,16 +110,14 @@ export class GhApiClient {
   async call(
     method: HttpMethod,
     endpoint: string,
-    payload?: unknown,
-    options?: GhApiOptions,
-    paginate?: boolean
+    params?: GhApiCallParams
   ): Promise<string> {
     return ghApiCall(method, endpoint, {
       executor: this.executor,
       retries: this.retries,
-      apiOpts: options,
-      payload,
-      paginate,
+      apiOpts: params?.options,
+      payload: params?.payload,
+      paginate: params?.paginate,
     });
   }
 }

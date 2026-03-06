@@ -166,7 +166,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets`;
-    const result = await this.api.call("GET", endpoint, undefined, options);
+    const result = await this.api.call("GET", endpoint, { options });
 
     return parseApiJson<GitHubRuleset[]>(result, "rulesets response");
   }
@@ -179,7 +179,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets/${rulesetId}`;
-    const result = await this.api.call("GET", endpoint, undefined, options);
+    const result = await this.api.call("GET", endpoint, { options });
 
     return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
@@ -194,7 +194,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets`;
     const payload = configToGitHub(name, ruleset);
-    const result = await this.api.call("POST", endpoint, payload, options);
+    const result = await this.api.call("POST", endpoint, { payload, options });
 
     return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
@@ -210,7 +210,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets/${rulesetId}`;
     const payload = configToGitHub(name, ruleset);
-    const result = await this.api.call("PUT", endpoint, payload, options);
+    const result = await this.api.call("PUT", endpoint, { payload, options });
 
     return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
@@ -223,6 +223,6 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets/${rulesetId}`;
-    await this.api.call("DELETE", endpoint, undefined, options);
+    await this.api.call("DELETE", endpoint, { options });
   }
 }

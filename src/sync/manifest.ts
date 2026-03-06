@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { toErrorMessage } from "../shared/type-guards.js";
+import { toErrorMessage, isPlainObject } from "../shared/type-guards.js";
 import { SyncError } from "../shared/errors.js";
 
 export const MANIFEST_FILENAME = ".xfg.json";
@@ -41,43 +41,34 @@ export interface XfgManifest {
   configs: Record<string, XfgManifestConfigEntry>;
 }
 
+function hasVersion(manifest: unknown, version: number): boolean {
+  return (
+    isPlainObject(manifest) &&
+    (manifest as { version: number }).version === version
+  );
+}
+
 function isV1Manifest(manifest: unknown): manifest is XfgManifestV1 {
   return (
-    typeof manifest === "object" &&
-    manifest !== null &&
-    (manifest as XfgManifestV1).version === 1 &&
+    hasVersion(manifest, 1) &&
     Array.isArray((manifest as XfgManifestV1).managedFiles)
   );
 }
 
+function hasConfigs(manifest: unknown): boolean {
+  return isPlainObject((manifest as { configs: unknown }).configs);
+}
+
 function isV2Manifest(manifest: unknown): manifest is XfgManifestV2 {
-  return (
-    typeof manifest === "object" &&
-    manifest !== null &&
-    (manifest as XfgManifestV2).version === 2 &&
-    typeof (manifest as XfgManifestV2).configs === "object" &&
-    (manifest as XfgManifestV2).configs !== null
-  );
+  return hasVersion(manifest, 2) && hasConfigs(manifest);
 }
 
 function isV3Manifest(manifest: unknown): manifest is XfgManifestV3 {
-  return (
-    typeof manifest === "object" &&
-    manifest !== null &&
-    (manifest as XfgManifestV3).version === 3 &&
-    typeof (manifest as XfgManifestV3).configs === "object" &&
-    (manifest as XfgManifestV3).configs !== null
-  );
+  return hasVersion(manifest, 3) && hasConfigs(manifest);
 }
 
 function isV4Manifest(manifest: unknown): manifest is XfgManifest {
-  return (
-    typeof manifest === "object" &&
-    manifest !== null &&
-    (manifest as XfgManifest).version === 4 &&
-    typeof (manifest as XfgManifest).configs === "object" &&
-    (manifest as XfgManifest).configs !== null
-  );
+  return hasVersion(manifest, 4) && hasConfigs(manifest);
 }
 
 /**

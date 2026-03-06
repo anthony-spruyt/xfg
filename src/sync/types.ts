@@ -116,7 +116,7 @@ export interface IAuthOptionsBuilder {
   resolve(
     repoInfo: RepoInfo,
     repoName: string,
-    preResolvedToken?: string
+    token?: string
   ): Promise<AuthResult>;
 }
 
@@ -165,7 +165,7 @@ export interface ProcessorOptions {
   executor?: ICommandExecutor;
   prTemplate?: string;
   noDelete?: boolean;
-  /** Pre-resolved GitHub token — avoids duplicate resolution in AuthOptionsBuilder */
+  /** GitHub token for authentication (resolved by caller) */
   token?: string;
   /** True when using GraphQL commit strategy (GitHub App) which cannot set file modes */
   isGraphQLCommitMode?: boolean;

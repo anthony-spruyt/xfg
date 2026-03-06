@@ -16,18 +16,20 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
   async resolve(
     repoInfo: RepoInfo,
     repoName: string,
-    preResolvedToken?: string
+    token?: string
   ): Promise<AuthResult> {
     if (!isGitHubRepo(repoInfo)) {
       return { ok: true, token: undefined, authOptions: undefined };
     }
 
-    if (preResolvedToken !== undefined) {
-      const authOptions = this.buildAuthOptions(repoInfo, preResolvedToken);
-      return { ok: true, token: preResolvedToken, authOptions };
+    // If caller already resolved a token, use it directly
+    if (token !== undefined) {
+      const authOptions = this.buildAuthOptions(repoInfo, token);
+      return { ok: true, token, authOptions };
     }
 
-    const { token, skipped } = await resolveGitHubToken(
+    // Otherwise resolve via token manager / env fallback
+    const resolved = await resolveGitHubToken(
       repoInfo,
       this.tokenManager,
       repoName,
@@ -35,7 +37,7 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
       this.envToken
     );
 
-    if (skipped) {
+    if (resolved.skipped) {
       return {
         ok: false,
         skipResult: {
@@ -47,11 +49,11 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
       };
     }
 
-    const authOptions = token
-      ? this.buildAuthOptions(repoInfo, token)
+    const authOptions = resolved.token
+      ? this.buildAuthOptions(repoInfo, resolved.token)
       : undefined;
 
-    return { ok: true, token, authOptions };
+    return { ok: true, token: resolved.token, authOptions };
   }
 
   private buildAuthOptions(
