@@ -223,7 +223,7 @@ describe("RepoSettingsProcessor", () => {
     assert.ok(result.planOutput!.entries.length > 0);
     assert.ok(
       result.planOutput!.entries.some(
-        (e) => e.property === "hasWiki" && e.action === "change"
+        (e) => e.property === "hasWiki" && e.action === "update"
       )
     );
   });

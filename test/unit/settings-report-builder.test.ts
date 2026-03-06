@@ -12,7 +12,7 @@ describe("buildSettingsReport", () => {
             entries: [
               {
                 property: "deleteBranchOnMerge",
-                action: "change" as const,
+                action: "update" as const,
                 oldValue: false,
                 newValue: true,
               },
@@ -28,8 +28,8 @@ describe("buildSettingsReport", () => {
     assert.equal(report.repos[0].repoName, "org/repo");
     assert.equal(report.repos[0].settings.length, 1);
     assert.equal(report.repos[0].settings[0].name, "deleteBranchOnMerge");
-    assert.equal(report.repos[0].settings[0].action, "change");
-    assert.equal(report.totals.settings.change, 1);
+    assert.equal(report.repos[0].settings[0].action, "update");
+    assert.equal(report.totals.settings.update, 1);
   });
 
   test("converts ruleset processor result to SettingsReport", () => {
@@ -87,10 +87,10 @@ describe("buildSettingsReport", () => {
         settingsResult: {
           planOutput: {
             entries: [
-              { property: "p1", action: "add" as const, newValue: true },
+              { property: "p1", action: "create" as const, newValue: true },
               {
                 property: "p2",
-                action: "change" as const,
+                action: "update" as const,
                 oldValue: 1,
                 newValue: 2,
               },
@@ -115,8 +115,8 @@ describe("buildSettingsReport", () => {
 
     const report = buildSettingsReport(results);
 
-    assert.equal(report.totals.settings.add, 1);
-    assert.equal(report.totals.settings.change, 1);
+    assert.equal(report.totals.settings.create, 1);
+    assert.equal(report.totals.settings.update, 1);
     assert.equal(report.totals.rulesets.create, 1);
     assert.equal(report.totals.rulesets.delete, 1);
   });
@@ -245,7 +245,7 @@ describe("buildSettingsReport", () => {
             entries: [
               {
                 property: "hasWiki",
-                action: "change" as const,
+                action: "update" as const,
                 oldValue: true,
                 newValue: false,
               },
@@ -272,13 +272,13 @@ describe("buildSettingsReport", () => {
             entries: [
               {
                 property: "has_issues",
-                action: "change" as const,
+                action: "update" as const,
                 oldValue: undefined,
                 newValue: undefined,
               },
               {
                 property: "deleteBranchOnMerge",
-                action: "change" as const,
+                action: "update" as const,
                 oldValue: false,
                 newValue: true,
               },
@@ -294,6 +294,6 @@ describe("buildSettingsReport", () => {
     assert.equal(report.repos[0].settings.length, 1);
     assert.equal(report.repos[0].settings[0].name, "deleteBranchOnMerge");
     // Totals should only count the valid setting
-    assert.equal(report.totals.settings.change, 1);
+    assert.equal(report.totals.settings.update, 1);
   });
 });

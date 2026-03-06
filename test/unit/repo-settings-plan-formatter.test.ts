@@ -11,7 +11,7 @@ describe("formatRepoSettingsPlan", () => {
     const changes: RepoSettingsChange[] = [
       {
         property: "hasWiki",
-        action: "change",
+        action: "update",
         oldValue: true,
         newValue: false,
       },
@@ -29,7 +29,7 @@ describe("formatRepoSettingsPlan", () => {
 
   test("should format added property", () => {
     const changes: RepoSettingsChange[] = [
-      { property: "allowAutoMerge", action: "add", newValue: true },
+      { property: "allowAutoMerge", action: "create", newValue: true },
     ];
 
     const result = formatRepoSettingsPlan(changes);
@@ -52,7 +52,7 @@ describe("formatRepoSettingsPlan", () => {
     const changes: RepoSettingsChange[] = [
       {
         property: "visibility",
-        action: "change",
+        action: "update",
         oldValue: "private",
         newValue: "public",
       },
@@ -68,7 +68,7 @@ describe("formatRepoSettingsPlan", () => {
     const changes: RepoSettingsChange[] = [
       {
         property: "archived",
-        action: "change",
+        action: "update",
         oldValue: false,
         newValue: true,
       },
@@ -84,7 +84,7 @@ describe("formatRepoSettingsPlan", () => {
     const changes: RepoSettingsChange[] = [
       {
         property: "hasIssues",
-        action: "change",
+        action: "update",
         oldValue: true,
         newValue: false,
       },
@@ -100,7 +100,7 @@ describe("formatRepoSettingsPlan", () => {
     const changes: RepoSettingsChange[] = [
       {
         property: "defaultBranch",
-        action: "change",
+        action: "update",
         oldValue: "main",
         newValue: "develop",
       },
@@ -115,14 +115,14 @@ describe("formatRepoSettingsPlan", () => {
     const changes: RepoSettingsChange[] = [
       {
         property: "hasWiki",
-        action: "change",
+        action: "update",
         oldValue: true,
         newValue: false,
       },
-      { property: "allowAutoMerge", action: "add", newValue: true },
+      { property: "allowAutoMerge", action: "create", newValue: true },
       {
         property: "allowSquashMerge",
-        action: "change",
+        action: "update",
         oldValue: false,
         newValue: true,
       },
@@ -138,21 +138,21 @@ describe("formatRepoSettingsPlan", () => {
   describe("entries population", () => {
     test("populates entry for add action", () => {
       const changes: RepoSettingsChange[] = [
-        { property: "allowAutoMerge", action: "add", newValue: true },
+        { property: "allowAutoMerge", action: "create", newValue: true },
       ];
 
       const result = formatRepoSettingsPlan(changes);
 
       assert.equal(result.entries.length, 1);
       assert.equal(result.entries[0].property, "allowAutoMerge");
-      assert.equal(result.entries[0].action, "add");
+      assert.equal(result.entries[0].action, "create");
     });
 
     test("populates entry for change action", () => {
       const changes: RepoSettingsChange[] = [
         {
           property: "hasWiki",
-          action: "change",
+          action: "update",
           oldValue: true,
           newValue: false,
         },
@@ -162,7 +162,7 @@ describe("formatRepoSettingsPlan", () => {
 
       assert.equal(result.entries.length, 1);
       assert.equal(result.entries[0].property, "hasWiki");
-      assert.equal(result.entries[0].action, "change");
+      assert.equal(result.entries[0].action, "update");
     });
 
     test("excludes unchanged actions from entries", () => {
@@ -179,14 +179,14 @@ describe("formatRepoSettingsPlan", () => {
       const changes: RepoSettingsChange[] = [
         {
           property: "hasWiki",
-          action: "change",
+          action: "update",
           oldValue: true,
           newValue: false,
         },
-        { property: "allowAutoMerge", action: "add", newValue: true },
+        { property: "allowAutoMerge", action: "create", newValue: true },
         {
           property: "allowSquashMerge",
-          action: "change",
+          action: "update",
           oldValue: false,
           newValue: true,
         },
@@ -196,11 +196,11 @@ describe("formatRepoSettingsPlan", () => {
 
       assert.equal(result.entries.length, 3);
       assert.equal(result.entries[0].property, "hasWiki");
-      assert.equal(result.entries[0].action, "change");
+      assert.equal(result.entries[0].action, "update");
       assert.equal(result.entries[1].property, "allowAutoMerge");
-      assert.equal(result.entries[1].action, "add");
+      assert.equal(result.entries[1].action, "create");
       assert.equal(result.entries[2].property, "allowSquashMerge");
-      assert.equal(result.entries[2].action, "change");
+      assert.equal(result.entries[2].action, "update");
     });
 
     test("returns empty entries for empty changes", () => {

@@ -69,10 +69,13 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
     const t = input.settings.totals;
 
     const settingsEntry = formatCountEntry("setting", "settings", [
-      { label: selectLabel(dry, "added", "to add"), value: t.settings.add },
       {
-        label: selectLabel(dry, "changed", "to change"),
-        value: t.settings.change,
+        label: selectLabel(dry, "created", "to create"),
+        value: t.settings.create,
+      },
+      {
+        label: selectLabel(dry, "updated", "to update"),
+        value: t.settings.update,
       },
     ]);
     if (settingsEntry) parts.push(settingsEntry);

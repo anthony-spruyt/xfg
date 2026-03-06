@@ -909,7 +909,7 @@ repos:
           entries: [
             {
               property: "hasWiki",
-              action: "change" as const,
+              action: "update" as const,
               oldValue: "true",
               newValue: "false",
             },
@@ -962,7 +962,7 @@ repos:
           entries: [
             {
               property: "hasWiki",
-              action: "change" as const,
+              action: "update" as const,
               oldValue: "true",
               newValue: "false",
             },

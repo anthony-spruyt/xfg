@@ -18,7 +18,7 @@ describe("settings-report types", () => {
     const report: SettingsReport = {
       repos: [],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -39,7 +39,7 @@ describe("settings-report types", () => {
   test("SettingChange structure is correct", () => {
     const change: SettingChange = {
       name: "deleteBranchOnMerge",
-      action: "change",
+      action: "update",
       oldValue: false,
       newValue: true,
     };
@@ -65,7 +65,7 @@ describe("formatSettingsReportCLI", () => {
           settings: [
             {
               name: "deleteBranchOnMerge",
-              action: "change",
+              action: "update",
               oldValue: false,
               newValue: true,
             },
@@ -75,7 +75,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 1 },
+        settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -102,7 +102,7 @@ describe("formatSettingsReportCLI", () => {
           settings: [
             {
               name: "hasWiki",
-              action: "add",
+              action: "create",
               newValue: true,
             },
           ],
@@ -111,7 +111,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 1, change: 0 },
+        settings: { create: 1, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -128,7 +128,7 @@ describe("formatSettingsReportCLI", () => {
     const report: SettingsReport = {
       repos: [],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -145,7 +145,7 @@ describe("formatSettingsReportCLI", () => {
       repos: [
         {
           repoName: "org/repo1",
-          settings: [{ name: "hasWiki", action: "add", newValue: true }],
+          settings: [{ name: "hasWiki", action: "create", newValue: true }],
           rulesets: [],
           labels: [],
         },
@@ -154,7 +154,7 @@ describe("formatSettingsReportCLI", () => {
           settings: [
             {
               name: "deleteBranchOnMerge",
-              action: "change",
+              action: "update",
               oldValue: false,
               newValue: true,
             },
@@ -164,7 +164,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 1, change: 1 },
+        settings: { create: 1, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -196,7 +196,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -239,7 +239,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 1, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -287,7 +287,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 1, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -324,7 +324,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 1 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -347,7 +347,7 @@ describe("formatSettingsReportCLI", () => {
           settings: [
             {
               name: "deleteBranchOnMerge",
-              action: "change",
+              action: "update",
               oldValue: false,
               newValue: true,
             },
@@ -370,7 +370,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 1 },
+        settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 1, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -391,13 +391,13 @@ describe("formatSettingsReportCLI", () => {
           settings: [
             {
               name: "has_issues",
-              action: "change",
+              action: "update",
               oldValue: undefined,
               newValue: undefined,
             },
             {
               name: "deleteBranchOnMerge",
-              action: "change",
+              action: "update",
               oldValue: false,
               newValue: true,
             },
@@ -407,7 +407,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 2 },
+        settings: { create: 0, update: 2 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -454,7 +454,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 1, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -501,7 +501,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
       },
@@ -537,7 +537,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
       },
@@ -575,7 +575,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
       },
@@ -620,7 +620,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
       },
@@ -659,7 +659,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 1 },
       },
@@ -684,7 +684,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
       },
@@ -717,7 +717,7 @@ describe("formatSettingsReportCLI", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 1 },
       },
@@ -742,7 +742,7 @@ describe("formatSettingsReportMarkdown", () => {
           settings: [
             {
               name: "deleteBranchOnMerge",
-              action: "change",
+              action: "update",
               oldValue: false,
               newValue: true,
             },
@@ -752,7 +752,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 1 },
+        settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -782,7 +782,7 @@ describe("formatSettingsReportMarkdown", () => {
           settings: [
             {
               name: "deleteBranchOnMerge",
-              action: "change",
+              action: "update",
               oldValue: false,
               newValue: true,
             },
@@ -792,7 +792,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 1 },
+        settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -816,7 +816,7 @@ describe("formatSettingsReportMarkdown", () => {
           settings: [
             {
               name: "deleteBranchOnMerge",
-              action: "change",
+              action: "update",
               oldValue: false,
               newValue: true,
             },
@@ -826,7 +826,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 1 },
+        settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -841,7 +841,7 @@ describe("formatSettingsReportMarkdown", () => {
     const report: SettingsReport = {
       repos: [],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -861,13 +861,13 @@ describe("formatSettingsReportMarkdown", () => {
           settings: [
             {
               name: "has_issues",
-              action: "change",
+              action: "update",
               oldValue: undefined,
               newValue: undefined,
             },
             {
               name: "deleteBranchOnMerge",
-              action: "change",
+              action: "update",
               oldValue: false,
               newValue: true,
             },
@@ -877,7 +877,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 2 },
+        settings: { create: 0, update: 2 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -923,7 +923,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 1, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -964,7 +964,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
       },
@@ -1005,7 +1005,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
       },
@@ -1043,7 +1043,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 1 },
       },
@@ -1076,7 +1076,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
       },
@@ -1117,7 +1117,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
       },
@@ -1151,7 +1151,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
       },
@@ -1185,7 +1185,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
       },
@@ -1215,7 +1215,7 @@ describe("formatSettingsReportMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 1 },
       },
@@ -1261,7 +1261,7 @@ describe("writeSettingsReportSummary", () => {
           settings: [
             {
               name: "deleteBranchOnMerge",
-              action: "change",
+              action: "update",
               oldValue: false,
               newValue: true,
             },
@@ -1271,7 +1271,7 @@ describe("writeSettingsReportSummary", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 1 },
+        settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -1289,7 +1289,7 @@ describe("writeSettingsReportSummary", () => {
     const report: SettingsReport = {
       repos: [],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },

@@ -30,7 +30,7 @@ function emptySettings(): SettingsReport {
   return {
     repos: [],
     totals: {
-      settings: { add: 0, change: 0 },
+      settings: { create: 0, update: 0 },
       rulesets: { create: 0, update: 0, delete: 0 },
       labels: { create: 0, update: 0, delete: 0 },
     },
@@ -369,14 +369,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
         {
           repoName: "org/repo",
           settings: [
-            { name: "visibility", action: "add", newValue: "private" },
+            { name: "visibility", action: "create", newValue: "private" },
           ],
           rulesets: [],
           labels: [],
         },
       ],
       totals: {
-        settings: { add: 1, change: 0 },
+        settings: { create: 1, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -389,7 +389,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(markdown.includes("## xfg Apply"));
     assert.ok(markdown.includes("@@ org/repo @@"));
     assert.ok(markdown.includes('+ visibility: "private"'));
-    assert.ok(markdown.includes("**Applied: 1 setting (1 added)**"));
+    assert.ok(markdown.includes("**Applied: 1 setting (1 created)**"));
   });
 
   test("renders settings change with old and new values", () => {
@@ -400,7 +400,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
           settings: [
             {
               name: "description",
-              action: "change",
+              action: "update",
               oldValue: "old desc",
               newValue: "new desc",
             },
@@ -410,7 +410,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 1 },
+        settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -422,7 +422,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
 
     assert.ok(markdown.includes("@@ org/repo @@"));
     assert.ok(markdown.includes('! description: "old desc" → "new desc"'));
-    assert.ok(markdown.includes("**Applied: 1 setting (1 changed)**"));
+    assert.ok(markdown.includes("**Applied: 1 setting (1 updated)**"));
   });
 
   test("renders ruleset create in settings", () => {
@@ -445,7 +445,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 1, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -483,7 +483,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 1, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -508,7 +508,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 1 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -534,7 +534,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -579,7 +579,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
           settings: [
             {
               name: "description",
-              action: "add",
+              action: "create",
               newValue: "My repo",
             },
           ],
@@ -588,7 +588,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 1, change: 0 },
+        settings: { create: 1, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -620,7 +620,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
       "should include file count"
     );
     assert.ok(
-      markdown.includes("1 setting (1 added)"),
+      markdown.includes("1 setting (1 created)"),
       "should include setting count"
     );
   });
@@ -631,14 +631,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
         {
           repoName: "org/repo",
           settings: [
-            { name: "visibility", action: "add", newValue: "private" },
+            { name: "visibility", action: "create", newValue: "private" },
           ],
           rulesets: [],
           labels: [],
         },
       ],
       totals: {
-        settings: { add: 1, change: 0 },
+        settings: { create: 1, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -670,7 +670,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 1, update: 0, delete: 1 },
         labels: { create: 0, update: 0, delete: 0 },
       },
@@ -709,7 +709,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
       },
@@ -743,7 +743,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
       },
@@ -773,7 +773,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
       },
@@ -798,7 +798,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 1 },
       },
@@ -830,7 +830,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 1 },
       },
@@ -863,7 +863,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 1, delete: 0 },
       },
@@ -895,7 +895,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
       },
@@ -932,7 +932,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
       },
@@ -959,7 +959,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         },
       ],
       totals: {
-        settings: { add: 0, change: 0 },
+        settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
       },

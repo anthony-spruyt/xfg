@@ -3,7 +3,7 @@ import type { RepoSettingsChange } from "./diff.js";
 
 export interface RepoSettingsPlanEntry {
   property: string;
-  action: "add" | "change";
+  action: "create" | "update";
   oldValue?: unknown;
   newValue?: unknown;
 }
@@ -73,17 +73,17 @@ export function formatRepoSettingsPlan(
       warnings.push(warning);
     }
 
-    if (change.action === "add") {
+    if (change.action === "create") {
       lines.push(
         chalk.green(`    + ${change.property}: ${formatValue(change.newValue)}`)
       );
       creates++;
       entries.push({
         property: change.property,
-        action: "add",
+        action: "create",
         newValue: change.newValue,
       });
-    } else if (change.action === "change") {
+    } else if (change.action === "update") {
       lines.push(
         chalk.yellow(
           `    ~ ${change.property}: ${formatValue(change.oldValue)} → ${formatValue(change.newValue)}`
@@ -92,7 +92,7 @@ export function formatRepoSettingsPlan(
       updates++;
       entries.push({
         property: change.property,
-        action: "change",
+        action: "update",
         oldValue: change.oldValue,
         newValue: change.newValue,
       });

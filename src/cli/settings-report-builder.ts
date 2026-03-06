@@ -40,7 +40,7 @@ export function buildSettingsReport(
 ): SettingsReport {
   const repos: RepoChanges[] = [];
   const totals = {
-    settings: { add: 0, change: 0 },
+    settings: { create: 0, update: 0 },
     rulesets: { create: 0, update: 0, delete: 0 },
     labels: { create: 0, update: 0, delete: 0 },
   };
@@ -68,10 +68,10 @@ export function buildSettingsReport(
         };
         repoChanges.settings.push(settingChange);
 
-        if (entry.action === "add") {
-          totals.settings.add++;
+        if (entry.action === "create") {
+          totals.settings.create++;
         } else {
-          totals.settings.change++;
+          totals.settings.update++;
         }
       }
     }

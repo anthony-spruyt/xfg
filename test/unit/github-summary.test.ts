@@ -276,7 +276,7 @@ describe("formatSummary", () => {
         repoName: "org/repo",
         status: "succeeded",
         message: "Applied: 0 added, 1 changed",
-        repoSettingsPlanDetails: [{ property: "hasWiki", action: "change" }],
+        repoSettingsPlanDetails: [{ property: "hasWiki", action: "update" }],
       };
       const data: SummaryData = {
         title: "Repository Settings Summary",
@@ -290,7 +290,7 @@ describe("formatSummary", () => {
       const markdown = formatSummary(data);
 
       assert.ok(
-        markdown.includes("1 to change"),
+        markdown.includes("1 to update"),
         "Changes column should show settings plan summary"
       );
     });
@@ -759,8 +759,8 @@ describe("formatSummary", () => {
           status: "succeeded",
           message: "[DRY RUN] 1 to add, 1 to change",
           repoSettingsPlanDetails: [
-            { property: "allowAutoMerge", action: "add" },
-            { property: "hasWiki", action: "change" },
+            { property: "allowAutoMerge", action: "create" },
+            { property: "hasWiki", action: "update" },
           ],
         };
         const data: SummaryData = {
@@ -776,14 +776,14 @@ describe("formatSummary", () => {
         const markdown = formatSummary(data);
 
         assert.ok(markdown.includes("Repo Settings:"));
-        assert.ok(markdown.includes("1 to add"));
-        assert.ok(markdown.includes("1 to change"));
+        assert.ok(markdown.includes("1 to create"));
+        assert.ok(markdown.includes("1 to update"));
         assert.ok(markdown.includes("| Setting |"));
         assert.ok(markdown.includes("| Action |"));
         assert.ok(markdown.includes("allowAutoMerge"));
-        assert.ok(markdown.includes("+ Add"));
+        assert.ok(markdown.includes("+ Create"));
         assert.ok(markdown.includes("hasWiki"));
-        assert.ok(markdown.includes("~ Change"));
+        assert.ok(markdown.includes("~ Update"));
       });
     });
 
@@ -800,7 +800,7 @@ describe("formatSummary", () => {
               propertyChanges: { added: 0, changed: 1, removed: 0 },
             },
           ],
-          repoSettingsPlanDetails: [{ property: "hasWiki", action: "change" }],
+          repoSettingsPlanDetails: [{ property: "hasWiki", action: "update" }],
         };
         const data: SummaryData = {
           title: "Repository Settings Summary",

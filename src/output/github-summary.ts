@@ -22,7 +22,7 @@ export interface RulesetPlanDetail {
 
 export interface RepoSettingsPlanDetail {
   property: string;
-  action: "add" | "change";
+  action: "create" | "update";
 }
 
 export interface LabelsPlanDetail {
@@ -157,21 +157,21 @@ function formatRulesetPlanSummary(details: RulesetPlanDetail[]): string {
 
 function formatSettingsAction(action: string): string {
   switch (action) {
-    case "add":
-      return "+ Add";
-    case "change":
-      return "~ Change";
+    case "create":
+      return "+ Create";
+    case "update":
+      return "~ Update";
     default:
       return action;
   }
 }
 
 function formatSettingsPlanSummary(details: RepoSettingsPlanDetail[]): string {
-  const adds = details.filter((d) => d.action === "add").length;
-  const changes = details.filter((d) => d.action === "change").length;
+  const creates = details.filter((d) => d.action === "create").length;
+  const updates = details.filter((d) => d.action === "update").length;
   const parts: string[] = [];
-  if (adds > 0) parts.push(`${adds} to add`);
-  if (changes > 0) parts.push(`${changes} to change`);
+  if (creates > 0) parts.push(`${creates} to create`);
+  if (updates > 0) parts.push(`${updates} to update`);
   return parts.join(", ") || "no changes";
 }
 

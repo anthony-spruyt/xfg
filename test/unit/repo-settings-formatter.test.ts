@@ -8,7 +8,7 @@ describe("formatRepoSettingsPlan", () => {
     const changes: RepoSettingsChange[] = [
       {
         property: "deleteBranchOnMerge",
-        action: "change",
+        action: "update",
         oldValue: false,
         newValue: true,
       },
@@ -18,7 +18,7 @@ describe("formatRepoSettingsPlan", () => {
 
     assert.equal(result.entries.length, 1);
     assert.equal(result.entries[0].property, "deleteBranchOnMerge");
-    assert.equal(result.entries[0].action, "change");
+    assert.equal(result.entries[0].action, "update");
     assert.equal(result.entries[0].oldValue, false);
     assert.equal(result.entries[0].newValue, true);
   });
@@ -27,7 +27,7 @@ describe("formatRepoSettingsPlan", () => {
     const changes: RepoSettingsChange[] = [
       {
         property: "hasWiki",
-        action: "add",
+        action: "create",
         newValue: true,
       },
     ];
@@ -35,7 +35,7 @@ describe("formatRepoSettingsPlan", () => {
     const result = formatRepoSettingsPlan(changes);
 
     assert.equal(result.entries.length, 1);
-    assert.equal(result.entries[0].action, "add");
+    assert.equal(result.entries[0].action, "create");
     assert.equal(result.entries[0].newValue, true);
     assert.equal(result.entries[0].oldValue, undefined);
   });

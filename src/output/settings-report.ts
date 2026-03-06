@@ -6,7 +6,7 @@ import { writeGitHubStepSummary } from "./github-summary.js";
 export interface SettingsReport {
   repos: RepoChanges[];
   totals: {
-    settings: { add: number; change: number };
+    settings: { create: number; update: number };
     rulesets: { create: number; update: number; delete: number };
     labels: { create: number; update: number; delete: number };
   };
@@ -22,7 +22,7 @@ export interface RepoChanges {
 
 export interface SettingChange {
   name: string;
-  action: "add" | "change";
+  action: "create" | "update";
   oldValue?: unknown;
   newValue: unknown;
 }
@@ -136,8 +136,8 @@ function formatSettingsSummary(totals: SettingsReport["totals"]): string {
   const parts: string[] = [];
 
   const settingsEntry = formatCountEntry("setting", "settings", [
-    { label: "to add", value: totals.settings.add },
-    { label: "to change", value: totals.settings.change },
+    { label: "to create", value: totals.settings.create },
+    { label: "to update", value: totals.settings.update },
   ]);
   if (settingsEntry) parts.push(settingsEntry);
 
@@ -184,7 +184,7 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
       if (setting.oldValue === undefined && setting.newValue === undefined) {
         continue;
       }
-      if (setting.action === "add") {
+      if (setting.action === "create") {
         lines.push(
           chalk.green(
             `    + ${setting.name}: ${formatValuePlain(setting.newValue)}`
@@ -304,7 +304,7 @@ export function renderRepoSettingsDiffLines(
     if (setting.oldValue === undefined && setting.newValue === undefined) {
       continue;
     }
-    if (setting.action === "add") {
+    if (setting.action === "create") {
       diffLines.push(
         `+ ${setting.name}: ${formatValuePlain(setting.newValue)}`
       );
