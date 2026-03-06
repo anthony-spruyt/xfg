@@ -5,7 +5,7 @@ import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { ILogger } from "../shared/logger.js";
 import type { IBranchManager, BranchSetupOptions } from "./types.js";
 
-export type PRStrategyFactory = (
+type PRStrategyFactory = (
   repoInfo: RepoInfo,
   executor?: ICommandExecutor,
   log?: ILogger

@@ -11,7 +11,7 @@ import type {
 } from "./types.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 
-export type CommitStrategyFactory = (
+type CommitStrategyFactory = (
   repoInfo: RepoInfo,
   executor?: ICommandExecutor,
   hasAppCredentials?: boolean
