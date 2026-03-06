@@ -174,8 +174,8 @@ function mergeLabels(
 ): Record<string, Label> | undefined {
   if (!rootLabels && !repoLabels) return undefined;
 
-  const root = rootLabels ?? ({} as LabelMap);
-  const repo = repoLabels ?? ({} as LabelMap);
+  const root: LabelMap = rootLabels ?? {};
+  const repo: LabelMap = repoLabels ?? {};
   const inheritLabels = shouldInherit(repo);
 
   const allLabelNames = new Set([
@@ -193,11 +193,14 @@ function mergeLabels(
     if (repoLabel === false) continue;
     if (!inheritLabels && !repoLabel && rootLabel) continue;
 
-    const base = rootLabel && typeof rootLabel === "object" ? rootLabel : {};
-    const overlay = repoLabel && typeof repoLabel === "object" ? repoLabel : {};
-    const merged: Label = { ...base, ...overlay } as Label;
-    // Strip # from color and lowercase
-    merged.color = merged.color.replace(/^#/, "").toLowerCase();
+    const base: Partial<Label> =
+      rootLabel && typeof rootLabel === "object" ? rootLabel : {};
+    const overlay: Partial<Label> =
+      repoLabel && typeof repoLabel === "object" ? repoLabel : {};
+    const color = (overlay.color ?? base.color ?? "")
+      .replace(/^#/, "")
+      .toLowerCase();
+    const merged: Label = { ...base, ...overlay, color };
     result[name] = merged;
   }
 
