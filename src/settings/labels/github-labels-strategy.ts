@@ -14,13 +14,6 @@ interface GitHubLabelsStrategyOptions {
   retries?: number;
 }
 
-/**
- * GitHub Labels Strategy for managing repository labels via GitHub REST API.
- * Uses `gh api` CLI for authentication and API calls.
- *
- * Note: Uses ICommandExecutor (the project's safe executor pattern) with
- * escapeShellArg for input sanitization, matching the rulesets strategy pattern.
- */
 export class GitHubLabelsStrategy implements ILabelsStrategy {
   private api: GhApiClient;
 
@@ -34,10 +27,6 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     );
   }
 
-  /**
-   * Lists all labels for a repository.
-   * Uses --paginate to retrieve all labels.
-   */
   async list(
     repoInfo: RepoInfo,
     options?: GhApiOptions
@@ -56,9 +45,6 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     return parseApiJson<GitHubLabel[]>(result, "labels response");
   }
 
-  /**
-   * Creates a new label.
-   */
   async create(
     repoInfo: RepoInfo,
     label: { name: string; color: string; description?: string },
@@ -70,10 +56,6 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     await this.api.call("POST", endpoint, label, options);
   }
 
-  /**
-   * Updates an existing label.
-   * Uses encodeURIComponent for label name in URL path.
-   */
   async update(
     repoInfo: RepoInfo,
     currentName: string,
@@ -86,10 +68,6 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     await this.api.call("PATCH", endpoint, label, options);
   }
 
-  /**
-   * Deletes a label.
-   * Uses encodeURIComponent for label name in URL path.
-   */
   async delete(
     repoInfo: RepoInfo,
     name: string,

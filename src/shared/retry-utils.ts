@@ -84,9 +84,6 @@ interface RetryOptions {
 
 /**
  * Classifies an error as permanent (should not retry) or transient (should retry).
- * @param error The error to classify
- * @param patterns Custom patterns to use (defaults to DEFAULT_PERMANENT_ERROR_PATTERNS)
- * @returns true if the error is permanent, false if it might be transient
  */
 export function isPermanentError(
   error: unknown,
@@ -114,9 +111,6 @@ export function isPermanentError(
 
 /**
  * Checks if an error matches known transient patterns.
- * @param error The error to check
- * @param patterns Custom patterns to use (defaults to DEFAULT_TRANSIENT_ERROR_PATTERNS)
- * @returns true if the error appears to be transient
  */
 export function isTransientError(
   error: Error,

@@ -246,7 +246,6 @@ export class GitLabPRStrategy extends BasePRStrategy {
   async merge(options: MergeOptions): Promise<MergeResult> {
     const { prUrl, config, workDir, retries = 3 } = options;
 
-    // Manual mode: do nothing
     if (config.mode === "manual") {
       return {
         success: true,

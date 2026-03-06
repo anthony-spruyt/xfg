@@ -23,17 +23,8 @@ export function createTokenManager(
 }
 
 /**
- * Factory function to get the appropriate commit strategy for a repository.
- *
- * For GitHub repositories with GitHub App credentials, returns GraphQLCommitStrategy
- * which creates verified commits via the GitHub GraphQL API.
- *
- * For all other cases (GitHub with PAT, Azure DevOps, GitLab), returns GitCommitStrategy
- * which uses standard git commands.
- *
- * @param repoInfo - Repository information
- * @param executor - Optional command executor for shell commands
- * @param hasAppCredentials - Whether GitHub App credentials are configured
+ * Returns GraphQLCommitStrategy for GitHub repos with App credentials (verified commits),
+ * or GitCommitStrategy for all other cases.
  */
 export function getCommitStrategy(
   repoInfo: RepoInfo,

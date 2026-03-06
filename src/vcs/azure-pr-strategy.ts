@@ -86,7 +86,6 @@ export class AzurePRStrategy extends BasePRStrategy {
       return false;
     }
 
-    // Extract PR ID from URL
     const prInfo = this.parsePRUrl(existingUrl);
     if (!prInfo) {
       this.log?.warn(`Could not parse PR URL: ${existingUrl}`);
@@ -199,7 +198,6 @@ export class AzurePRStrategy extends BasePRStrategy {
   async merge(options: MergeOptions): Promise<MergeResult> {
     const { prUrl, config, workDir, retries = 3 } = options;
 
-    // Manual mode: do nothing
     if (config.mode === "manual") {
       return {
         success: true,
@@ -208,7 +206,6 @@ export class AzurePRStrategy extends BasePRStrategy {
       };
     }
 
-    // Parse PR URL to extract details
     const prInfo = this.parsePRUrl(prUrl);
     if (!prInfo) {
       return {

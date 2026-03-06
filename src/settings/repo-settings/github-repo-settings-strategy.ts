@@ -84,12 +84,6 @@ interface GitHubRepoSettingsStrategyOptions {
   retries?: number;
 }
 
-/**
- * GitHub Repository Settings Strategy.
- * Manages repository settings via GitHub REST API using `gh api` CLI.
- * Note: Uses exec via ICommandExecutor for gh CLI integration, consistent
- * with other strategies in this codebase. Inputs are escaped via escapeShellArg.
- */
 export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   private api: GhApiClient;
 
@@ -119,7 +113,6 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     // Extract owner type from nested API response
     settings.owner_type = parsed.owner?.type;
 
-    // Fetch security settings from separate endpoints
     settings.vulnerability_alerts = await this.getVulnerabilityAlerts(
       repoInfo,
       options

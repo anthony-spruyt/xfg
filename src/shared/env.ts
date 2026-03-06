@@ -95,10 +95,6 @@ function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
  * - ${VAR:-default} - Replace with env value, or use default if missing
  * - ${VAR:?message} - Replace with env value, or throw error with message if missing
  * - $${VAR} - Escape: outputs literal ${VAR} without interpolation
- *
- * @param json - The JSON object to process
- * @param options - Interpolation options (default: strict mode)
- * @returns A new object with interpolated values
  */
 export function interpolateEnvVars(
   json: Record<string, unknown>,

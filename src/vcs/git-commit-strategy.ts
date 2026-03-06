@@ -53,7 +53,6 @@ export class GitCommitStrategy implements ICommitStrategy {
       });
     }
 
-    // Get the commit SHA
     const sha = await this.executor.exec("git rev-parse HEAD", workDir);
 
     return {

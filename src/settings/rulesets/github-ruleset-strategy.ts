@@ -146,10 +146,6 @@ interface GitHubRulesetStrategyOptions {
   retries?: number;
 }
 
-/**
- * GitHub Ruleset Strategy for managing repository rulesets via GitHub REST API.
- * Uses `gh api` CLI for authentication and API calls.
- */
 export class GitHubRulesetStrategy implements IRulesetStrategy {
   private api: GhApiClient;
 
@@ -163,9 +159,6 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     );
   }
 
-  /**
-   * Lists all rulesets for a repository.
-   */
   async list(
     repoInfo: RepoInfo,
     options?: GhApiOptions
@@ -178,9 +171,6 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     return parseApiJson<GitHubRuleset[]>(result, "rulesets response");
   }
 
-  /**
-   * Gets a single ruleset by ID.
-   */
   async get(
     repoInfo: RepoInfo,
     rulesetId: number,
@@ -194,9 +184,6 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
 
-  /**
-   * Creates a new ruleset.
-   */
   async create(
     repoInfo: RepoInfo,
     name: string,
@@ -212,9 +199,6 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
 
-  /**
-   * Updates an existing ruleset.
-   */
   async update(
     repoInfo: RepoInfo,
     rulesetId: number,
@@ -231,9 +215,6 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
 
-  /**
-   * Deletes a ruleset.
-   */
   async delete(
     repoInfo: RepoInfo,
     rulesetId: number,

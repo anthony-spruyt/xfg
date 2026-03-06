@@ -506,9 +506,6 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     };
   }
 
-  /**
-   * Create a branch ref on the remote via GraphQL createRef mutation.
-   */
   private async createRemoteRef(
     repositoryId: string,
     branchName: string,
@@ -521,9 +518,6 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     await this.executeGraphQLRefOp(mutation, repoInfo, workDir, token);
   }
 
-  /**
-   * Delete a branch ref on the remote via GraphQL deleteRef mutation.
-   */
   private async deleteRemoteRef(
     refId: string,
     workDir: string,

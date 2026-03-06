@@ -84,7 +84,6 @@ export function convertContentToString(
   fileName: string,
   options?: ConvertOptions
 ): string {
-  // Handle empty file case
   if (content === null) {
     const format = detectOutputFormat(fileName);
     if (format === "yaml" && options) {
@@ -99,20 +98,15 @@ export function convertContentToString(
     return "";
   }
 
-  // Handle string content (text file)
   if (typeof content === "string") {
-    // Ensure trailing newline for text files
     return content.endsWith("\n") ? content : content + "\n";
   }
 
-  // Handle string[] content (text file with lines)
   if (Array.isArray(content)) {
-    // Join lines with newlines and ensure trailing newline
     const text = content.join("\n");
     return text.length > 0 ? text + "\n" : "";
   }
 
-  // Handle object content (JSON/YAML)
   const format = detectOutputFormat(fileName);
 
   if (format === "yaml") {

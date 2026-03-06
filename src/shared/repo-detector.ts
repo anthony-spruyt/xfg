@@ -97,9 +97,6 @@ export function assertGitLabRepo(
   }
 }
 
-/**
- * Extract hostname from a git URL.
- */
 function extractHostFromUrl(gitUrl: string): string | null {
   // SSH: git@hostname:path
   const sshMatch = gitUrl.match(/^git@([^:]+):/);

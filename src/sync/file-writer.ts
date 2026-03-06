@@ -105,7 +105,6 @@ export class FileWriter implements IFileWriter {
       // Determine action type (create vs update) BEFORE writing
       const action: "create" | "update" = fileExistsLocal ? "update" : "create";
 
-      // Check if file would change
       const existingContent = gitOps.getFileContent(file.fileName);
       const changed = gitOps.wouldChange(file.fileName, fileContent);
 

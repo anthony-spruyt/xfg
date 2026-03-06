@@ -225,7 +225,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
   async merge(options: MergeOptions): Promise<MergeResult> {
     const { prUrl, repoInfo, config, workDir, retries = 3, token } = options;
 
-    // Manual mode: do nothing
     if (config.mode === "manual") {
       return {
         success: true,
