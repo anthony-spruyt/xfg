@@ -11,7 +11,7 @@ import {
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { parseApiJson } from "../shared/gh-api-utils.js";
+import { parseApiJson, buildTokenEnv } from "../shared/gh-api-utils.js";
 import { ValidationError } from "../config/errors.js";
 
 /**
@@ -268,7 +268,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
         ? `--hostname ${escapeShellArg(repoInfo.host)}`
         : "";
 
-    const tokenEnv = token ? { GH_TOKEN: token } : undefined;
+    const tokenEnv = buildTokenEnv(token);
 
     const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
 
@@ -441,7 +441,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       repoInfo.host !== "github.com"
         ? `--hostname ${escapeShellArg(repoInfo.host)}`
         : "";
-    const tokenEnv = token ? { GH_TOKEN: token } : undefined;
+    const tokenEnv = buildTokenEnv(token);
     const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
 
     let response: string;
