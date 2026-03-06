@@ -11,12 +11,12 @@ import {
   writeLifecycleReportSummary,
   hasLifecycleChanges,
   type LifecycleReport,
-  type LifecycleReportInput,
+  type LifecycleAction,
 } from "../../src/output/lifecycle-report.js";
 
 describe("buildLifecycleReport", () => {
   test("correctly tallies created actions", () => {
-    const inputs: LifecycleReportInput[] = [
+    const inputs: LifecycleAction[] = [
       { repoName: "org/repo1", action: "created" },
       { repoName: "org/repo2", action: "created" },
     ];
@@ -31,7 +31,7 @@ describe("buildLifecycleReport", () => {
   });
 
   test("correctly tallies mixed actions", () => {
-    const inputs: LifecycleReportInput[] = [
+    const inputs: LifecycleAction[] = [
       { repoName: "org/repo1", action: "created" },
       {
         repoName: "org/repo2",
@@ -57,7 +57,7 @@ describe("buildLifecycleReport", () => {
   });
 
   test("preserves upstream and source fields", () => {
-    const inputs: LifecycleReportInput[] = [
+    const inputs: LifecycleAction[] = [
       {
         repoName: "org/my-fork",
         action: "forked",
@@ -80,7 +80,7 @@ describe("buildLifecycleReport", () => {
   });
 
   test("preserves settings fields", () => {
-    const inputs: LifecycleReportInput[] = [
+    const inputs: LifecycleAction[] = [
       {
         repoName: "org/repo",
         action: "created",

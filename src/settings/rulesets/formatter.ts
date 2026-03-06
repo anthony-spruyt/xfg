@@ -8,10 +8,10 @@ import {
 import type { Ruleset } from "../../config/index.js";
 import {
   computePropertyDiffs,
-  isObject,
   type DiffAction,
   type PropertyDiff,
 } from "./diff-algorithm.js";
+import { isPlainObject } from "../../shared/type-guards.js";
 
 export interface RulesetPlanEntry {
   name: string;
@@ -119,7 +119,7 @@ function renderNestedValue(
   if (Array.isArray(val)) {
     for (let i = 0; i < val.length; i++) {
       const item = val[i];
-      if (isObject(item)) {
+      if (isPlainObject(item)) {
         const obj = item as Record<string, unknown>;
         const typeLabel = "type" in obj ? ` (${obj.type})` : "";
         lines.push(
@@ -134,7 +134,7 @@ function renderNestedValue(
         );
       }
     }
-  } else if (isObject(val)) {
+  } else if (isPlainObject(val)) {
     lines.push(
       ...renderNestedObject(val as Record<string, unknown>, action, indent)
     );
@@ -155,10 +155,10 @@ function renderNestedObject(
   for (const [key, value] of Object.entries(obj)) {
     if (value === null || value === undefined) continue;
 
-    if (Array.isArray(value) && value.some((v) => isObject(v))) {
+    if (Array.isArray(value) && value.some((v) => isPlainObject(v))) {
       lines.push(style.color(`${indentStr}${style.symbol} ${key}:`));
       lines.push(...renderNestedValue(value, action, indent + 1));
-    } else if (isObject(value)) {
+    } else if (isPlainObject(value)) {
       lines.push(style.color(`${indentStr}${style.symbol} ${key}:`));
       lines.push(
         ...renderNestedObject(
@@ -214,13 +214,13 @@ function renderTree(node: TreeNode, indent: number = 0): string[] {
     } else {
       // Leaf node with value
       const hasComplexNew =
-        isObject(child.newValue) ||
+        isPlainObject(child.newValue) ||
         (Array.isArray(child.newValue) &&
-          child.newValue.some((v) => isObject(v)));
+          child.newValue.some((v) => isPlainObject(v)));
       const hasComplexOld =
-        isObject(child.oldValue) ||
+        isPlainObject(child.oldValue) ||
         (Array.isArray(child.oldValue) &&
-          (child.oldValue as unknown[]).some((v) => isObject(v)));
+          (child.oldValue as unknown[]).some((v) => isPlainObject(v)));
 
       if (child.action === "add" && hasComplexNew) {
         lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));

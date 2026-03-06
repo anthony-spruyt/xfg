@@ -1,4 +1,5 @@
 // src/settings/rulesets/diff-algorithm.ts
+import { isPlainObject } from "../../shared/type-guards.js";
 
 export type DiffAction = "add" | "change" | "remove";
 
@@ -7,10 +8,6 @@ export interface PropertyDiff {
   action: DiffAction;
   oldValue?: unknown;
   newValue?: unknown;
-}
-
-export function isObject(val: unknown): val is Record<string, unknown> {
-  return val !== null && typeof val === "object" && !Array.isArray(val);
 }
 
 export function deepEqual(a: unknown, b: unknown): boolean {
@@ -24,7 +21,7 @@ export function deepEqual(a: unknown, b: unknown): boolean {
     return a.every((val, i) => deepEqual(val, b[i]));
   }
 
-  if (isObject(a) && isObject(b)) {
+  if (isPlainObject(a) && isPlainObject(b)) {
     const keysA = Object.keys(a);
     const keysB = Object.keys(b);
     if (keysA.length !== keysB.length) return false;
@@ -35,7 +32,7 @@ export function deepEqual(a: unknown, b: unknown): boolean {
 }
 
 export function isArrayOfObjects(arr: unknown[]): boolean {
-  return arr.length > 0 && arr.every((item) => isObject(item));
+  return arr.length > 0 && arr.every((item) => isPlainObject(item));
 }
 
 /**
@@ -62,7 +59,7 @@ export function computePropertyDiffs(
       diffs.push({ path, action: "remove", oldValue: currentVal });
     } else if (!deepEqual(currentVal, desiredVal)) {
       // Changed property
-      if (isObject(currentVal) && isObject(desiredVal)) {
+      if (isPlainObject(currentVal) && isPlainObject(desiredVal)) {
         // Recurse into nested objects
         diffs.push(
           ...computePropertyDiffs(
@@ -105,7 +102,7 @@ function diffObjectArrays(
   const diffs: PropertyDiff[] = [];
 
   const hasType = desiredArr.every(
-    (item) => isObject(item) && "type" in (item as Record<string, unknown>)
+    (item) => isPlainObject(item) && "type" in (item as Record<string, unknown>)
   );
 
   if (hasType) {
@@ -173,7 +170,7 @@ function diffObjectArrays(
           action: "remove",
           oldValue: currentArr[i],
         });
-      } else if (isObject(currentArr[i]) && isObject(desiredArr[i])) {
+      } else if (isPlainObject(currentArr[i]) && isPlainObject(desiredArr[i])) {
         const itemDiffs = computePropertyDiffs(
           currentArr[i] as Record<string, unknown>,
           desiredArr[i] as Record<string, unknown>,

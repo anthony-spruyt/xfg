@@ -645,6 +645,19 @@ function validateRepoEntry(
   validateRepoSettingsEntry(config, repo, repoLabel);
 }
 
+function hasGroupFiles(config: RawConfig): boolean {
+  return (
+    isPlainObject(config.groups) &&
+    Object.values(config.groups).some(
+      (g) =>
+        g.files &&
+        Object.keys(g.files).filter(
+          (k) => k !== "inherit" && g.files![k] !== false
+        ).length > 0
+    )
+  );
+}
+
 /**
  * Validates raw config structure before normalization.
  * @throws Error if validation fails
@@ -655,22 +668,14 @@ export function validateRawConfig(config: RawConfig): void {
   const hasFiles =
     isPlainObject(config.files) && Object.keys(config.files).length > 0;
   const hasSettings = isPlainObject(config.settings);
-  const hasGroupFiles =
-    isPlainObject(config.groups) &&
-    Object.values(config.groups).some(
-      (g) =>
-        g.files &&
-        Object.keys(g.files).filter(
-          (k) => k !== "inherit" && g.files![k] !== false
-        ).length > 0
-    );
-  const hasGroupSettings =
+  const hasGrpFiles = hasGroupFiles(config);
+  const hasGrpSettings =
     isPlainObject(config.groups) &&
     Object.values(config.groups).some(
       (g) => g.settings && isPlainObject(g.settings)
     );
 
-  if (!hasFiles && !hasSettings && !hasGroupFiles && !hasGroupSettings) {
+  if (!hasFiles && !hasSettings && !hasGrpFiles && !hasGrpSettings) {
     throw new ValidationError(
       "Config requires at least one of: 'files' or 'settings'. " +
         "Use 'files' to sync configuration files, or 'settings' to manage repository settings."
@@ -712,15 +717,7 @@ export function validateRawConfig(config: RawConfig): void {
  */
 export function validateForSync(config: RawConfig): void {
   const hasRootFiles = config.files && Object.keys(config.files).length > 0;
-  const hasGroupFiles =
-    config.groups &&
-    Object.values(config.groups).some(
-      (g) =>
-        g.files &&
-        Object.keys(g.files).filter(
-          (k) => k !== "inherit" && g.files![k] !== false
-        ).length > 0
-    );
+  const hasGrpFiles = hasGroupFiles(config);
   const hasSettings = hasActionableSettings(config.settings);
   const hasRepoSettings = config.repos.some((repo) =>
     hasActionableSettings(repo.settings)
@@ -733,7 +730,7 @@ export function validateForSync(config: RawConfig): void {
 
   if (
     !hasRootFiles &&
-    !hasGroupFiles &&
+    !hasGrpFiles &&
     !hasSettings &&
     !hasRepoSettings &&
     !hasGroupSettings

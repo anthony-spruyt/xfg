@@ -23,19 +23,8 @@ export interface LifecycleAction {
   };
 }
 
-export interface LifecycleReportInput {
-  repoName: string;
-  action: "existed" | "created" | "forked" | "migrated";
-  upstream?: string;
-  source?: string;
-  settings?: {
-    visibility?: string;
-    description?: string;
-  };
-}
-
 export function buildLifecycleReport(
-  results: LifecycleReportInput[]
+  results: LifecycleAction[]
 ): LifecycleReport {
   const actions: LifecycleAction[] = [];
   const totals = { created: 0, forked: 0, migrated: 0, existed: 0 };

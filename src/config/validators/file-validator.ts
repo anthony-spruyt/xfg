@@ -1,19 +1,12 @@
 import { extname, isAbsolute } from "node:path";
 import { isTextContent } from "../merge.js";
 import { ValidationError } from "../../shared/errors.js";
+import { isPlainObject } from "../../shared/type-guards.js";
 
 export { isTextContent };
+export { isPlainObject as isObjectContent };
 
 const VALID_STRATEGIES = ["replace", "append", "prepend"];
-
-/**
- * Check if content is object type (for JSON/YAML output).
- */
-export function isObjectContent(content: unknown): boolean {
-  return (
-    typeof content === "object" && content !== null && !Array.isArray(content)
-  );
-}
 
 /**
  * Check if file extension is for structured output (JSON/YAML).

@@ -49,7 +49,7 @@ import {
   buildLifecycleReport,
   formatLifecycleReportCLI,
   hasLifecycleChanges,
-  type LifecycleReportInput,
+  type LifecycleAction,
 } from "../output/lifecycle-report.js";
 import { writeUnifiedSummary } from "../output/unified-summary.js";
 import type { ProcessorResult } from "../sync/index.js";
@@ -233,7 +233,7 @@ async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
 
 function displayReports(
   reportResults: SyncResultEntry[],
-  lifecycleReportInputs: LifecycleReportInput[],
+  lifecycleReportInputs: LifecycleAction[],
   settingsCollector: ResultsCollector,
   dryRun: boolean
 ): void {
@@ -286,7 +286,7 @@ interface RepoIterationContext {
   lifecycleManager: IRepoLifecycleManager;
   tokenManager: ReturnType<typeof createTokenManager>;
   reportResults: SyncResultEntry[];
-  lifecycleReportInputs: LifecycleReportInput[];
+  lifecycleReportInputs: LifecycleAction[];
   settingsCollector: ResultsCollector;
   rulesetProcessorFactory: NonNullable<
     SyncDependencies["rulesetProcessorFactory"]

@@ -2,7 +2,6 @@
 export {
   computePropertyDiffs,
   deepEqual,
-  isObject,
   isArrayOfObjects,
   type PropertyDiff,
 } from "./diff-algorithm.js";

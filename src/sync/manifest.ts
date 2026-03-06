@@ -107,6 +107,17 @@ function migrateV3ToV4(v3: XfgManifestV3): XfgManifest {
   return { version: 4, configs: v4Configs };
 }
 
+/**
+ * Migrates a parsed manifest to V4 if recognized (V2/V3/V4).
+ * Returns null for unrecognized formats.
+ */
+function migrateToV4(parsed: unknown): XfgManifest | null {
+  if (isV4Manifest(parsed)) return parsed;
+  if (isV3Manifest(parsed)) return migrateV3ToV4(parsed);
+  if (isV2Manifest(parsed)) return migrateV3ToV4(migrateV2ToV3(parsed));
+  return null;
+}
+
 export function createEmptyManifest(): XfgManifest {
   return {
     version: 4,
@@ -132,20 +143,8 @@ export function loadManifest(
     const content = readFileSync(manifestPath, "utf-8");
     const parsed = JSON.parse(content) as unknown;
 
-    // V4 manifest - return as-is
-    if (isV4Manifest(parsed)) {
-      return parsed;
-    }
-
-    // V3 manifest - migrate to V4
-    if (isV3Manifest(parsed)) {
-      return migrateV3ToV4(parsed);
-    }
-
-    // V2 manifest - migrate to V3, then to V4
-    if (isV2Manifest(parsed)) {
-      return migrateV3ToV4(migrateV2ToV3(parsed));
-    }
+    const migrated = migrateToV4(parsed);
+    if (migrated) return migrated;
 
     // V1 manifest - treat as no manifest (will be overwritten with v4)
     if (isV1Manifest(parsed)) {
@@ -173,20 +172,7 @@ export function parseManifestContent(
 ): XfgManifest | null {
   try {
     const parsed = JSON.parse(content) as unknown;
-
-    if (isV4Manifest(parsed)) {
-      return parsed;
-    }
-
-    if (isV3Manifest(parsed)) {
-      return migrateV3ToV4(parsed);
-    }
-
-    if (isV2Manifest(parsed)) {
-      return migrateV3ToV4(migrateV2ToV3(parsed));
-    }
-
-    return null;
+    return migrateToV4(parsed);
   } catch (error) {
     log?.warn(`Failed to parse manifest content: ${toErrorMessage(error)}`);
     return null;
