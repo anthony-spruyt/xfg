@@ -12,6 +12,11 @@ export type {
   Ruleset,
   // Repo Settings
   GitHubRepoSettings,
+  RepoVisibility,
+  SquashMergeCommitTitle,
+  SquashMergeCommitMessage,
+  MergeCommitTitle,
+  MergeCommitMessage,
   // Labels
   Label,
   RepoSettings,

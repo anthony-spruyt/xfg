@@ -150,14 +150,15 @@ function mergeRuleset(
   if (!root) return structuredClone(perRepo ?? {});
   if (!perRepo) return structuredClone(root);
 
-  // Deep merge using the existing merge utility with replace strategy
+  // Deep merge using the existing merge utility with replace strategy.
+  // deepMerge operates on Record<string, unknown> — the cast is safe because
+  // merging two Ruleset-shaped objects preserves the Ruleset structure.
   const ctx = createMergeContext("replace");
-  const merged = deepMerge(
+  return deepMerge(
     structuredClone(root) as Record<string, unknown>,
     perRepo as Record<string, unknown>,
     ctx
-  );
-  return merged as unknown as Ruleset;
+  ) as Ruleset;
 }
 
 /**
@@ -406,7 +407,7 @@ function mergeRawSettings(
       } else if (typeof ruleset === "object") {
         const existing = result.rulesets[name];
         result.rulesets[name] = existing
-          ? (mergeRuleset(existing, ruleset) as Ruleset)
+          ? mergeRuleset(existing, ruleset)
           : structuredClone(ruleset);
       }
     }
