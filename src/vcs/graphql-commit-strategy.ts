@@ -12,7 +12,7 @@ import {
 } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { parseApiJson, buildTokenEnv } from "../shared/gh-api-utils.js";
-import { ValidationError } from "../config/errors.js";
+import { ValidationError, GraphQLApiError } from "../config/errors.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
@@ -293,14 +293,12 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     );
 
     if (parsed.errors) {
-      throw new Error(
-        `GraphQL error: ${parsed.errors.map((e) => e.message).join(", ")}`
-      );
+      throw new GraphQLApiError(parsed.errors.map((e) => e.message).join(", "));
     }
 
     const oid = parsed.data?.createCommitOnBranch?.commit?.oid;
     if (!oid) {
-      throw new Error("GraphQL response missing commit OID");
+      throw new GraphQLApiError("Response missing commit OID");
     }
 
     return {
@@ -330,7 +328,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     token?: string
   ): Promise<void> {
     if (!repoInfo) {
-      throw new Error("repoInfo is required for GraphQL ref operations");
+      throw new GraphQLApiError("repoInfo is required for ref operations");
     }
 
     const { repositoryId, refId } = await this.queryRemoteRef(
@@ -409,7 +407,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       cleanMessage = cleanMessage.substring(0, 2000) + "... (truncated)";
     }
 
-    return new Error(`GraphQL commit failed for ${repo}: ${cleanMessage}`);
+    return new GraphQLApiError(`Commit failed for ${repo}: ${cleanMessage}`);
   }
 
   /**
@@ -465,9 +463,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       errors?: Array<{ message: string }>;
     }>(response, "GraphQL API response");
     if (parsed.errors) {
-      throw new Error(
-        `GraphQL error: ${parsed.errors.map((e) => e.message).join(", ")}`
-      );
+      throw new GraphQLApiError(parsed.errors.map((e) => e.message).join(", "));
     }
 
     return parsed;
@@ -495,8 +491,8 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     const repoResponse = parsed as GraphQLRepoResponse;
     const repositoryId = repoResponse.data?.repository?.id;
     if (!repositoryId) {
-      throw new Error(
-        `GraphQL response missing repository ID for ${repoInfo.owner}/${repoInfo.repo}`
+      throw new GraphQLApiError(
+        `Response missing repository ID for ${repoInfo.owner}/${repoInfo.repo}`
       );
     }
 

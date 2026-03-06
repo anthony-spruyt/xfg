@@ -10,3 +10,16 @@ export class ValidationError extends Error {
     super(message);
   }
 }
+
+/**
+ * Thrown when a GitHub GraphQL API call fails.
+ * Standardizes all GraphQL error messages under one type so catch blocks
+ * and retry logic can identify them without message-parsing.
+ */
+export class GraphQLApiError extends Error {
+  override readonly name = "GraphQLApiError";
+
+  constructor(message: string) {
+    super(message);
+  }
+}
