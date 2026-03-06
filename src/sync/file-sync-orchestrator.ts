@@ -62,16 +62,7 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
       { gitOps: session.gitOps, log: this.log, fileChanges }
     );
 
-    // Update diff stats for deletions in dry-run
-    if (dryRun && filesToDelete.length > 0 && !noDelete) {
-      for (const fileName of filesToDelete) {
-        if (session.gitOps.fileExists(fileName)) {
-          incrementDiffStats(diffStats, "DELETED");
-        }
-      }
-    }
-
-    // Save manifest
+    // Save manifest (may add to fileChanges)
     this.manifestManager.saveUpdatedManifest(
       workDir,
       newManifest,
@@ -79,6 +70,21 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
       dryRun,
       fileChanges
     );
+
+    // Update diff stats from fileChanges.
+    // In dry-run, writeFiles already counted create/update/unchanged — only add deletions
+    // and manifest changes. In non-dry-run, count all actions from fileChanges.
+    for (const [, info] of fileChanges) {
+      if (dryRun) {
+        if (info.action === "delete") incrementDiffStats(diffStats, "DELETED");
+      } else {
+        if (info.action === "create") incrementDiffStats(diffStats, "NEW");
+        else if (info.action === "update")
+          incrementDiffStats(diffStats, "MODIFIED");
+        else if (info.action === "delete")
+          incrementDiffStats(diffStats, "DELETED");
+      }
+    }
 
     // Show diff summary in dry-run
     if (dryRun) {
@@ -94,17 +100,6 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
     const changedFiles: FileAction[] = Array.from(fileChanges.entries()).map(
       ([fileName, info]) => ({ fileName, action: info.action })
     );
-
-    // Calculate diff stats for non-dry-run
-    if (!dryRun) {
-      for (const [, info] of fileChanges) {
-        if (info.action === "create") incrementDiffStats(diffStats, "NEW");
-        else if (info.action === "update")
-          incrementDiffStats(diffStats, "MODIFIED");
-        else if (info.action === "delete")
-          incrementDiffStats(diffStats, "DELETED");
-      }
-    }
 
     const hasChanges = changedFiles.some((f) => f.action !== "skip");
 
