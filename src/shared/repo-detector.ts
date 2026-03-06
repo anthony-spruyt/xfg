@@ -61,7 +61,7 @@ export function assertGitHubRepo(
   context: string
 ): asserts repoInfo is GitHubRepoInfo {
   if (!isGitHubRepo(repoInfo)) {
-    throw new Error(
+    throw new ValidationError(
       `${context} requires GitHub repositories. Got: ${repoInfo.type}`
     );
   }
@@ -76,7 +76,7 @@ export function assertAzureDevOpsRepo(
   context: string
 ): asserts repoInfo is AzureDevOpsRepoInfo {
   if (!isAzureDevOpsRepo(repoInfo)) {
-    throw new Error(
+    throw new ValidationError(
       `${context} requires Azure DevOps repositories. Got: ${repoInfo.type}`
     );
   }
@@ -91,7 +91,7 @@ export function assertGitLabRepo(
   context: string
 ): asserts repoInfo is GitLabRepoInfo {
   if (!isGitLabRepo(repoInfo)) {
-    throw new Error(
+    throw new ValidationError(
       `${context} requires GitLab repositories. Got: ${repoInfo.type}`
     );
   }
