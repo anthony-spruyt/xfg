@@ -87,17 +87,21 @@ export interface IManifestManager {
   ): void;
 }
 
-export interface BranchSetupOptions {
-  repoInfo: RepoInfo;
-  branchName: string;
-  baseBranch: string;
+/** Common runtime context shared across workflow step options bags. */
+export interface RunContext {
   workDir: string;
-  isDirectMode: boolean;
   dryRun: boolean;
   retries: number;
   token?: string;
-  gitOps: IGitOps;
   executor: ICommandExecutor;
+}
+
+export interface BranchSetupOptions extends RunContext {
+  repoInfo: RepoInfo;
+  branchName: string;
+  baseBranch: string;
+  isDirectMode: boolean;
+  gitOps: IGitOps;
 }
 
 export interface IBranchManager {
@@ -133,18 +137,13 @@ export interface IRepositorySession {
   setup(repoInfo: RepoInfo, options: SessionOptions): Promise<SessionContext>;
 }
 
-export interface CommitPushOptions {
+export interface CommitPushOptions extends RunContext {
   repoInfo: RepoInfo;
   gitOps: IGitOps;
-  workDir: string;
   fileChanges: Map<string, FileWriteResult>;
   commitMessage: string;
   pushBranch: string;
   isDirectMode: boolean;
-  dryRun: boolean;
-  retries: number;
-  token?: string;
-  executor: ICommandExecutor;
   hasAppCredentials?: boolean;
 }
 
@@ -216,15 +215,10 @@ export interface IFileSyncOrchestrator {
   ): Promise<FileSyncResult>;
 }
 
-export interface PRHandlerOptions {
+export interface PRHandlerOptions extends RunContext {
   branchName: string;
   baseBranch: string;
-  workDir: string;
-  dryRun: boolean;
-  retries: number;
   prTemplate?: string;
-  token?: string;
-  executor: ICommandExecutor;
 }
 
 export interface CreateAndMergeInput {
