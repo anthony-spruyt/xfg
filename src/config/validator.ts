@@ -713,7 +713,7 @@ export function validateRawConfig(config: RawConfig): void {
 
 /**
  * Validates that config is suitable for the sync command.
- * @throws Error if files section is missing or empty
+ * @throws ValidationError if neither files nor settings are present
  */
 export function validateForSync(config: RawConfig): void {
   const hasRootFiles = config.files && Object.keys(config.files).length > 0;

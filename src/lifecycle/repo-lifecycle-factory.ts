@@ -12,9 +12,6 @@ import type {
 import { GitHubLifecycleProvider } from "./github-lifecycle-provider.js";
 import { AdoMigrationSource } from "./ado-migration-source.js";
 
-/**
- * Factory for creating lifecycle providers and migration sources.
- */
 export class RepoLifecycleFactory implements IRepoLifecycleFactory {
   private readonly providers: Map<LifecyclePlatform, IRepoLifecycleProvider> =
     new Map();

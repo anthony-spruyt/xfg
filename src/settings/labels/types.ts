@@ -1,9 +1,6 @@
 import type { RepoInfo } from "../../shared/repo-detector.js";
 import type { GhApiOptions } from "../../shared/gh-api-utils.js";
 
-/**
- * GitHub label as returned by the API.
- */
 export interface GitHubLabel {
   id: number;
   name: string;

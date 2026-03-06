@@ -1,23 +1,14 @@
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { RepoConfig } from "../config/types.js";
 
-/**
- * Supported platforms for lifecycle operations.
- */
 export type LifecyclePlatform = "github" | "azure-devops" | "gitlab";
 
-/**
- * Result of a lifecycle operation.
- */
 export interface LifecycleResult {
   repoInfo: RepoInfo;
   action: "existed" | "created" | "forked" | "migrated";
   skipped?: boolean;
 }
 
-/**
- * Options for lifecycle operations.
- */
 export interface LifecycleOptions {
   dryRun: boolean;
   workDir: string;
@@ -96,9 +87,6 @@ export interface IMigrationSource {
   cloneForMigration(repoInfo: RepoInfo, workDir: string): Promise<void>;
 }
 
-/**
- * Factory for getting providers by platform.
- */
 export interface IRepoLifecycleFactory {
   /**
    * Get lifecycle provider for a platform.
@@ -113,9 +101,6 @@ export interface IRepoLifecycleFactory {
   getMigrationSource(platform: LifecyclePlatform): IMigrationSource;
 }
 
-/**
- * Manager that orchestrates lifecycle operations before sync.
- */
 export interface IRepoLifecycleManager {
   /**
    * Ensure repository exists, creating/forking/migrating if needed.

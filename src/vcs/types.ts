@@ -1,17 +1,11 @@
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { MergeMode, MergeStrategy } from "../config/index.js";
 
-/**
- * Options for authenticated git operations.
- */
 export interface GitAuthOptions {
-  /** Access token for authentication */
   token: string;
-  /** Git host (e.g., "github.com", "github.mycompany.com") */
+  /** e.g., "github.com", "github.mycompany.com" */
   host: string;
-  /** Repository owner */
   owner: string;
-  /** Repository name */
   repo: string;
 }
 
@@ -102,9 +96,6 @@ export interface MergeOptions {
   token?: string;
 }
 
-/**
- * Options for closing an existing PR.
- */
 export interface CloseExistingPROptions {
   repoInfo: RepoInfo;
   branchName: string;

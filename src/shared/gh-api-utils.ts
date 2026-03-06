@@ -124,9 +124,9 @@ export class GhApiClient {
 }
 
 /**
- * Resolve a GitHub token for a repo: GitHub App token → GH_TOKEN env fallback.
+ * Resolve a GitHub token for a repo: GitHub App token → envToken fallback.
  * Returns { token, skipped } where skipped=true means no App installation found
- * and no GH_TOKEN is available. Both sync and settings paths use this function.
+ * for this owner (token will be undefined). Both sync and settings paths use this.
  */
 export async function resolveGitHubToken(
   repoInfo: GitHubRepoInfo,

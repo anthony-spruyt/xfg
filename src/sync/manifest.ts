@@ -164,7 +164,7 @@ export function loadManifest(
 
 /**
  * Parses manifest content from a string (e.g., fetched from a remote API).
- * Handles V2→V3 migration, returns null for V1/unknown/invalid formats.
+ * Handles V2/V3 → V4 migration, returns null for V1/unknown/invalid formats.
  */
 export function parseManifestContent(
   content: string,

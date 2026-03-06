@@ -2,17 +2,11 @@ import { Document, stringify } from "yaml";
 
 type OutputFormat = "json" | "json5" | "yaml";
 
-/**
- * Options for content conversion.
- */
 interface ConvertOptions {
   header?: string[];
   schemaUrl?: string;
 }
 
-/**
- * Detects output format from file extension.
- */
 export function detectOutputFormat(fileName: string): OutputFormat {
   const ext = fileName.toLowerCase().split(".").pop();
   if (ext === "yaml" || ext === "yml") {
