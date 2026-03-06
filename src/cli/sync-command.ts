@@ -1,7 +1,7 @@
 import { resolve, join } from "node:path";
 import { existsSync } from "node:fs";
 import { loadRawConfig, normalizeConfig, RepoConfig } from "../config/index.js";
-import { ValidationError } from "../config/errors.js";
+import { ValidationError, SyncError } from "../config/errors.js";
 import { validateForSync } from "../config/validator.js";
 import {
   parseGitUrl,
@@ -608,6 +608,6 @@ export async function runSync(
   const hasErrors = ctx.reportResults.some((r) => r.error);
   const hasSettingsErrors = settingsResults.some((r) => r.error);
   if (hasErrors || hasSettingsErrors) {
-    throw new Error("One or more repositories had errors during sync");
+    throw new SyncError("One or more repositories had errors during sync");
   }
 }

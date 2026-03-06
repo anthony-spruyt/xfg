@@ -23,3 +23,19 @@ export class GraphQLApiError extends Error {
     super(message);
   }
 }
+
+export class SyncError extends Error {
+  override readonly name = "SyncError";
+
+  constructor(message: string) {
+    super(message);
+  }
+}
+
+export class LifecycleError extends Error {
+  override readonly name = "LifecycleError";
+
+  constructor(message: string) {
+    super(message);
+  }
+}

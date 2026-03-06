@@ -2,6 +2,7 @@ import {
   ICommandExecutor,
   defaultExecutor,
 } from "../shared/command-executor.js";
+import { LifecycleError } from "../config/errors.js";
 import type {
   IRepoLifecycleFactory,
   IRepoLifecycleProvider,
@@ -52,7 +53,7 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
         });
         break;
       default:
-        throw new Error(
+        throw new LifecycleError(
           `Platform '${platform}' not supported as target for lifecycle operations. ` +
             `Currently supported: github`
         );
@@ -76,7 +77,7 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
         source = new AdoMigrationSource(this.executor, this.retries);
         break;
       default:
-        throw new Error(
+        throw new LifecycleError(
           `Platform '${platform}' not supported as migration source. ` +
             `Currently supported: azure-devops`
         );

@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { rm } from "node:fs/promises";
 import { parseGitUrl, type RepoInfo } from "../shared/repo-detector.js";
 import { safeCleanup } from "../shared/type-guards.js";
+import { LifecycleError } from "../config/errors.js";
 import type { RepoConfig } from "../config/types.js";
 import type {
   IRepoLifecycleManager,
@@ -124,7 +125,9 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
     }
 
     if (!provider.fork) {
-      throw new Error(`Platform '${repoInfo.type}' does not support forking`);
+      throw new LifecycleError(
+        `Platform '${repoInfo.type}' does not support forking`
+      );
     }
 
     const upstreamInfo = parseGitUrl(repoConfig.upstream!, {

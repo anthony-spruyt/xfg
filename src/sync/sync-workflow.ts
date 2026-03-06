@@ -1,6 +1,5 @@
 import type { RepoConfig } from "../config/types.js";
 import { RepoInfo, getRepoDisplayName } from "../shared/repo-detector.js";
-import type { ILogger } from "../shared/logger.js";
 import { safeCleanup } from "../shared/type-guards.js";
 import type {
   ISyncWorkflow,
@@ -27,7 +26,7 @@ export class SyncWorkflow implements ISyncWorkflow {
     private readonly branchManager: IBranchManager,
     private readonly commitPushManager: ICommitPushManager,
     private readonly prMergeHandler: IPRMergeHandler,
-    private readonly log: ILogger
+    private readonly log: { info(msg: string): void; debug(msg: string): void }
   ) {}
 
   async execute(

@@ -1,4 +1,3 @@
-import { ILogger } from "../shared/logger.js";
 import { getCommitStrategy, type FileChange } from "../vcs/index.js";
 import type { ICommitStrategy } from "../vcs/types.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
@@ -19,7 +18,7 @@ type CommitStrategyFactory = (
 
 export class CommitPushManager implements ICommitPushManager {
   constructor(
-    private readonly log: ILogger,
+    private readonly log: { debug(msg: string): void; info(msg: string): void },
     private readonly commitStrategyFactory: CommitStrategyFactory = getCommitStrategy
   ) {}
 

@@ -14,6 +14,7 @@ import {
   type GitHubRepoInfo,
 } from "../shared/repo-detector.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { LifecycleError } from "../config/errors.js";
 import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
 import type {
   IRepoLifecycleProvider,
@@ -289,7 +290,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     // Guard: cannot fork a repo to the same owner
     if (upstream.owner.toLowerCase() === target.owner.toLowerCase()) {
-      throw new Error(
+      throw new LifecycleError(
         `Cannot fork ${upstream.owner}/${upstream.repo} to the same owner '${target.owner}'. ` +
           `The upstream and target owners must be different.`
       );
@@ -365,7 +366,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       );
     }
 
-    throw new Error(
+    throw new LifecycleError(
       `Timed out waiting for fork ${repoInfo.owner}/${repoInfo.repo} to become available ` +
         `after ${timeoutMs / 1000}s. The fork may still be processing on GitHub.`
     );
@@ -469,7 +470,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
       const prefix = "refs/heads/";
       if (!headRef.startsWith(prefix)) {
-        throw new Error(
+        throw new LifecycleError(
           `Mirror clone HEAD symbolic-ref is '${headRef}', expected to start with '${prefix}'. ` +
             `Cannot rename default branch.`
         );
