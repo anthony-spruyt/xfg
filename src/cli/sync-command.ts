@@ -11,11 +11,11 @@ import {
 import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 import { sanitizeBranchName, validateBranchName } from "../vcs/branch-utils.js";
 import { createTokenManager } from "../vcs/index.js";
+import { RepositoryProcessor } from "../sync/index.js";
 import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoInfo } from "../shared/repo-detector.js";
 import {
-  defaultProcessorFactory,
   defaultRulesetProcessorFactory,
   defaultRepoSettingsProcessorFactory,
   defaultLabelsProcessorFactory,
@@ -526,7 +526,6 @@ export async function runSync(
   deps: SyncDependencies = {}
 ): Promise<void> {
   const {
-    processorFactory = defaultProcessorFactory,
     lifecycleManager,
     rulesetProcessorFactory = defaultRulesetProcessorFactory,
     repoSettingsProcessorFactory = defaultRepoSettingsProcessorFactory,
@@ -563,22 +562,28 @@ export async function runSync(
   logger.log(`Target files: ${formatFileNames(fileNames)}`);
   logger.log(`Branch: ${branchName}\n`);
 
+  const tokenManager = createTokenManager(
+    process.env.XFG_GITHUB_APP_ID && process.env.XFG_GITHUB_APP_PRIVATE_KEY
+      ? {
+          appId: process.env.XFG_GITHUB_APP_ID,
+          privateKey: process.env.XFG_GITHUB_APP_PRIVATE_KEY,
+        }
+      : undefined
+  );
+
+  const processor = deps.processorFactory
+    ? deps.processorFactory()
+    : new RepositoryProcessor(undefined, undefined, { tokenManager });
+
   const ctx: RepoIterationContext = {
     config,
     options,
     branchName,
-    processor: processorFactory(),
+    processor,
     lifecycleManager:
       lifecycleManager ??
       new RepoLifecycleManager(undefined, options.retries, logger),
-    tokenManager: createTokenManager(
-      process.env.XFG_GITHUB_APP_ID && process.env.XFG_GITHUB_APP_PRIVATE_KEY
-        ? {
-            appId: process.env.XFG_GITHUB_APP_ID,
-            privateKey: process.env.XFG_GITHUB_APP_PRIVATE_KEY,
-          }
-        : undefined
-    ),
+    tokenManager,
     reportResults: [],
     lifecycleReportInputs: [],
     settingsCollector: new ResultsCollector(),

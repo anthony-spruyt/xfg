@@ -5,6 +5,7 @@ import { AuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
 import { defaultExecutor } from "../shared/command-executor.js";
 import { logger, ILogger } from "../shared/logger.js";
 import { createTokenManager } from "../vcs/index.js";
+import type { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import { FileWriter } from "./file-writer.js";
 import { ManifestManager } from "./manifest-manager.js";
 import { BranchManager } from "./branch-manager.js";
@@ -51,6 +52,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       fileSyncOrchestrator?: IFileSyncOrchestrator;
       prMergeHandler?: IPRMergeHandler;
       syncWorkflow?: ISyncWorkflow;
+      tokenManager?: GitHubAppTokenManager | null;
     }
   ) {
     const logInstance = log ?? logger;
@@ -68,12 +70,18 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         );
       });
 
-    // Initialize token manager for auth builder (env access at composition root)
-    const appId = process.env.XFG_GITHUB_APP_ID;
-    const appKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
-    const tokenManager = createTokenManager(
-      appId && appKey ? { appId, privateKey: appKey } : undefined
-    );
+    const tokenManager =
+      components?.tokenManager !== undefined
+        ? components.tokenManager
+        : createTokenManager(
+            process.env.XFG_GITHUB_APP_ID &&
+              process.env.XFG_GITHUB_APP_PRIVATE_KEY
+              ? {
+                  appId: process.env.XFG_GITHUB_APP_ID,
+                  privateKey: process.env.XFG_GITHUB_APP_PRIVATE_KEY,
+                }
+              : undefined
+          );
 
     const fileWriter = components?.fileWriter ?? new FileWriter();
     const manifestManager =
