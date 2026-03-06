@@ -1,7 +1,6 @@
 import { join } from "node:path";
 import { rm } from "node:fs/promises";
 import { parseGitUrl, type RepoInfo } from "../shared/repo-detector.js";
-import { logger } from "../shared/logger.js";
 import { safeCleanup } from "../shared/type-guards.js";
 import type { RepoConfig } from "../config/types.js";
 import type {
@@ -19,9 +18,23 @@ import { RepoLifecycleFactory } from "./repo-lifecycle-factory.js";
  */
 export class RepoLifecycleManager implements IRepoLifecycleManager {
   private readonly factory: IRepoLifecycleFactory;
+  private readonly log?: {
+    debug(msg: string): void;
+    info(msg: string): void;
+    warn(msg: string): void;
+  };
 
-  constructor(factory?: IRepoLifecycleFactory, retries?: number) {
-    this.factory = factory ?? new RepoLifecycleFactory(undefined, retries);
+  constructor(
+    factory?: IRepoLifecycleFactory,
+    retries?: number,
+    log?: {
+      debug(msg: string): void;
+      info(msg: string): void;
+      warn(msg: string): void;
+    }
+  ) {
+    this.factory = factory ?? new RepoLifecycleFactory(undefined, retries, log);
+    this.log = log;
   }
 
   async ensureRepo(
@@ -39,7 +52,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
         throw error;
       }
       // Platform doesn't support lifecycle operations yet - log and skip
-      logger.debug(
+      this.log?.debug(
         `Lifecycle: skipping unsupported platform "${repoInfo.type}"`
       );
       return { repoInfo, action: "existed" };
@@ -170,7 +183,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       await safeCleanup(
         () => rm(sourceDir, { recursive: true, force: true }),
         `failed to remove ${sourceDir}`,
-        logger
+        this.log ?? { debug() {} }
       );
     }
   }
@@ -195,7 +208,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       await new Promise((resolve) => setTimeout(resolve, pollMs));
     }
     // Timed out — proceed anyway and let downstream operations handle it
-    logger.info(
+    this.log?.info(
       `Repo ${repoInfo.owner}/${repoInfo.repo} not yet visible after ${timeoutMs}ms, proceeding`
     );
   }

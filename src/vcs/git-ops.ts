@@ -1,6 +1,7 @@
 import {
   rmSync,
   existsSync,
+  statSync,
   mkdirSync,
   writeFileSync,
   readFileSync,
@@ -124,16 +125,11 @@ export class GitOps implements ILocalGitOps {
   getFileContent(fileName: string): string | null {
     const filePath = this.validatePath(fileName);
 
-    if (!existsSync(filePath)) {
+    if (!existsSync(filePath) || !statSync(filePath).isFile()) {
       return null;
     }
 
-    try {
-      return readFileSync(filePath, "utf-8");
-    } catch (error) {
-      this.log?.debug(`Failed to read ${fileName}: ${toErrorMessage(error)}`);
-      return null;
-    }
+    return readFileSync(filePath, "utf-8");
   }
 
   /**

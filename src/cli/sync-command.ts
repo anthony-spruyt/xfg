@@ -568,7 +568,8 @@ export async function runSync(
     branchName,
     processor: processorFactory(),
     lifecycleManager:
-      lifecycleManager ?? new RepoLifecycleManager(undefined, options.retries),
+      lifecycleManager ??
+      new RepoLifecycleManager(undefined, options.retries, logger),
     tokenManager: createTokenManager(),
     reportResults: [],
     lifecycleReportInputs: [],

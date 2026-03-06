@@ -22,10 +22,16 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
 
   private readonly executor: ICommandExecutor;
   private readonly retries: number;
+  private readonly log?: { debug(msg: string): void; warn(msg: string): void };
 
-  constructor(executor?: ICommandExecutor, retries?: number) {
+  constructor(
+    executor?: ICommandExecutor,
+    retries?: number,
+    log?: { debug(msg: string): void; warn(msg: string): void }
+  ) {
     this.executor = executor ?? defaultExecutor;
     this.retries = retries ?? 3;
+    this.log = log;
   }
 
   getProvider(platform: LifecyclePlatform): IRepoLifecycleProvider {
@@ -42,6 +48,7 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
         provider = new GitHubLifecycleProvider({
           executor: this.executor,
           retries: this.retries,
+          log: this.log,
         });
         break;
       default:

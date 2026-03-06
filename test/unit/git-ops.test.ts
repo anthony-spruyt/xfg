@@ -742,19 +742,13 @@ describe("GitOps", () => {
       );
     });
 
-    test("returns null and logs when readFileSync throws", () => {
-      // Create a directory where a file would be expected - readFileSync on a directory throws
+    test("returns null for directories", () => {
+      // Create a directory where a file would be expected
       mkdirSync(join(workDir, "is-a-dir"), { recursive: true });
-      const debugMessages: string[] = [];
-      const gitOps = new GitOps({
-        workDir,
-        log: { debug: (msg: string) => debugMessages.push(msg) },
-      });
+      const gitOps = new GitOps({ workDir });
 
       const content = gitOps.getFileContent("is-a-dir");
       assert.equal(content, null);
-      assert.ok(debugMessages.length > 0, "Should have logged a debug message");
-      assert.ok(debugMessages[0].includes("Failed to read"));
     });
   });
 

@@ -127,7 +127,7 @@ export function createEmptyManifest(): XfgManifest {
  */
 export function loadManifest(
   workDir: string,
-  log?: { debug(msg: string): void }
+  log?: { debug(msg: string): void; warn(msg: string): void }
 ): XfgManifest | null {
   const manifestPath = join(workDir, MANIFEST_FILENAME);
 
@@ -159,10 +159,11 @@ export function loadManifest(
       return null;
     }
 
-    // Unknown format - treat as no manifest
+    // Unknown format
+    log?.warn(`Unrecognized manifest format in ${manifestPath}, ignoring`);
     return null;
   } catch (error) {
-    log?.debug(`Failed to load manifest from ${manifestPath}: ${error}`);
+    log?.warn(`Failed to parse manifest ${manifestPath}: ${error}`);
     return null;
   }
 }
@@ -173,7 +174,7 @@ export function loadManifest(
  */
 export function parseManifestContent(
   content: string,
-  log?: { debug(msg: string): void }
+  log?: { debug(msg: string): void; warn(msg: string): void }
 ): XfgManifest | null {
   try {
     const parsed = JSON.parse(content) as unknown;
@@ -192,7 +193,7 @@ export function parseManifestContent(
 
     return null;
   } catch (error) {
-    log?.debug(`Failed to parse manifest content: ${error}`);
+    log?.warn(`Failed to parse manifest content: ${error}`);
     return null;
   }
 }

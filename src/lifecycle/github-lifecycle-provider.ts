@@ -5,6 +5,7 @@ import {
 } from "../shared/command-executor.js";
 import {
   withRetry,
+  isPermanentError,
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "../shared/retry-utils.js";
 import {
@@ -12,7 +13,6 @@ import {
   type RepoInfo,
   type GitHubRepoInfo,
 } from "../shared/repo-detector.js";
-import { logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
 import type {
@@ -72,6 +72,7 @@ interface GitHubLifecycleProviderOptions {
   forkReadyTimeoutMs?: number;
   /** Poll interval in ms for fork readiness checks (default: 2000) */
   forkPollIntervalMs?: number;
+  log?: { debug(msg: string): void; warn(msg: string): void };
 }
 
 export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
@@ -81,6 +82,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   private readonly cwd: string;
   private readonly forkReadyTimeoutMs: number;
   private readonly forkPollIntervalMs: number;
+  private readonly log?: { debug(msg: string): void; warn(msg: string): void };
 
   constructor(options?: GitHubLifecycleProviderOptions) {
     const opts = options ?? {};
@@ -89,6 +91,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     this.cwd = opts.cwd ?? process.cwd();
     this.forkReadyTimeoutMs = opts.forkReadyTimeoutMs ?? FORK_READY_TIMEOUT_MS;
     this.forkPollIntervalMs = opts.forkPollIntervalMs ?? FORK_POLL_INTERVAL_MS;
+    this.log = opts.log;
   }
 
   /**
@@ -111,13 +114,17 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       const data = JSON.parse(stdout);
       return data.type === "Organization";
     } catch (error) {
-      // If we can't determine, assume it's an org (safer - uses --org flag).
+      // Propagate auth/permission errors — they won't resolve by guessing
+      if (isPermanentError(error)) {
+        throw error;
+      }
+      // For transient errors, assume org (safer - uses --org flag).
       // This may cause fork to fail with a misleading error for personal accounts.
       const errMsg = toErrorMessage(error);
-      logger.debug(
+      this.log?.debug(
         `Could not determine if '${owner}' is an organization, defaulting to org behavior: ${errMsg}`
       );
-      logger.warn(
+      this.log?.warn(
         `Could not verify if '${owner}' is an organization or user account. ` +
           `If fork fails, check your authentication (gh auth status) and ensure the ` +
           `target owner is correct.`
@@ -349,7 +356,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           return;
         }
       } catch (error) {
-        logger.debug(`Polling fork readiness: ${toErrorMessage(error)}`);
+        this.log?.debug(`Polling fork readiness: ${toErrorMessage(error)}`);
       }
       const remaining = deadline - Date.now();
       if (remaining <= 0) break;
@@ -418,7 +425,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         this.cwd
       );
     } catch (error) {
-      logger.debug(
+      this.log?.debug(
         `Cleanup: remote remove origin skipped - ${toErrorMessage(error)}`
       );
     }
@@ -446,7 +453,9 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         }
       }
     } catch (error) {
-      logger.debug(`Cleanup: ref cleanup skipped - ${toErrorMessage(error)}`);
+      this.log?.debug(
+        `Cleanup: ref cleanup skipped - ${toErrorMessage(error)}`
+      );
     }
 
     // Rename default branch in mirror clone if requested.
@@ -586,7 +595,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           return;
         }
       } catch (error) {
-        logger.debug(`Polling default branch: ${toErrorMessage(error)}`);
+        this.log?.debug(`Polling default branch: ${toErrorMessage(error)}`);
       }
       await new Promise((resolve) => setTimeout(resolve, pollMs));
     }

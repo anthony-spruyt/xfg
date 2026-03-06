@@ -19,7 +19,12 @@ import type {
  * Handles manifest loading, saving, and orphan detection.
  */
 export class ManifestManager implements IManifestManager {
-  constructor(private readonly log?: { debug(msg: string): void }) {}
+  constructor(
+    private readonly log?: {
+      debug(msg: string): void;
+      warn(msg: string): void;
+    }
+  ) {}
 
   processOrphans(
     workDir: string,
