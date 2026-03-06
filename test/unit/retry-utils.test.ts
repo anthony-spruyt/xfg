@@ -5,7 +5,6 @@ import {
   isTransientError,
   withRetry,
 } from "../../src/shared/retry-utils.js";
-import { logger } from "../../src/shared/logger.js";
 
 describe("isPermanentError", () => {
   test("returns true for permission denied", () => {
@@ -252,27 +251,22 @@ describe("withRetry", () => {
 
   test("sanitizes credentials in retry log messages", async () => {
     const logs: string[] = [];
-    const originalInfo = logger.info;
-    logger.info = (msg: string) => logs.push(msg);
+    const mockLog = { info: (msg: string) => logs.push(msg) };
 
     let attempts = 0;
-    try {
-      await withRetry(
-        async () => {
-          attempts++;
-          if (attempts < 3) {
-            // Use a transient error (connection timeout) that contains credentials
-            throw new Error(
-              "Connection timed out for 'https://x-access-token:secret123@github.com/repo'"
-            );
-          }
-          return "success";
-        },
-        { retries: 3 }
-      );
-    } finally {
-      logger.info = originalInfo;
-    }
+    await withRetry(
+      async () => {
+        attempts++;
+        if (attempts < 3) {
+          // Use a transient error (connection timeout) that contains credentials
+          throw new Error(
+            "Connection timed out for 'https://x-access-token:secret123@github.com/repo'"
+          );
+        }
+        return "success";
+      },
+      { retries: 3, log: mockLog }
+    );
 
     // Verify credentials were sanitized in log output
     assert.equal(logs.length, 2); // 2 failed attempts before success

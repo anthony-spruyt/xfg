@@ -98,7 +98,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     try {
       const result = await withRetry(
         () => this.executor.exec(command, workDir),
-        { retries }
+        { retries, log: this.log }
       );
 
       if (!result || result.trim() === "" || result.trim() === "[]") {
@@ -154,6 +154,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     try {
       await withRetry(() => this.executor.exec(closeCommand, workDir), {
         retries,
+        log: this.log,
       });
     } catch (error) {
       const message = toErrorMessage(error);
@@ -168,6 +169,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     try {
       await withRetry(() => this.executor.exec(deleteBranchCommand, workDir), {
         retries,
+        log: this.log,
       });
     } catch (error) {
       // Branch deletion failure is not critical
@@ -202,7 +204,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     try {
       const result = await withRetry(
         () => this.executor.exec(command, workDir),
-        { retries }
+        { retries, log: this.log }
       );
 
       // Extract MR URL from output

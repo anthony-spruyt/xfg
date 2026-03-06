@@ -64,7 +64,9 @@ export function resolveFileReference(
     content = readFileSync(resolvedPath, "utf-8");
   } catch (error) {
     const msg = toErrorMessage(error);
-    throw new Error(`Failed to load file reference "${reference}": ${msg}`);
+    throw new ValidationError(
+      `Failed to load file reference "${reference}": ${msg}`
+    );
   }
 
   // Parse based on extension
@@ -74,7 +76,7 @@ export function resolveFileReference(
       return JSON.parse(content) as Record<string, unknown>;
     } catch (error) {
       const msg = toErrorMessage(error);
-      throw new Error(`Invalid JSON in "${reference}": ${msg}`);
+      throw new ValidationError(`Invalid JSON in "${reference}": ${msg}`);
     }
   }
   if (ext === ".json5") {
@@ -82,7 +84,7 @@ export function resolveFileReference(
       return JSON5.parse(content) as Record<string, unknown>;
     } catch (error) {
       const msg = toErrorMessage(error);
-      throw new Error(`Invalid JSON5 in "${reference}": ${msg}`);
+      throw new ValidationError(`Invalid JSON5 in "${reference}": ${msg}`);
     }
   }
   if (ext === ".yaml" || ext === ".yml") {
@@ -90,7 +92,7 @@ export function resolveFileReference(
       return parseYaml(content) as Record<string, unknown>;
     } catch (error) {
       const msg = toErrorMessage(error);
-      throw new Error(`Invalid YAML in "${reference}": ${msg}`);
+      throw new ValidationError(`Invalid YAML in "${reference}": ${msg}`);
     }
   }
 

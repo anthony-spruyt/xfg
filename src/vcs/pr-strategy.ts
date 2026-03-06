@@ -47,7 +47,7 @@ export abstract class BasePRStrategy implements IPRStrategy {
     errorPrefix: string
   ): Promise<MergeResult> {
     try {
-      await withRetry(execFn, { retries });
+      await withRetry(execFn, { retries, log: this.log });
       return successResult;
     } catch (error) {
       return {

@@ -51,7 +51,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     try {
       const existingPR = await withRetry(
         () => this.executor.exec(command, workDir, { env: tokenEnv }),
-        { retries }
+        { retries, log: this.log }
       );
 
       return existingPR || null;
@@ -106,7 +106,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     try {
       await withRetry(
         () => this.executor.exec(command, workDir, { env: tokenEnv }),
-        { retries }
+        { retries, log: this.log }
       );
       return true;
     } catch (error) {
@@ -147,7 +147,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     try {
       const result = await withRetry(
         () => this.executor.exec(command, workDir, { env: tokenEnv }),
-        { retries }
+        { retries, log: this.log }
       );
 
       // Extract URL from output - use strict regex for valid PR URLs only
@@ -192,7 +192,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     try {
       const result = await withRetry(
         () => this.executor.exec(command, workDir, { env: tokenEnv }),
-        { retries }
+        { retries, log: this.log }
       );
       return result.trim() === "true";
     } catch (error) {

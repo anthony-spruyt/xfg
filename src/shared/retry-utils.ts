@@ -1,5 +1,4 @@
 import pRetry, { AbortError } from "p-retry";
-import { logger } from "./logger.js";
 import { sanitizeCredentials } from "./sanitize-utils.js";
 import { ValidationError } from "../config/errors.js";
 
@@ -79,6 +78,8 @@ interface RetryOptions {
   permanentErrorPatterns?: RegExp[];
   /** Custom transient error patterns (defaults to DEFAULT_TRANSIENT_ERROR_PATTERNS) */
   transientErrorPatterns?: RegExp[];
+  /** Logger for retry messages (defaults to no logging) */
+  log?: { info(msg: string): void };
 }
 
 /**
@@ -173,7 +174,7 @@ export async function withRetry<T>(
         if (context.retriesLeft > 0) {
           const msg =
             sanitizeCredentials(context.error.message) || "Unknown error";
-          logger.info(
+          options?.log?.info(
             `Attempt ${context.attemptNumber}/${retries + 1} failed: ${msg}. Retrying...`
           );
           options?.onRetry?.(context.error, context.attemptNumber);
