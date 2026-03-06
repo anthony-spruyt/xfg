@@ -310,9 +310,10 @@ export class GitLabPRStrategy extends BasePRStrategy {
       );
     }
 
+    const _exhaustive: "direct" = config.mode;
     return {
       success: false,
-      message: `Unknown merge mode: ${config.mode}`,
+      message: `Merge not applicable for mode: ${_exhaustive}`,
       merged: false,
     };
   }

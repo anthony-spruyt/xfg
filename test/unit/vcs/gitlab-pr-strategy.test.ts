@@ -1141,7 +1141,7 @@ describe("GitLabPRStrategy merge unknown mode", () => {
 
     assert.equal(result.success, false);
     assert.equal(result.merged, false);
-    assert.ok(result.message.includes("Unknown merge mode"));
+    assert.ok(result.message.includes("Merge not applicable for mode:"));
   });
 });
 

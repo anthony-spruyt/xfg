@@ -297,9 +297,12 @@ export class GitHubPRStrategy extends BasePRStrategy {
       );
     }
 
+    // "direct" mode doesn't create PRs, so merge() should not be called for it.
+    // This is a defensive fallback for type safety.
+    const _exhaustive: "direct" = config.mode;
     return {
       success: false,
-      message: `Unknown merge mode: ${config.mode}`,
+      message: `Merge not applicable for mode: ${_exhaustive}`,
       merged: false,
     };
   }
