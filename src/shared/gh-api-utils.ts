@@ -157,8 +157,10 @@ export function isHttp404Error(error: unknown): boolean {
 export function parseApiJson<T>(response: string, context: string): T {
   try {
     return JSON.parse(response) as T;
-  } catch {
+  } catch (error) {
     const preview = response.slice(0, 200);
-    throw new Error(`Failed to parse ${context}: ${preview}`);
+    throw new Error(
+      `Failed to parse ${context}: ${toErrorMessage(error)} — ${preview}`
+    );
   }
 }
