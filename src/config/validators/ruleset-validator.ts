@@ -1,4 +1,4 @@
-import { ValidationError } from "../errors.js";
+import { ValidationError } from "../../shared/errors.js";
 
 const VALID_RULESET_TARGETS = ["branch", "tag"];
 const VALID_ENFORCEMENT_LEVELS = ["active", "disabled", "evaluate"];

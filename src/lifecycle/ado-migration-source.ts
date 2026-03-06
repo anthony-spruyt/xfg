@@ -5,7 +5,7 @@ import {
 } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { LifecycleError } from "../config/errors.js";
+import { LifecycleError } from "../shared/errors.js";
 import {
   isAzureDevOpsRepo,
   type RepoInfo,

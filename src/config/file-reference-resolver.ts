@@ -4,7 +4,7 @@ import JSON5 from "json5";
 import { parse as parseYaml } from "yaml";
 import type { ContentValue, RawConfig } from "./types.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { ValidationError } from "./errors.js";
+import { ValidationError } from "../shared/errors.js";
 
 interface FileReferenceOptions {
   configDir: string;

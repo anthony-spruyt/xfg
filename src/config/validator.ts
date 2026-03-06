@@ -10,7 +10,7 @@ import { validateRepoSettings } from "./validators/repo-settings-validator.js";
 import { validateRuleset } from "./validators/ruleset-validator.js";
 import { escapeRegExp } from "../shared/shell-utils.js";
 import { isPlainObject } from "../shared/type-guards.js";
-import { ValidationError } from "./errors.js";
+import { ValidationError } from "../shared/errors.js";
 
 // Pattern for valid config ID: alphanumeric, hyphens, underscores
 const CONFIG_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
@@ -138,11 +138,7 @@ function validateFileConfigFields(
   }
 
   if (fileConfig.vars !== undefined) {
-    if (
-      typeof fileConfig.vars !== "object" ||
-      fileConfig.vars === null ||
-      Array.isArray(fileConfig.vars)
-    ) {
+    if (!isPlainObject(fileConfig.vars)) {
       throw new ValidationError(
         `${context} file '${fileName}' vars must be an object with string values`
       );
@@ -328,7 +324,7 @@ function validateRootFiles(config: RawConfig): void {
     validateFileName(fileName);
 
     const fileConfig = config.files[fileName];
-    if (!fileConfig || typeof fileConfig !== "object") {
+    if (!isPlainObject(fileConfig)) {
       throw new ValidationError(
         `File '${fileName}' must have a configuration object`
       );
@@ -545,7 +541,7 @@ function validateRepoFiles(
 ): void {
   if (!repo.files) return;
 
-  if (typeof repo.files !== "object" || Array.isArray(repo.files)) {
+  if (!isPlainObject(repo.files)) {
     throw new ValidationError(
       `Repo at index ${index}: files must be an object`
     );
@@ -657,14 +653,10 @@ export function validateRawConfig(config: RawConfig): void {
   validateConfigId(config);
 
   const hasFiles =
-    config.files &&
-    typeof config.files === "object" &&
-    Object.keys(config.files).length > 0;
-  const hasSettings = config.settings && typeof config.settings === "object";
+    isPlainObject(config.files) && Object.keys(config.files).length > 0;
+  const hasSettings = isPlainObject(config.settings);
   const hasGroupFiles =
-    config.groups &&
-    typeof config.groups === "object" &&
-    !Array.isArray(config.groups) &&
+    isPlainObject(config.groups) &&
     Object.values(config.groups).some(
       (g) =>
         g.files &&
@@ -673,11 +665,9 @@ export function validateRawConfig(config: RawConfig): void {
         ).length > 0
     );
   const hasGroupSettings =
-    config.groups &&
-    typeof config.groups === "object" &&
-    !Array.isArray(config.groups) &&
+    isPlainObject(config.groups) &&
     Object.values(config.groups).some(
-      (g) => g.settings && typeof g.settings === "object"
+      (g) => g.settings && isPlainObject(g.settings)
     );
 
   if (!hasFiles && !hasSettings && !hasGroupFiles && !hasGroupSettings) {
@@ -736,9 +726,7 @@ export function validateForSync(config: RawConfig): void {
     hasActionableSettings(repo.settings)
   );
   const hasGroupSettings =
-    config.groups &&
-    typeof config.groups === "object" &&
-    !Array.isArray(config.groups) &&
+    isPlainObject(config.groups) &&
     Object.values(config.groups).some(
       (g) => g.settings && hasActionableSettings(g.settings)
     );

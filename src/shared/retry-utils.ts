@@ -1,6 +1,6 @@
 import pRetry, { AbortError } from "p-retry";
 import { sanitizeCredentials } from "./sanitize-utils.js";
-import { ValidationError } from "../config/errors.js";
+import { ValidationError } from "./errors.js";
 
 /**
  * Core permanent error patterns shared across all strategies (API, GraphQL, CLI).

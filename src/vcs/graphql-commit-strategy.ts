@@ -12,7 +12,7 @@ import {
 } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { parseApiJson, buildTokenEnv } from "../shared/gh-api-utils.js";
-import { ValidationError, GraphQLApiError } from "../config/errors.js";
+import { ValidationError, GraphQLApiError } from "../shared/errors.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).

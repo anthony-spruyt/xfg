@@ -1,9 +1,12 @@
-import { escapeShellArg } from "../shared/shell-utils.js";
-import { withRetry } from "../shared/retry-utils.js";
-import type { ICommandExecutor } from "../shared/command-executor.js";
-import type { GitHubRepoInfo } from "../shared/repo-detector.js";
-import type { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
-import { toErrorMessage } from "../shared/type-guards.js";
+import { escapeShellArg } from "./shell-utils.js";
+import { withRetry } from "./retry-utils.js";
+import type { ICommandExecutor } from "./command-executor.js";
+import type { GitHubRepoInfo } from "./repo-detector.js";
+import { toErrorMessage } from "./type-guards.js";
+
+export interface ITokenManager {
+  getTokenForRepo(repoInfo: GitHubRepoInfo): Promise<string | null>;
+}
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -121,7 +124,7 @@ export class GhApiClient {
  */
 export async function resolveGitHubToken(
   repoInfo: GitHubRepoInfo,
-  tokenManager: GitHubAppTokenManager | null,
+  tokenManager: ITokenManager | null,
   context: string,
   log?: { debug(msg: string): void },
   envToken?: string
@@ -143,17 +146,17 @@ export async function resolveGitHubToken(
 }
 
 /**
- * Parse a JSON API response with a contextual error message.
- * Wraps JSON.parse so callers get "Failed to parse <context>: ..." instead of
- * a bare "Unexpected token" SyntaxError.
- */
-/**
  * Check if an error message indicates an HTTP 404 response from the GitHub API.
  */
 export function isHttp404Error(error: unknown): boolean {
   return toErrorMessage(error).includes("HTTP 404");
 }
 
+/**
+ * Parse a JSON API response with a contextual error message.
+ * Wraps JSON.parse so callers get "Failed to parse <context>: ..." instead of
+ * a bare "Unexpected token" SyntaxError.
+ */
 export function parseApiJson<T>(response: string, context: string): T {
   try {
     return JSON.parse(response) as T;

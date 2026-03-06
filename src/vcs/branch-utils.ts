@@ -1,4 +1,4 @@
-import { ValidationError } from "../config/errors.js";
+import { ValidationError } from "../shared/errors.js";
 
 export function sanitizeBranchName(fileName: string): string {
   return fileName

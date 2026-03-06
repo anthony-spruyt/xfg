@@ -1,6 +1,6 @@
 import { extname, isAbsolute } from "node:path";
 import { isTextContent } from "../merge.js";
-import { ValidationError } from "../errors.js";
+import { ValidationError } from "../../shared/errors.js";
 
 export { isTextContent };
 

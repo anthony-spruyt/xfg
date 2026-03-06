@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { rm } from "node:fs/promises";
 import { parseGitUrl, type RepoInfo } from "../shared/repo-detector.js";
 import { safeCleanup } from "../shared/type-guards.js";
-import { LifecycleError } from "../config/errors.js";
+import { LifecycleError } from "../shared/errors.js";
 import type { RepoConfig } from "../config/types.js";
 import type {
   IRepoLifecycleManager,

@@ -2,7 +2,7 @@ import {
   ICommandExecutor,
   defaultExecutor,
 } from "../shared/command-executor.js";
-import { LifecycleError } from "../config/errors.js";
+import { LifecycleError } from "../shared/errors.js";
 import type {
   IRepoLifecycleFactory,
   IRepoLifecycleProvider,

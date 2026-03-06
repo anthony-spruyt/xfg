@@ -6,7 +6,7 @@ import { normalizeConfig as normalizeConfigInternal } from "./normalizer.js";
 import { resolveFileReferencesInConfig } from "./file-reference-resolver.js";
 import type { RawConfig, Config } from "./types.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { ValidationError } from "./errors.js";
+import { ValidationError } from "../shared/errors.js";
 
 export { normalizeConfigInternal as normalizeConfig };
 

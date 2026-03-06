@@ -5,7 +5,7 @@ import {
   validateForSync,
   hasActionableSettings,
 } from "../../src/config/validator.js";
-import { ValidationError } from "../../src/config/errors.js";
+import { ValidationError } from "../../src/shared/errors.js";
 import type {
   RawConfig,
   RawFileConfig,

@@ -1,7 +1,7 @@
 import type { Label } from "../../config/types.js";
 import type { GitHubLabel } from "./types.js";
 import { normalizeColor } from "./converter.js";
-import { ValidationError } from "../../config/errors.js";
+import { ValidationError } from "../../shared/errors.js";
 
 export type LabelAction = "create" | "update" | "delete" | "unchanged";
 

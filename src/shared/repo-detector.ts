@@ -1,4 +1,4 @@
-import { ValidationError } from "../config/errors.js";
+import { ValidationError } from "./errors.js";
 
 type RepoType = "github" | "azure-devops" | "gitlab";
 
