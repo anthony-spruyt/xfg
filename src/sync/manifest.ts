@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { SyncError } from "../shared/errors.js";
 
 export const MANIFEST_FILENAME = ".xfg.json";
 
@@ -207,7 +208,7 @@ export function saveManifest(workDir: string, manifest: XfgManifest): void {
   try {
     writeFileSync(manifestPath, content, "utf-8");
   } catch (error) {
-    throw new Error(
+    throw new SyncError(
       `Failed to save manifest ${manifestPath}: ${toErrorMessage(error)}`
     );
   }

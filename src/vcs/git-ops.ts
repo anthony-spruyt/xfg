@@ -14,6 +14,7 @@ import {
   defaultExecutor,
 } from "../shared/command-executor.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { ValidationError, SyncError } from "../shared/errors.js";
 import type { ILocalGitOps } from "./types.js";
 
 export interface GitOpsOptions {
@@ -52,7 +53,7 @@ export class GitOps implements ILocalGitOps {
     const resolvedWorkDir = resolve(this._workDir);
     const relativePath = relative(resolvedWorkDir, resolvedPath);
     if (relativePath.startsWith("..") || isAbsolute(relativePath)) {
-      throw new Error(`Path traversal detected: ${fileName}`);
+      throw new ValidationError(`Path traversal detected: ${fileName}`);
     }
     return filePath;
   }
@@ -77,7 +78,9 @@ export class GitOps implements ILocalGitOps {
       );
     } catch (error) {
       const message = toErrorMessage(error);
-      throw new Error(`Failed to create branch '${branchName}': ${message}`);
+      throw new SyncError(
+        `Failed to create branch '${branchName}': ${message}`
+      );
     }
   }
 

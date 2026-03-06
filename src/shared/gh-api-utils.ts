@@ -3,6 +3,7 @@ import { withRetry } from "./retry-utils.js";
 import type { ICommandExecutor } from "./command-executor.js";
 import type { GitHubRepoInfo } from "./repo-detector.js";
 import { toErrorMessage } from "./type-guards.js";
+import { GraphQLApiError } from "./errors.js";
 
 export interface ITokenManager {
   getTokenForRepo(repoInfo: GitHubRepoInfo): Promise<string | null>;
@@ -162,7 +163,7 @@ export function parseApiJson<T>(response: string, context: string): T {
     return JSON.parse(response) as T;
   } catch (error) {
     const preview = response.slice(0, 200);
-    throw new Error(
+    throw new GraphQLApiError(
       `Failed to parse ${context}: ${toErrorMessage(error)} — ${preview}`
     );
   }
