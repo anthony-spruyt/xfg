@@ -5,7 +5,7 @@ import type { GitHubRepoInfo } from "./repo-detector.js";
 import { toErrorMessage } from "./type-guards.js";
 import { GraphQLApiError } from "./errors.js";
 
-export interface ITokenManager {
+interface ITokenManager {
   getTokenForRepo(repoInfo: GitHubRepoInfo): Promise<string | null>;
 }
 
@@ -16,7 +16,7 @@ export interface GhApiOptions {
   host?: string;
 }
 
-export interface GhApiCallParams {
+interface GhApiCallParams {
   payload?: unknown;
   options?: GhApiOptions;
   paginate?: boolean;
@@ -25,6 +25,7 @@ export interface GhApiCallParams {
 interface GhApiCallOptions {
   executor: ICommandExecutor;
   retries: number;
+  cwd: string;
   apiOpts?: GhApiOptions;
   payload?: unknown;
   paginate?: boolean;
@@ -59,7 +60,7 @@ async function ghApiCall(
   endpoint: string,
   opts: GhApiCallOptions
 ): Promise<string> {
-  const { executor, retries, apiOpts, payload, paginate } = opts;
+  const { executor, retries, cwd, apiOpts, payload, paginate } = opts;
   const args: string[] = ["gh", "api"];
 
   if (method !== "GET") {
@@ -85,16 +86,14 @@ async function ghApiCall(
   ) {
     const payloadJson = JSON.stringify(payload);
     const command = `echo ${escapeShellArg(payloadJson)} | ${baseCommand} --input -`;
-    return await withRetry(
-      () => executor.exec(command, process.cwd(), { env }),
-      { retries }
-    );
+    return await withRetry(() => executor.exec(command, cwd, { env }), {
+      retries,
+    });
   }
 
-  return await withRetry(
-    () => executor.exec(baseCommand, process.cwd(), { env }),
-    { retries }
-  );
+  return await withRetry(() => executor.exec(baseCommand, cwd, { env }), {
+    retries,
+  });
 }
 
 /**
@@ -104,7 +103,8 @@ async function ghApiCall(
 export class GhApiClient {
   constructor(
     private readonly executor: ICommandExecutor,
-    private readonly retries: number
+    private readonly retries: number,
+    private readonly cwd: string = "."
   ) {}
 
   async call(
@@ -115,6 +115,7 @@ export class GhApiClient {
     return ghApiCall(method, endpoint, {
       executor: this.executor,
       retries: this.retries,
+      cwd: this.cwd,
       apiOpts: params?.options,
       payload: params?.payload,
       paginate: params?.paginate,

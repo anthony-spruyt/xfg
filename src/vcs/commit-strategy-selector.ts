@@ -5,7 +5,7 @@ import { GraphQLCommitStrategy } from "./graphql-commit-strategy.js";
 import { GitHubAppTokenManager } from "./github-app-token-manager.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 
-export interface GitHubAppCredentials {
+interface GitHubAppCredentials {
   appId: string;
   privateKey: string;
 }

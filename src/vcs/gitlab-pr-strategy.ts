@@ -17,6 +17,7 @@ import { parseApiJson } from "../shared/gh-api-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
 import type { MergeStrategy } from "../config/index.js";
+import { SyncError } from "../shared/errors.js";
 
 export class GitLabPRStrategy extends BasePRStrategy {
   constructor(executor?: ICommandExecutor, log?: IPRStrategyLogger) {
@@ -231,7 +232,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
         };
       }
 
-      throw new Error(`Could not parse MR URL from output: ${result}`);
+      throw new SyncError(`Could not parse MR URL from output: ${result}`);
     } finally {
       safeCleanup(
         () => {

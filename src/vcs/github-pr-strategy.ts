@@ -16,6 +16,7 @@ import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
 import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
 import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
+import { SyncError } from "../shared/errors.js";
 
 /**
  * Get the repo flag value for gh CLI commands.
@@ -159,7 +160,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       const urlMatch = result.match(urlRegex);
 
       if (!urlMatch) {
-        throw new Error(`Could not parse PR URL from output: ${result}`);
+        throw new SyncError(`Could not parse PR URL from output: ${result}`);
       }
 
       return {

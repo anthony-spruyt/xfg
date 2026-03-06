@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { MergeMode, MergeStrategy } from "../config/index.js";
+import { ValidationError } from "../shared/errors.js";
 import { runSync } from "./sync-command.js";
 import type { SyncOptions } from "./sync-command.js";
 
@@ -66,7 +67,7 @@ const syncCommand = new Command("sync")
     (value: string): MergeMode => {
       const valid: MergeMode[] = ["manual", "auto", "force", "direct"];
       if (!valid.includes(value as MergeMode)) {
-        throw new Error(
+        throw new ValidationError(
           `Invalid merge mode: ${value}. Valid: ${valid.join(", ")}`
         );
       }
@@ -79,7 +80,7 @@ const syncCommand = new Command("sync")
     (value: string): MergeStrategy => {
       const valid: MergeStrategy[] = ["merge", "squash", "rebase"];
       if (!valid.includes(value as MergeStrategy)) {
-        throw new Error(
+        throw new ValidationError(
           `Invalid merge strategy: ${value}. Valid: ${valid.join(", ")}`
         );
       }

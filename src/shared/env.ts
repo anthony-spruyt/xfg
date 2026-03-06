@@ -9,6 +9,7 @@ import {
   interpolateValue,
   type InterpolationConfig,
 } from "./interpolation-engine.js";
+import { ValidationError } from "./errors.js";
 
 export interface EnvInterpolationOptions {
   /**
@@ -67,12 +68,14 @@ function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
     // Required with message (:?message)
     if (modifier === "?") {
       const message = defaultOrMsg || `is required`;
-      throw new Error(`${varName}: ${message}`);
+      throw new ValidationError(`${varName}: ${message}`);
     }
 
     // No modifier - check strictness
     if (options.strict) {
-      throw new Error(`Missing required environment variable: ${varName}`);
+      throw new ValidationError(
+        `Missing required environment variable: ${varName}`
+      );
     }
 
     // Non-strict mode - leave placeholder as-is

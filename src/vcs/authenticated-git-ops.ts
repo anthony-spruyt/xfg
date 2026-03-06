@@ -3,6 +3,7 @@ import { withRetry } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { GitAuthOptions, ILocalGitOps, IGitOps } from "./types.js";
+import { SyncError } from "../shared/errors.js";
 
 /**
  * Adds authentication to network git operations and delegates local ops.
@@ -32,7 +33,7 @@ export class AuthenticatedGitOps implements IGitOps {
    */
   private getAuthenticatedUrl(): string {
     if (!this.auth) {
-      throw new Error("getAuthenticatedUrl() called without auth options");
+      throw new SyncError("getAuthenticatedUrl() called without auth options");
     }
     const { token, host, owner, repo } = this.auth;
     return `https://x-access-token:${token}@${host}/${owner}/${repo}`;

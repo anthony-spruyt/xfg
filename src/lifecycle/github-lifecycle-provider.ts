@@ -89,7 +89,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     const opts = options ?? {};
     this.executor = opts.executor ?? defaultExecutor;
     this.retries = opts.retries ?? 3;
-    this.cwd = opts.cwd ?? process.cwd();
+    this.cwd = opts.cwd ?? ".";
     this.forkReadyTimeoutMs = opts.forkReadyTimeoutMs ?? FORK_READY_TIMEOUT_MS;
     this.forkPollIntervalMs = opts.forkPollIntervalMs ?? FORK_POLL_INTERVAL_MS;
     this.log = opts.log;

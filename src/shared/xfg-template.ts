@@ -12,6 +12,7 @@ import {
 
 import type { RepoInfo } from "./repo-detector.js";
 import type { ContentValue } from "../config/index.js";
+import { ValidationError } from "./errors.js";
 
 export interface XfgTemplateContext {
   /** Repository information from URL parsing */
@@ -120,7 +121,7 @@ function buildXfgConfig(
 
     // Unknown variable
     if (options.strict) {
-      throw new Error(`Unknown xfg template variable: ${varName}`);
+      throw new ValidationError(`Unknown xfg template variable: ${varName}`);
     }
 
     // Non-strict mode - leave placeholder as-is
