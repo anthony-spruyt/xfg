@@ -203,7 +203,9 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       }
     }
 
-    throw lastError ?? new Error("Unexpected error in GraphQL commit");
+    throw (
+      lastError ?? new GraphQLApiError("Unexpected error in GraphQL commit")
+    );
   }
 
   /**

@@ -12,11 +12,11 @@ import { writeFileSync, rmSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { runSync, type SyncOptions } from "../../src/cli/sync-command.js";
 import type { ProcessorResult } from "../../src/sync/types.js";
+import type { IRepositoryProcessor } from "../../src/sync/types.js";
 import type {
-  IRepositoryProcessor,
   IRepoSettingsProcessor,
   ILabelsProcessor,
-} from "../../src/cli/types.js";
+} from "../../src/settings/index.js";
 import type {
   IRulesetProcessor,
   RulesetProcessorResult,

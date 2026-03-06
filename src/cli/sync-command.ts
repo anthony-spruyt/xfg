@@ -26,11 +26,11 @@ import {
   type SettingsResult,
   type SyncOptions,
   type ApplyRepoSettingsContext,
-  type IRepositoryProcessor,
   type RulesetProcessorFactory,
   type RepoSettingsProcessorFactory,
   type LabelsProcessorFactory,
 } from "./types.js";
+import type { IRepositoryProcessor } from "../sync/index.js";
 
 const defaultRulesetProcessorFactory: RulesetProcessorFactory = () =>
   new RulesetProcessor();
@@ -585,7 +585,7 @@ export async function runSync(
 
   const processor = deps.processorFactory
     ? deps.processorFactory()
-    : new RepositoryProcessor(undefined, undefined, {
+    : new RepositoryProcessor(undefined, logger, {
         tokenManager,
         envToken: process.env.GH_TOKEN,
       });

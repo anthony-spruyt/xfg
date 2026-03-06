@@ -105,7 +105,8 @@ describe("RepositoryProcessor", () => {
   beforeEach(() => {
     workDir = join(testDir, `workspace-${Date.now()}`);
     mkdirSync(testDir, { recursive: true });
-    processor = new RepositoryProcessor();
+    const { mock: defaultMockLogger } = createMockLogger();
+    processor = new RepositoryProcessor(undefined, defaultMockLogger);
   });
 
   afterEach(() => {

@@ -3,7 +3,7 @@ import type { RepoInfo } from "../shared/repo-detector.js";
 import { GitOps } from "../vcs/git-ops.js";
 import { AuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
 import { defaultExecutor } from "../shared/command-executor.js";
-import { logger, ILogger } from "../shared/logger.js";
+import type { ILogger } from "../shared/logger.js";
 import type { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import { FileWriter } from "./file-writer.js";
 import { ManifestManager } from "./manifest-manager.js";
@@ -39,8 +39,8 @@ export class RepositoryProcessor implements IRepositoryProcessor {
   private readonly fileSyncOrchestrator: IFileSyncOrchestrator;
 
   constructor(
-    gitOpsFactory?: GitOpsFactory,
-    log?: ILogger,
+    gitOpsFactory: GitOpsFactory | undefined,
+    log: ILogger,
     components?: {
       fileWriter?: IFileWriter;
       manifestManager?: IManifestManager;
@@ -55,7 +55,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       envToken?: string;
     }
   ) {
-    const logInstance = log ?? logger;
+    const logInstance = log;
     const factory: GitOpsFactory =
       gitOpsFactory ??
       ((opts, auth, retries) => {

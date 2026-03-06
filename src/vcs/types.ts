@@ -151,6 +151,11 @@ export interface IPRStrategy {
   merge(options: MergeOptions): Promise<MergeResult>;
 }
 
+export interface FileAction {
+  fileName: string;
+  action: "create" | "update" | "skip" | "delete";
+}
+
 export interface FileChange {
   path: string;
   content: string | null; // null = deletion

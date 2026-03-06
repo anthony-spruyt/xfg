@@ -1,5 +1,5 @@
 // Types
-export type { PRMergeConfig, FileChange } from "./types.js";
+export type { PRMergeConfig, FileChange, FileAction } from "./types.js";
 
 // Commit strategies
 export {

@@ -5,6 +5,7 @@ import {
   isGitLabRepo,
 } from "../shared/repo-detector.js";
 import type { IPRStrategy } from "./types.js";
+import { SyncError } from "../shared/errors.js";
 import { GitHubPRStrategy } from "./github-pr-strategy.js";
 import { AzurePRStrategy } from "./azure-pr-strategy.js";
 import { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
@@ -26,5 +27,7 @@ export function getPRStrategy(
     return new GitLabPRStrategy(executor, log);
   }
   const _exhaustive: never = repoInfo;
-  throw new Error(`Unknown repository type: ${JSON.stringify(_exhaustive)}`);
+  throw new SyncError(
+    `Unknown repository type: ${JSON.stringify(_exhaustive)}`
+  );
 }

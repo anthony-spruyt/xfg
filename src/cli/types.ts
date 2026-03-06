@@ -10,8 +10,6 @@ import type {
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { ResultsCollector } from "./results-collector.js";
 
-export type { IRepositoryProcessor, IRulesetProcessor };
-
 export type ProcessorFactory = () => IRepositoryProcessor;
 
 export type SettingsProcessorFactory<T extends ISettingsProcessor> = () => T;
@@ -87,6 +85,3 @@ export interface ApplyRepoSettingsContext {
     SyncDependencies["labelsProcessorFactory"]
   >;
 }
-
-// Re-export for convenience
-export type { IRepoSettingsProcessor, ILabelsProcessor };

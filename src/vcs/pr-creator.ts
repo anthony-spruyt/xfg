@@ -5,14 +5,16 @@ import { RepoInfo } from "../shared/repo-detector.js";
 import { getPRStrategy } from "./pr-strategy-factory.js";
 import { PRWorkflowExecutor } from "./pr-strategy.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";
-import type { MergeResult, PRMergeConfig, PRResult } from "./types.js";
+import type {
+  FileAction,
+  MergeResult,
+  PRMergeConfig,
+  PRResult,
+} from "./types.js";
 import { interpolateXfgContent } from "../shared/xfg-template.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 
-export interface FileAction {
-  fileName: string;
-  action: "create" | "update" | "skip" | "delete";
-}
+export type { FileAction };
 
 interface PROptions {
   repoInfo: RepoInfo;
