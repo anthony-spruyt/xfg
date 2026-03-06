@@ -6,7 +6,7 @@ import type { DiffStats } from "./diff-utils.js";
 import type { ILogger } from "../shared/logger.js";
 import type { XfgManifest } from "./manifest.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
-import type { FileAction } from "../vcs/pr-creator.js";
+import type { FileAction } from "../vcs/types.js";
 
 export type GitOpsFactory = (
   options: GitOpsOptions,

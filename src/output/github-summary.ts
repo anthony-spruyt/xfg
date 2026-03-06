@@ -305,21 +305,24 @@ export function formatSummary(data: SummaryData): string {
   return lines.join("\n");
 }
 
-export function isGitHubActions(): boolean {
-  return !!process.env.GITHUB_STEP_SUMMARY;
+export function isGitHubActions(summaryPath?: string): boolean {
+  return !!(summaryPath ?? process.env.GITHUB_STEP_SUMMARY);
 }
 
 /**
  * Append markdown content to GITHUB_STEP_SUMMARY.
- * No-op outside GitHub Actions.
+ * No-op if summaryPath is not provided and GITHUB_STEP_SUMMARY is unset.
  */
-export function writeGitHubStepSummary(markdown: string): void {
-  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
-  if (!summaryPath) return;
-  appendFileSync(summaryPath, "\n" + markdown + "\n");
+export function writeGitHubStepSummary(
+  markdown: string,
+  summaryPath?: string
+): void {
+  const path = summaryPath ?? process.env.GITHUB_STEP_SUMMARY;
+  if (!path) return;
+  appendFileSync(path, "\n" + markdown + "\n");
 }
 
-export function writeSummary(data: SummaryData): void {
+export function writeSummary(data: SummaryData, summaryPath?: string): void {
   const markdown = formatSummary(data);
-  writeGitHubStepSummary(markdown);
+  writeGitHubStepSummary(markdown, summaryPath);
 }

@@ -1,7 +1,7 @@
 import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { ILogger } from "../shared/logger.js";
-import type { FileAction } from "../vcs/pr-creator.js";
+import type { FileAction } from "../vcs/types.js";
 import { incrementDiffStats } from "./diff-utils.js";
 import { loadManifest } from "./manifest.js";
 import type {
