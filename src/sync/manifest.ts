@@ -204,7 +204,13 @@ export function parseManifestContent(
 export function saveManifest(workDir: string, manifest: XfgManifest): void {
   const manifestPath = join(workDir, MANIFEST_FILENAME);
   const content = JSON.stringify(manifest, null, 2) + "\n";
-  writeFileSync(manifestPath, content, "utf-8");
+  try {
+    writeFileSync(manifestPath, content, "utf-8");
+  } catch (error) {
+    throw new Error(
+      `Failed to save manifest ${manifestPath}: ${toErrorMessage(error)}`
+    );
+  }
 }
 
 export function getManagedFiles(
