@@ -5,47 +5,42 @@ import { GraphQLCommitStrategy } from "./graphql-commit-strategy.js";
 import { GitHubAppTokenManager } from "./github-app-token-manager.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 
-/**
- * Checks if GitHub App credentials are configured via environment variables.
- * Both XFG_GITHUB_APP_ID and XFG_GITHUB_APP_PRIVATE_KEY must be set.
- */
-export function hasGitHubAppCredentials(): boolean {
-  return !!(
-    process.env.XFG_GITHUB_APP_ID && process.env.XFG_GITHUB_APP_PRIVATE_KEY
-  );
+export interface GitHubAppCredentials {
+  appId: string;
+  privateKey: string;
 }
 
 /**
- * Creates a GitHubAppTokenManager if credentials are configured, otherwise null.
+ * Creates a GitHubAppTokenManager from credentials, or null if not provided.
  */
-export function createTokenManager(): GitHubAppTokenManager | null {
-  if (!hasGitHubAppCredentials()) {
+export function createTokenManager(
+  credentials?: GitHubAppCredentials
+): GitHubAppTokenManager | null {
+  if (!credentials) {
     return null;
   }
-  return new GitHubAppTokenManager(
-    process.env.XFG_GITHUB_APP_ID!,
-    process.env.XFG_GITHUB_APP_PRIVATE_KEY!
-  );
+  return new GitHubAppTokenManager(credentials.appId, credentials.privateKey);
 }
 
 /**
  * Factory function to get the appropriate commit strategy for a repository.
  *
- * For GitHub repositories with GitHub App credentials (XFG_GITHUB_APP_ID and
- * XFG_GITHUB_APP_PRIVATE_KEY), returns GraphQLCommitStrategy which creates
- * verified commits via the GitHub GraphQL API.
+ * For GitHub repositories with GitHub App credentials, returns GraphQLCommitStrategy
+ * which creates verified commits via the GitHub GraphQL API.
  *
  * For all other cases (GitHub with PAT, Azure DevOps, GitLab), returns GitCommitStrategy
  * which uses standard git commands.
  *
  * @param repoInfo - Repository information
  * @param executor - Optional command executor for shell commands
+ * @param hasAppCredentials - Whether GitHub App credentials are configured
  */
 export function getCommitStrategy(
   repoInfo: RepoInfo,
-  executor?: ICommandExecutor
+  executor?: ICommandExecutor,
+  hasAppCredentials?: boolean
 ): ICommitStrategy {
-  if (isGitHubRepo(repoInfo) && hasGitHubAppCredentials()) {
+  if (isGitHubRepo(repoInfo) && hasAppCredentials) {
     return new GraphQLCommitStrategy(executor);
   }
   return new GitCommitStrategy(executor);

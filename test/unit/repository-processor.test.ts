@@ -1825,6 +1825,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
+          isGraphQLCommitMode: true,
         });
 
         assert.equal(result.success, true, "Should succeed");
@@ -1919,6 +1920,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
+          isGraphQLCommitMode: true,
         });
 
         assert.equal(result.success, false, "Should fail");
@@ -1996,6 +1998,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
+          isGraphQLCommitMode: true,
         });
 
         assert.equal(result.success, false, "Should fail");
@@ -2067,6 +2070,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
+          isGraphQLCommitMode: true,
         });
 
         assert.equal(result.success, false, "Should fail");
@@ -2137,6 +2141,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
+          isGraphQLCommitMode: true,
         });
 
         assert.equal(result.success, false);
@@ -2360,26 +2365,24 @@ describe("RepositoryProcessor", () => {
       );
     });
 
-    test("hasGitHubAppCredentials returns true when both env vars are set", async () => {
-      // Import the function directly for testing
-      const { hasGitHubAppCredentials } =
+    test("createTokenManager returns token manager when credentials provided", async () => {
+      const { createTokenManager } =
         await import("../../src/vcs/commit-strategy-selector.js");
 
-      // Initially should be false (env vars cleared in beforeEach)
       assert.equal(
-        hasGitHubAppCredentials(),
-        false,
-        "Should return false when env vars not set"
+        createTokenManager(),
+        null,
+        "Should return null when no credentials"
       );
 
-      // Set both env vars
-      process.env.XFG_GITHUB_APP_ID = "12345";
-      process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-key";
+      const manager = createTokenManager({
+        appId: "12345",
+        privateKey: "test-key",
+      });
 
-      assert.equal(
-        hasGitHubAppCredentials(),
-        true,
-        "Should return true when both env vars are set"
+      assert.ok(
+        manager !== null,
+        "Should return token manager when credentials provided"
       );
     });
 

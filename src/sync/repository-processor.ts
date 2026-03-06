@@ -68,8 +68,12 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         );
       });
 
-    // Initialize token manager for auth builder
-    const tokenManager = createTokenManager();
+    // Initialize token manager for auth builder (env access at composition root)
+    const appId = process.env.XFG_GITHUB_APP_ID;
+    const appKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+    const tokenManager = createTokenManager(
+      appId && appKey ? { appId, privateKey: appKey } : undefined
+    );
 
     const fileWriter = components?.fileWriter ?? new FileWriter();
     const manifestManager =

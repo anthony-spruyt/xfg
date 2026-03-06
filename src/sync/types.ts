@@ -145,6 +145,7 @@ export interface CommitPushOptions {
   retries: number;
   token?: string;
   executor: ICommandExecutor;
+  hasAppCredentials?: boolean;
 }
 
 export type CommitPushResult =

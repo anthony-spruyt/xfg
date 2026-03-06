@@ -105,6 +105,7 @@ export class SyncWorkflow implements ISyncWorkflow {
         retries,
         token: authResult.token,
         executor,
+        hasAppCredentials: options.isGraphQLCommitMode,
       });
 
       if (!commitResult.success) {

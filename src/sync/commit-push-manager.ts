@@ -46,7 +46,11 @@ export class CommitPushManager implements ICommitPushManager {
       return { success: true, skipped: true };
     }
 
-    const commitStrategy = getCommitStrategy(repoInfo, executor);
+    const commitStrategy = getCommitStrategy(
+      repoInfo,
+      executor,
+      options.hasAppCredentials
+    );
     this.log.debug("Committing and pushing changes...");
 
     try {

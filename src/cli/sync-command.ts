@@ -571,7 +571,14 @@ export async function runSync(
     lifecycleManager:
       lifecycleManager ??
       new RepoLifecycleManager(undefined, options.retries, logger),
-    tokenManager: createTokenManager(),
+    tokenManager: createTokenManager(
+      process.env.XFG_GITHUB_APP_ID && process.env.XFG_GITHUB_APP_PRIVATE_KEY
+        ? {
+            appId: process.env.XFG_GITHUB_APP_ID,
+            privateKey: process.env.XFG_GITHUB_APP_PRIVATE_KEY,
+          }
+        : undefined
+    ),
     reportResults: [],
     lifecycleReportInputs: [],
     settingsCollector: new ResultsCollector(),
