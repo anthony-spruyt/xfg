@@ -1,10 +1,6 @@
 import type { FileContent, RepoConfig } from "../config/types.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
-import type {
-  ILocalGitOps,
-  IGitOps,
-  GitAuthOptions,
-} from "../vcs/authenticated-git-ops.js";
+import type { ILocalGitOps, IGitOps, GitAuthOptions } from "../vcs/types.js";
 import type { GitOpsOptions } from "../vcs/git-ops.js";
 import type { DiffStats } from "./diff-utils.js";
 import type { ILogger } from "../shared/logger.js";

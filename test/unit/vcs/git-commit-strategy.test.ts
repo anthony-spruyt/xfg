@@ -6,7 +6,7 @@ import { GitCommitStrategy } from "../../../src/vcs/git-commit-strategy.js";
 import { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import { CommitOptions } from "../../../src/vcs/types.js";
 import { ICommandExecutor } from "../../../src/shared/command-executor.js";
-import { INetworkGitOps } from "../../../src/vcs/authenticated-git-ops.js";
+import type { INetworkGitOps } from "../../../src/vcs/types.js";
 
 const testDir = join(process.cwd(), "test-git-commit-strategy-tmp");
 

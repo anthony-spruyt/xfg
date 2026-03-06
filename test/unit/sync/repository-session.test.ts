@@ -10,7 +10,7 @@ import {
 } from "../../mocks/index.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import type { GitOpsFactory } from "../../../src/sync/types.js";
-import type { GitAuthOptions } from "../../../src/vcs/authenticated-git-ops.js";
+import type { GitAuthOptions } from "../../../src/vcs/types.js";
 
 const testDir = join(tmpdir(), "repository-session-test-" + Date.now());
 

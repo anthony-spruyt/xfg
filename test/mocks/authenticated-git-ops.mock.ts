@@ -1,4 +1,4 @@
-import type { IGitOps } from "../../src/vcs/authenticated-git-ops.js";
+import type { IGitOps } from "../../src/vcs/types.js";
 
 export interface AuthenticatedGitOpsMockConfig {
   // Return value overrides

@@ -4,13 +4,6 @@ import { toErrorMessage } from "../shared/type-guards.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { GitAuthOptions, ILocalGitOps, IGitOps } from "./types.js";
 
-export type {
-  GitAuthOptions,
-  ILocalGitOps,
-  INetworkGitOps,
-  IGitOps,
-} from "./types.js";
-
 /**
  * Adds authentication to network git operations and delegates local ops.
  *

@@ -17,7 +17,7 @@ import {
   ICommandExecutor,
   ExecOptions,
 } from "../../../src/shared/command-executor.js";
-import type { INetworkGitOps } from "../../../src/vcs/authenticated-git-ops.js";
+import type { INetworkGitOps } from "../../../src/vcs/types.js";
 
 // Create a mock INetworkGitOps for testing
 function createMockGitOps(): INetworkGitOps & {

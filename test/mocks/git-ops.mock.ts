@@ -1,7 +1,4 @@
-import type {
-  ILocalGitOps,
-  INetworkGitOps,
-} from "../../src/vcs/authenticated-git-ops.js";
+import type { ILocalGitOps, INetworkGitOps } from "../../src/vcs/types.js";
 
 type IGitOps = ILocalGitOps & INetworkGitOps;
 
