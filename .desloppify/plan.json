@@ -1,0 +1,1623 @@
+{
+  "version": 8,
+  "created": "2026-03-06T08:53:09+00:00",
+  "updated": "2026-03-06T12:38:47+00:00",
+  "queue_order": [
+    "workflow::score-checkpoint",
+    "triage::observe",
+    "triage::reflect",
+    "triage::organize",
+    "triage::commit",
+    "workflow::communicate-score",
+    "workflow::create-plan",
+    "review::.::holistic::abstraction_fitness::authenticated_git_ops_wide_delegation::786c07e9",
+    "review::.::holistic::abstraction_fitness::processor_options_bag_threading::7d5953ca",
+    "review::.::holistic::ai_generated_debt::restating_type_docstrings::1bbab389",
+    "review::.::holistic::api_surface_coherence::isPermanent_isTransient_param_type_mismatch::bb322587",
+    "review::.::holistic::api_surface_coherence::parseApiJson_in_gh_api_utils::e253c0c0",
+    "review::.::holistic::api_surface_coherence::runLifecycleCheck_6_positional_params::29c1a48b",
+    "review::.::holistic::authorization_consistency::force_merge_no_audit_log::4693670d",
+    "review::.::holistic::contract_coherence::parseManifestContent_stale_docstring::d5599762",
+    "review::.::holistic::contract_coherence::resolveGitHubToken_skipped_docstring::06931a81",
+    "review::.::holistic::contract_coherence::validateForSync_stale_throws_clause::a4fccf91",
+    "review::.::holistic::convention_outlier::is_object_naming_drift::6c9d0327",
+    "review::.::holistic::convention_outlier::lifecycle_duplicate_interface::2f7a2218",
+    "review::.::holistic::cross_module_architecture::fileaction_imported_from_reexport::90e6f298",
+    "review::.::holistic::cross_module_architecture::github_summary_process_env::6c600813",
+    "review::.::holistic::cross_module_architecture::incomplete_shared_barrel::828ebd61",
+    "review::.::holistic::cross_module_architecture::incomplete_vcs_barrel::12f8fa40",
+    "review::.::holistic::cross_module_architecture::sync_types_imports_concrete_vcs_file::48bfd1eb",
+    "review::.::holistic::design_coherence::duplicate_lifecycle_types::4202517b",
+    "review::.::holistic::design_coherence::report_markdown_structure_duplication::59b8adb0",
+    "review::.::holistic::design_coherence::validate_settings_param_sprawl::75a01550",
+    "review::.::holistic::error_consistency::close_pr_error_swallowed::d18dc729",
+    "review::.::holistic::error_consistency::commit_error_string_matching::7ae4f438",
+    "review::.::holistic::error_consistency::github_summary_no_error_handling::a2ddbdcc",
+    "review::.::holistic::high_level_elegance::github_utils_in_shared::1983c60a",
+    "review::.::holistic::initialization_coupling::logger_env_read_at_import::8fdd0bd4",
+    "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count::c56338c9",
+    "review::.::holistic::logic_clarity::unreachable_merge_mode_branches::7c8c5f31",
+    "review::.::holistic::low_level_elegance::formatter_renderTree_nesting::144fc191",
+    "review::.::holistic::low_level_elegance::manifest_migration_duplication::b8c91aed",
+    "review::.::holistic::low_level_elegance::sync_command_positional_params::b7bc4496",
+    "review::.::holistic::low_level_elegance::validator_duplicate_group_checks::0b556c0f",
+    "review::.::holistic::mid_level_elegance::executor_optional_assertion::b0fd80b0",
+    "review::.::holistic::mid_level_elegance::file_action_import_bypass::85e9ba96",
+    "review::.::holistic::mid_level_elegance::pr_strategy_double_construction::48361bcc",
+    "review::.::holistic::naming_quality::isObject_vs_isPlainObject_divergence::10ec33a2",
+    "review::.::holistic::naming_quality::lifecycle_report_input_redundant_type::13c0b05b",
+    "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs::177793d7",
+    "review::.::holistic::test_strategy::config_validators_transitive_only::877b0eab",
+    "review::.::holistic::test_strategy::gh_api_utils_no_tests::ce97cb61",
+    "review::.::holistic::type_safety::current_repo_settings_broad_string_types::f55aa063",
+    "review::.::holistic::type_safety::double_cast_in_merge_ruleset::1195b763",
+    "review::.::holistic::type_safety::validation_arrays_not_type_linked::84d0274f"
+  ],
+  "deferred": [],
+  "skipped": {},
+  "active_cluster": null,
+  "overrides": {
+    "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
+      "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/test_coverage",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "test_coverage::src/config/validators/file-validator.ts::transitive_only": {
+      "issue_id": "test_coverage::src/config/validators/file-validator.ts::transitive_only",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/test_coverage",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "test_coverage::src/config/validators/repo-settings-validator.ts::transitive_only": {
+      "issue_id": "test_coverage::src/config/validators/repo-settings-validator.ts::transitive_only",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/test_coverage",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "test_coverage::src/shared/file-status.ts::transitive_only": {
+      "issue_id": "test_coverage::src/shared/file-status.ts::transitive_only",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/test_coverage",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts": {
+      "issue_id": "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/test_coverage",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "test_coverage::src/cli/results-collector.ts::transitive_only": {
+      "issue_id": "test_coverage::src/cli/results-collector.ts::transitive_only",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/test_coverage",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "test_coverage::src/shared/interpolation-engine.ts::transitive_only": {
+      "issue_id": "test_coverage::src/shared/interpolation-engine.ts::transitive_only",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/test_coverage",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "test_coverage::src/cli/types.ts::transitive_only": {
+      "issue_id": "test_coverage::src/cli/types.ts::transitive_only",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/test_coverage",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/authenticated-git-ops.test.ts::hardcoded_url": {
+      "issue_id": "smells::test/unit/authenticated-git-ops.test.ts::hardcoded_url",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_url",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/config-formatter.test.ts::hardcoded_url": {
+      "issue_id": "smells::test/unit/config-formatter.test.ts::hardcoded_url",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_url",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/config-normalizer.test.ts::hardcoded_url": {
+      "issue_id": "smells::test/unit/config-normalizer.test.ts::hardcoded_url",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_url",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/config-validator.test.ts::hardcoded_url": {
+      "issue_id": "smells::test/unit/config-validator.test.ts::hardcoded_url",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_url",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/config.test.ts::hardcoded_url": {
+      "issue_id": "smells::test/unit/config.test.ts::hardcoded_url",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_url",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/env.test.ts::hardcoded_url": {
+      "issue_id": "smells::test/unit/env.test.ts::hardcoded_url",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_url",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/file-reference-resolver.test.ts::hardcoded_url": {
+      "issue_id": "smells::test/unit/file-reference-resolver.test.ts::hardcoded_url",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_url",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/github-app-token-manager.test.ts::hardcoded_url": {
+      "issue_id": "smells::test/unit/github-app-token-manager.test.ts::hardcoded_url",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_url",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/github-summary.test.ts::hardcoded_url": {
+      "issue_id": "smells::test/unit/github-summary.test.ts::hardcoded_url",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_url",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/base-processor.test.ts::hardcoded_url": {
+      "issue_id": "smells::test/unit/base-processor.test.ts::hardcoded_url",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_url",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/integration/github-rulesets.test.ts::async_no_await": {
+      "issue_id": "smells::test/integration/github-rulesets.test.ts::async_no_await",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-async_no_await",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/integration/github.test.ts::async_no_await": {
+      "issue_id": "smells::test/integration/github.test.ts::async_no_await",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-async_no_await",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/integration/test-helpers.ts::async_no_await": {
+      "issue_id": "smells::test/integration/test-helpers.ts::async_no_await",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-async_no_await",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/repository-processor.test.ts::async_no_await": {
+      "issue_id": "smells::test/unit/repository-processor.test.ts::async_no_await",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-async_no_await",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/ruleset-processor.test.ts::async_no_await": {
+      "issue_id": "smells::test/unit/ruleset-processor.test.ts::async_no_await",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-async_no_await",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/sync/sync-workflow.test.ts::async_no_await": {
+      "issue_id": "smells::test/unit/sync/sync-workflow.test.ts::async_no_await",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-async_no_await",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/vcs/git-commit-strategy.test.ts::async_no_await": {
+      "issue_id": "smells::test/unit/vcs/git-commit-strategy.test.ts::async_no_await",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-async_no_await",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/vcs/pr-strategy.test.ts::async_no_await": {
+      "issue_id": "smells::test/unit/vcs/pr-strategy.test.ts::async_no_await",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-async_no_await",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/shared/type-guards.ts::async_no_await": {
+      "issue_id": "smells::src/shared/type-guards.ts::async_no_await",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-async_no_await",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/sync/commit-push-manager.test.ts::async_no_await": {
+      "issue_id": "smells::test/unit/sync/commit-push-manager.test.ts::async_no_await",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-async_no_await",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/command-executor.test.ts::console_error_no_throw": {
+      "issue_id": "smells::test/unit/command-executor.test.ts::console_error_no_throw",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-console_error_no_throw",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/error-sanitization.integration.test.ts::console_error_no_throw": {
+      "issue_id": "smells::test/unit/error-sanitization.integration.test.ts::console_error_no_throw",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-console_error_no_throw",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/sync-command.test.ts::console_error_no_throw": {
+      "issue_id": "smells::test/unit/sync-command.test.ts::console_error_no_throw",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-console_error_no_throw",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/config-normalizer.test.ts::hardcoded_color": {
+      "issue_id": "smells::test/unit/config-normalizer.test.ts::hardcoded_color",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_color",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/config-validator.test.ts::hardcoded_color": {
+      "issue_id": "smells::test/unit/config-validator.test.ts::hardcoded_color",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_color",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/labels-converter.test.ts::hardcoded_color": {
+      "issue_id": "smells::test/unit/labels-converter.test.ts::hardcoded_color",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-hardcoded_color",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/vcs/graphql-commit-strategy.ts::non_null_assert": {
+      "issue_id": "smells::src/vcs/graphql-commit-strategy.ts::non_null_assert",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-non_null_assert",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/config-normalizer.test.ts::non_null_assert": {
+      "issue_id": "smells::test/unit/config-normalizer.test.ts::non_null_assert",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-non_null_assert",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/file-reference-resolver.test.ts::non_null_assert": {
+      "issue_id": "smells::test/unit/file-reference-resolver.test.ts::non_null_assert",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-non_null_assert",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/lifecycle/lifecycle-helpers.test.ts::non_null_assert": {
+      "issue_id": "smells::test/unit/lifecycle/lifecycle-helpers.test.ts::non_null_assert",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-non_null_assert",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/manifest.test.ts::non_null_assert": {
+      "issue_id": "smells::test/unit/manifest.test.ts::non_null_assert",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-non_null_assert",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/repo-settings-processor.test.ts::non_null_assert": {
+      "issue_id": "smells::test/unit/repo-settings-processor.test.ts::non_null_assert",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-non_null_assert",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/repository-processor.test.ts::non_null_assert": {
+      "issue_id": "smells::test/unit/repository-processor.test.ts::non_null_assert",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-non_null_assert",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/ruleset-formatter.test.ts::non_null_assert": {
+      "issue_id": "smells::test/unit/ruleset-formatter.test.ts::non_null_assert",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-non_null_assert",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/ruleset-plan-formatter.test.ts::non_null_assert": {
+      "issue_id": "smells::test/unit/ruleset-plan-formatter.test.ts::non_null_assert",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-non_null_assert",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/ruleset-processor.test.ts::non_null_assert": {
+      "issue_id": "smells::test/unit/ruleset-processor.test.ts::non_null_assert",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-non_null_assert",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/settings/repo-settings/processor.ts::non_null_assert": {
+      "issue_id": "smells::src/settings/repo-settings/processor.ts::non_null_assert",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-non_null_assert",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/vcs/github-app-token-manager.ts::magic_number": {
+      "issue_id": "smells::src/vcs/github-app-token-manager.ts::magic_number",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-magic_number",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/vcs/graphql-commit-strategy.ts::magic_number": {
+      "issue_id": "smells::src/vcs/graphql-commit-strategy.ts::magic_number",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-magic_number",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/github-app-token-manager.test.ts::magic_number": {
+      "issue_id": "smells::test/unit/github-app-token-manager.test.ts::magic_number",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-magic_number",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/vcs/graphql-commit-strategy.test.ts::magic_number": {
+      "issue_id": "smells::test/unit/vcs/graphql-commit-strategy.test.ts::magic_number",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-magic_number",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/output/lifecycle-report.ts::switch_no_default": {
+      "issue_id": "smells::src/output/lifecycle-report.ts::switch_no_default",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-switch_no_default",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/output/unified-summary.ts::switch_no_default": {
+      "issue_id": "smells::src/output/unified-summary.ts::switch_no_default",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-switch_no_default",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/settings/labels/processor.ts::switch_no_default": {
+      "issue_id": "smells::src/settings/labels/processor.ts::switch_no_default",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-switch_no_default",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/settings/rulesets/formatter.ts::switch_no_default": {
+      "issue_id": "smells::src/settings/rulesets/formatter.ts::switch_no_default",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-switch_no_default",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/settings/rulesets/processor.ts::switch_no_default": {
+      "issue_id": "smells::src/settings/rulesets/processor.ts::switch_no_default",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-switch_no_default",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/sync/diff-utils.ts::switch_no_default": {
+      "issue_id": "smells::src/sync/diff-utils.ts::switch_no_default",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-switch_no_default",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/shared/file-status.ts::switch_no_default": {
+      "issue_id": "smells::src/shared/file-status.ts::switch_no_default",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-switch_no_default",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/security",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/security",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "exports::src/vcs/index.ts::FileAction": {
+      "issue_id": "exports::src/vcs/index.ts::FileAction",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/exports",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "exports::src/config/index.ts::ContentValue": {
+      "issue_id": "exports::src/config/index.ts::ContentValue",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/exports",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "props::src/cli/types.ts::ApplyRepoSettingsContext": {
+      "issue_id": "props::src/cli/types.ts::ApplyRepoSettingsContext",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/props-context",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "props::src/cli/sync-command.ts::RepoIterationContext": {
+      "issue_id": "props::src/cli/sync-command.ts::RepoIterationContext",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/props-context",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "stale_wontfix::src/vcs/pr-strategy.ts::smells::src/vcs/pr-strategy.ts::catch_return_default": {
+      "issue_id": "stale_wontfix::src/vcs/pr-strategy.ts::smells::src/vcs/pr-strategy.ts::catch_return_default",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/stale_wontfix",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "stale_wontfix::src/vcs/pr-creator.ts::smells::src/vcs/pr-creator.ts::async_no_await": {
+      "issue_id": "stale_wontfix::src/vcs/pr-creator.ts::smells::src/vcs/pr-creator.ts::async_no_await",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/stale_wontfix",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "review::.::holistic::mid_level_elegance::token-resolution-dual-path::78618e0c": {
+      "issue_id": "review::.::holistic::mid_level_elegance::token-resolution-dual-path::78618e0c",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "token-resolution",
+      "updated_at": "2026-03-06T09:00:07+00:00"
+    },
+    "review::.::holistic::mid_level_elegance::pr-creator-free-functions-vs-strategy::d75ff76a": {
+      "issue_id": "review::.::holistic::mid_level_elegance::pr-creator-free-functions-vs-strategy::d75ff76a",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "review::.::holistic::low_level_elegance::normalizer-merge-duplication::a5d0bcb7": {
+      "issue_id": "review::.::holistic::low_level_elegance::normalizer-merge-duplication::a5d0bcb7",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/review-low_level_elegance",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "review::.::holistic::low_level_elegance::validator-repetitive-settings-check::aa05982e": {
+      "issue_id": "review::.::holistic::low_level_elegance::validator-repetitive-settings-check::aa05982e",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/review-low_level_elegance",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "review::.::holistic::api_surface_coherence::FileChange-name-collision::84ad34d6": {
+      "issue_id": "review::.::holistic::api_surface_coherence::FileChange-name-collision::84ad34d6",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "stale-findings",
+      "updated_at": "2026-03-06T09:00:17+00:00"
+    },
+    "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation::c57c3d3c": {
+      "issue_id": "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation::c57c3d3c",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "stale-findings",
+      "updated_at": "2026-03-06T09:00:17+00:00"
+    },
+    "review::.::holistic::incomplete_migration::logger-process-env-direct-read::e77992a0": {
+      "issue_id": "review::.::holistic::incomplete_migration::logger-process-env-direct-read::e77992a0",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "stale-findings",
+      "updated_at": "2026-03-06T09:00:17+00:00"
+    },
+    "review::.::holistic::incomplete_migration::env-interpolation-process-env::5b557840": {
+      "issue_id": "review::.::holistic::incomplete_migration::env-interpolation-process-env::5b557840",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/cli/sync-command.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/cli/sync-command.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/config/file-reference-resolver.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/config/file-reference-resolver.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/config/normalizer.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/config/normalizer.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/config/validator.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/config/validator.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/config/validators/repo-settings-validator.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/config/validators/repo-settings-validator.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/config/validators/ruleset-validator.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/config/validators/ruleset-validator.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/output/github-summary.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/output/github-summary.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/output/lifecycle-report.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/output/lifecycle-report.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/output/settings-report.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/output/settings-report.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/output/unified-summary.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/output/unified-summary.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/settings/labels/formatter.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/settings/labels/formatter.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/settings/rulesets/diff-algorithm.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/settings/rulesets/diff-algorithm.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/settings/rulesets/formatter.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/settings/rulesets/formatter.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/settings/rulesets/github-ruleset-strategy.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/settings/rulesets/github-ruleset-strategy.ts::high_cyclomatic_complexity",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-high_cyclomatic_complexity",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::src/cli/sync-command.ts::stub_function": {
+      "issue_id": "smells::src/cli/sync-command.ts::stub_function",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-stub_function",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/mocks/authenticated-git-ops.mock.ts::stub_function": {
+      "issue_id": "smells::test/mocks/authenticated-git-ops.mock.ts::stub_function",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-stub_function",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/mocks/executor.mock.ts::stub_function": {
+      "issue_id": "smells::test/mocks/executor.mock.ts::stub_function",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-stub_function",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/mocks/git-ops.mock.ts::stub_function": {
+      "issue_id": "smells::test/mocks/git-ops.mock.ts::stub_function",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-stub_function",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/pr-creator.test.ts::stub_function": {
+      "issue_id": "smells::test/unit/pr-creator.test.ts::stub_function",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-stub_function",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "smells::test/unit/sync-command.test.ts::stub_function": {
+      "issue_id": "smells::test/unit/sync-command.test.ts::stub_function",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": "auto/smells-stub_function",
+      "updated_at": "2026-03-06T12:38:39+00:00"
+    },
+    "subjective::abstraction_fitness": {
+      "issue_id": "subjective::abstraction_fitness",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T08:57:13+00:00"
+    },
+    "subjective::ai_generated_debt": {
+      "issue_id": "subjective::ai_generated_debt",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T08:57:13+00:00"
+    },
+    "subjective::api_surface_coherence": {
+      "issue_id": "subjective::api_surface_coherence",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T08:57:13+00:00"
+    },
+    "subjective::authorization_consistency": {
+      "issue_id": "subjective::authorization_consistency",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T08:57:13+00:00"
+    },
+    "subjective::convention_outlier": {
+      "issue_id": "subjective::convention_outlier",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T08:57:13+00:00"
+    },
+    "subjective::cross_module_architecture": {
+      "issue_id": "subjective::cross_module_architecture",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T08:57:13+00:00"
+    },
+    "subjective::design_coherence": {
+      "issue_id": "subjective::design_coherence",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T08:57:13+00:00"
+    },
+    "subjective::error_consistency": {
+      "issue_id": "subjective::error_consistency",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T08:57:13+00:00"
+    },
+    "subjective::high_level_elegance": {
+      "issue_id": "subjective::high_level_elegance",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T08:57:13+00:00"
+    },
+    "subjective::low_level_elegance": {
+      "issue_id": "subjective::low_level_elegance",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T08:57:13+00:00"
+    },
+    "subjective::mid_level_elegance": {
+      "issue_id": "subjective::mid_level_elegance",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T08:57:13+00:00"
+    },
+    "subjective::package_organization": {
+      "issue_id": "subjective::package_organization",
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-06T08:57:13+00:00"
+    },
+    "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns::3af7a40a": {
+      "issue_id": "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns::3af7a40a",
+      "created_at": "2026-03-06T09:00:07+00:00",
+      "cluster": "token-resolution",
+      "updated_at": "2026-03-06T09:00:07+00:00"
+    },
+    "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels::7c804c77": {
+      "issue_id": "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels::7c804c77",
+      "created_at": "2026-03-06T09:00:07+00:00",
+      "cluster": "token-resolution",
+      "updated_at": "2026-03-06T09:00:07+00:00"
+    },
+    "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param::ae38217f": {
+      "issue_id": "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param::ae38217f",
+      "created_at": "2026-03-06T09:00:13+00:00",
+      "cluster": "accepted-debt",
+      "updated_at": "2026-03-06T09:00:13+00:00"
+    },
+    "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return::51577196": {
+      "issue_id": "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return::51577196",
+      "created_at": "2026-03-06T09:00:13+00:00",
+      "cluster": "accepted-debt",
+      "updated_at": "2026-03-06T09:00:13+00:00"
+    },
+    "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check::0c814a90": {
+      "issue_id": "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check::0c814a90",
+      "created_at": "2026-03-06T09:00:13+00:00",
+      "cluster": "accepted-debt",
+      "updated_at": "2026-03-06T09:00:13+00:00"
+    }
+  },
+  "clusters": {
+    "auto/test_coverage": {
+      "name": "auto/test_coverage",
+      "description": "Fix 8 test coverage issues",
+      "issue_ids": [
+        "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
+        "test_coverage::src/config/validators/file-validator.ts::transitive_only",
+        "test_coverage::src/config/validators/repo-settings-validator.ts::transitive_only",
+        "test_coverage::src/shared/file-status.ts::transitive_only",
+        "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts",
+        "test_coverage::src/cli/results-collector.ts::transitive_only",
+        "test_coverage::src/shared/interpolation-engine.ts::transitive_only",
+        "test_coverage::src/cli/types.ts::transitive_only"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "detector::test_coverage",
+      "action": "add tests for untested production modules \u2014 prioritize by import count",
+      "user_modified": false
+    },
+    "auto/smells-hardcoded_url": {
+      "name": "auto/smells-hardcoded_url",
+      "description": "Fix 10 hardcoded url issues",
+      "issue_ids": [
+        "smells::test/unit/authenticated-git-ops.test.ts::hardcoded_url",
+        "smells::test/unit/config-formatter.test.ts::hardcoded_url",
+        "smells::test/unit/config-normalizer.test.ts::hardcoded_url",
+        "smells::test/unit/config-validator.test.ts::hardcoded_url",
+        "smells::test/unit/config.test.ts::hardcoded_url",
+        "smells::test/unit/env.test.ts::hardcoded_url",
+        "smells::test/unit/file-reference-resolver.test.ts::hardcoded_url",
+        "smells::test/unit/github-app-token-manager.test.ts::hardcoded_url",
+        "smells::test/unit/github-summary.test.ts::hardcoded_url",
+        "smells::test/unit/base-processor.test.ts::hardcoded_url"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "typed::smells::hardcoded_url",
+      "action": "fix code smells",
+      "user_modified": false
+    },
+    "auto/smells-async_no_await": {
+      "name": "auto/smells-async_no_await",
+      "description": "Fix 10 async no await issues",
+      "issue_ids": [
+        "smells::test/integration/github-rulesets.test.ts::async_no_await",
+        "smells::test/integration/github.test.ts::async_no_await",
+        "smells::test/integration/test-helpers.ts::async_no_await",
+        "smells::test/unit/repository-processor.test.ts::async_no_await",
+        "smells::test/unit/ruleset-processor.test.ts::async_no_await",
+        "smells::test/unit/sync/sync-workflow.test.ts::async_no_await",
+        "smells::test/unit/vcs/git-commit-strategy.test.ts::async_no_await",
+        "smells::test/unit/vcs/pr-strategy.test.ts::async_no_await",
+        "smells::src/shared/type-guards.ts::async_no_await",
+        "smells::test/unit/sync/commit-push-manager.test.ts::async_no_await"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "typed::smells::async_no_await",
+      "action": "fix code smells",
+      "user_modified": false
+    },
+    "auto/smells-console_error_no_throw": {
+      "name": "auto/smells-console_error_no_throw",
+      "description": "Fix 3 console error no throw issues",
+      "issue_ids": [
+        "smells::test/unit/command-executor.test.ts::console_error_no_throw",
+        "smells::test/unit/error-sanitization.integration.test.ts::console_error_no_throw",
+        "smells::test/unit/sync-command.test.ts::console_error_no_throw"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "typed::smells::console_error_no_throw",
+      "action": "fix code smells",
+      "user_modified": false
+    },
+    "auto/smells-hardcoded_color": {
+      "name": "auto/smells-hardcoded_color",
+      "description": "Fix 3 hardcoded color issues",
+      "issue_ids": [
+        "smells::test/unit/config-normalizer.test.ts::hardcoded_color",
+        "smells::test/unit/config-validator.test.ts::hardcoded_color",
+        "smells::test/unit/labels-converter.test.ts::hardcoded_color"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "typed::smells::hardcoded_color",
+      "action": "fix code smells",
+      "user_modified": false
+    },
+    "auto/smells-non_null_assert": {
+      "name": "auto/smells-non_null_assert",
+      "description": "Fix 11 non null assert issues",
+      "issue_ids": [
+        "smells::src/vcs/graphql-commit-strategy.ts::non_null_assert",
+        "smells::test/unit/config-normalizer.test.ts::non_null_assert",
+        "smells::test/unit/file-reference-resolver.test.ts::non_null_assert",
+        "smells::test/unit/lifecycle/lifecycle-helpers.test.ts::non_null_assert",
+        "smells::test/unit/manifest.test.ts::non_null_assert",
+        "smells::test/unit/repo-settings-processor.test.ts::non_null_assert",
+        "smells::test/unit/repository-processor.test.ts::non_null_assert",
+        "smells::test/unit/ruleset-formatter.test.ts::non_null_assert",
+        "smells::test/unit/ruleset-plan-formatter.test.ts::non_null_assert",
+        "smells::test/unit/ruleset-processor.test.ts::non_null_assert",
+        "smells::src/settings/repo-settings/processor.ts::non_null_assert"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "typed::smells::non_null_assert",
+      "action": "fix code smells",
+      "user_modified": false
+    },
+    "auto/smells-magic_number": {
+      "name": "auto/smells-magic_number",
+      "description": "Fix 4 magic number issues",
+      "issue_ids": [
+        "smells::src/vcs/github-app-token-manager.ts::magic_number",
+        "smells::src/vcs/graphql-commit-strategy.ts::magic_number",
+        "smells::test/unit/github-app-token-manager.test.ts::magic_number",
+        "smells::test/unit/vcs/graphql-commit-strategy.test.ts::magic_number"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "typed::smells::magic_number",
+      "action": "fix code smells",
+      "user_modified": false
+    },
+    "auto/smells-switch_no_default": {
+      "name": "auto/smells-switch_no_default",
+      "description": "Fix 7 switch no default issues",
+      "issue_ids": [
+        "smells::src/output/lifecycle-report.ts::switch_no_default",
+        "smells::src/output/unified-summary.ts::switch_no_default",
+        "smells::src/settings/labels/processor.ts::switch_no_default",
+        "smells::src/settings/rulesets/formatter.ts::switch_no_default",
+        "smells::src/settings/rulesets/processor.ts::switch_no_default",
+        "smells::src/sync/diff-utils.ts::switch_no_default",
+        "smells::src/shared/file-status.ts::switch_no_default"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "typed::smells::switch_no_default",
+      "action": "fix code smells",
+      "user_modified": false
+    },
+    "auto/security": {
+      "name": "auto/security",
+      "description": "Fix 2 security issues",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "detector::security",
+      "action": "review and fix security issues \u2014 prioritize by severity",
+      "user_modified": false
+    },
+    "auto/exports": {
+      "name": "auto/exports",
+      "description": "Fix 2 exports issues",
+      "issue_ids": [
+        "exports::src/vcs/index.ts::FileAction",
+        "exports::src/config/index.ts::ContentValue"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "detector::exports",
+      "action": "run `knip --fix` to remove dead exports",
+      "user_modified": false
+    },
+    "auto/props-context": {
+      "name": "auto/props-context",
+      "description": "Fix 2 context issues",
+      "issue_ids": [
+        "props::src/cli/types.ts::ApplyRepoSettingsContext",
+        "props::src/cli/sync-command.ts::RepoIterationContext"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "typed::props::context",
+      "action": "split bloated components, extract sub-components",
+      "user_modified": false
+    },
+    "auto/stale_wontfix": {
+      "name": "auto/stale_wontfix",
+      "description": "Fix 2 stale wontfix issues",
+      "issue_ids": [
+        "stale_wontfix::src/vcs/pr-strategy.ts::smells::src/vcs/pr-strategy.ts::catch_return_default",
+        "stale_wontfix::src/vcs/pr-creator.ts::smells::src/vcs/pr-creator.ts::async_no_await"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "detector::stale_wontfix",
+      "action": "re-evaluate old wontfix decisions \u2014 fix, document, or escalate",
+      "user_modified": false
+    },
+    "auto/review-low_level_elegance": {
+      "name": "auto/review-low_level_elegance",
+      "description": "Address 2 low_level_elegance review issues",
+      "issue_ids": [
+        "review::.::holistic::low_level_elegance::normalizer-merge-duplication::a5d0bcb7",
+        "review::.::holistic::low_level_elegance::validator-repetitive-settings-check::aa05982e"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "review::low_level_elegance",
+      "action": "address design quality issues from AI code review",
+      "user_modified": false
+    },
+    "auto/smells-high_cyclomatic_complexity": {
+      "name": "auto/smells-high_cyclomatic_complexity",
+      "description": "Fix 15 high cyclomatic complexity issues",
+      "issue_ids": [
+        "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity",
+        "smells::src/cli/sync-command.ts::high_cyclomatic_complexity",
+        "smells::src/config/file-reference-resolver.ts::high_cyclomatic_complexity",
+        "smells::src/config/normalizer.ts::high_cyclomatic_complexity",
+        "smells::src/config/validator.ts::high_cyclomatic_complexity",
+        "smells::src/config/validators/repo-settings-validator.ts::high_cyclomatic_complexity",
+        "smells::src/config/validators/ruleset-validator.ts::high_cyclomatic_complexity",
+        "smells::src/output/github-summary.ts::high_cyclomatic_complexity",
+        "smells::src/output/lifecycle-report.ts::high_cyclomatic_complexity",
+        "smells::src/output/settings-report.ts::high_cyclomatic_complexity",
+        "smells::src/output/unified-summary.ts::high_cyclomatic_complexity",
+        "smells::src/settings/labels/formatter.ts::high_cyclomatic_complexity",
+        "smells::src/settings/rulesets/diff-algorithm.ts::high_cyclomatic_complexity",
+        "smells::src/settings/rulesets/formatter.ts::high_cyclomatic_complexity",
+        "smells::src/settings/rulesets/github-ruleset-strategy.ts::high_cyclomatic_complexity"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "typed::smells::high_cyclomatic_complexity",
+      "action": "fix code smells",
+      "user_modified": false
+    },
+    "auto/smells-stub_function": {
+      "name": "auto/smells-stub_function",
+      "description": "Fix 6 stub function issues",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::stub_function",
+        "smells::test/mocks/authenticated-git-ops.mock.ts::stub_function",
+        "smells::test/mocks/executor.mock.ts::stub_function",
+        "smells::test/mocks/git-ops.mock.ts::stub_function",
+        "smells::test/unit/pr-creator.test.ts::stub_function",
+        "smells::test/unit/sync-command.test.ts::stub_function"
+      ],
+      "created_at": "2026-03-06T08:53:44+00:00",
+      "updated_at": "2026-03-06T08:53:44+00:00",
+      "auto": true,
+      "cluster_key": "typed::smells::stub_function",
+      "action": "fix code smells",
+      "user_modified": false
+    },
+    "token-resolution": {
+      "name": "token-resolution",
+      "description": "Extract resolveGitHubToken from gh-api-utils.ts into dedicated auth module, centralize token resolution to happen once per repo",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns::3af7a40a",
+        "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels::7c804c77",
+        "review::.::holistic::mid_level_elegance::token-resolution-dual-path::78618e0c"
+      ],
+      "created_at": "2026-03-06T09:00:03+00:00",
+      "updated_at": "2026-03-06T09:00:38+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Move resolveGitHubToken to src/vcs/github-token-resolver.ts"
+        },
+        {
+          "title": "Update auth-options-builder.ts to be the single owner of token resolution"
+        },
+        {
+          "title": "Remove duplicate resolution from sync-command.ts processSingleRepo"
+        }
+      ]
+    },
+    "accepted-debt": {
+      "name": "accepted-debt",
+      "description": "Intentional design decisions to skip: unused token param in Azure/GitLab (documented interface sharing), merge mode convention (internally consistent), isPermanentError string matching (pragmatic)",
+      "issue_ids": [
+        "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param::ae38217f",
+        "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return::51577196",
+        "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check::0c814a90"
+      ],
+      "created_at": "2026-03-06T09:00:13+00:00",
+      "updated_at": "2026-03-06T09:00:46+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Skip ae38217f with note: documented interface sharing for cross-platform PRStrategy"
+        },
+        {
+          "title": "Skip 51577196 with note: internally consistent across all 3 strategies"
+        },
+        {
+          "title": "Skip 0c814a90 with note: pragmatic given CLI tools lack structured error codes"
+        }
+      ]
+    },
+    "stale-findings": {
+      "name": "stale-findings",
+      "description": "Findings likely already fixed in prior commits (FileChange consolidation, Logger DI fix). Verify with rescan then resolve.",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::FileChange-name-collision::84ad34d6",
+        "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation::c57c3d3c",
+        "review::.::holistic::incomplete_migration::logger-process-env-direct-read::e77992a0"
+      ],
+      "created_at": "2026-03-06T09:00:17+00:00",
+      "updated_at": "2026-03-06T09:00:52+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Verify 84ad34d6 and c57c3d3c resolved by FileChange type consolidation in commit 0d8a1e7"
+        },
+        {
+          "title": "Verify e77992a0 resolved by Logger debug flag injection in commit 0d8a1e7"
+        },
+        {
+          "title": "Resolve all three if confirmed fixed"
+        }
+      ]
+    }
+  },
+  "superseded": {},
+  "promoted_ids": [],
+  "plan_start_scores": {
+    "strict": 76.6,
+    "overall": 76.7,
+    "objective": 96.5,
+    "verified": 96.2
+  },
+  "execution_log": [
+    {
+      "timestamp": "2026-03-06T08:53:09+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::FileChange-name-collision::84ad34d6",
+        "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation::c57c3d3c"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed output FileChange to ReportFileChange, consolidated as alias for sync FileChangeDetail",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-06T08:53:44+00:00",
+      "action": "sync_stale",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-03-06T08:53:44+00:00",
+      "action": "auto_cluster",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-03-06T08:53:44+00:00",
+      "action": "sync_communicate_score",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "injected": true
+      }
+    },
+    {
+      "timestamp": "2026-03-06T08:53:44+00:00",
+      "action": "sync_create_plan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "injected": true
+      }
+    },
+    {
+      "timestamp": "2026-03-06T08:53:44+00:00",
+      "action": "sync_triage",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "injected": true
+      }
+    },
+    {
+      "timestamp": "2026-03-06T08:53:44+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-06T08:54:07+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::FileChange-name-collision::84ad34d6",
+        "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation::c57c3d3c",
+        "review::.::holistic::incomplete_migration::logger-process-env-direct-read::e77992a0"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed FileChange to ReportFileChange, consolidated types, injected debugEnabled in Logger constructor",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-06T08:57:13+00:00",
+      "action": "sync_stale",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-03-06T08:57:13+00:00",
+      "action": "auto_cluster",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-03-06T08:57:13+00:00",
+      "action": "clear_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-06T08:57:58+00:00",
+      "action": "triage_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 15,
+        "cited_ids": [
+          "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns::3af7a40a",
+          "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check::0c814a90",
+          "review::.::holistic::api_surface_coherence::FileChange-name-collision::84ad34d6",
+          "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation::c57c3d3c",
+          "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param::ae38217f",
+          "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return::51577196",
+          "review::.::holistic::design_coherence::settings-processor-result-inconsistency::0ef38784",
+          "review::.::holistic::incomplete_migration::env-interpolation-process-env::5b557840",
+          "review::.::holistic::incomplete_migration::logger-process-env-direct-read::e77992a0",
+          "review::.::holistic::mid_level_elegance::pr-creator-free-functions-vs-strategy::d75ff76a",
+          "review::.::holistic::mid_level_elegance::token-resolution-dual-path::78618e0c",
+          "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels::7c804c77"
+        ],
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-03-06T08:59:20+00:00",
+      "action": "triage_confirm_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "I have thoroughly reviewed all 15 issues. I verified api_surface_coherence findings against actual FileChange types in vcs/types.ts and sync/types.ts, confirmed the abstraction_fitness concern about resolveGitHubToken mixed into gh-api-utils.ts, and verified mid_level_elegance token resolution duplication across sync-command.ts and auth-options-builder.ts. No contradictions found."
+      }
+    },
+    {
+      "timestamp": "2026-03-06T08:59:41+00:00",
+      "action": "triage_reflect",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 15,
+        "reuse": false,
+        "recurring_dims": []
+      }
+    },
+    {
+      "timestamp": "2026-03-06T08:59:54+00:00",
+      "action": "triage_confirm_reflect",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "Strategy reviewed against api_surface_coherence (FileChange types likely fixed in prior commit), abstraction_fitness (resolveGitHubToken still mixed into gh-api-utils.ts, needs extraction), and design_coherence (settings processor result shapes need warnings field normalization). 3 stale findings, 8 remaining, 3 candidates for skip as accepted debt."
+      }
+    },
+    {
+      "timestamp": "2026-03-06T09:00:03+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "token-resolution",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null,
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-03-06T09:00:07+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns::3af7a40a",
+        "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels::7c804c77",
+        "review::.::holistic::mid_level_elegance::token-resolution-dual-path::78618e0c"
+      ],
+      "cluster_name": "token-resolution",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-06T09:00:13+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "accepted-debt",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null,
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-03-06T09:00:13+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param::ae38217f",
+        "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return::51577196",
+        "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check::0c814a90"
+      ],
+      "cluster_name": "accepted-debt",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-06T09:00:17+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "stale-findings",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null,
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-03-06T09:00:17+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::FileChange-name-collision::84ad34d6",
+        "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation::c57c3d3c",
+        "review::.::holistic::incomplete_migration::logger-process-env-direct-read::e77992a0"
+      ],
+      "cluster_name": "stale-findings",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-06T09:00:38+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "token-resolution",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Extract resolveGitHubToken from gh-api-utils.ts into dedicated auth module, centralize token resolution to happen once per repo"
+      }
+    },
+    {
+      "timestamp": "2026-03-06T09:00:46+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "accepted-debt",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Intentional design decisions to skip: unused token param in Azure/GitLab (documented interface sharing), merge mode convention (internally consistent), isPermanentError string matching (pragmatic)"
+      }
+    },
+    {
+      "timestamp": "2026-03-06T09:00:52+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "stale-findings",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Findings likely already fixed in prior commits (FileChange consolidation, Logger DI fix). Verify with rescan then resolve."
+      }
+    },
+    {
+      "timestamp": "2026-03-06T09:01:03+00:00",
+      "action": "triage_organize",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "cluster_count": 3,
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-03-06T09:01:10+00:00",
+      "action": "triage_confirm_organize",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "Clusters organized with enriched action steps against api_surface_coherence (stale FileChange findings), abstraction_fitness and package_organization (token-resolution extraction), and convention_outlier (accepted-debt skip). Sequencing is correct: reviews first for unassessed dimensions, then debt resolution, then code changes.",
+        "coverage": "13/15"
+      }
+    },
+    {
+      "timestamp": "2026-03-06T09:01:22+00:00",
+      "action": "triage_complete",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "strategy_len": 1171,
+        "coverage": "13/15"
+      }
+    },
+    {
+      "timestamp": "2026-03-06T12:38:39+00:00",
+      "action": "sync_stale",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-03-06T12:38:39+00:00",
+      "action": "auto_cluster",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-03-06T12:38:39+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-06T12:38:47+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::abstraction_fitness::authenticated_git_ops_wide_delegation::786c07e9",
+          "review::.::holistic::abstraction_fitness::processor_options_bag_threading::7d5953ca",
+          "review::.::holistic::ai_generated_debt::restating_type_docstrings::1bbab389",
+          "review::.::holistic::api_surface_coherence::isPermanent_isTransient_param_type_mismatch::bb322587",
+          "review::.::holistic::api_surface_coherence::parseApiJson_in_gh_api_utils::e253c0c0",
+          "review::.::holistic::api_surface_coherence::runLifecycleCheck_6_positional_params::29c1a48b",
+          "review::.::holistic::authorization_consistency::force_merge_no_audit_log::4693670d",
+          "review::.::holistic::contract_coherence::parseManifestContent_stale_docstring::d5599762",
+          "review::.::holistic::contract_coherence::resolveGitHubToken_skipped_docstring::06931a81",
+          "review::.::holistic::contract_coherence::validateForSync_stale_throws_clause::a4fccf91",
+          "review::.::holistic::convention_outlier::is_object_naming_drift::6c9d0327",
+          "review::.::holistic::convention_outlier::lifecycle_duplicate_interface::2f7a2218",
+          "review::.::holistic::cross_module_architecture::fileaction_imported_from_reexport::90e6f298",
+          "review::.::holistic::cross_module_architecture::github_summary_process_env::6c600813",
+          "review::.::holistic::cross_module_architecture::incomplete_shared_barrel::828ebd61",
+          "review::.::holistic::cross_module_architecture::incomplete_vcs_barrel::12f8fa40",
+          "review::.::holistic::cross_module_architecture::sync_types_imports_concrete_vcs_file::48bfd1eb",
+          "review::.::holistic::design_coherence::duplicate_lifecycle_types::4202517b",
+          "review::.::holistic::design_coherence::report_markdown_structure_duplication::59b8adb0",
+          "review::.::holistic::design_coherence::validate_settings_param_sprawl::75a01550",
+          "review::.::holistic::error_consistency::close_pr_error_swallowed::d18dc729",
+          "review::.::holistic::error_consistency::commit_error_string_matching::7ae4f438",
+          "review::.::holistic::error_consistency::github_summary_no_error_handling::a2ddbdcc",
+          "review::.::holistic::high_level_elegance::github_utils_in_shared::1983c60a",
+          "review::.::holistic::initialization_coupling::logger_env_read_at_import::8fdd0bd4",
+          "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count::c56338c9",
+          "review::.::holistic::logic_clarity::unreachable_merge_mode_branches::7c8c5f31",
+          "review::.::holistic::low_level_elegance::formatter_renderTree_nesting::144fc191",
+          "review::.::holistic::low_level_elegance::manifest_migration_duplication::b8c91aed",
+          "review::.::holistic::low_level_elegance::sync_command_positional_params::b7bc4496",
+          "review::.::holistic::low_level_elegance::validator_duplicate_group_checks::0b556c0f",
+          "review::.::holistic::mid_level_elegance::executor_optional_assertion::b0fd80b0",
+          "review::.::holistic::mid_level_elegance::file_action_import_bypass::85e9ba96",
+          "review::.::holistic::mid_level_elegance::pr_strategy_double_construction::48361bcc",
+          "review::.::holistic::naming_quality::isObject_vs_isPlainObject_divergence::10ec33a2",
+          "review::.::holistic::naming_quality::lifecycle_report_input_redundant_type::13c0b05b",
+          "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs::177793d7",
+          "review::.::holistic::test_strategy::config_validators_transitive_only::877b0eab",
+          "review::.::holistic::test_strategy::gh_api_utils_no_tests::ce97cb61",
+          "review::.::holistic::type_safety::current_repo_settings_broad_string_types::f55aa063",
+          "review::.::holistic::type_safety::double_cast_in_merge_ruleset::1195b763",
+          "review::.::holistic::type_safety::validation_arrays_not_type_linked::84d0274f"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::abstraction_fitness::authenticated_git_ops_wide_delegation::786c07e9",
+          "review::.::holistic::abstraction_fitness::processor_options_bag_threading::7d5953ca",
+          "review::.::holistic::ai_generated_debt::restating_type_docstrings::1bbab389",
+          "review::.::holistic::api_surface_coherence::isPermanent_isTransient_param_type_mismatch::bb322587",
+          "review::.::holistic::api_surface_coherence::parseApiJson_in_gh_api_utils::e253c0c0",
+          "review::.::holistic::api_surface_coherence::runLifecycleCheck_6_positional_params::29c1a48b",
+          "review::.::holistic::authorization_consistency::force_merge_no_audit_log::4693670d",
+          "review::.::holistic::contract_coherence::parseManifestContent_stale_docstring::d5599762",
+          "review::.::holistic::contract_coherence::resolveGitHubToken_skipped_docstring::06931a81",
+          "review::.::holistic::contract_coherence::validateForSync_stale_throws_clause::a4fccf91",
+          "review::.::holistic::convention_outlier::is_object_naming_drift::6c9d0327",
+          "review::.::holistic::convention_outlier::lifecycle_duplicate_interface::2f7a2218",
+          "review::.::holistic::cross_module_architecture::fileaction_imported_from_reexport::90e6f298",
+          "review::.::holistic::cross_module_architecture::github_summary_process_env::6c600813",
+          "review::.::holistic::cross_module_architecture::incomplete_shared_barrel::828ebd61",
+          "review::.::holistic::cross_module_architecture::incomplete_vcs_barrel::12f8fa40",
+          "review::.::holistic::cross_module_architecture::sync_types_imports_concrete_vcs_file::48bfd1eb",
+          "review::.::holistic::design_coherence::duplicate_lifecycle_types::4202517b",
+          "review::.::holistic::design_coherence::report_markdown_structure_duplication::59b8adb0",
+          "review::.::holistic::design_coherence::validate_settings_param_sprawl::75a01550",
+          "review::.::holistic::error_consistency::close_pr_error_swallowed::d18dc729",
+          "review::.::holistic::error_consistency::commit_error_string_matching::7ae4f438",
+          "review::.::holistic::error_consistency::github_summary_no_error_handling::a2ddbdcc",
+          "review::.::holistic::high_level_elegance::github_utils_in_shared::1983c60a",
+          "review::.::holistic::initialization_coupling::logger_env_read_at_import::8fdd0bd4",
+          "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count::c56338c9",
+          "review::.::holistic::logic_clarity::unreachable_merge_mode_branches::7c8c5f31",
+          "review::.::holistic::low_level_elegance::formatter_renderTree_nesting::144fc191",
+          "review::.::holistic::low_level_elegance::manifest_migration_duplication::b8c91aed",
+          "review::.::holistic::low_level_elegance::sync_command_positional_params::b7bc4496",
+          "review::.::holistic::low_level_elegance::validator_duplicate_group_checks::0b556c0f",
+          "review::.::holistic::mid_level_elegance::executor_optional_assertion::b0fd80b0",
+          "review::.::holistic::mid_level_elegance::file_action_import_bypass::85e9ba96",
+          "review::.::holistic::mid_level_elegance::pr_strategy_double_construction::48361bcc",
+          "review::.::holistic::naming_quality::isObject_vs_isPlainObject_divergence::10ec33a2",
+          "review::.::holistic::naming_quality::lifecycle_report_input_redundant_type::13c0b05b",
+          "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs::177793d7",
+          "review::.::holistic::test_strategy::config_validators_transitive_only::877b0eab",
+          "review::.::holistic::test_strategy::gh_api_utils_no_tests::ce97cb61",
+          "review::.::holistic::type_safety::current_repo_settings_broad_string_types::f55aa063",
+          "review::.::holistic::type_safety::double_cast_in_merge_ruleset::1195b763",
+          "review::.::holistic::type_safety::validation_arrays_not_type_linked::84d0274f"
+        ],
+        "diff_new": 42,
+        "diff_reopened": 0,
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::cross_module_architecture",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::package_organization"
+        ]
+      }
+    }
+  ],
+  "epic_triage_meta": {
+    "triage_stages": {},
+    "issue_snapshot_hash": "9d3e430738db820a",
+    "triaged_ids": [
+      "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns::3af7a40a",
+      "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check::0c814a90",
+      "review::.::holistic::api_surface_coherence::FileChange-name-collision::84ad34d6",
+      "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation::c57c3d3c",
+      "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param::ae38217f",
+      "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return::51577196",
+      "review::.::holistic::design_coherence::settings-processor-result-inconsistency::0ef38784",
+      "review::.::holistic::high_level_elegance::sync-command-orchestration-sprawl::b1e38605",
+      "review::.::holistic::incomplete_migration::env-interpolation-process-env::5b557840",
+      "review::.::holistic::incomplete_migration::logger-process-env-direct-read::e77992a0",
+      "review::.::holistic::low_level_elegance::normalizer-merge-duplication::a5d0bcb7",
+      "review::.::holistic::low_level_elegance::validator-repetitive-settings-check::aa05982e",
+      "review::.::holistic::mid_level_elegance::pr-creator-free-functions-vs-strategy::d75ff76a",
+      "review::.::holistic::mid_level_elegance::token-resolution-dual-path::78618e0c",
+      "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels::7c804c77"
+    ],
+    "strategy_summary": "EXECUTION PLAN:\n\nPhase 1 - SUBJECTIVE REVIEWS (highest ROI): Run blind reviews for 7 unassessed dimensions (Type safety, Contracts, Logic clarity, and others). These are scored as 0% and represent ~18 points of strict score potential. Use desloppify review --run-batches workflow with parallel Claude subagents.\n\nPhase 2 - DEBT RESOLUTION: Skip accepted-debt cluster items (ae38217f, 51577196, 0c814a90) with documented rationale. Resolve stale-findings (84ad34d6, c57c3d3c, e77992a0) after verifying they're fixed.\n\nPhase 3 - TOKEN RESOLUTION REFACTOR: Extract resolveGitHubToken from gh-api-utils.ts into dedicated module, centralize resolution in auth-options-builder.ts, remove duplicate from sync-command.ts.\n\nPhase 4 - REMAINING FIXES: Quick wins first (aa05982e hasActionableSettings dedup, 0ef38784 settings processor result shapes), then larger refactors (d75ff76a PRStrategy reuse, b1e38605 sync-command extraction) if score target not yet met.\n\nPhase 5 - ENV.TS AND NORMALIZER: Low priority - 5b557840 (env.ts reading process.env is its core purpose) and a5d0bcb7 (parallel merge pipelines serve different semantic purposes). Only address if needed for target.",
+    "trigger": "manual_triage",
+    "last_completed_at": "2026-03-06T09:01:22+00:00",
+    "last_triage": {
+      "completed_at": "2026-03-06T09:01:22+00:00",
+      "stages": {
+        "observe": {
+          "stage": "observe",
+          "report": "Three themes emerge from these 15 review issues:\n\n1. MIXED ABSTRACTION LEVELS (5 issues): gh-api-utils.ts appears in 3 findings (3af7a40a, 7c804c77, and related to 78618e0c token resolution). These share a root cause: resolveGitHubToken is business logic co-located with API infrastructure. The token resolution duplication (78618e0c) is a downstream symptom.\n\n2. TYPE/INTERFACE INCONSISTENCY (4 issues): FileChange naming collision (84ad34d6), overlapping file change types (c57c3d3c), settings processor result shapes (0ef38784), and unused token params in Azure/GitLab (ae38217f). Root cause: organic growth without periodic type unification.\n\n3. INCOMPLETE DI MIGRATION (3 issues): Logger.debug reads process.env (e77992a0), interpolateEnvVars reads process.env (5b557840), and the convention_outlier about merge mode error handling (51577196). These are residual coupling to globals.\n\nNo contradictions found - the api_surface_coherence pair (84ad34d6, c57c3d3c) are complementary (one about naming, one about shapes). The mid_level_elegance pair (78618e0c, d75ff76a) are independent (token resolution vs PRStrategy reuse). Several issues are low-risk accepted debt: isPermanentError string matching (0c814a90) is pragmatic, token param in Azure/GitLab (ae38217f) is documented, merge mode convention (51577196) is internally consistent.",
+          "cited_ids": [
+            "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns::3af7a40a",
+            "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check::0c814a90",
+            "review::.::holistic::api_surface_coherence::FileChange-name-collision::84ad34d6",
+            "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation::c57c3d3c",
+            "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param::ae38217f",
+            "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return::51577196",
+            "review::.::holistic::design_coherence::settings-processor-result-inconsistency::0ef38784",
+            "review::.::holistic::incomplete_migration::env-interpolation-process-env::5b557840",
+            "review::.::holistic::incomplete_migration::logger-process-env-direct-read::e77992a0",
+            "review::.::holistic::mid_level_elegance::pr-creator-free-functions-vs-strategy::d75ff76a",
+            "review::.::holistic::mid_level_elegance::token-resolution-dual-path::78618e0c",
+            "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels::7c804c77"
+          ],
+          "timestamp": "2026-03-06T08:57:58+00:00",
+          "issue_count": 15,
+          "confirmed_at": "2026-03-06T08:59:20+00:00",
+          "confirmed_text": "I have thoroughly reviewed all 15 issues. I verified api_surface_coherence findings against actual FileChange types in vcs/types.ts and sync/types.ts, confirmed the abstraction_fitness concern about resolveGitHubToken mixed into gh-api-utils.ts, and verified mid_level_elegance token resolution duplication across sync-command.ts and auth-options-builder.ts. No contradictions found."
+        },
+        "reflect": {
+          "stage": "reflect",
+          "report": "Comparing against completed work from rounds 1-3 (commits 0d8a1e7, 60098d5, 694827a, a560a7b, fbe2c45):\n\nALREADY FIXED:\n- FileChange type consolidation was done in commit 0d8a1e7 (refactor: consolidate FileChange types). The review findings 84ad34d6 and c57c3d3c may be stale if scan hasn't picked up the fix.\n- Logger debug flag injection was done in 0d8a1e7 (inject debug flag in Logger). Finding e77992a0 may be stale.\n- Typed errors and DI violations removed in 60098d5 and a560a7b. \n- process.env removed from repository-processor in fbe2c45.\n\nPOTENTIALLY STALE (need rescan verification):\n- 84ad34d6 (FileChange naming) - likely fixed in 0d8a1e7\n- c57c3d3c (overlapping file change types) - likely fixed in 0d8a1e7\n- e77992a0 (Logger.debug reads process.env) - likely fixed in 0d8a1e7\n\nGENUINELY REMAINING:\n- 3af7a40a + 7c804c77: resolveGitHubToken in gh-api-utils.ts (mixed abstraction) - NOT addressed yet\n- 78618e0c: duplicate token resolution in sync-command + auth-options-builder - NOT addressed\n- d75ff76a: PRStrategy created multiple times per repo - NOT addressed\n- b1e38605: sync-command.ts 628 lines mixing concerns - NOT addressed\n- 5b557840: interpolateEnvVars reads process.env - NOT addressed but is the module's core purpose\n- a5d0bcb7: parallel merge pipelines in normalizer.ts - NOT addressed, but the two pipelines serve different semantic purposes\n- aa05982e: duplicate hasActionableSettings checks - NOT addressed\n- 0ef38784: settings processor result shape inconsistency - NOT addressed\n- ae38217f: unused token param in Azure/GitLab - documented and intentional, candidate for skip\n- 51577196: merge mode convention - internally consistent, candidate for skip\n- 0c814a90: isPermanentError string matching - pragmatic, candidate for skip\n\nPATTERN: Past rounds focused on typed errors, DI violations, and barrel exports. The remaining issues are deeper architectural concerns (mixed abstractions, duplicate pipelines) or intentional design choices.",
+          "cited_ids": [],
+          "timestamp": "2026-03-06T08:59:41+00:00",
+          "issue_count": 15,
+          "recurring_dims": [],
+          "confirmed_at": "2026-03-06T08:59:54+00:00",
+          "confirmed_text": "Strategy reviewed against api_surface_coherence (FileChange types likely fixed in prior commit), abstraction_fitness (resolveGitHubToken still mixed into gh-api-utils.ts, needs extraction), and design_coherence (settings processor result shapes need warnings field normalization). 3 stale findings, 8 remaining, 3 candidates for skip as accepted debt."
+        },
+        "organize": {
+          "stage": "organize",
+          "report": "CLUSTERS FORMED:\n\n1. token-resolution (3 issues): Extract resolveGitHubToken, centralize token resolution. Addresses abstraction_fitness, package_organization, mid_level_elegance.\n\n2. accepted-debt (3 issues): Skip as intentional design choices with documented rationale.\n\n3. stale-findings (3 issues): Verify fixed in prior commits, resolve after confirmation.\n\nREMAINING UNCLUSTERED (6 issues): Independent fixes - b1e38605 (sync-command extraction), d75ff76a (PRStrategy reuse), 5b557840 (env.ts process.env), a5d0bcb7 (merge pipelines), aa05982e (hasActionableSettings dedup), 0ef38784 (settings processor results).\n\nPRIORITY: Run subjective reviews first (7 unassessed dimensions = biggest score impact), then skip accepted-debt, resolve stale-findings, fix token-resolution cluster, then remaining items.",
+          "cited_ids": [],
+          "timestamp": "2026-03-06T09:01:03+00:00",
+          "issue_count": 3,
+          "confirmed_at": "2026-03-06T09:01:10+00:00",
+          "confirmed_text": "Clusters organized with enriched action steps against api_surface_coherence (stale FileChange findings), abstraction_fitness and package_organization (token-resolution extraction), and convention_outlier (accepted-debt skip). Sequencing is correct: reviews first for unassessed dimensions, then debt resolution, then code changes."
+        }
+      },
+      "strategy": "EXECUTION PLAN:\n\nPhase 1 - SUBJECTIVE REVIEWS (highest ROI): Run blind reviews for 7 unassessed dimensions (Type safety, Contracts, Logic clarity, and others). These are scored as 0% and represent ~18 points of strict score potential. Use desloppify review --run-batches workflow with parallel Claude subagents.\n\nPhase 2 - DEBT RESOLUTION: Skip accepted-debt cluster items (ae38217f, 51577196, 0c814a90) with documented rationale. Resolve stale-findings (84ad34d6, c57c3d3c, e77992a0) after verifying they're fixed.\n\nPhase 3 - TOKEN RESOLUTION REFACTOR: Extract resolveGitHubToken from gh-api-utils.ts into dedicated module, centralize resolution in auth-options-builder.ts, remove duplicate from sync-command.ts.\n\nPhase 4 - REMAINING FIXES: Quick wins first (aa05982e hasActionableSettings dedup, 0ef38784 settings processor result shapes), then larger refactors (d75ff76a PRStrategy reuse, b1e38605 sync-command extraction) if score target not yet met.\n\nPhase 5 - ENV.TS AND NORMALIZER: Low priority - 5b557840 (env.ts reading process.env is its core purpose) and a5d0bcb7 (parallel merge pipelines serve different semantic purposes). Only address if needed for target."
+    }
+  },
+  "commit_log": [],
+  "uncommitted_issues": [],
+  "commit_tracking_branch": null,
+  "scan_count_at_plan_start": 122
+}

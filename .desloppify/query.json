@@ -1,70 +1,192 @@
 {
-  "command": "resolve",
-  "patterns": [
-    "review::.::holistic::api_surface_coherence::FileChange-name-collision::84ad34d6",
-    "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation::c57c3d3c",
-    "review::.::holistic::design_coherence::settings-processor-result-inconsistency::0ef38784",
-    "review::.::holistic::mid_level_elegance::pr-creator-free-functions-vs-strategy::d75ff76a",
-    "review::.::holistic::mid_level_elegance::token-resolution-dual-path::78618e0c",
-    "review::.::holistic::low_level_elegance::validator-repetitive-settings-check::aa05982e",
-    "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param::ae38217f",
-    "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check::0c814a90",
-    "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels::7c804c77",
-    "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns::3af7a40a",
-    "review::.::holistic::high_level_elegance::sync-command-orchestration-sprawl::b1e38605",
-    "review::.::holistic::low_level_elegance::normalizer-merge-duplication::a5d0bcb7"
-  ],
-  "status": "open",
-  "resolved": [
-    "review::.::holistic::api_surface_coherence::FileChange-name-collision::84ad34d6",
-    "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation::c57c3d3c",
-    "review::.::holistic::design_coherence::settings-processor-result-inconsistency::0ef38784",
-    "review::.::holistic::mid_level_elegance::pr-creator-free-functions-vs-strategy::d75ff76a",
-    "review::.::holistic::mid_level_elegance::token-resolution-dual-path::78618e0c",
-    "review::.::holistic::low_level_elegance::validator-repetitive-settings-check::aa05982e",
-    "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param::ae38217f",
-    "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check::0c814a90",
-    "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels::7c804c77",
-    "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns::3af7a40a",
-    "review::.::holistic::high_level_elegance::sync-command-orchestration-sprawl::b1e38605",
-    "review::.::holistic::low_level_elegance::normalizer-merge-duplication::a5d0bcb7"
-  ],
-  "count": 12,
-  "next_command": "desloppify issues",
-  "overall_score": 92.1,
-  "objective_score": 97.0,
-  "strict_score": 92.0,
-  "verified_strict_score": 96.7,
-  "prev_overall_score": 92.1,
-  "prev_objective_score": 97.0,
-  "prev_strict_score": 92.0,
-  "prev_verified_strict_score": 96.7,
-  "attestation": null,
+  "command": "review",
+  "action": "import",
+  "mode": "holistic",
+  "diff": {
+    "new": 42,
+    "auto_resolved": 15,
+    "reopened": 0,
+    "total_current": 42,
+    "suspect_detectors": [
+      "boilerplate_duplication",
+      "exports",
+      "facade",
+      "flat_dirs",
+      "props",
+      "responsibility_cohesion",
+      "review",
+      "security",
+      "signature",
+      "smells",
+      "stale_wontfix",
+      "structural",
+      "test_coverage"
+    ],
+    "chronic_reopeners": [
+      {
+        "id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
+        "detector": "security",
+        "file": "src/settings/repo-settings/diff.ts",
+        "tier": 2,
+        "confidence": "high",
+        "summary": "Hardcoded secret in variable 'secretScanning'",
+        "detail": {
+          "kind": "hardcoded_secret_name",
+          "severity": "high",
+          "line": 40,
+          "content": "  secretScanning: \"_secret_scanning\",",
+          "remediation": "Move secret to environment variable or secrets manager"
+        },
+        "status": "open",
+        "note": "Reopened (\u00d76) \u2014 reappeared in scan (was auto_resolved)",
+        "first_seen": "2026-03-03T09:10:57+00:00",
+        "last_seen": "2026-03-06T12:38:39+00:00",
+        "resolved_at": null,
+        "reopen_count": 6,
+        "zone": "production",
+        "lang": "typescript",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "wontfix_scan_count": 105,
+        "wontfix_snapshot": {
+          "captured_at": "2026-03-06T07:04:07+00:00",
+          "scan_count": 105,
+          "tier": 2,
+          "confidence": "high",
+          "detail": {
+            "kind": "hardcoded_secret_name",
+            "severity": "high",
+            "line": 40,
+            "content": "  secretScanning: \"_secret_scanning\",",
+            "remediation": "Move secret to environment variable or secrets manager"
+          }
+        }
+      },
+      {
+        "id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
+        "detector": "security",
+        "file": "src/settings/repo-settings/diff.ts",
+        "tier": 2,
+        "confidence": "high",
+        "summary": "Hardcoded secret in variable 'secretScanningPushProtection'",
+        "detail": {
+          "kind": "hardcoded_secret_name",
+          "severity": "high",
+          "line": 41,
+          "content": "  secretScanningPushProtection: \"_secret_scanning_push_protection\",",
+          "remediation": "Move secret to environment variable or secrets manager"
+        },
+        "status": "open",
+        "note": "Reopened (\u00d76) \u2014 reappeared in scan (was auto_resolved)",
+        "first_seen": "2026-03-03T09:10:57+00:00",
+        "last_seen": "2026-03-06T12:38:39+00:00",
+        "resolved_at": null,
+        "reopen_count": 6,
+        "zone": "production",
+        "lang": "typescript",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "wontfix_scan_count": 105,
+        "wontfix_snapshot": {
+          "captured_at": "2026-03-06T07:04:07+00:00",
+          "scan_count": 105,
+          "tier": 2,
+          "confidence": "high",
+          "detail": {
+            "kind": "hardcoded_secret_name",
+            "severity": "high",
+            "line": 41,
+            "content": "  secretScanningPushProtection: \"_secret_scanning_push_protection\",",
+            "remediation": "Move secret to environment variable or secrets manager"
+          }
+        }
+      },
+      {
+        "id": "facade::src/settings/labels/index.ts",
+        "detector": "facade",
+        "file": "src/settings/labels/index.ts",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "Re-export facade (5 LOC): imports from ./formatter.js, ./processor.js (1 importers)",
+        "detail": {
+          "loc": 5,
+          "importers": 1,
+          "imports_from": [
+            "./formatter.js",
+            "./processor.js"
+          ],
+          "kind": "file"
+        },
+        "status": "open",
+        "note": "Reopened (\u00d76) \u2014 reappeared in scan (was auto_resolved)",
+        "first_seen": "2026-03-05T01:16:56+00:00",
+        "last_seen": "2026-03-06T12:38:39+00:00",
+        "resolved_at": null,
+        "reopen_count": 6,
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "wontfix_scan_count": 112,
+        "wontfix_snapshot": {
+          "captured_at": "2026-03-06T08:15:04+00:00",
+          "scan_count": 112,
+          "tier": 2,
+          "confidence": "medium",
+          "detail": {
+            "loc": 5,
+            "importers": 1,
+            "imports_from": [
+              "./formatter.js",
+              "./processor.js"
+            ],
+            "kind": "file"
+          }
+        }
+      }
+    ],
+    "skipped_other_lang": 0,
+    "resolved_out_of_scope": 0,
+    "ignored": 0,
+    "ignore_patterns": 0,
+    "raw_issues": 42,
+    "suppressed_pct": 0.0
+  },
+  "next_command": "desloppify show review --status open",
+  "subjective_at_target": [],
+  "assessment_import": {
+    "mode": "trusted_internal",
+    "trusted": true,
+    "reason": "trusted import-run replay from 20260306_090132"
+  },
   "narrative": {
-    "phase": "stagnation",
-    "headline": "\u26a0 2 security findings \u2014 review before other cleanup. All T1 items cleared! (15 review findings \u2014 run `desloppify issues`)",
+    "phase": "refinement",
+    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Crossed 80% strict! (42 review issues \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
-          "name": "API coherence",
-          "strict": 84.0,
-          "issues": 2,
+          "name": "Cross-module arch",
+          "strict": 60.0,
+          "failing": 5,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
         },
         {
           "name": "Mid elegance",
-          "strict": 86.0,
-          "issues": 2,
+          "strict": 69.9,
+          "failing": 3,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
         },
         {
-          "name": "Abstraction fit",
-          "strict": 88.0,
-          "issues": 1,
+          "name": "API coherence",
+          "strict": 71.1,
+          "failing": 3,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -73,13 +195,13 @@
       "biggest_gap_dimensions": [],
       "stagnant_dimensions": [
         {
-          "name": "File health",
-          "strict": 96.0,
+          "name": "Security",
+          "strict": 99.5,
           "stuck_scans": 5
         },
         {
-          "name": "Code quality",
-          "strict": 97.8,
+          "name": "File health",
+          "strict": 96.0,
           "stuck_scans": 5
         },
         {
@@ -89,142 +211,127 @@
         },
         {
           "name": "Test health",
-          "strict": 93.2,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Security",
-          "strict": 99.5,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Abstraction fit",
-          "strict": 88.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "High elegance",
-          "strict": 90.0,
+          "strict": 92.3,
           "stuck_scans": 5
         }
       ]
     },
     "actions": [
       {
-        "type": "issue_queue",
-        "detector": "review",
-        "count": 15,
-        "description": "15 review findings need investigation \u2014 run `desloppify issues` to see the work queue",
-        "command": "desloppify issues",
-        "impact": 0.0,
-        "dimension": "Unknown",
-        "priority": 1,
-        "lane": "refactor_0"
-      },
-      {
         "type": "reorganize",
         "detector": "flat_dirs",
         "count": 1,
-        "description": "1 flat_dirs findings \u2014 create subdirectories and use `desloppify move`",
+        "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`",
         "command": "desloppify show flat_dirs --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 2,
+        "priority": 1,
         "lane": "restructure"
       },
       {
         "type": "reorganize",
         "detector": "facade",
         "count": 1,
-        "description": "1 facade findings \u2014 flatten re-export facades or consolidate barrel files",
+        "description": "1 facade issues \u2014 flatten re-export facades or consolidate barrel files",
         "command": "desloppify show facade --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 3,
+        "priority": 2,
         "lane": "restructure"
       },
       {
         "type": "refactor",
         "detector": "structural",
         "count": 40,
-        "description": "40 structural findings \u2014 decompose large files \u2014 extract logic into focused modules",
+        "description": "40 structural issues \u2014 review large files \u2014 split only when responsibilities are clearly separable",
         "command": "desloppify show structural --status open",
         "impact": 0.0,
         "dimension": "File health",
-        "priority": 4,
-        "lane": "refactor_1"
+        "priority": 3,
+        "lane": "refactor_0"
       },
       {
         "type": "refactor",
         "detector": "props",
         "count": 2,
-        "description": "2 props findings \u2014 split bloated components, extract sub-components",
+        "description": "2 props issues \u2014 split bloated components, extract sub-components",
         "command": "desloppify show props --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 5,
-        "lane": "refactor_1"
+        "priority": 4,
+        "lane": "refactor_0"
       },
       {
         "type": "refactor",
         "detector": "test_coverage",
-        "count": 7,
-        "description": "7 test_coverage findings \u2014 add tests for untested production modules \u2014 prioritize by import count",
+        "count": 8,
+        "description": "8 test_coverage issues \u2014 add tests for untested production modules \u2014 prioritize by import count",
         "command": "desloppify show test_coverage --status open",
         "impact": 0.0,
         "dimension": "Test health",
-        "priority": 6,
+        "priority": 5,
         "lane": "test_coverage"
       },
       {
         "type": "refactor",
         "detector": "signature",
         "count": 1,
-        "description": "1 signature findings \u2014 consolidate inconsistent function signatures",
+        "description": "1 signature issues \u2014 consolidate inconsistent function signatures",
         "command": "desloppify show signature --status open",
         "impact": 0.0,
         "dimension": "Unknown",
-        "priority": 7,
-        "lane": "refactor_1"
+        "priority": 6,
+        "lane": "refactor_0"
       },
       {
         "type": "refactor",
         "detector": "responsibility_cohesion",
-        "count": 6,
-        "description": "6 responsibility_cohesion findings \u2014 split modules with too many responsibilities \u2014 extract focused sub-modules",
+        "count": 1,
+        "description": "1 responsibility_cohesion issues \u2014 split modules with too many responsibilities \u2014 extract focused sub-modules",
         "command": "desloppify show responsibility_cohesion --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 8,
-        "lane": "refactor_1"
+        "priority": 7,
+        "lane": "refactor_0"
       },
       {
         "type": "refactor",
         "detector": "boilerplate_duplication",
         "count": 11,
-        "description": "11 boilerplate_duplication findings \u2014 extract shared boilerplate into reusable helpers or base classes",
+        "description": "11 boilerplate_duplication issues \u2014 extract shared boilerplate into reusable helpers or base classes",
         "command": "desloppify show boilerplate_duplication --status open",
         "impact": 0.0,
         "dimension": "Duplication",
+        "priority": 8,
+        "lane": "refactor_0"
+      },
+      {
+        "type": "refactor",
+        "detector": "review",
+        "count": 42,
+        "description": "42 review issues need investigation \u2014 run `desloppify show review --status open` to see them",
+        "command": "desloppify show review --status open",
+        "impact": 0.0,
+        "dimension": "Unknown",
         "priority": 9,
         "lane": "refactor_1"
       },
       {
         "type": "manual_fix",
         "detector": "smells",
-        "count": 55,
-        "description": "55 smells findings \u2014 inspect with `desloppify next` and fix manually",
+        "count": 72,
+        "description": "72 smells issues \u2014 inspect with `desloppify next` and fix manually",
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
         "priority": 10,
-        "lane": "refactor_1"
+        "lane": "refactor_0"
       },
       {
         "type": "manual_fix",
         "detector": "exports",
-        "count": 1,
-        "description": "1 exports findings \u2014 run `knip --fix` to remove dead exports",
+        "count": 2,
+        "description": "2 exports issues \u2014 run `knip --fix` to remove dead exports",
         "command": "desloppify show exports --status open",
         "impact": 0.0,
         "dimension": "Code quality",
@@ -235,7 +342,7 @@
         "type": "manual_fix",
         "detector": "stale_wontfix",
         "count": 2,
-        "description": "2 stale_wontfix findings \u2014 re-evaluate old wontfix decisions \u2014 fix, document, or escalate",
+        "description": "2 stale_wontfix issues \u2014 re-evaluate old wontfix decisions \u2014 fix, document, or escalate",
         "command": "desloppify show stale_wontfix --status open",
         "impact": 0.0,
         "dimension": "Unknown",
@@ -246,7 +353,7 @@
         "type": "manual_fix",
         "detector": "security",
         "count": 2,
-        "description": "2 security findings \u2014 review and fix security findings \u2014 prioritize by severity",
+        "description": "2 security issues \u2014 review and fix security issues \u2014 prioritize by severity",
         "command": "desloppify show security --status open",
         "impact": 0.0,
         "dimension": "Security",
@@ -257,7 +364,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 174,
+        "total_count": 269,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -265,8 +372,8 @@
       "lanes": {
         "restructure": {
           "actions": [
-            2,
-            3
+            1,
+            2
           ],
           "file_count": 2,
           "total_impact": 0.0,
@@ -275,23 +382,23 @@
         },
         "refactor_0": {
           "actions": [
-            1
+            3,
+            4,
+            6,
+            7,
+            8,
+            10
           ],
-          "file_count": 1,
+          "file_count": 82,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "refactor_1": {
           "actions": [
-            4,
-            5,
-            7,
-            8,
-            9,
-            10
+            9
           ],
-          "file_count": 79,
+          "file_count": 1,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -300,7 +407,7 @@
           "actions": [
             11
           ],
-          "file_count": 1,
+          "file_count": 2,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -325,30 +432,30 @@
         },
         "test_coverage": {
           "actions": [
-            6
+            5
           ],
-          "file_count": 7,
+          "file_count": 8,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         }
       },
       "can_parallelize": true,
-      "hint": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 15 finding(s) \u2014 `desloppify issues`."
+      "hint": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 42 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
         {
           "name": "dead-useeffect",
           "detector": "smells",
-          "open_count": 55,
-          "command": "desloppify fix dead-useeffect --dry-run"
+          "open_count": 72,
+          "command": "desloppify autofix dead-useeffect --dry-run"
         },
         {
           "name": "empty-if-chain",
           "detector": "smells",
-          "open_count": 55,
-          "command": "desloppify fix empty-if-chain --dry-run"
+          "open_count": 72,
+          "command": "desloppify autofix empty-if-chain --dry-run"
         }
       ],
       "move": {
@@ -369,18 +476,18 @@
       }
     },
     "debt": {
-      "overall_gap": 0.1,
-      "wontfix_count": 7,
+      "overall_gap": 0.0,
+      "wontfix_count": 6,
       "worst_dimension": "Test health",
       "worst_gap": 0.9,
       "trend": "stable"
     },
-    "milestone": "All T1 items cleared!",
+    "milestone": "Crossed 80% strict!",
     "primary_action": {
-      "command": "desloppify issues",
-      "description": "15 review findings need investigation \u2014 run `desloppify issues` to see the work queue"
+      "command": "desloppify show flat_dirs --status open",
+      "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 15 finding(s) \u2014 `desloppify issues`.",
+    "why_now": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 42 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -389,44 +496,28 @@
       {
         "type": "wontfix_gap",
         "severity": "medium",
-        "message": "Strict/lenient gap is 0.1 pts with 7 wontfix findings"
+        "message": "Strict/lenient gap is 0.0 pts with 6 wontfix issues"
       }
     ],
     "strict_target": {
       "target": 95.0,
-      "current": 92.0,
-      "gap": 3.0,
+      "current": 84.1,
+      "gap": 10.9,
       "state": "below",
       "warning": null
     },
-    "reminders": [
-      {
-        "type": "rereview_needed",
-        "message": "Subjective results may be stale after resolve. Re-run `desloppify review --prepare` to refresh, or reset with `desloppify scan --reset-subjective` before a clean rerun.",
-        "command": "desloppify review --prepare",
-        "priority": 1,
-        "severity": "high"
-      },
-      {
-        "type": "rescan_needed",
-        "message": "Rescan to verify \u2014 cascading effects may create new findings.",
-        "command": "desloppify scan",
-        "priority": 1,
-        "severity": "high"
-      }
-    ],
+    "reminders": [],
     "reminder_history": {
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 3,
-      "report_scores": 85,
+      "report_scores": 89,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
       "review_not_run": 3,
       "badge_recommendation": 3,
-      "rereview_needed": 1,
-      "rescan_needed": 1
+      "review_issues_pending": 3
     }
   },
   "config": {
@@ -446,8 +537,14 @@
     "review_dimensions": [],
     "large_files_threshold": 0,
     "props_threshold": 0,
-    "finding_noise_budget": 10,
-    "finding_noise_global_budget": 0,
-    "languages": {}
+    "issue_noise_budget": 10,
+    "issue_noise_global_budget": 0,
+    "execution_log_max_entries": 10000,
+    "needs_rescan": false,
+    "languages": {},
+    "commit_tracking_enabled": true,
+    "commit_pr": 0,
+    "commit_default_branch": "",
+    "commit_message_template": "desloppify: {status} {count} issue(s) \u2014 {summary}"
   }
 }
