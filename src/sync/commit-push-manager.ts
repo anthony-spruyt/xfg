@@ -1,6 +1,9 @@
 import { ILogger } from "../shared/logger.js";
 import { getCommitStrategy, type FileChange } from "../vcs/index.js";
+import type { ICommitStrategy } from "../vcs/types.js";
+import type { RepoInfo } from "../shared/repo-detector.js";
 import { getRepoDisplayName } from "../shared/repo-detector.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import type {
   CommitPushOptions,
   CommitPushResult,
@@ -8,8 +11,17 @@ import type {
 } from "./types.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 
+export type CommitStrategyFactory = (
+  repoInfo: RepoInfo,
+  executor?: ICommandExecutor,
+  hasAppCredentials?: boolean
+) => ICommitStrategy;
+
 export class CommitPushManager implements ICommitPushManager {
-  constructor(private readonly log: ILogger) {}
+  constructor(
+    private readonly log: ILogger,
+    private readonly commitStrategyFactory: CommitStrategyFactory = getCommitStrategy
+  ) {}
 
   async commitAndPush(options: CommitPushOptions): Promise<CommitPushResult> {
     const {
@@ -46,7 +58,7 @@ export class CommitPushManager implements ICommitPushManager {
       return { success: true, skipped: true };
     }
 
-    const commitStrategy = getCommitStrategy(
+    const commitStrategy = this.commitStrategyFactory(
       repoInfo,
       executor,
       options.hasAppCredentials
