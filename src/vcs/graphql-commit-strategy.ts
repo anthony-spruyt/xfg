@@ -20,6 +20,25 @@ import { ValidationError } from "../config/errors.js";
  */
 export const MAX_PAYLOAD_SIZE = 50 * 1024 * 1024;
 
+interface GraphQLCommitResponse {
+  data?: {
+    createCommitOnBranch?: {
+      commit?: { oid?: string };
+    };
+  };
+  errors?: Array<{ message: string }>;
+}
+
+interface GraphQLRepoResponse {
+  data?: {
+    repository?: {
+      id?: string;
+      ref?: { id?: string };
+    };
+  };
+  errors?: Array<{ message: string }>;
+}
+
 /**
  * Pattern for valid git branch names that are also safe for shell commands.
  * Git branch names have strict rules:
@@ -268,23 +287,18 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       throw this.sanitizeCommandError(error, repositoryNameWithOwner);
     }
 
-    const parsed = parseApiJson<Record<string, unknown>>(
+    const parsed = parseApiJson<GraphQLCommitResponse>(
       response,
       "GraphQL createCommitOnBranch response"
     );
 
     if (parsed.errors) {
-      const errors = parsed.errors as Array<{ message: string }>;
       throw new Error(
-        `GraphQL error: ${errors.map((e) => e.message).join(", ")}`
+        `GraphQL error: ${parsed.errors.map((e) => e.message).join(", ")}`
       );
     }
 
-    const data = parsed.data as Record<string, unknown> | undefined;
-    const commit = (
-      data?.createCommitOnBranch as Record<string, unknown> | undefined
-    )?.commit as Record<string, unknown> | undefined;
-    const oid = commit?.oid as string | undefined;
+    const oid = parsed.data?.createCommitOnBranch?.commit?.oid;
     if (!oid) {
       throw new Error("GraphQL response missing commit OID");
     }
@@ -478,17 +492,18 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       token
     );
 
-    const repo = parsed.data?.repository as
-      | { id?: string; ref?: { id?: string } }
-      | undefined;
-    const repositoryId = repo?.id;
+    const repoResponse = parsed as GraphQLRepoResponse;
+    const repositoryId = repoResponse.data?.repository?.id;
     if (!repositoryId) {
       throw new Error(
         `GraphQL response missing repository ID for ${repoInfo.owner}/${repoInfo.repo}`
       );
     }
 
-    return { repositoryId, refId: repo?.ref?.id ?? null };
+    return {
+      repositoryId,
+      refId: repoResponse.data?.repository?.ref?.id ?? null,
+    };
   }
 
   /**
