@@ -121,7 +121,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     } = options;
 
     if (!isGitHubRepo(repoInfo)) {
-      throw new Error(
+      throw new ValidationError(
         `GraphQL commit strategy requires GitHub repositories. Got: ${repoInfo.type}`
       );
     }
@@ -140,7 +140,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     }, 0);
 
     if (totalSize > MAX_PAYLOAD_SIZE) {
-      throw new Error(
+      throw new ValidationError(
         `GraphQL payload exceeds 50 MB limit (${Math.round(totalSize / (1024 * 1024))} MB). ` +
           `Consider using smaller files or the git commit strategy.`
       );
