@@ -1,0 +1,152 @@
+{
+  "assessments": {
+    "error_consistency": 88,
+    "convention_outlier": 93,
+    "authorization_consistency": 92,
+    "ai_generated_debt": 95,
+    "incomplete_migration": 96
+  },
+  "findings": [
+    {
+      "dimension": "error_consistency",
+      "identifier": "mixed-error-vs-generic-error",
+      "summary": "Some throw sites use generic Error instead of typed error classes, creating inconsistency. The codebase defines ValidationError, GraphQLApiError, SyncError, LifecycleError but several throw sites still use bare Error.",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/github-pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/gitlab-pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/authenticated-git-ops.ts",
+        "/workspaces/xfg/src/shared/xfg-template.ts",
+        "/workspaces/xfg/src/shared/errors.ts"
+      ],
+      "evidence": [
+        "github-pr-strategy.ts:162 throws bare Error for 'Could not parse PR URL from output' - should use a typed error",
+        "gitlab-pr-strategy.ts:234 throws bare Error for 'Could not parse MR URL from output' - same pattern",
+        "authenticated-git-ops.ts:35 throws bare Error for 'getAuthenticatedUrl() called without auth options' - programmer error could use ValidationError",
+        "xfg-template.ts:123 throws bare Error for 'Unknown xfg template variable' - should use ValidationError since it's config-driven"
+      ],
+      "suggestion": "Replace bare Error throws with the appropriate typed error class (ValidationError for config/input issues, SyncError for sync-path failures). The exhaustive-check errors (pr-strategy-factory.ts, lifecycle-formatter.ts) are fine as bare Error since they represent impossible states.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "checkExistingPR-error-swallowing-inconsistency",
+      "summary": "The three PR strategy implementations handle errors in checkExistingPR differently regarding what gets swallowed vs re-thrown. GitHub and GitLab filter on isPermanentError and re-throw, but Azure DevOps has the same pattern. However, the error messages they suppress differ ('no pull requests match' vs 'does not exist' vs 'no merge requests').",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/github-pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/azure-pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/gitlab-pr-strategy.ts"
+      ],
+      "evidence": [
+        "github-pr-strategy.ts:63 suppresses stderr not containing 'no pull requests match'",
+        "azure-pr-strategy.ts:60 suppresses stderr not containing 'does not exist'",
+        "gitlab-pr-strategy.ts:118 suppresses stderr not containing 'no merge requests'",
+        "All three correctly re-throw isPermanentError, maintaining consistency in the critical path"
+      ],
+      "suggestion": "This is a minor inconsistency - the platform-specific filter strings are expected since each CLI has different output. The pattern itself is consistent (isPermanentError check + platform-specific noise filter). Consider adding a comment noting the platform-specific filter reason.",
+      "confidence": "low"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "cli-program-bare-error-throw",
+      "summary": "CLI argument validation in program.ts throws bare Error for invalid merge mode/strategy instead of using ValidationError.",
+      "related_files": [
+        "/workspaces/xfg/src/cli/program.ts",
+        "/workspaces/xfg/src/shared/errors.ts"
+      ],
+      "evidence": [
+        "program.ts:69 throws bare Error for 'Invalid merge mode' - should use ValidationError",
+        "program.ts:82 throws bare Error for 'Invalid merge strategy' - should use ValidationError"
+      ],
+      "suggestion": "Use ValidationError for input validation failures in CLI argument parsing, matching the pattern used throughout config validation.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "authorization_consistency",
+      "identifier": "azure-gitlab-no-token-passthrough",
+      "summary": "Azure DevOps and GitLab PR strategies do not pass tokens through environment variables like GitHub does. Azure DevOps relies on az CLI's own auth, and GitLab on glab CLI auth. This is intentional (as documented in type comments), but the token parameter is still accepted and silently ignored in some interfaces.",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/azure-pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/gitlab-pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/types.ts"
+      ],
+      "evidence": [
+        "types.ts:89 documents token as 'GitHub App installation token (GitHub-only; ignored by GitLab/Azure strategies which use their own CLI auth)'",
+        "azure-pr-strategy.ts:40 destructures options but does not use token",
+        "gitlab-pr-strategy.ts:89 destructures options but does not use token",
+        "The JSDoc on types.ts correctly documents this as intentional"
+      ],
+      "suggestion": "The documentation on the interface makes this intentional. No code change needed, but the unused destructured token in Azure and GitLab checkExistingPR could be removed for clarity.",
+      "confidence": "low"
+    },
+    {
+      "dimension": "authorization_consistency",
+      "identifier": "dual-token-resolution-paths",
+      "summary": "Token resolution happens in two places: sync-command.ts resolves tokens early via resolveGitHubToken for the whole repo iteration, then AuthOptionsBuilder.resolve() is called again inside SyncWorkflow. When the CLI pre-resolves a token and passes it in ProcessorOptions.token, AuthOptionsBuilder shortcuts and uses it directly. This dual path works correctly but adds cognitive overhead.",
+      "related_files": [
+        "/workspaces/xfg/src/cli/sync-command.ts",
+        "/workspaces/xfg/src/sync/auth-options-builder.ts",
+        "/workspaces/xfg/src/shared/gh-api-utils.ts"
+      ],
+      "evidence": [
+        "sync-command.ts:353-363 resolves token via resolveGitHubToken before calling processor.process()",
+        "auth-options-builder.ts:26-28 shortcuts if token is not undefined (from CLI pre-resolution)",
+        "auth-options-builder.ts:32-38 falls back to resolveGitHubToken if no pre-resolved token",
+        "Both paths use the same resolveGitHubToken function, ensuring consistency"
+      ],
+      "suggestion": "The dual path exists because the CLI needs the token for settings processing (which runs outside the sync workflow). Consider documenting why early resolution is needed in sync-command.ts.",
+      "confidence": "low"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "defaultExecutor-singleton-in-shared",
+      "summary": "The defaultExecutor singleton is exported from shared/command-executor.ts and imported across many modules as a default fallback. While most modules accept it via constructor/parameter injection, the singleton import pattern exists in library code (vcs/, settings/, lifecycle/) rather than only in composition roots.",
+      "related_files": [
+        "/workspaces/xfg/src/shared/command-executor.ts",
+        "/workspaces/xfg/src/vcs/pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/graphql-commit-strategy.ts",
+        "/workspaces/xfg/src/lifecycle/github-lifecycle-provider.ts"
+      ],
+      "evidence": [
+        "command-executor.ts:51 exports singleton defaultExecutor",
+        "pr-strategy.ts:28 uses 'this.executor = executor ?? defaultExecutor' as constructor default",
+        "graphql-commit-strategy.ts:102 uses same pattern",
+        "github-lifecycle-provider.ts:90 uses same pattern",
+        "The CLAUDE.md says 'src/shared/ and src/sync/ modules must not import global singletons'"
+      ],
+      "suggestion": "The defaultExecutor serves as a sensible default for optional constructor parameters and is always overridable via DI. However, per the project's own architecture rules, library code should not import singletons from shared/. Either move defaultExecutor to the composition root only, or accept this as a pragmatic exception and document it.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "process-cwd-in-library-code",
+      "summary": "GitHubLifecycleProvider defaults cwd to process.cwd() and ghApiCall uses process.cwd() directly. This is global state access in library code.",
+      "related_files": [
+        "/workspaces/xfg/src/lifecycle/github-lifecycle-provider.ts",
+        "/workspaces/xfg/src/shared/gh-api-utils.ts"
+      ],
+      "evidence": [
+        "github-lifecycle-provider.ts:92 uses 'this.cwd = opts.cwd ?? process.cwd()'",
+        "gh-api-utils.ts:89 uses 'process.cwd()' as cwd for command execution",
+        "gh-api-utils.ts:95 uses same pattern"
+      ],
+      "suggestion": "Pass cwd as a required parameter to ghApiCall/GhApiClient instead of defaulting to process.cwd(). This makes the dependency explicit and testable.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "incomplete_migration",
+      "identifier": "gh-api-utils-process-cwd",
+      "summary": "The ghApiCall function in gh-api-utils.ts uses process.cwd() as the working directory, while all other command execution calls throughout the codebase pass an explicit workDir parameter. This looks like a leftover from before the GhApiClient was introduced.",
+      "related_files": [
+        "/workspaces/xfg/src/shared/gh-api-utils.ts"
+      ],
+      "evidence": [
+        "gh-api-utils.ts:89 uses process.cwd() as cwd - hardcoded",
+        "gh-api-utils.ts:95 uses same process.cwd() pattern",
+        "Every other command execution call in the codebase passes an explicit workDir (from options or constructor)",
+        "GhApiClient wraps ghApiCall but does not accept or pass a cwd parameter"
+      ],
+      "suggestion": "Add a cwd parameter to GhApiClient constructor and ghApiCall, passing it through to the executor. This aligns with the established pattern used everywhere else.",
+      "confidence": "high"
+    }
+  ]
+}

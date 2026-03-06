@@ -49,51 +49,19 @@ describe("Logger", () => {
   });
 
   describe("debug", () => {
-    let originalDebug: string | undefined;
-    let originalXfgDebug: string | undefined;
-
-    beforeEach(() => {
-      originalDebug = process.env.DEBUG;
-      originalXfgDebug = process.env.XFG_DEBUG;
-      delete process.env.DEBUG;
-      delete process.env.XFG_DEBUG;
-    });
-
-    afterEach(() => {
-      if (originalDebug !== undefined) {
-        process.env.DEBUG = originalDebug;
-      } else {
-        delete process.env.DEBUG;
-      }
-      if (originalXfgDebug !== undefined) {
-        process.env.XFG_DEBUG = originalXfgDebug;
-      } else {
-        delete process.env.XFG_DEBUG;
-      }
-    });
-
-    test("does not log when DEBUG and XFG_DEBUG are not set", () => {
+    test("does not log when debugEnabled is false", () => {
       logger.debug("Should not appear");
 
       assert.equal(consoleLogs.length, 0);
     });
 
-    test("logs when DEBUG env var is set", () => {
-      process.env.DEBUG = "1";
-      logger.debug("Debug message");
+    test("logs when debugEnabled is true", () => {
+      const debugLogger = new Logger(true);
+      debugLogger.debug("Debug message");
 
       assert.equal(consoleLogs.length, 1);
       assert.ok(consoleLogs[0].includes("[debug]"));
       assert.ok(consoleLogs[0].includes("Debug message"));
-    });
-
-    test("logs when XFG_DEBUG env var is set", () => {
-      process.env.XFG_DEBUG = "true";
-      logger.debug("Debug via XFG_DEBUG");
-
-      assert.equal(consoleLogs.length, 1);
-      assert.ok(consoleLogs[0].includes("[debug]"));
-      assert.ok(consoleLogs[0].includes("Debug via XFG_DEBUG"));
     });
   });
 

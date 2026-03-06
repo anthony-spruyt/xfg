@@ -1,0 +1,43 @@
+{
+  "assessments": {
+    "error_consistency": 88
+  },
+  "findings": [
+    {
+      "dimension": "error_consistency",
+      "identifier": "assert-repo-throws-plain-error",
+      "summary": "assertGitHubRepo/assertAzureDevOpsRepo/assertGitLabRepo throw plain Error while equivalent validation elsewhere throws ValidationError",
+      "related_files": [
+        "src/shared/repo-detector.ts",
+        "src/vcs/graphql-commit-strategy.ts",
+        "src/config/errors.ts"
+      ],
+      "evidence": [
+        "repo-detector.ts:64: throw new Error(`${context} requires GitHub repositories. Got: ${repoInfo.type}`);",
+        "repo-detector.ts:79: throw new Error(`${context} requires Azure DevOps repositories. Got: ${repoInfo.type}`);",
+        "repo-detector.ts:94: throw new Error(`${context} requires GitLab repositories. Got: ${repoInfo.type}`);",
+        "graphql-commit-strategy.ts:124: throw new ValidationError(`GraphQL commit strategy requires GitHub repositories. Got: ${repoInfo.type}`);",
+        "repo-detector.ts:198: throw new ValidationError(`Unrecognized git URL format: ${gitUrl}...`)"
+      ],
+      "suggestion": "Change assertGitHubRepo, assertAzureDevOpsRepo, and assertGitLabRepo to throw ValidationError instead of plain Error, consistent with detectRepoType and the GraphQL commit strategy's equivalent check. These are all input validation — wrong repo type passed to a platform-specific function.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "graphql-mixed-error-types-for-api-failures",
+      "summary": "GraphQL error responses throw plain Error with inconsistent message formats",
+      "related_files": [
+        "src/vcs/graphql-commit-strategy.ts"
+      ],
+      "evidence": [
+        "graphql-commit-strategy.ts:296: throw new Error(`GraphQL error: ${parsed.errors.map((e) => e.message).join(', ')}`);",
+        "graphql-commit-strategy.ts:303: throw new Error('GraphQL response missing commit OID');",
+        "graphql-commit-strategy.ts:468: throw new Error(`GraphQL error: ${parsed.errors.map((e) => e.message).join(', ')}`);",
+        "graphql-commit-strategy.ts:498: throw new Error(`GraphQL response missing repository ID for ${repoInfo.owner}/${repoInfo.repo}`);",
+        "graphql-commit-strategy.ts:412: return new Error(`GraphQL commit failed for ${repo}: ${cleanMessage}`);"
+      ],
+      "suggestion": "The GraphQL strategy has three different error message formats for API failures: 'GraphQL error: ...', 'GraphQL response missing ...', and 'GraphQL commit failed for ...'. Consider standardizing the prefix or using a dedicated error class for GraphQL API errors to make them easier to identify in catch blocks and retry logic.",
+      "confidence": "medium"
+    }
+  ]
+}

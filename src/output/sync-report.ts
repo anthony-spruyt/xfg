@@ -1,6 +1,9 @@
 // src/output/sync-report.ts
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
+import type { FileChangeDetail } from "../sync/types.js";
+
+export type ReportFileChange = FileChangeDetail;
 
 export interface SyncReport {
   repos: RepoFileChanges[];
@@ -11,15 +14,10 @@ export interface SyncReport {
 
 export interface RepoFileChanges {
   repoName: string;
-  files: FileChange[];
+  files: ReportFileChange[];
   prUrl?: string;
   mergeOutcome?: "manual" | "auto" | "force" | "direct";
   error?: string;
-}
-
-export interface FileChange {
-  path: string;
-  action: "create" | "update" | "delete";
 }
 
 function formatSyncSummary(totals: SyncReport["totals"]): string {

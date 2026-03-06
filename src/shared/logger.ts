@@ -28,12 +28,17 @@ interface LoggerStats {
 }
 
 export class Logger implements ILogger {
+  private readonly debugEnabled: boolean;
   private stats: LoggerStats = {
     total: 0,
     succeeded: 0,
     failed: 0,
     skipped: 0,
   };
+
+  constructor(debugEnabled?: boolean) {
+    this.debugEnabled = debugEnabled ?? false;
+  }
 
   log(message: string): void {
     console.log(message);
@@ -59,7 +64,7 @@ export class Logger implements ILogger {
   }
 
   debug(message: string): void {
-    if (process.env.DEBUG || process.env.XFG_DEBUG) {
+    if (this.debugEnabled) {
       console.log(chalk.dim(`    [debug] ${message}`));
     }
   }
@@ -127,4 +132,6 @@ export class Logger implements ILogger {
   }
 }
 
-export const logger = new Logger();
+export const logger = new Logger(
+  !!(process.env.DEBUG || process.env.XFG_DEBUG)
+);

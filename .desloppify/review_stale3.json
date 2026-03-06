@@ -1,0 +1,133 @@
+{
+  "assessments": {
+    "incomplete_migration": 88,
+    "package_organization": 82
+  },
+  "findings": [
+    {
+      "dimension": "incomplete_migration",
+      "identifier": "stale-ts-node-dev-script",
+      "summary": "dev script references ts-node which is not installed; project uses tsx",
+      "related_files": [
+        "src/package.json"
+      ],
+      "evidence": [
+        "\"dev\": \"ts-node src/cli.ts\" — but devDependencies has tsx, not ts-node"
+      ],
+      "suggestion": "Change dev script to: \"dev\": \"tsx src/cli.ts\" to match the actual dev toolchain",
+      "confidence": "high"
+    },
+    {
+      "dimension": "incomplete_migration",
+      "identifier": "manifest-v1-v2-v3-legacy-types",
+      "summary": "V1, V2, V3 manifest structures and migration functions kept for runtime backward compatibility",
+      "related_files": [
+        "src/sync/manifest.ts"
+      ],
+      "evidence": [
+        "interface XfgManifestV1 { version: 1; managedFiles: string[] }",
+        "interface XfgManifestV2 { version: 2; configs: Record<string, string[]> }",
+        "interface XfgManifestV3 { version: 3; ... rulesets?: string[]; labels?: string[] }",
+        "function migrateV2ToV3(v2: XfgManifestV2): XfgManifestV3",
+        "function migrateV3ToV4(v3: XfgManifestV3): XfgManifest"
+      ],
+      "suggestion": "This is intentional backward-compat for existing users' repos — no action needed unless a major version drop of V1/V2 support is desired. Consider adding a deprecation timeline comment.",
+      "confidence": "low"
+    },
+    {
+      "dimension": "incomplete_migration",
+      "identifier": "stale-esm-compat-comment",
+      "summary": "Comment about ESM compatibility and interface handling is stale — inline export type is already used",
+      "related_files": [
+        "src/cli/index.ts"
+      ],
+      "evidence": [
+        "// Export types - using 'export type' for type aliases, but interfaces need special handling",
+        "// For ESM compatibility, re-export everything from types.js",
+        "Lines 8-14 already use `type` keyword inline, making the comment misleading"
+      ],
+      "suggestion": "Remove or update the stale comments on lines 4-5 of src/cli/index.ts",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "shared-imports-from-vcs",
+      "summary": "shared/gh-api-utils.ts imports from vcs/ module, violating the dependency direction (shared should be lowest-level)",
+      "related_files": [
+        "src/shared/gh-api-utils.ts"
+      ],
+      "evidence": [
+        "import type { GitHubAppTokenManager } from \"../vcs/github-app-token-manager.js\";",
+        "gh-api-utils.ts lives in shared/ but depends on vcs/ — a coupling-direction failure"
+      ],
+      "suggestion": "Move gh-api-utils.ts to vcs/ (where its consumers mostly are), or extract the token-manager type dependency to shared/ as an interface",
+      "confidence": "high"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "shared-imports-from-config",
+      "summary": "shared/repo-detector.ts and shared/retry-utils.ts import ValidationError from config/, inverting the dependency direction",
+      "related_files": [
+        "src/shared/repo-detector.ts",
+        "src/shared/retry-utils.ts",
+        "src/config/errors.ts"
+      ],
+      "evidence": [
+        "src/shared/repo-detector.ts:1:import { ValidationError } from \"../config/errors.js\";",
+        "src/shared/retry-utils.ts:3:import { ValidationError } from \"../config/errors.js\";",
+        "ValidationError is a generic error class living in config/ but used by shared/, vcs/, cli/, and settings/"
+      ],
+      "suggestion": "Move ValidationError to shared/errors.ts since it is a general-purpose error class, not config-specific. This would fix the coupling-direction violation.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "shared-barrel-incomplete",
+      "summary": "shared/index.ts barrel omits 5 files that have significant external usage",
+      "related_files": [
+        "src/shared/index.ts",
+        "src/shared/type-guards.ts",
+        "src/shared/gh-api-utils.ts",
+        "src/shared/string-utils.ts",
+        "src/shared/xfg-template.ts",
+        "src/shared/file-status.ts"
+      ],
+      "evidence": [
+        "type-guards.ts: 23 external imports, not in barrel",
+        "gh-api-utils.ts: 12 external imports, not in barrel",
+        "string-utils.ts: 3 external imports, not in barrel",
+        "xfg-template.ts: 2 external imports, not in barrel",
+        "file-status.ts: 1 external import, not in barrel"
+      ],
+      "suggestion": "Add the heavily-imported modules (at minimum type-guards and gh-api-utils) to the shared barrel, or document that direct imports are the intended pattern for shared/",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "shared-flat-directory-overload",
+      "summary": "shared/ has 14 non-index files mixing concerns: logging, shell, retry, env, git detection, GitHub API, templating, string utils",
+      "related_files": [
+        "src/shared/"
+      ],
+      "evidence": [
+        "14 files in one flat directory: logger, shell-utils, retry-utils, env, repo-detector, gh-api-utils, xfg-template, interpolation-engine, command-executor, type-guards, sanitize-utils, string-utils, workspace-utils, file-status"
+      ],
+      "suggestion": "This is borderline — the files are individually small and cohesive. Consider at minimum moving gh-api-utils to vcs/ where it has stronger affinity. No major restructuring required.",
+      "confidence": "low"
+    },
+    {
+      "dimension": "package_organization",
+      "identifier": "shared-xfg-template-imports-config",
+      "summary": "shared/xfg-template.ts imports ContentValue type from config/, creating another upward dependency",
+      "related_files": [
+        "src/shared/xfg-template.ts",
+        "src/config/index.ts"
+      ],
+      "evidence": [
+        "src/shared/xfg-template.ts:14:import type { ContentValue } from \"../config/index.js\";"
+      ],
+      "suggestion": "Define ContentValue (or the subset needed) in shared/ to eliminate the upward dependency, or move xfg-template to a module that can depend on config/",
+      "confidence": "medium"
+    }
+  ]
+}

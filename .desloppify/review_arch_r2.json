@@ -1,0 +1,142 @@
+{
+  "assessments": {
+    "cross_module_architecture": 93,
+    "design_coherence": 90,
+    "abstraction_fitness": 88,
+    "package_organization": 92,
+    "api_surface_coherence": 84
+  },
+  "findings": [
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "FileChange-name-collision",
+      "summary": "Two unrelated interfaces named 'FileChange' exist in different modules with different shapes, both re-exported from barrel files",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/types.ts",
+        "/workspaces/xfg/src/output/sync-report.ts",
+        "/workspaces/xfg/src/output/index.ts",
+        "/workspaces/xfg/src/vcs/index.ts"
+      ],
+      "evidence": [
+        "src/vcs/types.ts:154 defines FileChange with { path: string; content: string | null }",
+        "src/output/sync-report.ts:20 defines FileChange with { path: string; action: 'create' | 'update' | 'delete' }",
+        "Both are re-exported from their respective barrel files (vcs/index.ts, output/index.ts)"
+      ],
+      "suggestion": "Rename one or both to disambiguate: e.g. VcsFileChange (content-bearing) vs ReportFileChange (action-only), or consolidate into a single shared type",
+      "confidence": 0.95
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "FileChange-vs-FileChangeDetail-vs-FileAction-proliferation",
+      "summary": "Four closely related types represent file changes with overlapping but slightly different shapes, creating confusion about which to use where",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/types.ts",
+        "/workspaces/xfg/src/vcs/pr-creator.ts",
+        "/workspaces/xfg/src/sync/types.ts",
+        "/workspaces/xfg/src/output/sync-report.ts"
+      ],
+      "evidence": [
+        "vcs/types.ts: FileChange { path, content } - for commit payloads",
+        "vcs/pr-creator.ts: FileAction { fileName, action } - for PR descriptions",
+        "sync/types.ts: FileChangeDetail { path, action } - for processor results",
+        "output/sync-report.ts: FileChange { path, action } - for report output",
+        "FileChangeDetail and output/FileChange have identical shapes but different names",
+        "FileAction uses 'fileName' while others use 'path' for the same concept"
+      ],
+      "suggestion": "Consolidate FileChangeDetail and output/FileChange into a single type. Standardize the field name (path vs fileName) across FileAction and related types.",
+      "confidence": 0.92
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "sync-types-imports-pr-creator-concrete",
+      "summary": "sync/types.ts imports FileAction from the concrete vcs/pr-creator.ts rather than from vcs/types.ts or vcs/index.ts barrel",
+      "related_files": [
+        "/workspaces/xfg/src/sync/types.ts",
+        "/workspaces/xfg/src/vcs/pr-creator.ts",
+        "/workspaces/xfg/src/sync/file-sync-orchestrator.ts",
+        "/workspaces/xfg/src/sync/commit-message.ts"
+      ],
+      "evidence": [
+        "sync/types.ts:9 - import type { FileAction } from '../vcs/pr-creator.js'",
+        "sync/file-sync-orchestrator.ts:4 - import type { FileAction } from '../vcs/pr-creator.js'",
+        "sync/commit-message.ts:1 - import type { FileAction } from '../vcs/pr-creator.js'",
+        "FileAction is not exported from vcs/index.ts or vcs/types.ts, forcing direct file imports that bypass the barrel"
+      ],
+      "suggestion": "Move FileAction to vcs/types.ts and export it from vcs/index.ts. This keeps cross-module imports going through the barrel.",
+      "confidence": 0.9
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "settings-processor-result-inconsistency",
+      "summary": "The three settings processors return slightly different result shapes despite sharing a base type, with inconsistent presence of optional fields",
+      "related_files": [
+        "/workspaces/xfg/src/settings/rulesets/processor.ts",
+        "/workspaces/xfg/src/settings/labels/processor.ts",
+        "/workspaces/xfg/src/settings/repo-settings/processor.ts",
+        "/workspaces/xfg/src/settings/base-processor.ts"
+      ],
+      "evidence": [
+        "RulesetProcessorResult has { changes?, planOutput?: RulesetPlanResult }",
+        "LabelsProcessorResult has { changes?, planOutput?: LabelsPlanResult }",
+        "RepoSettingsProcessorResult has { changes?, warnings?, planOutput?: RepoSettingsPlanResult }",
+        "Only RepoSettingsProcessorResult has 'warnings' at the result level, though the base-processor's buildDryRunResult supports passing arbitrary extra fields",
+        "The consuming code in sync-command.ts logSettingsResult checks result.warnings and result.planOutput?.lines generically, meaning it expects a uniform shape but gets different types"
+      ],
+      "suggestion": "Add 'warnings' to BaseProcessorResult (optional) so all three result types consistently support it, or define a common SettingsProcessorResult that includes warnings.",
+      "confidence": 0.78
+    },
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "gh-api-utils-mixed-concerns",
+      "summary": "gh-api-utils.ts in shared/ contains both low-level API utilities (GhApiClient, parseApiJson) and a high-level token resolution function (resolveGitHubToken) that understands GitHub App installation semantics",
+      "related_files": [
+        "/workspaces/xfg/src/shared/gh-api-utils.ts"
+      ],
+      "evidence": [
+        "GhApiClient is a stateful class wrapping executor+retries for GitHub API calls",
+        "resolveGitHubToken() handles GitHub App token resolution with fallback to GH_TOKEN env",
+        "parseApiJson() is a JSON parser with domain-specific error wrapping (throws GraphQLApiError)",
+        "isHttp404Error() is a simple string-match utility",
+        "These span two abstraction levels: infrastructure (API client, JSON parsing) and business logic (token resolution strategy with App installation awareness)"
+      ],
+      "suggestion": "Consider splitting: keep GhApiClient/parseApiJson/buildTokenEnv/getHostnameFlag/isHttp404Error as API infrastructure utilities, and move resolveGitHubToken to a more domain-specific location (e.g., vcs/ or a dedicated auth module)",
+      "confidence": 0.72
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "cli-types-re-exports-from-other-modules",
+      "summary": "cli/types.ts re-exports types from other modules (IRepositoryProcessor, IRulesetProcessor, IRepoSettingsProcessor, ILabelsProcessor) alongside its own definitions, creating ambiguous import sources",
+      "related_files": [
+        "/workspaces/xfg/src/cli/types.ts",
+        "/workspaces/xfg/src/cli/index.ts",
+        "/workspaces/xfg/src/sync/index.ts",
+        "/workspaces/xfg/src/settings/index.ts"
+      ],
+      "evidence": [
+        "cli/types.ts:3 imports IRepositoryProcessor from sync/index.ts",
+        "cli/types.ts:8 imports ISettingsProcessor, IRulesetProcessor, IRepoSettingsProcessor, ILabelsProcessor from settings/index.ts",
+        "cli/types.ts:13 re-exports: export type { IRepositoryProcessor, IRulesetProcessor }",
+        "cli/types.ts:92 re-exports: export type { IRepoSettingsProcessor, ILabelsProcessor }",
+        "cli/index.ts:3-10 re-exports these same types from cli/types.ts, adding a third layer",
+        "Consumers can import IRepositoryProcessor from sync/index, cli/types, or cli/index"
+      ],
+      "suggestion": "Remove re-exports from cli/types.ts and cli/index.ts. Let consumers import these interfaces directly from their owning modules (sync/ and settings/).",
+      "confidence": 0.88
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "processor-constructor-default-fallback-pattern",
+      "summary": "RepositoryProcessor constructor uses logger singleton as default when no ILogger is passed, which weakens the DI pattern by making the singleton accessible from library code",
+      "related_files": [
+        "/workspaces/xfg/src/sync/repository-processor.ts"
+      ],
+      "evidence": [
+        "repository-processor.ts:6 imports { logger, ILogger } from '../shared/logger.js'",
+        "repository-processor.ts:58 uses: const logInstance = log ?? logger",
+        "This means RepositoryProcessor (library code in sync/) has a direct import of the logger singleton, which CLAUDE.md says should be avoided: 'Only CLI entry points and composition roots may import singletons directly'"
+      ],
+      "suggestion": "Remove the logger singleton import. Make the ILogger parameter required, or have the composition root (cli/sync-command.ts) always pass it explicitly. The RepositoryProcessor is already only instantiated from sync-command.ts.",
+      "confidence": 0.85
+    }
+  ]
+}

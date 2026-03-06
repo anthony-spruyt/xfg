@@ -5,7 +5,7 @@ export {
   writeSyncReportSummary,
   type SyncReport,
   type RepoFileChanges,
-  type FileChange,
+  type ReportFileChange,
 } from "./sync-report.js";
 
 // Settings report (repo-grouped settings changes)

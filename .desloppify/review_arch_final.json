@@ -1,0 +1,161 @@
+{
+  "assessments": {
+    "cross_module_architecture": 90,
+    "design_coherence": 91,
+    "abstraction_fitness": 88,
+    "package_organization": 93,
+    "api_surface_coherence": 87
+  },
+  "findings": [
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "shared-imports-config-type",
+      "summary": "shared/xfg-template.ts imports ContentValue type from config module, creating an upward dependency from shared (general) to config (specific)",
+      "related_files": [
+        "/workspaces/xfg/src/shared/xfg-template.ts",
+        "/workspaces/xfg/src/config/types.ts"
+      ],
+      "evidence": [
+        "src/shared/xfg-template.ts line 14: import type { ContentValue } from \"../config/index.js\";",
+        "ContentValue is defined in config/types.ts as: Record<string, unknown> | string | string[]",
+        "shared/ is the general utility layer; config/ is a domain-specific layer that depends on shared/. This creates a bidirectional type dependency between layers."
+      ],
+      "suggestion": "Move the ContentValue type alias to shared/ (e.g., shared/content-types.ts) since it is a general-purpose union type. Both config/ and shared/xfg-template.ts can then import it from shared/. Alternatively, xfg-template.ts could define its own parameter type that matches the same shape.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "inconsistent-error-types",
+      "summary": "Some modules throw bare Error while others use typed error classes (ValidationError, LifecycleError, GraphQLApiError), making error handling unpredictable for consumers",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/github-pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/gitlab-pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/authenticated-git-ops.ts",
+        "/workspaces/xfg/src/vcs/pr-strategy-factory.ts",
+        "/workspaces/xfg/src/shared/xfg-template.ts",
+        "/workspaces/xfg/src/shared/env.ts",
+        "/workspaces/xfg/src/shared/errors.ts"
+      ],
+      "evidence": [
+        "vcs/github-pr-strategy.ts:162: throw new Error('Could not parse PR URL from output: ...')",
+        "vcs/gitlab-pr-strategy.ts:234: throw new Error('Could not parse MR URL from output: ...')",
+        "vcs/authenticated-git-ops.ts:35: throw new Error('getAuthenticatedUrl() called without auth options')",
+        "shared/xfg-template.ts:123: throw new Error('Unknown xfg template variable: ...')",
+        "shared/env.ts:70,75: throw new Error for env var errors",
+        "Meanwhile config/ consistently uses ValidationError, lifecycle/ uses LifecycleError, and GraphQL code uses GraphQLApiError"
+      ],
+      "suggestion": "Introduce a typed error for VCS operations (e.g., VcsError or PRStrategyError) and use ValidationError for template/env errors. This allows callers to handle error types programmatically without parsing messages.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "settings-strategy-api-inconsistency",
+      "summary": "The three settings strategy interfaces (IRulesetStrategy, ILabelsStrategy, IRepoSettingsStrategy) have inconsistent API shapes despite solving the same CRUD problem",
+      "related_files": [
+        "/workspaces/xfg/src/settings/rulesets/types.ts",
+        "/workspaces/xfg/src/settings/labels/types.ts",
+        "/workspaces/xfg/src/settings/repo-settings/types.ts"
+      ],
+      "evidence": [
+        "IRulesetStrategy.create returns Promise<GitHubRuleset> while ILabelsStrategy.create returns Promise<void>",
+        "IRulesetStrategy has a get() method; ILabelsStrategy and IRepoSettingsStrategy do not",
+        "IRepoSettingsStrategy has setVulnerabilityAlerts, setAutomatedSecurityFixes, setPrivateVulnerabilityReporting (toggle methods) — a shape not present in the other two",
+        "IRulesetStrategy.update takes (repoInfo, rulesetId, name, ruleset, options) while ILabelsStrategy.update takes (repoInfo, currentName, label, options) — different parameter ordering for the same concept"
+      ],
+      "suggestion": "Where the domain allows, align return types (create consistently returns the created entity or consistently returns void). Document explicitly why IRepoSettingsStrategy needs extra toggle methods. Consider whether IRulesetStrategy.get() could be an optional method or separate interface to keep the core CRUD shape aligned.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "pr-creator-dual-api",
+      "summary": "pr-creator.ts exposes both a procedural API (createPR/mergePR functions) and an OOP API (PRWorkflowExecutor class), creating two redundant ways to achieve the same result",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/pr-creator.ts",
+        "/workspaces/xfg/src/vcs/pr-strategy.ts",
+        "/workspaces/xfg/src/sync/pr-merge-handler.ts"
+      ],
+      "evidence": [
+        "pr-creator.ts exports createPR() which internally creates a PRWorkflowExecutor and calls execute()",
+        "pr-creator.ts exports mergePR() which directly calls strategy.merge()",
+        "PRWorkflowExecutor wraps IPRStrategy with error handling and existing-PR check",
+        "pr-merge-handler.ts calls createPR() and mergePR() as free functions, never using PRWorkflowExecutor directly",
+        "PRWorkflowExecutor is also exported from pr-strategy.ts, giving consumers two entry points for the same workflow"
+      ],
+      "suggestion": "Consider making PRWorkflowExecutor the single entry point and removing the free-function wrappers, or vice versa. Having both creates confusion about which API to use.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "repo-settings-type-guard-unnecessary",
+      "summary": "isRepoSettingsStrategy runtime type guard in repo-settings/types.ts is unnecessary given TypeScript's static type system and DI pattern used throughout",
+      "related_files": [
+        "/workspaces/xfg/src/settings/repo-settings/types.ts"
+      ],
+      "evidence": [
+        "repo-settings/types.ts lines 92-106: isRepoSettingsStrategy() does duck-type checking at runtime",
+        "No usage found via grep for isRepoSettingsStrategy in production code — only defined, never called",
+        "All other strategy interfaces (IRulesetStrategy, ILabelsStrategy, IPRStrategy) do NOT have corresponding type guards"
+      ],
+      "suggestion": "Remove isRepoSettingsStrategy if unused, or add equivalent guards to all strategy interfaces if there is a real need for runtime checking. Dead code reduces navigability.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "logger-injection-inconsistency",
+      "summary": "Logger dependency injection uses inconsistent narrow interface shapes across modules instead of a shared minimal interface",
+      "related_files": [
+        "/workspaces/xfg/src/sync/branch-manager.ts",
+        "/workspaces/xfg/src/sync/commit-push-manager.ts",
+        "/workspaces/xfg/src/sync/sync-workflow.ts",
+        "/workspaces/xfg/src/lifecycle/repo-lifecycle-manager.ts",
+        "/workspaces/xfg/src/vcs/pr-strategy.ts",
+        "/workspaces/xfg/src/shared/logger.ts"
+      ],
+      "evidence": [
+        "branch-manager.ts defines SyncLog = { debug, info, warn }",
+        "commit-push-manager.ts accepts { debug, info }",
+        "sync-workflow.ts accepts { info, debug }",
+        "repo-lifecycle-manager.ts accepts { debug, info, warn }",
+        "pr-strategy.ts defines IPRStrategyLogger = { debug, warn, info }",
+        "Each module defines its own inline or local type alias for essentially the same narrow logger shape"
+      ],
+      "suggestion": "Define 2-3 shared narrow logger interfaces in shared/ (e.g., IDebugLogger = { debug }, IInfoLogger extends IDebugLogger = { info }, IWarnLogger extends IInfoLogger = { warn }) and reuse them. This maintains ISP while eliminating the proliferation of identical anonymous types.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "sync-command-god-function",
+      "summary": "sync-command.ts is a 628-line file that acts as both composition root and orchestration logic, mixing dependency wiring with business flow control",
+      "related_files": [
+        "/workspaces/xfg/src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "runSync() at 93 lines wires dependencies AND controls the main loop",
+        "processSingleRepo() coordinates lifecycle, file sync, and settings — three distinct phases",
+        "logSettingsResult() directly imports and uses the logger singleton for formatting",
+        "applyRepoSettings() is a 95-line function with its own descriptor pattern that could be a separate module",
+        "The file imports from 12 different modules across cli, config, shared, sync, vcs, lifecycle, output"
+      ],
+      "suggestion": "Extract the orchestration into a dedicated SyncOrchestrator class that receives dependencies via constructor. Keep sync-command.ts as a thin composition root that wires the orchestrator and calls it. This would also allow the orchestrator to be tested without the CLI layer.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "api_surface_coherence",
+      "identifier": "processor-options-bag-inconsistency",
+      "summary": "ProcessorOptions uses optional fields with runtime defaults while BaseProcessorOptions uses the same pattern but with different field names for equivalent concepts",
+      "related_files": [
+        "/workspaces/xfg/src/sync/types.ts",
+        "/workspaces/xfg/src/settings/base-processor.ts"
+      ],
+      "evidence": [
+        "ProcessorOptions has: dryRun?: boolean, retries?: number, executor?: ICommandExecutor, noDelete?: boolean, token?: string",
+        "BaseProcessorOptions has: dryRun?: boolean, token?: string — no retries, no executor, no noDelete",
+        "RulesetProcessorOptions extends BaseProcessorOptions adding noDelete?: boolean",
+        "RepoSettingsProcessorOptions = BaseProcessorOptions (no noDelete at all)",
+        "The sync processor and settings processors accept token via their options bags, but sync-command resolves token before passing to both — the token field semantics differ (sync: optional fallback, settings: pre-resolved)"
+      ],
+      "suggestion": "Document the token resolution contract clearly in each options interface. Consider whether noDelete should be on BaseProcessorOptions since it applies to rulesets and labels but not repo-settings (current design is correct but the asymmetry may confuse contributors).",
+      "confidence": "low"
+    }
+  ]
+}

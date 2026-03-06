@@ -1,0 +1,89 @@
+{
+  "assessments": {
+    "high_level_elegance": 90,
+    "mid_level_elegance": 88,
+    "low_level_elegance": 85
+  },
+  "findings": [
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "sync-command-god-function",
+      "summary": "sync-command.ts is a 628-line file containing ~10 module-level functions that orchestrate the entire sync flow. It acts as both composition root and orchestration logic, mixing DI wiring (creating processors, token managers) with business flow (lifecycle phases, file sync phases, settings application, report display). This makes the module hard to extend and test in isolation.",
+      "related_files": [
+        "/workspaces/xfg/src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "runSync() builds RepoIterationContext with 13 fields, then iterates repos calling processSingleRepo",
+        "processSingleRepo calls runLifecyclePhase, runFileSyncPhase, applyRepoSettings - three separate concerns in one function chain",
+        "applyRepoSettings has its own internal descriptor loop for rulesets/labels/repo-settings",
+        "displayReports builds lifecycle, sync, and settings reports then writes unified summary - all inline"
+      ],
+      "suggestion": "Extract the per-repo orchestration and report display into a dedicated class (e.g., SyncOrchestrator) that accepts its dependencies via constructor injection, leaving runSync as a thin composition root that only wires dependencies and delegates.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "processorresult-dual-encoding",
+      "summary": "ProcessorResult encodes failure in two ways: success:false with a message, and CommitPushResult uses a nested errorResult. The caller (SyncWorkflow.execute) must check both commitResult.success and commitResult.errorResult, while other steps just return ProcessorResult directly. This inconsistency makes error propagation across the workflow harder to follow.",
+      "related_files": [
+        "/workspaces/xfg/src/sync/types.ts",
+        "/workspaces/xfg/src/sync/sync-workflow.ts",
+        "/workspaces/xfg/src/sync/commit-push-manager.ts"
+      ],
+      "evidence": [
+        "CommitPushResult has three variants: { success: true }, { success: true; skipped: true }, { success: false; errorResult: ProcessorResult }",
+        "SyncWorkflow.execute line 107-109: if (!commitResult.success) { return commitResult.errorResult; } - unwraps nested result",
+        "Other workflow steps (authOptionsBuilder, prMergeHandler) return ProcessorResult directly without wrapping"
+      ],
+      "suggestion": "Unify CommitPushResult to return ProcessorResult directly on failure (like other steps), using a discriminated union with a 'status' field: 'committed' | 'skipped' | 'failed'. This eliminates the nested unwrapping.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "normalizer-merge-duplication",
+      "summary": "normalizer.ts contains two parallel merge paths for settings: mergeSettings (raw root + raw repo -> normalized) and mergeRawSettings (raw root + raw group -> raw root). Both implement nearly identical ruleset/label/repo merge logic with slightly different type signatures. The comment on mergeRawSettings acknowledges this: 'Unlike mergeSettings(), this operates on raw types and returns raw types, preserving false values and inherit keys'.",
+      "related_files": [
+        "/workspaces/xfg/src/config/normalizer.ts"
+      ],
+      "evidence": [
+        "mergeSettings (lines 214-289): iterates rulesets with shouldInherit, handles false opt-out, calls mergeRuleset, handles labels via mergeLabels, merges repo settings",
+        "mergeRawSettings (lines 385-454): iterates rulesets with shouldInherit, handles false opt-out, calls mergeRuleset, handles labels with inherit logic, merges repo settings",
+        "Both functions share identical structural patterns: check inherit flag, iterate entries skipping 'inherit' key, handle false, merge or clone"
+      ],
+      "suggestion": "Extract the shared iteration pattern (inherit check, entry-by-entry merge with false handling) into a generic helper parameterized by the merge function and false handling behavior. The two functions differ only in whether they preserve false values in output.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "file-writer-dual-iteration",
+      "summary": "FileWriter.writeFiles iterates the files array twice: once for writing content and once for setting executable permissions. The second loop re-checks file change results and skip status. This could be a single pass since executable setting depends on per-file data already available in the first loop.",
+      "related_files": [
+        "/workspaces/xfg/src/sync/file-writer.ts"
+      ],
+      "evidence": [
+        "First loop (line 57-138): iterates files, writes content, tracks fileChanges",
+        "Second loop (line 140-157): iterates files again, checks fileChanges.get(file.fileName), applies setExecutable",
+        "The separation exists because setExecutable needs the file to exist on disk, but writeFile is called in the first loop anyway"
+      ],
+      "suggestion": "The two loops could be merged since writeFile is called before setExecutable would need to run. Set executable immediately after writing each file in the first loop. This eliminates the second pass and the need to re-lookup change results.",
+      "confidence": "low"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "auth-result-skip-pattern",
+      "summary": "AuthResult is a discriminated union where the failure case embeds a full ProcessorResult (skipResult). This means the auth layer pre-formats user-facing messages that conceptually belong to the workflow layer. The auth boundary leaks presentation concerns.",
+      "related_files": [
+        "/workspaces/xfg/src/sync/types.ts",
+        "/workspaces/xfg/src/sync/auth-options-builder.ts",
+        "/workspaces/xfg/src/sync/sync-workflow.ts"
+      ],
+      "evidence": [
+        "AuthResult type: { ok: false; skipResult: ProcessorResult } - embeds full result with repoName, message, success fields",
+        "SyncWorkflow line 46-48: if (!authResult.ok) { return authResult.skipResult; } - directly returns pre-built result",
+        "The auth layer must know about ProcessorResult structure to build skipResult, creating coupling from auth to processor domain"
+      ],
+      "suggestion": "Have AuthResult's failure case carry only the reason string, and let SyncWorkflow construct the ProcessorResult. This keeps auth focused on auth concerns.",
+      "confidence": "medium"
+    }
+  ]
+}

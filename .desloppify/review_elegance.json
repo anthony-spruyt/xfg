@@ -1,0 +1,156 @@
+{
+  "assessments": {
+    "high_level_elegance": 88,
+    "mid_level_elegance": 82,
+    "low_level_elegance": 84
+  },
+  "findings": [
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "sync-command-orchestration-sprawl",
+      "summary": "sync-command.ts at 600 lines is a procedural orchestrator with multiple responsibilities (config loading, lifecycle, file sync, settings, reporting)",
+      "related_files": [
+        "src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "processSingleRepo, runLifecyclePhase, runFileSyncPhase, applyRepoSettings, displayReports are all top-level functions in a single file doing orchestration at different levels",
+        "RepoIterationContext has 13 fields bundling unrelated concerns (processor, lifecycleManager, tokenManager, settingsCollector, three factory types)"
+      ],
+      "suggestion": "Extract lifecycle, settings application, and reporting into separate orchestrator classes or modules to localize change",
+      "confidence": 0.75
+    },
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "pr-creator-mixed-ownership",
+      "summary": "pr-creator.ts mixes template formatting, PR creation orchestration, and merge orchestration in a single file with module-level functions",
+      "related_files": [
+        "src/vcs/pr-creator.ts"
+      ],
+      "evidence": [
+        "formatPRBody, formatPRTitle, loadDefaultTemplate, createPR, and mergePR are all exported from the same file",
+        "createPR internally constructs a PRWorkflowExecutor and calls it — thin wrapper that could be eliminated"
+      ],
+      "suggestion": "Separate PR body/title formatting into a dedicated formatter module; consider whether createPR/mergePR wrappers add value over direct PRWorkflowExecutor usage",
+      "confidence": 0.65
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "options-bag-proliferation",
+      "summary": "Large options objects are passed through multiple layers with overlapping fields, creating glue-code entropy",
+      "related_files": [
+        "src/sync/types.ts",
+        "src/sync/sync-workflow.ts",
+        "src/sync/commit-push-manager.ts"
+      ],
+      "evidence": [
+        "CommitPushOptions has 11 fields (repoInfo, gitOps, workDir, fileChanges, commitMessage, pushBranch, isDirectMode, dryRun, retries, token, executor)",
+        "BranchSetupOptions has 10 fields with significant overlap with CommitPushOptions (repoInfo, workDir, dryRun, retries, token, executor)",
+        "SyncWorkflow.execute destructures ProcessorOptions then rebuilds similar bags for branchManager.setupBranch and commitPushManager.commitAndPush"
+      ],
+      "suggestion": "Introduce a shared session/context type that carries the common fields (repoInfo, workDir, dryRun, retries, token, executor) once, with operation-specific types adding only unique fields",
+      "confidence": 0.8
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "duplicate-token-resolution",
+      "summary": "GitHub token resolution happens in two places: sync-command resolves it for lifecycle/settings, and AuthOptionsBuilder resolves it again for file sync",
+      "related_files": [
+        "src/cli/sync-command.ts",
+        "src/sync/auth-options-builder.ts"
+      ],
+      "evidence": [
+        "sync-command.ts line 340-349: resolveGitHubToken called and result passed as repoToken",
+        "auth-options-builder.ts line 29-35: resolveGitHubToken called again when preResolvedToken is undefined",
+        "The preResolvedToken path in AuthOptionsBuilder exists solely to handle the fact that sync-command already resolved the token"
+      ],
+      "suggestion": "Resolve token once in the outer loop and pass it through consistently, or let AuthOptionsBuilder be the sole resolver",
+      "confidence": 0.85
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "process-env-access-in-library-code",
+      "summary": "AuthOptionsBuilder accesses process.env.GH_TOKEN directly, violating the codebase's own DI principle for shared/library code",
+      "related_files": [
+        "src/sync/auth-options-builder.ts"
+      ],
+      "evidence": [
+        "auth-options-builder.ts line 35: process.env.GH_TOKEN passed directly to resolveGitHubToken",
+        "CLAUDE.md states: 'src/shared/ and src/sync/ modules must not import global singletons. Pass them in.'"
+      ],
+      "suggestion": "Accept the environment token as a constructor parameter or resolve option rather than reading process.env directly",
+      "confidence": 0.9
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "commit-strategy-selection-outside-vcs",
+      "summary": "CommitPushManager calls getCommitStrategy (selecting between Git and GraphQL) based on repo type, but this selection logic is spread across sync-command and commit-push-manager",
+      "related_files": [
+        "src/sync/commit-push-manager.ts",
+        "src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "sync-command.ts line 488: isGraphQLCommitMode computed as isGitHubRepo(repoInfo) && ctx.tokenManager !== null",
+        "commit-push-manager.ts line 49: getCommitStrategy(repoInfo, executor) called without isGraphQLCommitMode context — the strategy factory makes its own determination",
+        "isGraphQLCommitMode is threaded through ProcessorOptions -> FileWriteContext but not used by CommitPushManager"
+      ],
+      "suggestion": "Centralize commit strategy selection in one place — either the factory handles all selection logic, or the caller decides and injects the strategy",
+      "confidence": 0.7
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "validator-repetitive-structure",
+      "summary": "Config validator has repetitive validation patterns that could be extracted into a small validation DSL or helper",
+      "related_files": [
+        "src/config/validator.ts"
+      ],
+      "evidence": [
+        "validateFileConfigFields manually checks booleanFields with for-of loop (lines 99-114), stringFields with identical loop (lines 116-126), then separate header and vars checks",
+        "validateRawConfig has duplicated hasGroupFiles/hasGroupSettings logic that's repeated in validateForSync (lines 659-688 vs 723-757)"
+      ],
+      "suggestion": "Extract a fieldValidator helper that takes field name, expected type, and context; extract the hasGroupFiles/hasGroupSettings checks into shared predicates",
+      "confidence": 0.7
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "graphql-response-unsafe-casting",
+      "summary": "GraphQL response parsing uses chains of unsafe type casts instead of a typed parser or schema validation",
+      "related_files": [
+        "src/vcs/graphql-commit-strategy.ts"
+      ],
+      "evidence": [
+        "Lines 282-289: const data = parsed.data as Record<string, unknown> | undefined; const commit = (data?.createCommitOnBranch as Record<string, unknown> | undefined)?.commit as Record<string, unknown> | undefined; const oid = commit?.oid as string | undefined;",
+        "Lines 480-491: similar casting chain for queryRemoteRef response"
+      ],
+      "suggestion": "Define typed response interfaces and use a small type guard or assertion function to validate the response shape once",
+      "confidence": 0.75
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "labels-processor-update-payload-rebuild",
+      "summary": "LabelsProcessor manually rebuilds update payload from propertyChanges array instead of using a more direct mapping",
+      "related_files": [
+        "src/settings/labels/processor.ts"
+      ],
+      "evidence": [
+        "Lines 114-127: constructs updatePayload by looping over propertyChanges and checking prop.property against string literals ('color', 'description', 'new_name') with individual if branches"
+      ],
+      "suggestion": "Use Object.fromEntries or a reduce to map propertyChanges directly to the payload shape",
+      "confidence": 0.6
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "file-writer-double-iteration",
+      "summary": "FileWriter iterates over files twice — once for content writing and once for executable permissions",
+      "related_files": [
+        "src/sync/file-writer.ts"
+      ],
+      "evidence": [
+        "Lines 57-135: first loop writes files and tracks changes",
+        "Lines 137-154: second loop over same files array checks shouldBeExecutable",
+        "The second loop re-checks fileChanges.get(file.fileName) which was set in the first loop"
+      ],
+      "suggestion": "Handle executable permissions in the first loop after writing, or collect executable files during the first pass for a targeted second pass",
+      "confidence": 0.55
+    }
+  ]
+}

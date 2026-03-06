@@ -1,0 +1,100 @@
+{
+  "assessments": {
+    "error_consistency": 85
+  },
+  "findings": [
+    {
+      "dimension": "error_consistency",
+      "identifier": "sync-command-bare-error-vs-validation-error",
+      "summary": "runSync throws bare Error for 'Config file not found' while all other config-level validation uses ValidationError",
+      "related_files": [
+        "src/cli/sync-command.ts",
+        "src/config/errors.ts",
+        "src/config/loader.ts"
+      ],
+      "evidence": [
+        "src/cli/sync-command.ts:538: throw new Error(`Config file not found: ${configPath}`);",
+        "src/config/loader.ts:26-28: throw new ValidationError(`Failed to parse YAML config at ${filePath}: ${message}`);",
+        "src/cli/sync-command.ts:598: throw new Error('One or more repositories had errors during sync');"
+      ],
+      "suggestion": "Use ValidationError for config-file-not-found (it is a user input error and should be classified as permanent by retry logic). The aggregation error at line 598 is arguably a different concern but could also benefit from a distinct error type.",
+      "confidence": 0.7
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "manifest-parse-log-level-inconsistency",
+      "summary": "Manifest parsing uses warn for parse failures while similar patterns elsewhere use debug",
+      "related_files": [
+        "src/sync/manifest.ts"
+      ],
+      "evidence": [
+        "src/sync/manifest.ts:166: log?.warn(`Failed to parse manifest ${manifestPath}: ${error}`);",
+        "Contrast with safeCleanup in type-guards.ts which uses debug: log.debug(`Cleanup: ${label}: ${toErrorMessage(error)}`);"
+      ],
+      "suggestion": "A corrupt manifest is recoverable (treated as 'no manifest'). Using warn is arguably correct since it signals data loss, but the pattern differs from the debug-level used in other swallowed-error scenarios. Consider standardizing: warn for data that may indicate user action needed, debug for purely internal recovery.",
+      "confidence": 0.5
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "labels-diff-throws-error-not-validation-error",
+      "summary": "Label rename collision detection throws bare Error instead of ValidationError for user config problems",
+      "related_files": [
+        "src/settings/labels/diff.ts",
+        "src/config/errors.ts"
+      ],
+      "evidence": [
+        "src/settings/labels/diff.ts:57-59: throw new Error(`Rename collision: both '${renameTargets.get(targetLower)}' and '${name}' rename to '${label.new_name}'`);",
+        "src/settings/labels/diff.ts:102-105: throw new Error(`Rename collision: '${name}' would rename to '${label.new_name}', but that label already exists`);"
+      ],
+      "suggestion": "These are config validation errors (user misconfigured label renames). Use ValidationError for consistency with config-layer error classification. This also affects retry behavior — rename collisions should be treated as permanent errors without relying on message-pattern matching.",
+      "confidence": 0.8
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "branch-utils-bare-error-for-validation",
+      "summary": "validateBranchName and validateSafeBranchName throw bare Error for input validation",
+      "related_files": [
+        "src/vcs/branch-utils.ts",
+        "src/vcs/graphql-commit-strategy.ts"
+      ],
+      "evidence": [
+        "src/vcs/branch-utils.ts:16: throw new Error('Branch name cannot be empty');",
+        "src/vcs/branch-utils.ts:20: throw new Error('Branch name cannot start with \".\" or \"-\"');",
+        "src/vcs/graphql-commit-strategy.ts:41-46: throw new Error(`Invalid branch name for GraphQL commit strategy: \"${branchName}\"...`);"
+      ],
+      "suggestion": "These are input validation errors. Using ValidationError would allow retry logic to classify them as permanent without message-parsing, consistent with config validation.",
+      "confidence": 0.65
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "checkExistingPR-swallows-transient-errors",
+      "summary": "checkExistingPR in all 3 strategies returns null for non-permanent errors, silently swallowing transient failures",
+      "related_files": [
+        "src/vcs/github-pr-strategy.ts",
+        "src/vcs/azure-pr-strategy.ts",
+        "src/vcs/gitlab-pr-strategy.ts"
+      ],
+      "evidence": [
+        "src/vcs/github-pr-strategy.ts:58-69: catch(error) { if (isPermanentError(error)) { throw error; } ... return null; }",
+        "src/vcs/azure-pr-strategy.ts:55-66: catch(error) { if (isPermanentError(error)) { throw error; } ... return null; }",
+        "src/vcs/gitlab-pr-strategy.ts:113-124: catch(error) { if (isPermanentError(error)) { throw error; } ... return null; }"
+      ],
+      "suggestion": "This is consistent across all 3 strategies (which is good). However, swallowing transient errors means a temporary network issue during PR check causes a duplicate PR to be created instead of retrying. The behavior is intentional for resilience but the debug-level logging means operators may not notice repeated duplicates. This is a design tradeoff rather than a bug.",
+      "confidence": 0.4
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "github-app-token-manager-different-error-pattern",
+      "summary": "GitHubAppTokenManager uses fetch API with manual HTTP status checking, producing differently formatted errors from the rest of the codebase",
+      "related_files": [
+        "src/vcs/github-app-token-manager.ts"
+      ],
+      "evidence": [
+        "src/vcs/github-app-token-manager.ts:96-100: throw new Error(`GitHub API error: ${res.status}${body ? ` - ${body}` : ''}`);",
+        "Compare with gh-api-utils.ts which uses gh CLI, producing errors like 'Command failed: gh api ...' with stderr"
+      ],
+      "suggestion": "The token manager is the only module using fetch() directly for GitHub API calls. Its error messages use a different format ('GitHub API error: NNN') than the CLI-based errors elsewhere. This means the retry pattern matching in isPermanentError works differently for these errors (e.g., /401\\b/ will match 'GitHub API error: 401' but the error structure lacks stderr). The inconsistency is minor since token manager errors are caught at a higher level, but consider standardizing the error format.",
+      "confidence": 0.55
+    }
+  ]
+}

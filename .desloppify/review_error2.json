@@ -1,0 +1,100 @@
+{
+  "assessments": {
+    "error_consistency": 85
+  },
+  "findings": [
+    {
+      "dimension": "error_consistency",
+      "identifier": "manifest-raw-error-interpolation",
+      "summary": "manifest.ts uses raw `${error}` template interpolation instead of `toErrorMessage(error)`",
+      "related_files": [
+        "src/sync/manifest.ts"
+      ],
+      "evidence": [
+        "log?.warn(`Failed to parse manifest ${manifestPath}: ${error}`); (line 166)",
+        "log?.warn(`Failed to parse manifest content: ${error}`); (line 196)",
+        "Every other catch block in the codebase uses toErrorMessage(error) for consistent string extraction"
+      ],
+      "suggestion": "Replace `${error}` with `${toErrorMessage(error)}` in both catch blocks for consistency with the rest of the codebase.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "parseapijson-drops-original-error",
+      "summary": "parseApiJson discards the original JSON.parse error, losing diagnostic context",
+      "related_files": [
+        "src/shared/gh-api-utils.ts"
+      ],
+      "evidence": [
+        "} catch { const preview = response.slice(0, 200); throw new Error(`Failed to parse ${context}: ${preview}`); } (lines 160-163)",
+        "The bare `catch {}` discards the original SyntaxError which contains the position and character that caused the parse failure"
+      ],
+      "suggestion": "Capture the error and include the original parse error message: `catch (error) { throw new Error(`Failed to parse ${context}: ${toErrorMessage(error)} - ${preview}`); }`",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "mixed-error-vs-validation-error-in-repo-detector",
+      "summary": "repo-detector.ts uses bare Error for input validation failures that are conceptually validation errors",
+      "related_files": [
+        "src/shared/repo-detector.ts"
+      ],
+      "evidence": [
+        "throw new Error(`Unrecognized git URL format: ${gitUrl}...`) (line 196)",
+        "throw new Error(`Unable to parse GitHub URL: ${gitUrl}`) (line 249)",
+        "throw new Error(`Unable to parse Azure DevOps URL: ${gitUrl}`) (line 285)",
+        "throw new Error(`Unable to parse GitLab URL: ${gitUrl}`) (line 307)",
+        "These are user-input validation failures but use bare Error instead of ValidationError, which means isPermanentError won't recognize them via instanceof"
+      ],
+      "suggestion": "Use ValidationError for URL parsing failures since they represent invalid user input that won't resolve on retry. The isPermanentError function does catch them via regex patterns, but using the correct error type would be more consistent with the pattern in validator.ts, branch-utils.ts, and loader.ts.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "graphql-commit-mixed-error-types",
+      "summary": "GraphQL commit strategy throws bare Error for both runtime failures and input validation",
+      "related_files": [
+        "src/vcs/graphql-commit-strategy.ts"
+      ],
+      "evidence": [
+        "throw new ValidationError(...) for branch name validation (line 42/61)",
+        "throw new Error(`GraphQL commit strategy requires GitHub repositories...`) for repo type validation (line 124)",
+        "throw new Error(`GraphQL payload exceeds 50 MB limit...`) for input constraint (line 143)",
+        "The repo type check and payload size check are input validation but use bare Error while branch name validation correctly uses ValidationError"
+      ],
+      "suggestion": "Use ValidationError for the repo type check and payload size check, since they are pre-condition validation on user-provided input.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "assert-functions-use-bare-error",
+      "summary": "Assert functions (assertGitHubRepo, assertAzureDevOpsRepo, assertGitLabRepo) throw bare Error for type mismatches",
+      "related_files": [
+        "src/shared/repo-detector.ts"
+      ],
+      "evidence": [
+        "throw new Error(`${context} requires GitHub repositories. Got: ${repoInfo.type}`) (line 62)",
+        "throw new Error(`${context} requires Azure DevOps repositories. Got: ${repoInfo.type}`) (line 77)",
+        "throw new Error(`${context} requires GitLab repositories. Got: ${repoInfo.type}`) (line 92)"
+      ],
+      "suggestion": "These are programming errors (wrong strategy for wrong repo type) rather than user-input errors, so bare Error is arguably appropriate. However, they could use a dedicated assertion error type for better debuggability. Low priority.",
+      "confidence": "low"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "savemanifest-no-error-handling",
+      "summary": "saveManifest has no error handling for writeFileSync, unlike loadManifest which wraps I/O in try-catch",
+      "related_files": [
+        "src/sync/manifest.ts",
+        "src/sync/manifest-manager.ts"
+      ],
+      "evidence": [
+        "saveManifest calls writeFileSync without try-catch (line 204)",
+        "loadManifest wraps readFileSync in try-catch and returns null on failure (line 138-168)",
+        "The asymmetry means write failures propagate as raw Node.js errors without context"
+      ],
+      "suggestion": "Either wrap writeFileSync in try-catch to add context, or document that callers handle write failures. The caller (manifest-manager.ts line 116) also doesn't wrap it.",
+      "confidence": "medium"
+    }
+  ]
+}

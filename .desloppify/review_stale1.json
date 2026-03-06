@@ -1,0 +1,166 @@
+{
+  "assessments": {
+    "ai_generated_debt": 82,
+    "authorization_consistency": 90
+  },
+  "findings": [
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "restating-jsdoc-on-trivial-methods",
+      "summary": "JSDoc comments restate what the method name already says, adding no information",
+      "related_files": [
+        "src/settings/rulesets/github-ruleset-strategy.ts",
+        "src/settings/labels/github-labels-strategy.ts",
+        "src/vcs/graphql-commit-strategy.ts",
+        "src/shared/repo-detector.ts"
+      ],
+      "evidence": [
+        "/** Lists all rulesets for a repository. */ async list()",
+        "/** Gets a single ruleset by ID. */ async get()",
+        "/** Creates a new ruleset. */ async create()",
+        "/** Updates an existing ruleset. */ async update()",
+        "/** Deletes a ruleset. */ async delete()",
+        "/** Creates a new label. */ async create()",
+        "/** Deletes a label. */ async delete()",
+        "/** Extract hostname from a git URL. */ function extractHostFromUrl()",
+        "/** Delete a branch ref on the remote via GraphQL deleteRef mutation. */ private async deleteRemoteRef()",
+        "/** Create a branch ref on the remote via GraphQL createRef mutation. */ private async createRemoteRef()"
+      ],
+      "suggestion": "Remove JSDoc comments that merely restate the method name. Keep comments only when they add context (e.g. error semantics, side effects, non-obvious behavior).",
+      "confidence": "high"
+    },
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "inline-comments-restating-code",
+      "summary": "Inline comments describe what the next line of code does, which is already obvious from reading it",
+      "related_files": [
+        "src/vcs/github-pr-strategy.ts",
+        "src/sync/file-writer.ts",
+        "src/vcs/azure-pr-strategy.ts",
+        "src/settings/repo-settings/github-repo-settings-strategy.ts",
+        "src/config/formatter.ts"
+      ],
+      "evidence": [
+        "// Extract PR number from URL (azure-pr-strategy.ts:89)",
+        "// Manual mode: do nothing (repeated in 3 PR strategies)",
+        "// Handle empty file case (formatter.ts:87)",
+        "// Handle string content (text file) (formatter.ts:102)",
+        "// Handle object content (JSON/YAML) (formatter.ts:115)",
+        "// Check if file would change (file-writer.ts:108)",
+        "// Get the commit SHA (git-commit-strategy.ts:56)",
+        "// Parse PR URL to extract details (azure-pr-strategy.ts:211)",
+        "// Fetch security settings from separate endpoints (github-repo-settings-strategy.ts:122)"
+      ],
+      "suggestion": "Remove inline comments that restate the next line of code. The method names and variable names already communicate intent.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "parameter-documenting-jsdoc-bloat",
+      "summary": "JSDoc @param tags restate parameter names without adding useful information beyond what types provide",
+      "related_files": [
+        "src/shared/retry-utils.ts",
+        "src/shared/shell-utils.ts",
+        "src/shared/env.ts",
+        "src/vcs/commit-strategy-selector.ts"
+      ],
+      "evidence": [
+        "escapeShellArg: @param arg - The string to escape / @returns The escaped string wrapped in single quotes",
+        "getCommitStrategy: @param repoInfo - Repository information / @param executor - Optional command executor for shell commands / @param hasAppCredentials - Whether GitHub App credentials are configured",
+        "interpolateEnvVars: @param json - The JSON object to process / @param options - Interpolation options (default: strict mode) / @returns A new object with interpolated values",
+        "isPermanentError: @param error The error to classify / @param patterns Custom patterns to use / @returns true if the error is permanent"
+      ],
+      "suggestion": "Remove @param/@returns tags that just restate the parameter name and type. Keep only when adding non-obvious constraints or semantics.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "duplicate-token-env-construction",
+      "summary": "The pattern `token ? { GH_TOKEN: token } : undefined` is repeated verbatim in multiple files instead of using the centralized buildTokenEnv",
+      "related_files": [
+        "src/vcs/graphql-commit-strategy.ts",
+        "src/shared/gh-api-utils.ts"
+      ],
+      "evidence": [
+        "graphql-commit-strategy.ts:271: const tokenEnv = token ? { GH_TOKEN: token } : undefined;",
+        "graphql-commit-strategy.ts:444: const tokenEnv = token ? { GH_TOKEN: token } : undefined;",
+        "gh-api-utils.ts:37: return token ? { GH_TOKEN: token } : undefined; (this IS buildTokenEnv)"
+      ],
+      "suggestion": "Import and use buildTokenEnv from gh-api-utils.ts in graphql-commit-strategy.ts instead of inlining the same logic.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "ai_generated_debt",
+      "identifier": "class-docstring-restates-class-name",
+      "summary": "Class-level JSDoc comments restate the class name and add only boilerplate",
+      "related_files": [
+        "src/settings/rulesets/github-ruleset-strategy.ts",
+        "src/settings/labels/github-labels-strategy.ts",
+        "src/settings/repo-settings/github-repo-settings-strategy.ts"
+      ],
+      "evidence": [
+        "/** GitHub Ruleset Strategy for managing repository rulesets via GitHub REST API. Uses `gh api` CLI for authentication and API calls. */",
+        "/** GitHub Labels Strategy for managing repository labels via GitHub REST API. Uses `gh api` CLI for authentication and API calls. Note: Uses ICommandExecutor... */",
+        "/** GitHub Repository Settings Strategy. Manages repository settings via GitHub REST API using `gh api` CLI. Note: Uses exec via ICommandExecutor... */"
+      ],
+      "suggestion": "Remove class-level JSDoc that restates the class name. The 'Note:' about ICommandExecutor usage is internal implementation detail obvious from the code.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "authorization_consistency",
+      "identifier": "github-token-env-not-used-by-non-github",
+      "summary": "GitHub strategies pass tokens via GH_TOKEN env var while Azure/GitLab strategies rely entirely on CLI-level auth with no token parameter",
+      "related_files": [
+        "src/vcs/github-pr-strategy.ts",
+        "src/vcs/azure-pr-strategy.ts",
+        "src/vcs/gitlab-pr-strategy.ts",
+        "src/vcs/types.ts"
+      ],
+      "evidence": [
+        "PRStrategyOptions.token comment: '/** GitHub App installation token (GitHub-only; ignored by GitLab/Azure strategies which use their own CLI auth) */'",
+        "AzurePRStrategy destructures but ignores token: const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options; (no token)",
+        "GitLabPRStrategy also omits token from destructuring in all methods"
+      ],
+      "suggestion": "This is actually a design choice documented in the types, not an inconsistency. The token field is explicitly documented as GitHub-only. However, the interface carries a field that two of three implementations silently ignore. Consider using discriminated options types or at minimum documenting why in the Azure/GitLab strategy constructors.",
+      "confidence": "low"
+    },
+    {
+      "dimension": "authorization_consistency",
+      "identifier": "assertrepo-pattern-consistent",
+      "summary": "All three platform strategies consistently use assert*Repo guards at method entry, providing uniform trust boundary validation",
+      "related_files": [
+        "src/vcs/github-pr-strategy.ts",
+        "src/vcs/azure-pr-strategy.ts",
+        "src/vcs/gitlab-pr-strategy.ts",
+        "src/settings/rulesets/github-ruleset-strategy.ts",
+        "src/settings/labels/github-labels-strategy.ts",
+        "src/settings/repo-settings/github-repo-settings-strategy.ts"
+      ],
+      "evidence": [
+        "assertGitHubRepo(repoInfo, 'GitHub PR strategy') in every GitHubPRStrategy method",
+        "assertAzureDevOpsRepo(repoInfo, 'Azure PR strategy') in every AzurePRStrategy method",
+        "assertGitLabRepo(repoInfo, 'GitLab PR strategy') in every GitLabPRStrategy method",
+        "assertGitHubRepo used in all settings strategy methods (rulesets, labels, repo-settings)"
+      ],
+      "suggestion": "No change needed. This is a strength. The assert pattern is applied uniformly across all platform-specific code paths.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "authorization_consistency",
+      "identifier": "settings-token-resolution-centralized",
+      "summary": "Token resolution for GitHub App credentials is centralized in resolveGitHubToken, used by both sync and settings paths",
+      "related_files": [
+        "src/shared/gh-api-utils.ts",
+        "src/sync/auth-options-builder.ts",
+        "src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "resolveGitHubToken in gh-api-utils.ts: 'Both sync and settings paths use this function'",
+        "AuthOptionsBuilder.resolve() calls resolveGitHubToken",
+        "sync-command.ts passes pre-resolved token to settings processors"
+      ],
+      "suggestion": "No change needed. Token resolution is properly centralized.",
+      "confidence": "high"
+    }
+  ]
+}

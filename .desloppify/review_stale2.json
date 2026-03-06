@@ -1,0 +1,108 @@
+{
+  "assessments": {
+    "convention_outlier": 88,
+    "cross_module_architecture": 90
+  },
+  "findings": [
+    {
+      "dimension": "convention_outlier",
+      "identifier": "label-new-name-snake-case",
+      "summary": "Label.new_name uses snake_case while all other config interfaces use camelCase",
+      "related_files": [
+        "src/config/types.ts",
+        "src/settings/labels/converter.ts",
+        "src/settings/labels/diff.ts",
+        "src/settings/labels/processor.ts"
+      ],
+      "evidence": [
+        "src/config/types.ts:375: new_name?: string; — in Label interface",
+        "GitHubRepoSettings uses camelCase (hasIssues, allowSquashMerge) with camelToSnake() conversion for API calls",
+        "Label.new_name directly uses the GitHub API snake_case key instead of following the camelCase + conversion pattern"
+      ],
+      "suggestion": "Rename to newName in the Label interface and convert to new_name at the API boundary (in converter.ts), matching the GitHubRepoSettings pattern that uses camelToSnake().",
+      "confidence": "high"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "duplicate-type-names-across-modules",
+      "summary": "FileChange and RulesetChange type names are duplicated across modules with different shapes",
+      "related_files": [
+        "src/vcs/types.ts",
+        "src/output/sync-report.ts",
+        "src/settings/rulesets/diff.ts",
+        "src/output/settings-report.ts"
+      ],
+      "evidence": [
+        "src/vcs/types.ts:153: export interface FileChange { path: string; content: string | null; }",
+        "src/output/sync-report.ts:20: export interface FileChange { path: string; action: 'create' | 'update' | 'delete'; }",
+        "src/settings/rulesets/diff.ts:8: export interface RulesetChange { action: RulesetAction; name: string; rulesetId?: number; ... }",
+        "src/output/settings-report.ts:30: export interface RulesetChange { name: string; action: 'create' | 'update' | 'delete'; propertyDiffs?: ... }"
+      ],
+      "suggestion": "Distinguish with module-specific prefixes or suffixes: VcsFileChange vs ReportFileChange, DiffRulesetChange vs ReportRulesetChange. This prevents confusion when both types appear in the same scope.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "settings-strategies-import-singleton-default-executor",
+      "summary": "Three settings strategy classes import defaultExecutor singleton as fallback instead of requiring injection",
+      "related_files": [
+        "src/settings/labels/github-labels-strategy.ts",
+        "src/settings/rulesets/github-ruleset-strategy.ts",
+        "src/settings/repo-settings/github-repo-settings-strategy.ts"
+      ],
+      "evidence": [
+        "src/settings/labels/github-labels-strategy.ts:3: defaultExecutor,",
+        "src/settings/rulesets/github-ruleset-strategy.ts:3: defaultExecutor,",
+        "src/settings/repo-settings/github-repo-settings-strategy.ts:3: defaultExecutor,"
+      ],
+      "suggestion": "Make executor a required constructor parameter in all three strategy classes, and supply defaultExecutor at the composition root (cli/types.ts factory functions). This aligns with the CLAUDE.md principle that library code must not import singletons.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "shared-gh-api-utils-imports-vcs",
+      "summary": "src/shared/gh-api-utils.ts imports type from src/vcs/, violating the shared→domain dependency direction",
+      "related_files": [
+        "src/shared/gh-api-utils.ts",
+        "src/vcs/github-app-token-manager.ts"
+      ],
+      "evidence": [
+        "src/shared/gh-api-utils.ts:5: import type { GitHubAppTokenManager } from '../vcs/github-app-token-manager.js';",
+        "resolveGitHubToken function accepts GitHubAppTokenManager directly rather than a narrower interface"
+      ],
+      "suggestion": "Define a narrow interface (e.g., { getTokenForRepo(repo: GitHubRepoInfo): Promise<string | null | undefined> }) in shared/ and have GitHubAppTokenManager implement it. This removes the upward type dependency from shared to vcs.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "shared-imports-config-errors-runtime",
+      "summary": "Two shared modules import ValidationError class from config/errors.ts (runtime dependency, not type-only)",
+      "related_files": [
+        "src/shared/retry-utils.ts",
+        "src/shared/repo-detector.ts",
+        "src/config/errors.ts"
+      ],
+      "evidence": [
+        "src/shared/retry-utils.ts:3: import { ValidationError } from '../config/errors.js';",
+        "src/shared/repo-detector.ts:1: import { ValidationError } from '../config/errors.js';",
+        "retry-utils uses instanceof ValidationError check; repo-detector throws ValidationError"
+      ],
+      "suggestion": "Move ValidationError to src/shared/errors.ts since it is used across multiple modules. This makes shared self-contained and removes the upward dependency from shared to config.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "output-depends-on-settings-formatter",
+      "summary": "output/settings-report.ts imports formatPropertyTree from settings/, creating an unexpected output→domain dependency",
+      "related_files": [
+        "src/output/settings-report.ts",
+        "src/settings/rulesets/formatter.ts"
+      ],
+      "evidence": [
+        "src/output/settings-report.ts:2: import { formatPropertyTree, type PropertyDiff } from '../settings/index.js';"
+      ],
+      "suggestion": "Extract formatPropertyTree and PropertyDiff into src/shared/ or src/output/ since they are pure formatting utilities with no domain logic. This keeps the output module independent of settings.",
+      "confidence": "medium"
+    }
+  ]
+}

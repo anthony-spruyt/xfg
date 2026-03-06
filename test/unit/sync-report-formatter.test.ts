@@ -10,7 +10,7 @@ import {
   writeSyncReportSummary,
   type SyncReport,
   type RepoFileChanges,
-  type FileChange,
+  type ReportFileChange,
 } from "../../src/output/sync-report.js";
 
 describe("sync-report types", () => {
@@ -32,8 +32,8 @@ describe("sync-report types", () => {
     assert.ok(repoChanges);
   });
 
-  test("FileChange structure is correct", () => {
-    const change: FileChange = {
+  test("ReportFileChange structure is correct", () => {
+    const change: ReportFileChange = {
       path: ".github/workflows/ci.yml",
       action: "create",
     };
