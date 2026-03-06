@@ -1,176 +1,32 @@
 {
-  "command": "review",
-  "action": "import",
-  "mode": "holistic",
-  "diff": {
-    "new": 42,
-    "auto_resolved": 15,
-    "reopened": 0,
-    "total_current": 42,
-    "suspect_detectors": [
-      "boilerplate_duplication",
-      "exports",
-      "facade",
-      "flat_dirs",
-      "props",
-      "responsibility_cohesion",
-      "review",
-      "security",
-      "signature",
-      "smells",
-      "stale_wontfix",
-      "structural",
-      "test_coverage"
-    ],
-    "chronic_reopeners": [
-      {
-        "id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
-        "detector": "security",
-        "file": "src/settings/repo-settings/diff.ts",
-        "tier": 2,
-        "confidence": "high",
-        "summary": "Hardcoded secret in variable 'secretScanning'",
-        "detail": {
-          "kind": "hardcoded_secret_name",
-          "severity": "high",
-          "line": 40,
-          "content": "  secretScanning: \"_secret_scanning\",",
-          "remediation": "Move secret to environment variable or secrets manager"
-        },
-        "status": "open",
-        "note": "Reopened (\u00d76) \u2014 reappeared in scan (was auto_resolved)",
-        "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-06T12:38:39+00:00",
-        "resolved_at": null,
-        "reopen_count": 6,
-        "zone": "production",
-        "lang": "typescript",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "wontfix_scan_count": 105,
-        "wontfix_snapshot": {
-          "captured_at": "2026-03-06T07:04:07+00:00",
-          "scan_count": 105,
-          "tier": 2,
-          "confidence": "high",
-          "detail": {
-            "kind": "hardcoded_secret_name",
-            "severity": "high",
-            "line": 40,
-            "content": "  secretScanning: \"_secret_scanning\",",
-            "remediation": "Move secret to environment variable or secrets manager"
-          }
-        }
-      },
-      {
-        "id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
-        "detector": "security",
-        "file": "src/settings/repo-settings/diff.ts",
-        "tier": 2,
-        "confidence": "high",
-        "summary": "Hardcoded secret in variable 'secretScanningPushProtection'",
-        "detail": {
-          "kind": "hardcoded_secret_name",
-          "severity": "high",
-          "line": 41,
-          "content": "  secretScanningPushProtection: \"_secret_scanning_push_protection\",",
-          "remediation": "Move secret to environment variable or secrets manager"
-        },
-        "status": "open",
-        "note": "Reopened (\u00d76) \u2014 reappeared in scan (was auto_resolved)",
-        "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-06T12:38:39+00:00",
-        "resolved_at": null,
-        "reopen_count": 6,
-        "zone": "production",
-        "lang": "typescript",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "wontfix_scan_count": 105,
-        "wontfix_snapshot": {
-          "captured_at": "2026-03-06T07:04:07+00:00",
-          "scan_count": 105,
-          "tier": 2,
-          "confidence": "high",
-          "detail": {
-            "kind": "hardcoded_secret_name",
-            "severity": "high",
-            "line": 41,
-            "content": "  secretScanningPushProtection: \"_secret_scanning_push_protection\",",
-            "remediation": "Move secret to environment variable or secrets manager"
-          }
-        }
-      },
-      {
-        "id": "facade::src/settings/labels/index.ts",
-        "detector": "facade",
-        "file": "src/settings/labels/index.ts",
-        "tier": 2,
-        "confidence": "medium",
-        "summary": "Re-export facade (5 LOC): imports from ./formatter.js, ./processor.js (1 importers)",
-        "detail": {
-          "loc": 5,
-          "importers": 1,
-          "imports_from": [
-            "./formatter.js",
-            "./processor.js"
-          ],
-          "kind": "file"
-        },
-        "status": "open",
-        "note": "Reopened (\u00d76) \u2014 reappeared in scan (was auto_resolved)",
-        "first_seen": "2026-03-05T01:16:56+00:00",
-        "last_seen": "2026-03-06T12:38:39+00:00",
-        "resolved_at": null,
-        "reopen_count": 6,
-        "lang": "typescript",
-        "zone": "production",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "wontfix_scan_count": 112,
-        "wontfix_snapshot": {
-          "captured_at": "2026-03-06T08:15:04+00:00",
-          "scan_count": 112,
-          "tier": 2,
-          "confidence": "medium",
-          "detail": {
-            "loc": 5,
-            "importers": 1,
-            "imports_from": [
-              "./formatter.js",
-              "./processor.js"
-            ],
-            "kind": "file"
-          }
-        }
-      }
-    ],
-    "skipped_other_lang": 0,
-    "resolved_out_of_scope": 0,
-    "ignored": 0,
-    "ignore_patterns": 0,
-    "raw_issues": 42,
-    "suppressed_pct": 0.0
-  },
-  "next_command": "desloppify show review --status open",
-  "subjective_at_target": [],
-  "assessment_import": {
-    "mode": "trusted_internal",
-    "trusted": true,
-    "reason": "trusted import-run replay from 20260306_090132"
-  },
+  "command": "resolve",
+  "patterns": [
+    "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs::177793d7"
+  ],
+  "status": "fixed",
+  "resolved": [
+    "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs::177793d7"
+  ],
+  "count": 1,
+  "next_command": "desloppify next",
+  "overall_score": 84.2,
+  "objective_score": 96.5,
+  "strict_score": 84.1,
+  "verified_strict_score": 96.2,
+  "prev_overall_score": 84.2,
+  "prev_objective_score": 96.5,
+  "prev_strict_score": 84.1,
+  "prev_verified_strict_score": 96.2,
+  "attestation": "I have actually Moved branch-utils.ts from src/vcs/ to src/shared/, updated imports in src/cli/sync-command.ts and test/unit/git-ops.test.ts, deleted old file, verified build and all 2234 tests pass and I am not gaming the score.",
   "narrative": {
     "phase": "refinement",
-    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Crossed 80% strict! (42 review issues \u2014 run `desloppify show review --status open`)",
+    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Crossed 80% strict! (13 review issues \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
           "name": "Cross-module arch",
           "strict": 60.0,
-          "failing": 5,
+          "failing": 0,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -178,7 +34,7 @@
         {
           "name": "Mid elegance",
           "strict": 69.9,
-          "failing": 3,
+          "failing": 2,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -186,7 +42,7 @@
         {
           "name": "API coherence",
           "strict": 71.1,
-          "failing": 3,
+          "failing": 2,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -308,8 +164,8 @@
       {
         "type": "refactor",
         "detector": "review",
-        "count": 42,
-        "description": "42 review issues need investigation \u2014 run `desloppify show review --status open` to see them",
+        "count": 13,
+        "description": "13 review issues need investigation \u2014 run `desloppify show review --status open` to see them",
         "command": "desloppify show review --status open",
         "impact": 0.0,
         "dimension": "Unknown",
@@ -364,7 +220,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 269,
+        "total_count": 182,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -441,7 +297,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 42 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 13 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -477,7 +333,7 @@
     },
     "debt": {
       "overall_gap": 0.0,
-      "wontfix_count": 6,
+      "wontfix_count": 8,
       "worst_dimension": "Test health",
       "worst_gap": 0.9,
       "trend": "stable"
@@ -487,7 +343,7 @@
       "command": "desloppify show flat_dirs --status open",
       "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 42 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 13 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -496,7 +352,7 @@
       {
         "type": "wontfix_gap",
         "severity": "medium",
-        "message": "Strict/lenient gap is 0.0 pts with 6 wontfix issues"
+        "message": "Strict/lenient gap is 0.0 pts with 8 wontfix issues"
       }
     ],
     "strict_target": {
@@ -506,7 +362,22 @@
       "state": "below",
       "warning": null
     },
-    "reminders": [],
+    "reminders": [
+      {
+        "type": "rereview_needed",
+        "message": "Subjective results may be stale after resolve. Re-run `desloppify review --prepare` to refresh, or reset with `desloppify scan --reset-subjective` before a clean rerun.",
+        "command": "desloppify review --prepare",
+        "priority": 1,
+        "severity": "high"
+      },
+      {
+        "type": "rescan_needed",
+        "message": "Rescan to verify \u2014 cascading effects may create new issues.",
+        "command": "desloppify scan",
+        "priority": 1,
+        "severity": "high"
+      }
+    ],
     "reminder_history": {
       "auto_fixers_available": 3,
       "zone_classification": 3,
@@ -517,7 +388,9 @@
       "stagnant_nudge": 3,
       "review_not_run": 3,
       "badge_recommendation": 3,
-      "review_issues_pending": 3
+      "review_issues_pending": 3,
+      "rereview_needed": 1,
+      "rescan_needed": 1
     }
   },
   "config": {

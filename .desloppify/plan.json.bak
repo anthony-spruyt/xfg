@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-06T13:23:49+00:00",
+  "updated": "2026-03-06T13:23:28+00:00",
   "queue_order": [
     "workflow::score-checkpoint",
     "workflow::communicate-score",
@@ -3386,22 +3386,6 @@
       "actor": "user",
       "note": null,
       "detail": {}
-    },
-    {
-      "timestamp": "2026-03-06T13:23:49+00:00",
-      "action": "commit_record",
-      "issue_ids": [
-        "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count::c56338c9",
-        "review::.::holistic::logic_clarity::unreachable_merge_mode_branches::7c8c5f31",
-        "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs::177793d7"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": "code-cleanup cluster: truthiness fix, exhaustive merge mode checks, branch-utils relocation",
-      "detail": {
-        "sha": "8ab3c6723bc0",
-        "branch": "chore/desloppify-round-3"
-      }
     }
   ],
   "epic_triage_meta": {
@@ -3546,21 +3530,13 @@
       "recorded_at": "2026-03-06T13:14:44+00:00",
       "note": null,
       "cluster_name": null
-    },
-    {
-      "sha": "8ab3c6723bc0",
-      "branch": "chore/desloppify-round-3",
-      "issue_ids": [
-        "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count::c56338c9",
-        "review::.::holistic::logic_clarity::unreachable_merge_mode_branches::7c8c5f31",
-        "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs::177793d7"
-      ],
-      "recorded_at": "2026-03-06T13:23:49+00:00",
-      "note": "code-cleanup cluster: truthiness fix, exhaustive merge mode checks, branch-utils relocation",
-      "cluster_name": null
     }
   ],
-  "uncommitted_issues": [],
+  "uncommitted_issues": [
+    "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count::c56338c9",
+    "review::.::holistic::logic_clarity::unreachable_merge_mode_branches::7c8c5f31",
+    "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs::177793d7"
+  ],
   "commit_tracking_branch": null,
   "scan_count_at_plan_start": 122
 }
