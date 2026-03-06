@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 export const MANIFEST_FILENAME = ".xfg.json";
 
@@ -163,7 +164,9 @@ export function loadManifest(
     log?.warn(`Unrecognized manifest format in ${manifestPath}, ignoring`);
     return null;
   } catch (error) {
-    log?.warn(`Failed to parse manifest ${manifestPath}: ${error}`);
+    log?.warn(
+      `Failed to parse manifest ${manifestPath}: ${toErrorMessage(error)}`
+    );
     return null;
   }
 }
@@ -193,7 +196,7 @@ export function parseManifestContent(
 
     return null;
   } catch (error) {
-    log?.warn(`Failed to parse manifest content: ${error}`);
+    log?.warn(`Failed to parse manifest content: ${toErrorMessage(error)}`);
     return null;
   }
 }
