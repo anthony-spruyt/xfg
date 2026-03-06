@@ -1,17 +1,11 @@
 import type { MergeMode, MergeStrategy, RepoConfig } from "../config/index.js";
 import type { IRepoLifecycleManager } from "../lifecycle/index.js";
-import {
-  RepositoryProcessor,
-  type IRepositoryProcessor,
-} from "../sync/index.js";
-import {
-  type ISettingsProcessor,
-  RulesetProcessor,
-  type IRulesetProcessor,
-  RepoSettingsProcessor,
-  type IRepoSettingsProcessor,
-  LabelsProcessor,
-  type ILabelsProcessor,
+import type { IRepositoryProcessor } from "../sync/index.js";
+import type {
+  ISettingsProcessor,
+  IRulesetProcessor,
+  IRepoSettingsProcessor,
+  ILabelsProcessor,
 } from "../settings/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { ResultsCollector } from "./results-collector.js";
@@ -20,15 +14,6 @@ export type { IRepositoryProcessor, IRulesetProcessor };
 
 export type ProcessorFactory = () => IRepositoryProcessor;
 
-/**
- * Default factory that creates a real RepositoryProcessor.
- */
-export const defaultProcessorFactory: ProcessorFactory = () =>
-  new RepositoryProcessor();
-
-/**
- * Generic factory type for settings processors.
- */
 export type SettingsProcessorFactory<T extends ISettingsProcessor> = () => T;
 
 export type RulesetProcessorFactory =
@@ -36,15 +21,6 @@ export type RulesetProcessorFactory =
 export type RepoSettingsProcessorFactory =
   SettingsProcessorFactory<IRepoSettingsProcessor>;
 export type LabelsProcessorFactory = SettingsProcessorFactory<ILabelsProcessor>;
-
-export const defaultRulesetProcessorFactory: RulesetProcessorFactory = () =>
-  new RulesetProcessor();
-
-export const defaultRepoSettingsProcessorFactory: RepoSettingsProcessorFactory =
-  () => new RepoSettingsProcessor();
-
-export const defaultLabelsProcessorFactory: LabelsProcessorFactory = () =>
-  new LabelsProcessor();
 
 /**
  * Dependencies for the sync command (dependency injection).

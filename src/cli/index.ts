@@ -8,10 +8,6 @@ export {
   type RepoSettingsProcessorFactory,
   type ILabelsProcessor,
   type LabelsProcessorFactory,
-  defaultProcessorFactory,
-  defaultRulesetProcessorFactory,
-  defaultRepoSettingsProcessorFactory,
-  defaultLabelsProcessorFactory,
 } from "./types.js";
 
 export type { SyncOptions, SharedOptions } from "./sync-command.js";

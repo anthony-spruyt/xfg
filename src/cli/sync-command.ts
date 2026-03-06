@@ -12,20 +12,32 @@ import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 import { sanitizeBranchName, validateBranchName } from "../vcs/branch-utils.js";
 import { createTokenManager } from "../vcs/index.js";
 import { RepositoryProcessor } from "../sync/index.js";
+import {
+  RulesetProcessor,
+  RepoSettingsProcessor,
+  LabelsProcessor,
+} from "../settings/index.js";
 import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoInfo } from "../shared/repo-detector.js";
 import {
-  defaultRulesetProcessorFactory,
-  defaultRepoSettingsProcessorFactory,
-  defaultLabelsProcessorFactory,
   type SyncDependencies,
   type SyncResultEntry,
   type SettingsResult,
   type SyncOptions,
   type ApplyRepoSettingsContext,
   type IRepositoryProcessor,
+  type RulesetProcessorFactory,
+  type RepoSettingsProcessorFactory,
+  type LabelsProcessorFactory,
 } from "./types.js";
+
+const defaultRulesetProcessorFactory: RulesetProcessorFactory = () =>
+  new RulesetProcessor();
+const defaultRepoSettingsProcessorFactory: RepoSettingsProcessorFactory = () =>
+  new RepoSettingsProcessor();
+const defaultLabelsProcessorFactory: LabelsProcessorFactory = () =>
+  new LabelsProcessor();
 export type { SharedOptions, SyncOptions } from "./types.js";
 import type { Config } from "../config/types.js";
 import { ResultsCollector } from "./results-collector.js";
