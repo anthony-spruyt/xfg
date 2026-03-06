@@ -108,7 +108,7 @@ describe("AzurePRStrategy with mock executor", () => {
       assert.equal(result, null);
     });
 
-    test("returns null on permanent error (auth failure)", async () => {
+    test("throws on permanent error (auth failure)", async () => {
       const authError = new Error("401 Unauthorized");
       mockExecutor.responses.set("az repos pr list", authError);
 
@@ -123,8 +123,10 @@ describe("AzurePRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
-      assert.equal(result, null);
+      await assert.rejects(
+        () => strategy.checkExistingPR(options),
+        /401 Unauthorized/
+      );
     });
 
     test("returns null on transient error", async () => {

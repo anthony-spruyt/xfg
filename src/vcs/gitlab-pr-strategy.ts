@@ -11,7 +11,7 @@ import type {
   MergeOptions,
   MergeResult,
 } from "./types.js";
-import { withRetry } from "../shared/retry-utils.js";
+import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
 import { parseApiJson } from "../shared/gh-api-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
@@ -111,6 +111,9 @@ export class GitLabPRStrategy extends BasePRStrategy {
       }
       return null;
     } catch (error) {
+      if (isPermanentError(error)) {
+        throw error;
+      }
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("no merge requests")) {
         this.log?.debug(

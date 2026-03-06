@@ -14,7 +14,7 @@ import type {
   MergeOptions,
   MergeResult,
 } from "./types.js";
-import { withRetry } from "../shared/retry-utils.js";
+import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
@@ -53,6 +53,9 @@ export class AzurePRStrategy extends BasePRStrategy {
 
       return existingPRId ? this.buildPRUrl(azureRepoInfo, existingPRId) : null;
     } catch (error) {
+      if (isPermanentError(error)) {
+        throw error;
+      }
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("does not exist")) {
         this.log?.debug(
