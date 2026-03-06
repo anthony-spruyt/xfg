@@ -1,4 +1,5 @@
 import { appendFileSync } from "node:fs";
+import { toErrorMessage } from "../shared/type-guards.js";
 
 export type MergeOutcome = "manual" | "auto" | "force" | "direct";
 
@@ -315,11 +316,16 @@ export function isGitHubActions(summaryPath?: string): boolean {
  */
 export function writeGitHubStepSummary(
   markdown: string,
-  summaryPath?: string
+  summaryPath?: string,
+  log?: { debug(msg: string): void }
 ): void {
   const path = summaryPath ?? process.env.GITHUB_STEP_SUMMARY;
   if (!path) return;
-  appendFileSync(path, "\n" + markdown + "\n");
+  try {
+    appendFileSync(path, "\n" + markdown + "\n");
+  } catch (error) {
+    log?.debug(`Failed to write GitHub step summary: ${toErrorMessage(error)}`);
+  }
 }
 
 export function writeSummary(data: SummaryData, summaryPath?: string): void {
