@@ -1,6 +1,5 @@
 import type { RepoConfig } from "../../config/index.js";
 import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
-import { GitHubLabelsStrategy } from "./github-labels-strategy.js";
 import { diffLabels } from "./diff.js";
 import { formatLabelsPlan, type LabelsPlanResult } from "./formatter.js";
 import { labelConfigToPayload } from "./converter.js";
@@ -37,8 +36,8 @@ export interface LabelsProcessorResult extends BaseProcessorResult {
 export class LabelsProcessor implements ILabelsProcessor {
   private readonly strategy: ILabelsStrategy;
 
-  constructor(strategy?: ILabelsStrategy) {
-    this.strategy = strategy ?? new GitHubLabelsStrategy();
+  constructor(strategy: ILabelsStrategy) {
+    this.strategy = strategy;
   }
 
   async process(

@@ -83,6 +83,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       const result = await strategy.getSettings(githubRepo);
 
@@ -113,6 +114,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       const result = await strategy.getSettings(githubRepo);
 
@@ -136,6 +138,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       const result = await strategy.getSettings(githubRepo);
 
@@ -158,6 +161,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       const result = await strategy.getSettings(githubRepo);
 
@@ -180,6 +184,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       const result = await strategy.getSettings(githubRepo);
 
@@ -200,6 +205,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       const result = await strategy.getSettings(githubRepo);
 
@@ -218,6 +224,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
 
       await assert.rejects(
@@ -240,6 +247,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       const result = await strategy.getSettings(githubRepo);
 
@@ -262,6 +270,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       const result = await strategy.getSettings(githubRepo);
 
@@ -287,6 +296,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       const result = await strategy.getSettings(githubRepo);
 
@@ -306,6 +316,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
 
       await assert.rejects(
@@ -328,6 +339,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       const result = await strategy.getSettings(githubRepo);
 
@@ -348,6 +360,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       const result = await strategy.getSettings(githubRepo);
 
@@ -368,6 +381,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       const result = await strategy.getSettings(githubRepo);
 
@@ -388,6 +402,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
 
       await assert.rejects(
@@ -403,6 +418,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       await strategy.updateSettings(githubRepo, {
         hasIssues: false,
@@ -419,6 +435,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       await strategy.updateSettings(githubRepo, {
         webCommitSignoffRequired: true,
@@ -436,6 +453,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       await strategy.updateSettings(githubRepo, {
         defaultBranch: "develop",
@@ -451,6 +469,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       await strategy.updateSettings(githubRepo, {
         description: "My repo description",
@@ -465,6 +484,7 @@ describe("GitHubRepoSettingsStrategy", () => {
     test("should skip update when no settings provided", async () => {
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       await strategy.updateSettings(githubRepo, {});
 
@@ -478,6 +498,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       await strategy.setVulnerabilityAlerts(githubRepo, true);
 
@@ -491,6 +512,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       await strategy.setVulnerabilityAlerts(githubRepo, false);
 
@@ -506,6 +528,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       await strategy.setAutomatedSecurityFixes(githubRepo, true);
 
@@ -519,6 +542,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       await strategy.setAutomatedSecurityFixes(githubRepo, false);
 
@@ -534,6 +558,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       await strategy.setPrivateVulnerabilityReporting(githubRepo, true);
 
@@ -549,6 +574,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       await strategy.setPrivateVulnerabilityReporting(githubRepo, false);
 
@@ -573,6 +599,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
 
       await assert.rejects(
@@ -599,6 +626,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
       const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
         retries: 0,
+        cwd: "/test",
       });
       await strategy.getSettings(gheRepo, { host: "github.example.com" });
 
@@ -627,7 +655,10 @@ describe("GitHubRepoSettingsStrategy", () => {
         },
       };
 
-      const strategy = new GitHubRepoSettingsStrategy(executor, { retries: 1 });
+      const strategy = new GitHubRepoSettingsStrategy(executor, {
+        retries: 1,
+        cwd: "/test",
+      });
       await strategy.updateSettings(githubRepo, { hasIssues: true });
 
       assert.ok(
@@ -652,7 +683,10 @@ describe("GitHubRepoSettingsStrategy", () => {
         },
       };
 
-      const strategy = new GitHubRepoSettingsStrategy(executor, { retries: 1 });
+      const strategy = new GitHubRepoSettingsStrategy(executor, {
+        retries: 1,
+        cwd: "/test",
+      });
       await assert.rejects(
         async () => strategy.updateSettings(githubRepo, { hasIssues: true }),
         /404/
@@ -687,7 +721,10 @@ describe("GitHubRepoSettingsStrategy", () => {
         },
       };
 
-      const strategy = new GitHubRepoSettingsStrategy(executor, { retries: 1 });
+      const strategy = new GitHubRepoSettingsStrategy(executor, {
+        retries: 1,
+        cwd: "/test",
+      });
       const result = await strategy.getSettings(githubRepo);
 
       assert.equal(result.vulnerability_alerts, false);

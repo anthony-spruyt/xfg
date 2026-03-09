@@ -23,7 +23,7 @@ export class AdoMigrationSource implements IMigrationSource {
   constructor(
     private readonly executor: ICommandExecutor = defaultExecutor,
     private readonly retries: number = 3,
-    private readonly cwd: string = process.cwd()
+    private readonly cwd: string
   ) {}
 
   private assertAdo(

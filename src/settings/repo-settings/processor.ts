@@ -1,6 +1,5 @@
 import type { RepoConfig, GitHubRepoSettings } from "../../config/index.js";
 import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
-import { GitHubRepoSettingsStrategy } from "./github-repo-settings-strategy.js";
 import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
 import { diffRepoSettings, hasChanges } from "./diff.js";
 import { formatRepoSettingsPlan, RepoSettingsPlanResult } from "./formatter.js";
@@ -30,8 +29,8 @@ export interface RepoSettingsProcessorResult extends BaseProcessorResult {
 export class RepoSettingsProcessor implements IRepoSettingsProcessor {
   private readonly strategy: IRepoSettingsStrategy;
 
-  constructor(strategy?: IRepoSettingsStrategy) {
-    this.strategy = strategy ?? new GitHubRepoSettingsStrategy();
+  constructor(strategy: IRepoSettingsStrategy) {
+    this.strategy = strategy;
   }
 
   async process(

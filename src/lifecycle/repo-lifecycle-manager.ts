@@ -23,11 +23,13 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
   private readonly log?: DebugInfoWarnLog;
 
   constructor(
-    factory?: IRepoLifecycleFactory,
-    retries?: number,
+    factory: IRepoLifecycleFactory | undefined,
+    retries: number | undefined,
+    cwd: string,
     log?: DebugInfoWarnLog
   ) {
-    this.factory = factory ?? new RepoLifecycleFactory(undefined, retries, log);
+    this.factory =
+      factory ?? new RepoLifecycleFactory(undefined, retries, cwd, log);
     this.log = log;
   }
 

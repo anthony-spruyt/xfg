@@ -1,7 +1,4 @@
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../../shared/command-executor.js";
+import { ICommandExecutor } from "../../shared/command-executor.js";
 import { assertGitHubRepo, RepoInfo } from "../../shared/repo-detector.js";
 import {
   GhApiClient,
@@ -12,21 +9,17 @@ import type { ILabelsStrategy, GitHubLabel } from "./types.js";
 
 interface GitHubLabelsStrategyOptions {
   retries?: number;
-  cwd?: string;
+  cwd: string;
 }
 
 export class GitHubLabelsStrategy implements ILabelsStrategy {
   private api: GhApiClient;
 
   constructor(
-    executor?: ICommandExecutor,
-    options?: GitHubLabelsStrategyOptions
+    executor: ICommandExecutor,
+    options: GitHubLabelsStrategyOptions
   ) {
-    this.api = new GhApiClient(
-      executor ?? defaultExecutor,
-      options?.retries ?? 3,
-      options?.cwd ?? process.cwd()
-    );
+    this.api = new GhApiClient(executor, options.retries ?? 3, options.cwd);
   }
 
   async list(

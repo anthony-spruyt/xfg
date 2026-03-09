@@ -1,7 +1,4 @@
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../../shared/command-executor.js";
+import { ICommandExecutor } from "../../shared/command-executor.js";
 import {
   assertGitHubRepo,
   type GitHubRepoInfo,
@@ -82,21 +79,17 @@ function configToGitHubPayload(
 
 interface GitHubRepoSettingsStrategyOptions {
   retries?: number;
-  cwd?: string;
+  cwd: string;
 }
 
 export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   private api: GhApiClient;
 
   constructor(
-    executor?: ICommandExecutor,
-    options?: GitHubRepoSettingsStrategyOptions
+    executor: ICommandExecutor,
+    options: GitHubRepoSettingsStrategyOptions
   ) {
-    this.api = new GhApiClient(
-      executor ?? defaultExecutor,
-      options?.retries ?? 3,
-      options?.cwd ?? process.cwd()
-    );
+    this.api = new GhApiClient(executor, options.retries ?? 3, options.cwd);
   }
 
   async getSettings(

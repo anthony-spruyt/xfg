@@ -19,7 +19,11 @@ import {
   RulesetProcessor,
   RepoSettingsProcessor,
   LabelsProcessor,
+  GitHubRulesetStrategy,
+  GitHubRepoSettingsStrategy,
+  GitHubLabelsStrategy,
 } from "../settings/index.js";
+import { defaultExecutor } from "../shared/command-executor.js";
 import { logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoInfo } from "../shared/repo-detector.js";
@@ -35,12 +39,15 @@ import {
 } from "./types.js";
 import type { IRepositoryProcessor } from "../sync/index.js";
 
+const cwd = process.cwd();
 const defaultRulesetProcessorFactory: RulesetProcessorFactory = () =>
-  new RulesetProcessor();
+  new RulesetProcessor(new GitHubRulesetStrategy(defaultExecutor, { cwd }));
 const defaultRepoSettingsProcessorFactory: RepoSettingsProcessorFactory = () =>
-  new RepoSettingsProcessor();
+  new RepoSettingsProcessor(
+    new GitHubRepoSettingsStrategy(defaultExecutor, { cwd })
+  );
 const defaultLabelsProcessorFactory: LabelsProcessorFactory = () =>
-  new LabelsProcessor();
+  new LabelsProcessor(new GitHubLabelsStrategy(defaultExecutor, { cwd }));
 export type { SharedOptions, SyncOptions } from "./types.js";
 import type { Config } from "../config/types.js";
 import { ResultsCollector } from "./results-collector.js";
@@ -594,7 +601,7 @@ export async function runSync(
     processor,
     lifecycleManager:
       lifecycleManager ??
-      new RepoLifecycleManager(undefined, options.retries, logger),
+      new RepoLifecycleManager(undefined, options.retries, cwd, logger),
     tokenManager,
     reportResults: [],
     lifecycleReportInputs: [],

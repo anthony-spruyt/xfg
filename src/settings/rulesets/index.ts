@@ -11,3 +11,6 @@ export { formatPropertyTree, type RulesetPlanEntry } from "./formatter.js";
 
 // Processor
 export { RulesetProcessor, type IRulesetProcessor } from "./processor.js";
+
+// Strategy
+export { GitHubRulesetStrategy } from "./github-ruleset-strategy.js";

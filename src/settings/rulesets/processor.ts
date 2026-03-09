@@ -1,6 +1,5 @@
 import type { RepoConfig, Ruleset } from "../../config/index.js";
 import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
-import { GitHubRulesetStrategy } from "./github-ruleset-strategy.js";
 import type { IRulesetStrategy, GitHubRuleset } from "./types.js";
 import { diffRulesets } from "./diff.js";
 import { formatRulesetPlan, RulesetPlanResult } from "./formatter.js";
@@ -36,8 +35,8 @@ export interface RulesetProcessorResult extends BaseProcessorResult {
 export class RulesetProcessor implements IRulesetProcessor {
   private readonly strategy: IRulesetStrategy;
 
-  constructor(strategy?: IRulesetStrategy) {
-    this.strategy = strategy ?? new GitHubRulesetStrategy();
+  constructor(strategy: IRulesetStrategy) {
+    this.strategy = strategy;
   }
 
   async process(

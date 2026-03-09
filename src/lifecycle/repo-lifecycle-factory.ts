@@ -21,15 +21,18 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
 
   private readonly executor: ICommandExecutor;
   private readonly retries: number;
+  private readonly cwd: string;
   private readonly log?: DebugWarnLog;
 
   constructor(
-    executor?: ICommandExecutor,
-    retries?: number,
+    executor: ICommandExecutor | undefined,
+    retries: number | undefined,
+    cwd: string,
     log?: DebugWarnLog
   ) {
     this.executor = executor ?? defaultExecutor;
     this.retries = retries ?? 3;
+    this.cwd = cwd;
     this.log = log;
   }
 
@@ -47,6 +50,7 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
         provider = new GitHubLifecycleProvider({
           executor: this.executor,
           retries: this.retries,
+          cwd: this.cwd,
           log: this.log,
         });
         break;
@@ -72,7 +76,7 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
     let source: IMigrationSource;
     switch (platform) {
       case "azure-devops":
-        source = new AdoMigrationSource(this.executor, this.retries);
+        source = new AdoMigrationSource(this.executor, this.retries, this.cwd);
         break;
       default:
         throw new LifecycleError(

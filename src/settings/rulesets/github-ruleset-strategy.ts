@@ -1,7 +1,4 @@
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../../shared/command-executor.js";
+import { ICommandExecutor } from "../../shared/command-executor.js";
 import { assertGitHubRepo, RepoInfo } from "../../shared/repo-detector.js";
 import { camelToSnake } from "../../shared/string-utils.js";
 import {
@@ -144,21 +141,17 @@ interface GitHubRulesetPayload {
 
 interface GitHubRulesetStrategyOptions {
   retries?: number;
-  cwd?: string;
+  cwd: string;
 }
 
 export class GitHubRulesetStrategy implements IRulesetStrategy {
   private api: GhApiClient;
 
   constructor(
-    executor?: ICommandExecutor,
-    options?: GitHubRulesetStrategyOptions
+    executor: ICommandExecutor,
+    options: GitHubRulesetStrategyOptions
   ) {
-    this.api = new GhApiClient(
-      executor ?? defaultExecutor,
-      options?.retries ?? 3,
-      options?.cwd ?? process.cwd()
-    );
+    this.api = new GhApiClient(executor, options.retries ?? 3, options.cwd);
   }
 
   async list(
