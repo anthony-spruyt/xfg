@@ -11,6 +11,12 @@ export interface ICommandExecutor {
 }
 
 export class ShellCommandExecutor implements ICommandExecutor {
+  private readonly baseEnv: Record<string, string | undefined>;
+
+  constructor(baseEnv: Record<string, string | undefined>) {
+    this.baseEnv = baseEnv;
+  }
+
   async exec(
     command: string,
     cwd: string,
@@ -21,7 +27,9 @@ export class ShellCommandExecutor implements ICommandExecutor {
         cwd,
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
-        env: options?.env ? { ...process.env, ...options.env } : undefined,
+        env: options?.env
+          ? { ...this.baseEnv, ...options.env }
+          : (this.baseEnv as NodeJS.ProcessEnv),
       }).trim();
     } catch (error) {
       // Ensure stderr is always a string for consistent error handling
@@ -48,7 +56,9 @@ export class ShellCommandExecutor implements ICommandExecutor {
   }
 }
 
-export const defaultExecutor: ICommandExecutor = new ShellCommandExecutor();
+export const defaultExecutor: ICommandExecutor = new ShellCommandExecutor(
+  process.env
+);
 
 /** Extract stderr string from an exec error (child_process errors attach stderr). */
 export function getStderr(error: unknown): string {

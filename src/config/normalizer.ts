@@ -535,7 +535,7 @@ function resolveFileEntry(
  */
 export function normalizeConfig(
   raw: RawConfig,
-  env: Record<string, string | undefined> = process.env
+  env: Record<string, string | undefined>
 ): Config {
   const expandedRepos: RepoConfig[] = [];
 

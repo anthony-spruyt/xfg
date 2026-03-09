@@ -45,7 +45,7 @@ export interface XfgManifest {
 function hasVersion(manifest: unknown, version: number): boolean {
   return (
     isPlainObject(manifest) &&
-    (manifest as { version: number }).version === version
+    (manifest as Record<string, unknown>).version === version
   );
 }
 
@@ -59,7 +59,7 @@ function isV1Manifest(manifest: unknown): manifest is XfgManifestV1 {
 function hasConfigs(manifest: unknown): boolean {
   return (
     isPlainObject(manifest) &&
-    isPlainObject((manifest as { configs: unknown }).configs)
+    isPlainObject((manifest as Record<string, unknown>).configs)
   );
 }
 

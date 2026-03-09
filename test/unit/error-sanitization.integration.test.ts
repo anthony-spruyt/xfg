@@ -11,7 +11,7 @@ import { logger } from "../../src/shared/logger.js";
  */
 describe("error sanitization integration", () => {
   test("command executor sanitizes embedded credentials in stderr", async () => {
-    const executor = new ShellCommandExecutor();
+    const executor = new ShellCommandExecutor(process.env);
 
     // Simulate a git-like error that contains embedded credentials
     const errorMessage =

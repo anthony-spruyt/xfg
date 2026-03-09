@@ -7,47 +7,57 @@ import {
 } from "../../src/shared/env.js";
 
 describe("interpolateEnvVars", () => {
-  const originalEnv = { ...process.env };
+  const testEnv: Record<string, string | undefined> = {};
 
   beforeEach(() => {
     // Set up test environment variables
-    process.env.TEST_VAR = "test-value";
-    process.env.ANOTHER_VAR = "another-value";
-    process.env.EMPTY_VAR = "";
+    testEnv.TEST_VAR = "test-value";
+    testEnv.ANOTHER_VAR = "another-value";
+    testEnv.EMPTY_VAR = "";
   });
 
   afterEach(() => {
-    // Restore original environment
-    process.env = { ...originalEnv };
+    // Clean up test env
+    for (const key of Object.keys(testEnv)) {
+      delete testEnv[key];
+    }
+  });
+
+  const opts = (
+    overrides?: Partial<EnvInterpolationOptions>
+  ): EnvInterpolationOptions => ({
+    strict: true,
+    env: testEnv,
+    ...overrides,
   });
 
   test("replaces ${VAR} with env value", () => {
     const input = { key: "${TEST_VAR}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "test-value" });
   });
 
   test("replaces multiple vars in one string", () => {
     const input = { key: "${TEST_VAR}-${ANOTHER_VAR}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "test-value-another-value" });
   });
 
   test("returns default for ${VAR:-default} when var missing", () => {
     const input = { key: "${MISSING_VAR:-fallback}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "fallback" });
   });
 
   test("uses env value over default when var exists", () => {
     const input = { key: "${TEST_VAR:-fallback}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "test-value" });
   });
 
   test("uses default when var is empty string", () => {
     const input = { key: "${EMPTY_VAR:-fallback}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     // Empty string is still a valid value, don't use default
     assert.deepEqual(result, { key: "" });
   });
@@ -55,14 +65,14 @@ describe("interpolateEnvVars", () => {
   test("throws for ${VAR:?message} when var missing", () => {
     const input = { key: "${MISSING_VAR:?Variable is required}" };
     assert.throws(
-      () => interpolateEnvVars(input),
+      () => interpolateEnvVars(input, opts()),
       /MISSING_VAR: Variable is required/
     );
   });
 
   test("uses env value for ${VAR:?message} when var exists", () => {
     const input = { key: "${TEST_VAR:?Variable is required}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "test-value" });
   });
 
@@ -74,7 +84,7 @@ describe("interpolateEnvVars", () => {
         },
       },
     };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, {
       level1: {
         level2: {
@@ -88,7 +98,7 @@ describe("interpolateEnvVars", () => {
     const input = {
       items: ["${TEST_VAR}", "${ANOTHER_VAR}", "literal"],
     };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, {
       items: ["test-value", "another-value", "literal"],
     });
@@ -98,7 +108,7 @@ describe("interpolateEnvVars", () => {
     const input = {
       items: [{ name: "${TEST_VAR}" }, { name: "static" }],
     };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, {
       items: [{ name: "test-value" }, { name: "static" }],
     });
@@ -111,50 +121,48 @@ describe("interpolateEnvVars", () => {
       nullValue: null,
       array: [1, 2, 3],
     };
-    const result = interpolateEnvVars(input as Record<string, unknown>);
+    const result = interpolateEnvVars(input as Record<string, unknown>, opts());
     assert.deepEqual(result, input);
   });
 
   test("strict mode throws on missing vars without modifier", () => {
     const input = { key: "${MISSING_VAR}" };
-    const options: EnvInterpolationOptions = { strict: true };
     assert.throws(
-      () => interpolateEnvVars(input, options),
+      () => interpolateEnvVars(input, opts({ strict: true })),
       /Missing required environment variable: MISSING_VAR/
     );
   });
 
   test("non-strict mode leaves placeholder as-is", () => {
     const input = { key: "${MISSING_VAR}" };
-    const options: EnvInterpolationOptions = { strict: false };
-    const result = interpolateEnvVars(input, options);
+    const result = interpolateEnvVars(input, opts({ strict: false }));
     assert.deepEqual(result, { key: "${MISSING_VAR}" });
   });
 
   test("default strict mode is true", () => {
     const input = { key: "${MISSING_VAR}" };
     assert.throws(
-      () => interpolateEnvVars(input),
+      () => interpolateEnvVars(input, opts()),
       /Missing required environment variable: MISSING_VAR/
     );
   });
 
   test("handles empty default value", () => {
     const input = { key: "${MISSING_VAR:-}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "" });
   });
 
   test("handles complex default value with special characters", () => {
     const input = { key: "${MISSING_VAR:-http://example.com:8080/path}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "http://example.com:8080/path" });
   });
 
   test("handles var names with underscores", () => {
-    process.env.MY_LONG_VAR_NAME = "long-value";
+    testEnv.MY_LONG_VAR_NAME = "long-value";
     const input = { key: "${MY_LONG_VAR_NAME}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "long-value" });
   });
 
@@ -164,7 +172,7 @@ describe("interpolateEnvVars", () => {
       withDefault: "${MISSING:-default}",
       simple: "${ANOTHER_VAR}",
     };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, {
       required: "test-value",
       withDefault: "default",
@@ -174,144 +182,180 @@ describe("interpolateEnvVars", () => {
 
   test("preserves non-variable dollar signs", () => {
     const input = { key: "price is $100" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "price is $100" });
   });
 
   test("handles empty object", () => {
-    const result = interpolateEnvVars({});
+    const result = interpolateEnvVars({}, opts());
     assert.deepEqual(result, {});
   });
 });
 
 describe("interpolateContent with strings", () => {
-  const originalEnv = { ...process.env };
+  const testEnv: Record<string, string | undefined> = {};
 
   beforeEach(() => {
-    process.env.TEST_VAR = "test-value";
-    process.env.DIR = "build";
+    testEnv.TEST_VAR = "test-value";
+    testEnv.DIR = "build";
   });
 
   afterEach(() => {
-    process.env = { ...originalEnv };
+    for (const key of Object.keys(testEnv)) {
+      delete testEnv[key];
+    }
+  });
+
+  const opts = (
+    overrides?: Partial<EnvInterpolationOptions>
+  ): EnvInterpolationOptions => ({
+    strict: true,
+    env: testEnv,
+    ...overrides,
   });
 
   test("interpolates in plain string", () => {
-    const result = interpolateContent("value is ${TEST_VAR}");
+    const result = interpolateContent("value is ${TEST_VAR}", opts());
     assert.equal(result, "value is test-value");
   });
 
   test("handles multiline string", () => {
     const input = "line1\n${TEST_VAR}\nline3";
-    const result = interpolateContent(input);
+    const result = interpolateContent(input, opts());
     assert.equal(result, "line1\ntest-value\nline3");
   });
 
   test("handles multiple vars in one string", () => {
-    const result = interpolateContent("${TEST_VAR} and ${DIR}");
+    const result = interpolateContent("${TEST_VAR} and ${DIR}", opts());
     assert.equal(result, "test-value and build");
   });
 
   test("handles default values", () => {
-    const result = interpolateContent("${MISSING:-default-val}");
+    const result = interpolateContent("${MISSING:-default-val}", opts());
     assert.equal(result, "default-val");
   });
 
   test("throws on missing required var", () => {
     assert.throws(
-      () => interpolateContent("${MISSING_VAR}"),
+      () => interpolateContent("${MISSING_VAR}", opts()),
       /Missing required environment variable: MISSING_VAR/
     );
   });
 
   test("leaves placeholder in non-strict mode", () => {
-    const result = interpolateContent("${MISSING_VAR}", {
-      strict: false,
-    });
+    const result = interpolateContent(
+      "${MISSING_VAR}",
+      opts({
+        strict: false,
+      })
+    );
     assert.equal(result, "${MISSING_VAR}");
   });
 });
 
 describe("interpolateContent with string arrays", () => {
-  const originalEnv = { ...process.env };
+  const testEnv: Record<string, string | undefined> = {};
 
   beforeEach(() => {
-    process.env.DIR = "build";
-    process.env.EXTRA = "extra";
+    testEnv.DIR = "build";
+    testEnv.EXTRA = "extra";
   });
 
   afterEach(() => {
-    process.env = { ...originalEnv };
+    for (const key of Object.keys(testEnv)) {
+      delete testEnv[key];
+    }
+  });
+
+  const opts = (): EnvInterpolationOptions => ({
+    strict: true,
+    env: testEnv,
   });
 
   test("interpolates each line", () => {
-    const result = interpolateContent(["${DIR}/", "other"]);
+    const result = interpolateContent(["${DIR}/", "other"], opts());
     assert.deepEqual(result, ["build/", "other"]);
   });
 
   test("handles multiple vars across lines", () => {
-    const result = interpolateContent(["${DIR}/output", "${EXTRA}/files"]);
+    const result = interpolateContent(
+      ["${DIR}/output", "${EXTRA}/files"],
+      opts()
+    );
     assert.deepEqual(result, ["build/output", "extra/files"]);
   });
 
   test("handles empty array", () => {
-    const result = interpolateContent([]);
+    const result = interpolateContent([], opts());
     assert.deepEqual(result, []);
   });
 
   test("handles lines without vars", () => {
-    const result = interpolateContent(["static", "content"]);
+    const result = interpolateContent(["static", "content"], opts());
     assert.deepEqual(result, ["static", "content"]);
   });
 
   test("throws on missing required var in any line", () => {
     assert.throws(
-      () => interpolateContent(["${DIR}/", "${MISSING}"]),
+      () => interpolateContent(["${DIR}/", "${MISSING}"], opts()),
       /Missing required environment variable: MISSING/
     );
   });
 });
 
 describe("interpolateContent", () => {
-  const originalEnv = { ...process.env };
+  const testEnv: Record<string, string | undefined> = {};
 
   beforeEach(() => {
-    process.env.VAR = "value";
-    process.env.DIR = "build";
+    testEnv.VAR = "value";
+    testEnv.DIR = "build";
   });
 
   afterEach(() => {
-    process.env = { ...originalEnv };
+    for (const key of Object.keys(testEnv)) {
+      delete testEnv[key];
+    }
+  });
+
+  const opts = (): EnvInterpolationOptions => ({
+    strict: true,
+    env: testEnv,
   });
 
   test("handles string content", () => {
-    const result = interpolateContent("prefix-${VAR}");
+    const result = interpolateContent("prefix-${VAR}", opts());
     assert.equal(result, "prefix-value");
   });
 
   test("handles string array content", () => {
-    const result = interpolateContent(["${VAR}", "static"]);
+    const result = interpolateContent(["${VAR}", "static"], opts());
     assert.deepEqual(result, ["value", "static"]);
   });
 
   test("handles object content", () => {
-    const result = interpolateContent({ key: "${VAR}" });
+    const result = interpolateContent({ key: "${VAR}" }, opts());
     assert.deepEqual(result, { key: "value" });
   });
 
   test("handles nested object content", () => {
-    const result = interpolateContent({
-      outer: { inner: "${VAR}" },
-    });
+    const result = interpolateContent(
+      {
+        outer: { inner: "${VAR}" },
+      },
+      opts()
+    );
     assert.deepEqual(result, { outer: { inner: "value" } });
   });
 
   test("handles mixed content types within object", () => {
-    const result = interpolateContent({
-      stringVal: "${VAR}",
-      arrayVal: ["${DIR}"],
-      numVal: 123,
-    });
+    const result = interpolateContent(
+      {
+        stringVal: "${VAR}",
+        arrayVal: ["${DIR}"],
+        numVal: 123,
+      },
+      opts()
+    );
     assert.deepEqual(result, {
       stringVal: "value",
       arrayVal: ["build"],
@@ -321,46 +365,53 @@ describe("interpolateContent", () => {
 });
 
 describe("escape mechanism with $$ syntax", () => {
-  const originalEnv = { ...process.env };
+  const testEnv: Record<string, string | undefined> = {};
 
   beforeEach(() => {
-    process.env.TEST_VAR = "test-value";
-    process.env.HOME = "/home/user";
+    testEnv.TEST_VAR = "test-value";
+    testEnv.HOME = "/home/user";
   });
 
   afterEach(() => {
-    process.env = { ...originalEnv };
+    for (const key of Object.keys(testEnv)) {
+      delete testEnv[key];
+    }
+  });
+
+  const opts = (): EnvInterpolationOptions => ({
+    strict: true,
+    env: testEnv,
   });
 
   // Basic escape functionality
   test("$${VAR} outputs literal ${VAR}", () => {
     const input = { key: "$${VAR}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "${VAR}" });
   });
 
   test("$${VAR:-default} outputs literal ${VAR:-default}", () => {
     const input = { key: "$${MISSING:-fallback}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "${MISSING:-fallback}" });
   });
 
   test("$${VAR:?message} outputs literal ${VAR:?message}", () => {
     const input = { key: "$${REQUIRED:?Must be set}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "${REQUIRED:?Must be set}" });
   });
 
   // Mixed escaped and non-escaped
   test("mixes escaped and interpolated vars in same string", () => {
     const input = { key: "${TEST_VAR} and $${NOT_INTERPOLATED}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "test-value and ${NOT_INTERPOLATED}" });
   });
 
   test("multiple escaped vars in one string", () => {
     const input = { key: "$${VAR1} and $${VAR2}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "${VAR1} and ${VAR2}" });
   });
 
@@ -373,7 +424,7 @@ describe("escape mechanism with $$ syntax", () => {
         ACTUAL_VALUE: "${TEST_VAR}",
       },
     };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, {
       remoteEnv: {
         LOCAL_WORKSPACE_FOLDER: "${localWorkspaceFolder}",
@@ -392,7 +443,7 @@ describe("escape mechanism with $$ syntax", () => {
         },
       },
     };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, {
       outer: { inner: { template: "${TEMPLATE_VAR}" } },
     });
@@ -403,7 +454,7 @@ describe("escape mechanism with $$ syntax", () => {
     const input = {
       items: ["$${VAR1}", "${TEST_VAR}", "$${VAR2}"],
     };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, {
       items: ["${VAR1}", "test-value", "${VAR2}"],
     });
@@ -411,16 +462,16 @@ describe("escape mechanism with $$ syntax", () => {
 
   // String interpolation via interpolateContent
   test("interpolateContent handles escaped vars in string", () => {
-    const result = interpolateContent("template: $${localEnv:HOME}");
+    const result = interpolateContent("template: $${localEnv:HOME}", opts());
     assert.equal(result, "template: ${localEnv:HOME}");
   });
 
   // Lines array via interpolateContent
   test("interpolateContent handles escaped vars in lines", () => {
-    const result = interpolateContent([
-      "# Use $${VAR} for local env",
-      "export PATH=${HOME}",
-    ]);
+    const result = interpolateContent(
+      ["# Use $${VAR} for local env", "export PATH=${HOME}"],
+      opts()
+    );
     assert.deepEqual(result, [
       "# Use ${VAR} for local env",
       "export PATH=/home/user",
@@ -430,23 +481,23 @@ describe("escape mechanism with $$ syntax", () => {
   // Edge cases
   test("consecutive escaped vars", () => {
     const input = { key: "$${A}$${B}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "${A}${B}" });
   });
 
   test("escaped var at start and end of string", () => {
     const input = { key: "$${START} middle $${END}" };
-    const result = interpolateEnvVars(input);
+    const result = interpolateEnvVars(input, opts());
     assert.deepEqual(result, { key: "${START} middle ${END}" });
   });
 
   test("interpolateContent handles escaped vars in string", () => {
-    const result = interpolateContent("prefix-$${VAR}");
+    const result = interpolateContent("prefix-$${VAR}", opts());
     assert.equal(result, "prefix-${VAR}");
   });
 
   test("interpolateContent handles escaped vars in array", () => {
-    const result = interpolateContent(["$${VAR}", "static"]);
+    const result = interpolateContent(["$${VAR}", "static"], opts());
     assert.deepEqual(result, ["${VAR}", "static"]);
   });
 });

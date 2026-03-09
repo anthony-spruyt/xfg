@@ -19,14 +19,9 @@ export interface EnvInterpolationOptions {
   strict: boolean;
   /**
    * Environment variables to resolve from.
-   * Defaults to process.env when not provided (for backward compatibility in tests).
    */
-  env?: Record<string, string | undefined>;
+  env: Record<string, string | undefined>;
 }
-
-const DEFAULT_OPTIONS: EnvInterpolationOptions = {
-  strict: true,
-};
 
 /**
  * Regex to match environment variable placeholders.
@@ -52,7 +47,7 @@ const ENV_VAR_REGEX = /\$\{([A-Za-z_][A-Za-z0-9_.]*)(?::([?-])([^}]*))?\}/g;
 const ESCAPED_VAR_REGEX = /\$\$\{((?!xfg:)[^}]+)\}/g;
 
 function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
-  const envSource = options.env ?? process.env;
+  const envSource = options.env;
   function resolveEnvVar(
     match: string,
     varName: string,
@@ -107,7 +102,7 @@ function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
  */
 export function interpolateEnvVars(
   json: Record<string, unknown>,
-  options: EnvInterpolationOptions = DEFAULT_OPTIONS
+  options: EnvInterpolationOptions
 ): Record<string, unknown> {
   return interpolateValue(json, buildEnvConfig(options)) as Record<
     string,
@@ -121,7 +116,7 @@ export function interpolateEnvVars(
  */
 export function interpolateContent(
   content: Record<string, unknown> | string | string[],
-  options: EnvInterpolationOptions = DEFAULT_OPTIONS
+  options: EnvInterpolationOptions
 ): Record<string, unknown> | string | string[] {
   const config = buildEnvConfig(options);
   if (typeof content === "string") {

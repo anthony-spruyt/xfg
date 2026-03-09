@@ -15,7 +15,7 @@ import {
 } from "../../src/shared/command-executor.js";
 
 describe("ShellCommandExecutor", () => {
-  const executor = new ShellCommandExecutor();
+  const executor = new ShellCommandExecutor(process.env);
   const testDir = join(tmpdir(), `cmd-exec-test-${Date.now()}`);
 
   // Setup test directory
@@ -127,7 +127,7 @@ describe("credential sanitization", () => {
   // credential sanitization in error output paths
 
   test("sanitizes credentials in error messages", async () => {
-    const executor = new ShellCommandExecutor();
+    const executor = new ShellCommandExecutor(process.env);
 
     try {
       // Simulate a failing command that outputs credentials to stderr
@@ -147,7 +147,7 @@ describe("credential sanitization", () => {
   });
 
   test("sanitizes credentials in stderr", async () => {
-    const executor = new ShellCommandExecutor();
+    const executor = new ShellCommandExecutor(process.env);
 
     try {
       await executor.exec(

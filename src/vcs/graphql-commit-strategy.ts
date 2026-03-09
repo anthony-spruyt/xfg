@@ -39,6 +39,11 @@ interface GraphQLRepoResponse {
   errors?: Array<{ message: string }>;
 }
 
+interface GraphQLMutationResponse {
+  data?: Record<string, unknown>;
+  errors?: Array<{ message: string }>;
+}
+
 /**
  * Pattern for valid git branch names that are also safe for shell commands.
  * Git branch names have strict rules:
@@ -430,9 +435,6 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     T extends {
       data?: Record<string, unknown>;
       errors?: Array<{ message: string }>;
-    } = {
-      data?: Record<string, unknown>;
-      errors?: Array<{ message: string }>;
     },
   >(
     queryOrMutation: string,
@@ -514,7 +516,12 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     token?: string
   ): Promise<void> {
     const mutation = `mutation { createRef(input: { repositoryId: ${JSON.stringify(repositoryId)}, name: ${JSON.stringify(`refs/heads/${branchName}`)}, oid: ${JSON.stringify(oid)} }) { clientMutationId } }`;
-    await this.executeGraphQLRefOp(mutation, repoInfo, workDir, token);
+    await this.executeGraphQLRefOp<GraphQLMutationResponse>(
+      mutation,
+      repoInfo,
+      workDir,
+      token
+    );
   }
 
   private async deleteRemoteRef(
@@ -524,6 +531,11 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     token?: string
   ): Promise<void> {
     const mutation = `mutation { deleteRef(input: { refId: ${JSON.stringify(refId)} }) { clientMutationId } }`;
-    await this.executeGraphQLRefOp(mutation, repoInfo, workDir, token);
+    await this.executeGraphQLRefOp<GraphQLMutationResponse>(
+      mutation,
+      repoInfo,
+      workDir,
+      token
+    );
   }
 }
