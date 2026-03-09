@@ -22,7 +22,8 @@ export class AdoMigrationSource implements IMigrationSource {
 
   constructor(
     private readonly executor: ICommandExecutor = defaultExecutor,
-    private readonly retries: number = 3
+    private readonly retries: number = 3,
+    private readonly cwd: string = process.cwd()
   ) {}
 
   private assertAdo(
@@ -41,7 +42,7 @@ export class AdoMigrationSource implements IMigrationSource {
     const command = `git clone --mirror ${escapeShellArg(repoInfo.gitUrl)} ${escapeShellArg(workDir)}`;
 
     try {
-      await withRetry(() => this.executor.exec(command, process.cwd()), {
+      await withRetry(() => this.executor.exec(command, this.cwd), {
         retries: this.retries,
       });
     } catch (error) {

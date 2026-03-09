@@ -71,7 +71,10 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
       fileChanges
     );
 
-    // Count stats for entries added after writeFiles (orphan deletes + manifest)
+    // Count stats for entries added after writeFiles (orphan deletes + manifest).
+    // Invariant: writerFiles and post-write entries are disjoint — orphan deletes
+    // only target files NOT in the current config (see updateManifest), and
+    // the manifest file is never a config-managed file.
     const writerFiles = new Set(repoConfig.files.map((f) => f.fileName));
     for (const [name, info] of fileChanges) {
       if (writerFiles.has(name)) continue;

@@ -62,6 +62,17 @@ describe("AdoMigrationSource", () => {
       );
     });
 
+    test("uses injected cwd for command execution", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        defaultResponse: "",
+      });
+
+      const source = new AdoMigrationSource(executor, 0, "/custom/work/dir");
+      await source.cloneForMigration(mockRepoInfo, "/tmp/migration");
+
+      assert.equal(calls[0].cwd, "/custom/work/dir");
+    });
+
     test("rejects non-ADO repo", async () => {
       const { mock: executor } = createMockExecutor({
         defaultResponse: "",
