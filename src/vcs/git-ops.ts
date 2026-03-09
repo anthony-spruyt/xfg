@@ -128,11 +128,15 @@ export class GitOps implements ILocalGitOps {
   getFileContent(fileName: string): string | null {
     const filePath = this.validatePath(fileName);
 
-    if (!existsSync(filePath) || !statSync(filePath).isFile()) {
+    try {
+      if (!existsSync(filePath) || !statSync(filePath).isFile()) {
+        return null;
+      }
+
+      return readFileSync(filePath, "utf-8");
+    } catch {
       return null;
     }
-
-    return readFileSync(filePath, "utf-8");
   }
 
   /**

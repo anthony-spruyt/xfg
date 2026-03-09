@@ -426,15 +426,20 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
    * Handles command construction, retry, error sanitization, and response parsing.
    * Uses gh CLI's --input flag to pass GraphQL via stdin (same pattern as executeGraphQLMutation).
    */
-  private async executeGraphQLRefOp(
+  private async executeGraphQLRefOp<
+    T extends {
+      data?: Record<string, unknown>;
+      errors?: Array<{ message: string }>;
+    } = {
+      data?: Record<string, unknown>;
+      errors?: Array<{ message: string }>;
+    },
+  >(
     queryOrMutation: string,
     repoInfo: GitHubRepoInfo,
     workDir: string,
     token?: string
-  ): Promise<{
-    data?: Record<string, unknown>;
-    errors?: Array<{ message: string }>;
-  }> {
+  ): Promise<T> {
     const requestBody = JSON.stringify({ query: queryOrMutation });
 
     const hostnameArg =
@@ -460,10 +465,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       );
     }
 
-    const parsed = parseApiJson<{
-      data?: Record<string, unknown>;
-      errors?: Array<{ message: string }>;
-    }>(response, "GraphQL API response");
+    const parsed = parseApiJson<T>(response, "GraphQL API response");
     if (parsed.errors) {
       throw new GraphQLApiError(parsed.errors.map((e) => e.message).join(", "));
     }
@@ -483,14 +485,13 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
   ): Promise<{ repositoryId: string; refId: string | null }> {
     const query = `{ repository(owner: ${JSON.stringify(repoInfo.owner)}, name: ${JSON.stringify(repoInfo.repo)}) { id ref(qualifiedName: ${JSON.stringify(`refs/heads/${branchName}`)}) { id } } }`;
 
-    const parsed = await this.executeGraphQLRefOp(
+    const repoResponse = await this.executeGraphQLRefOp<GraphQLRepoResponse>(
       query,
       repoInfo,
       workDir,
       token
     );
 
-    const repoResponse = parsed as GraphQLRepoResponse;
     const repositoryId = repoResponse.data?.repository?.id;
     if (!repositoryId) {
       throw new GraphQLApiError(

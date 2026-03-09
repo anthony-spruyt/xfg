@@ -1,6 +1,6 @@
 import { createSign } from "node:crypto";
 import { withRetry } from "../shared/retry-utils.js";
-import { GraphQLApiError } from "../shared/errors.js";
+import { SyncError } from "../shared/errors.js";
 import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 
 /** Duration to cache tokens (45 minutes in milliseconds) */
@@ -26,9 +26,7 @@ interface CachedToken {
 async function assertOkResponse(res: Response, context: string): Promise<void> {
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new GraphQLApiError(
-      `${context}: ${res.status}${body ? ` - ${body}` : ""}`
-    );
+    throw new SyncError(`${context}: ${res.status}${body ? ` - ${body}` : ""}`);
   }
 }
 
