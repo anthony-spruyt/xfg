@@ -307,20 +307,20 @@ export function formatSummary(data: SummaryData): string {
   return lines.join("\n");
 }
 
-export function isGitHubActions(summaryPath?: string): boolean {
-  return !!(summaryPath ?? process.env.GITHUB_STEP_SUMMARY);
+export function isGitHubActions(summaryPath: string | undefined): boolean {
+  return !!summaryPath;
 }
 
 /**
  * Append markdown content to GITHUB_STEP_SUMMARY.
- * No-op if summaryPath is not provided and GITHUB_STEP_SUMMARY is unset.
+ * No-op if summaryPath is not provided.
  */
 export function writeGitHubStepSummary(
   markdown: string,
-  summaryPath?: string,
+  summaryPath: string | undefined,
   log?: DebugLog
 ): void {
-  const path = summaryPath ?? process.env.GITHUB_STEP_SUMMARY;
+  const path = summaryPath;
   if (!path) return;
   try {
     appendFileSync(path, "\n" + markdown + "\n");
@@ -329,7 +329,10 @@ export function writeGitHubStepSummary(
   }
 }
 
-export function writeSummary(data: SummaryData, summaryPath?: string): void {
+export function writeSummary(
+  data: SummaryData,
+  summaryPath: string | undefined
+): void {
   const markdown = formatSummary(data);
   writeGitHubStepSummary(markdown, summaryPath);
 }

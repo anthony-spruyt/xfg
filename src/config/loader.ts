@@ -36,7 +36,10 @@ export function loadRawConfig(filePath: string): RawConfig {
   return rawConfig;
 }
 
-export function loadConfig(filePath: string): Config {
+export function loadConfig(
+  filePath: string,
+  env: Record<string, string | undefined> = process.env
+): Config {
   const rawConfig = loadRawConfig(filePath);
-  return normalizeConfigInternal(rawConfig);
+  return normalizeConfigInternal(rawConfig, env);
 }

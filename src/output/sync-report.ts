@@ -130,8 +130,9 @@ export function formatSyncReportMarkdown(
 
 export function writeSyncReportSummary(
   report: SyncReport,
-  dryRun: boolean
+  dryRun: boolean,
+  summaryPath: string | undefined
 ): void {
   const markdown = formatSyncReportMarkdown(report, dryRun);
-  writeGitHubStepSummary(markdown);
+  writeGitHubStepSummary(markdown, summaryPath);
 }

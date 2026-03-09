@@ -429,8 +429,9 @@ export function formatSettingsReportMarkdown(
 
 export function writeSettingsReportSummary(
   report: SettingsReport,
-  dryRun: boolean
+  dryRun: boolean,
+  summaryPath: string | undefined
 ): void {
   const markdown = formatSettingsReportMarkdown(report, dryRun);
-  writeGitHubStepSummary(markdown);
+  writeGitHubStepSummary(markdown, summaryPath);
 }

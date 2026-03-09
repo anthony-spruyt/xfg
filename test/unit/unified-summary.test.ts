@@ -985,26 +985,17 @@ describe("formatUnifiedSummaryMarkdown", () => {
 
 describe("writeUnifiedSummary", () => {
   let tempFile: string;
-  let originalEnv: string | undefined;
-
   beforeEach(() => {
     tempFile = join(tmpdir(), `unified-summary-test-${Date.now()}.md`);
-    originalEnv = process.env.GITHUB_STEP_SUMMARY;
   });
 
   afterEach(() => {
-    if (originalEnv === undefined) {
-      delete process.env.GITHUB_STEP_SUMMARY;
-    } else {
-      process.env.GITHUB_STEP_SUMMARY = originalEnv;
-    }
     if (existsSync(tempFile)) {
       unlinkSync(tempFile);
     }
   });
 
-  test("writes markdown to GITHUB_STEP_SUMMARY path", () => {
-    process.env.GITHUB_STEP_SUMMARY = tempFile;
+  test("writes markdown to summaryPath", () => {
     const lifecycle: LifecycleReport = {
       actions: [{ repoName: "org/repo", action: "created" }],
       totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
@@ -1014,6 +1005,7 @@ describe("writeUnifiedSummary", () => {
       lifecycle,
       sync: emptySync(),
       dryRun: false,
+      summaryPath: tempFile,
     });
 
     assert.ok(existsSync(tempFile));
@@ -1021,22 +1013,22 @@ describe("writeUnifiedSummary", () => {
     assert.ok(content.includes("xfg Apply"));
   });
 
-  test("no-ops when env var not set", () => {
-    delete process.env.GITHUB_STEP_SUMMARY;
+  test("no-ops when summaryPath not set", () => {
     writeUnifiedSummary({
       lifecycle: emptyLifecycle(),
       sync: emptySync(),
       dryRun: false,
+      summaryPath: undefined,
     });
     assert.ok(!existsSync(tempFile));
   });
 
   test("no-ops when no changes", () => {
-    process.env.GITHUB_STEP_SUMMARY = tempFile;
     writeUnifiedSummary({
       lifecycle: emptyLifecycle(),
       sync: emptySync(),
       dryRun: false,
+      summaryPath: tempFile,
     });
     assert.ok(!existsSync(tempFile));
   });

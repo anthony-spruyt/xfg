@@ -281,6 +281,7 @@ function displayReports(
     sync: report,
     settings: settingsReport,
     dryRun,
+    summaryPath: process.env.GITHUB_STEP_SUMMARY,
   });
 }
 
@@ -562,7 +563,7 @@ export async function runSync(
 
   validateForSync(rawConfig);
 
-  const config = normalizeConfig(rawConfig);
+  const config = normalizeConfig(rawConfig, process.env);
   const fileNames = getUniqueFileNames(config);
 
   let branchName: string;

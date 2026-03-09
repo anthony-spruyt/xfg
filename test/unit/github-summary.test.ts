@@ -1074,7 +1074,7 @@ describe("writeSummary", () => {
       results: [],
     };
 
-    writeSummary(data);
+    writeSummary(data, tempFile);
 
     assert.ok(existsSync(tempFile));
     const content = readFileSync(tempFile, "utf-8");
@@ -1082,7 +1082,6 @@ describe("writeSummary", () => {
   });
 
   test("appends newline after content", () => {
-    process.env.GITHUB_STEP_SUMMARY = tempFile;
     const data: SummaryData = {
       title: "Config Sync Summary",
       total: 1,
@@ -1092,7 +1091,7 @@ describe("writeSummary", () => {
       results: [],
     };
 
-    writeSummary(data);
+    writeSummary(data, tempFile);
 
     const content = readFileSync(tempFile, "utf-8");
     assert.ok(content.endsWith("\n"));
@@ -1100,7 +1099,6 @@ describe("writeSummary", () => {
 
   test("appends to existing file content", () => {
     writeFileSync(tempFile, "# Existing Content\n");
-    process.env.GITHUB_STEP_SUMMARY = tempFile;
     const data: SummaryData = {
       title: "Config Sync Summary",
       total: 1,
@@ -1110,7 +1108,7 @@ describe("writeSummary", () => {
       results: [],
     };
 
-    writeSummary(data);
+    writeSummary(data, tempFile);
 
     const content = readFileSync(tempFile, "utf-8");
     assert.ok(content.includes("# Existing Content"));
@@ -1119,7 +1117,6 @@ describe("writeSummary", () => {
 
   test("consecutive writes have blank line between summaries for heading rendering", () => {
     writeFileSync(tempFile, "");
-    process.env.GITHUB_STEP_SUMMARY = tempFile;
     const data: SummaryData = {
       title: "Repository Settings Summary",
       total: 1,
@@ -1129,8 +1126,8 @@ describe("writeSummary", () => {
       results: [{ repoName: "org/repo", status: "succeeded", message: "Done" }],
     };
 
-    writeSummary(data);
-    writeSummary(data);
+    writeSummary(data, tempFile);
+    writeSummary(data, tempFile);
 
     const content = readFileSync(tempFile, "utf-8");
     // The closing </details> of the first summary and the ## heading of the
@@ -1141,8 +1138,7 @@ describe("writeSummary", () => {
     );
   });
 
-  test("no-ops when env var not set", () => {
-    delete process.env.GITHUB_STEP_SUMMARY;
+  test("no-ops when summaryPath not set", () => {
     const data: SummaryData = {
       title: "Config Sync Summary",
       total: 1,
@@ -1153,14 +1149,13 @@ describe("writeSummary", () => {
     };
 
     // Should not throw
-    writeSummary(data);
+    writeSummary(data, undefined);
 
     // File should not be created
     assert.ok(!existsSync(tempFile));
   });
 
-  test("no-ops when env var is empty string", () => {
-    process.env.GITHUB_STEP_SUMMARY = "";
+  test("no-ops when summaryPath is empty string", () => {
     const data: SummaryData = {
       title: "Config Sync Summary",
       total: 1,
@@ -1171,40 +1166,20 @@ describe("writeSummary", () => {
     };
 
     // Should not throw
-    writeSummary(data);
+    writeSummary(data, "");
   });
 });
 
 describe("isGitHubActions", () => {
-  let originalEnv: string | undefined;
-
-  beforeEach(() => {
-    originalEnv = process.env.GITHUB_STEP_SUMMARY;
+  test("returns true when summaryPath is set", () => {
+    assert.equal(isGitHubActions("/path/to/summary"), true);
   });
 
-  afterEach(() => {
-    if (originalEnv === undefined) {
-      delete process.env.GITHUB_STEP_SUMMARY;
-    } else {
-      process.env.GITHUB_STEP_SUMMARY = originalEnv;
-    }
+  test("returns false when summaryPath is undefined", () => {
+    assert.equal(isGitHubActions(undefined), false);
   });
 
-  test("returns true when GITHUB_STEP_SUMMARY set", () => {
-    process.env.GITHUB_STEP_SUMMARY = "/path/to/summary";
-
-    assert.equal(isGitHubActions(), true);
-  });
-
-  test("returns false when not set", () => {
-    delete process.env.GITHUB_STEP_SUMMARY;
-
-    assert.equal(isGitHubActions(), false);
-  });
-
-  test("returns false when empty string", () => {
-    process.env.GITHUB_STEP_SUMMARY = "";
-
-    assert.equal(isGitHubActions(), false);
+  test("returns false when summaryPath is empty string", () => {
+    assert.equal(isGitHubActions(""), false);
   });
 });

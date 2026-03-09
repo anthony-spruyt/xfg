@@ -18,6 +18,7 @@ interface UnifiedSummaryInput {
   sync?: SyncReport;
   settings?: SettingsReport;
   dryRun: boolean;
+  summaryPath?: string | undefined;
 }
 
 // =============================================================================
@@ -288,5 +289,5 @@ export function formatUnifiedSummaryMarkdown(
 export function writeUnifiedSummary(input: UnifiedSummaryInput): void {
   const markdown = formatUnifiedSummaryMarkdown(input);
   if (!markdown) return;
-  writeGitHubStepSummary(markdown);
+  writeGitHubStepSummary(markdown, input.summaryPath);
 }

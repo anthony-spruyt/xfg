@@ -262,26 +262,17 @@ describe("formatSyncReportMarkdown", () => {
 
 describe("writeSyncReportSummary", () => {
   let tempFile: string;
-  let originalEnv: string | undefined;
-
   beforeEach(() => {
     tempFile = join(tmpdir(), `sync-report-test-${Date.now()}.md`);
-    originalEnv = process.env.GITHUB_STEP_SUMMARY;
   });
 
   afterEach(() => {
-    if (originalEnv === undefined) {
-      delete process.env.GITHUB_STEP_SUMMARY;
-    } else {
-      process.env.GITHUB_STEP_SUMMARY = originalEnv;
-    }
     if (existsSync(tempFile)) {
       unlinkSync(tempFile);
     }
   });
 
-  test("writes markdown to GITHUB_STEP_SUMMARY path", () => {
-    process.env.GITHUB_STEP_SUMMARY = tempFile;
+  test("writes markdown to summaryPath", () => {
     const report: SyncReport = {
       repos: [
         {
@@ -294,15 +285,14 @@ describe("writeSyncReportSummary", () => {
       },
     };
 
-    writeSyncReportSummary(report, false);
+    writeSyncReportSummary(report, false, tempFile);
 
     assert.ok(existsSync(tempFile));
     const content = readFileSync(tempFile, "utf-8");
     assert.ok(content.includes("xfg Apply"));
   });
 
-  test("no-ops when env var not set", () => {
-    delete process.env.GITHUB_STEP_SUMMARY;
+  test("no-ops when summaryPath not set", () => {
     const report: SyncReport = {
       repos: [],
       totals: {
@@ -310,7 +300,7 @@ describe("writeSyncReportSummary", () => {
       },
     };
 
-    writeSyncReportSummary(report, false);
+    writeSyncReportSummary(report, false, undefined);
 
     assert.ok(!existsSync(tempFile));
   });

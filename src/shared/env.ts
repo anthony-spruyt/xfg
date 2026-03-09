@@ -17,6 +17,11 @@ export interface EnvInterpolationOptions {
    * and has no default value. If false, leaves the placeholder as-is.
    */
   strict: boolean;
+  /**
+   * Environment variables to resolve from.
+   * Defaults to process.env when not provided (for backward compatibility in tests).
+   */
+  env?: Record<string, string | undefined>;
 }
 
 const DEFAULT_OPTIONS: EnvInterpolationOptions = {
@@ -47,13 +52,14 @@ const ENV_VAR_REGEX = /\$\{([A-Za-z_][A-Za-z0-9_.]*)(?::([?-])([^}]*))?\}/g;
 const ESCAPED_VAR_REGEX = /\$\$\{((?!xfg:)[^}]+)\}/g;
 
 function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
+  const envSource = options.env ?? process.env;
   function resolveEnvVar(
     match: string,
     varName: string,
     modifier: string | undefined,
     defaultOrMsg: string | undefined
   ): string {
-    const envValue = process.env[varName];
+    const envValue = envSource[varName];
 
     // Variable exists - use its value
     if (envValue !== undefined) {

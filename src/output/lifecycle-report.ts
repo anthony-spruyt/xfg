@@ -188,9 +188,10 @@ export function formatLifecycleReportMarkdown(
 
 export function writeLifecycleReportSummary(
   report: LifecycleReport,
-  dryRun: boolean
+  dryRun: boolean,
+  summaryPath: string | undefined
 ): void {
   const markdown = formatLifecycleReportMarkdown(report, dryRun);
   if (!markdown) return;
-  writeGitHubStepSummary(markdown);
+  writeGitHubStepSummary(markdown, summaryPath);
 }

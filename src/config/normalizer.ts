@@ -167,7 +167,18 @@ function mergeRuleset(
  * inherit: false skips all root labels.
  * label: false opts out of a specific root label.
  */
-type LabelMap = Record<string, Label | false> & { inherit?: boolean };
+/**
+ * Label map from config: each key is a label name mapped to a Label config
+ * or `false` to opt out. The special `inherit` key controls whether parent
+ * labels are inherited (defaults to true).
+ *
+ * The index signature accommodates both label entries and the boolean
+ * `inherit` flag to avoid a type intersection conflict.
+ */
+interface LabelMap {
+  inherit?: boolean;
+  [key: string]: Label | false | boolean | undefined;
+}
 
 function mergeLabels(
   rootLabels: LabelMap | undefined,
@@ -481,7 +492,8 @@ function resolveFileEntry(
   fileConfig: RawFileConfig,
   repoOverride: RawRepoFileOverride | false | undefined,
   inheritFiles: boolean,
-  globalDeleteOrphaned: boolean | undefined
+  globalDeleteOrphaned: boolean | undefined,
+  env: Record<string, string | undefined>
 ): FileContent | null {
   if (repoOverride === false) return null;
   if (!inheritFiles && !repoOverride) return null;
@@ -495,7 +507,7 @@ function resolveFileEntry(
   );
 
   if (mergedContent !== null) {
-    mergedContent = interpolateContent(mergedContent, { strict: true });
+    mergedContent = interpolateContent(mergedContent, { strict: true, env });
   }
 
   return {
@@ -521,7 +533,10 @@ function resolveFileEntry(
  * Normalizes raw config into expanded, merged config.
  * Pipeline: expand git arrays -> merge content -> interpolate env vars
  */
-export function normalizeConfig(raw: RawConfig): Config {
+export function normalizeConfig(
+  raw: RawConfig,
+  env: Record<string, string | undefined> = process.env
+): Config {
   const expandedRepos: RepoConfig[] = [];
 
   for (const rawRepo of raw.repos) {
@@ -556,7 +571,8 @@ export function normalizeConfig(raw: RawConfig): Config {
           effectiveRootFiles[fileName],
           rawRepo.files?.[fileName],
           inheritFiles,
-          raw.deleteOrphaned
+          raw.deleteOrphaned,
+          env
         );
         if (entry) files.push(entry);
       }

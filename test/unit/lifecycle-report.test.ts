@@ -499,58 +499,47 @@ describe("formatLifecycleReportMarkdown", () => {
 
 describe("writeLifecycleReportSummary", () => {
   let tempFile: string;
-  let originalEnv: string | undefined;
-
   beforeEach(() => {
     tempFile = join(tmpdir(), `lifecycle-report-test-${Date.now()}.md`);
-    originalEnv = process.env.GITHUB_STEP_SUMMARY;
   });
 
   afterEach(() => {
-    if (originalEnv === undefined) {
-      delete process.env.GITHUB_STEP_SUMMARY;
-    } else {
-      process.env.GITHUB_STEP_SUMMARY = originalEnv;
-    }
     if (existsSync(tempFile)) {
       unlinkSync(tempFile);
     }
   });
 
-  test("writes markdown to GITHUB_STEP_SUMMARY path", () => {
-    process.env.GITHUB_STEP_SUMMARY = tempFile;
+  test("writes markdown to summaryPath", () => {
     const report: LifecycleReport = {
       actions: [{ repoName: "org/repo", action: "created" }],
       totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
     };
 
-    writeLifecycleReportSummary(report, false);
+    writeLifecycleReportSummary(report, false, tempFile);
 
     assert.ok(existsSync(tempFile));
     const content = readFileSync(tempFile, "utf-8");
     assert.ok(content.includes("Lifecycle Summary"));
   });
 
-  test("no-ops when env var not set", () => {
-    delete process.env.GITHUB_STEP_SUMMARY;
+  test("no-ops when summaryPath not set", () => {
     const report: LifecycleReport = {
       actions: [{ repoName: "org/repo", action: "created" }],
       totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
     };
 
-    writeLifecycleReportSummary(report, false);
+    writeLifecycleReportSummary(report, false, undefined);
 
     assert.ok(!existsSync(tempFile));
   });
 
   test("no-ops when all actions are existed (no changes)", () => {
-    process.env.GITHUB_STEP_SUMMARY = tempFile;
     const report: LifecycleReport = {
       actions: [{ repoName: "org/repo", action: "existed" }],
       totals: { created: 0, forked: 0, migrated: 0, existed: 1 },
     };
 
-    writeLifecycleReportSummary(report, false);
+    writeLifecycleReportSummary(report, false, tempFile);
 
     assert.ok(!existsSync(tempFile), "should not create file when all existed");
   });
