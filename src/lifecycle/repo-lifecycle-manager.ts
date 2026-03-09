@@ -3,7 +3,7 @@ import { rm } from "node:fs/promises";
 import { parseGitUrl, type RepoInfo } from "../shared/repo-detector.js";
 import { safeCleanup } from "../shared/type-guards.js";
 import { LifecycleError } from "../shared/errors.js";
-import type { DebugInfoWarnLog } from "../shared/logger.js";
+import { NO_OP_DEBUG_LOG, type DebugInfoWarnLog } from "../shared/logger.js";
 import type { RepoConfig } from "../config/types.js";
 import type {
   IRepoLifecycleManager,
@@ -181,7 +181,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       await safeCleanup(
         () => rm(sourceDir, { recursive: true, force: true }),
         `failed to remove ${sourceDir}`,
-        this.log ?? { debug() {} }
+        this.log ?? NO_OP_DEBUG_LOG
       );
     }
   }

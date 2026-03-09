@@ -117,11 +117,15 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       const data = JSON.parse(stdout);
       return data.type === "Organization";
     } catch (error) {
-      // Propagate auth/permission errors — they won't resolve by guessing
+      // Two-tier error handling:
+      // 1. Permanent errors (auth failures, 403/401) are rethrown — retrying
+      //    or falling through would mask a real credentials problem.
+      // 2. Transient errors (network timeouts, 5xx) fall through to assume
+      //    the owner is an organization, which is the safer default because
+      //    --org is required for org forks but harmless if wrong.
       if (isPermanentError(error)) {
         throw error;
       }
-      // For transient errors, assume org (safer - uses --org flag).
       // This may cause fork to fail with a misleading error for personal accounts.
       const errMsg = toErrorMessage(error);
       this.log?.debug(

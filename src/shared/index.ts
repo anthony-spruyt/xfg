@@ -2,6 +2,7 @@
 export {
   Logger,
   logger,
+  NO_OP_DEBUG_LOG,
   type ILogger,
   type DebugLog,
   type DebugWarnLog,

@@ -154,6 +154,9 @@ export class Logger implements ILogger {
   }
 }
 
+/** No-op debug logger for use as a fallback when logging is optional. */
+export const NO_OP_DEBUG_LOG: DebugLog = { debug() {} };
+
 export const logger = new Logger(
   !!(process.env.DEBUG || process.env.XFG_DEBUG)
 );

@@ -126,13 +126,8 @@ export class FileWriter implements IFileWriter {
           file.fileName
         );
         log.fileDiff(file.fileName, status, diffLines);
-      } else {
-        if (changed) {
-          incrementDiffStats(
-            diffStats,
-            action === "create" ? "NEW" : "MODIFIED"
-          );
-        }
+      } else if (changed) {
+        incrementDiffStats(diffStats, action === "create" ? "NEW" : "MODIFIED");
         gitOps.writeFile(file.fileName, fileContent);
       }
     }

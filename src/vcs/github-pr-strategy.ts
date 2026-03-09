@@ -13,6 +13,7 @@ import type {
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
+import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
 import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
@@ -174,7 +175,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
           if (existsSync(bodyFile)) unlinkSync(bodyFile);
         },
         `failed to remove ${bodyFile}`,
-        this.log ?? { debug() {} }
+        this.log ?? NO_OP_DEBUG_LOG
       );
     }
   }

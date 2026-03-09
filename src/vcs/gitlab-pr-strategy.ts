@@ -16,6 +16,7 @@ import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
 import { parseApiJson } from "../shared/gh-api-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
+import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import type { MergeStrategy } from "../config/index.js";
 import { SyncError } from "../shared/errors.js";
 
@@ -239,7 +240,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
           if (existsSync(descFile)) unlinkSync(descFile);
         },
         `failed to remove ${descFile}`,
-        this.log ?? { debug() {} }
+        this.log ?? NO_OP_DEBUG_LOG
       );
     }
   }
