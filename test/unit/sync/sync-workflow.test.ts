@@ -18,6 +18,7 @@ import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import {
   createMockLogger,
   createMockAuthenticatedGitOps,
+  createMockExecutor,
 } from "../../mocks/index.js";
 
 describe("SyncWorkflow", () => {
@@ -141,7 +142,12 @@ describe("SyncWorkflow", () => {
     const result = await workflow.execute(
       mockRepoConfig,
       mockRepoInfo,
-      { branchName: "test", workDir, configId: "test" },
+      {
+        branchName: "test",
+        workDir,
+        configId: "test",
+        executor: createMockExecutor().mock,
+      },
       mockStrategy
     );
 
@@ -171,7 +177,12 @@ describe("SyncWorkflow", () => {
     const result = await workflow.execute(
       mockRepoConfig,
       mockRepoInfo,
-      { branchName: "test", workDir, configId: "test" },
+      {
+        branchName: "test",
+        workDir,
+        configId: "test",
+        executor: createMockExecutor().mock,
+      },
       mockStrategy
     );
 
@@ -213,7 +224,12 @@ describe("SyncWorkflow", () => {
     const result = await workflow.execute(
       mockRepoConfig,
       mockRepoInfo,
-      { branchName: "test", workDir, configId: "test" },
+      {
+        branchName: "test",
+        workDir,
+        configId: "test",
+        executor: createMockExecutor().mock,
+      },
       mockStrategy
     );
 
@@ -260,7 +276,12 @@ describe("SyncWorkflow", () => {
     const result = await workflow.execute(
       repoConfigDirect,
       mockRepoInfo,
-      { branchName: "test", workDir, configId: "test" },
+      {
+        branchName: "test",
+        workDir,
+        configId: "test",
+        executor: createMockExecutor().mock,
+      },
       mockStrategy
     );
 
@@ -294,7 +315,12 @@ describe("SyncWorkflow", () => {
       await workflow.execute(
         mockRepoConfig,
         mockRepoInfo,
-        { branchName: "test", workDir, configId: "test" },
+        {
+          branchName: "test",
+          workDir,
+          configId: "test",
+          executor: createMockExecutor().mock,
+        },
         mockStrategy
       );
     } catch {
@@ -344,7 +370,12 @@ describe("SyncWorkflow", () => {
     const result = await workflow.execute(
       mockRepoConfig,
       mockRepoInfo,
-      { branchName: "test", workDir, configId: "test" },
+      {
+        branchName: "test",
+        workDir,
+        configId: "test",
+        executor: createMockExecutor().mock,
+      },
       mockStrategy
     );
 

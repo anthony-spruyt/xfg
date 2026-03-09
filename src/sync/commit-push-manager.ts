@@ -52,7 +52,7 @@ export class CommitPushManager implements ICommitPushManager {
     await gitOps.stageAll();
 
     if (!(await gitOps.hasStagedChanges())) {
-      this.log.info("No staged changes after git add -A, skipping commit");
+      this.log.info("No staged changes, skipping commit");
       return { success: true, skipped: true };
     }
 

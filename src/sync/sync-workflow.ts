@@ -50,12 +50,18 @@ export class SyncWorkflow implements ISyncWorkflow {
     const mergeMode = repoConfig.prOptions?.merge ?? "auto";
     const isDirectMode = mergeMode === "direct";
 
+    if (!options.executor) {
+      throw new Error(
+        "ProcessorOptions.executor is required for sync workflow execution"
+      );
+    }
+
     const runCtx: RunContext = {
       workDir: options.workDir,
       dryRun: options.dryRun ?? false,
       retries: options.retries ?? 3,
       token: authResult.token,
-      executor: options.executor!,
+      executor: options.executor,
     };
 
     let session: SessionContext | null = null;
