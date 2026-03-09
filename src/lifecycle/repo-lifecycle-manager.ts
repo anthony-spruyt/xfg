@@ -25,11 +25,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
   constructor(
     factory?: IRepoLifecycleFactory,
     retries?: number,
-    log?: {
-      debug(msg: string): void;
-      info(msg: string): void;
-      warn(msg: string): void;
-    }
+    log?: DebugInfoWarnLog
   ) {
     this.factory = factory ?? new RepoLifecycleFactory(undefined, retries, log);
     this.log = log;

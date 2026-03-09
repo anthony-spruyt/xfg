@@ -57,7 +57,10 @@ function isV1Manifest(manifest: unknown): manifest is XfgManifestV1 {
 }
 
 function hasConfigs(manifest: unknown): boolean {
-  return isPlainObject((manifest as { configs: unknown }).configs);
+  return (
+    isPlainObject(manifest) &&
+    isPlainObject((manifest as { configs: unknown }).configs)
+  );
 }
 
 function isV2Manifest(manifest: unknown): manifest is XfgManifestV2 {
