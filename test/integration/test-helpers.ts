@@ -35,6 +35,61 @@ export function exec(
 }
 
 /**
+ * Transient HTTP error patterns from the GitHub API that warrant a retry.
+ */
+const TRANSIENT_ERROR_PATTERNS = [
+  /502/i,
+  /503/i,
+  /504/i,
+  /500/i,
+  /Server Error/i,
+  /Service Unavailable/i,
+];
+
+/**
+ * Executes a shell command with synchronous retry for transient GitHub API errors.
+ * Uses Atomics.wait for synchronous sleep (same approach as waitForRepoReady).
+ *
+ * Note: All command arguments are constructed from controlled test constants
+ * (owner, repoName from generateRepoName), not user input.
+ */
+export function execWithRetry(
+  command: string,
+  options?: { cwd?: string; env?: Record<string, string | undefined> },
+  retries = 3,
+  delayMs = 2000
+): string {
+  for (let attempt = 1; attempt <= retries + 1; attempt++) {
+    try {
+      return exec(command, options);
+    } catch (error) {
+      const err = error as {
+        stderr?: string;
+        stdout?: string;
+        message?: string;
+      };
+      const errorText = `${err.message ?? ""} ${err.stderr ?? ""} ${err.stdout ?? ""}`;
+      const isTransient = TRANSIENT_ERROR_PATTERNS.some((p) =>
+        p.test(errorText)
+      );
+
+      if (!isTransient || attempt > retries) {
+        throw error;
+      }
+
+      const backoff = delayMs * attempt;
+      console.log(
+        `  Transient error on attempt ${attempt}/${retries + 1}, retrying in ${backoff}ms...`
+      );
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, backoff);
+    }
+  }
+
+  // Unreachable — loop always throws on final attempt failure
+  throw new Error("execWithRetry: unexpected code path");
+}
+
+/**
  * Polls GitHub API until a file is visible, handling eventual consistency.
  * This prevents flaky tests where a newly pushed file isn't immediately
  * visible through the contents API.
@@ -256,7 +311,7 @@ export function createRepo(
   // owner and repoName are controlled test constants (from generateRepoName),
   // not user input — safe to use with exec()
   const cmd = `gh repo create ${owner}/${repoName} --public --add-readme`;
-  exec(cmd, envOptions);
+  execWithRetry(cmd, envOptions);
   console.log(`  Created ${owner}/${repoName}`);
   waitForRepoReady(`${owner}/${repoName}`, envOptions);
 }
