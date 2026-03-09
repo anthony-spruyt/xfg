@@ -1,5 +1,6 @@
 import type { RepoConfig } from "../config/types.js";
 import { RepoInfo, getRepoDisplayName } from "../shared/repo-detector.js";
+import { SyncError } from "../shared/errors.js";
 import { safeCleanup } from "../shared/type-guards.js";
 import type {
   ISyncWorkflow,
@@ -51,7 +52,7 @@ export class SyncWorkflow implements ISyncWorkflow {
     const isDirectMode = mergeMode === "direct";
 
     if (!options.executor) {
-      throw new Error(
+      throw new SyncError(
         "ProcessorOptions.executor is required for sync workflow execution"
       );
     }
