@@ -144,6 +144,7 @@ interface GitHubRulesetPayload {
 
 interface GitHubRulesetStrategyOptions {
   retries?: number;
+  cwd?: string;
 }
 
 export class GitHubRulesetStrategy implements IRulesetStrategy {
@@ -155,7 +156,8 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
   ) {
     this.api = new GhApiClient(
       executor ?? defaultExecutor,
-      options?.retries ?? 3
+      options?.retries ?? 3,
+      options?.cwd ?? process.cwd()
     );
   }
 

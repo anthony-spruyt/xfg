@@ -12,6 +12,7 @@ import type { ILabelsStrategy, GitHubLabel } from "./types.js";
 
 interface GitHubLabelsStrategyOptions {
   retries?: number;
+  cwd?: string;
 }
 
 export class GitHubLabelsStrategy implements ILabelsStrategy {
@@ -23,7 +24,8 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
   ) {
     this.api = new GhApiClient(
       executor ?? defaultExecutor,
-      options?.retries ?? 3
+      options?.retries ?? 3,
+      options?.cwd ?? process.cwd()
     );
   }
 

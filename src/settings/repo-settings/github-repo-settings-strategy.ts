@@ -82,6 +82,7 @@ function configToGitHubPayload(
 
 interface GitHubRepoSettingsStrategyOptions {
   retries?: number;
+  cwd?: string;
 }
 
 export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
@@ -93,7 +94,8 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   ) {
     this.api = new GhApiClient(
       executor ?? defaultExecutor,
-      options?.retries ?? 3
+      options?.retries ?? 3,
+      options?.cwd ?? process.cwd()
     );
   }
 

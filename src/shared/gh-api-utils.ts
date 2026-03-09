@@ -105,7 +105,7 @@ export class GhApiClient {
   constructor(
     private readonly executor: ICommandExecutor,
     private readonly retries: number,
-    private readonly cwd: string = process.cwd()
+    private readonly cwd: string
   ) {}
 
   async call(
