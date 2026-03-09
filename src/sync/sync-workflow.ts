@@ -2,6 +2,7 @@ import type { RepoConfig } from "../config/types.js";
 import { RepoInfo, getRepoDisplayName } from "../shared/repo-detector.js";
 import { SyncError } from "../shared/errors.js";
 import { safeCleanup } from "../shared/type-guards.js";
+import type { DebugInfoLog } from "../shared/logger.js";
 import type {
   ISyncWorkflow,
   IWorkStrategy,
@@ -27,7 +28,7 @@ export class SyncWorkflow implements ISyncWorkflow {
     private readonly branchManager: IBranchManager,
     private readonly commitPushManager: ICommitPushManager,
     private readonly prMergeHandler: IPRMergeHandler,
-    private readonly log: { info(msg: string): void; debug(msg: string): void }
+    private readonly log: DebugInfoLog
   ) {}
 
   async execute(
@@ -108,7 +109,7 @@ export class SyncWorkflow implements ISyncWorkflow {
         commitMessage: workResult.commitMessage,
         pushBranch,
         isDirectMode,
-        hasAppCredentials: options.isGraphQLCommitMode,
+        hasAppCredentials: options.hasAppCredentials,
       });
 
       if (!commitResult.success) {

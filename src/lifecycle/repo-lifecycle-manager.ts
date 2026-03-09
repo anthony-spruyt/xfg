@@ -3,6 +3,7 @@ import { rm } from "node:fs/promises";
 import { parseGitUrl, type RepoInfo } from "../shared/repo-detector.js";
 import { safeCleanup } from "../shared/type-guards.js";
 import { LifecycleError } from "../shared/errors.js";
+import type { DebugInfoWarnLog } from "../shared/logger.js";
 import type { RepoConfig } from "../config/types.js";
 import type {
   IRepoLifecycleManager,
@@ -19,11 +20,7 @@ import { RepoLifecycleFactory } from "./repo-lifecycle-factory.js";
  */
 export class RepoLifecycleManager implements IRepoLifecycleManager {
   private readonly factory: IRepoLifecycleFactory;
-  private readonly log?: {
-    debug(msg: string): void;
-    info(msg: string): void;
-    warn(msg: string): void;
-  };
+  private readonly log?: DebugInfoWarnLog;
 
   constructor(
     factory?: IRepoLifecycleFactory,

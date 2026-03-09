@@ -39,7 +39,7 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
         dryRun,
         noDelete,
         configId,
-        isGraphQLCommitMode: options.isGraphQLCommitMode,
+        hasAppCredentials: options.hasAppCredentials,
       },
       { gitOps: session.gitOps, log: this.log }
     );

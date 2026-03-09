@@ -1,5 +1,13 @@
 // Logging
-export { Logger, logger, type ILogger } from "./logger.js";
+export {
+  Logger,
+  logger,
+  type ILogger,
+  type DebugLog,
+  type DebugWarnLog,
+  type DebugInfoLog,
+  type DebugInfoWarnLog,
+} from "./logger.js";
 
 // Retry utilities
 export {

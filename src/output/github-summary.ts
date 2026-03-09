@@ -1,5 +1,6 @@
 import { appendFileSync } from "node:fs";
 import { toErrorMessage } from "../shared/type-guards.js";
+import type { DebugLog } from "../shared/logger.js";
 
 export type MergeOutcome = "manual" | "auto" | "force" | "direct";
 
@@ -317,7 +318,7 @@ export function isGitHubActions(summaryPath?: string): boolean {
 export function writeGitHubStepSummary(
   markdown: string,
   summaryPath?: string,
-  log?: { debug(msg: string): void }
+  log?: DebugLog
 ): void {
   const path = summaryPath ?? process.env.GITHUB_STEP_SUMMARY;
   if (!path) return;

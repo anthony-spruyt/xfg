@@ -1,6 +1,28 @@
 import chalk from "chalk";
 import { FileStatus, formatStatusBadge } from "./file-status.js";
 
+/** Minimal log interface: debug only. */
+export type DebugLog = { debug(msg: string): void };
+
+/** Log interface: debug + warn. */
+export type DebugWarnLog = {
+  debug(msg: string): void;
+  warn(msg: string): void;
+};
+
+/** Log interface: debug + info. */
+export type DebugInfoLog = {
+  debug(msg: string): void;
+  info(msg: string): void;
+};
+
+/** Log interface: debug + info + warn. */
+export type DebugInfoWarnLog = {
+  debug(msg: string): void;
+  info(msg: string): void;
+  warn(msg: string): void;
+};
+
 export interface ILogger {
   log(message: string): void;
   info(message: string): void;

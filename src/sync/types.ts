@@ -28,7 +28,7 @@ export interface FileWriteContext {
   noDelete: boolean;
   configId: string;
   /** True when using GraphQL commit strategy (GitHub App) which cannot set file modes */
-  isGraphQLCommitMode?: boolean;
+  hasAppCredentials?: boolean;
 }
 
 export interface FileWriterDeps {
@@ -168,7 +168,7 @@ export interface ProcessorOptions {
   /** GitHub token for authentication (resolved by caller) */
   token?: string;
   /** True when using GraphQL commit strategy (GitHub App) which cannot set file modes */
-  isGraphQLCommitMode?: boolean;
+  hasAppCredentials?: boolean;
 }
 
 export interface FileChangeDetail {

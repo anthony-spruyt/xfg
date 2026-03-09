@@ -13,6 +13,7 @@ import {
   ICommandExecutor,
   defaultExecutor,
 } from "../shared/command-executor.js";
+import type { DebugLog } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { ValidationError, SyncError } from "../shared/errors.js";
 import type { ILocalGitOps } from "./types.js";
@@ -22,14 +23,14 @@ export interface GitOpsOptions {
   dryRun?: boolean;
   executor?: ICommandExecutor;
   /** Optional logger for debug messages */
-  log?: { debug(msg: string): void };
+  log?: DebugLog;
 }
 
 export class GitOps implements ILocalGitOps {
   private readonly _workDir: string;
   private readonly dryRun: boolean;
   private readonly _executor: ICommandExecutor;
-  private readonly log?: { debug(msg: string): void };
+  private readonly log?: DebugLog;
 
   constructor(options: GitOpsOptions) {
     this._workDir = options.workDir;

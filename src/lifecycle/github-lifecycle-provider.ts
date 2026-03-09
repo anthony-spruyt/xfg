@@ -16,6 +16,7 @@ import {
 import { toErrorMessage } from "../shared/type-guards.js";
 import { LifecycleError } from "../shared/errors.js";
 import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
+import type { DebugWarnLog } from "../shared/logger.js";
 import type {
   IRepoLifecycleProvider,
   LifecyclePlatform,
@@ -73,7 +74,7 @@ interface GitHubLifecycleProviderOptions {
   forkReadyTimeoutMs?: number;
   /** Poll interval in ms for fork readiness checks (default: 2000) */
   forkPollIntervalMs?: number;
-  log?: { debug(msg: string): void; warn(msg: string): void };
+  log?: DebugWarnLog;
 }
 
 export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
@@ -83,13 +84,13 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   private readonly cwd: string;
   private readonly forkReadyTimeoutMs: number;
   private readonly forkPollIntervalMs: number;
-  private readonly log?: { debug(msg: string): void; warn(msg: string): void };
+  private readonly log?: DebugWarnLog;
 
   constructor(options?: GitHubLifecycleProviderOptions) {
     const opts = options ?? {};
     this.executor = opts.executor ?? defaultExecutor;
     this.retries = opts.retries ?? 3;
-    this.cwd = opts.cwd ?? ".";
+    this.cwd = opts.cwd ?? process.cwd();
     this.forkReadyTimeoutMs = opts.forkReadyTimeoutMs ?? FORK_READY_TIMEOUT_MS;
     this.forkPollIntervalMs = opts.forkPollIntervalMs ?? FORK_POLL_INTERVAL_MS;
     this.log = opts.log;

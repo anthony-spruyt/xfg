@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { toErrorMessage, isPlainObject } from "../shared/type-guards.js";
 import { SyncError } from "../shared/errors.js";
+import type { DebugWarnLog } from "../shared/logger.js";
 
 export const MANIFEST_FILENAME = ".xfg.json";
 
@@ -131,7 +132,7 @@ export function createEmptyManifest(): XfgManifest {
  */
 export function loadManifest(
   workDir: string,
-  log?: { debug(msg: string): void; warn(msg: string): void }
+  log?: DebugWarnLog
 ): XfgManifest | null {
   const manifestPath = join(workDir, MANIFEST_FILENAME);
 
@@ -168,7 +169,7 @@ export function loadManifest(
  */
 export function parseManifestContent(
   content: string,
-  log?: { debug(msg: string): void; warn(msg: string): void }
+  log?: DebugWarnLog
 ): XfgManifest | null {
   try {
     const parsed = JSON.parse(content) as unknown;

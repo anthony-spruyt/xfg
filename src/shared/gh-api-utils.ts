@@ -4,6 +4,7 @@ import type { ICommandExecutor } from "./command-executor.js";
 import type { GitHubRepoInfo } from "./repo-detector.js";
 import { toErrorMessage } from "./type-guards.js";
 import { SyncError } from "./errors.js";
+import type { DebugLog } from "./logger.js";
 
 interface ITokenManager {
   getTokenForRepo(repoInfo: GitHubRepoInfo): Promise<string | null>;
@@ -132,7 +133,7 @@ export async function resolveGitHubToken(
   repoInfo: GitHubRepoInfo,
   tokenManager: ITokenManager | null,
   context: string,
-  log?: { debug(msg: string): void },
+  log?: DebugLog,
   envToken?: string
 ): Promise<{ token: string | undefined; skipped: boolean }> {
   try {

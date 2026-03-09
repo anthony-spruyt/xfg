@@ -1827,7 +1827,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
-          isGraphQLCommitMode: true,
+          hasAppCredentials: true,
         });
 
         assert.equal(result.success, true, "Should succeed");
@@ -1922,7 +1922,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
-          isGraphQLCommitMode: true,
+          hasAppCredentials: true,
         });
 
         assert.equal(result.success, false, "Should fail");
@@ -2000,7 +2000,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
-          isGraphQLCommitMode: true,
+          hasAppCredentials: true,
         });
 
         assert.equal(result.success, false, "Should fail");
@@ -2072,7 +2072,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
-          isGraphQLCommitMode: true,
+          hasAppCredentials: true,
         });
 
         assert.equal(result.success, false, "Should fail");
@@ -2143,7 +2143,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
-          isGraphQLCommitMode: true,
+          hasAppCredentials: true,
         });
 
         assert.equal(result.success, false);

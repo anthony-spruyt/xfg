@@ -2,6 +2,7 @@ import { escapeShellArg } from "../shared/shell-utils.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
+import type { DebugLog } from "../shared/logger.js";
 import type { GitAuthOptions, ILocalGitOps, IGitOps } from "./types.js";
 import { SyncError } from "../shared/errors.js";
 
@@ -19,7 +20,7 @@ export class AuthenticatedGitOps implements IGitOps {
     private readonly workDir: string,
     private readonly retries: number,
     private readonly auth?: GitAuthOptions,
-    private readonly log?: { debug(msg: string): void }
+    private readonly log?: DebugLog
   ) {}
 
   private async execWithRetry(command: string): Promise<string> {

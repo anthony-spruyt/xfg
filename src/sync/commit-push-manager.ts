@@ -9,6 +9,7 @@ import type {
   ICommitPushManager,
 } from "./types.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import type { DebugInfoLog } from "../shared/logger.js";
 
 type CommitStrategyFactory = (
   repoInfo: RepoInfo,
@@ -18,7 +19,7 @@ type CommitStrategyFactory = (
 
 export class CommitPushManager implements ICommitPushManager {
   constructor(
-    private readonly log: { debug(msg: string): void; info(msg: string): void },
+    private readonly log: DebugInfoLog,
     private readonly commitStrategyFactory: CommitStrategyFactory = getCommitStrategy
   ) {}
 

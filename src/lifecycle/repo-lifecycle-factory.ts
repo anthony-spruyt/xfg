@@ -3,6 +3,7 @@ import {
   defaultExecutor,
 } from "../shared/command-executor.js";
 import { LifecycleError } from "../shared/errors.js";
+import type { DebugWarnLog } from "../shared/logger.js";
 import type {
   IRepoLifecycleFactory,
   IRepoLifecycleProvider,
@@ -20,12 +21,12 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
 
   private readonly executor: ICommandExecutor;
   private readonly retries: number;
-  private readonly log?: { debug(msg: string): void; warn(msg: string): void };
+  private readonly log?: DebugWarnLog;
 
   constructor(
     executor?: ICommandExecutor,
     retries?: number,
-    log?: { debug(msg: string): void; warn(msg: string): void }
+    log?: DebugWarnLog
   ) {
     this.executor = executor ?? defaultExecutor;
     this.retries = retries ?? 3;

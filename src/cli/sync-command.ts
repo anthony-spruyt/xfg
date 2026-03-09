@@ -494,7 +494,7 @@ async function runFileSyncPhase(
       prTemplate: ctx.config.prTemplate,
       noDelete: ctx.options.noDelete,
       token: repo.token,
-      isGraphQLCommitMode:
+      hasAppCredentials:
         isGitHubRepo(repo.repoInfo) && ctx.tokenManager !== null,
     });
 
