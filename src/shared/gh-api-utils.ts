@@ -145,8 +145,11 @@ export async function resolveGitHubToken(
     // string = app token; undefined = no manager configured
     return { token: appToken ?? envToken, skipped: false };
   } catch (error) {
+    const fallbackDesc = envToken
+      ? "falling back to GH_TOKEN"
+      : "no fallback token available";
     log?.debug(
-      `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}; falling back to GH_TOKEN`
+      `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}; ${fallbackDesc}`
     );
     return { token: envToken, skipped: false };
   }

@@ -191,14 +191,11 @@ export class GitOps implements ILocalGitOps {
   }
 
   async hasStagedChanges(): Promise<boolean> {
-    try {
-      await this.exec("git diff --cached --quiet", this._workDir);
-      return false; // Exit code 0 = no staged changes
-    } catch (error) {
-      // Exit code 1 is expected when staged changes exist
-      this.log?.debug(`hasStagedChanges: ${toErrorMessage(error)}`);
-      return true;
-    }
+    const diff = await this.exec(
+      "git diff --cached --name-only",
+      this._workDir
+    );
+    return diff.length > 0;
   }
 
   /**

@@ -673,9 +673,9 @@ describe("GitOps", () => {
       const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
-          // git diff --cached --quiet exits with code 1 when there are changes
-          if (command.includes("git diff --cached --quiet")) {
-            throw new Error("exit code 1");
+          // git diff --cached --name-only returns file names when there are changes
+          if (command.includes("git diff --cached --name-only")) {
+            return "file.txt\n";
           }
           return "";
         },
@@ -695,9 +695,9 @@ describe("GitOps", () => {
       const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
-          // git diff --cached --quiet exits with code 0 when no changes
-          if (command.includes("git diff --cached --quiet")) {
-            return ""; // No error = no staged changes
+          // git diff --cached --name-only returns empty when no changes
+          if (command.includes("git diff --cached --name-only")) {
+            return "";
           }
           return "";
         },
