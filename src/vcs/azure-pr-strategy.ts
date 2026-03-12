@@ -35,15 +35,18 @@ export class AzurePRStrategy extends BasePRStrategy {
     return `https://dev.azure.com/${encodeURIComponent(repoInfo.organization)}/${encodeURIComponent(repoInfo.project)}/_git/${encodeURIComponent(repoInfo.repo)}/pullrequest/${prId.trim()}`;
   }
 
-  async checkExistingPR(
-    options: CloseExistingPROptions
+  /**
+   * Query Azure DevOps for an existing PR ID matching source/target branches.
+   * Returns the raw PR ID string, or null if none found.
+   */
+  private async findExistingPRId(
+    azureRepoInfo: AzureDevOpsRepoInfo,
+    branchName: string,
+    baseBranch: string,
+    workDir: string,
+    retries: number
   ): Promise<string | null> {
-    const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
-
-    assertAzureDevOpsRepo(repoInfo, "Azure PR strategy");
-    const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
     const orgUrl = this.getOrgUrl(azureRepoInfo);
-
     const command = `az repos pr list --repository ${escapeShellArg(azureRepoInfo.repo)} --source-branch ${escapeShellArg(branchName)} --target-branch ${escapeShellArg(baseBranch)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --query "[0].pullRequestId" -o tsv`;
 
     try {
@@ -52,7 +55,7 @@ export class AzurePRStrategy extends BasePRStrategy {
         { retries, log: this.log }
       );
 
-      return existingPRId ? this.buildPRUrl(azureRepoInfo, existingPRId) : null;
+      return existingPRId ? existingPRId.trim() : null;
     } catch (error) {
       if (isPermanentError(error)) {
         throw error;
@@ -67,6 +70,25 @@ export class AzurePRStrategy extends BasePRStrategy {
     }
   }
 
+  async checkExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<string | null> {
+    const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
+
+    assertAzureDevOpsRepo(repoInfo, "Azure PR strategy");
+    const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
+
+    const prId = await this.findExistingPRId(
+      azureRepoInfo,
+      branchName,
+      baseBranch,
+      workDir,
+      retries
+    );
+
+    return prId ? this.buildPRUrl(azureRepoInfo, prId) : null;
+  }
+
   async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
     const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
 
@@ -74,27 +96,20 @@ export class AzurePRStrategy extends BasePRStrategy {
     const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
     const orgUrl = this.getOrgUrl(azureRepoInfo);
 
-    // First check if there's an existing PR
-    const existingUrl = await this.checkExistingPR({
-      repoInfo,
+    const prId = await this.findExistingPRId(
+      azureRepoInfo,
       branchName,
       baseBranch,
       workDir,
-      retries,
-    });
+      retries
+    );
 
-    if (!existingUrl) {
-      return false;
-    }
-
-    const prInfo = this.parsePRUrl(existingUrl);
-    if (!prInfo) {
-      this.log?.warn(`Could not parse PR URL: ${existingUrl}`);
+    if (!prId) {
       return false;
     }
 
     // Abandon the PR (Azure DevOps equivalent of closing)
-    const abandonCommand = `az repos pr update --id ${escapeShellArg(prInfo.prId)} --status abandoned --org ${escapeShellArg(orgUrl)}`;
+    const abandonCommand = `az repos pr update --id ${escapeShellArg(prId)} --status abandoned --org ${escapeShellArg(orgUrl)}`;
 
     try {
       await withRetry(() => this.executor.exec(abandonCommand, workDir), {
@@ -103,7 +118,7 @@ export class AzurePRStrategy extends BasePRStrategy {
       });
     } catch (error) {
       const message = toErrorMessage(error);
-      this.log?.warn(`Failed to abandon PR #${prInfo.prId}: ${message}`);
+      this.log?.warn(`Failed to abandon PR #${prId}: ${message}`);
       return false;
     }
 

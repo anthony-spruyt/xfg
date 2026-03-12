@@ -67,34 +67,29 @@ export function hasLifecycleChanges(report: LifecycleReport): boolean {
   return report.actions.some((a) => a.action !== "existed");
 }
 
-export function formatLifecycleReportCLI(report: LifecycleReport): string[] {
-  if (!hasLifecycleChanges(report)) {
-    return [];
-  }
-
+/**
+ * Render action diff lines from lifecycle actions (shared between CLI and Markdown).
+ */
+function renderActionDiffLines(actions: LifecycleAction[]): string[] {
   const lines: string[] = [];
 
-  for (const action of report.actions) {
+  for (const action of actions) {
     if (action.action === "existed") continue;
 
     switch (action.action) {
       case "created":
-        lines.push(chalk.green(`+ CREATE ${action.repoName}`));
+        lines.push(`+ CREATE ${action.repoName}`);
         break;
 
       case "forked":
         lines.push(
-          chalk.green(
-            `+ FORK ${action.upstream ?? "upstream"} -> ${action.repoName}`
-          )
+          `+ FORK ${action.upstream ?? "upstream"} -> ${action.repoName}`
         );
         break;
 
       case "migrated":
         lines.push(
-          chalk.green(
-            `+ MIGRATE ${action.source ?? "source"} -> ${action.repoName}`
-          )
+          `+ MIGRATE ${action.source ?? "source"} -> ${action.repoName}`
         );
         break;
     }
@@ -109,9 +104,18 @@ export function formatLifecycleReportCLI(report: LifecycleReport): string[] {
     }
   }
 
-  lines.push("");
+  return lines;
+}
 
-  // Summary
+export function formatLifecycleReportCLI(report: LifecycleReport): string[] {
+  if (!hasLifecycleChanges(report)) {
+    return [];
+  }
+
+  const lines = renderActionDiffLines(report.actions).map((line) =>
+    line.startsWith("+") ? chalk.green(line) : line
+  );
+  lines.push("");
   lines.push(formatLifecycleSummary(report.totals));
 
   return lines;
@@ -140,38 +144,7 @@ export function formatLifecycleReportMarkdown(
   }
 
   // Diff block
-  const diffLines: string[] = [];
-
-  for (const action of report.actions) {
-    if (action.action === "existed") continue;
-
-    switch (action.action) {
-      case "created":
-        diffLines.push(`+ CREATE ${action.repoName}`);
-        break;
-
-      case "forked":
-        diffLines.push(
-          `+ FORK ${action.upstream ?? "upstream"} -> ${action.repoName}`
-        );
-        break;
-
-      case "migrated":
-        diffLines.push(
-          `+ MIGRATE ${action.source ?? "source"} -> ${action.repoName}`
-        );
-        break;
-    }
-
-    if (action.settings) {
-      if (action.settings.visibility) {
-        diffLines.push(`    visibility: ${action.settings.visibility}`);
-      }
-      if (action.settings.description) {
-        diffLines.push(`    description: "${action.settings.description}"`);
-      }
-    }
-  }
+  const diffLines = renderActionDiffLines(report.actions);
 
   if (diffLines.length > 0) {
     lines.push("```diff");

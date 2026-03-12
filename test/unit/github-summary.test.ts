@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import {
   formatSummary,
   writeSummary,
-  isGitHubActions,
+  shouldWriteSummary,
   SummaryData,
   RepoResult,
 } from "../../src/output/github-summary.js";
@@ -1170,16 +1170,16 @@ describe("writeSummary", () => {
   });
 });
 
-describe("isGitHubActions", () => {
+describe("shouldWriteSummary", () => {
   test("returns true when summaryPath is set", () => {
-    assert.equal(isGitHubActions("/path/to/summary"), true);
+    assert.equal(shouldWriteSummary("/path/to/summary"), true);
   });
 
   test("returns false when summaryPath is undefined", () => {
-    assert.equal(isGitHubActions(undefined), false);
+    assert.equal(shouldWriteSummary(undefined), false);
   });
 
   test("returns false when summaryPath is empty string", () => {
-    assert.equal(isGitHubActions(""), false);
+    assert.equal(shouldWriteSummary(""), false);
   });
 });

@@ -280,49 +280,14 @@ export function formatPropertyTree(diffs: PropertyDiff[]): string[] {
 
 /**
  * Format a full ruleset config as tree lines (for create action).
+ * Delegates to renderNestedObject which handles recursive rendering.
  */
 function formatFullConfig(ruleset: Ruleset, indent: number = 2): string[] {
-  const lines: string[] = [];
-  const style = getActionStyle("add");
-
-  function renderValue(
-    key: string,
-    value: unknown,
-    currentIndent: number
-  ): void {
-    const pad = "    ".repeat(currentIndent);
-    if (value === null || value === undefined) return;
-
-    if (Array.isArray(value)) {
-      if (value.length === 0) {
-        lines.push(style.color(`${pad}+ ${key}: []`));
-      } else if (value.every((v) => typeof v !== "object")) {
-        lines.push(style.color(`${pad}+ ${key}: ${formatValue(value)}`));
-      } else {
-        lines.push(style.color(`${pad}+ ${key}:`));
-        for (const item of value) {
-          if (typeof item === "object" && item !== null) {
-            lines.push(style.color(`${pad}    + ${JSON.stringify(item)}`));
-          } else {
-            lines.push(style.color(`${pad}    + ${formatValue(item)}`));
-          }
-        }
-      }
-    } else if (typeof value === "object") {
-      lines.push(style.color(`${pad}+ ${key}:`));
-      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-        renderValue(k, v, currentIndent + 1);
-      }
-    } else {
-      lines.push(style.color(`${pad}+ ${key}: ${formatValue(value)}`));
-    }
-  }
-
-  for (const [key, value] of Object.entries(ruleset)) {
-    renderValue(key, value, indent);
-  }
-
-  return lines;
+  return renderNestedObject(
+    ruleset as unknown as Record<string, unknown>,
+    "add",
+    indent
+  );
 }
 
 /**

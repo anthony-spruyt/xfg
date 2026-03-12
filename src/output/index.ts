@@ -28,7 +28,7 @@ export {
 // GitHub Actions summary
 export {
   formatSummary,
-  isGitHubActions,
+  shouldWriteSummary,
   writeSummary,
   type MergeOutcome,
   type FileChanges,
