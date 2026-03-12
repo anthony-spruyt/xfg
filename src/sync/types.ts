@@ -162,7 +162,7 @@ export interface ProcessorOptions {
   configId: string;
   dryRun?: boolean;
   retries?: number;
-  executor?: ICommandExecutor;
+  executor: ICommandExecutor;
   prTemplate?: string;
   noDelete?: boolean;
   /** GitHub token for authentication (resolved by caller) */

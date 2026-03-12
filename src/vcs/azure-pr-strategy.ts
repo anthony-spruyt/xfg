@@ -243,6 +243,9 @@ export class AzurePRStrategy extends BasePRStrategy {
     if (config.mode === "force") {
       const bypassReason =
         config.bypassReason ?? "Automated config sync via xfg";
+      this.log?.warn(
+        `Bypassing policies for PR ${prInfo.prId} (reason: ${bypassReason})`
+      );
       const forceCommand =
         `az repos pr update --id ${escapeShellArg(prInfo.prId)} --bypass-policy true --bypass-policy-reason ${escapeShellArg(bypassReason)} --status completed ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)}`.trim();
 

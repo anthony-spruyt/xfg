@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { FileSyncOrchestrator } from "../../../src/sync/file-sync-orchestrator.js";
 import {
   createMockAuthenticatedGitOps,
+  createMockExecutor,
   createMockLogger,
 } from "../../mocks/index.js";
 import {
@@ -118,7 +119,12 @@ describe("FileSyncOrchestrator", () => {
         repoConfig,
         mockRepoInfo,
         { gitOps, baseBranch: "main", cleanup: () => {} },
-        { branchName: "chore/sync", workDir, configId: "test" }
+        {
+          branchName: "chore/sync",
+          workDir,
+          configId: "test",
+          executor: createMockExecutor().mock,
+        }
       );
 
       assert.equal(mockManifestManager.calls.processOrphans, 1);
@@ -156,7 +162,12 @@ describe("FileSyncOrchestrator", () => {
         repoConfig,
         mockRepoInfo,
         { gitOps, baseBranch: "main", cleanup: () => {} },
-        { branchName: "chore/sync", workDir, configId: "test" }
+        {
+          branchName: "chore/sync",
+          workDir,
+          configId: "test",
+          executor: createMockExecutor().mock,
+        }
       );
 
       assert.equal(result.hasChanges, false);
@@ -190,7 +201,13 @@ describe("FileSyncOrchestrator", () => {
         repoConfig,
         mockRepoInfo,
         { gitOps, baseBranch: "main", cleanup: () => {} },
-        { branchName: "chore/sync", workDir, configId: "test", dryRun: true }
+        {
+          branchName: "chore/sync",
+          workDir,
+          configId: "test",
+          dryRun: true,
+          executor: createMockExecutor().mock,
+        }
       );
 
       assert.equal(diffSummaries.length, 1);
@@ -235,7 +252,13 @@ describe("FileSyncOrchestrator", () => {
         repoConfig,
         mockRepoInfo,
         { gitOps, baseBranch: "main", cleanup: () => {} },
-        { branchName: "chore/sync", workDir, configId: "test", dryRun: false }
+        {
+          branchName: "chore/sync",
+          workDir,
+          configId: "test",
+          dryRun: false,
+          executor: createMockExecutor().mock,
+        }
       );
 
       assert.equal(result.diffStats.newCount, 1);

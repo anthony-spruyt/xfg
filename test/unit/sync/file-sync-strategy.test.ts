@@ -7,7 +7,10 @@ import type {
 } from "../../../src/sync/index.js";
 import type { RepoConfig } from "../../../src/config/index.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
-import { createMockAuthenticatedGitOps } from "../../mocks/index.js";
+import {
+  createMockAuthenticatedGitOps,
+  createMockExecutor,
+} from "../../mocks/index.js";
 
 describe("FileSyncStrategy", () => {
   const mockRepoConfig: RepoConfig = {
@@ -54,7 +57,12 @@ describe("FileSyncStrategy", () => {
       mockRepoConfig,
       mockRepoInfo,
       session,
-      { branchName: "test", workDir: "/tmp", configId: "test" }
+      {
+        branchName: "test",
+        workDir: "/tmp",
+        configId: "test",
+        executor: createMockExecutor().mock,
+      }
     );
 
     assert.equal(result, null);
@@ -100,7 +108,12 @@ describe("FileSyncStrategy", () => {
       mockRepoConfig,
       mockRepoInfo,
       session,
-      { branchName: "test", workDir: "/tmp", configId: "test" }
+      {
+        branchName: "test",
+        workDir: "/tmp",
+        configId: "test",
+        executor: createMockExecutor().mock,
+      }
     );
 
     assert.ok(result);
@@ -154,7 +167,12 @@ describe("FileSyncStrategy", () => {
       mockRepoConfig,
       mockRepoInfo,
       session,
-      { branchName: "test", workDir: "/tmp", configId: "test" }
+      {
+        branchName: "test",
+        workDir: "/tmp",
+        configId: "test",
+        executor: createMockExecutor().mock,
+      }
     );
 
     assert.ok(result);

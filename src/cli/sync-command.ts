@@ -499,6 +499,7 @@ async function runFileSyncPhase(
       configId: ctx.config.id,
       dryRun: ctx.options.dryRun,
       retries: ctx.options.retries,
+      executor: defaultExecutor,
       prTemplate: ctx.config.prTemplate,
       noDelete: ctx.options.noDelete,
       token: repo.token,

@@ -113,10 +113,10 @@ export function isPermanentError(
  * Checks if an error matches known transient patterns.
  */
 export function isTransientError(
-  error: Error,
+  error: unknown,
   patterns: RegExp[] = DEFAULT_TRANSIENT_ERROR_PATTERNS
 ): boolean {
-  const message = error.message;
+  const message = error instanceof Error ? error.message : String(error ?? "");
   const stderr =
     (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
   const combined = `${message} ${stderr}`;

@@ -282,7 +282,9 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
 
     if (config.mode === "force") {
-      // Force merge using admin privileges
+      this.log?.warn(
+        `Force-merging PR ${prUrl} using admin privileges (bypasses branch protection)`
+      );
       const forceCommand =
         `gh pr merge ${escapeShellArg(prUrl)} --admin ${strategyFlag} ${deleteBranchFlag}`.trim();
 

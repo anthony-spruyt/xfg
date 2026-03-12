@@ -200,6 +200,7 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: true, // Use dry run to avoid actual git/PR operations
+        executor: createMockExecutor(),
       });
 
       // In dry run, it should detect changes and not skip
@@ -230,6 +231,7 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: true, // Use dry run to avoid actual git/PR operations
+        executor: createMockExecutor(),
       });
 
       // Should detect that file needs to be created (not skipped)
