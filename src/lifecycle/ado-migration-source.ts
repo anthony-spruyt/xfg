@@ -1,8 +1,5 @@
 import { escapeShellArg } from "../shared/shell-utils.js";
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../shared/command-executor.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { LifecycleError } from "../shared/errors.js";
@@ -21,7 +18,7 @@ export class AdoMigrationSource implements IMigrationSource {
   readonly platform: LifecyclePlatform = "azure-devops";
 
   constructor(
-    private readonly executor: ICommandExecutor = defaultExecutor,
+    private readonly executor: ICommandExecutor,
     private readonly retries: number = 3,
     private readonly cwd: string
   ) {}

@@ -11,6 +11,9 @@ import {
   AzureDevOpsRepoInfo,
   GitLabRepoInfo,
 } from "../../../src/shared/repo-detector.js";
+import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
+
+const mockExecutor: ICommandExecutor = { exec: async () => "" };
 
 describe("createTokenManager", () => {
   test("returns null when no credentials provided", () => {
@@ -56,7 +59,7 @@ describe("getCommitStrategy", () => {
   };
 
   test("returns GitCommitStrategy for GitHub without app credentials", () => {
-    const strategy = getCommitStrategy(githubRepoInfo);
+    const strategy = getCommitStrategy(githubRepoInfo, mockExecutor);
 
     assert.ok(
       strategy instanceof GitCommitStrategy,
@@ -65,7 +68,7 @@ describe("getCommitStrategy", () => {
   });
 
   test("returns GraphQLCommitStrategy for GitHub with app credentials", () => {
-    const strategy = getCommitStrategy(githubRepoInfo, undefined, true);
+    const strategy = getCommitStrategy(githubRepoInfo, mockExecutor, true);
 
     assert.ok(
       strategy instanceof GraphQLCommitStrategy,
@@ -74,7 +77,7 @@ describe("getCommitStrategy", () => {
   });
 
   test("returns GitCommitStrategy for Azure DevOps (ignores app credentials)", () => {
-    const strategy = getCommitStrategy(azureRepoInfo, undefined, true);
+    const strategy = getCommitStrategy(azureRepoInfo, mockExecutor, true);
 
     assert.ok(
       strategy instanceof GitCommitStrategy,
@@ -83,7 +86,7 @@ describe("getCommitStrategy", () => {
   });
 
   test("returns GitCommitStrategy for GitLab (ignores app credentials)", () => {
-    const strategy = getCommitStrategy(gitlabRepoInfo, undefined, true);
+    const strategy = getCommitStrategy(gitlabRepoInfo, mockExecutor, true);
 
     assert.ok(
       strategy instanceof GitCommitStrategy,

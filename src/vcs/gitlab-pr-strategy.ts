@@ -21,7 +21,7 @@ import type { MergeStrategy } from "../config/index.js";
 import { SyncError } from "../shared/errors.js";
 
 export class GitLabPRStrategy extends BasePRStrategy {
-  constructor(executor?: ICommandExecutor, log?: IPRStrategyLogger) {
+  constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {
     super(executor, log);
     this.bodyFilePath = ".mr-description.md";
   }

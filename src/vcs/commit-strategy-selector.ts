@@ -28,7 +28,7 @@ export function createTokenManager(
  */
 export function getCommitStrategy(
   repoInfo: RepoInfo,
-  executor?: ICommandExecutor,
+  executor: ICommandExecutor,
   hasAppCredentials?: boolean
 ): ICommitStrategy {
   if (isGitHubRepo(repoInfo) && hasAppCredentials) {

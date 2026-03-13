@@ -1,8 +1,5 @@
 import { escapeShellArg } from "../shared/shell-utils.js";
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../shared/command-executor.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
 import {
   withRetry,
   isPermanentError,
@@ -67,7 +64,7 @@ const FORK_POLL_INTERVAL_MS = 2_000;
  * Uses gh CLI for all operations.
  */
 interface GitHubLifecycleProviderOptions {
-  executor?: ICommandExecutor;
+  executor: ICommandExecutor;
   retries?: number;
   cwd: string;
   /** Timeout in ms for waiting for fork readiness (default: 60000) */
@@ -87,7 +84,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   private readonly log?: DebugWarnLog;
 
   constructor(options: GitHubLifecycleProviderOptions) {
-    this.executor = options.executor ?? defaultExecutor;
+    this.executor = options.executor;
     this.retries = options.retries ?? 3;
     this.cwd = options.cwd;
     this.forkReadyTimeoutMs =

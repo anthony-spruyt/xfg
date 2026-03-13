@@ -9,10 +9,7 @@ import {
 } from "node:fs";
 import { join, resolve, relative, isAbsolute, dirname } from "node:path";
 import { escapeShellArg } from "../shared/shell-utils.js";
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../shared/command-executor.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
 import type { DebugLog } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { ValidationError, SyncError } from "../shared/errors.js";
@@ -21,7 +18,7 @@ import type { ILocalGitOps } from "./types.js";
 export interface GitOpsOptions {
   workDir: string;
   dryRun?: boolean;
-  executor?: ICommandExecutor;
+  executor: ICommandExecutor;
   /** Optional logger for debug messages */
   log?: DebugLog;
 }
@@ -35,7 +32,7 @@ export class GitOps implements ILocalGitOps {
   constructor(options: GitOpsOptions) {
     this._workDir = options.workDir;
     this.dryRun = options.dryRun ?? false;
-    this._executor = options.executor ?? defaultExecutor;
+    this._executor = options.executor;
     this.log = options.log;
   }
 

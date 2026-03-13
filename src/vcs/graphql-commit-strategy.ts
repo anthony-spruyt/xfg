@@ -1,8 +1,5 @@
 import type { ICommitStrategy, CommitOptions, CommitResult } from "./types.js";
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../shared/command-executor.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
 import { isGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
 import {
@@ -103,8 +100,8 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
 
   private executor: ICommandExecutor;
 
-  constructor(executor?: ICommandExecutor) {
-    this.executor = executor ?? defaultExecutor;
+  constructor(executor: ICommandExecutor) {
+    this.executor = executor;
   }
 
   /**

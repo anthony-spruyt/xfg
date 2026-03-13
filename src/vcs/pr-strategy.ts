@@ -1,10 +1,7 @@
 import { toErrorMessage } from "../shared/type-guards.js";
 import { withRetry } from "../shared/retry-utils.js";
 import type { PRResult } from "./types.js";
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../shared/command-executor.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
 import type {
   MergeResult,
   PRStrategyOptions,
@@ -24,8 +21,8 @@ export abstract class BasePRStrategy implements IPRStrategy {
   protected executor: ICommandExecutor;
   protected log?: IPRStrategyLogger;
 
-  constructor(executor?: ICommandExecutor, log?: IPRStrategyLogger) {
-    this.executor = executor ?? defaultExecutor;
+  constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {
+    this.executor = executor;
     this.log = log;
   }
 

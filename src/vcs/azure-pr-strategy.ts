@@ -22,7 +22,7 @@ import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 
 export class AzurePRStrategy extends BasePRStrategy {
-  constructor(executor?: ICommandExecutor, log?: IPRStrategyLogger) {
+  constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {
     super(executor, log);
     this.bodyFilePath = ".pr-description.md";
   }

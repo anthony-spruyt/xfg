@@ -65,6 +65,7 @@ export class SyncWorkflow implements ISyncWorkflow {
         workDir: runCtx.workDir,
         dryRun: runCtx.dryRun,
         retries: runCtx.retries,
+        executor: runCtx.executor,
         authOptions: authResult.authOptions,
       });
 

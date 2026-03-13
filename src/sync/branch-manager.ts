@@ -12,7 +12,7 @@ type SyncLog = {
 
 type PRStrategyFactory = (
   repoInfo: RepoInfo,
-  executor?: ICommandExecutor,
+  executor: ICommandExecutor,
   log?: SyncLog
 ) => IPRStrategy;
 

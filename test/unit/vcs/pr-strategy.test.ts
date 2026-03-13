@@ -16,6 +16,9 @@ import type {
 } from "../../../src/vcs/types.js";
 import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
 import { PRResult } from "../../../src/vcs/pr-creator.js";
+import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
+
+const mockExecutor: ICommandExecutor = { exec: async () => "" };
 
 describe("getPRStrategy", () => {
   test("returns GitHubPRStrategy for GitHub repos", () => {
@@ -27,7 +30,7 @@ describe("getPRStrategy", () => {
       host: "github.com",
     };
 
-    const strategy = getPRStrategy(repoInfo);
+    const strategy = getPRStrategy(repoInfo, mockExecutor);
     assert.ok(strategy instanceof GitHubPRStrategy);
   });
 
@@ -41,7 +44,7 @@ describe("getPRStrategy", () => {
       project: "project",
     };
 
-    const strategy = getPRStrategy(repoInfo);
+    const strategy = getPRStrategy(repoInfo, mockExecutor);
     assert.ok(strategy instanceof AzurePRStrategy);
   });
 
@@ -55,7 +58,7 @@ describe("getPRStrategy", () => {
       host: "gitlab.com",
     };
 
-    const strategy = getPRStrategy(repoInfo);
+    const strategy = getPRStrategy(repoInfo, mockExecutor);
     assert.ok(strategy instanceof GitLabPRStrategy);
   });
 
@@ -69,14 +72,14 @@ describe("getPRStrategy", () => {
       host: "gitlab.com",
     };
 
-    const strategy = getPRStrategy(repoInfo);
+    const strategy = getPRStrategy(repoInfo, mockExecutor);
     assert.ok(strategy instanceof GitLabPRStrategy);
   });
 });
 
 describe("GitHubPRStrategy type guards", () => {
   test("checkExistingPR throws for non-GitHub repo", async () => {
-    const strategy = new GitHubPRStrategy();
+    const strategy = new GitHubPRStrategy(mockExecutor);
     const azureRepoInfo: AzureDevOpsRepoInfo = {
       type: "azure-devops",
       gitUrl: "git@ssh.dev.azure.com:v3/org/project/repo",
@@ -102,7 +105,7 @@ describe("GitHubPRStrategy type guards", () => {
   });
 
   test("create throws for non-GitHub repo", async () => {
-    const strategy = new GitHubPRStrategy();
+    const strategy = new GitHubPRStrategy(mockExecutor);
     const azureRepoInfo: AzureDevOpsRepoInfo = {
       type: "azure-devops",
       gitUrl: "git@ssh.dev.azure.com:v3/org/project/repo",
@@ -130,7 +133,7 @@ describe("GitHubPRStrategy type guards", () => {
 
 describe("AzurePRStrategy type guards", () => {
   test("checkExistingPR throws for non-Azure repo", async () => {
-    const strategy = new AzurePRStrategy();
+    const strategy = new AzurePRStrategy(mockExecutor);
     const githubRepoInfo: GitHubRepoInfo = {
       type: "github",
       gitUrl: "git@github.com:owner/repo.git",
@@ -155,7 +158,7 @@ describe("AzurePRStrategy type guards", () => {
   });
 
   test("create throws for non-Azure repo", async () => {
-    const strategy = new AzurePRStrategy();
+    const strategy = new AzurePRStrategy(mockExecutor);
     const githubRepoInfo: GitHubRepoInfo = {
       type: "github",
       gitUrl: "git@github.com:owner/repo.git",

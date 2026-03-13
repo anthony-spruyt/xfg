@@ -4,6 +4,9 @@ import { getPRStrategy } from "../../../src/vcs/pr-strategy-factory.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import type { AzureDevOpsRepoInfo } from "../../../src/shared/repo-detector.js";
 import type { GitLabRepoInfo } from "../../../src/shared/repo-detector.js";
+import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
+
+const mockExecutor: ICommandExecutor = { exec: async () => "" };
 
 describe("getPRStrategy", () => {
   test("returns GitHubPRStrategy for GitHub repos", () => {
@@ -14,7 +17,7 @@ describe("getPRStrategy", () => {
       repo: "repo",
       host: "github.com",
     };
-    const strategy = getPRStrategy(repoInfo);
+    const strategy = getPRStrategy(repoInfo, mockExecutor);
     assert.ok(strategy);
   });
 
@@ -27,7 +30,7 @@ describe("getPRStrategy", () => {
       project: "proj",
       repo: "repo",
     };
-    const strategy = getPRStrategy(repoInfo);
+    const strategy = getPRStrategy(repoInfo, mockExecutor);
     assert.ok(strategy);
   });
 
@@ -40,7 +43,7 @@ describe("getPRStrategy", () => {
       repo: "repo",
       host: "gitlab.com",
     };
-    const strategy = getPRStrategy(repoInfo);
+    const strategy = getPRStrategy(repoInfo, mockExecutor);
     assert.ok(strategy);
   });
 
@@ -50,6 +53,9 @@ describe("getPRStrategy", () => {
       gitUrl: "git@bitbucket.org:test/repo.git",
     } as never;
 
-    assert.throws(() => getPRStrategy(unknownRepo), /Unknown repository type/);
+    assert.throws(
+      () => getPRStrategy(unknownRepo, mockExecutor),
+      /Unknown repository type/
+    );
   });
 });

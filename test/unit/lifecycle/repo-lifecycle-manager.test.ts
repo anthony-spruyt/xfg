@@ -11,6 +11,9 @@ import type {
 } from "../../../src/lifecycle/types.js";
 import type { RepoConfig } from "../../../src/config/types.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
+
+const stubExecutor: ICommandExecutor = { exec: async () => "" };
 
 describe("RepoLifecycleManager", () => {
   const testDir = join(tmpdir(), `lifecycle-manager-test-${Date.now()}`);
@@ -81,7 +84,12 @@ describe("RepoLifecycleManager", () => {
   describe("ensureRepo()", () => {
     test("returns existed when repo exists", async () => {
       const factory = createMockFactory({ exists: true });
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -104,7 +112,12 @@ describe("RepoLifecycleManager", () => {
           createCalled = true;
         },
       });
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -128,7 +141,12 @@ describe("RepoLifecycleManager", () => {
           forkCalled = true;
         },
       });
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -157,7 +175,12 @@ describe("RepoLifecycleManager", () => {
           cloneCalled = true;
         },
       });
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -179,7 +202,12 @@ describe("RepoLifecycleManager", () => {
       const factory = createMockFactory({
         exists: false,
       });
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -205,7 +233,12 @@ describe("RepoLifecycleManager", () => {
           createCalled = true;
         },
       });
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -230,7 +263,12 @@ describe("RepoLifecycleManager", () => {
           forkCalled = true;
         },
       });
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -249,7 +287,12 @@ describe("RepoLifecycleManager", () => {
 
     test("dry-run fork returns skipped", async () => {
       const factory = createMockFactory({ exists: false });
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -268,7 +311,12 @@ describe("RepoLifecycleManager", () => {
 
     test("dry-run migrate returns skipped", async () => {
       const factory = createMockFactory({ exists: false });
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -293,7 +341,12 @@ describe("RepoLifecycleManager", () => {
           createCalled = true;
         },
       });
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -329,7 +382,12 @@ describe("RepoLifecycleManager", () => {
         }),
       };
 
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -372,7 +430,12 @@ describe("RepoLifecycleManager", () => {
         getMigrationSource: () => source,
       };
 
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -403,7 +466,12 @@ describe("RepoLifecycleManager", () => {
           throw new Error("Platform not supported");
         },
       };
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: "https://dev.azure.com/org/project/_git/repo",
@@ -445,7 +513,12 @@ describe("RepoLifecycleManager", () => {
           );
         },
       };
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: mockGitHubRepoInfo.gitUrl,
@@ -472,7 +545,12 @@ describe("RepoLifecycleManager", () => {
           throw new Error("Platform not supported");
         },
       };
-      const manager = new RepoLifecycleManager(factory, undefined, "/test");
+      const manager = new RepoLifecycleManager(
+        factory,
+        stubExecutor,
+        undefined,
+        "/test"
+      );
 
       const repoConfig: RepoConfig = {
         git: "https://dev.azure.com/org/project/_git/repo",

@@ -124,6 +124,7 @@ export interface SessionOptions {
   workDir: string;
   dryRun: boolean;
   retries: number;
+  executor: ICommandExecutor;
   authOptions?: GitAuthOptions;
 }
 

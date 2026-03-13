@@ -20,8 +20,9 @@ export class RepositorySession implements IRepositorySession {
   ): Promise<SessionContext> {
     const { workDir, dryRun, retries, authOptions } = options;
 
+    const { executor } = options;
     const gitOps = this.gitOpsFactory(
-      { workDir, dryRun },
+      { workDir, dryRun, executor },
       authOptions,
       retries
     );

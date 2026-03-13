@@ -603,7 +603,13 @@ export async function runSync(
     processor,
     lifecycleManager:
       lifecycleManager ??
-      new RepoLifecycleManager(undefined, options.retries, cwd, logger),
+      new RepoLifecycleManager(
+        undefined,
+        defaultExecutor,
+        options.retries,
+        cwd,
+        logger
+      ),
     tokenManager,
     reportResults: [],
     lifecycleReportInputs: [],

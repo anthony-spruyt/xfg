@@ -12,6 +12,9 @@ import {
 } from "../../src/vcs/pr-creator.js";
 import { escapeShellArg } from "../../src/shared/shell-utils.js";
 import type { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
+import type { ICommandExecutor } from "../../src/shared/command-executor.js";
+
+const stubExecutor: ICommandExecutor = { exec: async () => "" };
 
 // Helper to create a mock repo info for tests
 function createMockRepoInfo(
@@ -429,6 +432,7 @@ describe("createPR", () => {
       files,
       workDir: "/tmp/test",
       dryRun: true,
+      executor: stubExecutor,
     });
 
     assert.equal(result.success, true);
@@ -449,6 +453,7 @@ describe("createPR", () => {
       files,
       workDir: "/tmp/test",
       dryRun: true,
+      executor: stubExecutor,
     });
 
     assert.equal(result.success, true);
@@ -493,6 +498,7 @@ describe("mergePR", () => {
       },
       workDir: "/tmp/test",
       dryRun: true,
+      executor: stubExecutor,
     });
 
     assert.equal(result.success, true);
@@ -512,6 +518,7 @@ describe("mergePR", () => {
       },
       workDir: "/tmp/test",
       dryRun: true,
+      executor: stubExecutor,
     });
 
     assert.equal(result.success, true);
@@ -531,6 +538,7 @@ describe("mergePR", () => {
       },
       workDir: "/tmp/test",
       dryRun: true,
+      executor: stubExecutor,
     });
 
     assert.equal(result.success, true);

@@ -13,7 +13,7 @@ import type { DebugInfoLog } from "../shared/logger.js";
 
 type CommitStrategyFactory = (
   repoInfo: RepoInfo,
-  executor?: ICommandExecutor,
+  executor: ICommandExecutor,
   hasAppCredentials?: boolean
 ) => ICommitStrategy;
 

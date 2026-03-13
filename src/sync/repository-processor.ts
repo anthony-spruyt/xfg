@@ -2,7 +2,6 @@ import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import { GitOps } from "../vcs/git-ops.js";
 import { AuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
-import { defaultExecutor } from "../shared/command-executor.js";
 import type { ILogger } from "../shared/logger.js";
 import type { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import { FileWriter } from "./file-writer.js";
@@ -61,7 +60,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         const gitOps = new GitOps({ ...opts, log: log });
         return new AuthenticatedGitOps(
           gitOps,
-          opts.executor ?? defaultExecutor,
+          opts.executor,
           opts.workDir,
           retries ?? 3,
           auth,

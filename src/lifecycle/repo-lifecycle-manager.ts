@@ -4,6 +4,7 @@ import { parseGitUrl, type RepoInfo } from "../shared/repo-detector.js";
 import { safeCleanup } from "../shared/type-guards.js";
 import { LifecycleError } from "../shared/errors.js";
 import { NO_OP_DEBUG_LOG, type DebugInfoWarnLog } from "../shared/logger.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { RepoConfig } from "../config/types.js";
 import type {
   IRepoLifecycleManager,
@@ -24,12 +25,13 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
 
   constructor(
     factory: IRepoLifecycleFactory | undefined,
+    executor: ICommandExecutor,
     retries: number | undefined,
     cwd: string,
     log?: DebugInfoWarnLog
   ) {
     this.factory =
-      factory ?? new RepoLifecycleFactory(undefined, retries, cwd, log);
+      factory ?? new RepoLifecycleFactory(executor, retries, cwd, log);
     this.log = log;
   }
 

@@ -14,7 +14,7 @@ import type { IPRStrategyLogger } from "./pr-strategy.js";
 
 export function getPRStrategy(
   repoInfo: RepoInfo,
-  executor?: ICommandExecutor,
+  executor: ICommandExecutor,
   log?: IPRStrategyLogger
 ): IPRStrategy {
   if (isGitHubRepo(repoInfo)) {
