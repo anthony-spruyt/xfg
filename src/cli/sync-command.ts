@@ -23,8 +23,8 @@ import {
   GitHubRepoSettingsStrategy,
   GitHubLabelsStrategy,
 } from "../settings/index.js";
-import { defaultExecutor } from "../shared/command-executor.js";
-import { logger } from "../shared/logger.js";
+import { ShellCommandExecutor } from "../shared/command-executor.js";
+import { Logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoInfo } from "../shared/repo-detector.js";
 import {
@@ -38,6 +38,9 @@ import {
   type LabelsProcessorFactory,
 } from "./types.js";
 import type { IRepositoryProcessor } from "../sync/index.js";
+
+const defaultExecutor = new ShellCommandExecutor(process.env);
+const logger = new Logger(!!(process.env.DEBUG || process.env.XFG_DEBUG));
 
 const cwd = process.cwd();
 const defaultRulesetProcessorFactory: RulesetProcessorFactory = () =>

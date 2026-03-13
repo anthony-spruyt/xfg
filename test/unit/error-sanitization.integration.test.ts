@@ -2,7 +2,6 @@ import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import { ShellCommandExecutor } from "../../src/shared/command-executor.js";
 import { withRetry } from "../../src/shared/retry-utils.js";
-import { logger } from "../../src/shared/logger.js";
 
 /**
  * Integration tests verifying credentials don't leak through error paths.
@@ -43,8 +42,7 @@ describe("error sanitization integration", () => {
 
   test("retry logging does not leak credentials", async () => {
     const logs: string[] = [];
-    const originalInfo = logger.info;
-    logger.info = (msg: string) => logs.push(msg);
+    const log = { info: (msg: string) => logs.push(msg) };
 
     try {
       await withRetry(
@@ -53,12 +51,10 @@ describe("error sanitization integration", () => {
             "Cloning https://oauth2:glpat-SECRET@gitlab.com failed"
           );
         },
-        { retries: 1 }
+        { retries: 1, log }
       );
     } catch {
       // Expected to fail
-    } finally {
-      logger.info = originalInfo;
     }
 
     const allLogs = logs.join("\n");

@@ -1,7 +1,6 @@
 // Logging
 export {
   Logger,
-  logger,
   NO_OP_DEBUG_LOG,
   type ILogger,
   type DebugLog,
@@ -21,7 +20,6 @@ export {
 // Command execution
 export {
   ShellCommandExecutor,
-  defaultExecutor,
   type ICommandExecutor,
 } from "./command-executor.js";
 

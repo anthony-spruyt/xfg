@@ -55,10 +55,6 @@ export class ShellCommandExecutor implements ICommandExecutor {
   }
 }
 
-export const defaultExecutor: ICommandExecutor = new ShellCommandExecutor(
-  process.env
-);
-
 /** Extract stderr string from an exec error (child_process errors attach stderr). */
 export function getStderr(error: unknown): string {
   if (error != null && typeof error === "object" && "stderr" in error) {
