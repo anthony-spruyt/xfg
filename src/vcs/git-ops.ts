@@ -132,7 +132,14 @@ export class GitOps implements ILocalGitOps {
       }
 
       return readFileSync(filePath, "utf-8");
-    } catch {
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === "ENOENT" || code === "EACCES") {
+        return null;
+      }
+      this.log?.debug(
+        `Unexpected error reading ${fileName}: ${(error as Error).message}`
+      );
       return null;
     }
   }

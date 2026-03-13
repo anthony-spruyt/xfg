@@ -6,6 +6,7 @@ import {
   assertAzureDevOpsRepo,
 } from "../shared/repo-detector.js";
 import type { PRResult } from "./types.js";
+import { SyncError } from "../shared/errors.js";
 import { BasePRStrategy } from "./pr-strategy.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
@@ -161,7 +162,13 @@ export class AzurePRStrategy extends BasePRStrategy {
     const orgUrl = this.getOrgUrl(azureRepoInfo);
 
     const descFile = join(workDir, this.bodyFilePath);
-    writeFileSync(descFile, body, "utf-8");
+    try {
+      writeFileSync(descFile, body, "utf-8");
+    } catch (err) {
+      throw new SyncError(
+        `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`
+      );
+    }
 
     // Azure CLI @file syntax: escape the full @path to handle special chars in workDir
     const command = `az repos pr create --repository ${escapeShellArg(azureRepoInfo.repo)} --source-branch ${escapeShellArg(branchName)} --target-branch ${escapeShellArg(baseBranch)} --title ${escapeShellArg(title)} --description ${escapeShellArg("@" + descFile)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --query "pullRequestId" -o tsv`;
