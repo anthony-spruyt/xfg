@@ -32,7 +32,8 @@ export class ShellCommandExecutor implements ICommandExecutor {
           : (this.baseEnv as NodeJS.ProcessEnv),
       }).trim();
     } catch (error) {
-      // Ensure stderr is always a string for consistent error handling
+      // Normalise and sanitise the exec error so downstream retry logic
+      // sees a string stderr with no raw credentials.
       const execError = error as {
         stderr?: Buffer | string;
         message?: string;
@@ -40,11 +41,9 @@ export class ShellCommandExecutor implements ICommandExecutor {
       if (execError.stderr && typeof execError.stderr !== "string") {
         execError.stderr = execError.stderr.toString();
       }
-      // Sanitize credentials from stderr before including in error
       if (execError.stderr) {
         execError.stderr = sanitizeCredentials(execError.stderr);
       }
-      // Include sanitized stderr in error message for better debugging
       if (execError.stderr && execError.message) {
         execError.message =
           sanitizeCredentials(execError.message) + "\n" + execError.stderr;

@@ -54,32 +54,30 @@ function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
     modifier: string | undefined,
     defaultOrMsg: string | undefined
   ): string {
+    // Resolution follows bash parameter expansion semantics:
+    // ${VAR} → value or error, ${VAR:-fallback} → value or fallback,
+    // ${VAR:?msg} → value or throw with msg.
     const envValue = envSource[varName];
 
-    // Variable exists - use its value
     if (envValue !== undefined) {
       return envValue;
     }
 
-    // Has default value (:-default)
     if (modifier === "-") {
       return defaultOrMsg ?? "";
     }
 
-    // Required with message (:?message)
     if (modifier === "?") {
       const message = defaultOrMsg || `is required`;
       throw new ValidationError(`${varName}: ${message}`);
     }
 
-    // No modifier - check strictness
     if (options.strict) {
       throw new ValidationError(
         `Missing required environment variable: ${varName}`
       );
     }
 
-    // Non-strict mode - leave placeholder as-is
     return match;
   }
 

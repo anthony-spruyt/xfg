@@ -37,7 +37,7 @@ interface GhApiCallOptions {
  * Returns "--hostname HOST" for GHE, empty string for github.com.
  */
 export function getHostnameFlag(repoInfo: GitHubRepoInfo): string {
-  if (repoInfo.host && repoInfo.host !== "github.com") {
+  if (repoInfo.host !== "github.com") {
     return `--hostname ${escapeShellArg(repoInfo.host)}`;
   }
   return "";

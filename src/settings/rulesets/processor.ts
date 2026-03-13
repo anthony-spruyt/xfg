@@ -48,12 +48,12 @@ export class RulesetProcessor implements IRulesetProcessor {
       hasDesiredSettings: (rc) =>
         Object.keys(rc.settings?.rulesets ?? {}).length > 0,
       emptySettingsMessage: "No rulesets configured",
-      processSettings: (githubRepo, rc, opts, token, repoName) =>
-        this.processSettings(githubRepo, rc, opts, token, repoName),
+      applySettings: (githubRepo, rc, opts, token, repoName) =>
+        this.applySettings(githubRepo, rc, opts, token, repoName),
     });
   }
 
-  private async processSettings(
+  private async applySettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
     options: RulesetProcessorOptions,

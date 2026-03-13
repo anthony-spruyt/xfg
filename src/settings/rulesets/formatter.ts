@@ -305,12 +305,12 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
   const createChanges = changes.filter((c) => c.action === "create");
   const updateChanges = changes.filter((c) => c.action === "update");
   const deleteChanges = changes.filter((c) => c.action === "delete");
-  const unchangedChanges = changes.filter((c) => c.action === "unchanged");
+  const unchangedItems = changes.filter((c) => c.action === "unchanged");
 
   creates = createChanges.length;
   updates = updateChanges.length;
   deletes = deleteChanges.length;
-  unchanged = unchangedChanges.length;
+  unchanged = unchangedItems.length;
 
   if (createChanges.length > 0) {
     lines.push(chalk.bold("  Create:"));
@@ -374,7 +374,7 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     lines.push(""); // Blank line after deletes
   }
 
-  for (const change of unchangedChanges) {
+  for (const change of unchangedItems) {
     entries.push({ name: change.name, action: "unchanged" });
   }
 

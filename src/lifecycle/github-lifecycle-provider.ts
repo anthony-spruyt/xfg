@@ -114,7 +114,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         () => this.executor.exec(command, this.cwd, { env: tokenEnv }),
         { retries: this.retries }
       );
-      const data = JSON.parse(stdout);
+      const data: { type?: string } = JSON.parse(stdout);
       return data.type === "Organization";
     } catch (error) {
       // Two-tier error handling:

@@ -218,14 +218,12 @@ function validateSettings(
     throw new ValidationError(`${context}: settings must be an object`);
   }
 
-  const s = settings;
-
-  if (s.rulesets !== undefined) {
-    if (!isPlainObject(s.rulesets)) {
+  if (settings.rulesets !== undefined) {
+    if (!isPlainObject(settings.rulesets)) {
       throw new ValidationError(`${context}: rulesets must be an object`);
     }
 
-    const rulesets = s.rulesets;
+    const rulesets = settings.rulesets;
     for (const [name, ruleset] of Object.entries(rulesets)) {
       // Skip reserved key
       if (name === "inherit") continue;
@@ -243,11 +241,11 @@ function validateSettings(
     }
   }
 
-  if (s.labels !== undefined) {
-    if (!isPlainObject(s.labels)) {
+  if (settings.labels !== undefined) {
+    if (!isPlainObject(settings.labels)) {
       throw new ValidationError(`${context}: labels must be an object`);
     }
-    const labels = s.labels;
+    const labels = settings.labels;
     for (const [name, label] of Object.entries(labels)) {
       if (name === "inherit") continue;
       if (label === false) {
@@ -262,14 +260,17 @@ function validateSettings(
     }
   }
 
-  if (s.deleteOrphaned !== undefined && typeof s.deleteOrphaned !== "boolean") {
+  if (
+    settings.deleteOrphaned !== undefined &&
+    typeof settings.deleteOrphaned !== "boolean"
+  ) {
     throw new ValidationError(
       `${context}: settings.deleteOrphaned must be a boolean`
     );
   }
 
-  if (s.repo !== undefined) {
-    if (s.repo === false) {
+  if (settings.repo !== undefined) {
+    if (settings.repo === false) {
       if (!rootCtx) {
         // Root level — repo: false not valid here
         throw new ValidationError(
@@ -284,7 +285,7 @@ function validateSettings(
       }
       // Valid opt-out, skip further repo validation
     } else {
-      validateRepoSettings(s.repo, context);
+      validateRepoSettings(settings.repo, context);
     }
   }
 }

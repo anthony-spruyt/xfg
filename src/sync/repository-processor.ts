@@ -55,18 +55,17 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       envToken?: string;
     }
   ) {
-    const logInstance = log;
     const factory: GitOpsFactory =
       gitOpsFactory ??
       ((opts, auth, retries) => {
-        const gitOps = new GitOps({ ...opts, log: logInstance });
+        const gitOps = new GitOps({ ...opts, log: log });
         return new AuthenticatedGitOps(
           gitOps,
           opts.executor ?? defaultExecutor,
           opts.workDir,
           retries ?? 3,
           auth,
-          logInstance
+          log
         );
       });
 
@@ -74,23 +73,21 @@ export class RepositoryProcessor implements IRepositoryProcessor {
 
     const fileWriter = components?.fileWriter ?? new FileWriter();
     const manifestManager =
-      components?.manifestManager ?? new ManifestManager(logInstance);
-    const branchManager =
-      components?.branchManager ?? new BranchManager(logInstance);
+      components?.manifestManager ?? new ManifestManager(log);
+    const branchManager = components?.branchManager ?? new BranchManager(log);
     const authOptionsBuilder =
       components?.authOptionsBuilder ??
-      new AuthOptionsBuilder(tokenManager, logInstance, components?.envToken);
+      new AuthOptionsBuilder(tokenManager, log, components?.envToken);
     const repositorySession =
-      components?.repositorySession ??
-      new RepositorySession(factory, logInstance);
+      components?.repositorySession ?? new RepositorySession(factory, log);
     const commitPushManager =
-      components?.commitPushManager ?? new CommitPushManager(logInstance);
+      components?.commitPushManager ?? new CommitPushManager(log);
     const prMergeHandler =
-      components?.prMergeHandler ?? new PRMergeHandler(logInstance);
+      components?.prMergeHandler ?? new PRMergeHandler(log);
 
     this.fileSyncOrchestrator =
       components?.fileSyncOrchestrator ??
-      new FileSyncOrchestrator(fileWriter, manifestManager, logInstance);
+      new FileSyncOrchestrator(fileWriter, manifestManager, log);
 
     this.syncWorkflow =
       components?.syncWorkflow ??
@@ -100,7 +97,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         branchManager,
         commitPushManager,
         prMergeHandler,
-        logInstance
+        log
       );
   }
 

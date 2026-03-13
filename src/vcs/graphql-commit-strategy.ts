@@ -133,8 +133,6 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
 
     validateSafeBranchName(branchName);
 
-    const githubInfo = repoInfo as GitHubRepoInfo;
-
     const additions = fileChanges.filter((fc) => fc.content !== null);
     const deletions = fileChanges.filter((fc) => fc.content === null);
 
@@ -159,7 +157,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       branchName,
       workDir,
       options.force,
-      githubInfo,
+      repoInfo,
       token
     );
 
@@ -185,7 +183,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
         );
 
         const result = await this.executeGraphQLMutation(
-          githubInfo,
+          repoInfo,
           branchName,
           message,
           headSha.trim(),

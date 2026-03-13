@@ -42,7 +42,7 @@ interface SettingsGuards<
 > {
   hasDesiredSettings(repoConfig: RepoConfig): boolean;
   emptySettingsMessage: string;
-  processSettings(
+  applySettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
     options: TOptions,
@@ -85,7 +85,7 @@ export async function withGitHubGuards<
   }
 
   try {
-    return await guards.processSettings(
+    return await guards.applySettings(
       repoInfo as GitHubRepoInfo,
       repoConfig,
       options,

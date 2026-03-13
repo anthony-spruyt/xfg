@@ -49,12 +49,12 @@ export class LabelsProcessor implements ILabelsProcessor {
       hasDesiredSettings: (rc) =>
         Object.keys(rc.settings?.labels ?? {}).length > 0,
       emptySettingsMessage: "No labels configured",
-      processSettings: (githubRepo, rc, opts, token, repoName) =>
-        this.processSettings(githubRepo, rc, opts, token, repoName),
+      applySettings: (githubRepo, rc, opts, token, repoName) =>
+        this.applySettings(githubRepo, rc, opts, token, repoName),
     });
   }
 
-  private async processSettings(
+  private async applySettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
     options: LabelsProcessorOptions,

@@ -58,7 +58,16 @@ export function configToGitHub(
  * Default parameters for pull_request rules.
  * GitHub API requires all parameters to be present.
  */
-const PULL_REQUEST_DEFAULTS: Record<string, unknown> = {
+interface PullRequestRuleDefaults {
+  required_approving_review_count: number;
+  dismiss_stale_reviews_on_push: boolean;
+  require_code_owner_review: boolean;
+  require_last_push_approval: boolean;
+  required_review_thread_resolution: boolean;
+  allowed_merge_methods: string[];
+}
+
+const PULL_REQUEST_DEFAULTS: PullRequestRuleDefaults = {
   required_approving_review_count: 0,
   dismiss_stale_reviews_on_push: false,
   require_code_owner_review: false,

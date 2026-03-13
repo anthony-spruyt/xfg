@@ -3,7 +3,7 @@ import type { LifecycleReport, LifecycleAction } from "./lifecycle-report.js";
 import { hasLifecycleChanges } from "./lifecycle-report.js";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import type { SyncReport, RepoFileChanges } from "./sync-report.js";
-import type { SettingsReport, RepoChanges } from "./settings-report.js";
+import type { SettingsReport } from "./settings-report.js";
 import {
   renderRepoSettingsDiffLines,
   formatCountEntry,
@@ -190,13 +190,6 @@ function renderSyncLines(syncRepo: RepoFileChanges, diffLines: string[]): void {
   }
 }
 
-function renderSettingsLines(
-  settingsRepo: RepoChanges,
-  diffLines: string[]
-): void {
-  renderRepoSettingsDiffLines(settingsRepo, diffLines);
-}
-
 // =============================================================================
 // Markdown Formatter
 // =============================================================================
@@ -266,7 +259,7 @@ export function formatUnifiedSummaryMarkdown(
 
     if (lcAction) renderLifecycleLines(lcAction, diffLines);
     if (syncRepo) renderSyncLines(syncRepo, diffLines);
-    if (settingsRepo) renderSettingsLines(settingsRepo, diffLines);
+    if (settingsRepo) renderRepoSettingsDiffLines(settingsRepo, diffLines);
   }
 
   if (diffLines.length > 0) {

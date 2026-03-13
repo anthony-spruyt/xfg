@@ -40,16 +40,16 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
   ): Promise<RepoSettingsProcessorResult> {
     return withGitHubGuards(repoConfig, repoInfo, options, {
       hasDesiredSettings: (rc) => {
-        const s = rc.settings?.repo;
-        return !!s && Object.keys(s).length > 0;
+        const repoSettings = rc.settings?.repo;
+        return !!repoSettings && Object.keys(repoSettings).length > 0;
       },
       emptySettingsMessage: "No repo settings configured",
-      processSettings: (githubRepo, rc, opts, token, repoName) =>
-        this.processSettings(githubRepo, rc, opts, token, repoName),
+      applySettings: (githubRepo, rc, opts, token, repoName) =>
+        this.applySettings(githubRepo, rc, opts, token, repoName),
     });
   }
 
-  private async processSettings(
+  private async applySettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
     options: RepoSettingsProcessorOptions,

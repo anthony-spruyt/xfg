@@ -24,7 +24,7 @@ import { SyncError } from "../shared/errors.js";
  * Returns HOST/OWNER/REPO for GHE, OWNER/REPO for github.com.
  */
 function getRepoFlag(repoInfo: GitHubRepoInfo): string {
-  if (repoInfo.host && repoInfo.host !== "github.com") {
+  if (repoInfo.host !== "github.com") {
     return `${repoInfo.host}/${repoInfo.owner}/${repoInfo.repo}`;
   }
   return `${repoInfo.owner}/${repoInfo.repo}`;
