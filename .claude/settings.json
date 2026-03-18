@@ -1,19 +1,19 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50",
     "BASH_DEFAULT_TIMEOUT_MS": "420000",
     "BASH_MAX_TIMEOUT_MS": "420000",
-    "CLAUDE_CODE_EFFORT_LEVEL": "medium",
-    "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1"
+    "CLAUDE_CODE_EFFORT_LEVEL": "medium"
   },
   "alwaysThinkingEnabled": true,
   "fastMode": false,
   "prefersReducedMotion": true,
-  "model": "claude-opus-4-6",
+  "model": "opus[1m]",
   "autoUpdatesChannel": "latest",
   "defaultMode": "acceptEdits",
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash(./lint.sh:*)",
       "Bash(docker manifest inspect:*)",
@@ -156,13 +156,13 @@
     ]
   },
   "enabledPlugins": {
-    "claude-code-setup@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": false,
+    "claude-md-management@claude-plugins-official": false,
     "code-review@claude-plugins-official": false,
     "context7@claude-plugins-official": true,
-    "feature-dev@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": false,
     "hookify@claude-plugins-official": false,
-    "plugin-dev@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": false,
     "security-guidance@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
     "hookify-plus@hookify-plus": true

@@ -3,6 +3,7 @@
 # This file is automatically updated - do not modify directly
 # To add custom linters, modify .mega-linter.yml instead
 
+DEFAULT_BRANCH: "main"
 ENABLE_LINTERS:
   - "ACTION_ACTIONLINT"
   - "BASH_SHELLCHECK"
@@ -19,7 +20,9 @@ EXCLUDED_DIRECTORIES:
   - ".git"
   - "plans"
 FILTER_REGEX_EXCLUDE: "(CLAUDE\\.md$)"
-DEFAULT_BRANCH: "main"
-IGNORE_GITIGNORED_FILES: true
-SPELL_LYCHEE_FILTER_REGEX_EXCLUDE: "(package-lock\\.json)"
 FLAVOR_SUGGESTIONS: false
+IGNORE_GITIGNORED_FILES: true
+REPOSITORY_SECRETLINT_ARGUMENTS:
+  - "--secretlintignore"
+  - ".secretlintignore"
+SPELL_LYCHEE_FILTER_REGEX_EXCLUDE: "(package-lock\\.json)"
