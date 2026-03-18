@@ -8,7 +8,8 @@ import {
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { parseApiJson, buildTokenEnv } from "../shared/gh-api-utils.js";
+import { parseApiJson } from "../shared/json-utils.js";
+import { buildTokenEnv } from "../shared/gh-api-utils.js";
 import { ValidationError, GraphQLApiError } from "../shared/errors.js";
 
 /**

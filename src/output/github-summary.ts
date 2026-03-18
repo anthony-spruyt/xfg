@@ -1,6 +1,7 @@
 import { appendFileSync } from "node:fs";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { DebugLog } from "../shared/logger.js";
+import type { SettingsAction } from "../settings/base-processor.js";
 
 export type MergeOutcome = "manual" | "auto" | "force" | "direct";
 
@@ -121,7 +122,7 @@ function formatResult(result: RepoResult): string {
   return escapeMarkdown(result.message);
 }
 
-function formatRulesetAction(action: string): string {
+function formatRulesetAction(action: SettingsAction): string {
   switch (action) {
     case "create":
       return "+ Create";
@@ -146,7 +147,7 @@ function formatRulesetProperties(detail: RulesetPlanDetail): string {
   return "-";
 }
 
-function formatPlanSummary(details: { action: string }[]): string {
+function formatPlanSummary(details: { action: SettingsAction }[]): string {
   const counts: Record<string, number> = {};
   for (const d of details) {
     counts[d.action] = (counts[d.action] ?? 0) + 1;
@@ -158,7 +159,7 @@ function formatPlanSummary(details: { action: string }[]): string {
   return parts.join(", ") || "no changes";
 }
 
-function formatSettingsAction(action: string): string {
+function formatSettingsAction(action: SettingsAction): string {
   switch (action) {
     case "create":
       return "+ Create";

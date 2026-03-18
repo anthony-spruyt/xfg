@@ -62,6 +62,22 @@ export function interpolateString(
  * Recursively process a value, interpolating strings within objects and arrays.
  */
 export function interpolateValue(
+  value: string,
+  config: InterpolationConfig
+): string;
+export function interpolateValue(
+  value: unknown[],
+  config: InterpolationConfig
+): unknown[];
+export function interpolateValue(
+  value: Record<string, unknown>,
+  config: InterpolationConfig
+): Record<string, unknown>;
+export function interpolateValue(
+  value: unknown,
+  config: InterpolationConfig
+): unknown;
+export function interpolateValue(
   value: unknown,
   config: InterpolationConfig
 ): unknown {

@@ -102,6 +102,9 @@ export async function withGitHubGuards<
   }
 }
 
+/** Common action literals shared by all settings processors. */
+export type SettingsAction = "create" | "update" | "delete" | "unchanged";
+
 export interface ChangeCounts {
   create: number;
   update: number;
@@ -114,7 +117,7 @@ export interface ChangeCounts {
  * Works with any change type that has an `action` field.
  */
 export function countActions(
-  changes: ReadonlyArray<{ action: string }>
+  changes: ReadonlyArray<{ action: SettingsAction }>
 ): ChangeCounts {
   return {
     create: changes.filter((c) => c.action === "create").length,

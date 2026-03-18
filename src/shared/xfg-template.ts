@@ -171,5 +171,5 @@ export function interpolateXfgContent(
     return content.map((line) => interpolateString(line, config));
   }
 
-  return interpolateValue(content, config) as Record<string, unknown>;
+  return interpolateValue(content, config);
 }
