@@ -57,6 +57,7 @@ jobs:
         run: npm run build
 
       - name: Create verified commit
+        id: commit
         uses: iarekylew00t/verified-bot-commit@v2
         with:
           token: ${{ steps.app-token.outputs.token }}
@@ -69,8 +70,8 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{ steps.commit.outputs.commit }}
         run: |
-          COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
           echo "Waiting for CI on commit $COMMIT_SHA..."
 
           TIMEOUT=${{ inputs.ci_timeout }}
@@ -115,9 +116,9 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           VERSION: ${{ steps.version.outputs.version }}
+          COMMIT_SHA: ${{ steps.commit.outputs.commit }}
+          REPO: ${{ github.repository }}
         run: |
-          REPO="${{ github.repository }}"
-          COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
           echo "Verified commit: $COMMIT_SHA"
 
           gh api "repos/$REPO/git/refs" \
@@ -129,10 +130,10 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           VERSION: ${{ steps.version.outputs.version }}
+          COMMIT_SHA: ${{ steps.commit.outputs.commit }}
           REPO: ${{ github.repository }}
         run: |
           MAJOR=$(echo "${VERSION}" | cut -d. -f1)
-          COMMIT_SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq '.object.sha')
 
           # Delete and recreate the major version tag (e.g., v3)
           # Use git/ref (singular) for exact match — git/refs (plural) does prefix matching
