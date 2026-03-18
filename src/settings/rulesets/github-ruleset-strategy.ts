@@ -1,7 +1,4 @@
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../../shared/command-executor.js";
+import { ICommandExecutor } from "../../shared/command-executor.js";
 import { assertGitHubRepo, RepoInfo } from "../../shared/repo-detector.js";
 import { camelToSnake } from "../../shared/string-utils.js";
 import {
@@ -61,7 +58,16 @@ export function configToGitHub(
  * Default parameters for pull_request rules.
  * GitHub API requires all parameters to be present.
  */
-const PULL_REQUEST_DEFAULTS: Record<string, unknown> = {
+interface PullRequestRuleDefaults {
+  required_approving_review_count: number;
+  dismiss_stale_reviews_on_push: boolean;
+  require_code_owner_review: boolean;
+  require_last_push_approval: boolean;
+  required_review_thread_resolution: boolean;
+  allowed_merge_methods: string[];
+}
+
+const PULL_REQUEST_DEFAULTS: PullRequestRuleDefaults = {
   required_approving_review_count: 0,
   dismiss_stale_reviews_on_push: false,
   require_code_owner_review: false,
@@ -144,28 +150,19 @@ interface GitHubRulesetPayload {
 
 interface GitHubRulesetStrategyOptions {
   retries?: number;
+  cwd: string;
 }
 
-/**
- * GitHub Ruleset Strategy for managing repository rulesets via GitHub REST API.
- * Uses `gh api` CLI for authentication and API calls.
- */
 export class GitHubRulesetStrategy implements IRulesetStrategy {
   private api: GhApiClient;
 
   constructor(
-    executor?: ICommandExecutor,
-    options?: GitHubRulesetStrategyOptions
+    executor: ICommandExecutor,
+    options: GitHubRulesetStrategyOptions
   ) {
-    this.api = new GhApiClient(
-      executor ?? defaultExecutor,
-      options?.retries ?? 3
-    );
+    this.api = new GhApiClient(executor, options.retries ?? 3, options.cwd);
   }
 
-  /**
-   * Lists all rulesets for a repository.
-   */
   async list(
     repoInfo: RepoInfo,
     options?: GhApiOptions
@@ -173,14 +170,11 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets`;
-    const result = await this.api.call("GET", endpoint, undefined, options);
+    const result = await this.api.call("GET", endpoint, { options });
 
     return parseApiJson<GitHubRuleset[]>(result, "rulesets response");
   }
 
-  /**
-   * Gets a single ruleset by ID.
-   */
   async get(
     repoInfo: RepoInfo,
     rulesetId: number,
@@ -189,14 +183,11 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets/${rulesetId}`;
-    const result = await this.api.call("GET", endpoint, undefined, options);
+    const result = await this.api.call("GET", endpoint, { options });
 
     return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
 
-  /**
-   * Creates a new ruleset.
-   */
   async create(
     repoInfo: RepoInfo,
     name: string,
@@ -207,14 +198,11 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets`;
     const payload = configToGitHub(name, ruleset);
-    const result = await this.api.call("POST", endpoint, payload, options);
+    const result = await this.api.call("POST", endpoint, { payload, options });
 
     return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
 
-  /**
-   * Updates an existing ruleset.
-   */
   async update(
     repoInfo: RepoInfo,
     rulesetId: number,
@@ -226,14 +214,11 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets/${rulesetId}`;
     const payload = configToGitHub(name, ruleset);
-    const result = await this.api.call("PUT", endpoint, payload, options);
+    const result = await this.api.call("PUT", endpoint, { payload, options });
 
     return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
 
-  /**
-   * Deletes a ruleset.
-   */
   async delete(
     repoInfo: RepoInfo,
     rulesetId: number,
@@ -242,6 +227,6 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets/${rulesetId}`;
-    await this.api.call("DELETE", endpoint, undefined, options);
+    await this.api.call("DELETE", endpoint, { options });
   }
 }

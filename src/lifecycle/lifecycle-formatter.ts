@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import type { LifecycleResult } from "./types.js";
 import { getRepoDisplayName } from "../shared/repo-detector.js";
+import { SyncError } from "../shared/errors.js";
 
 interface FormatOptions {
   upstream?: string;
@@ -49,7 +50,7 @@ export function formatLifecycleAction(
 
     default: {
       const _exhaustive: never = result.action;
-      throw new Error(`Unknown lifecycle action: ${_exhaustive}`);
+      throw new SyncError(`Unknown lifecycle action: ${_exhaustive}`);
     }
   }
 

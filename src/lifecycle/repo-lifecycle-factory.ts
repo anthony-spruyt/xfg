@@ -1,7 +1,6 @@
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../shared/command-executor.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
+import { LifecycleError } from "../shared/errors.js";
+import type { DebugWarnLog } from "../shared/logger.js";
 import type {
   IRepoLifecycleFactory,
   IRepoLifecycleProvider,
@@ -11,9 +10,6 @@ import type {
 import { GitHubLifecycleProvider } from "./github-lifecycle-provider.js";
 import { AdoMigrationSource } from "./ado-migration-source.js";
 
-/**
- * Factory for creating lifecycle providers and migration sources.
- */
 export class RepoLifecycleFactory implements IRepoLifecycleFactory {
   private readonly providers: Map<LifecyclePlatform, IRepoLifecycleProvider> =
     new Map();
@@ -22,10 +18,19 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
 
   private readonly executor: ICommandExecutor;
   private readonly retries: number;
+  private readonly cwd: string;
+  private readonly log?: DebugWarnLog;
 
-  constructor(executor?: ICommandExecutor, retries?: number) {
-    this.executor = executor ?? defaultExecutor;
+  constructor(
+    executor: ICommandExecutor,
+    retries: number | undefined,
+    cwd: string,
+    log?: DebugWarnLog
+  ) {
+    this.executor = executor;
     this.retries = retries ?? 3;
+    this.cwd = cwd;
+    this.log = log;
   }
 
   getProvider(platform: LifecyclePlatform): IRepoLifecycleProvider {
@@ -42,10 +47,12 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
         provider = new GitHubLifecycleProvider({
           executor: this.executor,
           retries: this.retries,
+          cwd: this.cwd,
+          log: this.log,
         });
         break;
       default:
-        throw new Error(
+        throw new LifecycleError(
           `Platform '${platform}' not supported as target for lifecycle operations. ` +
             `Currently supported: github`
         );
@@ -66,10 +73,10 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
     let source: IMigrationSource;
     switch (platform) {
       case "azure-devops":
-        source = new AdoMigrationSource(this.executor, this.retries);
+        source = new AdoMigrationSource(this.executor, this.retries, this.cwd);
         break;
       default:
-        throw new Error(
+        throw new LifecycleError(
           `Platform '${platform}' not supported as migration source. ` +
             `Currently supported: azure-devops`
         );

@@ -10,19 +10,21 @@ import type {
   MergeOptions,
   MergeResult,
 } from "./types.js";
-import { withRetry } from "../shared/retry-utils.js";
+import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
+import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
 import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
+import { SyncError } from "../shared/errors.js";
 
 /**
  * Get the repo flag value for gh CLI commands.
  * Returns HOST/OWNER/REPO for GHE, OWNER/REPO for github.com.
  */
 function getRepoFlag(repoInfo: GitHubRepoInfo): string {
-  if (repoInfo.host && repoInfo.host !== "github.com") {
+  if (repoInfo.host !== "github.com") {
     return `${repoInfo.host}/${repoInfo.owner}/${repoInfo.repo}`;
   }
   return `${repoInfo.owner}/${repoInfo.repo}`;
@@ -51,11 +53,14 @@ export class GitHubPRStrategy extends BasePRStrategy {
     try {
       const existingPR = await withRetry(
         () => this.executor.exec(command, workDir, { env: tokenEnv }),
-        { retries }
+        { retries, log: this.log }
       );
 
       return existingPR || null;
     } catch (error) {
+      if (isPermanentError(error)) {
+        throw error;
+      }
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("no pull requests match")) {
         this.log?.debug(
@@ -106,7 +111,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     try {
       await withRetry(
         () => this.executor.exec(command, workDir, { env: tokenEnv }),
-        { retries }
+        { retries, log: this.log }
       );
       return true;
     } catch (error) {
@@ -147,7 +152,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     try {
       const result = await withRetry(
         () => this.executor.exec(command, workDir, { env: tokenEnv }),
-        { retries }
+        { retries, log: this.log }
       );
 
       // Extract URL from output - use strict regex for valid PR URLs only
@@ -156,7 +161,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       const urlMatch = result.match(urlRegex);
 
       if (!urlMatch) {
-        throw new Error(`Could not parse PR URL from output: ${result}`);
+        throw new SyncError(`Could not parse PR URL from output: ${result}`);
       }
 
       return {
@@ -170,7 +175,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
           if (existsSync(bodyFile)) unlinkSync(bodyFile);
         },
         `failed to remove ${bodyFile}`,
-        this.log ?? { debug() {} }
+        this.log ?? NO_OP_DEBUG_LOG
       );
     }
   }
@@ -192,7 +197,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     try {
       const result = await withRetry(
         () => this.executor.exec(command, workDir, { env: tokenEnv }),
-        { retries }
+        { retries, log: this.log }
       );
       return result.trim() === "true";
     } catch (error) {
@@ -222,7 +227,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
   async merge(options: MergeOptions): Promise<MergeResult> {
     const { prUrl, repoInfo, config, workDir, retries = 3, token } = options;
 
-    // Manual mode: do nothing
     if (config.mode === "manual") {
       return {
         success: true,
@@ -278,7 +282,9 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
 
     if (config.mode === "force") {
-      // Force merge using admin privileges
+      this.log?.warn(
+        `Force-merging PR ${prUrl} using admin privileges (bypasses branch protection)`
+      );
       const forceCommand =
         `gh pr merge ${escapeShellArg(prUrl)} --admin ${strategyFlag} ${deleteBranchFlag}`.trim();
 
@@ -294,9 +300,12 @@ export class GitHubPRStrategy extends BasePRStrategy {
       );
     }
 
+    // "direct" mode doesn't create PRs, so merge() should not be called for it.
+    // This is a defensive fallback for type safety.
+    const _exhaustive: "direct" = config.mode;
     return {
       success: false,
-      message: `Unknown merge mode: ${config.mode}`,
+      message: `Merge not applicable for mode: ${_exhaustive}`,
       merged: false,
     };
   }

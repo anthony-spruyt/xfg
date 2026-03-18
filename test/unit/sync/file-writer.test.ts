@@ -285,7 +285,7 @@ describe("FileWriter", () => {
           dryRun: false,
           noDelete: false,
           configId: "test",
-          isGraphQLCommitMode: true,
+          hasAppCredentials: true,
         },
         {
           gitOps: mockGitOps,

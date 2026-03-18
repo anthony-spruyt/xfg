@@ -9,13 +9,12 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   ShellCommandExecutor,
-  defaultExecutor,
   ICommandExecutor,
   getStderr,
 } from "../../src/shared/command-executor.js";
 
 describe("ShellCommandExecutor", () => {
-  const executor = new ShellCommandExecutor();
+  const executor = new ShellCommandExecutor(process.env);
   const testDir = join(tmpdir(), `cmd-exec-test-${Date.now()}`);
 
   // Setup test directory
@@ -75,18 +74,19 @@ describe("ShellCommandExecutor", () => {
   });
 });
 
-describe("defaultExecutor", () => {
+describe("ShellCommandExecutor with process.env", () => {
+  const processEnvExecutor = new ShellCommandExecutor(process.env);
+
   test("is an instance of ShellCommandExecutor", () => {
-    assert.ok(defaultExecutor instanceof ShellCommandExecutor);
+    assert.ok(processEnvExecutor instanceof ShellCommandExecutor);
   });
 
   test("implements ICommandExecutor interface", () => {
-    // TypeScript ensures this at compile time, but verify at runtime
-    assert.strictEqual(typeof defaultExecutor.exec, "function");
+    assert.strictEqual(typeof processEnvExecutor.exec, "function");
   });
 
   test("runs commands successfully", async () => {
-    const result = await defaultExecutor.exec("echo default", tmpdir());
+    const result = await processEnvExecutor.exec("echo default", tmpdir());
     assert.strictEqual(result, "default");
   });
 });
@@ -127,7 +127,7 @@ describe("credential sanitization", () => {
   // credential sanitization in error output paths
 
   test("sanitizes credentials in error messages", async () => {
-    const executor = new ShellCommandExecutor();
+    const executor = new ShellCommandExecutor(process.env);
 
     try {
       // Simulate a failing command that outputs credentials to stderr
@@ -147,7 +147,7 @@ describe("credential sanitization", () => {
   });
 
   test("sanitizes credentials in stderr", async () => {
-    const executor = new ShellCommandExecutor();
+    const executor = new ShellCommandExecutor(process.env);
 
     try {
       await executor.exec(

@@ -1,0 +1,60 @@
+{
+  "assessments": {
+    "abstraction_fitness": 85
+  },
+  "findings": [
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "processor-options-wide-bag",
+      "summary": "ProcessorOptions is a 10-field bag threaded through SyncWorkflow → IWorkStrategy → IFileSyncOrchestrator where each layer uses a disjoint subset of fields",
+      "related_files": [
+        "src/sync/types.ts",
+        "src/sync/sync-workflow.ts",
+        "src/sync/file-sync-strategy.ts",
+        "src/sync/file-sync-orchestrator.ts"
+      ],
+      "evidence": [
+        "ProcessorOptions has 10 fields: branchName, workDir, configId, dryRun, retries, executor, prTemplate, noDelete, token, isGraphQLCommitMode",
+        "SyncWorkflow.execute() receives full ProcessorOptions, uses branchName/workDir/dryRun/retries/executor/prTemplate/token but passes the whole object to workStrategy.execute()",
+        "FileSyncStrategy.execute() receives full ProcessorOptions, passes it unchanged to fileSyncOrchestrator.sync()",
+        "FileSyncOrchestrator.sync() receives full ProcessorOptions but only uses workDir/configId/dryRun/noDelete/isGraphQLCommitMode — 5 of 10 fields"
+      ],
+      "suggestion": "Split ProcessorOptions into layer-specific slices: a SyncWorkflowOptions (branchName, workDir, dryRun, retries, executor, prTemplate, token) and a FileSyncOptions (workDir, configId, dryRun, noDelete, isGraphQLCommitMode). Each layer receives only the fields it needs, and SyncWorkflow constructs FileSyncOptions from its own context rather than forwarding the full bag.",
+      "confidence": 0.8
+    },
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "branch-setup-options-wide-bag",
+      "summary": "BranchSetupOptions bundles 10 fields including injected dependencies (gitOps, executor) alongside per-call data, creating a mixed-concern parameter object",
+      "related_files": [
+        "src/sync/types.ts",
+        "src/sync/branch-manager.ts",
+        "src/sync/sync-workflow.ts"
+      ],
+      "evidence": [
+        "BranchSetupOptions has 10 fields: repoInfo, branchName, baseBranch, workDir, isDirectMode, dryRun, retries, token, gitOps, executor",
+        "BranchManager constructor only takes ILogger; all 10 other dependencies arrive via setupBranch options bag including runtime collaborators gitOps and executor",
+        "SyncWorkflow.execute() manually assembles this 10-field object at line 66-77 from various local variables"
+      ],
+      "suggestion": "Inject gitOps and executor via BranchManager constructor (they are per-session stable dependencies, not per-call data) and reduce BranchSetupOptions to the 8 per-call fields. Alternatively, split into BranchSetupDeps (gitOps, executor) and BranchSetupParams (the 8 data fields).",
+      "confidence": 0.7
+    },
+    {
+      "dimension": "abstraction_fitness",
+      "identifier": "commit-push-options-wide-bag",
+      "summary": "CommitPushOptions bundles 11 fields including injected dependencies (gitOps, executor) alongside per-call data",
+      "related_files": [
+        "src/sync/types.ts",
+        "src/sync/commit-push-manager.ts",
+        "src/sync/sync-workflow.ts"
+      ],
+      "evidence": [
+        "CommitPushOptions has 11 fields: repoInfo, gitOps, workDir, fileChanges, commitMessage, pushBranch, isDirectMode, dryRun, retries, token, executor",
+        "CommitPushManager constructor only takes ILogger; all other deps arrive via commitAndPush options",
+        "SyncWorkflow.execute() manually assembles this 11-field object at lines 96-108"
+      ],
+      "suggestion": "Inject gitOps and executor via CommitPushManager constructor as stable session deps, reducing CommitPushOptions to the 9 per-call data fields.",
+      "confidence": 0.7
+    }
+  ]
+}

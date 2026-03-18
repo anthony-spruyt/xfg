@@ -1,16 +1,12 @@
 import type { FileContent, RepoConfig } from "../config/types.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
-import type {
-  ILocalGitOps,
-  IGitOps,
-  GitAuthOptions,
-} from "../vcs/authenticated-git-ops.js";
+import type { ILocalGitOps, IGitOps, GitAuthOptions } from "../vcs/types.js";
 import type { GitOpsOptions } from "../vcs/git-ops.js";
 import type { DiffStats } from "./diff-utils.js";
 import type { ILogger } from "../shared/logger.js";
 import type { XfgManifest } from "./manifest.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
-import type { FileAction } from "../vcs/pr-creator.js";
+import type { FileAction } from "../vcs/types.js";
 
 export type GitOpsFactory = (
   options: GitOpsOptions,
@@ -32,7 +28,7 @@ export interface FileWriteContext {
   noDelete: boolean;
   configId: string;
   /** True when using GraphQL commit strategy (GitHub App) which cannot set file modes */
-  isGraphQLCommitMode?: boolean;
+  hasAppCredentials?: boolean;
 }
 
 export interface FileWriterDeps {
@@ -91,17 +87,21 @@ export interface IManifestManager {
   ): void;
 }
 
-export interface BranchSetupOptions {
-  repoInfo: RepoInfo;
-  branchName: string;
-  baseBranch: string;
+/** Common runtime context shared across workflow step options bags. */
+export interface RunContext {
   workDir: string;
-  isDirectMode: boolean;
   dryRun: boolean;
   retries: number;
   token?: string;
-  gitOps: IGitOps;
   executor: ICommandExecutor;
+}
+
+export interface BranchSetupOptions extends RunContext {
+  repoInfo: RepoInfo;
+  branchName: string;
+  baseBranch: string;
+  isDirectMode: boolean;
+  gitOps: IGitOps;
 }
 
 export interface IBranchManager {
@@ -116,7 +116,7 @@ export interface IAuthOptionsBuilder {
   resolve(
     repoInfo: RepoInfo,
     repoName: string,
-    preResolvedToken?: string
+    token?: string
   ): Promise<AuthResult>;
 }
 
@@ -124,6 +124,7 @@ export interface SessionOptions {
   workDir: string;
   dryRun: boolean;
   retries: number;
+  executor: ICommandExecutor;
   authOptions?: GitAuthOptions;
 }
 
@@ -137,18 +138,14 @@ export interface IRepositorySession {
   setup(repoInfo: RepoInfo, options: SessionOptions): Promise<SessionContext>;
 }
 
-export interface CommitPushOptions {
+export interface CommitPushOptions extends RunContext {
   repoInfo: RepoInfo;
   gitOps: IGitOps;
-  workDir: string;
   fileChanges: Map<string, FileWriteResult>;
   commitMessage: string;
   pushBranch: string;
   isDirectMode: boolean;
-  dryRun: boolean;
-  retries: number;
-  token?: string;
-  executor: ICommandExecutor;
+  hasAppCredentials?: boolean;
 }
 
 export type CommitPushResult =
@@ -166,13 +163,13 @@ export interface ProcessorOptions {
   configId: string;
   dryRun?: boolean;
   retries?: number;
-  executor?: ICommandExecutor;
+  executor: ICommandExecutor;
   prTemplate?: string;
   noDelete?: boolean;
-  /** Pre-resolved GitHub token — avoids duplicate resolution in AuthOptionsBuilder */
+  /** GitHub token for authentication (resolved by caller) */
   token?: string;
   /** True when using GraphQL commit strategy (GitHub App) which cannot set file modes */
-  isGraphQLCommitMode?: boolean;
+  hasAppCredentials?: boolean;
 }
 
 export interface FileChangeDetail {
@@ -219,15 +216,10 @@ export interface IFileSyncOrchestrator {
   ): Promise<FileSyncResult>;
 }
 
-export interface PRHandlerOptions {
+export interface PRHandlerOptions extends RunContext {
   branchName: string;
   baseBranch: string;
-  workDir: string;
-  dryRun: boolean;
-  retries: number;
   prTemplate?: string;
-  token?: string;
-  executor: ICommandExecutor;
 }
 
 export interface CreateAndMergeInput {

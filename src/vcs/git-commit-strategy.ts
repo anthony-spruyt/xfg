@@ -1,8 +1,5 @@
 import type { ICommitStrategy, CommitOptions, CommitResult } from "./types.js";
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../shared/command-executor.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
 
@@ -14,8 +11,8 @@ import { escapeShellArg } from "../shared/shell-utils.js";
 export class GitCommitStrategy implements ICommitStrategy {
   private executor: ICommandExecutor;
 
-  constructor(executor?: ICommandExecutor) {
-    this.executor = executor ?? defaultExecutor;
+  constructor(executor: ICommandExecutor) {
+    this.executor = executor;
   }
 
   /**
@@ -53,7 +50,6 @@ export class GitCommitStrategy implements ICommitStrategy {
       });
     }
 
-    // Get the commit SHA
     const sha = await this.executor.exec("git rev-parse HEAD", workDir);
 
     return {

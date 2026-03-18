@@ -1,8 +1,5 @@
 import type { ICommitStrategy, CommitOptions, CommitResult } from "./types.js";
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../shared/command-executor.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
 import { isGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
 import {
@@ -11,13 +8,38 @@ import {
   DEFAULT_PERMANENT_ERROR_PATTERNS,
 } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { parseApiJson } from "../shared/gh-api-utils.js";
+import { parseApiJson, buildTokenEnv } from "../shared/gh-api-utils.js";
+import { ValidationError, GraphQLApiError } from "../shared/errors.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
  * Base64 encoding adds ~33% overhead, so raw content should be checked.
  */
 export const MAX_PAYLOAD_SIZE = 50 * 1024 * 1024;
+
+interface GraphQLCommitResponse {
+  data?: {
+    createCommitOnBranch?: {
+      commit?: { oid?: string };
+    };
+  };
+  errors?: Array<{ message: string }>;
+}
+
+interface GraphQLRepoResponse {
+  data?: {
+    repository?: {
+      id?: string;
+      ref?: { id?: string };
+    };
+  };
+  errors?: Array<{ message: string }>;
+}
+
+interface GraphQLMutationResponse {
+  data?: Record<string, unknown>;
+  errors?: Array<{ message: string }>;
+}
 
 /**
  * Pattern for valid git branch names that are also safe for shell commands.
@@ -38,7 +60,7 @@ export const SAFE_BRANCH_NAME_PATTERN = /^[a-zA-Z0-9][-a-zA-Z0-9_./]*$/;
  */
 export function validateSafeBranchName(branchName: string): void {
   if (!SAFE_BRANCH_NAME_PATTERN.test(branchName)) {
-    throw new Error(
+    throw new ValidationError(
       `Invalid branch name for GraphQL commit strategy: "${branchName}". ` +
         `Branch names must start with alphanumeric and contain only ` +
         `alphanumeric characters, hyphens, underscores, dots, and forward slashes.`
@@ -78,8 +100,8 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
 
   private executor: ICommandExecutor;
 
-  constructor(executor?: ICommandExecutor) {
-    this.executor = executor ?? defaultExecutor;
+  constructor(executor: ICommandExecutor) {
+    this.executor = executor;
   }
 
   /**
@@ -101,14 +123,12 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     } = options;
 
     if (!isGitHubRepo(repoInfo)) {
-      throw new Error(
+      throw new ValidationError(
         `GraphQL commit strategy requires GitHub repositories. Got: ${repoInfo.type}`
       );
     }
 
     validateSafeBranchName(branchName);
-
-    const githubInfo = repoInfo as GitHubRepoInfo;
 
     const additions = fileChanges.filter((fc) => fc.content !== null);
     const deletions = fileChanges.filter((fc) => fc.content === null);
@@ -120,7 +140,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     }, 0);
 
     if (totalSize > MAX_PAYLOAD_SIZE) {
-      throw new Error(
+      throw new ValidationError(
         `GraphQL payload exceeds 50 MB limit (${Math.round(totalSize / (1024 * 1024))} MB). ` +
           `Consider using smaller files or the git commit strategy.`
       );
@@ -134,7 +154,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       branchName,
       workDir,
       options.force,
-      githubInfo,
+      repoInfo,
       token
     );
 
@@ -160,7 +180,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
         );
 
         const result = await this.executeGraphQLMutation(
-          githubInfo,
+          repoInfo,
           branchName,
           message,
           headSha.trim(),
@@ -183,7 +203,9 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       }
     }
 
-    throw lastError ?? new Error("Unexpected error in GraphQL commit");
+    throw (
+      lastError ?? new GraphQLApiError("Unexpected error in GraphQL commit")
+    );
   }
 
   /**
@@ -248,7 +270,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
         ? `--hostname ${escapeShellArg(repoInfo.host)}`
         : "";
 
-    const tokenEnv = token ? { GH_TOKEN: token } : undefined;
+    const tokenEnv = buildTokenEnv(token);
 
     const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
 
@@ -267,25 +289,18 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       throw this.sanitizeCommandError(error, repositoryNameWithOwner);
     }
 
-    const parsed = parseApiJson<Record<string, unknown>>(
+    const parsed = parseApiJson<GraphQLCommitResponse>(
       response,
       "GraphQL createCommitOnBranch response"
     );
 
     if (parsed.errors) {
-      const errors = parsed.errors as Array<{ message: string }>;
-      throw new Error(
-        `GraphQL error: ${errors.map((e) => e.message).join(", ")}`
-      );
+      throw new GraphQLApiError(parsed.errors.map((e) => e.message).join(", "));
     }
 
-    const data = parsed.data as Record<string, unknown> | undefined;
-    const commit = (
-      data?.createCommitOnBranch as Record<string, unknown> | undefined
-    )?.commit as Record<string, unknown> | undefined;
-    const oid = commit?.oid as string | undefined;
+    const oid = parsed.data?.createCommitOnBranch?.commit?.oid;
     if (!oid) {
-      throw new Error("GraphQL response missing commit OID");
+      throw new GraphQLApiError("Response missing commit OID");
     }
 
     return {
@@ -315,7 +330,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     token?: string
   ): Promise<void> {
     if (!repoInfo) {
-      throw new Error("repoInfo is required for GraphQL ref operations");
+      throw new GraphQLApiError("repoInfo is required for ref operations");
     }
 
     const { repositoryId, refId } = await this.queryRemoteRef(
@@ -394,7 +409,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       cleanMessage = cleanMessage.substring(0, 2000) + "... (truncated)";
     }
 
-    return new Error(`GraphQL commit failed for ${repo}: ${cleanMessage}`);
+    return new GraphQLApiError(`Commit failed for ${repo}: ${cleanMessage}`);
   }
 
   /**
@@ -411,22 +426,24 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
    * Handles command construction, retry, error sanitization, and response parsing.
    * Uses gh CLI's --input flag to pass GraphQL via stdin (same pattern as executeGraphQLMutation).
    */
-  private async executeGraphQLRefOp(
+  private async executeGraphQLRefOp<
+    T extends {
+      data?: Record<string, unknown>;
+      errors?: Array<{ message: string }>;
+    },
+  >(
     queryOrMutation: string,
     repoInfo: GitHubRepoInfo,
     workDir: string,
     token?: string
-  ): Promise<{
-    data?: Record<string, unknown>;
-    errors?: Array<{ message: string }>;
-  }> {
+  ): Promise<T> {
     const requestBody = JSON.stringify({ query: queryOrMutation });
 
     const hostnameArg =
       repoInfo.host !== "github.com"
         ? `--hostname ${escapeShellArg(repoInfo.host)}`
         : "";
-    const tokenEnv = token ? { GH_TOKEN: token } : undefined;
+    const tokenEnv = buildTokenEnv(token);
     const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
 
     let response: string;
@@ -445,14 +462,9 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       );
     }
 
-    const parsed = parseApiJson<{
-      data?: Record<string, unknown>;
-      errors?: Array<{ message: string }>;
-    }>(response, "GraphQL API response");
+    const parsed = parseApiJson<T>(response, "GraphQL API response");
     if (parsed.errors) {
-      throw new Error(
-        `GraphQL error: ${parsed.errors.map((e) => e.message).join(", ")}`
-      );
+      throw new GraphQLApiError(parsed.errors.map((e) => e.message).join(", "));
     }
 
     return parsed;
@@ -470,29 +482,26 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
   ): Promise<{ repositoryId: string; refId: string | null }> {
     const query = `{ repository(owner: ${JSON.stringify(repoInfo.owner)}, name: ${JSON.stringify(repoInfo.repo)}) { id ref(qualifiedName: ${JSON.stringify(`refs/heads/${branchName}`)}) { id } } }`;
 
-    const parsed = await this.executeGraphQLRefOp(
+    const repoResponse = await this.executeGraphQLRefOp<GraphQLRepoResponse>(
       query,
       repoInfo,
       workDir,
       token
     );
 
-    const repo = parsed.data?.repository as
-      | { id?: string; ref?: { id?: string } }
-      | undefined;
-    const repositoryId = repo?.id;
+    const repositoryId = repoResponse.data?.repository?.id;
     if (!repositoryId) {
-      throw new Error(
-        `GraphQL response missing repository ID for ${repoInfo.owner}/${repoInfo.repo}`
+      throw new GraphQLApiError(
+        `Response missing repository ID for ${repoInfo.owner}/${repoInfo.repo}`
       );
     }
 
-    return { repositoryId, refId: repo?.ref?.id ?? null };
+    return {
+      repositoryId,
+      refId: repoResponse.data?.repository?.ref?.id ?? null,
+    };
   }
 
-  /**
-   * Create a branch ref on the remote via GraphQL createRef mutation.
-   */
   private async createRemoteRef(
     repositoryId: string,
     branchName: string,
@@ -502,12 +511,14 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     token?: string
   ): Promise<void> {
     const mutation = `mutation { createRef(input: { repositoryId: ${JSON.stringify(repositoryId)}, name: ${JSON.stringify(`refs/heads/${branchName}`)}, oid: ${JSON.stringify(oid)} }) { clientMutationId } }`;
-    await this.executeGraphQLRefOp(mutation, repoInfo, workDir, token);
+    await this.executeGraphQLRefOp<GraphQLMutationResponse>(
+      mutation,
+      repoInfo,
+      workDir,
+      token
+    );
   }
 
-  /**
-   * Delete a branch ref on the remote via GraphQL deleteRef mutation.
-   */
   private async deleteRemoteRef(
     refId: string,
     workDir: string,
@@ -515,6 +526,11 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     token?: string
   ): Promise<void> {
     const mutation = `mutation { deleteRef(input: { refId: ${JSON.stringify(refId)} }) { clientMutationId } }`;
-    await this.executeGraphQLRefOp(mutation, repoInfo, workDir, token);
+    await this.executeGraphQLRefOp<GraphQLMutationResponse>(
+      mutation,
+      repoInfo,
+      workDir,
+      token
+    );
   }
 }

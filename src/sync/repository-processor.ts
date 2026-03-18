@@ -2,9 +2,8 @@ import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import { GitOps } from "../vcs/git-ops.js";
 import { AuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
-import { defaultExecutor } from "../shared/command-executor.js";
-import { logger, ILogger } from "../shared/logger.js";
-import { createTokenManager } from "../vcs/index.js";
+import type { ILogger } from "../shared/logger.js";
+import type { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import { FileWriter } from "./file-writer.js";
 import { ManifestManager } from "./manifest-manager.js";
 import { BranchManager } from "./branch-manager.js";
@@ -39,8 +38,8 @@ export class RepositoryProcessor implements IRepositoryProcessor {
   private readonly fileSyncOrchestrator: IFileSyncOrchestrator;
 
   constructor(
-    gitOpsFactory?: GitOpsFactory,
-    log?: ILogger,
+    gitOpsFactory: GitOpsFactory | undefined,
+    log: ILogger,
     components?: {
       fileWriter?: IFileWriter;
       manifestManager?: IManifestManager;
@@ -51,45 +50,43 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       fileSyncOrchestrator?: IFileSyncOrchestrator;
       prMergeHandler?: IPRMergeHandler;
       syncWorkflow?: ISyncWorkflow;
+      tokenManager?: GitHubAppTokenManager | null;
+      envToken?: string;
     }
   ) {
-    const logInstance = log ?? logger;
     const factory: GitOpsFactory =
       gitOpsFactory ??
       ((opts, auth, retries) => {
-        const gitOps = new GitOps({ ...opts, log: logInstance });
+        const gitOps = new GitOps({ ...opts, log: log });
         return new AuthenticatedGitOps(
           gitOps,
-          opts.executor ?? defaultExecutor,
+          opts.executor,
           opts.workDir,
           retries ?? 3,
           auth,
-          logInstance
+          log
         );
       });
 
-    // Initialize token manager for auth builder
-    const tokenManager = createTokenManager();
+    const tokenManager = components?.tokenManager ?? null;
 
     const fileWriter = components?.fileWriter ?? new FileWriter();
     const manifestManager =
-      components?.manifestManager ?? new ManifestManager(logInstance);
-    const branchManager =
-      components?.branchManager ?? new BranchManager(logInstance);
+      components?.manifestManager ?? new ManifestManager(log);
+    const branchManager = components?.branchManager ?? new BranchManager(log);
     const authOptionsBuilder =
       components?.authOptionsBuilder ??
-      new AuthOptionsBuilder(tokenManager, logInstance);
+      new AuthOptionsBuilder(tokenManager, log, components?.envToken);
     const repositorySession =
-      components?.repositorySession ??
-      new RepositorySession(factory, logInstance);
+      components?.repositorySession ?? new RepositorySession(factory, log);
     const commitPushManager =
-      components?.commitPushManager ?? new CommitPushManager(logInstance);
+      components?.commitPushManager ?? new CommitPushManager(log);
     const prMergeHandler =
-      components?.prMergeHandler ?? new PRMergeHandler(logInstance);
+      components?.prMergeHandler ?? new PRMergeHandler(log);
 
     this.fileSyncOrchestrator =
       components?.fileSyncOrchestrator ??
-      new FileSyncOrchestrator(fileWriter, manifestManager, logInstance);
+      new FileSyncOrchestrator(fileWriter, manifestManager, log);
 
     this.syncWorkflow =
       components?.syncWorkflow ??
@@ -99,7 +96,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         branchManager,
         commitPushManager,
         prMergeHandler,
-        logInstance
+        log
       );
   }
 

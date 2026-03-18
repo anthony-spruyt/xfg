@@ -2,14 +2,9 @@ import { escapeShellArg } from "../shared/shell-utils.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
+import type { DebugLog } from "../shared/logger.js";
 import type { GitAuthOptions, ILocalGitOps, IGitOps } from "./types.js";
-
-export type {
-  GitAuthOptions,
-  ILocalGitOps,
-  INetworkGitOps,
-  IGitOps,
-} from "./types.js";
+import { SyncError } from "../shared/errors.js";
 
 /**
  * Adds authentication to network git operations and delegates local ops.
@@ -25,7 +20,7 @@ export class AuthenticatedGitOps implements IGitOps {
     private readonly workDir: string,
     private readonly retries: number,
     private readonly auth?: GitAuthOptions,
-    private readonly log?: { debug(msg: string): void }
+    private readonly log?: DebugLog
   ) {}
 
   private async execWithRetry(command: string): Promise<string> {
@@ -39,7 +34,7 @@ export class AuthenticatedGitOps implements IGitOps {
    */
   private getAuthenticatedUrl(): string {
     if (!this.auth) {
-      throw new Error("getAuthenticatedUrl() called without auth options");
+      throw new SyncError("getAuthenticatedUrl() called without auth options");
     }
     const { token, host, owner, repo } = this.auth;
     return `https://x-access-token:${token}@${host}/${owner}/${repo}`;
@@ -77,6 +72,10 @@ export class AuthenticatedGitOps implements IGitOps {
 
   getChangedFiles(): Promise<string[]> {
     return this.localOps.getChangedFiles();
+  }
+
+  stageAll(): Promise<void> {
+    return this.localOps.stageAll();
   }
 
   hasStagedChanges(): Promise<boolean> {

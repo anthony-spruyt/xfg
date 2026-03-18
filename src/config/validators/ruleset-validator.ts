@@ -1,31 +1,60 @@
-import { ValidationError } from "../errors.js";
+import { ValidationError } from "../../shared/errors.js";
+import type {
+  RulesetTarget,
+  RulesetEnforcement,
+  BypassActorType,
+  BypassMode,
+  MergeMethod,
+  AlertsThreshold,
+  SecurityAlertsThreshold,
+  RulesetRule,
+} from "../types.js";
 
-const VALID_RULESET_TARGETS = ["branch", "tag"];
-const VALID_ENFORCEMENT_LEVELS = ["active", "disabled", "evaluate"];
-const VALID_ACTOR_TYPES = ["Team", "User", "Integration"];
-const VALID_BYPASS_MODES = ["always", "pull_request"];
+/** Compile-time validates an array matches a type union, while keeping string[] runtime type for .includes() */
+function validValues<T extends string>(
+  values: readonly T[]
+): readonly string[] {
+  return values;
+}
+
+const VALID_RULESET_TARGETS = validValues<RulesetTarget>(["branch", "tag"]);
+const VALID_ENFORCEMENT_LEVELS = validValues<RulesetEnforcement>([
+  "active",
+  "disabled",
+  "evaluate",
+]);
+const VALID_ACTOR_TYPES = validValues<BypassActorType>([
+  "Team",
+  "User",
+  "Integration",
+]);
+const VALID_BYPASS_MODES = validValues<BypassMode>(["always", "pull_request"]);
 const VALID_PATTERN_OPERATORS = [
   "starts_with",
   "ends_with",
   "contains",
   "regex",
 ];
-const VALID_MERGE_METHODS = ["merge", "squash", "rebase"];
-const VALID_ALERTS_THRESHOLDS = [
+const VALID_MERGE_METHODS = validValues<MergeMethod>([
+  "merge",
+  "squash",
+  "rebase",
+]);
+const VALID_ALERTS_THRESHOLDS = validValues<AlertsThreshold>([
   "none",
   "errors",
   "errors_and_warnings",
   "all",
-];
-const VALID_SECURITY_THRESHOLDS = [
+]);
+const VALID_SECURITY_THRESHOLDS = validValues<SecurityAlertsThreshold>([
   "none",
   "critical",
   "high_or_higher",
   "medium_or_higher",
   "all",
-];
+]);
 
-const VALID_RULE_TYPES = [
+const VALID_RULE_TYPES = validValues<RulesetRule["type"]>([
   "pull_request",
   "required_status_checks",
   "required_signatures",
@@ -47,7 +76,7 @@ const VALID_RULE_TYPES = [
   "file_extension_restriction",
   "max_file_path_length",
   "max_file_size",
-];
+]);
 
 /**
  * Validates a single ruleset rule.

@@ -1,7 +1,4 @@
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../../shared/command-executor.js";
+import { ICommandExecutor } from "../../shared/command-executor.js";
 import { assertGitHubRepo, RepoInfo } from "../../shared/repo-detector.js";
 import {
   GhApiClient,
@@ -12,32 +9,19 @@ import type { ILabelsStrategy, GitHubLabel } from "./types.js";
 
 interface GitHubLabelsStrategyOptions {
   retries?: number;
+  cwd: string;
 }
 
-/**
- * GitHub Labels Strategy for managing repository labels via GitHub REST API.
- * Uses `gh api` CLI for authentication and API calls.
- *
- * Note: Uses ICommandExecutor (the project's safe executor pattern) with
- * escapeShellArg for input sanitization, matching the rulesets strategy pattern.
- */
 export class GitHubLabelsStrategy implements ILabelsStrategy {
   private api: GhApiClient;
 
   constructor(
-    executor?: ICommandExecutor,
-    options?: GitHubLabelsStrategyOptions
+    executor: ICommandExecutor,
+    options: GitHubLabelsStrategyOptions
   ) {
-    this.api = new GhApiClient(
-      executor ?? defaultExecutor,
-      options?.retries ?? 3
-    );
+    this.api = new GhApiClient(executor, options.retries ?? 3, options.cwd);
   }
 
-  /**
-   * Lists all labels for a repository.
-   * Uses --paginate to retrieve all labels.
-   */
   async list(
     repoInfo: RepoInfo,
     options?: GhApiOptions
@@ -45,20 +29,14 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels`;
-    const result = await this.api.call(
-      "GET",
-      endpoint,
-      undefined,
+    const result = await this.api.call("GET", endpoint, {
       options,
-      true
-    );
+      paginate: true,
+    });
 
     return parseApiJson<GitHubLabel[]>(result, "labels response");
   }
 
-  /**
-   * Creates a new label.
-   */
   async create(
     repoInfo: RepoInfo,
     label: { name: string; color: string; description?: string },
@@ -67,13 +45,9 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels`;
-    await this.api.call("POST", endpoint, label, options);
+    await this.api.call("POST", endpoint, { payload: label, options });
   }
 
-  /**
-   * Updates an existing label.
-   * Uses encodeURIComponent for label name in URL path.
-   */
   async update(
     repoInfo: RepoInfo,
     currentName: string,
@@ -83,13 +57,9 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels/${encodeURIComponent(currentName)}`;
-    await this.api.call("PATCH", endpoint, label, options);
+    await this.api.call("PATCH", endpoint, { payload: label, options });
   }
 
-  /**
-   * Deletes a label.
-   * Uses encodeURIComponent for label name in URL path.
-   */
   async delete(
     repoInfo: RepoInfo,
     name: string,
@@ -98,6 +68,6 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/labels/${encodeURIComponent(name)}`;
-    await this.api.call("DELETE", endpoint, undefined, options);
+    await this.api.call("DELETE", endpoint, { options });
   }
 }

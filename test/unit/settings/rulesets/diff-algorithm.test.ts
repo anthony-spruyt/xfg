@@ -4,31 +4,31 @@ import { strict as assert } from "node:assert";
 import {
   computePropertyDiffs,
   deepEqual,
-  isObject,
   isArrayOfObjects,
 } from "../../../../src/settings/rulesets/index.js";
+import { isPlainObject } from "../../../../src/shared/type-guards.js";
 
 describe("diff-algorithm", () => {
-  describe("isObject", () => {
+  describe("isPlainObject", () => {
     test("returns true for plain objects", () => {
-      assert.equal(isObject({}), true);
-      assert.equal(isObject({ a: 1 }), true);
+      assert.equal(isPlainObject({}), true);
+      assert.equal(isPlainObject({ a: 1 }), true);
     });
 
     test("returns false for arrays", () => {
-      assert.equal(isObject([]), false);
-      assert.equal(isObject([1, 2]), false);
+      assert.equal(isPlainObject([]), false);
+      assert.equal(isPlainObject([1, 2]), false);
     });
 
     test("returns false for null", () => {
-      assert.equal(isObject(null), false);
+      assert.equal(isPlainObject(null), false);
     });
 
     test("returns false for primitives", () => {
-      assert.equal(isObject("string"), false);
-      assert.equal(isObject(42), false);
-      assert.equal(isObject(true), false);
-      assert.equal(isObject(undefined), false);
+      assert.equal(isPlainObject("string"), false);
+      assert.equal(isPlainObject(42), false);
+      assert.equal(isPlainObject(true), false);
+      assert.equal(isPlainObject(undefined), false);
     });
   });
 

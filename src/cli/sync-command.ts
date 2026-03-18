@@ -1,6 +1,7 @@
 import { resolve, join } from "node:path";
 import { existsSync } from "node:fs";
 import { loadRawConfig, normalizeConfig, RepoConfig } from "../config/index.js";
+import { ValidationError, SyncError } from "../shared/errors.js";
 import { validateForSync } from "../config/validator.js";
 import {
   parseGitUrl,
@@ -8,23 +9,48 @@ import {
   isGitHubRepo,
 } from "../shared/repo-detector.js";
 import type { GitHubRepoInfo } from "../shared/repo-detector.js";
-import { sanitizeBranchName, validateBranchName } from "../vcs/branch-utils.js";
+import {
+  sanitizeBranchName,
+  validateBranchName,
+} from "../shared/branch-utils.js";
 import { createTokenManager } from "../vcs/index.js";
-import { logger } from "../shared/logger.js";
+import { RepositoryProcessor } from "../sync/index.js";
+import {
+  RulesetProcessor,
+  RepoSettingsProcessor,
+  LabelsProcessor,
+  GitHubRulesetStrategy,
+  GitHubRepoSettingsStrategy,
+  GitHubLabelsStrategy,
+} from "../settings/index.js";
+import { ShellCommandExecutor } from "../shared/command-executor.js";
+import { Logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { RepoInfo } from "../shared/repo-detector.js";
 import {
-  defaultProcessorFactory,
-  defaultRulesetProcessorFactory,
-  defaultRepoSettingsProcessorFactory,
-  defaultLabelsProcessorFactory,
   type SyncDependencies,
   type SyncResultEntry,
   type SettingsResult,
   type SyncOptions,
   type ApplyRepoSettingsContext,
-  type IRepositoryProcessor,
+  type RulesetProcessorFactory,
+  type RepoSettingsProcessorFactory,
+  type LabelsProcessorFactory,
 } from "./types.js";
+import type { IRepositoryProcessor } from "../sync/index.js";
+
+const defaultExecutor = new ShellCommandExecutor(process.env);
+const logger = new Logger(!!(process.env.DEBUG || process.env.XFG_DEBUG));
+
+const cwd = process.cwd();
+const defaultRulesetProcessorFactory: RulesetProcessorFactory = () =>
+  new RulesetProcessor(new GitHubRulesetStrategy(defaultExecutor, { cwd }));
+const defaultRepoSettingsProcessorFactory: RepoSettingsProcessorFactory = () =>
+  new RepoSettingsProcessor(
+    new GitHubRepoSettingsStrategy(defaultExecutor, { cwd })
+  );
+const defaultLabelsProcessorFactory: LabelsProcessorFactory = () =>
+  new LabelsProcessor(new GitHubLabelsStrategy(defaultExecutor, { cwd }));
 export type { SharedOptions, SyncOptions } from "./types.js";
 import type { Config } from "../config/types.js";
 import { ResultsCollector } from "./results-collector.js";
@@ -36,7 +62,7 @@ import {
   buildLifecycleReport,
   formatLifecycleReportCLI,
   hasLifecycleChanges,
-  type LifecycleReportInput,
+  type LifecycleAction,
 } from "../output/lifecycle-report.js";
 import { writeUnifiedSummary } from "../output/unified-summary.js";
 import type { ProcessorResult } from "../sync/index.js";
@@ -220,7 +246,7 @@ async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
 
 function displayReports(
   reportResults: SyncResultEntry[],
-  lifecycleReportInputs: LifecycleReportInput[],
+  lifecycleReportInputs: LifecycleAction[],
   settingsCollector: ResultsCollector,
   dryRun: boolean
 ): void {
@@ -258,6 +284,7 @@ function displayReports(
     sync: report,
     settings: settingsReport,
     dryRun,
+    summaryPath: process.env.GITHUB_STEP_SUMMARY,
   });
 }
 
@@ -273,7 +300,7 @@ interface RepoIterationContext {
   lifecycleManager: IRepoLifecycleManager;
   tokenManager: ReturnType<typeof createTokenManager>;
   reportResults: SyncResultEntry[];
-  lifecycleReportInputs: LifecycleReportInput[];
+  lifecycleReportInputs: LifecycleAction[];
   settingsCollector: ResultsCollector;
   rulesetProcessorFactory: NonNullable<
     SyncDependencies["rulesetProcessorFactory"]
@@ -284,6 +311,15 @@ interface RepoIterationContext {
   labelsProcessorFactory: NonNullable<
     SyncDependencies["labelsProcessorFactory"]
   >;
+}
+
+interface RepoPhaseParams {
+  repoConfig: RepoConfig;
+  repoInfo: RepoInfo;
+  repoName: string;
+  index: number;
+  workDir: string;
+  token: string | undefined;
 }
 
 /**
@@ -349,27 +385,20 @@ async function processSingleRepo(
       ).token
     : undefined;
 
-  const skipFileSync = await runLifecyclePhase(
+  const repo: RepoPhaseParams = {
     repoConfig,
     repoInfo,
     repoName,
     index,
     workDir,
-    repoToken,
-    ctx
-  );
+    token: repoToken,
+  };
+
+  const skipFileSync = await runLifecyclePhase(repo, ctx);
   if (skipFileSync) return;
 
   // Sync files via processor
-  await runFileSyncPhase(
-    repoConfig,
-    repoInfo,
-    repoName,
-    current,
-    workDir,
-    repoToken,
-    ctx
-  );
+  await runFileSyncPhase(repo, ctx);
 
   // Apply settings via API (GitHub-only — ADO and GitLab repos are skipped)
   await applyRepoSettings({
@@ -391,29 +420,24 @@ async function processSingleRepo(
  * Returns true if the main loop should skip file sync for this repo.
  */
 async function runLifecyclePhase(
-  repoConfig: RepoConfig,
-  repoInfo: RepoInfo,
-  repoName: string,
-  index: number,
-  workDir: string,
-  lifecycleToken: string | undefined,
+  repo: RepoPhaseParams,
   ctx: RepoIterationContext
 ): Promise<boolean> {
-  const current = index + 1;
+  const current = repo.index + 1;
 
   try {
     const { outputLines, lifecycleResult } = await runLifecycleCheck(
-      repoConfig,
-      repoInfo,
-      index,
+      repo.repoConfig,
+      repo.repoInfo,
       {
         dryRun: ctx.options.dryRun ?? false,
-        resolvedWorkDir: workDir,
+        resolvedWorkDir: repo.workDir,
         githubHosts: ctx.config.githubHosts,
-        token: lifecycleToken,
-      },
-      ctx.lifecycleManager,
-      ctx.config.settings?.repo
+        token: repo.token,
+        repoIndex: repo.index,
+        lifecycleManager: ctx.lifecycleManager,
+        repoSettings: ctx.config.settings?.repo,
+      }
     );
 
     for (const line of outputLines) {
@@ -422,10 +446,10 @@ async function runLifecyclePhase(
 
     const createSettings = toCreateRepoSettings(ctx.config.settings?.repo);
     ctx.lifecycleReportInputs.push({
-      repoName,
+      repoName: repo.repoName,
       action: lifecycleResult.action,
-      upstream: repoConfig.upstream,
-      source: repoConfig.source,
+      upstream: repo.repoConfig.upstream,
+      source: repo.repoConfig.source,
       settings: createSettings
         ? {
             visibility: createSettings.visibility,
@@ -437,7 +461,7 @@ async function runLifecyclePhase(
     // In dry-run, skip processing repos that don't exist yet
     if (ctx.options.dryRun && lifecycleResult.action !== "existed") {
       ctx.reportResults.push({
-        repoName,
+        repoName: repo.repoName,
         success: true,
         fileChanges: [],
       });
@@ -448,11 +472,11 @@ async function runLifecyclePhase(
   } catch (error) {
     logger.error(
       current,
-      repoName,
+      repo.repoName,
       `Lifecycle error: ${toErrorMessage(error)}`
     );
     ctx.reportResults.push({
-      repoName,
+      repoName: repo.repoName,
       success: false,
       fileChanges: [],
       error: toErrorMessage(error),
@@ -465,33 +489,31 @@ async function runLifecyclePhase(
  * Run the file sync processor for a single repo and collect results.
  */
 async function runFileSyncPhase(
-  repoConfig: RepoConfig,
-  repoInfo: RepoInfo,
-  repoName: string,
-  current: number,
-  workDir: string,
-  token: string | undefined,
+  repo: RepoPhaseParams,
   ctx: RepoIterationContext
 ): Promise<void> {
+  const current = repo.index + 1;
   try {
-    logger.progress(current, repoName, "Processing...");
+    logger.progress(current, repo.repoName, "Processing...");
 
-    const result = await ctx.processor.process(repoConfig, repoInfo, {
+    const result = await ctx.processor.process(repo.repoConfig, repo.repoInfo, {
       branchName: ctx.branchName,
-      workDir,
+      workDir: repo.workDir,
       configId: ctx.config.id,
       dryRun: ctx.options.dryRun,
       retries: ctx.options.retries,
+      executor: defaultExecutor,
       prTemplate: ctx.config.prTemplate,
       noDelete: ctx.options.noDelete,
-      token,
-      isGraphQLCommitMode: isGitHubRepo(repoInfo) && ctx.tokenManager !== null,
+      token: repo.token,
+      hasAppCredentials:
+        isGitHubRepo(repo.repoInfo) && ctx.tokenManager !== null,
     });
 
     const mergeOutcome = determineMergeOutcome(result);
 
     ctx.reportResults.push({
-      repoName,
+      repoName: repo.repoName,
       success: result.success,
       fileChanges: (result.fileChanges ?? []).map((f) => ({
         path: f.path,
@@ -503,16 +525,16 @@ async function runFileSyncPhase(
     });
 
     if (result.skipped) {
-      logger.skip(current, repoName, result.message);
+      logger.skip(current, repo.repoName, result.message);
     } else if (result.success) {
-      logger.success(current, repoName, result.message);
+      logger.success(current, repo.repoName, result.message);
     } else {
-      logger.error(current, repoName, result.message);
+      logger.error(current, repo.repoName, result.message);
     }
   } catch (error) {
-    logger.error(current, repoName, toErrorMessage(error));
+    logger.error(current, repo.repoName, toErrorMessage(error));
     ctx.reportResults.push({
-      repoName,
+      repoName: repo.repoName,
       success: false,
       fileChanges: [],
       error: toErrorMessage(error),
@@ -525,7 +547,6 @@ export async function runSync(
   deps: SyncDependencies = {}
 ): Promise<void> {
   const {
-    processorFactory = defaultProcessorFactory,
     lifecycleManager,
     rulesetProcessorFactory = defaultRulesetProcessorFactory,
     repoSettingsProcessorFactory = defaultRepoSettingsProcessorFactory,
@@ -534,7 +555,7 @@ export async function runSync(
   const configPath = resolve(options.config);
 
   if (!existsSync(configPath)) {
-    throw new Error(`Config file not found: ${configPath}`);
+    throw new ValidationError(`Config file not found: ${configPath}`);
   }
 
   logger.log(`Loading config from: ${configPath}`);
@@ -546,7 +567,7 @@ export async function runSync(
 
   validateForSync(rawConfig);
 
-  const config = normalizeConfig(rawConfig);
+  const config = normalizeConfig(rawConfig, process.env);
   const fileNames = getUniqueFileNames(config);
 
   let branchName: string;
@@ -562,14 +583,37 @@ export async function runSync(
   logger.log(`Target files: ${formatFileNames(fileNames)}`);
   logger.log(`Branch: ${branchName}\n`);
 
+  const tokenManager = createTokenManager(
+    process.env.XFG_GITHUB_APP_ID && process.env.XFG_GITHUB_APP_PRIVATE_KEY
+      ? {
+          appId: process.env.XFG_GITHUB_APP_ID,
+          privateKey: process.env.XFG_GITHUB_APP_PRIVATE_KEY,
+        }
+      : undefined
+  );
+
+  const processor = deps.processorFactory
+    ? deps.processorFactory()
+    : new RepositoryProcessor(undefined, logger, {
+        tokenManager,
+        envToken: process.env.GH_TOKEN,
+      });
+
   const ctx: RepoIterationContext = {
     config,
     options,
     branchName,
-    processor: processorFactory(),
+    processor,
     lifecycleManager:
-      lifecycleManager ?? new RepoLifecycleManager(undefined, options.retries),
-    tokenManager: createTokenManager(),
+      lifecycleManager ??
+      new RepoLifecycleManager(
+        undefined,
+        defaultExecutor,
+        options.retries,
+        cwd,
+        logger
+      ),
+    tokenManager,
     reportResults: [],
     lifecycleReportInputs: [],
     settingsCollector: new ResultsCollector(),
@@ -594,6 +638,6 @@ export async function runSync(
   const hasErrors = ctx.reportResults.some((r) => r.error);
   const hasSettingsErrors = settingsResults.some((r) => r.error);
   if (hasErrors || hasSettingsErrors) {
-    throw new Error("One or more repositories had errors during sync");
+    throw new SyncError("One or more repositories had errors during sync");
   }
 }

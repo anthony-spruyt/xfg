@@ -14,6 +14,7 @@ import { RepoConfig } from "../../src/config/index.js";
 import { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
 import { ICommandExecutor } from "../../src/shared/command-executor.js";
 import type { GitAuthOptions } from "../../src/vcs/types.js";
+import { GitHubAppTokenManager } from "../../src/vcs/github-app-token-manager.js";
 import type { AuthenticatedGitOpsMockConfig } from "../mocks/index.js";
 import {
   createMockLogger,
@@ -104,7 +105,8 @@ describe("RepositoryProcessor", () => {
   beforeEach(() => {
     workDir = join(testDir, `workspace-${Date.now()}`);
     mkdirSync(testDir, { recursive: true });
-    processor = new RepositoryProcessor();
+    const { mock: defaultMockLogger } = createMockLogger();
+    processor = new RepositoryProcessor(undefined, defaultMockLogger);
   });
 
   afterEach(() => {
@@ -198,6 +200,7 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: true, // Use dry run to avoid actual git/PR operations
+        executor: createMockExecutor(),
       });
 
       // In dry run, it should detect changes and not skip
@@ -228,6 +231,7 @@ describe("RepositoryProcessor", () => {
         workDir: localWorkDir,
         configId: "test-config",
         dryRun: true, // Use dry run to avoid actual git/PR operations
+        executor: createMockExecutor(),
       });
 
       // Should detect that file needs to be created (not skipped)
@@ -1825,6 +1829,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
+          hasAppCredentials: true,
         });
 
         assert.equal(result.success, true, "Should succeed");
@@ -1919,6 +1924,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
+          hasAppCredentials: true,
         });
 
         assert.equal(result.success, false, "Should fail");
@@ -1996,6 +2002,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
+          hasAppCredentials: true,
         });
 
         assert.equal(result.success, false, "Should fail");
@@ -2067,6 +2074,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
+          hasAppCredentials: true,
         });
 
         assert.equal(result.success, false, "Should fail");
@@ -2137,6 +2145,7 @@ describe("RepositoryProcessor", () => {
           configId: "test-config",
           dryRun: false,
           executor: mockExecutor,
+          hasAppCredentials: true,
         });
 
         assert.equal(result.success, false);
@@ -2360,36 +2369,30 @@ describe("RepositoryProcessor", () => {
       );
     });
 
-    test("hasGitHubAppCredentials returns true when both env vars are set", async () => {
-      // Import the function directly for testing
-      const { hasGitHubAppCredentials } =
+    test("createTokenManager returns token manager when credentials provided", async () => {
+      const { createTokenManager } =
         await import("../../src/vcs/commit-strategy-selector.js");
 
-      // Initially should be false (env vars cleared in beforeEach)
       assert.equal(
-        hasGitHubAppCredentials(),
-        false,
-        "Should return false when env vars not set"
+        createTokenManager(),
+        null,
+        "Should return null when no credentials"
       );
 
-      // Set both env vars
-      process.env.XFG_GITHUB_APP_ID = "12345";
-      process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-key";
+      const manager = createTokenManager({
+        appId: "12345",
+        privateKey: "test-key",
+      });
 
-      assert.equal(
-        hasGitHubAppCredentials(),
-        true,
-        "Should return true when both env vars are set"
+      assert.ok(
+        manager !== null,
+        "Should return token manager when credentials provided"
       );
     });
 
     test("skips repo when no GitHub App installation found for owner", async () => {
       const { TEST_PRIVATE_KEY, TEST_APP_ID } =
         await import("../fixtures/test-fixtures.js");
-
-      // Set GitHub App credentials
-      process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
-      process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
 
       const { mock: mockLogger } = createMockLogger();
 
@@ -2412,9 +2415,14 @@ describe("RepositoryProcessor", () => {
           hasStagedChanges: true,
         });
 
+        const tokenManager = new GitHubAppTokenManager(
+          TEST_APP_ID,
+          TEST_PRIVATE_KEY
+        );
         const processor = new RepositoryProcessor(
           mockGitOpsFactory,
-          mockLogger
+          mockLogger,
+          { tokenManager }
         );
         const result = await processor.process(
           {
@@ -2646,78 +2654,61 @@ describe("RepositoryProcessor", () => {
     });
 
     test("uses GH_TOKEN for git auth when no GitHub App token", async () => {
-      // Set up GH_TOKEN in environment (no GitHub App credentials)
-      const originalGhToken = process.env.GH_TOKEN;
-      process.env.GH_TOKEN = "ghp_test_pat_token";
+      const { mock: mockLogger } = createMockLogger();
 
-      try {
-        const { mock: mockLogger } = createMockLogger();
+      // Track the auth options passed to factory
+      let capturedAuth: unknown = undefined;
 
-        // Track the auth options passed to factory
-        let capturedAuth: unknown = undefined;
+      const mockGitOpsFactory = createTypedGitOpsFactory({
+        onAuth: (auth) => {
+          capturedAuth = auth;
+        },
+      });
 
-        const mockGitOpsFactory = createTypedGitOpsFactory({
-          onAuth: (auth) => {
-            capturedAuth = auth;
-          },
-        });
+      const processor = new RepositoryProcessor(mockGitOpsFactory, mockLogger, {
+        envToken: "ghp_test_pat_token",
+      });
 
-        const processor = new RepositoryProcessor(
-          mockGitOpsFactory,
-          mockLogger
-        );
-
-        await processor.process(
-          {
-            git: "git@github.com:test-owner/repo.git",
-            files: [{ fileName: "test.json", content: { key: "value" } }],
-          },
-          {
-            type: "github",
-            gitUrl: "git@github.com:test-owner/repo.git",
-            owner: "test-owner",
-            repo: "repo",
-            host: "github.com",
-          },
-          {
-            branchName: "chore/sync-config",
-            workDir: join(testDir, "gh-token-test"),
-            configId: "test-config",
-            dryRun: false,
-            executor: createMockExecutor(),
-          }
-        );
-
-        // Verify gitOpsFactory was called with auth options containing GH_TOKEN
-        assert.ok(
-          capturedAuth,
-          "authOptions should be defined when GH_TOKEN is set"
-        );
-        const auth = capturedAuth as {
-          token: string;
-          host: string;
-          owner: string;
-          repo: string;
-        };
-        assert.strictEqual(
-          auth.token,
-          "ghp_test_pat_token",
-          "Should use GH_TOKEN"
-        );
-        assert.strictEqual(
-          auth.host,
-          "github.com",
-          "Host should be github.com"
-        );
-        assert.strictEqual(auth.owner, "test-owner", "Owner should match");
-        assert.strictEqual(auth.repo, "repo", "Repo should match");
-      } finally {
-        if (originalGhToken) {
-          process.env.GH_TOKEN = originalGhToken;
-        } else {
-          delete process.env.GH_TOKEN;
+      await processor.process(
+        {
+          git: "git@github.com:test-owner/repo.git",
+          files: [{ fileName: "test.json", content: { key: "value" } }],
+        },
+        {
+          type: "github",
+          gitUrl: "git@github.com:test-owner/repo.git",
+          owner: "test-owner",
+          repo: "repo",
+          host: "github.com",
+        },
+        {
+          branchName: "chore/sync-config",
+          workDir: join(testDir, "gh-token-test"),
+          configId: "test-config",
+          dryRun: false,
+          executor: createMockExecutor(),
         }
-      }
+      );
+
+      // Verify gitOpsFactory was called with auth options containing GH_TOKEN
+      assert.ok(
+        capturedAuth,
+        "authOptions should be defined when GH_TOKEN is set"
+      );
+      const auth = capturedAuth as {
+        token: string;
+        host: string;
+        owner: string;
+        repo: string;
+      };
+      assert.strictEqual(
+        auth.token,
+        "ghp_test_pat_token",
+        "Should use GH_TOKEN"
+      );
+      assert.strictEqual(auth.host, "github.com", "Host should be github.com");
+      assert.strictEqual(auth.owner, "test-owner", "Owner should match");
+      assert.strictEqual(auth.repo, "repo", "Repo should match");
     });
   });
 

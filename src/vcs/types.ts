@@ -1,17 +1,11 @@
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { MergeMode, MergeStrategy } from "../config/index.js";
 
-/**
- * Options for authenticated git operations.
- */
 export interface GitAuthOptions {
-  /** Access token for authentication */
   token: string;
-  /** Git host (e.g., "github.com", "github.mycompany.com") */
+  /** e.g., "github.com", "github.mycompany.com" */
   host: string;
-  /** Repository owner */
   owner: string;
-  /** Repository name */
   repo: string;
 }
 
@@ -28,6 +22,7 @@ export interface ILocalGitOps {
   wouldChange(fileName: string, content: string): boolean;
   hasChanges(): Promise<boolean>;
   getChangedFiles(): Promise<string[]>;
+  stageAll(): Promise<void>;
   hasStagedChanges(): Promise<boolean>;
   fileExistsOnBranch(fileName: string, branch: string): Promise<boolean>;
   fileExists(fileName: string): boolean;
@@ -101,9 +96,6 @@ export interface MergeOptions {
   token?: string;
 }
 
-/**
- * Options for closing an existing PR.
- */
 export interface CloseExistingPROptions {
   repoInfo: RepoInfo;
   branchName: string;
@@ -148,6 +140,11 @@ export interface IPRStrategy {
    * including failures. May throw on unexpected infrastructure errors.
    */
   merge(options: MergeOptions): Promise<MergeResult>;
+}
+
+export interface FileAction {
+  fileName: string;
+  action: "create" | "update" | "skip" | "delete";
 }
 
 export interface FileChange {

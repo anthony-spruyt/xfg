@@ -1,5 +1,12 @@
 import type { RepoInfo } from "../../shared/repo-detector.js";
-import type { GitHubRepoSettings } from "../../config/index.js";
+import type {
+  GitHubRepoSettings,
+  RepoVisibility,
+  SquashMergeCommitTitle,
+  SquashMergeCommitMessage,
+  MergeCommitTitle,
+  MergeCommitMessage,
+} from "../../config/index.js";
 import type { GhApiOptions } from "../../shared/gh-api-utils.js";
 
 /**
@@ -13,7 +20,7 @@ export interface CurrentRepoSettings {
   has_discussions?: boolean;
   is_template?: boolean;
   allow_forking?: boolean;
-  visibility?: string;
+  visibility?: RepoVisibility;
   archived?: boolean;
   allow_squash_merge?: boolean;
   allow_merge_commit?: boolean;
@@ -21,20 +28,18 @@ export interface CurrentRepoSettings {
   allow_auto_merge?: boolean;
   delete_branch_on_merge?: boolean;
   allow_update_branch?: boolean;
-  squash_merge_commit_title?: string;
-  squash_merge_commit_message?: string;
-  merge_commit_title?: string;
-  merge_commit_message?: string;
+  squash_merge_commit_title?: SquashMergeCommitTitle;
+  squash_merge_commit_message?: SquashMergeCommitMessage;
+  merge_commit_title?: MergeCommitTitle;
+  merge_commit_message?: MergeCommitMessage;
   web_commit_signoff_required?: boolean;
   default_branch?: string;
   security_and_analysis?: {
-    secret_scanning?: { status: string };
-    secret_scanning_push_protection?: { status: string };
-    secret_scanning_validity_checks?: { status: string };
+    secret_scanning?: { status: "enabled" | "disabled" };
+    secret_scanning_push_protection?: { status: "enabled" | "disabled" };
+    secret_scanning_validity_checks?: { status: "enabled" | "disabled" };
   };
-  // Owner metadata (extracted from API response)
   owner_type?: "User" | "Organization";
-  // Security settings (fetched from separate endpoints)
   vulnerability_alerts?: boolean;
   automated_security_fixes?: boolean;
   private_vulnerability_reporting?: boolean;
@@ -84,23 +89,4 @@ export interface IRepoSettingsStrategy {
     enable: boolean,
     options?: GhApiOptions
   ): Promise<void>;
-}
-
-/**
- * Type guard to check if an object implements IRepoSettingsStrategy.
- */
-export function isRepoSettingsStrategy(
-  obj: unknown
-): obj is IRepoSettingsStrategy {
-  if (typeof obj !== "object" || obj === null) {
-    return false;
-  }
-  const strategy = obj as Record<string, unknown>;
-  return (
-    typeof strategy.getSettings === "function" &&
-    typeof strategy.updateSettings === "function" &&
-    typeof strategy.setVulnerabilityAlerts === "function" &&
-    typeof strategy.setAutomatedSecurityFixes === "function" &&
-    typeof strategy.setPrivateVulnerabilityReporting === "function"
-  );
 }

@@ -17,7 +17,7 @@ describe("diffRepoSettings", () => {
     assert.equal(changes.length, 1);
     assert.deepEqual(changes[0], {
       property: "hasWiki",
-      action: "change",
+      action: "update",
       oldValue: true,
       newValue: false,
     });
@@ -32,7 +32,7 @@ describe("diffRepoSettings", () => {
     assert.equal(changes.length, 1);
     assert.deepEqual(changes[0], {
       property: "allowAutoMerge",
-      action: "add",
+      action: "create",
       newValue: true,
     });
   });
@@ -63,15 +63,17 @@ describe("diffRepoSettings", () => {
 
     assert.equal(changes.length, 3);
     assert.ok(
-      changes.some((c) => c.property === "hasIssues" && c.action === "change")
+      changes.some((c) => c.property === "hasIssues" && c.action === "update")
     );
     assert.ok(
       changes.some(
-        (c) => c.property === "allowSquashMerge" && c.action === "change"
+        (c) => c.property === "allowSquashMerge" && c.action === "update"
       )
     );
     assert.ok(
-      changes.some((c) => c.property === "allowAutoMerge" && c.action === "add")
+      changes.some(
+        (c) => c.property === "allowAutoMerge" && c.action === "create"
+      )
     );
   });
 
@@ -94,7 +96,7 @@ describe("diffRepoSettings", () => {
       changes.some(
         (c) =>
           c.property === "secretScanning" &&
-          c.action === "change" &&
+          c.action === "update" &&
           c.oldValue === true &&
           c.newValue === false
       )
@@ -103,7 +105,7 @@ describe("diffRepoSettings", () => {
       changes.some(
         (c) =>
           c.property === "secretScanningPushProtection" &&
-          c.action === "change" &&
+          c.action === "update" &&
           c.oldValue === false &&
           c.newValue === true
       )
@@ -119,7 +121,7 @@ describe("diffRepoSettings", () => {
     assert.equal(changes.length, 1);
     assert.deepEqual(changes[0], {
       property: "webCommitSignoffRequired",
-      action: "change",
+      action: "update",
       oldValue: false,
       newValue: true,
     });
@@ -134,7 +136,7 @@ describe("diffRepoSettings", () => {
     assert.equal(changes.length, 1);
     assert.deepEqual(changes[0], {
       property: "defaultBranch",
-      action: "change",
+      action: "update",
       oldValue: "main",
       newValue: "develop",
     });
@@ -151,7 +153,7 @@ describe("diffRepoSettings", () => {
     assert.equal(changes.length, 1);
     assert.deepEqual(changes[0], {
       property: "description",
-      action: "change",
+      action: "update",
       oldValue: "Old description",
       newValue: "New description",
     });
@@ -168,7 +170,7 @@ describe("diffRepoSettings", () => {
     assert.equal(changes.length, 1);
     assert.deepEqual(changes[0], {
       property: "description",
-      action: "add",
+      action: "create",
       newValue: "My repo description",
     });
   });
@@ -216,15 +218,15 @@ describe("diffRepoSettings", () => {
       (c) => c.property === "privateVulnerabilityReporting"
     );
 
-    assert.equal(vulnChange?.action, "change");
+    assert.equal(vulnChange?.action, "update");
     assert.equal(vulnChange?.oldValue, true);
     assert.equal(vulnChange?.newValue, false);
 
-    assert.equal(autoChange?.action, "change");
+    assert.equal(autoChange?.action, "update");
     assert.equal(autoChange?.oldValue, false);
     assert.equal(autoChange?.newValue, true);
 
-    assert.equal(pvrChange?.action, "change");
+    assert.equal(pvrChange?.action, "update");
     assert.equal(pvrChange?.oldValue, false);
     assert.equal(pvrChange?.newValue, true);
   });
@@ -253,7 +255,7 @@ describe("hasChanges", () => {
     const changes = [
       {
         property: "hasWiki" as const,
-        action: "change" as const,
+        action: "update" as const,
         oldValue: true,
         newValue: false,
       },
@@ -263,7 +265,11 @@ describe("hasChanges", () => {
 
   test("should return true for add actions", () => {
     const changes = [
-      { property: "hasWiki" as const, action: "add" as const, newValue: true },
+      {
+        property: "hasWiki" as const,
+        action: "create" as const,
+        newValue: true,
+      },
     ];
     assert.equal(hasChanges(changes), true);
   });

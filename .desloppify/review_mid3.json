@@ -1,0 +1,91 @@
+{
+  "assessments": {
+    "mid_level_elegance": 82
+  },
+  "findings": [
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "duplicate-token-manager-creation",
+      "summary": "TokenManager is created independently in both sync-command.ts and repository-processor.ts from the same env vars",
+      "related_files": [
+        "src/cli/sync-command.ts",
+        "src/sync/repository-processor.ts"
+      ],
+      "evidence": [
+        "repository-processor.ts:72-76 creates tokenManager from process.env.XFG_GITHUB_APP_ID/PRIVATE_KEY",
+        "sync-command.ts:574-581 creates an identical tokenManager from the same env vars",
+        "sync-command.ts:343 calls resolveGitHubToken with its own tokenManager, then passes the result as options.token to the processor, which also has its own tokenManager inside AuthOptionsBuilder"
+      ],
+      "suggestion": "Inject a single tokenManager from the CLI composition root into RepositoryProcessor rather than having both layers independently read env vars and create their own instances. The processor's constructor already accepts a components bag — add tokenManager there or pass it through the existing GitOpsFactory.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "options-bag-field-repetition",
+      "summary": "SyncWorkflow re-packs the same fields (workDir, dryRun, retries, token, executor, repoInfo) into 3 different options bags per call",
+      "related_files": [
+        "src/sync/sync-workflow.ts",
+        "src/sync/types.ts"
+      ],
+      "evidence": [
+        "BranchSetupOptions has: repoInfo, branchName, baseBranch, workDir, isDirectMode, dryRun, retries, token, gitOps, executor (10 fields)",
+        "CommitPushOptions has: repoInfo, gitOps, workDir, fileChanges, commitMessage, pushBranch, isDirectMode, dryRun, retries, token, executor, hasAppCredentials (12 fields)",
+        "PRHandlerOptions has: branchName, baseBranch, workDir, dryRun, retries, prTemplate, token, executor (8 fields)",
+        "sync-workflow.ts:59-77 assembles BranchSetupOptions, then :96-109 assembles CommitPushOptions, then :140-154 assembles PRHandlerOptions — all pulling from the same local variables"
+      ],
+      "suggestion": "Extract a shared 'RunContext' type containing the common fields (workDir, dryRun, retries, token, executor, repoInfo, gitOps) and have each options bag compose with it plus its unique fields, reducing re-assembly boilerplate in SyncWorkflow.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "hidden-factory-calls-in-di-classes",
+      "summary": "BranchManager and CommitPushManager call module-level factory functions (getPRStrategy, getCommitStrategy) instead of receiving strategies via DI",
+      "related_files": [
+        "src/sync/branch-manager.ts",
+        "src/sync/commit-push-manager.ts",
+        "src/vcs/pr-strategy-factory.ts",
+        "src/vcs/commit-strategy-selector.ts"
+      ],
+      "evidence": [
+        "branch-manager.ts:34 calls getPRStrategy(repoInfo, executor, this.log) as a free function import",
+        "commit-push-manager.ts:49 calls getCommitStrategy(repoInfo, executor, options.hasAppCredentials) as a free function import",
+        "Both classes accept ILogger via constructor (DI pattern) but then use static factory calls for their main collaborators"
+      ],
+      "suggestion": "Inject the strategy factories (or the strategies themselves) via constructor parameters to maintain consistent DI at integration seams. This also improves testability — currently tests must mock module-level imports rather than injecting test doubles.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "double-token-resolution-path",
+      "summary": "Token resolution happens at two levels: sync-command resolves token then passes it down, but AuthOptionsBuilder can also resolve tokens independently",
+      "related_files": [
+        "src/cli/sync-command.ts",
+        "src/sync/auth-options-builder.ts",
+        "src/shared/gh-api-utils.ts"
+      ],
+      "evidence": [
+        "sync-command.ts:341-351 resolves token via resolveGitHubToken and passes as options.token",
+        "auth-options-builder.ts:25-27 short-circuits if preResolvedToken is provided, but lines 30-36 can also resolve independently",
+        "This creates two valid execution paths through the same seam — one where token is pre-resolved (sync-command path) and one where AuthOptionsBuilder resolves it (direct RepositoryProcessor usage)"
+      ],
+      "suggestion": "Choose one canonical token resolution point. Either always resolve at the outer layer and remove the resolution capability from AuthOptionsBuilder, or always delegate to AuthOptionsBuilder and remove the sync-command resolution. Document the intended path clearly.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "defaultexecutor-imported-in-workflow",
+      "summary": "SyncWorkflow imports defaultExecutor singleton as fallback, breaking the DI pattern used elsewhere",
+      "related_files": [
+        "src/sync/sync-workflow.ts",
+        "src/shared/command-executor.ts"
+      ],
+      "evidence": [
+        "sync-workflow.ts:5 imports defaultExecutor from shared/command-executor.js",
+        "sync-workflow.ts:43 uses it as fallback: const executor = options.executor ?? defaultExecutor",
+        "This is a library-layer module importing a global singleton, contrary to the CLAUDE.md rule: 'src/shared/ and src/sync/ modules must not import global singletons'"
+      ],
+      "suggestion": "Make executor required in ProcessorOptions, or push the defaultExecutor fallback to the composition root (repository-processor.ts) where env access is expected.",
+      "confidence": "high"
+    }
+  ]
+}

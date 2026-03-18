@@ -1,10 +1,8 @@
 import { describe, it } from "node:test";
 import { strict as assert } from "node:assert";
 
-import {
-  AuthenticatedGitOps,
-  GitAuthOptions,
-} from "../../src/vcs/authenticated-git-ops.js";
+import { AuthenticatedGitOps } from "../../src/vcs/authenticated-git-ops.js";
+import type { GitAuthOptions } from "../../src/vcs/types.js";
 import type { ILocalGitOps } from "../../src/vcs/types.js";
 
 // Minimal ILocalGitOps mock for tests that only exercise network methods
@@ -29,6 +27,7 @@ function createMockLocalOps(): ILocalGitOps {
     async getChangedFiles() {
       return [];
     },
+    async stageAll() {},
     async hasStagedChanges() {
       return false;
     },

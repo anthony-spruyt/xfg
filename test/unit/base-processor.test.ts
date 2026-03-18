@@ -56,7 +56,7 @@ function defaultGuards(overrides?: {
   const guards = {
     hasDesiredSettings: () => overrides?.hasSettings ?? true,
     emptySettingsMessage: "No test settings configured",
-    processSettings: async (
+    applySettings: async (
       githubRepo: GitHubRepoInfo,
       _rc: RepoConfig,
       _opts: BaseProcessorOptions,
@@ -136,7 +136,7 @@ describe("withGitHubGuards", () => {
   });
 
   describe("token resolution", () => {
-    test("passes provided token to processSettings", async () => {
+    test("passes provided token to applySettings", async () => {
       const { guards, calls } = defaultGuards();
 
       const result = await withGitHubGuards(

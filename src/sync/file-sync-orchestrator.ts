@@ -1,7 +1,7 @@
 import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { ILogger } from "../shared/logger.js";
-import type { FileAction } from "../vcs/pr-creator.js";
+import type { FileAction } from "../vcs/types.js";
 import { incrementDiffStats } from "./diff-utils.js";
 import { loadManifest } from "./manifest.js";
 import type {
@@ -39,7 +39,7 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
         dryRun,
         noDelete,
         configId,
-        isGraphQLCommitMode: options.isGraphQLCommitMode,
+        hasAppCredentials: options.hasAppCredentials,
       },
       { gitOps: session.gitOps, log: this.log }
     );
@@ -62,16 +62,7 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
       { gitOps: session.gitOps, log: this.log, fileChanges }
     );
 
-    // Update diff stats for deletions in dry-run
-    if (dryRun && filesToDelete.length > 0 && !noDelete) {
-      for (const fileName of filesToDelete) {
-        if (session.gitOps.fileExists(fileName)) {
-          incrementDiffStats(diffStats, "DELETED");
-        }
-      }
-    }
-
-    // Save manifest
+    // Save manifest (may add to fileChanges)
     this.manifestManager.saveUpdatedManifest(
       workDir,
       newManifest,
@@ -79,6 +70,20 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
       dryRun,
       fileChanges
     );
+
+    // Count stats for entries added after writeFiles (orphan deletes + manifest).
+    // Invariant: writerFiles and post-write entries are disjoint — orphan deletes
+    // only target files NOT in the current config (see updateManifest), and
+    // the manifest file is never a config-managed file.
+    const writerFiles = new Set(repoConfig.files.map((f) => f.fileName));
+    for (const [name, info] of fileChanges) {
+      if (writerFiles.has(name)) continue;
+      if (info.action === "create") incrementDiffStats(diffStats, "NEW");
+      else if (info.action === "update")
+        incrementDiffStats(diffStats, "MODIFIED");
+      else if (info.action === "delete")
+        incrementDiffStats(diffStats, "DELETED");
+    }
 
     // Show diff summary in dry-run
     if (dryRun) {
@@ -94,17 +99,6 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
     const changedFiles: FileAction[] = Array.from(fileChanges.entries()).map(
       ([fileName, info]) => ({ fileName, action: info.action })
     );
-
-    // Calculate diff stats for non-dry-run
-    if (!dryRun) {
-      for (const [, info] of fileChanges) {
-        if (info.action === "create") incrementDiffStats(diffStats, "NEW");
-        else if (info.action === "update")
-          incrementDiffStats(diffStats, "MODIFIED");
-        else if (info.action === "delete")
-          incrementDiffStats(diffStats, "DELETED");
-      }
-    }
 
     const hasChanges = changedFiles.some((f) => f.action !== "skip");
 

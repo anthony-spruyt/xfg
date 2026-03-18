@@ -10,7 +10,10 @@ import {
 } from "../../mocks/index.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import type { GitOpsFactory } from "../../../src/sync/types.js";
-import type { GitAuthOptions } from "../../../src/vcs/authenticated-git-ops.js";
+import type { GitAuthOptions } from "../../../src/vcs/types.js";
+import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
+
+const mockExecutor: ICommandExecutor = { exec: async () => "" };
 
 const testDir = join(tmpdir(), "repository-session-test-" + Date.now());
 
@@ -49,6 +52,7 @@ describe("RepositorySession", () => {
         workDir,
         dryRun: false,
         retries: 3,
+        executor: mockExecutor,
       });
 
       // Verify sequence: clean -> clone
@@ -84,6 +88,7 @@ describe("RepositorySession", () => {
         workDir,
         dryRun: false,
         retries: 3,
+        executor: mockExecutor,
         authOptions,
       });
 
@@ -99,6 +104,7 @@ describe("RepositorySession", () => {
         workDir,
         dryRun: false,
         retries: 3,
+        executor: mockExecutor,
       });
 
       // Reset call count
@@ -130,6 +136,7 @@ describe("RepositorySession", () => {
         workDir,
         dryRun: false,
         retries: 3,
+        executor: mockExecutor,
       });
 
       // Should not throw even when cleanWorkspace throws
@@ -148,6 +155,7 @@ describe("RepositorySession", () => {
         workDir,
         dryRun: false,
         retries: 3,
+        executor: mockExecutor,
       });
 
       assert.ok(messages.some((msg) => msg.includes("Cleaning")));

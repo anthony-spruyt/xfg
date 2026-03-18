@@ -20,7 +20,7 @@ describe("AdoMigrationSource", () => {
         defaultResponse: "",
       });
 
-      const source = new AdoMigrationSource(executor, 0);
+      const source = new AdoMigrationSource(executor, 0, "/test");
       await source.cloneForMigration(mockRepoInfo, "/tmp/migration");
 
       assert.equal(calls.length, 1);
@@ -32,7 +32,7 @@ describe("AdoMigrationSource", () => {
         defaultResponse: "",
       });
 
-      const source = new AdoMigrationSource(executor, 0);
+      const source = new AdoMigrationSource(executor, 0, "/test");
       await source.cloneForMigration(mockRepoInfo, "/tmp/migration");
 
       assert.ok(calls[0].command.includes("/tmp/migration"));
@@ -43,7 +43,7 @@ describe("AdoMigrationSource", () => {
         defaultResponse: "",
       });
 
-      const source = new AdoMigrationSource(executor, 0);
+      const source = new AdoMigrationSource(executor, 0, "/test");
       await source.cloneForMigration(mockRepoInfo, "/tmp/migration");
 
       assert.ok(calls[0].command.includes(mockRepoInfo.gitUrl));
@@ -54,12 +54,23 @@ describe("AdoMigrationSource", () => {
         responses: new Map([["git clone", new Error("Authentication failed")]]),
       });
 
-      const source = new AdoMigrationSource(executor, 0);
+      const source = new AdoMigrationSource(executor, 0, "/test");
 
       await assert.rejects(
         () => source.cloneForMigration(mockRepoInfo, "/tmp/migration"),
         /Authentication failed/
       );
+    });
+
+    test("uses injected cwd for command execution", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        defaultResponse: "",
+      });
+
+      const source = new AdoMigrationSource(executor, 0, "/custom/work/dir");
+      await source.cloneForMigration(mockRepoInfo, "/tmp/migration");
+
+      assert.equal(calls[0].cwd, "/custom/work/dir");
     });
 
     test("rejects non-ADO repo", async () => {
@@ -75,7 +86,7 @@ describe("AdoMigrationSource", () => {
         host: "github.com",
       };
 
-      const source = new AdoMigrationSource(executor, 0);
+      const source = new AdoMigrationSource(executor, 0, "/test");
 
       await assert.rejects(
         () => source.cloneForMigration(githubRepo, "/tmp/migration"),

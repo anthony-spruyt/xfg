@@ -1,8 +1,7 @@
 import type { RepoConfig } from "../config/types.js";
 import { RepoInfo, getRepoDisplayName } from "../shared/repo-detector.js";
-import type { ILogger } from "../shared/logger.js";
 import { safeCleanup } from "../shared/type-guards.js";
-import { defaultExecutor } from "../shared/command-executor.js";
+import type { DebugInfoLog } from "../shared/logger.js";
 import type {
   ISyncWorkflow,
   IWorkStrategy,
@@ -14,6 +13,7 @@ import type {
   ProcessorOptions,
   ProcessorResult,
   SessionContext,
+  RunContext,
 } from "./types.js";
 
 /**
@@ -27,7 +27,7 @@ export class SyncWorkflow implements ISyncWorkflow {
     private readonly branchManager: IBranchManager,
     private readonly commitPushManager: ICommitPushManager,
     private readonly prMergeHandler: IPRMergeHandler,
-    private readonly log: ILogger
+    private readonly log: DebugInfoLog
   ) {}
 
   async execute(
@@ -37,10 +37,7 @@ export class SyncWorkflow implements ISyncWorkflow {
     workStrategy: IWorkStrategy
   ): Promise<ProcessorResult> {
     const repoName = getRepoDisplayName(repoInfo);
-    const { branchName, workDir } = options;
-    const dryRun = options.dryRun ?? false;
-    const retries = options.retries ?? 3;
-    const executor = options.executor ?? defaultExecutor;
+    const { branchName } = options;
 
     const authResult = await this.authOptionsBuilder.resolve(
       repoInfo,
@@ -54,26 +51,31 @@ export class SyncWorkflow implements ISyncWorkflow {
     const mergeMode = repoConfig.prOptions?.merge ?? "auto";
     const isDirectMode = mergeMode === "direct";
 
+    const runCtx: RunContext = {
+      workDir: options.workDir,
+      dryRun: options.dryRun ?? false,
+      retries: options.retries ?? 3,
+      token: authResult.token,
+      executor: options.executor,
+    };
+
     let session: SessionContext | null = null;
     try {
       session = await this.repositorySession.setup(repoInfo, {
-        workDir,
-        dryRun,
-        retries,
+        workDir: runCtx.workDir,
+        dryRun: runCtx.dryRun,
+        retries: runCtx.retries,
+        executor: runCtx.executor,
         authOptions: authResult.authOptions,
       });
 
       await this.branchManager.setupBranch({
+        ...runCtx,
         repoInfo,
         branchName,
         baseBranch: session.baseBranch,
-        workDir,
         isDirectMode,
-        dryRun,
-        retries,
-        token: authResult.token,
         gitOps: session.gitOps,
-        executor,
       });
 
       const workResult = await workStrategy.execute(
@@ -94,17 +96,14 @@ export class SyncWorkflow implements ISyncWorkflow {
 
       const pushBranch = isDirectMode ? session.baseBranch : branchName;
       const commitResult = await this.commitPushManager.commitAndPush({
+        ...runCtx,
         repoInfo,
         gitOps: session.gitOps,
-        workDir,
         fileChanges: workResult.fileChanges,
         commitMessage: workResult.commitMessage,
         pushBranch,
         isDirectMode,
-        dryRun,
-        retries,
-        token: authResult.token,
-        executor,
+        hasAppCredentials: options.hasAppCredentials,
       });
 
       if (!commitResult.success) {
@@ -137,14 +136,10 @@ export class SyncWorkflow implements ISyncWorkflow {
         repoInfo,
         repoConfig,
         options: {
+          ...runCtx,
           branchName,
           baseBranch: session.baseBranch,
-          workDir,
-          dryRun,
-          retries,
           prTemplate: options.prTemplate,
-          token: authResult.token,
-          executor,
         },
         changedFiles: workResult.changedFiles,
         repoName,

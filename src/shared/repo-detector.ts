@@ -1,3 +1,5 @@
+import { ValidationError } from "./errors.js";
+
 type RepoType = "github" | "azure-devops" | "gitlab";
 
 // Context for repo detection with optional GitHub Enterprise hosts
@@ -59,7 +61,7 @@ export function assertGitHubRepo(
   context: string
 ): asserts repoInfo is GitHubRepoInfo {
   if (!isGitHubRepo(repoInfo)) {
-    throw new Error(
+    throw new ValidationError(
       `${context} requires GitHub repositories. Got: ${repoInfo.type}`
     );
   }
@@ -74,7 +76,7 @@ export function assertAzureDevOpsRepo(
   context: string
 ): asserts repoInfo is AzureDevOpsRepoInfo {
   if (!isAzureDevOpsRepo(repoInfo)) {
-    throw new Error(
+    throw new ValidationError(
       `${context} requires Azure DevOps repositories. Got: ${repoInfo.type}`
     );
   }
@@ -89,15 +91,12 @@ export function assertGitLabRepo(
   context: string
 ): asserts repoInfo is GitLabRepoInfo {
   if (!isGitLabRepo(repoInfo)) {
-    throw new Error(
+    throw new ValidationError(
       `${context} requires GitLab repositories. Got: ${repoInfo.type}`
     );
   }
 }
 
-/**
- * Extract hostname from a git URL.
- */
 function extractHostFromUrl(gitUrl: string): string | null {
   // SSH: git@hostname:path
   const sshMatch = gitUrl.match(/^git@([^:]+):/);
@@ -193,7 +192,7 @@ export function detectRepoType(
   }
 
   // Throw for unrecognized URL formats
-  throw new Error(
+  throw new ValidationError(
     `Unrecognized git URL format: ${gitUrl}. Supported formats: GitHub (git@github.com: or https://github.com/), Azure DevOps (git@ssh.dev.azure.com: or https://dev.azure.com/), and GitLab (git@gitlab.com: or https://gitlab.com/)`
   );
 }
@@ -246,7 +245,7 @@ function parseGitHubUrl(gitUrl: string, host: string): GitHubRepoInfo {
     };
   }
 
-  throw new Error(`Unable to parse GitHub URL: ${gitUrl}`);
+  throw new ValidationError(`Unable to parse GitHub URL: ${gitUrl}`);
 }
 
 function parseAzureDevOpsUrl(gitUrl: string): AzureDevOpsRepoInfo {
@@ -282,7 +281,7 @@ function parseAzureDevOpsUrl(gitUrl: string): AzureDevOpsRepoInfo {
     };
   }
 
-  throw new Error(`Unable to parse Azure DevOps URL: ${gitUrl}`);
+  throw new ValidationError(`Unable to parse Azure DevOps URL: ${gitUrl}`);
 }
 
 function parseGitLabUrl(gitUrl: string): GitLabRepoInfo {
@@ -304,7 +303,7 @@ function parseGitLabUrl(gitUrl: string): GitLabRepoInfo {
     return parseGitLabPath(gitUrl, host, fullPath);
   }
 
-  throw new Error(`Unable to parse GitLab URL: ${gitUrl}`);
+  throw new ValidationError(`Unable to parse GitLab URL: ${gitUrl}`);
 }
 
 function parseGitLabPath(
@@ -316,7 +315,7 @@ function parseGitLabPath(
   const segments = fullPath.split("/");
 
   if (segments.length < 2) {
-    throw new Error(`Unable to parse GitLab URL: ${gitUrl}`);
+    throw new ValidationError(`Unable to parse GitLab URL: ${gitUrl}`);
   }
 
   // Last segment is repo, everything else is namespace

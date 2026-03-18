@@ -1,6 +1,7 @@
 import {
   rmSync,
   existsSync,
+  statSync,
   mkdirSync,
   writeFileSync,
   readFileSync,
@@ -8,31 +9,30 @@ import {
 } from "node:fs";
 import { join, resolve, relative, isAbsolute, dirname } from "node:path";
 import { escapeShellArg } from "../shared/shell-utils.js";
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../shared/command-executor.js";
+import { ICommandExecutor } from "../shared/command-executor.js";
+import type { DebugLog } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { ValidationError, SyncError } from "../shared/errors.js";
 import type { ILocalGitOps } from "./types.js";
 
 export interface GitOpsOptions {
   workDir: string;
   dryRun?: boolean;
-  executor?: ICommandExecutor;
+  executor: ICommandExecutor;
   /** Optional logger for debug messages */
-  log?: { debug(msg: string): void };
+  log?: DebugLog;
 }
 
 export class GitOps implements ILocalGitOps {
   private readonly _workDir: string;
   private readonly dryRun: boolean;
   private readonly _executor: ICommandExecutor;
-  private readonly log?: { debug(msg: string): void };
+  private readonly log?: DebugLog;
 
   constructor(options: GitOpsOptions) {
     this._workDir = options.workDir;
     this.dryRun = options.dryRun ?? false;
-    this._executor = options.executor ?? defaultExecutor;
+    this._executor = options.executor;
     this.log = options.log;
   }
 
@@ -51,7 +51,7 @@ export class GitOps implements ILocalGitOps {
     const resolvedWorkDir = resolve(this._workDir);
     const relativePath = relative(resolvedWorkDir, resolvedPath);
     if (relativePath.startsWith("..") || isAbsolute(relativePath)) {
-      throw new Error(`Path traversal detected: ${fileName}`);
+      throw new ValidationError(`Path traversal detected: ${fileName}`);
     }
     return filePath;
   }
@@ -76,7 +76,9 @@ export class GitOps implements ILocalGitOps {
       );
     } catch (error) {
       const message = toErrorMessage(error);
-      throw new Error(`Failed to create branch '${branchName}': ${message}`);
+      throw new SyncError(
+        `Failed to create branch '${branchName}': ${message}`
+      );
     }
   }
 
@@ -124,14 +126,20 @@ export class GitOps implements ILocalGitOps {
   getFileContent(fileName: string): string | null {
     const filePath = this.validatePath(fileName);
 
-    if (!existsSync(filePath)) {
-      return null;
-    }
-
     try {
+      if (!existsSync(filePath) || !statSync(filePath).isFile()) {
+        return null;
+      }
+
       return readFileSync(filePath, "utf-8");
     } catch (error) {
-      this.log?.debug(`Failed to read ${fileName}: ${toErrorMessage(error)}`);
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === "ENOENT" || code === "EACCES") {
+        return null;
+      }
+      this.log?.debug(
+        `Unexpected error reading ${fileName}: ${(error as Error).message}`
+      );
       return null;
     }
   }
@@ -182,19 +190,16 @@ export class GitOps implements ILocalGitOps {
       .map((line) => line.slice(3)); // Remove status prefix (e.g., " M ", "?? ", "A  ")
   }
 
-  /**
-   * Check if there are staged changes ready to commit.
-   * Uses `git diff --cached --quiet` which exits with 1 if there are staged changes.
-   */
+  async stageAll(): Promise<void> {
+    await this.exec("git add -A", this._workDir);
+  }
+
   async hasStagedChanges(): Promise<boolean> {
-    try {
-      await this.exec("git diff --cached --quiet", this._workDir);
-      return false; // Exit code 0 = no staged changes
-    } catch (error) {
-      // Exit code 1 is expected when staged changes exist
-      this.log?.debug(`hasStagedChanges: ${toErrorMessage(error)}`);
-      return true;
-    }
+    const diff = await this.exec(
+      "git diff --cached --name-only",
+      this._workDir
+    );
+    return diff.length > 0;
   }
 
   /**

@@ -50,7 +50,7 @@ repos:
   - git: git@github.com:org/repo.git
 `);
       assert.throws(
-        () => loadConfig(path),
+        () => loadConfig(path, process.env),
         /Config requires at least one of: 'files' or 'settings'/
       );
     });
@@ -64,7 +64,7 @@ files:
       key: value
 `);
       assert.throws(
-        () => loadConfig(path),
+        () => loadConfig(path, process.env),
         /Config missing required field: repos/
       );
     });
@@ -78,7 +78,10 @@ files:
       key: value
 repos: not-an-array
 `);
-      assert.throws(() => loadConfig(path), /repos \(must be an array\)/);
+      assert.throws(
+        () => loadConfig(path, process.env),
+        /repos \(must be an array\)/
+      );
     });
 
     test("throws when repo.git is missing", () => {
@@ -95,7 +98,7 @@ repos:
           extra: data
 `);
       assert.throws(
-        () => loadConfig(path),
+        () => loadConfig(path, process.env),
         /Repo at index 0 missing required field: git/
       );
     });
@@ -111,7 +114,7 @@ repos:
   - git: git@github.com:org/repo.git
 `);
       assert.throws(
-        () => loadConfig(path),
+        () => loadConfig(path, process.env),
         /Invalid fileName.*must be a relative path/
       );
     });
@@ -127,7 +130,7 @@ repos:
   - git: git@github.com:org/repo.git
 `);
       assert.throws(
-        () => loadConfig(path),
+        () => loadConfig(path, process.env),
         /Invalid fileName.*must be a relative path/
       );
     });
@@ -142,7 +145,7 @@ files:
 repos:
   - git: git@github.com:org/repo.git
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.equal(config.repos[0].files[0].fileName, "config/settings.json");
     });
 
@@ -158,7 +161,7 @@ repos:
       - git@github.com:org/repo1.git
       - git@github.com:org/repo2.git
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.equal(config.repos.length, 2);
     });
   });
@@ -174,7 +177,7 @@ files:
 repos:
   - git: git@github.com:org/repo.git
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.equal(config.repos.length, 1);
       assert.equal(config.repos[0].git, "git@github.com:org/repo.git");
     });
@@ -192,7 +195,7 @@ repos:
       - git@github.com:org/repo2.git
       - git@github.com:org/repo3.git
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.equal(config.repos.length, 3);
       assert.equal(config.repos[0].git, "git@github.com:org/repo1.git");
       assert.equal(config.repos[1].git, "git@github.com:org/repo2.git");
@@ -211,7 +214,7 @@ repos:
       - git@github.com:org/repo1.git
       - git@github.com:org/repo2.git
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.deepEqual(config.repos[0].files[0].content, { shared: "value" });
       assert.deepEqual(config.repos[1].files[0].content, { shared: "value" });
     });
@@ -230,7 +233,7 @@ files:
 repos:
   - git: git@github.com:org/repo.git
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.deepEqual(config.repos[0].files[0].content, {
         base: "value",
         nested: { key: "nested-value" },
@@ -253,7 +256,7 @@ repos:
           override: updated
           added: new
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.deepEqual(config.repos[0].files[0].content, {
         base: "value",
         override: "updated",
@@ -279,7 +282,7 @@ repos:
             b: 3
             c: 4
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.deepEqual(config.repos[0].files[0].content, {
         nested: { a: 1, b: 3, c: 4 },
       });
@@ -302,7 +305,7 @@ repos:
         content:
           only: repo-value
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.deepEqual(config.repos[0].files[0].content, {
         only: "repo-value",
       });
@@ -322,7 +325,7 @@ repos:
         override: true
 `);
       assert.throws(
-        () => loadConfig(path),
+        () => loadConfig(path, process.env),
         /override: true for file 'config.json' but no content defined/
       );
     });
@@ -344,7 +347,7 @@ repos:
           items:
             - override1
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.deepEqual(config.repos[0].files[0].content, {
         items: ["override1"],
       });
@@ -369,7 +372,7 @@ repos:
             - added1
             - added2
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.deepEqual(config.repos[0].files[0].content, {
         items: ["base1", "base2", "added1", "added2"],
       });
@@ -387,7 +390,7 @@ files:
 repos:
   - git: git@github.com:org/repo.git
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.deepEqual(config.repos[0].files[0].content, {
         value: "test-value",
       });
@@ -404,7 +407,7 @@ repos:
   - git: git@github.com:org/repo.git
 `);
       assert.throws(
-        () => loadConfig(path),
+        () => loadConfig(path, process.env),
         /Missing required environment variable: MISSING_VAR/
       );
     });
@@ -419,7 +422,7 @@ files:
 repos:
   - git: git@github.com:org/repo.git
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.deepEqual(config.repos[0].files[0].content, {
         value: "default-value",
       });
@@ -442,7 +445,7 @@ repos:
   - git: git@github.com:org/repo1.git
   - git: git@github.com:org/repo2.git
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.equal(config.repos.length, 2);
       assert.equal(config.repos[0].files.length, 2);
       assert.equal(config.repos[1].files.length, 2);
@@ -473,7 +476,7 @@ repos:
           items:
             - y
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       const appendFile = config.repos[0].files.find(
         (f) => f.fileName === "append.json"
       );
@@ -518,7 +521,7 @@ repos:
         content:
           legacy: true
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
 
       assert.equal(config.repos[0].files[0].fileName, "my.config.json");
       assert.equal(config.repos.length, 4);
@@ -565,7 +568,7 @@ files:
 repos:
   - git: git@github.com:org/repo.git
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.deepEqual(config.repos[0].files[0].content, {
         base: true,
         version: "1.0",
@@ -593,7 +596,7 @@ repos:
         content:
           custom: added
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.deepEqual(config.repos[0].files[0].content, {
         base: true,
         features: ["core"],
@@ -614,7 +617,7 @@ files:
 repos:
   - git: git@github.com:org/repo.git
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       assert.strictEqual(
         config.repos[0].files[0].content,
         "node_modules/\ndist/"
@@ -636,7 +639,7 @@ files:
 repos:
   - git: git@github.com:org/repo.git
 `);
-      const config = loadConfig(path);
+      const config = loadConfig(path, process.env);
       const file = config.repos[0].files[0];
       assert.deepEqual(file.content, { root: true, env: { node: true } });
       assert.deepEqual(file.header, ["Auto-generated"]);
@@ -668,7 +671,7 @@ prOptions:
 repos:
   - git: git@github.com:org/repo.git
 `);
-    const config = loadConfig(path);
+    const config = loadConfig(path, process.env);
     assert.deepEqual(config.repos[0].prOptions, {
       merge: "auto",
       mergeStrategy: "squash",
@@ -689,7 +692,7 @@ repos:
       merge: force
       bypassReason: "Automated sync"
 `);
-    const config = loadConfig(path);
+    const config = loadConfig(path, process.env);
     assert.deepEqual(config.repos[0].prOptions, {
       merge: "force",
       bypassReason: "Automated sync",
@@ -712,7 +715,7 @@ repos:
     prOptions:
       merge: force
 `);
-    const config = loadConfig(path);
+    const config = loadConfig(path, process.env);
     assert.deepEqual(config.repos[0].prOptions, {
       merge: "force",
       mergeStrategy: "squash",
@@ -736,7 +739,7 @@ repos:
     prOptions:
       mergeStrategy: rebase
 `);
-    const config = loadConfig(path);
+    const config = loadConfig(path, process.env);
     // First repo uses global settings
     assert.deepEqual(config.repos[0].prOptions, {
       merge: "auto",
@@ -759,7 +762,7 @@ files:
 repos:
   - git: git@github.com:org/repo.git
 `);
-    const config = loadConfig(path);
+    const config = loadConfig(path, process.env);
     assert.strictEqual(config.repos[0].prOptions, undefined);
   });
 
@@ -779,7 +782,7 @@ repos:
     prOptions:
       mergeStrategy: squash
 `);
-    const config = loadConfig(path);
+    const config = loadConfig(path, process.env);
     assert.equal(config.repos.length, 2);
     // Both expanded repos should have merged prOptions
     assert.deepEqual(config.repos[0].prOptions, {

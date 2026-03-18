@@ -105,7 +105,6 @@ export class FileWriter implements IFileWriter {
       // Determine action type (create vs update) BEFORE writing
       const action: "create" | "update" = fileExistsLocal ? "update" : "create";
 
-      // Check if file would change
       const existingContent = gitOps.getFileContent(file.fileName);
       const changed = gitOps.wouldChange(file.fileName, fileContent);
 
@@ -118,7 +117,6 @@ export class FileWriter implements IFileWriter {
       }
 
       if (dryRun) {
-        // In dry-run, show diff but don't write
         const status = getFileStatus(existingContent !== null, changed);
         incrementDiffStats(diffStats, status);
 
@@ -128,8 +126,8 @@ export class FileWriter implements IFileWriter {
           file.fileName
         );
         log.fileDiff(file.fileName, status, diffLines);
-      } else {
-        // Write the file
+      } else if (changed) {
+        incrementDiffStats(diffStats, action === "create" ? "NEW" : "MODIFIED");
         gitOps.writeFile(file.fileName, fileContent);
       }
     }
@@ -141,7 +139,7 @@ export class FileWriter implements IFileWriter {
       }
 
       if (shouldBeExecutable(file)) {
-        if (tracked?.action === "create" && ctx.isGraphQLCommitMode) {
+        if (tracked?.action === "create" && ctx.hasAppCredentials) {
           log.warn(
             `${file.fileName}: GitHub App commits cannot set executable mode on new files. ` +
               `The file will be created as non-executable (100644). ` +

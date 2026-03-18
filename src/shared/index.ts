@@ -1,5 +1,13 @@
 // Logging
-export { Logger, logger, type ILogger } from "./logger.js";
+export {
+  Logger,
+  NO_OP_DEBUG_LOG,
+  type ILogger,
+  type DebugLog,
+  type DebugWarnLog,
+  type DebugInfoLog,
+  type DebugInfoWarnLog,
+} from "./logger.js";
 
 // Retry utilities
 export {
@@ -12,7 +20,6 @@ export {
 // Command execution
 export {
   ShellCommandExecutor,
-  defaultExecutor,
   type ICommandExecutor,
 } from "./command-executor.js";
 
@@ -45,3 +52,44 @@ export {
   type AzureDevOpsRepoInfo,
   type GitLabRepoInfo,
 } from "./repo-detector.js";
+
+// Errors
+export {
+  ValidationError,
+  GraphQLApiError,
+  SyncError,
+  LifecycleError,
+} from "./errors.js";
+
+// File status
+export { formatStatusBadge, type FileStatus } from "./file-status.js";
+
+// GitHub API utilities
+export {
+  GhApiClient,
+  getHostnameFlag,
+  buildTokenEnv,
+  resolveGitHubToken,
+  isHttp404Error,
+  parseApiJson,
+  type GhApiOptions,
+} from "./gh-api-utils.js";
+
+// Interpolation engine
+export {
+  interpolateString,
+  interpolateValue,
+  type InterpolationConfig,
+} from "./interpolation-engine.js";
+
+// String utilities
+export { camelToSnake } from "./string-utils.js";
+
+// Type guards
+export { isPlainObject, toErrorMessage, safeCleanup } from "./type-guards.js";
+
+// XFG templating
+export {
+  interpolateXfgContent,
+  type XfgTemplateContext,
+} from "./xfg-template.js";

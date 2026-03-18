@@ -25,7 +25,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/cli.js",
-    "dev": "ts-node src/cli.ts",
+    "dev": "tsx src/cli.ts",
     "test": "node --import tsx scripts/run-tests.js",
     "test:coverage": "c8 --check-coverage --lines 95 --reporter=text --reporter=lcov --all --src=src --exclude='test/**/*.test.ts' --exclude='scripts/**' --exclude='src/vcs/types.ts' --exclude='src/settings/rulesets/types.ts' --exclude='src/settings/repo-settings/types.ts' --exclude='src/settings/labels/types.ts' --exclude='src/**/index.ts' --exclude='test/mocks/**' --exclude='src/sync/types.ts' --exclude='src/lifecycle/types.ts' --exclude='src/cli/program.ts' --exclude='src/cli.ts' --exclude='src/index.ts' npm test",
     "test:integration:github": "npm run build && node --import tsx --test test/integration/github.test.ts",

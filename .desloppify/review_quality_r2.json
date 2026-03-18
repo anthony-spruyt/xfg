@@ -1,0 +1,107 @@
+{
+  "assessments": {
+    "error_consistency": 92,
+    "convention_outlier": 95,
+    "authorization_consistency": 93,
+    "ai_generated_debt": 97,
+    "incomplete_migration": 90
+  },
+  "findings": [
+    {
+      "dimension": "error_consistency",
+      "identifier": "bare-error-graphql-commit-fallback",
+      "summary": "GraphQLCommitStrategy.commit() line 206 throws bare `new Error(\"Unexpected error in GraphQL commit\")` instead of a typed error class. While this path is practically unreachable (lastError is always set before reaching it), it breaks the convention that all throws use typed domain errors (SyncError, ValidationError, GraphQLApiError).",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/graphql-commit-strategy.ts"
+      ],
+      "evidence": [
+        "Line 206: `throw lastError ?? new Error(\"Unexpected error in GraphQL commit\");` -- uses bare Error instead of GraphQLApiError",
+        "All other throws in this file use GraphQLApiError or ValidationError consistently"
+      ],
+      "suggestion": "Change to `throw lastError ?? new GraphQLApiError(\"Unexpected error in GraphQL commit\");` for consistency.",
+      "confidence": 0.85
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "exhaustive-check-bare-errors",
+      "summary": "Exhaustive switch checks in pr-strategy-factory.ts and lifecycle-formatter.ts throw bare `new Error()` instead of typed domain errors. These are unreachable by design (TypeScript ensures exhaustiveness at compile time), but they break the convention that all production throws use typed errors.",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/pr-strategy-factory.ts",
+        "/workspaces/xfg/src/lifecycle/lifecycle-formatter.ts"
+      ],
+      "evidence": [
+        "pr-strategy-factory.ts:29: `throw new Error(\"Unknown repository type: ...\")` -- could be SyncError",
+        "lifecycle-formatter.ts:52: `throw new Error(\"Unknown lifecycle action: ...\")` -- could be LifecycleError",
+        "shell-utils.ts:12: `throw new Error(\"Shell argument contains null byte\")` -- defense-in-depth, could be ValidationError"
+      ],
+      "suggestion": "Replace with appropriate typed errors: SyncError for pr-strategy-factory, LifecycleError for lifecycle-formatter, ValidationError for shell-utils. These are unreachable code paths but consistency matters for grep-ability and catch handling.",
+      "confidence": 0.7
+    },
+    {
+      "dimension": "incomplete_migration",
+      "identifier": "logger-process-env-direct-read",
+      "summary": "Logger.debug() reads process.env.DEBUG and process.env.XFG_DEBUG directly at call time instead of accepting a debug-enabled flag at construction. The codebase has otherwise completed migration away from process.env in shared modules, but Logger retains this direct coupling.",
+      "related_files": [
+        "/workspaces/xfg/src/shared/logger.ts"
+      ],
+      "evidence": [
+        "Line 62: `if (process.env.DEBUG || process.env.XFG_DEBUG)` -- reads process.env directly in shared module",
+        "CLAUDE.md: 'src/shared/ and src/sync/ modules must not import global singletons. Pass them in.' -- Logger is both the singleton AND reads env directly",
+        "Other modules (sync-command.ts, auth-options-builder.ts) have been refactored to accept env values via constructor injection"
+      ],
+      "suggestion": "Accept a `debugEnabled` boolean in the Logger constructor (defaulting to `process.env.DEBUG || process.env.XFG_DEBUG` at construction root) so the Logger class itself doesn't read process.env at runtime.",
+      "confidence": 0.75
+    },
+    {
+      "dimension": "incomplete_migration",
+      "identifier": "env-interpolation-process-env",
+      "summary": "shared/env.ts interpolateEnvVars reads process.env directly (line 56). While this is the module's core purpose (reading env vars for template interpolation), the CLAUDE.md architecture principle says shared modules should not access process.env. An env-reader function could be injected.",
+      "related_files": [
+        "/workspaces/xfg/src/shared/env.ts"
+      ],
+      "evidence": [
+        "Line 56: `const envValue = process.env[varName];` -- direct process.env access in shared module",
+        "The module's purpose IS env var interpolation, so this is arguably the correct design",
+        "Other shared modules have been migrated to accept env values via parameters"
+      ],
+      "suggestion": "Accept an optional env record parameter (defaulting to process.env) to allow testing without modifying global state. Low priority since this is the module's core purpose.",
+      "confidence": 0.55
+    },
+    {
+      "dimension": "authorization_consistency",
+      "identifier": "azure-gitlab-ignore-token-param",
+      "summary": "Azure and GitLab PR strategies receive a `token` parameter in CloseExistingPROptions and PRStrategyOptions but never use it. The token field exists because the interface is shared with GitHub, but Azure/GitLab silently ignore it, relying on CLI-level auth (az/glab login). This is documented in the type comments but could confuse callers.",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/azure-pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/gitlab-pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/types.ts"
+      ],
+      "evidence": [
+        "types.ts:90 comment: '/** GitHub App installation token (GitHub-only; ignored by GitLab/Azure strategies which use their own CLI auth) */'",
+        "azure-pr-strategy.ts:40: destructures options but never uses `token` in checkExistingPR",
+        "gitlab-pr-strategy.ts:90: destructures options but never uses `token` in checkExistingPR",
+        "This is documented and intentional per the shared interface, but the mismatch exists"
+      ],
+      "suggestion": "This is well-documented in the type definitions and is a reasonable design choice for a shared interface. No action needed unless the team wants to split IPRStrategy into platform-specific option types.",
+      "confidence": 0.5
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "github-pr-merge-unknown-mode-inconsistent-return",
+      "summary": "All three PR strategies (GitHub, Azure, GitLab) handle unknown merge modes by returning { success: false, message: 'Unknown merge mode' } instead of throwing. This is consistent across strategies but inconsistent with the broader pattern where invalid inputs throw ValidationError.",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/github-pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/azure-pr-strategy.ts",
+        "/workspaces/xfg/src/vcs/gitlab-pr-strategy.ts"
+      ],
+      "evidence": [
+        "github-pr-strategy.ts:300-304: returns { success: false, message: 'Unknown merge mode' }",
+        "azure-pr-strategy.ts:260-264: same pattern",
+        "gitlab-pr-strategy.ts:313-317: same pattern",
+        "Convention elsewhere: branch-utils.ts throws ValidationError for invalid branch names, validator.ts throws ValidationError for invalid config"
+      ],
+      "suggestion": "This is internally consistent across all three strategies (return error result vs throw). The merge mode is validated earlier in the config validator, so this is defensive code for an impossible state. Could add an exhaustive check or throw ValidationError, but current behavior is harmless.",
+      "confidence": 0.5
+    }
+  ]
+}

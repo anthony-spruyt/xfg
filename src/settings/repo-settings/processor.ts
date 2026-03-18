@@ -1,6 +1,5 @@
 import type { RepoConfig, GitHubRepoSettings } from "../../config/index.js";
 import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
-import { GitHubRepoSettingsStrategy } from "./github-repo-settings-strategy.js";
 import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
 import { diffRepoSettings, hasChanges } from "./diff.js";
 import { formatRepoSettingsPlan, RepoSettingsPlanResult } from "./formatter.js";
@@ -30,8 +29,8 @@ export interface RepoSettingsProcessorResult extends BaseProcessorResult {
 export class RepoSettingsProcessor implements IRepoSettingsProcessor {
   private readonly strategy: IRepoSettingsStrategy;
 
-  constructor(strategy?: IRepoSettingsStrategy) {
-    this.strategy = strategy ?? new GitHubRepoSettingsStrategy();
+  constructor(strategy: IRepoSettingsStrategy) {
+    this.strategy = strategy;
   }
 
   async process(
@@ -41,16 +40,16 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
   ): Promise<RepoSettingsProcessorResult> {
     return withGitHubGuards(repoConfig, repoInfo, options, {
       hasDesiredSettings: (rc) => {
-        const s = rc.settings?.repo;
-        return !!s && Object.keys(s).length > 0;
+        const repoSettings = rc.settings?.repo;
+        return !!repoSettings && Object.keys(repoSettings).length > 0;
       },
       emptySettingsMessage: "No repo settings configured",
-      processSettings: (githubRepo, rc, opts, token, repoName) =>
-        this.processSettings(githubRepo, rc, opts, token, repoName),
+      applySettings: (githubRepo, rc, opts, token, repoName) =>
+        this.applySettings(githubRepo, rc, opts, token, repoName),
     });
   }
 
-  private async processSettings(
+  private async applySettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
     options: RepoSettingsProcessorOptions,

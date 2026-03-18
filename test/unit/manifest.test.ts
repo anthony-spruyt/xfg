@@ -610,25 +610,27 @@ describe("manifest", () => {
       assert.deepStrictEqual(loaded?.configs, {});
     });
 
-    test("loadManifest logs debug when JSON parsing fails", () => {
+    test("loadManifest warns when JSON parsing fails", () => {
       writeFileSync(join(testDir, MANIFEST_FILENAME), "not valid json{{{");
-      const debugMessages: string[] = [];
+      const warnMessages: string[] = [];
       const loaded = loadManifest(testDir, {
-        debug: (msg: string) => debugMessages.push(msg),
+        debug: () => {},
+        warn: (msg: string) => warnMessages.push(msg),
       });
       assert.equal(loaded, null);
-      assert.ok(debugMessages.length > 0, "Should have logged a debug message");
-      assert.ok(debugMessages[0].includes("Failed to load manifest"));
+      assert.ok(warnMessages.length > 0, "Should have logged a warning");
+      assert.ok(warnMessages[0].includes("Failed to parse manifest"));
     });
 
-    test("parseManifestContent logs debug when JSON parsing fails", () => {
-      const debugMessages: string[] = [];
+    test("parseManifestContent warns when JSON parsing fails", () => {
+      const warnMessages: string[] = [];
       const result = parseManifestContent("not valid json{{{", {
-        debug: (msg: string) => debugMessages.push(msg),
+        debug: () => {},
+        warn: (msg: string) => warnMessages.push(msg),
       });
       assert.equal(result, null);
-      assert.ok(debugMessages.length > 0, "Should have logged a debug message");
-      assert.ok(debugMessages[0].includes("Failed to parse manifest content"));
+      assert.ok(warnMessages.length > 0, "Should have logged a warning");
+      assert.ok(warnMessages[0].includes("Failed to parse manifest content"));
     });
   });
 });

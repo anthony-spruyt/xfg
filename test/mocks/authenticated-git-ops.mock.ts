@@ -1,4 +1,4 @@
-import type { IGitOps } from "../../src/vcs/authenticated-git-ops.js";
+import type { IGitOps } from "../../src/vcs/types.js";
 
 export interface AuthenticatedGitOpsMockConfig {
   // Return value overrides
@@ -147,6 +147,8 @@ export function createMockAuthenticatedGitOps(
     async getChangedFiles(): Promise<string[]> {
       return config.changedFiles ?? [];
     },
+
+    async stageAll(): Promise<void> {},
 
     async hasStagedChanges(): Promise<boolean> {
       return config.hasStagedChanges ?? true;

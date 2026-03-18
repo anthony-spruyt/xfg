@@ -33,12 +33,12 @@ export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
   const createChanges = changes.filter((c) => c.action === "create");
   const updateChanges = changes.filter((c) => c.action === "update");
   const deleteChanges = changes.filter((c) => c.action === "delete");
-  const unchangedChanges = changes.filter((c) => c.action === "unchanged");
+  const unchangedItems = changes.filter((c) => c.action === "unchanged");
 
   const creates = createChanges.length;
   const updates = updateChanges.length;
   const deletes = deleteChanges.length;
-  const unchanged = unchangedChanges.length;
+  const unchanged = unchangedItems.length;
 
   // Format creates
   if (createChanges.length > 0) {
@@ -112,7 +112,7 @@ export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
   }
 
   // Unchanged (entries only, no output lines)
-  for (const change of unchangedChanges) {
+  for (const change of unchangedItems) {
     entries.push({ name: change.name, action: "unchanged" });
   }
 

@@ -1,7 +1,4 @@
-import {
-  ICommandExecutor,
-  defaultExecutor,
-} from "../../shared/command-executor.js";
+import { ICommandExecutor } from "../../shared/command-executor.js";
 import {
   assertGitHubRepo,
   type GitHubRepoInfo,
@@ -82,25 +79,17 @@ function configToGitHubPayload(
 
 interface GitHubRepoSettingsStrategyOptions {
   retries?: number;
+  cwd: string;
 }
 
-/**
- * GitHub Repository Settings Strategy.
- * Manages repository settings via GitHub REST API using `gh api` CLI.
- * Note: Uses exec via ICommandExecutor for gh CLI integration, consistent
- * with other strategies in this codebase. Inputs are escaped via escapeShellArg.
- */
 export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   private api: GhApiClient;
 
   constructor(
-    executor?: ICommandExecutor,
-    options?: GitHubRepoSettingsStrategyOptions
+    executor: ICommandExecutor,
+    options: GitHubRepoSettingsStrategyOptions
   ) {
-    this.api = new GhApiClient(
-      executor ?? defaultExecutor,
-      options?.retries ?? 3
-    );
+    this.api = new GhApiClient(executor, options.retries ?? 3, options.cwd);
   }
 
   async getSettings(
@@ -110,7 +99,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     assertGitHubRepo(repoInfo, "GitHub Repo Settings strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}`;
-    const result = await this.api.call("GET", endpoint, undefined, options);
+    const result = await this.api.call("GET", endpoint, { options });
     const parsed = parseApiJson<
       CurrentRepoSettings & { owner?: { type?: "User" | "Organization" } }
     >(result, "repo settings response");
@@ -119,7 +108,6 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     // Extract owner type from nested API response
     settings.owner_type = parsed.owner?.type;
 
-    // Fetch security settings from separate endpoints
     settings.vulnerability_alerts = await this.getVulnerabilityAlerts(
       repoInfo,
       options
@@ -151,7 +139,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     }
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}`;
-    await this.api.call("PATCH", endpoint, payload, options);
+    await this.api.call("PATCH", endpoint, { payload, options });
   }
 
   async setVulnerabilityAlerts(
@@ -163,7 +151,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/vulnerability-alerts`;
     const method = enable ? "PUT" : "DELETE";
-    await this.api.call(method, endpoint, undefined, options);
+    await this.api.call(method, endpoint, { options });
   }
 
   async setAutomatedSecurityFixes(
@@ -175,7 +163,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/automated-security-fixes`;
     const method = enable ? "PUT" : "DELETE";
-    await this.api.call(method, endpoint, undefined, options);
+    await this.api.call(method, endpoint, { options });
   }
 
   async setPrivateVulnerabilityReporting(
@@ -187,7 +175,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/private-vulnerability-reporting`;
     const method = enable ? "PUT" : "DELETE";
-    await this.api.call(method, endpoint, undefined, options);
+    await this.api.call(method, endpoint, { options });
   }
 
   private async getVulnerabilityAlerts(
@@ -196,7 +184,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   ): Promise<boolean> {
     const endpoint = `/repos/${github.owner}/${github.repo}/vulnerability-alerts`;
     try {
-      await this.api.call("GET", endpoint, undefined, options);
+      await this.api.call("GET", endpoint, { options });
       return true; // 204 = enabled
     } catch (error) {
       if (isHttp404Error(error)) {
@@ -214,7 +202,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     // Note: GitHub returns JSON with {enabled: boolean} for this endpoint
     const endpoint = `/repos/${github.owner}/${github.repo}/automated-security-fixes`;
     try {
-      const result = await this.api.call("GET", endpoint, undefined, options);
+      const result = await this.api.call("GET", endpoint, { options });
       // Parse JSON response - GitHub returns {"enabled": true/false}
       if (result) {
         const data = parseApiJson<{ enabled?: boolean }>(
@@ -239,7 +227,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
   ): Promise<boolean> {
     const endpoint = `/repos/${github.owner}/${github.repo}/private-vulnerability-reporting`;
     try {
-      const result = await this.api.call("GET", endpoint, undefined, options);
+      const result = await this.api.call("GET", endpoint, { options });
       const data = parseApiJson<{ enabled?: boolean }>(
         result,
         "private vulnerability reporting response"

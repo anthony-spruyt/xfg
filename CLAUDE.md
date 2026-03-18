@@ -102,3 +102,14 @@ When running blind subjective reviews (subagent reviewers), ALWAYS instruct them
 - **Interface Segregation**: Focused interfaces are good even if there's one implementation
 - **Named type aliases** add semantic clarity at zero cost — do NOT penalize them
 - **Do NOT encourage inheritance** by suggesting inlining composed strategies or removing abstraction layers that enable DI
+
+### Subagent Rate Limits
+
+**NEVER launch more than 3 subagents at a time.** Launching 20 parallel review agents burned the user's entire 5-hour token budget in minutes. Follow this process:
+
+1. Launch 2-3 subagents max in the first batch
+2. Wait for them to complete and verify they produced valid output
+3. Only then launch the next batch of 2-3
+4. Continue until all batches are done
+
+This applies to ALL subagent work, not just desloppify reviews.

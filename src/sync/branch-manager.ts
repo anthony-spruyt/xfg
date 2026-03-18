@@ -1,14 +1,26 @@
 import { getPRStrategy } from "../vcs/index.js";
-import type { ILogger } from "../shared/logger.js";
+import type { IPRStrategy } from "../vcs/types.js";
+import type { RepoInfo } from "../shared/repo-detector.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { IBranchManager, BranchSetupOptions } from "./types.js";
 
-/**
- * Handles branch creation and existing PR cleanup.
- * Receives stable dependencies (logger) via constructor;
- * per-call data (repo, branch, executor) via setupBranch options.
- */
+type SyncLog = {
+  debug(msg: string): void;
+  info(msg: string): void;
+  warn(msg: string): void;
+};
+
+type PRStrategyFactory = (
+  repoInfo: RepoInfo,
+  executor: ICommandExecutor,
+  log?: SyncLog
+) => IPRStrategy;
+
 export class BranchManager implements IBranchManager {
-  constructor(private readonly log: ILogger) {}
+  constructor(
+    private readonly log: SyncLog,
+    private readonly prStrategyFactory: PRStrategyFactory = getPRStrategy
+  ) {}
 
   async setupBranch(options: BranchSetupOptions): Promise<void> {
     const {
@@ -31,7 +43,7 @@ export class BranchManager implements IBranchManager {
 
     if (!dryRun) {
       this.log.debug("Checking for existing PR...");
-      const strategy = getPRStrategy(repoInfo, executor, this.log);
+      const strategy = this.prStrategyFactory(repoInfo, executor, this.log);
       const closed = await strategy.closeExistingPR({
         repoInfo,
         branchName,

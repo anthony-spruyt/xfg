@@ -108,7 +108,7 @@ describe("AzurePRStrategy with mock executor", () => {
       assert.equal(result, null);
     });
 
-    test("returns null on permanent error (auth failure)", async () => {
+    test("throws on permanent error (auth failure)", async () => {
       const authError = new Error("401 Unauthorized");
       mockExecutor.responses.set("az repos pr list", authError);
 
@@ -123,8 +123,10 @@ describe("AzurePRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
-      assert.equal(result, null);
+      await assert.rejects(
+        () => strategy.checkExistingPR(options),
+        /401 Unauthorized/
+      );
     });
 
     test("returns null on transient error", async () => {
@@ -975,7 +977,7 @@ describe("AzurePRStrategy merge unknown mode", () => {
 
     assert.equal(result.success, false);
     assert.equal(result.merged, false);
-    assert.ok(result.message.includes("Unknown merge mode"));
+    assert.ok(result.message.includes("Merge not applicable for mode:"));
   });
 });
 
@@ -1095,47 +1097,6 @@ describe("AzurePRStrategy logger coverage", () => {
   });
 });
 
-describe("AzurePRStrategy closeExistingPR with unparseable URL", () => {
-  const azureRepoInfo: AzureDevOpsRepoInfo = {
-    type: "azure-devops",
-    gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
-    owner: "myorg",
-    repo: "myrepo",
-    organization: "myorg",
-    project: "myproject",
-  };
-
-  test("returns false when checkExistingPR returns unparseable URL", async () => {
-    // Mock checkExistingPR to return a non-empty but unparseable string
-    // by making az repos pr list return a non-numeric value
-    const mockExecutor = createMockExecutor();
-    // The checkExistingPR builds a URL via buildPRUrl, which uses the ID from the command.
-    // We need to override checkExistingPR behavior. Since we cannot easily make buildPRUrl
-    // produce an unparseable URL, we extend the strategy to override checkExistingPR.
-    class TestableAzurePRStrategy extends AzurePRStrategy {
-      override async checkExistingPR(): Promise<string | null> {
-        // Return a URL that parsePRUrl cannot parse
-        return "https://not-azure-devops.com/invalid-url";
-      }
-    }
-
-    const warnings: string[] = [];
-    const strategy = new TestableAzurePRStrategy(mockExecutor, {
-      debug() {},
-      warn(msg: string) {
-        warnings.push(msg);
-      },
-      info() {},
-    });
-    const result = await strategy.closeExistingPR({
-      repoInfo: azureRepoInfo,
-      branchName: "test-branch",
-      baseBranch: "main",
-      workDir: testDir,
-      retries: 0,
-    });
-
-    assert.equal(result, false);
-    assert.ok(warnings.some((w) => w.includes("Could not parse PR URL")));
-  });
-});
+// Note: "unparseable URL" test removed — closeExistingPR now uses findExistingPRId
+// directly instead of going through checkExistingPR → parsePRUrl, eliminating
+// the URL roundtrip that could produce unparseable results.

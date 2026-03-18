@@ -9,7 +9,8 @@ import {
 import { validateRepoSettings } from "./validators/repo-settings-validator.js";
 import { validateRuleset } from "./validators/ruleset-validator.js";
 import { escapeRegExp } from "../shared/shell-utils.js";
-import { ValidationError } from "./errors.js";
+import { isPlainObject } from "../shared/type-guards.js";
+import { ValidationError } from "../shared/errors.js";
 
 // Pattern for valid config ID: alphanumeric, hyphens, underscores
 const CONFIG_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
@@ -137,11 +138,7 @@ function validateFileConfigFields(
   }
 
   if (fileConfig.vars !== undefined) {
-    if (
-      typeof fileConfig.vars !== "object" ||
-      fileConfig.vars === null ||
-      Array.isArray(fileConfig.vars)
-    ) {
+    if (!isPlainObject(fileConfig.vars)) {
       throw new ValidationError(
         `${context} file '${fileName}' vars must be an object with string values`
       );
@@ -162,10 +159,10 @@ function validateFileConfigFields(
  * Validates a single label configuration.
  */
 function validateLabel(label: unknown, name: string, context: string): void {
-  if (typeof label !== "object" || label === null || Array.isArray(label)) {
+  if (!isPlainObject(label)) {
     throw new ValidationError(`${context}: label '${name}' must be an object`);
   }
-  const l = label as Record<string, unknown>;
+  const l = label;
   if (typeof l.color !== "string" || !/^#?[0-9a-fA-F]{6}$/.test(l.color)) {
     throw new ValidationError(
       `${context}: label '${name}' color must be a 6-character hex code (with or without #)`
@@ -215,36 +212,24 @@ function buildRootSettingsContext(config: RawConfig): RootSettingsContext {
 function validateSettings(
   settings: unknown,
   context: string,
-  rootRulesetNames?: string[],
-  hasRootRepoSettings?: boolean,
-  rootLabelNames?: string[]
+  rootCtx?: RootSettingsContext
 ): void {
-  if (
-    typeof settings !== "object" ||
-    settings === null ||
-    Array.isArray(settings)
-  ) {
+  if (!isPlainObject(settings)) {
     throw new ValidationError(`${context}: settings must be an object`);
   }
 
-  const s = settings as Record<string, unknown>;
-
-  if (s.rulesets !== undefined) {
-    if (
-      typeof s.rulesets !== "object" ||
-      s.rulesets === null ||
-      Array.isArray(s.rulesets)
-    ) {
+  if (settings.rulesets !== undefined) {
+    if (!isPlainObject(settings.rulesets)) {
       throw new ValidationError(`${context}: rulesets must be an object`);
     }
 
-    const rulesets = s.rulesets as Record<string, unknown>;
+    const rulesets = settings.rulesets;
     for (const [name, ruleset] of Object.entries(rulesets)) {
       // Skip reserved key
       if (name === "inherit") continue;
 
       if (ruleset === false) {
-        if (rootRulesetNames && !rootRulesetNames.includes(name)) {
+        if (rootCtx && !rootCtx.rulesetNames.includes(name)) {
           throw new ValidationError(
             `${context}: Cannot opt out of '${name}' - not defined in root settings.rulesets`
           );
@@ -256,19 +241,15 @@ function validateSettings(
     }
   }
 
-  if (s.labels !== undefined) {
-    if (
-      typeof s.labels !== "object" ||
-      s.labels === null ||
-      Array.isArray(s.labels)
-    ) {
+  if (settings.labels !== undefined) {
+    if (!isPlainObject(settings.labels)) {
       throw new ValidationError(`${context}: labels must be an object`);
     }
-    const labels = s.labels as Record<string, unknown>;
+    const labels = settings.labels;
     for (const [name, label] of Object.entries(labels)) {
       if (name === "inherit") continue;
       if (label === false) {
-        if (rootLabelNames && !rootLabelNames.includes(name)) {
+        if (rootCtx && !rootCtx.labelNames.includes(name)) {
           throw new ValidationError(
             `${context}: Cannot opt out of label '${name}' - not defined in root settings.labels`
           );
@@ -279,29 +260,32 @@ function validateSettings(
     }
   }
 
-  if (s.deleteOrphaned !== undefined && typeof s.deleteOrphaned !== "boolean") {
+  if (
+    settings.deleteOrphaned !== undefined &&
+    typeof settings.deleteOrphaned !== "boolean"
+  ) {
     throw new ValidationError(
       `${context}: settings.deleteOrphaned must be a boolean`
     );
   }
 
-  if (s.repo !== undefined) {
-    if (s.repo === false) {
-      if (!rootRulesetNames) {
+  if (settings.repo !== undefined) {
+    if (settings.repo === false) {
+      if (!rootCtx) {
         // Root level — repo: false not valid here
         throw new ValidationError(
           `${context}: repo: false is not valid at root level. Define repo settings or remove the field.`
         );
       }
       // Per-repo level — check root has repo settings to opt out of
-      if (!hasRootRepoSettings) {
+      if (!rootCtx.hasRepoSettings) {
         throw new ValidationError(
           `${context}: Cannot opt out of repo settings — not defined in root settings.repo`
         );
       }
       // Valid opt-out, skip further repo validation
     } else {
-      validateRepoSettings(s.repo, context);
+      validateRepoSettings(settings.repo, context);
     }
   }
 }
@@ -339,7 +323,7 @@ function validateRootFiles(config: RawConfig): void {
     validateFileName(fileName);
 
     const fileConfig = config.files[fileName];
-    if (!fileConfig || typeof fileConfig !== "object") {
+    if (!isPlainObject(fileConfig)) {
       throw new ValidationError(
         `File '${fileName}' must have a configuration object`
       );
@@ -418,11 +402,7 @@ function validatePrOptions(config: RawConfig): void {
 function validateGroups(config: RawConfig): void {
   if (config.groups === undefined) return;
 
-  if (
-    typeof config.groups !== "object" ||
-    config.groups === null ||
-    Array.isArray(config.groups)
-  ) {
+  if (!isPlainObject(config.groups)) {
     throw new ValidationError("groups must be an object");
   }
 
@@ -450,22 +430,15 @@ function validateGroups(config: RawConfig): void {
     }
 
     if (group.settings !== undefined) {
-      validateSettings(
-        group.settings,
-        `groups.${groupName}`,
-        rootCtx.rulesetNames,
-        rootCtx.hasRepoSettings,
-        rootCtx.labelNames
-      );
+      validateSettings(group.settings, `groups.${groupName}`, rootCtx);
     }
   }
 }
 
-function validateRepoEntry(
-  config: RawConfig,
+function validateRepoGitField(
   repo: RawConfig["repos"][number],
   index: number
-): void {
+): string {
   if (!repo.git) {
     throw new ValidationError(
       `Repo at index ${index} missing required field: git`
@@ -474,9 +447,14 @@ function validateRepoEntry(
   if (Array.isArray(repo.git) && repo.git.length === 0) {
     throw new ValidationError(`Repo at index ${index} has empty git array`);
   }
+  return getGitDisplayName(repo.git);
+}
 
-  const repoLabel = getGitDisplayName(repo.git);
-
+function validateRepoOrigins(
+  config: RawConfig,
+  repo: RawConfig["repos"][number],
+  repoLabel: string
+): void {
   if (repo.upstream !== undefined && repo.source !== undefined) {
     throw new ValidationError(
       `Repo ${repoLabel}: 'upstream' and 'source' are mutually exclusive. ` +
@@ -515,118 +493,156 @@ function validateRepoEntry(
       );
     }
   }
+}
 
-  if (repo.groups !== undefined) {
-    if (
-      !Array.isArray(repo.groups) ||
-      !repo.groups.every((g: unknown) => typeof g === "string")
-    ) {
+function validateRepoGroups(
+  config: RawConfig,
+  repo: RawConfig["repos"][number],
+  index: number
+): void {
+  if (repo.groups === undefined) return;
+
+  if (
+    !Array.isArray(repo.groups) ||
+    !repo.groups.every((g: unknown) => typeof g === "string")
+  ) {
+    throw new ValidationError(
+      `Repo at index ${index}: groups must be an array of strings`
+    );
+  }
+  const seen = new Set<string>();
+  for (const groupName of repo.groups) {
+    if (!config.groups || !config.groups[groupName]) {
       throw new ValidationError(
-        `Repo at index ${index}: groups must be an array of strings`
+        `Repo at index ${index}: group '${groupName}' is not defined in root 'groups'`
       );
     }
-    const seen = new Set<string>();
+    if (seen.has(groupName)) {
+      throw new ValidationError(
+        `Repo at index ${index}: duplicate group '${groupName}'`
+      );
+    }
+    seen.add(groupName);
+  }
+}
+
+function validateRepoFiles(
+  config: RawConfig,
+  repo: RawConfig["repos"][number],
+  index: number,
+  repoLabel: string
+): void {
+  if (!repo.files) return;
+
+  if (!isPlainObject(repo.files)) {
+    throw new ValidationError(
+      `Repo at index ${index}: files must be an object`
+    );
+  }
+
+  const knownFiles = new Set<string>(
+    config.files ? Object.keys(config.files) : []
+  );
+  if (repo.groups && config.groups) {
     for (const groupName of repo.groups) {
-      if (!config.groups || !config.groups[groupName]) {
-        throw new ValidationError(
-          `Repo at index ${index}: group '${groupName}' is not defined in root 'groups'`
-        );
+      const group = config.groups[groupName];
+      if (group?.files) {
+        for (const fn of Object.keys(group.files)) {
+          if (fn !== "inherit") knownFiles.add(fn);
+        }
       }
-      if (seen.has(groupName)) {
-        throw new ValidationError(
-          `Repo at index ${index}: duplicate group '${groupName}'`
-        );
-      }
-      seen.add(groupName);
     }
   }
 
-  if (repo.files) {
-    if (typeof repo.files !== "object" || Array.isArray(repo.files)) {
+  for (const fileName of Object.keys(repo.files)) {
+    if (fileName === "inherit") {
+      const inheritValue = (repo.files as Record<string, unknown>).inherit;
+      if (typeof inheritValue !== "boolean") {
+        throw new ValidationError(
+          `Repo at index ${index}: files.inherit must be a boolean`
+        );
+      }
+      continue;
+    }
+
+    if (!knownFiles.has(fileName)) {
       throw new ValidationError(
-        `Repo at index ${index}: files must be an object`
+        `Repo at index ${index} references undefined file '${fileName}'. File must be defined in root 'files' object or in a referenced group.`
       );
     }
 
-    const knownFiles = new Set<string>(
-      config.files ? Object.keys(config.files) : []
-    );
-    if (repo.groups && config.groups) {
-      for (const groupName of repo.groups) {
-        const group = config.groups[groupName];
-        if (group?.files) {
-          for (const fn of Object.keys(group.files)) {
-            if (fn !== "inherit") knownFiles.add(fn);
-          }
-        }
-      }
+    const fileOverride = repo.files[fileName];
+
+    if (fileOverride === false) {
+      continue;
     }
 
-    for (const fileName of Object.keys(repo.files)) {
-      if (fileName === "inherit") {
-        const inheritValue = (repo.files as Record<string, unknown>).inherit;
-        if (typeof inheritValue !== "boolean") {
-          throw new ValidationError(
-            `Repo at index ${index}: files.inherit must be a boolean`
-          );
-        }
-        continue;
-      }
-
-      if (!knownFiles.has(fileName)) {
-        throw new ValidationError(
-          `Repo at index ${index} references undefined file '${fileName}'. File must be defined in root 'files' object or in a referenced group.`
-        );
-      }
-
-      const fileOverride = repo.files[fileName];
-
-      if (fileOverride === false) {
-        continue;
-      }
-
-      if (fileOverride.override && !fileOverride.content) {
-        throw new ValidationError(
-          `Repo ${repoLabel} has override: true for file '${fileName}' but no content defined. ` +
-            `Use content: "" for an empty text file override, or content: {} for an empty JSON/YAML override.`
-        );
-      }
-
-      validateFileConfigFields(
-        fileOverride as Record<string, unknown>,
-        fileName,
-        `Repo ${repoLabel}:`
+    if (fileOverride.override && !fileOverride.content) {
+      throw new ValidationError(
+        `Repo ${repoLabel} has override: true for file '${fileName}' but no content defined. ` +
+          `Use content: "" for an empty text file override, or content: {} for an empty JSON/YAML override.`
       );
     }
+
+    validateFileConfigFields(
+      fileOverride as Record<string, unknown>,
+      fileName,
+      `Repo ${repoLabel}:`
+    );
   }
+}
 
-  if (repo.settings !== undefined) {
-    const rootCtx = buildRootSettingsContext(config);
+function validateRepoSettingsEntry(
+  config: RawConfig,
+  repo: RawConfig["repos"][number],
+  repoLabel: string
+): void {
+  if (repo.settings === undefined) return;
 
-    if (repo.groups && config.groups) {
-      for (const groupName of repo.groups) {
-        const group = config.groups[groupName];
-        if (group?.settings?.rulesets) {
-          for (const name of Object.keys(group.settings.rulesets)) {
-            if (name !== "inherit") rootCtx.rulesetNames.push(name);
-          }
+  const rootCtx = buildRootSettingsContext(config);
+
+  if (repo.groups && config.groups) {
+    for (const groupName of repo.groups) {
+      const group = config.groups[groupName];
+      if (group?.settings?.rulesets) {
+        for (const name of Object.keys(group.settings.rulesets)) {
+          if (name !== "inherit") rootCtx.rulesetNames.push(name);
         }
-        if (group?.settings?.labels) {
-          for (const name of Object.keys(group.settings.labels)) {
-            if (name !== "inherit") rootCtx.labelNames.push(name);
-          }
+      }
+      if (group?.settings?.labels) {
+        for (const name of Object.keys(group.settings.labels)) {
+          if (name !== "inherit") rootCtx.labelNames.push(name);
         }
       }
     }
-
-    validateSettings(
-      repo.settings,
-      `Repo ${repoLabel}`,
-      rootCtx.rulesetNames,
-      rootCtx.hasRepoSettings,
-      rootCtx.labelNames
-    );
   }
+
+  validateSettings(repo.settings, `Repo ${repoLabel}`, rootCtx);
+}
+
+function validateRepoEntry(
+  config: RawConfig,
+  repo: RawConfig["repos"][number],
+  index: number
+): void {
+  const repoLabel = validateRepoGitField(repo, index);
+  validateRepoOrigins(config, repo, repoLabel);
+  validateRepoGroups(config, repo, index);
+  validateRepoFiles(config, repo, index, repoLabel);
+  validateRepoSettingsEntry(config, repo, repoLabel);
+}
+
+function hasGroupFiles(config: RawConfig): boolean {
+  return (
+    isPlainObject(config.groups) &&
+    Object.values(config.groups).some(
+      (g) =>
+        g.files &&
+        Object.keys(g.files).filter(
+          (k) => k !== "inherit" && g.files![k] !== false
+        ).length > 0
+    )
+  );
 }
 
 /**
@@ -637,30 +653,16 @@ export function validateRawConfig(config: RawConfig): void {
   validateConfigId(config);
 
   const hasFiles =
-    config.files &&
-    typeof config.files === "object" &&
-    Object.keys(config.files).length > 0;
-  const hasSettings = config.settings && typeof config.settings === "object";
-  const hasGroupFiles =
-    config.groups &&
-    typeof config.groups === "object" &&
-    !Array.isArray(config.groups) &&
+    isPlainObject(config.files) && Object.keys(config.files).length > 0;
+  const hasSettings = isPlainObject(config.settings);
+  const hasGrpFiles = hasGroupFiles(config);
+  const hasGrpSettings =
+    isPlainObject(config.groups) &&
     Object.values(config.groups).some(
-      (g) =>
-        g.files &&
-        Object.keys(g.files).filter(
-          (k) => k !== "inherit" && g.files![k] !== false
-        ).length > 0
-    );
-  const hasGroupSettings =
-    config.groups &&
-    typeof config.groups === "object" &&
-    !Array.isArray(config.groups) &&
-    Object.values(config.groups).some(
-      (g) => g.settings && typeof g.settings === "object"
+      (g) => g.settings && isPlainObject(g.settings)
     );
 
-  if (!hasFiles && !hasSettings && !hasGroupFiles && !hasGroupSettings) {
+  if (!hasFiles && !hasSettings && !hasGrpFiles && !hasGrpSettings) {
     throw new ValidationError(
       "Config requires at least one of: 'files' or 'settings'. " +
         "Use 'files' to sync configuration files, or 'settings' to manage repository settings."
@@ -698,34 +700,24 @@ export function validateRawConfig(config: RawConfig): void {
 
 /**
  * Validates that config is suitable for the sync command.
- * @throws Error if files section is missing or empty
+ * @throws ValidationError if neither files nor settings are present
  */
 export function validateForSync(config: RawConfig): void {
   const hasRootFiles = config.files && Object.keys(config.files).length > 0;
-  const hasGroupFiles =
-    config.groups &&
-    Object.values(config.groups).some(
-      (g) =>
-        g.files &&
-        Object.keys(g.files).filter(
-          (k) => k !== "inherit" && g.files![k] !== false
-        ).length > 0
-    );
+  const hasGrpFiles = hasGroupFiles(config);
   const hasSettings = hasActionableSettings(config.settings);
   const hasRepoSettings = config.repos.some((repo) =>
     hasActionableSettings(repo.settings)
   );
   const hasGroupSettings =
-    config.groups &&
-    typeof config.groups === "object" &&
-    !Array.isArray(config.groups) &&
+    isPlainObject(config.groups) &&
     Object.values(config.groups).some(
       (g) => g.settings && hasActionableSettings(g.settings)
     );
 
   if (
     !hasRootFiles &&
-    !hasGroupFiles &&
+    !hasGrpFiles &&
     !hasSettings &&
     !hasRepoSettings &&
     !hasGroupSettings

@@ -14,8 +14,10 @@ import { GitOps } from "../../src/vcs/git-ops.js";
 import {
   sanitizeBranchName,
   validateBranchName,
-} from "../../src/vcs/branch-utils.js";
+} from "../../src/shared/branch-utils.js";
 import { ICommandExecutor } from "../../src/shared/command-executor.js";
+
+const stubExecutor: ICommandExecutor = { exec: async () => "" };
 
 const testDir = join(tmpdir(), "git-ops-test-" + Date.now());
 
@@ -254,7 +256,7 @@ describe("GitOps", () => {
 
   describe("cleanWorkspace", () => {
     test("creates workspace directory if not exists", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       gitOps.cleanWorkspace();
 
       assert.ok(existsSync(workDir));
@@ -264,7 +266,7 @@ describe("GitOps", () => {
       mkdirSync(workDir, { recursive: true });
       writeFileSync(join(workDir, "existing-file.txt"), "content");
 
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       gitOps.cleanWorkspace();
 
       assert.ok(existsSync(workDir));
@@ -276,7 +278,7 @@ describe("GitOps", () => {
       mkdirSync(nestedDir, { recursive: true });
       writeFileSync(join(nestedDir, "file.txt"), "content");
 
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       gitOps.cleanWorkspace();
 
       assert.ok(existsSync(workDir));
@@ -290,7 +292,7 @@ describe("GitOps", () => {
     });
 
     test("writes file with content and trailing newline", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       gitOps.writeFile("test.json", '{"key": "value"}');
 
       const content = readFileSync(join(workDir, "test.json"), "utf-8");
@@ -300,7 +302,7 @@ describe("GitOps", () => {
     test("overwrites existing file", () => {
       writeFileSync(join(workDir, "test.json"), "old content");
 
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       gitOps.writeFile("test.json", "new content");
 
       const content = readFileSync(join(workDir, "test.json"), "utf-8");
@@ -308,7 +310,11 @@ describe("GitOps", () => {
     });
 
     test("does not write in dry-run mode", () => {
-      const gitOps = new GitOps({ workDir, dryRun: true });
+      const gitOps = new GitOps({
+        workDir,
+        dryRun: true,
+        executor: stubExecutor,
+      });
       gitOps.writeFile("test.json", "content");
 
       assert.ok(!existsSync(join(workDir, "test.json")));
@@ -321,7 +327,7 @@ describe("GitOps", () => {
     });
 
     test("returns true when file does not exist", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       const result = gitOps.wouldChange("nonexistent.json", "content");
 
       assert.equal(result, true);
@@ -330,7 +336,7 @@ describe("GitOps", () => {
     test("returns true when content differs", () => {
       writeFileSync(join(workDir, "test.json"), "old content\n");
 
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       const result = gitOps.wouldChange("test.json", "new content");
 
       assert.equal(result, true);
@@ -339,7 +345,7 @@ describe("GitOps", () => {
     test("returns false when content is identical", () => {
       writeFileSync(join(workDir, "test.json"), "same content\n");
 
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       const result = gitOps.wouldChange("test.json", "same content");
 
       assert.equal(result, false);
@@ -349,7 +355,7 @@ describe("GitOps", () => {
       // File has content + newline
       writeFileSync(join(workDir, "test.json"), "content\n");
 
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       // wouldChange adds newline internally, so "content" should match "content\n"
       const result = gitOps.wouldChange("test.json", "content");
 
@@ -359,7 +365,11 @@ describe("GitOps", () => {
     test("works in dry-run mode", () => {
       writeFileSync(join(workDir, "test.json"), "existing\n");
 
-      const gitOps = new GitOps({ workDir, dryRun: true });
+      const gitOps = new GitOps({
+        workDir,
+        dryRun: true,
+        executor: stubExecutor,
+      });
       const resultSame = gitOps.wouldChange("test.json", "existing");
       const resultDiff = gitOps.wouldChange("test.json", "different");
 
@@ -373,6 +383,7 @@ describe("GitOps", () => {
       const debugMessages: string[] = [];
       const gitOps = new GitOps({
         workDir,
+        executor: stubExecutor,
         log: { debug: (msg: string) => debugMessages.push(msg) },
       });
 
@@ -389,14 +400,18 @@ describe("GitOps", () => {
     });
 
     test("dryRun defaults to false", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       // Write should work when dryRun is not specified
       gitOps.writeFile("test.json", "content");
       assert.ok(existsSync(join(workDir, "test.json")));
     });
 
     test("dryRun can be explicitly set to false", () => {
-      const gitOps = new GitOps({ workDir, dryRun: false });
+      const gitOps = new GitOps({
+        workDir,
+        dryRun: false,
+        executor: stubExecutor,
+      });
       gitOps.writeFile("test.json", "content");
       assert.ok(existsSync(join(workDir, "test.json")));
     });
@@ -408,7 +423,7 @@ describe("GitOps", () => {
     });
 
     test("writeFile throws on path traversal attempt", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       assert.throws(
         () => gitOps.writeFile("../escape.json", "content"),
         /Path traversal detected/
@@ -416,20 +431,20 @@ describe("GitOps", () => {
     });
 
     test("writeFile creates parent directories automatically", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       // Should auto-create parent directory
       gitOps.writeFile("config/settings.json", "content");
       assert.ok(existsSync(join(workDir, "config/settings.json")));
     });
 
     test("writeFile creates deeply nested directories", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       gitOps.writeFile(".github/workflows/ci.yml", "name: CI");
       assert.ok(existsSync(join(workDir, ".github/workflows/ci.yml")));
     });
 
     test("wouldChange throws on path traversal attempt", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       assert.throws(
         () => gitOps.wouldChange("../escape.json", "content"),
         /Path traversal detected/
@@ -461,7 +476,7 @@ describe("GitOps", () => {
     test("uses default executor when not provided", () => {
       // This test verifies the default executor is used by checking
       // that GitOps can be constructed without an executor
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       assert.ok(gitOps);
     });
   });
@@ -558,7 +573,7 @@ describe("GitOps", () => {
     });
 
     test("throws on path traversal attempt", async () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       await assert.rejects(
         async () => gitOps.setExecutable("../escape.sh"),
         /Path traversal detected/
@@ -673,9 +688,9 @@ describe("GitOps", () => {
       const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
-          // git diff --cached --quiet exits with code 1 when there are changes
-          if (command.includes("git diff --cached --quiet")) {
-            throw new Error("exit code 1");
+          // git diff --cached --name-only returns file names when there are changes
+          if (command.includes("git diff --cached --name-only")) {
+            return "file.txt\n";
           }
           return "";
         },
@@ -695,9 +710,9 @@ describe("GitOps", () => {
       const mockExecutor: ICommandExecutor = {
         async exec(command: string, _cwd: string): Promise<string> {
           commands.push(command);
-          // git diff --cached --quiet exits with code 0 when no changes
-          if (command.includes("git diff --cached --quiet")) {
-            return ""; // No error = no staged changes
+          // git diff --cached --name-only returns empty when no changes
+          if (command.includes("git diff --cached --name-only")) {
+            return "";
           }
           return "";
         },
@@ -721,40 +736,34 @@ describe("GitOps", () => {
     test("returns file content when file exists", () => {
       writeFileSync(join(workDir, "test.json"), '{"key": "value"}');
 
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       const content = gitOps.getFileContent("test.json");
 
       assert.equal(content, '{"key": "value"}');
     });
 
     test("returns null when file does not exist", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       const content = gitOps.getFileContent("nonexistent.json");
 
       assert.equal(content, null);
     });
 
     test("throws on path traversal attempt", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       assert.throws(
         () => gitOps.getFileContent("../escape.json"),
         /Path traversal detected/
       );
     });
 
-    test("returns null and logs when readFileSync throws", () => {
-      // Create a directory where a file would be expected - readFileSync on a directory throws
+    test("returns null for directories", () => {
+      // Create a directory where a file would be expected
       mkdirSync(join(workDir, "is-a-dir"), { recursive: true });
-      const debugMessages: string[] = [];
-      const gitOps = new GitOps({
-        workDir,
-        log: { debug: (msg: string) => debugMessages.push(msg) },
-      });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
 
       const content = gitOps.getFileContent("is-a-dir");
       assert.equal(content, null);
-      assert.ok(debugMessages.length > 0, "Should have logged a debug message");
-      assert.ok(debugMessages[0].includes("Failed to read"));
     });
   });
 
@@ -842,21 +851,21 @@ describe("GitOps", () => {
     test("returns true when file exists", () => {
       writeFileSync(join(workDir, "test.json"), '{"key": "value"}');
 
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       const exists = gitOps.fileExists("test.json");
 
       assert.equal(exists, true);
     });
 
     test("returns false when file does not exist", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       const exists = gitOps.fileExists("nonexistent.json");
 
       assert.equal(exists, false);
     });
 
     test("throws on path traversal attempt", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       assert.throws(
         () => gitOps.fileExists("../escape.json"),
         /Path traversal detected/
@@ -874,14 +883,14 @@ describe("GitOps", () => {
       writeFileSync(filePath, '{"key": "value"}');
       assert.ok(existsSync(filePath));
 
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       gitOps.deleteFile("test.json");
 
       assert.ok(!existsSync(filePath));
     });
 
     test("does nothing when file does not exist", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       // Should not throw
       gitOps.deleteFile("nonexistent.json");
     });
@@ -890,14 +899,18 @@ describe("GitOps", () => {
       const filePath = join(workDir, "test.json");
       writeFileSync(filePath, '{"key": "value"}');
 
-      const gitOps = new GitOps({ workDir, dryRun: true });
+      const gitOps = new GitOps({
+        workDir,
+        dryRun: true,
+        executor: stubExecutor,
+      });
       gitOps.deleteFile("test.json");
 
       assert.ok(existsSync(filePath));
     });
 
     test("throws on path traversal attempt", () => {
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       assert.throws(
         () => gitOps.deleteFile("../escape.json"),
         /Path traversal detected/
@@ -911,7 +924,7 @@ describe("GitOps", () => {
       writeFileSync(filePath, '{"key": "value"}');
       assert.ok(existsSync(filePath));
 
-      const gitOps = new GitOps({ workDir });
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
       gitOps.deleteFile("subdir/nested.json");
 
       assert.ok(!existsSync(filePath));

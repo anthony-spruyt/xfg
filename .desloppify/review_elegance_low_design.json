@@ -1,0 +1,139 @@
+{
+  "assessments": {
+    "low_level_elegance": 88,
+    "design_coherence": 86
+  },
+  "findings": [
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "repeated-skip-filter-pattern",
+      "summary": "The expression `files.filter(f => f.action !== \"skip\")` is duplicated across 6 locations in 4 files. This is a repeated structural pattern that should be extracted into a shared utility function (e.g., `getChangedFiles(files)`) to reduce duplication and make the intent clearer.",
+      "related_files": [
+        "src/vcs/pr-creator.ts",
+        "src/sync/commit-push-manager.ts",
+        "src/sync/commit-message.ts",
+        "src/sync/file-sync-strategy.ts"
+      ],
+      "evidence": [
+        "src/vcs/pr-creator.ts:72 — `const changedFiles = files.filter((f) => f.action !== \"skip\");`",
+        "src/vcs/pr-creator.ts:111 — same filter repeated",
+        "src/vcs/pr-creator.ts:132 — same filter repeated a third time in same file",
+        "src/sync/commit-message.ts:13 — same filter",
+        "src/sync/commit-push-manager.ts:48 — `.filter(([, info]) => info.action !== \"skip\")`",
+        "src/sync/file-sync-strategy.ts:38 — `.filter((f) => f.action !== \"skip\")`"
+      ],
+      "suggestion": "Extract a shared utility like `getEffectiveChanges(files: FileAction[]): FileAction[]` in a common location (e.g., pr-creator.ts or a shared file-action utility). This would centralize the skip-filtering logic and make it data-driven.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "repeated-action-counting-pattern",
+      "summary": "Action counting via repeated `.filter(c => c.action === X).length` appears in at least 5 locations across the codebase, despite `countActions()` existing in base-processor.ts. The `formatDiff` function in rulesets/diff.ts, github-summary.ts formatters, and repo-settings/processor.ts all recompute counts manually rather than using the shared utility.",
+      "related_files": [
+        "src/settings/rulesets/diff.ts",
+        "src/output/github-summary.ts",
+        "src/settings/repo-settings/processor.ts",
+        "src/settings/base-processor.ts"
+      ],
+      "evidence": [
+        "src/settings/rulesets/diff.ts:362-366 — manual filter-based counting in formatDiff()",
+        "src/output/github-summary.ts:148-150 — formatRulesetPlanSummary manual counting",
+        "src/output/github-summary.ts:170-171 — formatSettingsPlanSummary manual counting",
+        "src/output/github-summary.ts:179-181 — formatLabelsPlanSummary manual counting",
+        "src/settings/repo-settings/processor.ts:88-89,102-107 — manual unchanged counting alongside countActions-like inline code",
+        "src/settings/base-processor.ts:116-125 — countActions exists but is underutilized"
+      ],
+      "suggestion": "Use `countActions()` from base-processor.ts everywhere action-type counts are needed. For the github-summary formatters, either import the shared utility or create a thin adapter that works with the plan detail types. This eliminates repetitive multi-pass filtering.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "object-keys-length-idiom",
+      "summary": "The pattern `Object.keys(result).length > 0 ? result : undefined` appears 4 times across the codebase. While individually clear, the repetition suggests this \"return non-empty object or undefined\" guard could be a tiny utility for consistency.",
+      "related_files": [
+        "src/config/normalizer.ts",
+        "src/lifecycle/lifecycle-helpers.ts"
+      ],
+      "evidence": [
+        "src/config/normalizer.ts:140 — `return Object.keys(result).length > 0 ? result : undefined;`",
+        "src/config/normalizer.ts:207 — same pattern",
+        "src/config/normalizer.ts:288 — same pattern",
+        "src/lifecycle/lifecycle-helpers.ts:40 — same pattern"
+      ],
+      "suggestion": "Consider a small helper like `nonEmpty<T extends Record<string, unknown>>(obj: T): T | undefined` to reduce noise. This is a minor consistency issue, not a correctness concern.",
+      "confidence": "low"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "phase-functions-long-param-lists",
+      "summary": "The `runLifecyclePhase` and `runFileSyncPhase` functions each take 7 parameters, most of which are already available on the `ctx: RepoIterationContext` parameter. Values like `repoConfig`, `repoInfo`, `repoName`, `workDir`, and `token` are per-repo state that could be grouped into a per-repo context object passed alongside `ctx`, reducing the parameter count.",
+      "related_files": [
+        "src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "src/cli/sync-command.ts:406-414 — runLifecyclePhase(repoConfig, repoInfo, repoName, index, workDir, lifecycleToken, ctx)",
+        "src/cli/sync-command.ts:480-488 — runFileSyncPhase(repoConfig, repoInfo, repoName, current, workDir, token, ctx)",
+        "src/cli/sync-command.ts:365-373 — call site passes many per-repo locals individually"
+      ],
+      "suggestion": "Introduce a `RepoContext` type bundling `{ repoConfig, repoInfo, repoName, index, workDir, token }` and pass that alongside `ctx`. This collapses 6 parameters into 2 and makes the per-repo state bundle explicit.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "as-tresult-generic-casts",
+      "summary": "The `withGitHubGuards` function returns `as TResult` casts three times (lines 75, 84, 101), which bypass compile-time type checking. The function constructs partial `BaseProcessorResult` objects and asserts them as the full subtype `TResult`, which could silently succeed even if `TResult` has required fields beyond `BaseProcessorResult`.",
+      "related_files": [
+        "src/settings/base-processor.ts"
+      ],
+      "evidence": [
+        "src/settings/base-processor.ts:75 — `} as TResult;` for non-GitHub skip result",
+        "src/settings/base-processor.ts:84 — `} as TResult;` for empty settings skip result",
+        "src/settings/base-processor.ts:101 — `} as TResult;` for error result"
+      ],
+      "suggestion": "Consider having the guards object supply skip/error result factories (e.g., `buildSkipResult(repoName: string): TResult`) so each processor controls the shape of its own result type without unsafe casts. Alternatively, narrow the return type for guard branches to `BaseProcessorResult` and let callers widen it.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "normalizer-merge-complexity",
+      "summary": "normalizer.ts contains two near-parallel merge paths for settings: `mergeSettings` (final, filters out false/inherit) and `mergeRawSettings` (intermediate, preserves false/inherit for chaining). Both implement the same rulesets/labels/repo merge logic with slightly different semantics. The split adds cognitive overhead and risks drift between the two paths.",
+      "related_files": [
+        "src/config/normalizer.ts"
+      ],
+      "evidence": [
+        "src/config/normalizer.ts:214-289 — mergeSettings with final cleanup logic",
+        "src/config/normalizer.ts:385-454 — mergeRawSettings preserving raw types for group layering",
+        "Both iterate rulesets, check inherit, handle false, merge labels, handle repo settings — similar structure"
+      ],
+      "suggestion": "Consider unifying into a single parameterized merge function with a `preserveRaw: boolean` flag or a post-processing step, rather than maintaining two parallel implementations. Alternatively, make mergeRawSettings the single path and add a `finalize()` step that strips false/inherit entries.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "double-cast-ruleset-merge",
+      "summary": "In normalizer.ts, the mergeRuleset function returns `merged as unknown as Ruleset` — a double cast through unknown. This indicates a type mismatch between the deepMerge return type and the expected Ruleset type that the type system cannot verify.",
+      "related_files": [
+        "src/config/normalizer.ts"
+      ],
+      "evidence": [
+        "src/config/normalizer.ts:160 — `return merged as unknown as Ruleset;`"
+      ],
+      "suggestion": "If deepMerge inherently returns Record<string, unknown>, consider a type-narrowing utility or validation step rather than a double cast. This is a minor safety concern since the merge inputs are structurally valid, but the cast hides potential drift.",
+      "confidence": "low"
+    },
+    {
+      "dimension": "design_coherence",
+      "identifier": "processor-constructor-wide-bag",
+      "summary": "RepositoryProcessor's constructor takes a components bag with 9 optional injectable dependencies plus a gitOpsFactory and logger. While this enables fine-grained testability, the constructor itself is 60 lines of wiring code. The class is documented as a 'thin facade' but its constructor is the heaviest in the codebase.",
+      "related_files": [
+        "src/sync/repository-processor.ts"
+      ],
+      "evidence": [
+        "src/sync/repository-processor.ts:42-116 — constructor with 9 optional component overrides",
+        "src/sync/repository-processor.ts:118-134 — process() method is only 17 lines, dwarfed by constructor"
+      ],
+      "suggestion": "Extract the default-wiring logic into a static factory method (e.g., `RepositoryProcessor.create(options?)`) or a separate composition root function, keeping the constructor focused on accepting already-built dependencies. Tests can use the constructor directly; production code uses the factory.",
+      "confidence": "medium"
+    }
+  ]
+}

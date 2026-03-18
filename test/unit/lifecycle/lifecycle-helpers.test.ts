@@ -79,13 +79,11 @@ describe("lifecycle-helpers", () => {
         files: [],
       };
 
-      const result = await runLifecycleCheck(
-        repoConfig,
-        mockRepoInfo,
-        0,
-        { dryRun: false },
-        mockManager
-      );
+      const result = await runLifecycleCheck(repoConfig, mockRepoInfo, {
+        dryRun: false,
+        repoIndex: 0,
+        lifecycleManager: mockManager,
+      });
 
       assert.equal(result.lifecycleResult.action, "created");
       assert.ok(result.outputLines.length > 0);
@@ -104,13 +102,11 @@ describe("lifecycle-helpers", () => {
         files: [],
       };
 
-      const result = await runLifecycleCheck(
-        repoConfig,
-        mockRepoInfo,
-        0,
-        { dryRun: false },
-        mockManager
-      );
+      const result = await runLifecycleCheck(repoConfig, mockRepoInfo, {
+        dryRun: false,
+        repoIndex: 0,
+        lifecycleManager: mockManager,
+      });
 
       assert.equal(result.lifecycleResult.action, "existed");
       assert.equal(result.outputLines.length, 0);
@@ -130,13 +126,12 @@ describe("lifecycle-helpers", () => {
         files: [],
       };
 
-      await runLifecycleCheck(
-        repoConfig,
-        mockRepoInfo,
-        0,
-        { dryRun: false, githubHosts: ["ghe.example.com"] },
-        mockManager
-      );
+      await runLifecycleCheck(repoConfig, mockRepoInfo, {
+        dryRun: false,
+        repoIndex: 0,
+        lifecycleManager: mockManager,
+        githubHosts: ["ghe.example.com"],
+      });
 
       assert.deepEqual(
         (receivedOptions as { githubHosts: string[] }).githubHosts,
@@ -158,14 +153,12 @@ describe("lifecycle-helpers", () => {
         files: [],
       };
 
-      await runLifecycleCheck(
-        repoConfig,
-        mockRepoInfo,
-        0,
-        { dryRun: false },
-        mockManager,
-        { visibility: "private", description: "test" }
-      );
+      await runLifecycleCheck(repoConfig, mockRepoInfo, {
+        dryRun: false,
+        repoIndex: 0,
+        lifecycleManager: mockManager,
+        repoSettings: { visibility: "private", description: "test" },
+      });
 
       assert.deepEqual(receivedSettings, {
         visibility: "private",

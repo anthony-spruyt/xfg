@@ -3,7 +3,7 @@ import type { LifecycleReport, LifecycleAction } from "./lifecycle-report.js";
 import { hasLifecycleChanges } from "./lifecycle-report.js";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import type { SyncReport, RepoFileChanges } from "./sync-report.js";
-import type { SettingsReport, RepoChanges } from "./settings-report.js";
+import type { SettingsReport } from "./settings-report.js";
 import {
   renderRepoSettingsDiffLines,
   formatCountEntry,
@@ -18,6 +18,7 @@ interface UnifiedSummaryInput {
   sync?: SyncReport;
   settings?: SettingsReport;
   dryRun: boolean;
+  summaryPath?: string | undefined;
 }
 
 // =============================================================================
@@ -69,10 +70,13 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
     const t = input.settings.totals;
 
     const settingsEntry = formatCountEntry("setting", "settings", [
-      { label: selectLabel(dry, "added", "to add"), value: t.settings.add },
       {
-        label: selectLabel(dry, "changed", "to change"),
-        value: t.settings.change,
+        label: selectLabel(dry, "created", "to create"),
+        value: t.settings.create,
+      },
+      {
+        label: selectLabel(dry, "updated", "to update"),
+        value: t.settings.update,
       },
     ]);
     if (settingsEntry) parts.push(settingsEntry);
@@ -186,13 +190,6 @@ function renderSyncLines(syncRepo: RepoFileChanges, diffLines: string[]): void {
   }
 }
 
-function renderSettingsLines(
-  settingsRepo: RepoChanges,
-  diffLines: string[]
-): void {
-  renderRepoSettingsDiffLines(settingsRepo, diffLines);
-}
-
 // =============================================================================
 // Markdown Formatter
 // =============================================================================
@@ -262,7 +259,7 @@ export function formatUnifiedSummaryMarkdown(
 
     if (lcAction) renderLifecycleLines(lcAction, diffLines);
     if (syncRepo) renderSyncLines(syncRepo, diffLines);
-    if (settingsRepo) renderSettingsLines(settingsRepo, diffLines);
+    if (settingsRepo) renderRepoSettingsDiffLines(settingsRepo, diffLines);
   }
 
   if (diffLines.length > 0) {
@@ -285,5 +282,5 @@ export function formatUnifiedSummaryMarkdown(
 export function writeUnifiedSummary(input: UnifiedSummaryInput): void {
   const markdown = formatUnifiedSummaryMarkdown(input);
   if (!markdown) return;
-  writeGitHubStepSummary(markdown);
+  writeGitHubStepSummary(markdown, input.summaryPath);
 }

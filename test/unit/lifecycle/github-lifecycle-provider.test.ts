@@ -23,7 +23,7 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: '{"id": 123}',
       });
 
-      const provider = new GitHubLifecycleProvider({ executor });
+      const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
       const result = await provider.exists(mockRepoInfo);
 
       assert.equal(result, true);
@@ -37,7 +37,11 @@ describe("GitHubLifecycleProvider", () => {
         responses: new Map([["gh api", notFoundError]]),
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       const result = await provider.exists(mockRepoInfo);
 
       assert.equal(result, false);
@@ -50,7 +54,11 @@ describe("GitHubLifecycleProvider", () => {
         responses: new Map([["gh api", networkError]]),
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
 
       await assert.rejects(() => provider.exists(mockRepoInfo), /Network/);
     });
@@ -60,7 +68,7 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: '{"id": 123}',
       });
 
-      const provider = new GitHubLifecycleProvider({ executor });
+      const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
       await provider.exists(mockRepoInfo);
 
       assert.equal(calls.length, 1);
@@ -82,7 +90,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: '{"id": 123}',
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
 
       await assert.rejects(
         () => provider.exists(adoRepo),
@@ -97,7 +109,11 @@ describe("GitHubLifecycleProvider", () => {
         responses: new Map([["gh api", notFoundError]]),
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       const result = await provider.exists(mockRepoInfo);
 
       assert.equal(result, false);
@@ -110,7 +126,11 @@ describe("GitHubLifecycleProvider", () => {
         responses: new Map([["gh api", notFoundError]]),
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       const result = await provider.exists(mockRepoInfo);
 
       assert.equal(result, false);
@@ -121,7 +141,7 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: '{"id": 123}',
       });
 
-      const provider = new GitHubLifecycleProvider({ executor });
+      const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
       await provider.exists(mockRepoInfo);
 
       assert.ok(!calls[0].command.includes("--hostname"));
@@ -140,7 +160,7 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: '{"id": 123}',
       });
 
-      const provider = new GitHubLifecycleProvider({ executor });
+      const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
       await provider.exists(gheRepoInfo);
 
       assert.equal(calls.length, 1);
@@ -156,7 +176,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.create(mockRepoInfo);
 
       // calls[0] = gh repo create, calls[1] = GET README sha, calls[2] = DELETE README
@@ -175,7 +199,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.create(mockRepoInfo, { visibility: "private" });
 
       assert.ok(calls[0].command.includes("--private"));
@@ -186,7 +214,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.create(mockRepoInfo, { visibility: "internal" });
 
       assert.ok(calls[0].command.includes("--internal"));
@@ -197,7 +229,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.create(mockRepoInfo);
 
       assert.ok(calls[0].command.includes("--private"));
@@ -208,7 +244,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.create(mockRepoInfo, { visibility: "public" });
 
       assert.ok(calls[0].command.includes("--public"));
@@ -219,7 +259,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.create(mockRepoInfo, { description: "Test repo" });
 
       assert.ok(calls[0].command.includes("--description"));
@@ -231,7 +275,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.create(mockRepoInfo, { hasIssues: false });
 
       assert.ok(calls[0].command.includes("--disable-issues"));
@@ -242,7 +290,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.create(mockRepoInfo, { hasWiki: false });
 
       assert.ok(calls[0].command.includes("--disable-wiki"));
@@ -253,7 +305,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.create(mockRepoInfo, { hasIssues: true });
 
       assert.ok(!calls[0].command.includes("--disable-issues"));
@@ -265,7 +321,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.create(mockRepoInfo);
 
       // calls[0] = gh repo create with --add-readme
@@ -302,7 +362,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
 
       await assert.rejects(
         () => provider.create(adoRepo),
@@ -317,7 +381,11 @@ describe("GitHubLifecycleProvider", () => {
         ]),
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
 
       await assert.rejects(
         () => provider.create(mockRepoInfo),
@@ -349,7 +417,11 @@ describe("GitHubLifecycleProvider", () => {
           },
         };
 
-        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        const provider = new GitHubLifecycleProvider({
+          executor,
+          retries: 0,
+          cwd: "/test",
+        });
         await provider.create(mockRepoInfo, { defaultBranch: "main" });
 
         // Should have: create, get default_branch, rename, poll default_branch, get README sha, delete README
@@ -373,7 +445,11 @@ describe("GitHubLifecycleProvider", () => {
           defaultResponse: "",
         });
 
-        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        const provider = new GitHubLifecycleProvider({
+          executor,
+          retries: 0,
+          cwd: "/test",
+        });
         await provider.create(mockRepoInfo, { defaultBranch: "main" });
 
         // Should have: create, get default_branch, get README sha, delete README (no rename)
@@ -387,7 +463,11 @@ describe("GitHubLifecycleProvider", () => {
           defaultResponse: "",
         });
 
-        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        const provider = new GitHubLifecycleProvider({
+          executor,
+          retries: 0,
+          cwd: "/test",
+        });
         await provider.create(mockRepoInfo);
 
         // Should have: create, get README sha, delete README (no default_branch check)
@@ -417,7 +497,11 @@ describe("GitHubLifecycleProvider", () => {
           },
         };
 
-        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        const provider = new GitHubLifecycleProvider({
+          executor,
+          retries: 0,
+          cwd: "/test",
+        });
         await provider.create(mockRepoInfo, { defaultBranch: "main" });
 
         // Should have recovered from the error and continued polling
@@ -443,7 +527,11 @@ describe("GitHubLifecycleProvider", () => {
           defaultResponse: "",
         });
 
-        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        const provider = new GitHubLifecycleProvider({
+          executor,
+          retries: 0,
+          cwd: "/test",
+        });
 
         await assert.rejects(
           () => provider.create(mockRepoInfo, { defaultBranch: "main" }),
@@ -476,7 +564,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.fork!(upstreamRepoInfo, mockRepoInfo);
 
       // Find the fork command (not the API check)
@@ -507,7 +599,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.fork!(upstreamRepoInfo, personalRepoInfo);
 
       // Find the fork command (not the API check)
@@ -528,7 +624,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.fork!(upstreamRepoInfo, mockRepoInfo);
 
       const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
@@ -545,7 +645,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.fork!(upstreamRepoInfo, mockRepoInfo);
 
       // Should default to --org when we can't determine owner type
@@ -564,7 +668,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.fork!(upstreamRepoInfo, mockRepoInfo, {
         visibility: "private",
       });
@@ -589,7 +697,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.fork!(upstreamRepoInfo, mockRepoInfo, {
         description: "My custom fork",
       });
@@ -610,7 +722,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.fork!(upstreamRepoInfo, mockRepoInfo);
 
       // Should NOT call gh repo edit
@@ -632,7 +748,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
 
       await assert.rejects(
         () => provider.fork!(adoRepo, mockRepoInfo),
@@ -654,7 +774,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
 
       await assert.rejects(
         () => provider.fork!(upstreamRepoInfo, adoRepo),
@@ -670,7 +794,11 @@ describe("GitHubLifecycleProvider", () => {
         ]),
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
 
       await assert.rejects(
         () => provider.fork!(upstreamRepoInfo, mockRepoInfo),
@@ -691,7 +819,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
 
       await assert.rejects(
         () => provider.fork!(sameOwnerUpstream, mockRepoInfo),
@@ -715,7 +847,11 @@ describe("GitHubLifecycleProvider", () => {
         host: "github.com",
       };
       const { mock: executor } = createMockExecutor({ defaultResponse: "" });
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
 
       await assert.rejects(
         () => provider.fork!(upstream, target),
@@ -732,7 +868,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.fork!(upstreamRepoInfo, mockRepoInfo, {
         defaultBranch: "main",
       });
@@ -780,6 +920,7 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         forkReadyTimeoutMs: 5000,
         forkPollIntervalMs: 10,
+        cwd: "/test",
       });
 
       await provider.fork!(upstreamRepoInfo2, mockRepoInfo);
@@ -812,6 +953,7 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         forkReadyTimeoutMs: 50,
         forkPollIntervalMs: 10,
+        cwd: "/test",
       });
 
       await assert.rejects(
@@ -833,7 +975,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
 
       // calls[0] = remote remove origin
@@ -874,7 +1020,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
 
       await assert.rejects(
         () => provider.receiveMigration(adoRepo, "/tmp/source"),
@@ -890,7 +1040,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.receiveMigration(mockRepoInfo, "/tmp/source", {
         visibility: "private",
       });
@@ -916,7 +1070,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
 
       // Should still reach gh repo create despite remote remove failure
@@ -937,7 +1095,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
 
       // Should still reach gh repo create despite ref cleanup failure
@@ -960,7 +1122,11 @@ describe("GitHubLifecycleProvider", () => {
           defaultResponse: "",
         });
 
-        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        const provider = new GitHubLifecycleProvider({
+          executor,
+          retries: 0,
+          cwd: "/test",
+        });
         await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror", {
           defaultBranch: "main",
         });
@@ -988,7 +1154,11 @@ describe("GitHubLifecycleProvider", () => {
           defaultResponse: "",
         });
 
-        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        const provider = new GitHubLifecycleProvider({
+          executor,
+          retries: 0,
+          cwd: "/test",
+        });
         await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror", {
           defaultBranch: "main",
         });
@@ -1007,7 +1177,11 @@ describe("GitHubLifecycleProvider", () => {
           defaultResponse: "",
         });
 
-        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        const provider = new GitHubLifecycleProvider({
+          executor,
+          retries: 0,
+          cwd: "/test",
+        });
         await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
 
         assert.ok(!calls.some((c) => c.command.includes("symbolic-ref HEAD")));
@@ -1023,7 +1197,11 @@ describe("GitHubLifecycleProvider", () => {
           defaultResponse: "",
         });
 
-        const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+        const provider = new GitHubLifecycleProvider({
+          executor,
+          retries: 0,
+          cwd: "/test",
+        });
 
         await assert.rejects(
           () =>
@@ -1042,7 +1220,7 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: '{"id": 123}',
       });
 
-      const provider = new GitHubLifecycleProvider({ executor });
+      const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
       await provider.exists(mockRepoInfo, "ghs_test_token");
 
       assert.equal(calls.length, 1);
@@ -1055,7 +1233,7 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: '{"id": 123}',
       });
 
-      const provider = new GitHubLifecycleProvider({ executor });
+      const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
       await provider.exists(mockRepoInfo);
 
       assert.equal(calls.length, 1);
@@ -1068,7 +1246,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.create(mockRepoInfo, undefined, "ghs_test_token");
 
       // calls[0] = gh repo create, calls[1] = GET README sha, calls[2] = DELETE README
@@ -1085,7 +1267,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.receiveMigration(
         mockRepoInfo,
         "/tmp/source",
@@ -1116,7 +1302,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.fork!(
         upstreamRepoInfo,
         mockRepoInfo,
@@ -1154,7 +1344,11 @@ describe("GitHubLifecycleProvider", () => {
         defaultResponse: "",
       });
 
-      const provider = new GitHubLifecycleProvider({ executor, retries: 0 });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
       await provider.fork!(upstreamRepoInfo, mockRepoInfo);
 
       // Should still fork with --org flag (defaults to org when check fails)

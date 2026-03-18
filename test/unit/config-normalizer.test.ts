@@ -27,7 +27,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos.length, 1);
       assert.equal(result.repos[0].git, "git@github.com:org/repo.git");
     });
@@ -46,7 +46,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos.length, 2);
       assert.equal(result.repos[0].git, "git@github.com:org/repo1.git");
       assert.equal(result.repos[1].git, "git@github.com:org/repo2.git");
@@ -69,7 +69,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files.length, 2);
       assert.equal(result.repos[1].files.length, 2);
     });
@@ -89,7 +89,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos.length, 3);
     });
   });
@@ -108,7 +108,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
 
       // Both repos should have both files
       assert.equal(result.repos[0].files.length, 2);
@@ -138,7 +138,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
 
       // Only prettier.json should be included
       assert.equal(result.repos[0].files.length, 1);
@@ -164,7 +164,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
 
       // Only prettier.json should be included
       assert.equal(result.repos[0].files.length, 1);
@@ -194,7 +194,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
 
       // repo1: only prettier.json
       assert.equal(result.repos[0].files.length, 1);
@@ -223,7 +223,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
 
       // Only prettier.json, with merged content
       assert.equal(result.repos[0].files.length, 1);
@@ -245,7 +245,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].content, { base: "value" });
     });
 
@@ -265,7 +265,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].content, {
         base: "value",
         override: "updated",
@@ -289,7 +289,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].content, {
         nested: { a: 1, b: 3, c: 4 },
       });
@@ -314,7 +314,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].content, {
         only: "repo-value",
       });
@@ -339,7 +339,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // Override with text content - uses repo content only
       assert.equal(result.repos[0].files[0].content, "coverage\n.env");
     });
@@ -363,7 +363,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // Override with text array content - uses repo content only
       assert.deepEqual(result.repos[0].files[0].content, ["coverage", ".env"]);
     });
@@ -387,7 +387,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].content, {
         items: ["a", "b", "c", "d"],
       });
@@ -412,7 +412,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // String content always replaces - mergeStrategy is ignored
       assert.equal(result.repos[0].files[0].content, "coverage\n.env");
     });
@@ -436,7 +436,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // Text array content merged with append
       assert.deepEqual(result.repos[0].files[0].content, [
         "node_modules",
@@ -465,7 +465,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // Text array content merged with prepend - repo content before base
       assert.deepEqual(result.repos[0].files[0].content, [
         "coverage",
@@ -493,7 +493,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // Text array content with default replace - repo content replaces base
       assert.deepEqual(result.repos[0].files[0].content, ["coverage", ".env"]);
     });
@@ -518,7 +518,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       const jsonStr = JSON.stringify(result.repos[0].files[0].content);
       assert.ok(!jsonStr.includes("$arrayMerge"));
     });
@@ -534,7 +534,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].content, {
         value: "test-value",
       });
@@ -549,7 +549,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].content, { value: "default" });
     });
 
@@ -563,7 +563,7 @@ describe("normalizeConfig", () => {
       };
 
       assert.throws(
-        () => normalizeConfig(raw),
+        () => normalizeConfig(raw, process.env),
         /Missing required environment variable: MISSING_VAR/
       );
     });
@@ -579,7 +579,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].fileName, "my/config.json");
     });
 
@@ -597,7 +597,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
 
       // Modify one repo's content
       (result.repos[0].files[0].content as Record<string, unknown>).key =
@@ -617,7 +617,7 @@ describe("normalizeConfig", () => {
         repos: [],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos, []);
     });
   });
@@ -647,7 +647,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       const appendFile = result.repos[0].files.find(
         (f) => f.fileName === "append.json"
       );
@@ -676,7 +676,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].createOnly, true);
     });
 
@@ -689,7 +689,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].createOnly, false);
     });
 
@@ -702,7 +702,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].createOnly, undefined);
     });
 
@@ -722,7 +722,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].createOnly, false);
     });
 
@@ -742,7 +742,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].createOnly, true);
     });
 
@@ -763,7 +763,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // repo1 inherits root createOnly: true
       assert.equal(result.repos[0].files[0].createOnly, true);
       // repo2 overrides to false
@@ -790,7 +790,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].createOnly, true);
       assert.deepEqual(result.repos[0].files[0].content, {
         only: "repo-value",
@@ -808,7 +808,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].content, null);
     });
 
@@ -821,7 +821,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].content, null);
       assert.equal(result.repos[0].files[0].createOnly, true);
     });
@@ -842,7 +842,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].content, { key: "value" });
     });
 
@@ -862,7 +862,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].content, "node_modules\ndist");
     });
 
@@ -882,7 +882,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].content, [
         "node_modules",
         "dist",
@@ -905,7 +905,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].content, null);
     });
   });
@@ -920,7 +920,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].header, ["Single comment"]);
     });
 
@@ -933,7 +933,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].header, ["Line 1", "Line 2"]);
     });
 
@@ -953,7 +953,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].header, ["Repo header"]);
     });
 
@@ -966,7 +966,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].header, undefined);
     });
   });
@@ -984,7 +984,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(
         result.repos[0].files[0].schemaUrl,
         "https://example.com/schema.json"
@@ -1010,7 +1010,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(
         result.repos[0].files[0].schemaUrl,
         "https://repo.com/schema.json"
@@ -1026,7 +1026,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].schemaUrl, undefined);
     });
 
@@ -1039,7 +1039,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].content, null);
       assert.equal(
         result.repos[0].files[0].schemaUrl,
@@ -1065,7 +1065,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       const repo = result.repos[0];
       const file = repo.files.find((f) => f.fileName === ".gitignore");
       assert.deepEqual(file?.content, { invalid: "object" });
@@ -1081,7 +1081,7 @@ describe("normalizeConfig", () => {
         prTemplate: "## Custom Template\n\n${xfg:pr.fileChanges}",
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(
         result.prTemplate,
         "## Custom Template\n\n${xfg:pr.fileChanges}"
@@ -1095,7 +1095,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.prTemplate, undefined);
     });
   });
@@ -1110,7 +1110,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].executable, true);
     });
 
@@ -1123,7 +1123,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].executable, false);
     });
 
@@ -1136,7 +1136,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].executable, undefined);
     });
 
@@ -1156,7 +1156,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].executable, false);
     });
 
@@ -1176,7 +1176,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].executable, true);
     });
 
@@ -1197,7 +1197,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].executable, true);
       assert.equal(result.repos[1].files[0].executable, false);
     });
@@ -1213,7 +1213,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].template, true);
     });
 
@@ -1226,7 +1226,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].template, undefined);
     });
 
@@ -1246,7 +1246,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].template, false);
     });
 
@@ -1266,7 +1266,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].template, true);
     });
 
@@ -1287,7 +1287,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].template, true);
       assert.equal(result.repos[1].files[0].template, false);
     });
@@ -1307,7 +1307,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].vars, {
         env: "prod",
         region: "us-east-1",
@@ -1323,7 +1323,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].vars, undefined);
     });
 
@@ -1347,7 +1347,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].vars, {
         env: "prod",
         region: "us-east-1",
@@ -1375,7 +1375,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].vars, {
         env: "staging",
         region: "us-east-1",
@@ -1398,7 +1398,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].vars, { env: "dev" });
     });
 
@@ -1423,7 +1423,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].files[0].vars, { env: "prod" });
       assert.deepEqual(result.repos[1].files[0].vars, {
         env: "staging",
@@ -1444,7 +1444,7 @@ describe("normalizeConfig", () => {
         deleteOrphaned: true,
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].deleteOrphaned, true);
       assert.equal(result.repos[0].files[1].deleteOrphaned, true);
       assert.equal(result.deleteOrphaned, true);
@@ -1459,7 +1459,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].deleteOrphaned, undefined);
       assert.equal(result.deleteOrphaned, undefined);
     });
@@ -1475,7 +1475,7 @@ describe("normalizeConfig", () => {
         deleteOrphaned: false,
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].deleteOrphaned, true);
       assert.equal(result.repos[0].files[1].deleteOrphaned, false);
     });
@@ -1497,7 +1497,7 @@ describe("normalizeConfig", () => {
         deleteOrphaned: true,
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].deleteOrphaned, false);
     });
 
@@ -1518,7 +1518,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // repo1 inherits per-file deleteOrphaned: true
       assert.equal(result.repos[0].files[0].deleteOrphaned, true);
       // repo2 overrides to false
@@ -1541,7 +1541,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].files[0].deleteOrphaned, true);
     });
 
@@ -1562,7 +1562,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // Only settings.yaml should be included
       assert.equal(result.repos[0].files.length, 1);
       assert.equal(result.repos[0].files[0].fileName, "settings.yaml");
@@ -1589,7 +1589,7 @@ describe("normalizeConfig", () => {
         deleteOrphaned: true, // global default
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       const files = result.repos[0].files;
       const file1 = files.find((f) => f.fileName === "file1.json");
       const file2 = files.find((f) => f.fileName === "file2.json");
@@ -1617,7 +1617,7 @@ describe("normalizeConfig", () => {
         },
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].settings?.rulesets?.["pr-rules"], {
         target: "branch",
         enforcement: "active",
@@ -1650,7 +1650,7 @@ describe("normalizeConfig", () => {
         },
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // enforcement should be overridden, target inherited
       assert.equal(
         result.repos[0].settings?.rulesets?.["pr-rules"]?.enforcement,
@@ -1693,7 +1693,7 @@ describe("normalizeConfig", () => {
         },
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // Per-repo rules array should replace root rules array (not merge)
       assert.equal(
         result.repos[0].settings?.rulesets?.["pr-rules"]?.rules?.length,
@@ -1743,7 +1743,7 @@ describe("normalizeConfig", () => {
         },
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // Per-repo rules replace root rules entirely
       const prRule =
         result.repos[0].settings?.rulesets?.["pr-rules"]?.rules?.[0];
@@ -1781,7 +1781,7 @@ describe("normalizeConfig", () => {
         },
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // repo1 inherits root settings
       assert.equal(
         result.repos[0].settings?.rulesets?.["pr-rules"]?.enforcement,
@@ -1821,7 +1821,7 @@ describe("normalizeConfig", () => {
         },
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // Both rulesets should exist
       assert.ok(result.repos[0].settings?.rulesets?.["pr-rules"]);
       assert.ok(result.repos[0].settings?.rulesets?.["release-rules"]);
@@ -1844,7 +1844,7 @@ describe("normalizeConfig", () => {
         },
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].settings?.deleteOrphaned, false);
     });
 
@@ -1855,7 +1855,7 @@ describe("normalizeConfig", () => {
         repos: [{ git: "git@github.com:org/repo.git" }],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].settings, undefined);
     });
 
@@ -1880,7 +1880,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos.length, 2);
       assert.deepEqual(result.repos[0].settings, result.repos[1].settings);
     });
@@ -1903,7 +1903,7 @@ describe("normalizeConfig", () => {
         },
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       // Modify repo1's settings
       result.repos[0].settings!.rulesets!["pr-rules"]!.bypassActors!.push({
         actorId: 456,
@@ -1937,7 +1937,7 @@ describe("normalizeConfig", () => {
           ],
         };
 
-        const result = normalizeConfig(raw);
+        const result = normalizeConfig(raw, process.env);
         assert.equal(result.repos[0].files.length, 0);
       });
 
@@ -1959,7 +1959,7 @@ describe("normalizeConfig", () => {
           ],
         };
 
-        const result = normalizeConfig(raw);
+        const result = normalizeConfig(raw, process.env);
         assert.equal(result.repos[0].files.length, 1);
         assert.equal(result.repos[0].files[0].fileName, "custom.json");
         assert.deepEqual(result.repos[0].files[0].content, { custom: true });
@@ -1981,7 +1981,7 @@ describe("normalizeConfig", () => {
           ],
         };
 
-        const result = normalizeConfig(raw);
+        const result = normalizeConfig(raw, process.env);
         assert.equal(result.repos[0].files.length, 1);
         assert.equal(result.repos[0].files[0].fileName, "eslint.json");
       });
@@ -2010,7 +2010,7 @@ describe("normalizeConfig", () => {
           },
         };
 
-        const result = normalizeConfig(raw);
+        const result = normalizeConfig(raw, process.env);
         assert.ok(result.repos[0].settings?.rulesets);
         assert.equal(
           result.repos[0].settings?.rulesets?.["main-protection"],
@@ -2041,7 +2041,7 @@ describe("normalizeConfig", () => {
           },
         };
 
-        const result = normalizeConfig(raw);
+        const result = normalizeConfig(raw, process.env);
         assert.equal(result.repos[0].settings?.rulesets, undefined);
       });
 
@@ -2067,7 +2067,7 @@ describe("normalizeConfig", () => {
           },
         };
 
-        const result = normalizeConfig(raw);
+        const result = normalizeConfig(raw, process.env);
         assert.ok(result.repos[0].settings?.rulesets);
         assert.equal(
           result.repos[0].settings?.rulesets?.["main-protection"],
@@ -2101,7 +2101,7 @@ describe("normalizeConfig", () => {
           },
         };
 
-        const result = normalizeConfig(raw);
+        const result = normalizeConfig(raw, process.env);
         assert.ok(result.repos[0].settings?.rulesets?.["main-protection"]);
       });
     });
@@ -2127,7 +2127,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].settings?.repo, undefined);
     });
 
@@ -2152,7 +2152,7 @@ describe("normalizeConfig", () => {
         ],
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.equal(result.repos[0].settings?.repo, undefined);
       assert.ok(result.repos[0].settings?.rulesets?.["main-protection"]);
     });
@@ -2172,7 +2172,7 @@ describe("normalizeConfig - lifecycle fields", () => {
       ],
     };
 
-    const config = normalizeConfig(rawConfig);
+    const config = normalizeConfig(rawConfig, process.env);
 
     assert.equal(
       config.repos[0].upstream,
@@ -2192,7 +2192,7 @@ describe("normalizeConfig - lifecycle fields", () => {
       ],
     };
 
-    const config = normalizeConfig(rawConfig);
+    const config = normalizeConfig(rawConfig, process.env);
 
     assert.equal(
       config.repos[0].source,
@@ -2215,7 +2215,7 @@ describe("normalizeConfig - lifecycle fields", () => {
       ],
     };
 
-    const config = normalizeConfig(rawConfig);
+    const config = normalizeConfig(rawConfig, process.env);
 
     assert.equal(config.repos.length, 2);
     assert.equal(
@@ -2393,7 +2393,7 @@ describe("mergeSettings with repo", () => {
       },
       repos: [{ git: "git@github.com:org/repo.git" }],
     };
-    const config = normalizeConfig(raw);
+    const config = normalizeConfig(raw, process.env);
     assert.equal(config.repos[0].settings?.labels?.bug.color, "d73a4a");
   });
 
@@ -2407,7 +2407,7 @@ describe("mergeSettings with repo", () => {
       },
       repos: [{ git: "git@github.com:org/repo.git" }],
     };
-    const config = normalizeConfig(raw);
+    const config = normalizeConfig(raw, process.env);
     assert.equal(config.settings?.labels?.bug.color, "d73a4a");
     assert.equal(
       config.settings?.labels?.bug.description,
@@ -2429,7 +2429,7 @@ describe("mergeSettings with repo", () => {
         },
       ],
     };
-    const config = normalizeConfig(raw);
+    const config = normalizeConfig(raw, process.env);
     assert.ok(config.repos[0].settings?.labels?.custom);
     assert.equal(config.repos[0].settings?.labels?.custom.color, "aaaaaa");
   });
@@ -2445,7 +2445,7 @@ describe("mergeSettings with repo", () => {
         },
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].prOptions?.labels, [
         "config-sync",
         "automated",
@@ -2469,7 +2469,7 @@ describe("mergeSettings with repo", () => {
         },
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].prOptions?.labels, ["critical-config"]);
     });
 
@@ -2490,7 +2490,7 @@ describe("mergeSettings with repo", () => {
         },
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].prOptions?.labels, []);
     });
 
@@ -2512,7 +2512,7 @@ describe("mergeSettings with repo", () => {
         },
       };
 
-      const result = normalizeConfig(raw);
+      const result = normalizeConfig(raw, process.env);
       assert.deepEqual(result.repos[0].prOptions?.labels, ["config-sync"]);
       assert.equal(result.repos[0].prOptions?.merge, "manual");
     });
@@ -2536,7 +2536,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.equal(result.repos.length, 1);
     assert.equal(result.repos[0].files.length, 1);
     assert.deepStrictEqual(result.repos[0].files[0].content, {
@@ -2566,7 +2566,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.equal(result.repos.length, 1);
     const fileNames = result.repos[0].files.map((f) => f.fileName);
     assert.ok(fileNames.includes("root.json"));
@@ -2595,7 +2595,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const shared = result.repos[0].files.find(
       (f) => f.fileName === "shared.json"
     );
@@ -2626,7 +2626,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const config = result.repos[0].files.find(
       (f) => f.fileName === "config.json"
     );
@@ -2658,7 +2658,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const fileNames = result.repos[0].files.map((f) => f.fileName);
     assert.ok(!fileNames.includes("root.json"));
     assert.ok(fileNames.includes("group.json"));
@@ -2689,7 +2689,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     // With inherit:false on repo and no root definition of repo.json,
     // the repo file won't appear (it needs a root definition to be processed).
     // This test verifies root and group files are excluded.
@@ -2720,7 +2720,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const fileNames = result.repos[0].files.map((f) => f.fileName);
     assert.ok(fileNames.includes("keep.json"));
     assert.ok(!fileNames.includes("remove.json"));
@@ -2749,7 +2749,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const fileNames = result.repos[0].files.map((f) => f.fileName);
     assert.ok(!fileNames.includes("group.json"));
     assert.ok(fileNames.includes("other.json"));
@@ -2774,7 +2774,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.equal(result.repos.length, 2);
     assert.equal(result.repos[0].files.length, 1);
     assert.equal(result.repos[1].files.length, 1);
@@ -2791,7 +2791,7 @@ describe("group configuration", () => {
       repos: [{ git: "git@github.com:org/repo.git" }],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.equal(result.repos.length, 1);
     assert.equal(result.repos[0].files.length, 1);
     assert.deepStrictEqual(result.repos[0].files[0].content, { key: "value" });
@@ -2811,7 +2811,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.equal(result.repos[0].files.length, 1);
     assert.deepStrictEqual(result.repos[0].files[0].content, { key: "value" });
   });
@@ -2840,7 +2840,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const config = result.repos[0].files[0];
     assert.deepStrictEqual(config.content, { fromGroup: true });
   });
@@ -2874,7 +2874,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const config = result.repos[0].files[0];
     // override:true at repo level replaces all accumulated content (root + group)
     assert.deepStrictEqual(config.content, { fromRepo: true });
@@ -2900,7 +2900,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.equal(result.repos[0].prOptions?.merge, "auto");
     assert.deepStrictEqual(result.repos[0].prOptions?.labels, ["from-group"]);
   });
@@ -2939,7 +2939,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.ok(result.repos[0].settings?.rulesets?.["base-protection"]);
     assert.ok(result.repos[0].settings?.rulesets?.["group-protection"]);
   });
@@ -2979,7 +2979,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     // Group's inherit:false discards root rulesets
     assert.ok(!result.repos[0].settings?.rulesets?.["root-protection"]);
     assert.ok(result.repos[0].settings?.rulesets?.["group-only-protection"]);
@@ -3009,7 +3009,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const script = result.repos[0].files.find(
       (f) => f.fileName === "script.sh"
     );
@@ -3036,7 +3036,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.equal(result.repos[0].prOptions?.merge, "force");
     assert.deepStrictEqual(result.repos[0].prOptions?.labels, ["from-group"]);
   });
@@ -3058,7 +3058,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.equal(result.repos[0].files.length, 1);
     assert.equal(result.repos[0].files[0].fileName, "root.json");
   });
@@ -3084,7 +3084,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const fileNames = result.repos[0].files.map((f) => f.fileName);
     assert.ok(fileNames.includes("root.json"));
     assert.ok(!fileNames.includes("undef.json"));
@@ -3116,7 +3116,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const script = result.repos[0].files.find(
       (f) => f.fileName === "script.sh"
     );
@@ -3152,7 +3152,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const script = result.repos[0].files.find(
       (f) => f.fileName === "script.sh"
     );
@@ -3183,7 +3183,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const config = result.repos[0].files.find(
       (f) => f.fileName === "config.sh"
     );
@@ -3214,7 +3214,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const config = result.repos[0].files[0];
     // override:true with no overlay content = use existing content
     assert.deepStrictEqual(config.content, { fromRoot: true });
@@ -3239,7 +3239,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.equal(result.repos[0].files.length, 1);
     assert.equal(result.repos[0].files[0].fileName, "new-file.json");
     assert.deepStrictEqual(result.repos[0].files[0].content, { brand: "new" });
@@ -3263,7 +3263,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.equal(result.repos[0].prOptions?.merge, "auto");
   });
 
@@ -3289,7 +3289,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.ok(result.repos[0].settings?.rulesets?.["root-rule"]);
   });
 
@@ -3316,7 +3316,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.ok(result.repos[0].settings?.rulesets?.["group-rule"]);
   });
 
@@ -3353,7 +3353,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const rule = result.repos[0].settings?.rulesets?.["shared-rule"] as Record<
       string,
       unknown
@@ -3392,7 +3392,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     // mergeRawSettings accumulates false; mergeSettings then processes it
     // keep-rule should remain present
     assert.ok(result.repos[0].settings?.rulesets?.["keep-rule"]);
@@ -3425,7 +3425,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     // repo: false in group opts out of all repo settings
     assert.equal(result.repos[0].settings?.repo, undefined);
   });
@@ -3458,7 +3458,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const repo = result.repos[0].settings?.repo as Record<string, unknown>;
     assert.equal(repo?.hasIssues, true);
     assert.equal(repo?.hasWiki, false);
@@ -3490,7 +3490,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const repo = result.repos[0].settings?.repo as Record<string, unknown>;
     assert.equal(repo?.hasWiki, false);
   });
@@ -3525,7 +3525,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const labels = result.repos[0].settings?.labels;
     // Group overrides bug label color/description
     assert.equal(labels?.bug?.color, "ff0000");
@@ -3565,7 +3565,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const labels = result.repos[0].settings?.labels;
     // bug from root should be discarded
     assert.equal(labels?.bug, undefined);
@@ -3598,7 +3598,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const labels = result.repos[0].settings?.labels;
     // bug opted out via per-repo false
     assert.equal(labels?.bug, undefined);
@@ -3642,7 +3642,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const labels = result.repos[0].settings?.labels;
     // bug opted out
     assert.equal(labels?.bug, undefined);
@@ -3679,7 +3679,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.equal(result.repos[0].settings?.deleteOrphaned, true);
   });
 
@@ -3718,7 +3718,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.ok(result.repos[0].settings?.rulesets?.["root-rule"]);
     assert.ok(result.repos[0].settings?.rulesets?.["group-a-rule"]);
     assert.ok(result.repos[0].settings?.rulesets?.["group-b-rule"]);
@@ -3749,7 +3749,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     // inherit key should be stripped, group-rule present
     assert.ok(result.repos[0].settings?.rulesets?.["group-rule"]);
     assert.equal(result.repos[0].settings?.deleteOrphaned, true);
@@ -3779,7 +3779,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.ok(result.repos[0].settings?.labels?.enhancement);
   });
 
@@ -3806,7 +3806,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const repo = result.repos[0].settings?.repo as Record<string, unknown>;
     assert.equal(repo?.hasIssues, true);
   });
@@ -3839,7 +3839,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const rule = result.repos[0].settings?.rulesets?.[
       "brand-new-rule"
     ] as Record<string, unknown>;
@@ -3875,7 +3875,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const bug = result.repos[0].settings?.labels?.bug;
     // Group overrides color but description from root is preserved via mergeSettings
     assert.equal(bug?.color, "ff0000");
@@ -3899,7 +3899,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.equal(result.repos[0].settings, undefined);
   });
 
@@ -3933,7 +3933,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     assert.ok(result.repos[0].settings?.rulesets?.["root-rule"]);
     assert.ok(result.repos[0].settings?.rulesets?.["group-rule"]);
   });
@@ -3967,7 +3967,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     // Rulesets should be empty (inherit:false discarded root, no group rulesets added)
     // But repo settings should still be there
     assert.equal(result.repos[0].settings?.rulesets, undefined);
@@ -4006,7 +4006,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     // Labels should be empty since inherit:false discarded root labels
     assert.equal(result.repos[0].settings?.labels, undefined);
     // But rulesets should still be there
@@ -4036,7 +4036,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     // groupB overrides merge from root/groupA
     assert.equal(result.repos[0].prOptions?.merge, "force");
     // groupA labels preserved
@@ -4069,7 +4069,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const content = result.repos[0].files[0].content as Record<string, unknown>;
     assert.equal(content.root, true);
     assert.equal(content.group, true);
@@ -4098,7 +4098,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const config = result.repos[0].files[0];
     assert.deepStrictEqual(config.content, { fromRoot: true });
     assert.equal(config.createOnly, true);
@@ -4134,7 +4134,7 @@ describe("group configuration", () => {
       ],
     };
 
-    const result = normalizeConfig(raw);
+    const result = normalizeConfig(raw, process.env);
     const newFile = result.repos[0].files.find(
       (f) => f.fileName === "new.json"
     );

@@ -150,14 +150,15 @@ function mergeRuleset(
   if (!root) return structuredClone(perRepo ?? {});
   if (!perRepo) return structuredClone(root);
 
-  // Deep merge using the existing merge utility with replace strategy
+  // Deep merge using the existing merge utility with replace strategy.
+  // deepMerge operates on Record<string, unknown> — the cast is safe because
+  // merging two Ruleset-shaped objects preserves the Ruleset structure.
   const ctx = createMergeContext("replace");
-  const merged = deepMerge(
+  return deepMerge(
     structuredClone(root) as Record<string, unknown>,
     perRepo as Record<string, unknown>,
     ctx
-  );
-  return merged as unknown as Ruleset;
+  ) as Ruleset;
 }
 
 /**
@@ -166,14 +167,27 @@ function mergeRuleset(
  * inherit: false skips all root labels.
  * label: false opts out of a specific root label.
  */
+/**
+ * Label map from config: each key is a label name mapped to a Label config
+ * or `false` to opt out. The special `inherit` key controls whether parent
+ * labels are inherited (defaults to true).
+ *
+ * The index signature accommodates both label entries and the boolean
+ * `inherit` flag to avoid a type intersection conflict.
+ */
+interface LabelMap {
+  inherit?: boolean;
+  [key: string]: Label | false | boolean | undefined;
+}
+
 function mergeLabels(
-  rootLabels: Record<string, unknown> | undefined,
-  repoLabels: Record<string, unknown> | undefined
+  rootLabels: LabelMap | undefined,
+  repoLabels: LabelMap | undefined
 ): Record<string, Label> | undefined {
   if (!rootLabels && !repoLabels) return undefined;
 
-  const root = rootLabels ?? {};
-  const repo = repoLabels ?? {};
+  const root: LabelMap = rootLabels ?? {};
+  const repo: LabelMap = repoLabels ?? {};
   const inheritLabels = shouldInherit(repo);
 
   const allLabelNames = new Set([
@@ -191,12 +205,14 @@ function mergeLabels(
     if (repoLabel === false) continue;
     if (!inheritLabels && !repoLabel && rootLabel) continue;
 
-    const merged: Label = {
-      ...((rootLabel && rootLabel !== false ? rootLabel : {}) as Label),
-      ...((repoLabel && repoLabel !== false ? repoLabel : {}) as Label),
-    };
-    // Strip # from color and lowercase
-    merged.color = merged.color.replace(/^#/, "").toLowerCase();
+    const base: Partial<Label> =
+      rootLabel && typeof rootLabel === "object" ? rootLabel : {};
+    const overlay: Partial<Label> =
+      repoLabel && typeof repoLabel === "object" ? repoLabel : {};
+    const color = (overlay.color ?? base.color ?? "")
+      .replace(/^#/, "")
+      .toLowerCase();
+    const merged: Label = { ...base, ...overlay, color };
     result[name] = merged;
   }
 
@@ -276,10 +292,7 @@ export function mergeSettings(
   }
 
   // Merge labels by name
-  const mergedLabels = mergeLabels(
-    root?.labels as Record<string, unknown> | undefined,
-    perRepo?.labels as Record<string, unknown> | undefined
-  );
+  const mergedLabels = mergeLabels(root?.labels, perRepo?.labels);
   if (mergedLabels) {
     result.labels = mergedLabels;
   }
@@ -405,7 +418,7 @@ function mergeRawSettings(
       } else if (typeof ruleset === "object") {
         const existing = result.rulesets[name];
         result.rulesets[name] = existing
-          ? (mergeRuleset(existing, ruleset) as Ruleset)
+          ? mergeRuleset(existing, ruleset)
           : structuredClone(ruleset);
       }
     }
@@ -471,10 +484,59 @@ function mergeGroupSettings(
 }
 
 /**
+ * Resolves a single file entry by merging root config with repo overrides.
+ * Returns null if the file should be skipped.
+ */
+function resolveFileEntry(
+  fileName: string,
+  fileConfig: RawFileConfig,
+  repoOverride: RawRepoFileOverride | false | undefined,
+  inheritFiles: boolean,
+  globalDeleteOrphaned: boolean | undefined,
+  env: Record<string, string | undefined>
+): FileContent | null {
+  if (repoOverride === false) return null;
+  if (!inheritFiles && !repoOverride) return null;
+
+  const fileStrategy = fileConfig.mergeStrategy ?? "replace";
+
+  let mergedContent = resolveFileContent(
+    fileConfig.content,
+    repoOverride,
+    fileStrategy
+  );
+
+  if (mergedContent !== null) {
+    mergedContent = interpolateContent(mergedContent, { strict: true, env });
+  }
+
+  return {
+    fileName,
+    content: mergedContent,
+    createOnly: repoOverride?.createOnly ?? fileConfig.createOnly,
+    executable: repoOverride?.executable ?? fileConfig.executable,
+    header: normalizeHeader(repoOverride?.header ?? fileConfig.header),
+    schemaUrl: repoOverride?.schemaUrl ?? fileConfig.schemaUrl,
+    template: repoOverride?.template ?? fileConfig.template,
+    vars:
+      fileConfig.vars || repoOverride?.vars
+        ? { ...fileConfig.vars, ...repoOverride?.vars }
+        : undefined,
+    deleteOrphaned:
+      repoOverride?.deleteOrphaned ??
+      fileConfig.deleteOrphaned ??
+      globalDeleteOrphaned,
+  };
+}
+
+/**
  * Normalizes raw config into expanded, merged config.
  * Pipeline: expand git arrays -> merge content -> interpolate env vars
  */
-export function normalizeConfig(raw: RawConfig): Config {
+export function normalizeConfig(
+  raw: RawConfig,
+  env: Record<string, string | undefined>
+): Config {
   const expandedRepos: RepoConfig[] = [];
 
   for (const rawRepo of raw.repos) {
@@ -504,65 +566,15 @@ export function normalizeConfig(raw: RawConfig): Config {
         // Skip reserved key
         if (fileName === "inherit") continue;
 
-        const repoOverride = rawRepo.files?.[fileName];
-
-        // Skip excluded files (set to false)
-        if (repoOverride === false) {
-          continue;
-        }
-
-        // Skip if inherit: false and no repo-specific override
-        if (!inheritFiles && !repoOverride) {
-          continue;
-        }
-
-        const fileConfig = effectiveRootFiles[fileName];
-        const fileStrategy = fileConfig.mergeStrategy ?? "replace";
-
-        let mergedContent = resolveFileContent(
-          fileConfig.content,
-          repoOverride,
-          fileStrategy
-        );
-
-        if (mergedContent !== null) {
-          mergedContent = interpolateContent(mergedContent, { strict: true });
-        }
-
-        // Resolve fields: per-repo overrides root level
-        const createOnly = repoOverride?.createOnly ?? fileConfig.createOnly;
-        const executable = repoOverride?.executable ?? fileConfig.executable;
-        const header = normalizeHeader(
-          repoOverride?.header ?? fileConfig.header
-        );
-        const schemaUrl = repoOverride?.schemaUrl ?? fileConfig.schemaUrl;
-
-        // Template: per-repo overrides root level
-        const template = repoOverride?.template ?? fileConfig.template;
-
-        // Vars: merge root + per-repo (per-repo takes precedence)
-        const vars =
-          fileConfig.vars || repoOverride?.vars
-            ? { ...fileConfig.vars, ...repoOverride?.vars }
-            : undefined;
-
-        // deleteOrphaned: per-repo overrides per-file overrides global
-        const deleteOrphaned =
-          repoOverride?.deleteOrphaned ??
-          fileConfig.deleteOrphaned ??
-          raw.deleteOrphaned;
-
-        files.push({
+        const entry = resolveFileEntry(
           fileName,
-          content: mergedContent,
-          createOnly,
-          executable,
-          header,
-          schemaUrl,
-          template,
-          vars,
-          deleteOrphaned,
-        });
+          effectiveRootFiles[fileName],
+          rawRepo.files?.[fileName],
+          inheritFiles,
+          raw.deleteOrphaned,
+          env
+        );
+        if (entry) files.push(entry);
       }
 
       // Merge PR options: per-repo overrides effective (root + groups)

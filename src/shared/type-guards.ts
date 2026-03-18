@@ -1,13 +1,9 @@
-/**
- * Check if a value is a plain object (not array, null, or other types).
- */
+import type { DebugLog } from "./logger.js";
+
 export function isPlainObject(val: unknown): val is Record<string, unknown> {
   return typeof val === "object" && val !== null && !Array.isArray(val);
 }
 
-/**
- * Extract an error message from an unknown thrown value.
- */
 export function toErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
@@ -21,7 +17,7 @@ export function toErrorMessage(error: unknown): string {
 export async function safeCleanup(
   fn: () => void | Promise<void>,
   label: string,
-  log: { debug(msg: string): void }
+  log: DebugLog
 ): Promise<void> {
   try {
     await fn();

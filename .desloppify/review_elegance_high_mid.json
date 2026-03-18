@@ -1,0 +1,111 @@
+{
+  "assessments": {
+    "high_level_elegance": 88,
+    "mid_level_elegance": 82
+  },
+  "findings": [
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "sync-command-orchestration-weight",
+      "summary": "sync-command.ts (626 lines) acts as both CLI entry point and orchestration hub, containing 9 module-level helper functions (getUniqueFileNames, generateBranchName, formatFileNames, determineMergeOutcome, logSettingsResult, applyRepoSettings, displayReports, processSingleRepo, runLifecyclePhase, runFileSyncPhase) that mix CLI presentation (logging) with domain orchestration logic. This blurs ownership: is it a CLI adapter or a domain orchestrator?",
+      "related_files": [
+        "/workspaces/xfg/src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "src/cli/sync-command.ts:68-76 getUniqueFileNames - domain logic in CLI layer",
+        "src/cli/sync-command.ts:101-109 determineMergeOutcome - domain mapping in CLI layer",
+        "src/cli/sync-command.ts:111-136 logSettingsResult - presentation interleaved with domain state mutation (settingsCollector.appendError)",
+        "src/cli/sync-command.ts:138-232 applyRepoSettings - full settings orchestration living in CLI module",
+        "src/cli/sync-command.ts:306-400 processSingleRepo - repository-level orchestration in CLI"
+      ],
+      "suggestion": "Extract the domain orchestration (processSingleRepo, applyRepoSettings, runLifecyclePhase, runFileSyncPhase) into a dedicated orchestrator class in the sync module. sync-command.ts would become a thin CLI adapter that parses options, wires dependencies, and delegates to the orchestrator. This clarifies that sync/ owns orchestration and cli/ owns presentation.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "dual-token-resolution-paths",
+      "summary": "GitHub token resolution happens in two distinct places: sync-command.ts resolves the token upfront (line 353-363) and passes it down to both lifecycle and file-sync phases, while AuthOptionsBuilder.resolve() (auth-options-builder.ts:16-57) has its own full resolveGitHubToken fallback path. The AuthOptionsBuilder short-circuits when a pre-resolved token is provided, but the dual paths make it unclear which layer 'owns' token resolution.",
+      "related_files": [
+        "/workspaces/xfg/src/cli/sync-command.ts",
+        "/workspaces/xfg/src/sync/auth-options-builder.ts",
+        "/workspaces/xfg/src/shared/gh-api-utils.ts"
+      ],
+      "evidence": [
+        "src/cli/sync-command.ts:353-363 resolveGitHubToken called with tokenManager at CLI level",
+        "src/sync/auth-options-builder.ts:26-29 short-circuit when token already provided",
+        "src/sync/auth-options-builder.ts:32-38 duplicate resolveGitHubToken fallback path",
+        "src/sync/repository-processor.ts:93 AuthOptionsBuilder constructed with process.env.GH_TOKEN"
+      ],
+      "suggestion": "Consolidate token resolution ownership. Either the CLI layer resolves tokens and AuthOptionsBuilder only builds auth options from a provided token (removing its resolveGitHubToken path), or AuthOptionsBuilder fully owns resolution and the CLI layer stops resolving. The current approach works but creates a confusing dual-ownership contract.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "parameter-threading-through-phases",
+      "summary": "processSingleRepo passes 6-7 parameters to runLifecyclePhase and runFileSyncPhase (repoConfig, repoInfo, repoName, index/current, workDir, repoToken, ctx). The RepoIterationContext was introduced to reduce this, but it still requires threading per-repo state (repoConfig, repoInfo, repoName, workDir, token) separately. The phase functions destructure ctx and the explicit parameters, creating a split between 'what the context provides' and 'what each repo iteration computes'.",
+      "related_files": [
+        "/workspaces/xfg/src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "src/cli/sync-command.ts:365-373 runLifecyclePhase takes 7 params",
+        "src/cli/sync-command.ts:377-385 runFileSyncPhase takes 7 params",
+        "src/cli/sync-command.ts:388-399 applyRepoSettings gets its own context object ApplyRepoSettingsContext with 10 fields",
+        "src/cli/sync-command.ts:281-300 RepoIterationContext has 13 fields"
+      ],
+      "suggestion": "Create a per-repo context that bundles repoConfig, repoInfo, repoName, workDir, and token together (computed once per iteration), then pass it alongside the shared RepoIterationContext. This would eliminate the 5-param repetition across all three phase calls.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "settings-apply-loop-duplication",
+      "summary": "The three settings processors (RulesetProcessor, LabelsProcessor, RepoSettingsProcessor) share a near-identical apply loop pattern: compute diff, count actions, format plan, if dryRun return buildDryRunResult, else iterate changes with switch on action (create/update/delete/unchanged), then buildApplyResult. The withGitHubGuards extraction and shared countActions/buildDryRunResult/buildApplyResult helpers reduce some duplication, but the switch-on-action apply loop body is still repeated verbatim across all three.",
+      "related_files": [
+        "/workspaces/xfg/src/settings/rulesets/processor.ts",
+        "/workspaces/xfg/src/settings/labels/processor.ts",
+        "/workspaces/xfg/src/settings/repo-settings/processor.ts"
+      ],
+      "evidence": [
+        "src/settings/rulesets/processor.ts:108-152 switch on change.action with create/update/delete/unchanged",
+        "src/settings/labels/processor.ts:92-153 nearly identical switch pattern",
+        "src/settings/repo-settings/processor.ts:117-133 similar but uses reduce pattern instead"
+      ],
+      "suggestion": "Consider a generic applyChanges helper that accepts a strategy object with create/update/delete callbacks and iterates the changes array. This would centralize the switch-on-action dispatch and the appliedCount tracking. However, since each processor has slightly different API call signatures, the benefit may be marginal.",
+      "confidence": "low"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "pr-creator-module-level-functions",
+      "summary": "pr-creator.ts exposes createPR and mergePR as module-level functions that internally construct a strategy (getPRStrategy) and workflow executor on each call. This means the PR creation boundary has a different handoff style than the rest of the sync pipeline (which uses injected collaborators). The PRMergeHandler wraps these free functions but can't inject test doubles for the strategy construction happening inside.",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/pr-creator.ts",
+        "/workspaces/xfg/src/sync/pr-merge-handler.ts"
+      ],
+      "evidence": [
+        "src/vcs/pr-creator.ts:146-186 createPR constructs strategy internally via getPRStrategy",
+        "src/vcs/pr-creator.ts:203-240 mergePR also constructs strategy internally",
+        "src/sync/pr-merge-handler.ts:24-37 PRMergeHandler calls createPR/mergePR free functions, cannot inject strategy"
+      ],
+      "suggestion": "Accept a PRStrategy as a parameter (or have PRMergeHandler construct it once and pass to both createPR and mergePR), rather than constructing it independently inside each function. This would make the boundary consistent with the rest of the pipeline's DI pattern and avoid double-construction of the same strategy type.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "filechange-type-translation-chain",
+      "summary": "File change information passes through multiple type translations: FileWriteResult (fileWriter) -> FileAction (pr-creator) -> FileChangeDetail (sync types) -> SyncResultEntry (cli types), with each boundary performing a .map() and .filter(). The 'action' field subtly changes semantics: FileWriteResult includes 'skip', FileAction includes 'skip', but FileChangeDetail does not. This creates a translation chain where 'skip' filtering happens at 2-3 different points.",
+      "related_files": [
+        "/workspaces/xfg/src/sync/types.ts",
+        "/workspaces/xfg/src/sync/file-sync-strategy.ts",
+        "/workspaces/xfg/src/sync/file-sync-orchestrator.ts",
+        "/workspaces/xfg/src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "src/sync/file-sync-orchestrator.ts:96-98 changedFiles built from fileChanges entries (includes 'skip')",
+        "src/sync/file-sync-orchestrator.ts:100 hasChanges filters out 'skip'",
+        "src/sync/file-sync-strategy.ts:37-43 fileChangeDetails filters out 'skip' and maps fileName->path",
+        "src/cli/sync-command.ts:509-512 another map from fileChanges to {path, action}"
+      ],
+      "suggestion": "Filter out 'skip' entries once at the earliest boundary (FileSyncOrchestrator) and use a single type for changed files downstream. This would eliminate repeated filter-and-map chains and make the 'no skip entries past this point' invariant explicit.",
+      "confidence": "high"
+    }
+  ]
+}

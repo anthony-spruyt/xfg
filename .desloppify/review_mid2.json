@@ -1,0 +1,108 @@
+{
+  "assessments": {
+    "mid_level_elegance": 82
+  },
+  "findings": [
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "dual-token-resolution-paths",
+      "summary": "Token resolution happens in two independent paths: sync-command.ts pre-resolves via resolveGitHubToken, and AuthOptionsBuilder has its own fallback resolution",
+      "related_files": [
+        "src/cli/sync-command.ts",
+        "src/sync/auth-options-builder.ts",
+        "src/shared/gh-api-utils.ts"
+      ],
+      "evidence": [
+        "sync-command.ts:341-351: resolveGitHubToken called with process.env.GH_TOKEN, result passed as repoToken to processor",
+        "auth-options-builder.ts:25-27: if preResolvedToken !== undefined, uses it directly; otherwise falls back to its own resolveGitHubToken call at line 30",
+        "ProcessorOptions.token docstring: 'Pre-resolved GitHub token -- avoids duplicate resolution in AuthOptionsBuilder'"
+      ],
+      "suggestion": "Choose one resolution site. Either always pre-resolve in sync-command (and make AuthOptionsBuilder only build auth options from a required token), or let AuthOptionsBuilder own all resolution and remove pre-resolution from sync-command.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "wide-options-bags-across-boundaries",
+      "summary": "Several boundary handoffs pass wide options bags (10+ fields) that bundle per-call context with stable config, making the integration seam hard to reason about",
+      "related_files": [
+        "src/sync/types.ts",
+        "src/sync/sync-workflow.ts",
+        "src/sync/commit-push-manager.ts"
+      ],
+      "evidence": [
+        "CommitPushOptions has 11 fields: repoInfo, gitOps, workDir, fileChanges, commitMessage, pushBranch, isDirectMode, dryRun, retries, token, executor",
+        "BranchSetupOptions has 10 fields: repoInfo, branchName, baseBranch, workDir, isDirectMode, dryRun, retries, token, gitOps, executor",
+        "SyncWorkflow.execute spreads these across multiple call sites, re-destructuring the same fields"
+      ],
+      "suggestion": "Group stable per-session context (repoInfo, workDir, dryRun, retries, token, executor) into a shared context object passed through the workflow, keeping per-step options minimal.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "process-env-in-library-code",
+      "summary": "process.env access for GH_TOKEN occurs in repository-processor.ts (composition root) and commit-strategy-selector.ts (library code), violating the DI boundary",
+      "related_files": [
+        "src/sync/repository-processor.ts",
+        "src/vcs/commit-strategy-selector.ts"
+      ],
+      "evidence": [
+        "repository-processor.ts:81: new AuthOptionsBuilder(tokenManager, logInstance, process.env.GH_TOKEN) -- acceptable as composition root",
+        "commit-strategy-selector.ts:14: process.env.XFG_GITHUB_APP_ID && process.env.XFG_GITHUB_APP_PRIVATE_KEY -- library function reads env directly",
+        "commit-strategy-selector.ts:26-27: process.env.XFG_GITHUB_APP_ID!, process.env.XFG_GITHUB_APP_PRIVATE_KEY! -- passed to constructor from env in library code"
+      ],
+      "suggestion": "Inject app credentials into createTokenManager/getCommitStrategy as parameters rather than reading process.env in library code. The composition root (repository-processor.ts or sync-command.ts) should be the only env reader.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "pr-strategy-created-per-call",
+      "summary": "PR and commit strategies are created fresh via factory functions at each call site rather than being injected, creating implicit coupling at integration seams",
+      "related_files": [
+        "src/sync/branch-manager.ts",
+        "src/sync/commit-push-manager.ts",
+        "src/vcs/pr-creator.ts",
+        "src/vcs/pr-strategy-factory.ts"
+      ],
+      "evidence": [
+        "branch-manager.ts:34: const strategy = getPRStrategy(repoInfo, executor, this.log) -- creates strategy inline during setupBranch",
+        "commit-push-manager.ts:49: const commitStrategy = getCommitStrategy(repoInfo, executor) -- creates strategy inline during commitAndPush",
+        "pr-creator.ts:173: const strategy = getPRStrategy(repoInfo, executor, log) -- creates strategy inline in createPR function"
+      ],
+      "suggestion": "Inject strategy factories via constructor so the seam is explicit and testable without mocking module-level functions.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "sync-command-orchestration-sprawl",
+      "summary": "sync-command.ts mixes CLI concern (option parsing, logging) with orchestration (lifecycle, file sync, settings, reporting), making the integration seam between CLI and domain unclear",
+      "related_files": [
+        "src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "sync-command.ts has 601 lines with 7 top-level functions: processSingleRepo, runLifecyclePhase, runFileSyncPhase, applyRepoSettings, displayReports, logSettingsResult, runSync",
+        "RepoIterationContext (line 269-288) bundles 13 fields of mixed concern: CLI options, domain processors, report collectors",
+        "runSync at line 524 does config loading, validation, normalization, branch naming, processor creation, lifecycle manager creation, iteration, and reporting"
+      ],
+      "suggestion": "Extract a SyncOrchestrator class that owns the per-repo iteration loop (lifecycle -> sync -> settings -> collect), leaving sync-command.ts as a thin CLI adapter that parses options, creates the orchestrator, and displays results.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "inconsistent-error-propagation",
+      "summary": "Error handling across module boundaries uses inconsistent patterns: some boundaries return result objects with success:false, others throw, and some do both",
+      "related_files": [
+        "src/sync/sync-workflow.ts",
+        "src/sync/commit-push-manager.ts",
+        "src/vcs/types.ts",
+        "src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "CommitPushManager catches errors and returns { success: false, errorResult } (line 66-68), never throws",
+        "IPRStrategy.create docstring says 'Throws on infrastructure failures' while merge 'Returns MergeResult for all outcomes including failures. May throw on unexpected infrastructure errors'",
+        "sync-command.ts runFileSyncPhase wraps processor.process in try-catch (line 513), but the processor itself also catches internally via SyncWorkflow"
+      ],
+      "suggestion": "Standardize: domain boundaries (SyncWorkflow, processors) should always return result objects and never throw for expected failures. Reserve throws for programming errors only. Document this contract consistently.",
+      "confidence": "medium"
+    }
+  ]
+}

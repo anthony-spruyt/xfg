@@ -9,6 +9,7 @@ import {
   interpolateValue,
   type InterpolationConfig,
 } from "./interpolation-engine.js";
+import { ValidationError } from "./errors.js";
 
 export interface EnvInterpolationOptions {
   /**
@@ -16,11 +17,11 @@ export interface EnvInterpolationOptions {
    * and has no default value. If false, leaves the placeholder as-is.
    */
   strict: boolean;
+  /**
+   * Environment variables to resolve from.
+   */
+  env: Record<string, string | undefined>;
 }
-
-const DEFAULT_OPTIONS: EnvInterpolationOptions = {
-  strict: true,
-};
 
 /**
  * Regex to match environment variable placeholders.
@@ -46,36 +47,37 @@ const ENV_VAR_REGEX = /\$\{([A-Za-z_][A-Za-z0-9_.]*)(?::([?-])([^}]*))?\}/g;
 const ESCAPED_VAR_REGEX = /\$\$\{((?!xfg:)[^}]+)\}/g;
 
 function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
+  const envSource = options.env;
   function resolveEnvVar(
     match: string,
     varName: string,
     modifier: string | undefined,
     defaultOrMsg: string | undefined
   ): string {
-    const envValue = process.env[varName];
+    // Resolution follows bash parameter expansion semantics:
+    // ${VAR} → value or error, ${VAR:-fallback} → value or fallback,
+    // ${VAR:?msg} → value or throw with msg.
+    const envValue = envSource[varName];
 
-    // Variable exists - use its value
     if (envValue !== undefined) {
       return envValue;
     }
 
-    // Has default value (:-default)
     if (modifier === "-") {
       return defaultOrMsg ?? "";
     }
 
-    // Required with message (:?message)
     if (modifier === "?") {
       const message = defaultOrMsg || `is required`;
-      throw new Error(`${varName}: ${message}`);
+      throw new ValidationError(`${varName}: ${message}`);
     }
 
-    // No modifier - check strictness
     if (options.strict) {
-      throw new Error(`Missing required environment variable: ${varName}`);
+      throw new ValidationError(
+        `Missing required environment variable: ${varName}`
+      );
     }
 
-    // Non-strict mode - leave placeholder as-is
     return match;
   }
 
@@ -95,14 +97,10 @@ function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
  * - ${VAR:-default} - Replace with env value, or use default if missing
  * - ${VAR:?message} - Replace with env value, or throw error with message if missing
  * - $${VAR} - Escape: outputs literal ${VAR} without interpolation
- *
- * @param json - The JSON object to process
- * @param options - Interpolation options (default: strict mode)
- * @returns A new object with interpolated values
  */
 export function interpolateEnvVars(
   json: Record<string, unknown>,
-  options: EnvInterpolationOptions = DEFAULT_OPTIONS
+  options: EnvInterpolationOptions
 ): Record<string, unknown> {
   return interpolateValue(json, buildEnvConfig(options)) as Record<
     string,
@@ -116,7 +114,7 @@ export function interpolateEnvVars(
  */
 export function interpolateContent(
   content: Record<string, unknown> | string | string[],
-  options: EnvInterpolationOptions = DEFAULT_OPTIONS
+  options: EnvInterpolationOptions
 ): Record<string, unknown> | string | string[] {
   const config = buildEnvConfig(options);
   if (typeof content === "string") {

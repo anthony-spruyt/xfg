@@ -1,5 +1,8 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { toErrorMessage, isPlainObject } from "../shared/type-guards.js";
+import { SyncError } from "../shared/errors.js";
+import type { DebugWarnLog } from "../shared/logger.js";
 
 export const MANIFEST_FILENAME = ".xfg.json";
 
@@ -39,43 +42,37 @@ export interface XfgManifest {
   configs: Record<string, XfgManifestConfigEntry>;
 }
 
+function hasVersion(manifest: unknown, version: number): boolean {
+  return (
+    isPlainObject(manifest) &&
+    (manifest as Record<string, unknown>).version === version
+  );
+}
+
 function isV1Manifest(manifest: unknown): manifest is XfgManifestV1 {
   return (
-    typeof manifest === "object" &&
-    manifest !== null &&
-    (manifest as XfgManifestV1).version === 1 &&
+    hasVersion(manifest, 1) &&
     Array.isArray((manifest as XfgManifestV1).managedFiles)
   );
 }
 
-function isV2Manifest(manifest: unknown): manifest is XfgManifestV2 {
+function hasConfigs(manifest: unknown): boolean {
   return (
-    typeof manifest === "object" &&
-    manifest !== null &&
-    (manifest as XfgManifestV2).version === 2 &&
-    typeof (manifest as XfgManifestV2).configs === "object" &&
-    (manifest as XfgManifestV2).configs !== null
+    isPlainObject(manifest) &&
+    isPlainObject((manifest as Record<string, unknown>).configs)
   );
+}
+
+function isV2Manifest(manifest: unknown): manifest is XfgManifestV2 {
+  return hasVersion(manifest, 2) && hasConfigs(manifest);
 }
 
 function isV3Manifest(manifest: unknown): manifest is XfgManifestV3 {
-  return (
-    typeof manifest === "object" &&
-    manifest !== null &&
-    (manifest as XfgManifestV3).version === 3 &&
-    typeof (manifest as XfgManifestV3).configs === "object" &&
-    (manifest as XfgManifestV3).configs !== null
-  );
+  return hasVersion(manifest, 3) && hasConfigs(manifest);
 }
 
 function isV4Manifest(manifest: unknown): manifest is XfgManifest {
-  return (
-    typeof manifest === "object" &&
-    manifest !== null &&
-    (manifest as XfgManifest).version === 4 &&
-    typeof (manifest as XfgManifest).configs === "object" &&
-    (manifest as XfgManifest).configs !== null
-  );
+  return hasVersion(manifest, 4) && hasConfigs(manifest);
 }
 
 /**
@@ -114,6 +111,17 @@ function migrateV3ToV4(v3: XfgManifestV3): XfgManifest {
   return { version: 4, configs: v4Configs };
 }
 
+/**
+ * Migrates a parsed manifest to V4 if recognized (V2/V3/V4).
+ * Returns null for unrecognized formats.
+ */
+function migrateToV4(parsed: unknown): XfgManifest | null {
+  if (isV4Manifest(parsed)) return parsed;
+  if (isV3Manifest(parsed)) return migrateV3ToV4(parsed);
+  if (isV2Manifest(parsed)) return migrateV3ToV4(migrateV2ToV3(parsed));
+  return null;
+}
+
 export function createEmptyManifest(): XfgManifest {
   return {
     version: 4,
@@ -127,7 +135,7 @@ export function createEmptyManifest(): XfgManifest {
  */
 export function loadManifest(
   workDir: string,
-  log?: { debug(msg: string): void }
+  log?: DebugWarnLog
 ): XfgManifest | null {
   const manifestPath = join(workDir, MANIFEST_FILENAME);
 
@@ -139,60 +147,38 @@ export function loadManifest(
     const content = readFileSync(manifestPath, "utf-8");
     const parsed = JSON.parse(content) as unknown;
 
-    // V4 manifest - return as-is
-    if (isV4Manifest(parsed)) {
-      return parsed;
-    }
-
-    // V3 manifest - migrate to V4
-    if (isV3Manifest(parsed)) {
-      return migrateV3ToV4(parsed);
-    }
-
-    // V2 manifest - migrate to V3, then to V4
-    if (isV2Manifest(parsed)) {
-      return migrateV3ToV4(migrateV2ToV3(parsed));
-    }
+    const migrated = migrateToV4(parsed);
+    if (migrated) return migrated;
 
     // V1 manifest - treat as no manifest (will be overwritten with v4)
     if (isV1Manifest(parsed)) {
       return null;
     }
 
-    // Unknown format - treat as no manifest
+    // Unknown format
+    log?.warn(`Unrecognized manifest format in ${manifestPath}, ignoring`);
     return null;
   } catch (error) {
-    log?.debug(`Failed to load manifest from ${manifestPath}: ${error}`);
+    log?.warn(
+      `Failed to parse manifest ${manifestPath}: ${toErrorMessage(error)}`
+    );
     return null;
   }
 }
 
 /**
  * Parses manifest content from a string (e.g., fetched from a remote API).
- * Handles V2→V3 migration, returns null for V1/unknown/invalid formats.
+ * Handles V2/V3 → V4 migration, returns null for V1/unknown/invalid formats.
  */
 export function parseManifestContent(
   content: string,
-  log?: { debug(msg: string): void }
+  log?: DebugWarnLog
 ): XfgManifest | null {
   try {
     const parsed = JSON.parse(content) as unknown;
-
-    if (isV4Manifest(parsed)) {
-      return parsed;
-    }
-
-    if (isV3Manifest(parsed)) {
-      return migrateV3ToV4(parsed);
-    }
-
-    if (isV2Manifest(parsed)) {
-      return migrateV3ToV4(migrateV2ToV3(parsed));
-    }
-
-    return null;
+    return migrateToV4(parsed);
   } catch (error) {
-    log?.debug(`Failed to parse manifest content: ${error}`);
+    log?.warn(`Failed to parse manifest content: ${toErrorMessage(error)}`);
     return null;
   }
 }
@@ -200,7 +186,13 @@ export function parseManifestContent(
 export function saveManifest(workDir: string, manifest: XfgManifest): void {
   const manifestPath = join(workDir, MANIFEST_FILENAME);
   const content = JSON.stringify(manifest, null, 2) + "\n";
-  writeFileSync(manifestPath, content, "utf-8");
+  try {
+    writeFileSync(manifestPath, content, "utf-8");
+  } catch (error) {
+    throw new SyncError(
+      `Failed to save manifest ${manifestPath}: ${toErrorMessage(error)}`
+    );
+  }
 }
 
 export function getManagedFiles(

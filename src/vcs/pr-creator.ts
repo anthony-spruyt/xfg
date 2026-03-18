@@ -5,14 +5,16 @@ import { RepoInfo } from "../shared/repo-detector.js";
 import { getPRStrategy } from "./pr-strategy-factory.js";
 import { PRWorkflowExecutor } from "./pr-strategy.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";
-import type { MergeResult, PRMergeConfig, PRResult } from "./types.js";
+import type {
+  FileAction,
+  MergeResult,
+  PRMergeConfig,
+  PRResult,
+} from "./types.js";
 import { interpolateXfgContent } from "../shared/xfg-template.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 
-export interface FileAction {
-  fileName: string;
-  action: "create" | "update" | "skip" | "delete";
-}
+export type { FileAction };
 
 interface PROptions {
   repoInfo: RepoInfo;
@@ -25,8 +27,8 @@ interface PROptions {
   retries?: number;
   /** Custom PR body template */
   prTemplate?: string;
-  /** Optional command executor for shell commands (for testing) */
-  executor?: ICommandExecutor;
+  /** Command executor for shell commands */
+  executor: ICommandExecutor;
   /** GitHub App installation token for authentication */
   token?: string;
   /** Labels to apply to the created PR */
@@ -192,8 +194,8 @@ interface MergePROptions {
   workDir: string;
   dryRun?: boolean;
   retries?: number;
-  /** Optional command executor for shell commands (for testing) */
-  executor?: ICommandExecutor;
+  /** Command executor for shell commands */
+  executor: ICommandExecutor;
   /** GitHub App installation token for authentication */
   token?: string;
   /** Optional logger for PR strategy debug/warn/info messages */

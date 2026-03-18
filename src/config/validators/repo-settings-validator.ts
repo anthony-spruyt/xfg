@@ -1,4 +1,4 @@
-import { ValidationError } from "../errors.js";
+import { ValidationError } from "../../shared/errors.js";
 
 const VALID_VISIBILITY = ["public", "private", "internal"];
 const VALID_SQUASH_MERGE_COMMIT_TITLE = ["PR_TITLE", "COMMIT_OR_PR_TITLE"];

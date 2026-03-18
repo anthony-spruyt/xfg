@@ -4,7 +4,7 @@ import JSON5 from "json5";
 import { parse as parseYaml } from "yaml";
 import type { ContentValue, RawConfig } from "./types.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { ValidationError } from "./errors.js";
+import { ValidationError } from "../shared/errors.js";
 
 interface FileReferenceOptions {
   configDir: string;
@@ -64,38 +64,45 @@ export function resolveFileReference(
     content = readFileSync(resolvedPath, "utf-8");
   } catch (error) {
     const msg = toErrorMessage(error);
-    throw new Error(`Failed to load file reference "${reference}": ${msg}`);
+    throw new ValidationError(
+      `Failed to load file reference "${reference}": ${msg}`
+    );
   }
 
   // Parse based on extension
   const ext = extname(relativePath).toLowerCase();
   if (ext === ".json") {
-    try {
-      return JSON.parse(content) as Record<string, unknown>;
-    } catch (error) {
-      const msg = toErrorMessage(error);
-      throw new Error(`Invalid JSON in "${reference}": ${msg}`);
-    }
+    return parseWithContext(
+      () => JSON.parse(content),
+      `Invalid JSON in "${reference}"`
+    );
   }
   if (ext === ".json5") {
-    try {
-      return JSON5.parse(content) as Record<string, unknown>;
-    } catch (error) {
-      const msg = toErrorMessage(error);
-      throw new Error(`Invalid JSON5 in "${reference}": ${msg}`);
-    }
+    return parseWithContext(
+      () => JSON5.parse(content),
+      `Invalid JSON5 in "${reference}"`
+    );
   }
   if (ext === ".yaml" || ext === ".yml") {
-    try {
-      return parseYaml(content) as Record<string, unknown>;
-    } catch (error) {
-      const msg = toErrorMessage(error);
-      throw new Error(`Invalid YAML in "${reference}": ${msg}`);
-    }
+    return parseWithContext(
+      () => parseYaml(content),
+      `Invalid YAML in "${reference}"`
+    );
   }
 
   // Text file - return as string
   return content;
+}
+
+function parseWithContext(
+  fn: () => ContentValue,
+  errorPrefix: string
+): ContentValue {
+  try {
+    return fn();
+  } catch (error) {
+    throw new ValidationError(`${errorPrefix}: ${toErrorMessage(error)}`);
+  }
 }
 
 /**

@@ -11,15 +11,17 @@ import type {
   MergeOptions,
   MergeResult,
 } from "./types.js";
-import { withRetry } from "../shared/retry-utils.js";
+import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
 import { parseApiJson } from "../shared/gh-api-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
+import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import type { MergeStrategy } from "../config/index.js";
+import { SyncError } from "../shared/errors.js";
 
 export class GitLabPRStrategy extends BasePRStrategy {
-  constructor(executor?: ICommandExecutor, log?: IPRStrategyLogger) {
+  constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {
     super(executor, log);
     this.bodyFilePath = ".mr-description.md";
   }
@@ -98,7 +100,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     try {
       const result = await withRetry(
         () => this.executor.exec(command, workDir),
-        { retries }
+        { retries, log: this.log }
       );
 
       if (!result || result.trim() === "" || result.trim() === "[]") {
@@ -111,6 +113,9 @@ export class GitLabPRStrategy extends BasePRStrategy {
       }
       return null;
     } catch (error) {
+      if (isPermanentError(error)) {
+        throw error;
+      }
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("no merge requests")) {
         this.log?.debug(
@@ -154,6 +159,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     try {
       await withRetry(() => this.executor.exec(closeCommand, workDir), {
         retries,
+        log: this.log,
       });
     } catch (error) {
       const message = toErrorMessage(error);
@@ -168,6 +174,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     try {
       await withRetry(() => this.executor.exec(deleteBranchCommand, workDir), {
         retries,
+        log: this.log,
       });
     } catch (error) {
       // Branch deletion failure is not critical
@@ -202,7 +209,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     try {
       const result = await withRetry(
         () => this.executor.exec(command, workDir),
-        { retries }
+        { retries, log: this.log }
       );
 
       // Extract MR URL from output
@@ -226,14 +233,14 @@ export class GitLabPRStrategy extends BasePRStrategy {
         };
       }
 
-      throw new Error(`Could not parse MR URL from output: ${result}`);
+      throw new SyncError(`Could not parse MR URL from output: ${result}`);
     } finally {
       safeCleanup(
         () => {
           if (existsSync(descFile)) unlinkSync(descFile);
         },
         `failed to remove ${descFile}`,
-        this.log ?? { debug() {} }
+        this.log ?? NO_OP_DEBUG_LOG
       );
     }
   }
@@ -241,7 +248,6 @@ export class GitLabPRStrategy extends BasePRStrategy {
   async merge(options: MergeOptions): Promise<MergeResult> {
     const { prUrl, config, workDir, retries = 3 } = options;
 
-    // Manual mode: do nothing
     if (config.mode === "manual") {
       return {
         success: true,
@@ -305,9 +311,10 @@ export class GitLabPRStrategy extends BasePRStrategy {
       );
     }
 
+    const _exhaustive: "direct" = config.mode;
     return {
       success: false,
-      message: `Unknown merge mode: ${config.mode}`,
+      message: `Merge not applicable for mode: ${_exhaustive}`,
       merged: false,
     };
   }

@@ -1,15 +1,27 @@
-import { ILogger } from "../shared/logger.js";
 import { getCommitStrategy, type FileChange } from "../vcs/index.js";
+import type { ICommitStrategy } from "../vcs/types.js";
+import type { RepoInfo } from "../shared/repo-detector.js";
 import { getRepoDisplayName } from "../shared/repo-detector.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import type {
   CommitPushOptions,
   CommitPushResult,
   ICommitPushManager,
 } from "./types.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import type { DebugInfoLog } from "../shared/logger.js";
+
+type CommitStrategyFactory = (
+  repoInfo: RepoInfo,
+  executor: ICommandExecutor,
+  hasAppCredentials?: boolean
+) => ICommitStrategy;
 
 export class CommitPushManager implements ICommitPushManager {
-  constructor(private readonly log: ILogger) {}
+  constructor(
+    private readonly log: DebugInfoLog,
+    private readonly commitStrategyFactory: CommitStrategyFactory = getCommitStrategy
+  ) {}
 
   async commitAndPush(options: CommitPushOptions): Promise<CommitPushResult> {
     const {
@@ -37,16 +49,19 @@ export class CommitPushManager implements ICommitPushManager {
       .filter(([, info]) => info.action !== "skip")
       .map(([path, info]) => ({ path, content: info.content }));
 
-    // Stage changes using injected executor (existing pattern in codebase)
     this.log.info("Staging changes...");
-    await executor.exec("git add -A", workDir);
+    await gitOps.stageAll();
 
     if (!(await gitOps.hasStagedChanges())) {
-      this.log.info("No staged changes after git add -A, skipping commit");
+      this.log.info("No staged changes, skipping commit");
       return { success: true, skipped: true };
     }
 
-    const commitStrategy = getCommitStrategy(repoInfo, executor);
+    const commitStrategy = this.commitStrategyFactory(
+      repoInfo,
+      executor,
+      options.hasAppCredentials
+    );
     this.log.debug("Committing and pushing changes...");
 
     try {

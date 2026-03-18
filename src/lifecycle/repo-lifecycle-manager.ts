@@ -1,8 +1,10 @@
 import { join } from "node:path";
 import { rm } from "node:fs/promises";
 import { parseGitUrl, type RepoInfo } from "../shared/repo-detector.js";
-import { logger } from "../shared/logger.js";
 import { safeCleanup } from "../shared/type-guards.js";
+import { LifecycleError } from "../shared/errors.js";
+import { NO_OP_DEBUG_LOG, type DebugInfoWarnLog } from "../shared/logger.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { RepoConfig } from "../config/types.js";
 import type {
   IRepoLifecycleManager,
@@ -19,9 +21,18 @@ import { RepoLifecycleFactory } from "./repo-lifecycle-factory.js";
  */
 export class RepoLifecycleManager implements IRepoLifecycleManager {
   private readonly factory: IRepoLifecycleFactory;
+  private readonly log?: DebugInfoWarnLog;
 
-  constructor(factory?: IRepoLifecycleFactory, retries?: number) {
-    this.factory = factory ?? new RepoLifecycleFactory(undefined, retries);
+  constructor(
+    factory: IRepoLifecycleFactory | undefined,
+    executor: ICommandExecutor,
+    retries: number | undefined,
+    cwd: string,
+    log?: DebugInfoWarnLog
+  ) {
+    this.factory =
+      factory ?? new RepoLifecycleFactory(executor, retries, cwd, log);
+    this.log = log;
   }
 
   async ensureRepo(
@@ -39,7 +50,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
         throw error;
       }
       // Platform doesn't support lifecycle operations yet - log and skip
-      logger.debug(
+      this.log?.debug(
         `Lifecycle: skipping unsupported platform "${repoInfo.type}"`
       );
       return { repoInfo, action: "existed" };
@@ -111,7 +122,9 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
     }
 
     if (!provider.fork) {
-      throw new Error(`Platform '${repoInfo.type}' does not support forking`);
+      throw new LifecycleError(
+        `Platform '${repoInfo.type}' does not support forking`
+      );
     }
 
     const upstreamInfo = parseGitUrl(repoConfig.upstream!, {
@@ -170,7 +183,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       await safeCleanup(
         () => rm(sourceDir, { recursive: true, force: true }),
         `failed to remove ${sourceDir}`,
-        logger
+        this.log ?? NO_OP_DEBUG_LOG
       );
     }
   }
@@ -195,7 +208,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       await new Promise((resolve) => setTimeout(resolve, pollMs));
     }
     // Timed out — proceed anyway and let downstream operations handle it
-    logger.info(
+    this.log?.info(
       `Repo ${repoInfo.owner}/${repoInfo.repo} not yet visible after ${timeoutMs}ms, proceeding`
     );
   }

@@ -1,5 +1,6 @@
 import { createSign } from "node:crypto";
 import { withRetry } from "../shared/retry-utils.js";
+import { SyncError } from "../shared/errors.js";
 import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 
 /** Duration to cache tokens (45 minutes in milliseconds) */
@@ -20,6 +21,13 @@ interface TokenResponse {
 interface CachedToken {
   token: string;
   expiresAt: number;
+}
+
+async function assertOkResponse(res: Response, context: string): Promise<void> {
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new SyncError(`${context}: ${res.status}${body ? ` - ${body}` : ""}`);
+  }
 }
 
 /**
@@ -93,13 +101,7 @@ export class GitHubAppTokenManager {
         },
       });
 
-      if (!res.ok) {
-        const body = await res.text().catch(() => "");
-        throw new Error(
-          `GitHub API error: ${res.status}${body ? ` - ${body}` : ""}`
-        );
-      }
-
+      await assertOkResponse(res, "GitHub App installations");
       return res;
     });
 
@@ -154,13 +156,7 @@ export class GitHubAppTokenManager {
         },
       });
 
-      if (!res.ok) {
-        const body = await res.text().catch(() => "");
-        throw new Error(
-          `GitHub API error: ${res.status}${body ? ` - ${body}` : ""}`
-        );
-      }
-
+      await assertOkResponse(res, "GitHub App access token");
       return res;
     });
 

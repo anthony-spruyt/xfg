@@ -17,7 +17,7 @@ import {
   ICommandExecutor,
   ExecOptions,
 } from "../../../src/shared/command-executor.js";
-import type { INetworkGitOps } from "../../../src/vcs/authenticated-git-ops.js";
+import type { INetworkGitOps } from "../../../src/vcs/types.js";
 
 // Create a mock INetworkGitOps for testing
 function createMockGitOps(): INetworkGitOps & {
@@ -642,7 +642,7 @@ describe("GraphQLCommitStrategy", () => {
 
       await assert.rejects(
         () => strategy.commit(options),
-        /GraphQL error.*Validation failed.*Branch not found/,
+        /Validation failed.*Branch not found/,
         "Should throw error with all GraphQL error messages"
       );
     });
@@ -1350,7 +1350,7 @@ describe("GraphQLCommitStrategy", () => {
             workDir: testDir,
             token: "ghs_token",
           }),
-        /GraphQL error.*Field 'repository'/,
+        /Field 'repository'/,
         "Should throw error with GraphQL error messages from queryRemoteRef"
       );
     });
@@ -1409,7 +1409,7 @@ describe("GraphQLCommitStrategy", () => {
             workDir: testDir,
             token: "ghs_token",
           }),
-        /GraphQL error.*Name already exists/,
+        /Name already exists/,
         "Should throw GraphQL error from createRemoteRef response body"
       );
     });
@@ -1625,7 +1625,7 @@ describe("GraphQLCommitStrategy", () => {
             force: true,
             token: "ghs_token",
           }),
-        /GraphQL error.*Cannot delete a protected ref/,
+        /Cannot delete a protected ref/,
         "Should throw GraphQL error from deleteRemoteRef response body"
       );
     });

@@ -1,7 +1,6 @@
 import pRetry, { AbortError } from "p-retry";
-import { logger } from "./logger.js";
 import { sanitizeCredentials } from "./sanitize-utils.js";
-import { ValidationError } from "../config/errors.js";
+import { ValidationError } from "./errors.js";
 
 /**
  * Core permanent error patterns shared across all strategies (API, GraphQL, CLI).
@@ -79,13 +78,12 @@ interface RetryOptions {
   permanentErrorPatterns?: RegExp[];
   /** Custom transient error patterns (defaults to DEFAULT_TRANSIENT_ERROR_PATTERNS) */
   transientErrorPatterns?: RegExp[];
+  /** Logger for retry messages (defaults to no logging) */
+  log?: { info(msg: string): void };
 }
 
 /**
  * Classifies an error as permanent (should not retry) or transient (should retry).
- * @param error The error to classify
- * @param patterns Custom patterns to use (defaults to DEFAULT_PERMANENT_ERROR_PATTERNS)
- * @returns true if the error is permanent, false if it might be transient
  */
 export function isPermanentError(
   error: unknown,
@@ -113,15 +111,12 @@ export function isPermanentError(
 
 /**
  * Checks if an error matches known transient patterns.
- * @param error The error to check
- * @param patterns Custom patterns to use (defaults to DEFAULT_TRANSIENT_ERROR_PATTERNS)
- * @returns true if the error appears to be transient
  */
 export function isTransientError(
-  error: Error,
+  error: unknown,
   patterns: RegExp[] = DEFAULT_TRANSIENT_ERROR_PATTERNS
 ): boolean {
-  const message = error.message;
+  const message = error instanceof Error ? error.message : String(error ?? "");
   const stderr =
     (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
   const combined = `${message} ${stderr}`;
@@ -173,7 +168,7 @@ export async function withRetry<T>(
         if (context.retriesLeft > 0) {
           const msg =
             sanitizeCredentials(context.error.message) || "Unknown error";
-          logger.info(
+          options?.log?.info(
             `Attempt ${context.attemptNumber}/${retries + 1} failed: ${msg}. Retrying...`
           );
           options?.onRetry?.(context.error, context.attemptNumber);

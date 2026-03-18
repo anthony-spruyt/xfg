@@ -6,6 +6,7 @@ import {
   assertAzureDevOpsRepo,
 } from "../shared/repo-detector.js";
 import type { PRResult } from "./types.js";
+import { SyncError } from "../shared/errors.js";
 import { BasePRStrategy } from "./pr-strategy.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
@@ -14,14 +15,15 @@ import type {
   MergeOptions,
   MergeResult,
 } from "./types.js";
-import { withRetry } from "../shared/retry-utils.js";
+import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
+import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 
 export class AzurePRStrategy extends BasePRStrategy {
-  constructor(executor?: ICommandExecutor, log?: IPRStrategyLogger) {
+  constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {
     super(executor, log);
     this.bodyFilePath = ".pr-description.md";
   }
@@ -34,25 +36,31 @@ export class AzurePRStrategy extends BasePRStrategy {
     return `https://dev.azure.com/${encodeURIComponent(repoInfo.organization)}/${encodeURIComponent(repoInfo.project)}/_git/${encodeURIComponent(repoInfo.repo)}/pullrequest/${prId.trim()}`;
   }
 
-  async checkExistingPR(
-    options: CloseExistingPROptions
+  /**
+   * Query Azure DevOps for an existing PR ID matching source/target branches.
+   * Returns the raw PR ID string, or null if none found.
+   */
+  private async findExistingPRId(
+    azureRepoInfo: AzureDevOpsRepoInfo,
+    branchName: string,
+    baseBranch: string,
+    workDir: string,
+    retries: number
   ): Promise<string | null> {
-    const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
-
-    assertAzureDevOpsRepo(repoInfo, "Azure PR strategy");
-    const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
     const orgUrl = this.getOrgUrl(azureRepoInfo);
-
     const command = `az repos pr list --repository ${escapeShellArg(azureRepoInfo.repo)} --source-branch ${escapeShellArg(branchName)} --target-branch ${escapeShellArg(baseBranch)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --query "[0].pullRequestId" -o tsv`;
 
     try {
       const existingPRId = await withRetry(
         () => this.executor.exec(command, workDir),
-        { retries }
+        { retries, log: this.log }
       );
 
-      return existingPRId ? this.buildPRUrl(azureRepoInfo, existingPRId) : null;
+      return existingPRId ? existingPRId.trim() : null;
     } catch (error) {
+      if (isPermanentError(error)) {
+        throw error;
+      }
       const stderr = getStderr(error);
       if (stderr && !stderr.includes("does not exist")) {
         this.log?.debug(
@@ -63,6 +71,25 @@ export class AzurePRStrategy extends BasePRStrategy {
     }
   }
 
+  async checkExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<string | null> {
+    const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
+
+    assertAzureDevOpsRepo(repoInfo, "Azure PR strategy");
+    const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
+
+    const prId = await this.findExistingPRId(
+      azureRepoInfo,
+      branchName,
+      baseBranch,
+      workDir,
+      retries
+    );
+
+    return prId ? this.buildPRUrl(azureRepoInfo, prId) : null;
+  }
+
   async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
     const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
 
@@ -70,36 +97,29 @@ export class AzurePRStrategy extends BasePRStrategy {
     const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
     const orgUrl = this.getOrgUrl(azureRepoInfo);
 
-    // First check if there's an existing PR
-    const existingUrl = await this.checkExistingPR({
-      repoInfo,
+    const prId = await this.findExistingPRId(
+      azureRepoInfo,
       branchName,
       baseBranch,
       workDir,
-      retries,
-    });
+      retries
+    );
 
-    if (!existingUrl) {
-      return false;
-    }
-
-    // Extract PR ID from URL
-    const prInfo = this.parsePRUrl(existingUrl);
-    if (!prInfo) {
-      this.log?.warn(`Could not parse PR URL: ${existingUrl}`);
+    if (!prId) {
       return false;
     }
 
     // Abandon the PR (Azure DevOps equivalent of closing)
-    const abandonCommand = `az repos pr update --id ${escapeShellArg(prInfo.prId)} --status abandoned --org ${escapeShellArg(orgUrl)}`;
+    const abandonCommand = `az repos pr update --id ${escapeShellArg(prId)} --status abandoned --org ${escapeShellArg(orgUrl)}`;
 
     try {
       await withRetry(() => this.executor.exec(abandonCommand, workDir), {
         retries,
+        log: this.log,
       });
     } catch (error) {
       const message = toErrorMessage(error);
-      this.log?.warn(`Failed to abandon PR #${prInfo.prId}: ${message}`);
+      this.log?.warn(`Failed to abandon PR #${prId}: ${message}`);
       return false;
     }
 
@@ -107,14 +127,14 @@ export class AzurePRStrategy extends BasePRStrategy {
       const getRefCommand = `az repos ref list --repository ${escapeShellArg(azureRepoInfo.repo)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --filter heads/${escapeShellArg(branchName)} --query "[0].objectId" -o tsv`;
       const objectId = await withRetry(
         () => this.executor.exec(getRefCommand, workDir),
-        { retries }
+        { retries, log: this.log }
       );
 
       if (objectId) {
         const deleteBranchCommand = `az repos ref delete --name refs/heads/${escapeShellArg(branchName)} --repository ${escapeShellArg(azureRepoInfo.repo)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --object-id ${escapeShellArg(objectId)}`;
         await withRetry(
           () => this.executor.exec(deleteBranchCommand, workDir),
-          { retries }
+          { retries, log: this.log }
         );
       }
     } catch (error) {
@@ -142,7 +162,13 @@ export class AzurePRStrategy extends BasePRStrategy {
     const orgUrl = this.getOrgUrl(azureRepoInfo);
 
     const descFile = join(workDir, this.bodyFilePath);
-    writeFileSync(descFile, body, "utf-8");
+    try {
+      writeFileSync(descFile, body, "utf-8");
+    } catch (err) {
+      throw new SyncError(
+        `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`
+      );
+    }
 
     // Azure CLI @file syntax: escape the full @path to handle special chars in workDir
     const command = `az repos pr create --repository ${escapeShellArg(azureRepoInfo.repo)} --source-branch ${escapeShellArg(branchName)} --target-branch ${escapeShellArg(baseBranch)} --title ${escapeShellArg(title)} --description ${escapeShellArg("@" + descFile)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --query "pullRequestId" -o tsv`;
@@ -150,6 +176,7 @@ export class AzurePRStrategy extends BasePRStrategy {
     try {
       const prId = await withRetry(() => this.executor.exec(command, workDir), {
         retries,
+        log: this.log,
       });
 
       return {
@@ -163,7 +190,7 @@ export class AzurePRStrategy extends BasePRStrategy {
           if (existsSync(descFile)) unlinkSync(descFile);
         },
         `failed to remove ${descFile}`,
-        this.log ?? { debug() {} }
+        this.log ?? NO_OP_DEBUG_LOG
       );
     }
   }
@@ -194,7 +221,6 @@ export class AzurePRStrategy extends BasePRStrategy {
   async merge(options: MergeOptions): Promise<MergeResult> {
     const { prUrl, config, workDir, retries = 3 } = options;
 
-    // Manual mode: do nothing
     if (config.mode === "manual") {
       return {
         success: true,
@@ -203,7 +229,6 @@ export class AzurePRStrategy extends BasePRStrategy {
       };
     }
 
-    // Parse PR URL to extract details
     const prInfo = this.parsePRUrl(prUrl);
     if (!prInfo) {
       return {
@@ -240,6 +265,9 @@ export class AzurePRStrategy extends BasePRStrategy {
     if (config.mode === "force") {
       const bypassReason =
         config.bypassReason ?? "Automated config sync via xfg";
+      this.log?.warn(
+        `Bypassing policies for PR ${prInfo.prId} (reason: ${bypassReason})`
+      );
       const forceCommand =
         `az repos pr update --id ${escapeShellArg(prInfo.prId)} --bypass-policy true --bypass-policy-reason ${escapeShellArg(bypassReason)} --status completed ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)}`.trim();
 
@@ -255,9 +283,10 @@ export class AzurePRStrategy extends BasePRStrategy {
       );
     }
 
+    const _exhaustive: "direct" = config.mode;
     return {
       success: false,
-      message: `Unknown merge mode: ${config.mode}`,
+      message: `Merge not applicable for mode: ${_exhaustive}`,
       merged: false,
     };
   }

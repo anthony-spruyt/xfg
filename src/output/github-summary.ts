@@ -1,4 +1,6 @@
 import { appendFileSync } from "node:fs";
+import { toErrorMessage } from "../shared/type-guards.js";
+import type { DebugLog } from "../shared/logger.js";
 
 export type MergeOutcome = "manual" | "auto" | "force" | "direct";
 
@@ -22,7 +24,7 @@ export interface RulesetPlanDetail {
 
 export interface RepoSettingsPlanDetail {
   property: string;
-  action: "add" | "change";
+  action: "create" | "update";
 }
 
 export interface LabelsPlanDetail {
@@ -70,16 +72,16 @@ function formatChangesColumn(result: RepoResult): string {
   // For settings results, derive changes from plan details
   const parts: string[] = [];
   if (result.rulesetPlanDetails && result.rulesetPlanDetails.length > 0) {
-    parts.push(formatRulesetPlanSummary(result.rulesetPlanDetails));
+    parts.push(formatPlanSummary(result.rulesetPlanDetails));
   }
   if (
     result.repoSettingsPlanDetails &&
     result.repoSettingsPlanDetails.length > 0
   ) {
-    parts.push(formatSettingsPlanSummary(result.repoSettingsPlanDetails));
+    parts.push(formatPlanSummary(result.repoSettingsPlanDetails));
   }
   if (result.labelsPlanDetails && result.labelsPlanDetails.length > 0) {
-    parts.push(formatLabelsPlanSummary(result.labelsPlanDetails));
+    parts.push(formatPlanSummary(result.labelsPlanDetails));
   }
   return parts.length > 0 ? parts.join("; ") : "-";
 }
@@ -144,46 +146,27 @@ function formatRulesetProperties(detail: RulesetPlanDetail): string {
   return "-";
 }
 
-function formatRulesetPlanSummary(details: RulesetPlanDetail[]): string {
-  const creates = details.filter((d) => d.action === "create").length;
-  const updates = details.filter((d) => d.action === "update").length;
-  const deletes = details.filter((d) => d.action === "delete").length;
+function formatPlanSummary(details: { action: string }[]): string {
+  const counts: Record<string, number> = {};
+  for (const d of details) {
+    counts[d.action] = (counts[d.action] ?? 0) + 1;
+  }
   const parts: string[] = [];
-  if (creates > 0) parts.push(`${creates} to create`);
-  if (updates > 0) parts.push(`${updates} to update`);
-  if (deletes > 0) parts.push(`${deletes} to delete`);
+  if (counts.create) parts.push(`${counts.create} to create`);
+  if (counts.update) parts.push(`${counts.update} to update`);
+  if (counts.delete) parts.push(`${counts.delete} to delete`);
   return parts.join(", ") || "no changes";
 }
 
 function formatSettingsAction(action: string): string {
   switch (action) {
-    case "add":
-      return "+ Add";
-    case "change":
-      return "~ Change";
+    case "create":
+      return "+ Create";
+    case "update":
+      return "~ Update";
     default:
       return action;
   }
-}
-
-function formatSettingsPlanSummary(details: RepoSettingsPlanDetail[]): string {
-  const adds = details.filter((d) => d.action === "add").length;
-  const changes = details.filter((d) => d.action === "change").length;
-  const parts: string[] = [];
-  if (adds > 0) parts.push(`${adds} to add`);
-  if (changes > 0) parts.push(`${changes} to change`);
-  return parts.join(", ") || "no changes";
-}
-
-function formatLabelsPlanSummary(details: LabelsPlanDetail[]): string {
-  const creates = details.filter((d) => d.action === "create").length;
-  const updates = details.filter((d) => d.action === "update").length;
-  const deletes = details.filter((d) => d.action === "delete").length;
-  const parts: string[] = [];
-  if (creates > 0) parts.push(`${creates} to create`);
-  if (updates > 0) parts.push(`${updates} to update`);
-  if (deletes > 0) parts.push(`${deletes} to delete`);
-  return parts.join(", ") || "no changes";
 }
 
 export function formatSummary(data: SummaryData): string {
@@ -235,7 +218,7 @@ export function formatSummary(data: SummaryData): string {
         lines.push("");
         lines.push("<details>");
         lines.push(
-          `<summary>${result.repoName} — Rulesets: ${formatRulesetPlanSummary(result.rulesetPlanDetails)}</summary>`
+          `<summary>${result.repoName} — Rulesets: ${formatPlanSummary(result.rulesetPlanDetails)}</summary>`
         );
         lines.push("");
         lines.push("| Ruleset | Action | Properties |");
@@ -256,7 +239,7 @@ export function formatSummary(data: SummaryData): string {
         lines.push("");
         lines.push("<details>");
         lines.push(
-          `<summary>${result.repoName} — Repo Settings: ${formatSettingsPlanSummary(result.repoSettingsPlanDetails)}</summary>`
+          `<summary>${result.repoName} — Repo Settings: ${formatPlanSummary(result.repoSettingsPlanDetails)}</summary>`
         );
         lines.push("");
         lines.push("| Setting | Action |");
@@ -274,7 +257,7 @@ export function formatSummary(data: SummaryData): string {
         lines.push("");
         lines.push("<details>");
         lines.push(
-          `<summary>${result.repoName} — Labels: ${formatLabelsPlanSummary(result.labelsPlanDetails)}</summary>`
+          `<summary>${result.repoName} — Labels: ${formatPlanSummary(result.labelsPlanDetails)}</summary>`
         );
         lines.push("");
         lines.push("| Label | Action |");
@@ -305,21 +288,32 @@ export function formatSummary(data: SummaryData): string {
   return lines.join("\n");
 }
 
-export function isGitHubActions(): boolean {
-  return !!process.env.GITHUB_STEP_SUMMARY;
+export function shouldWriteSummary(summaryPath: string | undefined): boolean {
+  return !!summaryPath;
 }
 
 /**
  * Append markdown content to GITHUB_STEP_SUMMARY.
- * No-op outside GitHub Actions.
+ * No-op if summaryPath is not provided.
  */
-export function writeGitHubStepSummary(markdown: string): void {
-  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
-  if (!summaryPath) return;
-  appendFileSync(summaryPath, "\n" + markdown + "\n");
+export function writeGitHubStepSummary(
+  markdown: string,
+  summaryPath: string | undefined,
+  log?: DebugLog
+): void {
+  const path = summaryPath;
+  if (!path) return;
+  try {
+    appendFileSync(path, "\n" + markdown + "\n");
+  } catch (error) {
+    log?.debug(`Failed to write GitHub step summary: ${toErrorMessage(error)}`);
+  }
 }
 
-export function writeSummary(data: SummaryData): void {
+export function writeSummary(
+  data: SummaryData,
+  summaryPath: string | undefined
+): void {
   const markdown = formatSummary(data);
-  writeGitHubStepSummary(markdown);
+  writeGitHubStepSummary(markdown, summaryPath);
 }

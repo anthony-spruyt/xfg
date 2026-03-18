@@ -1,0 +1,91 @@
+{
+  "assessments": {
+    "high_level_elegance": 90,
+    "mid_level_elegance": 86,
+    "low_level_elegance": 88
+  },
+  "findings": [
+    {
+      "dimension": "high_level_elegance",
+      "identifier": "sync-command-orchestration-sprawl",
+      "summary": "sync-command.ts is 628 lines and mixes CLI orchestration concerns (config loading, branch naming, report display) with per-repo processing logic (lifecycle phases, file sync, settings application). The module defines 7 private functions that form a mini-framework for repo iteration, but this logic belongs in a dedicated orchestrator class rather than a CLI command module.",
+      "related_files": [
+        "/workspaces/xfg/src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "sync-command.ts defines processSingleRepo, runLifecyclePhase, runFileSyncPhase, applyRepoSettings, displayReports, logSettingsResult, RepoIterationContext — all as free functions in a CLI module",
+        "The module imports from 12+ different packages (config, sync, settings, lifecycle, output, shared, vcs) — a sign it's doing too much",
+        "RepoIterationContext at line 281 is essentially a poor man's service container, grouping 13 fields that would be better as constructor-injected dependencies of a class"
+      ],
+      "suggestion": "Extract the repo-iteration loop, lifecycle/sync/settings orchestration, and reporting into a dedicated SyncOrchestrator class (or similar) in src/sync/ or src/cli/. The CLI sync-command should only handle argument parsing, config loading, and delegating to the orchestrator.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "token-resolution-dual-path",
+      "summary": "GitHub token resolution happens in two places during sync: once in processSingleRepo (line 353-363) to get repoToken for lifecycle/settings, and again inside AuthOptionsBuilder.resolve() when the processor runs. When the caller passes the pre-resolved token, AuthOptionsBuilder short-circuits, but if it doesn't (or passes undefined), the resolution runs again. This creates a subtle data-flow dependency where callers must remember to pre-resolve.",
+      "related_files": [
+        "/workspaces/xfg/src/cli/sync-command.ts",
+        "/workspaces/xfg/src/sync/auth-options-builder.ts",
+        "/workspaces/xfg/src/shared/gh-api-utils.ts"
+      ],
+      "evidence": [
+        "sync-command.ts line 353-363: resolveGitHubToken called to get repoToken",
+        "sync-command.ts line 500: token passed to processor.process() options",
+        "auth-options-builder.ts line 26-28: if token !== undefined, uses it directly; else re-resolves via resolveGitHubToken",
+        "This means if callers forget to pre-resolve, a second token resolution occurs — not harmful but creates unclear ownership of who resolves the token"
+      ],
+      "suggestion": "Centralize token resolution so it happens exactly once per repo. Either always let AuthOptionsBuilder be the single owner of token resolution (remove pre-resolution from sync-command), or always require callers to provide a resolved token and remove the fallback path from AuthOptionsBuilder.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "pr-creator-free-functions-vs-strategy",
+      "summary": "pr-creator.ts exposes createPR() and mergePR() as free functions that internally construct a PRStrategy via getPRStrategy() and (for create) wrap it in PRWorkflowExecutor. Meanwhile, PRMergeHandler and BranchManager also call getPRStrategy() separately. This means PRStrategy instances are created multiple times per repo (once in BranchManager.setupBranch for closeExistingPR, once in createPR, once in mergePR), with no reuse.",
+      "related_files": [
+        "/workspaces/xfg/src/vcs/pr-creator.ts",
+        "/workspaces/xfg/src/sync/pr-merge-handler.ts",
+        "/workspaces/xfg/src/sync/branch-manager.ts",
+        "/workspaces/xfg/src/vcs/pr-strategy-factory.ts"
+      ],
+      "evidence": [
+        "pr-creator.ts line 173: getPRStrategy(repoInfo, executor, log) in createPR",
+        "pr-creator.ts line 231: getPRStrategy(repoInfo, executor, log) in mergePR",
+        "branch-manager.ts line 46: this.prStrategyFactory(repoInfo, executor, this.log) in setupBranch",
+        "Three separate strategy instantiations per repo when a single instance could be shared across the workflow"
+      ],
+      "suggestion": "Create the PRStrategy once per repo (e.g., in SyncWorkflow or RepositorySession) and pass it to BranchManager, PRMergeHandler, and the commit path. This eliminates redundant construction and makes the data flow clearer.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "normalizer-merge-duplication",
+      "summary": "normalizer.ts contains two nearly parallel merge pipelines: mergeSettings (for final normalized output) and mergeRawSettings (for group-layer accumulation). Both handle rulesets, labels, repo settings, and deleteOrphaned with similar logic but different type signatures. The structural overlap creates maintenance risk — changes to merge semantics must be made in both places.",
+      "related_files": [
+        "/workspaces/xfg/src/config/normalizer.ts"
+      ],
+      "evidence": [
+        "mergeSettings (line 214-289): handles rulesets with inherit/false, labels with inherit/false, repo settings with false opt-out, deleteOrphaned",
+        "mergeRawSettings (line 385-454): handles rulesets with inherit/false, labels with inherit/false, repo settings with false opt-out, deleteOrphaned — structurally parallel",
+        "Both functions check shouldInherit, iterate rulesets/labels filtering 'inherit' key, handle false entries, merge via mergeRuleset — the same logical steps"
+      ],
+      "suggestion": "Consider unifying the merge pipeline to always operate on raw types during accumulation, then normalize once at the end. Alternatively, extract shared merge primitives (mergeRulesetMap, mergeLabelMap) that both functions call.",
+      "confidence": "high"
+    },
+    {
+      "dimension": "low_level_elegance",
+      "identifier": "validator-repetitive-settings-check",
+      "summary": "validateForSync and the early guard in validateRawConfig both check for the presence of files/settings/groups using nearly identical logic. hasActionableSettings is used in validateForSync but the parallel check in validateRawConfig uses inline logic with different structure (hasFiles, hasSettings, hasGroupFiles, hasGroupSettings).",
+      "related_files": [
+        "/workspaces/xfg/src/config/validator.ts"
+      ],
+      "evidence": [
+        "validateRawConfig lines 655-678: inline checks for hasFiles, hasSettings, hasGroupFiles, hasGroupSettings",
+        "validateForSync lines 713-746: similar checks using hasActionableSettings plus hasRootFiles/hasGroupFiles",
+        "The two functions check overlapping conditions with different implementations — validateRawConfig does not use hasActionableSettings"
+      ],
+      "suggestion": "Unify the 'has any actionable content' check into a single helper used by both validateRawConfig and validateForSync, eliminating the duplicated logic.",
+      "confidence": "medium"
+    }
+  ]
+}

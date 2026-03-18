@@ -8,10 +8,10 @@ import {
 import type { Ruleset } from "../../config/index.js";
 import {
   computePropertyDiffs,
-  isObject,
   type DiffAction,
   type PropertyDiff,
 } from "./diff-algorithm.js";
+import { isPlainObject } from "../../shared/type-guards.js";
 
 export interface RulesetPlanEntry {
   name: string;
@@ -119,7 +119,7 @@ function renderNestedValue(
   if (Array.isArray(val)) {
     for (let i = 0; i < val.length; i++) {
       const item = val[i];
-      if (isObject(item)) {
+      if (isPlainObject(item)) {
         const obj = item as Record<string, unknown>;
         const typeLabel = "type" in obj ? ` (${obj.type})` : "";
         lines.push(
@@ -134,7 +134,7 @@ function renderNestedValue(
         );
       }
     }
-  } else if (isObject(val)) {
+  } else if (isPlainObject(val)) {
     lines.push(
       ...renderNestedObject(val as Record<string, unknown>, action, indent)
     );
@@ -155,10 +155,10 @@ function renderNestedObject(
   for (const [key, value] of Object.entries(obj)) {
     if (value === null || value === undefined) continue;
 
-    if (Array.isArray(value) && value.some((v) => isObject(v))) {
+    if (Array.isArray(value) && value.some((v) => isPlainObject(v))) {
       lines.push(style.color(`${indentStr}${style.symbol} ${key}:`));
       lines.push(...renderNestedValue(value, action, indent + 1));
-    } else if (isObject(value)) {
+    } else if (isPlainObject(value)) {
       lines.push(style.color(`${indentStr}${style.symbol} ${key}:`));
       lines.push(
         ...renderNestedObject(
@@ -214,13 +214,13 @@ function renderTree(node: TreeNode, indent: number = 0): string[] {
     } else {
       // Leaf node with value
       const hasComplexNew =
-        isObject(child.newValue) ||
+        isPlainObject(child.newValue) ||
         (Array.isArray(child.newValue) &&
-          child.newValue.some((v) => isObject(v)));
+          child.newValue.some((v) => isPlainObject(v)));
       const hasComplexOld =
-        isObject(child.oldValue) ||
+        isPlainObject(child.oldValue) ||
         (Array.isArray(child.oldValue) &&
-          (child.oldValue as unknown[]).some((v) => isObject(v)));
+          (child.oldValue as unknown[]).some((v) => isPlainObject(v)));
 
       if (child.action === "add" && hasComplexNew) {
         lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));
@@ -280,49 +280,14 @@ export function formatPropertyTree(diffs: PropertyDiff[]): string[] {
 
 /**
  * Format a full ruleset config as tree lines (for create action).
+ * Delegates to renderNestedObject which handles recursive rendering.
  */
 function formatFullConfig(ruleset: Ruleset, indent: number = 2): string[] {
-  const lines: string[] = [];
-  const style = getActionStyle("add");
-
-  function renderValue(
-    key: string,
-    value: unknown,
-    currentIndent: number
-  ): void {
-    const pad = "    ".repeat(currentIndent);
-    if (value === null || value === undefined) return;
-
-    if (Array.isArray(value)) {
-      if (value.length === 0) {
-        lines.push(style.color(`${pad}+ ${key}: []`));
-      } else if (value.every((v) => typeof v !== "object")) {
-        lines.push(style.color(`${pad}+ ${key}: ${formatValue(value)}`));
-      } else {
-        lines.push(style.color(`${pad}+ ${key}:`));
-        for (const item of value) {
-          if (typeof item === "object" && item !== null) {
-            lines.push(style.color(`${pad}    + ${JSON.stringify(item)}`));
-          } else {
-            lines.push(style.color(`${pad}    + ${formatValue(item)}`));
-          }
-        }
-      }
-    } else if (typeof value === "object") {
-      lines.push(style.color(`${pad}+ ${key}:`));
-      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-        renderValue(k, v, currentIndent + 1);
-      }
-    } else {
-      lines.push(style.color(`${pad}+ ${key}: ${formatValue(value)}`));
-    }
-  }
-
-  for (const [key, value] of Object.entries(ruleset)) {
-    renderValue(key, value, indent);
-  }
-
-  return lines;
+  return renderNestedObject(
+    ruleset as unknown as Record<string, unknown>,
+    "add",
+    indent
+  );
 }
 
 /**
@@ -340,12 +305,12 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
   const createChanges = changes.filter((c) => c.action === "create");
   const updateChanges = changes.filter((c) => c.action === "update");
   const deleteChanges = changes.filter((c) => c.action === "delete");
-  const unchangedChanges = changes.filter((c) => c.action === "unchanged");
+  const unchangedItems = changes.filter((c) => c.action === "unchanged");
 
   creates = createChanges.length;
   updates = updateChanges.length;
   deletes = deleteChanges.length;
-  unchanged = unchangedChanges.length;
+  unchanged = unchangedItems.length;
 
   if (createChanges.length > 0) {
     lines.push(chalk.bold("  Create:"));
@@ -409,7 +374,7 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     lines.push(""); // Blank line after deletes
   }
 
-  for (const change of unchangedChanges) {
+  for (const change of unchangedItems) {
     entries.push({ name: change.name, action: "unchanged" });
   }
 

@@ -2,18 +2,13 @@
 import type {
   SyncReport,
   RepoFileChanges,
-  FileChange,
+  ReportFileChange,
 } from "../output/sync-report.js";
-
-interface FileChangeInput {
-  path: string;
-  action: "create" | "update" | "delete";
-}
 
 interface SyncResultInput {
   repoName: string;
   success: boolean;
-  fileChanges: FileChangeInput[];
+  fileChanges: ReportFileChange[];
   prUrl?: string;
   mergeOutcome?: "manual" | "auto" | "force" | "direct";
   error?: string;
@@ -26,7 +21,7 @@ export function buildSyncReport(results: SyncResultInput[]): SyncReport {
   };
 
   for (const result of results) {
-    const files: FileChange[] = result.fileChanges.map((f) => ({
+    const files: ReportFileChange[] = result.fileChanges.map((f) => ({
       path: f.path,
       action: f.action,
     }));
