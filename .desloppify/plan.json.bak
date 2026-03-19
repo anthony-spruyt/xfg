@@ -1,45 +1,64 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-18T09:32:08+00:00",
+  "updated": "2026-03-19T10:10:28+00:00",
   "queue_order": [
-    "subjective::abstraction_fitness",
-    "subjective::authorization_consistency",
-    "subjective::high_level_elegance",
-    "subjective::initialization_coupling",
-    "subjective::test_strategy",
-    "subjective::ai_generated_debt",
-    "subjective::api_surface_coherence",
-    "subjective::contract_coherence",
-    "subjective::convention_outlier",
-    "subjective::cross_module_architecture",
-    "subjective::design_coherence",
-    "subjective::error_consistency",
-    "subjective::logic_clarity",
-    "subjective::low_level_elegance",
-    "subjective::mid_level_elegance",
-    "subjective::naming_quality",
-    "subjective::package_organization",
-    "subjective::type_safety",
-    "workflow::score-checkpoint",
     "workflow::communicate-score",
-    "workflow::create-plan",
-    "review::.::holistic::abstraction_fitness::authenticated_git_ops_wide_delegation::786c07e9",
-    "review::.::holistic::abstraction_fitness::processor_options_bag_threading::7d5953ca",
-    "review::.::holistic::api_surface_coherence::isPermanent_isTransient_param_type_mismatch::bb322587",
-    "review::.::holistic::api_surface_coherence::parseApiJson_in_gh_api_utils::e253c0c0",
-    "review::.::holistic::authorization_consistency::force_merge_no_audit_log::4693670d",
-    "review::.::holistic::design_coherence::report_markdown_structure_duplication::59b8adb0",
-    "review::.::holistic::high_level_elegance::github_utils_in_shared::1983c60a",
-    "review::.::holistic::initialization_coupling::logger_env_read_at_import::8fdd0bd4",
-    "review::.::holistic::low_level_elegance::formatter_renderTree_nesting::144fc191",
-    "review::.::holistic::mid_level_elegance::executor_optional_assertion::b0fd80b0",
-    "review::.::holistic::mid_level_elegance::pr_strategy_double_construction::48361bcc",
-    "review::.::holistic::test_strategy::config_validators_transitive_only::877b0eab",
-    "review::.::holistic::test_strategy::gh_api_utils_no_tests::ce97cb61"
+    "workflow::create-plan"
   ],
   "deferred": [],
-  "skipped": {},
+  "skipped": {
+    "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation": {
+      "issue_id": "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this against the code and I am not gaming the score by suppressing a real defect. Correct Decorator pattern per SOLID \u2014 TypeScript lacks traits/mixins.",
+      "created_at": "2026-03-19T10:07:15+00:00",
+      "review_after": null,
+      "skipped_at_scan": 129
+    },
+    "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement": {
+      "issue_id": "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this against the code and I am not gaming the score by suppressing a real defect. Cross-module usage justifies shared/ placement.",
+      "created_at": "2026-03-19T10:07:21+00:00",
+      "review_after": null,
+      "skipped_at_scan": 129
+    },
+    "review::.::holistic::abstraction_fitness::processor_options_passthrough": {
+      "issue_id": "review::.::holistic::abstraction_fitness::processor_options_passthrough",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this against the code and I am not gaming the score by suppressing a real defect. Selective field usage, not pass-through.",
+      "created_at": "2026-03-19T10:07:27+00:00",
+      "review_after": null,
+      "skipped_at_scan": 129
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 variable is a property key mapping to GitHub API field, not a secret. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-19T10:10:27+00:00",
+      "review_after": null,
+      "skipped_at_scan": 129
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 variable is a property key mapping to GitHub API field, not a secret. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-19T10:10:28+00:00",
+      "review_after": null,
+      "skipped_at_scan": 129
+    }
+  },
   "active_cluster": null,
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
@@ -600,78 +619,6 @@
       "cluster": "auto/smells-stub_function",
       "updated_at": "2026-03-06T13:30:19+00:00"
     },
-    "subjective::abstraction_fitness": {
-      "issue_id": "subjective::abstraction_fitness",
-      "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-06T08:57:13+00:00"
-    },
-    "subjective::ai_generated_debt": {
-      "issue_id": "subjective::ai_generated_debt",
-      "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
-    },
-    "subjective::api_surface_coherence": {
-      "issue_id": "subjective::api_surface_coherence",
-      "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
-    },
-    "subjective::authorization_consistency": {
-      "issue_id": "subjective::authorization_consistency",
-      "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-06T08:57:13+00:00"
-    },
-    "subjective::convention_outlier": {
-      "issue_id": "subjective::convention_outlier",
-      "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
-    },
-    "subjective::cross_module_architecture": {
-      "issue_id": "subjective::cross_module_architecture",
-      "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
-    },
-    "subjective::design_coherence": {
-      "issue_id": "subjective::design_coherence",
-      "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
-    },
-    "subjective::error_consistency": {
-      "issue_id": "subjective::error_consistency",
-      "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
-    },
-    "subjective::high_level_elegance": {
-      "issue_id": "subjective::high_level_elegance",
-      "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-06T08:57:13+00:00"
-    },
-    "subjective::low_level_elegance": {
-      "issue_id": "subjective::low_level_elegance",
-      "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
-    },
-    "subjective::mid_level_elegance": {
-      "issue_id": "subjective::mid_level_elegance",
-      "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
-    },
-    "subjective::package_organization": {
-      "issue_id": "subjective::package_organization",
-      "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
-    },
     "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns::3af7a40a": {
       "issue_id": "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns::3af7a40a",
       "created_at": "2026-03-06T09:00:07+00:00",
@@ -987,74 +934,134 @@
     "review::.::holistic::abstraction_fitness::authenticated_git_ops_wide_delegation::786c07e9": {
       "issue_id": "review::.::holistic::abstraction_fitness::authenticated_git_ops_wide_delegation::786c07e9",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/review-abstraction_fitness",
-      "updated_at": "2026-03-06T13:30:19+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-19T09:32:52+00:00"
     },
     "review::.::holistic::abstraction_fitness::processor_options_bag_threading::7d5953ca": {
       "issue_id": "review::.::holistic::abstraction_fitness::processor_options_bag_threading::7d5953ca",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/review-abstraction_fitness",
-      "updated_at": "2026-03-06T13:30:19+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-19T09:32:52+00:00"
     },
     "review::.::holistic::mid_level_elegance::executor_optional_assertion::b0fd80b0": {
       "issue_id": "review::.::holistic::mid_level_elegance::executor_optional_assertion::b0fd80b0",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/review-mid_level_elegance",
-      "updated_at": "2026-03-06T13:30:19+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-19T09:32:52+00:00"
     },
     "review::.::holistic::mid_level_elegance::pr_strategy_double_construction::48361bcc": {
       "issue_id": "review::.::holistic::mid_level_elegance::pr_strategy_double_construction::48361bcc",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/review-mid_level_elegance",
-      "updated_at": "2026-03-06T13:30:19+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-19T09:32:52+00:00"
     },
     "review::.::holistic::test_strategy::gh_api_utils_no_tests::ce97cb61": {
       "issue_id": "review::.::holistic::test_strategy::gh_api_utils_no_tests::ce97cb61",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/review-test_strategy",
-      "updated_at": "2026-03-06T13:30:19+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-19T09:32:52+00:00"
     },
     "review::.::holistic::test_strategy::config_validators_transitive_only::877b0eab": {
       "issue_id": "review::.::holistic::test_strategy::config_validators_transitive_only::877b0eab",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/review-test_strategy",
-      "updated_at": "2026-03-06T13:30:19+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-19T09:32:52+00:00"
     },
     "review::.::holistic::api_surface_coherence::isPermanent_isTransient_param_type_mismatch::bb322587": {
       "issue_id": "review::.::holistic::api_surface_coherence::isPermanent_isTransient_param_type_mismatch::bb322587",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/review-api_surface_coherence",
-      "updated_at": "2026-03-06T13:30:19+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-19T09:32:52+00:00"
     },
     "review::.::holistic::api_surface_coherence::parseApiJson_in_gh_api_utils::e253c0c0": {
       "issue_id": "review::.::holistic::api_surface_coherence::parseApiJson_in_gh_api_utils::e253c0c0",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/review-api_surface_coherence",
-      "updated_at": "2026-03-06T13:30:19+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-19T09:32:52+00:00"
     },
-    "subjective::contract_coherence": {
-      "issue_id": "subjective::contract_coherence",
-      "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
+    "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module": {
+      "issue_id": "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+      "created_at": "2026-03-18T11:51:36+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-18T12:47:23+00:00"
     },
-    "subjective::logic_clarity": {
-      "issue_id": "subjective::logic_clarity",
-      "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
+    "review::.::holistic::type_safety::interpolate_value_untyped_return": {
+      "issue_id": "review::.::holistic::type_safety::interpolate_value_untyped_return",
+      "created_at": "2026-03-18T11:51:36+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-18T12:47:24+00:00"
     },
-    "subjective::naming_quality": {
-      "issue_id": "subjective::naming_quality",
-      "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
+    "review::.::holistic::type_safety::action_param_typed_as_string": {
+      "issue_id": "review::.::holistic::type_safety::action_param_typed_as_string",
+      "created_at": "2026-03-18T11:51:36+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-18T12:47:36+00:00"
     },
-    "subjective::type_safety": {
-      "issue_id": "subjective::type_safety",
-      "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-03-06T13:30:19+00:00"
+    "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions": {
+      "issue_id": "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+      "created_at": "2026-03-18T11:51:37+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-19T09:17:41+00:00"
+    },
+    "review::.::holistic::design_coherence::incomplete_summary_format_consolidation": {
+      "issue_id": "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+      "created_at": "2026-03-18T11:51:37+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-19T09:17:42+00:00"
+    },
+    "review::.::holistic::logic_clarity::count_actions_multi_pass": {
+      "issue_id": "review::.::holistic::logic_clarity::count_actions_multi_pass",
+      "created_at": "2026-03-18T11:51:37+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-19T09:17:53+00:00"
+    },
+    "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel": {
+      "issue_id": "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+      "created_at": "2026-03-18T11:51:38+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-19T09:21:15+00:00"
+    },
+    "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers": {
+      "issue_id": "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+      "created_at": "2026-03-18T11:51:38+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-19T09:21:20+00:00"
+    },
+    "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation": {
+      "issue_id": "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
+      "created_at": "2026-03-18T11:51:38+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-19T09:21:26+00:00"
+    },
+    "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean": {
+      "issue_id": "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+      "created_at": "2026-03-18T11:51:43+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-19T09:27:56+00:00"
+    },
+    "review::.::holistic::ai_generated_debt::formulaic_cache_comments": {
+      "issue_id": "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+      "created_at": "2026-03-18T11:51:43+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-19T09:28:01+00:00"
+    },
+    "review::.::holistic::low_level_elegance::renderTree_nested_conditionals": {
+      "issue_id": "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+      "created_at": "2026-03-18T11:51:43+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-19T09:28:07+00:00"
+    },
+    "review::.::holistic::initialization_coupling::sync_command_module_level_singletons": {
+      "issue_id": "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+      "created_at": "2026-03-18T11:51:43+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-19T09:28:13+00:00"
+    },
+    "review::.::holistic::test_strategy::gh_api_utils_zero_coverage": {
+      "issue_id": "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
+      "created_at": "2026-03-18T11:51:44+00:00",
+      "cluster": null,
+      "updated_at": "2026-03-19T09:30:45+00:00"
     }
   },
   "clusters": {
@@ -1539,10 +1546,7 @@
     "auto/review-abstraction_fitness": {
       "name": "auto/review-abstraction_fitness",
       "description": "Address 2 abstraction_fitness review issues",
-      "issue_ids": [
-        "review::.::holistic::abstraction_fitness::authenticated_git_ops_wide_delegation",
-        "review::.::holistic::abstraction_fitness::processor_options_bag_threading"
-      ],
+      "issue_ids": [],
       "created_at": "2026-03-06T13:26:46+00:00",
       "updated_at": "2026-03-06T13:26:46+00:00",
       "auto": true,
@@ -1553,10 +1557,7 @@
     "auto/review-mid_level_elegance": {
       "name": "auto/review-mid_level_elegance",
       "description": "Address 2 mid_level_elegance review issues",
-      "issue_ids": [
-        "review::.::holistic::mid_level_elegance::executor_optional_assertion",
-        "review::.::holistic::mid_level_elegance::pr_strategy_double_construction"
-      ],
+      "issue_ids": [],
       "created_at": "2026-03-06T13:26:46+00:00",
       "updated_at": "2026-03-06T13:26:46+00:00",
       "auto": true,
@@ -1567,10 +1568,7 @@
     "auto/review-test_strategy": {
       "name": "auto/review-test_strategy",
       "description": "Address 2 test_strategy review issues",
-      "issue_ids": [
-        "review::.::holistic::test_strategy::gh_api_utils_no_tests",
-        "review::.::holistic::test_strategy::config_validators_transitive_only"
-      ],
+      "issue_ids": [],
       "created_at": "2026-03-06T13:26:46+00:00",
       "updated_at": "2026-03-06T13:26:46+00:00",
       "auto": true,
@@ -1581,10 +1579,7 @@
     "auto/review-api_surface_coherence": {
       "name": "auto/review-api_surface_coherence",
       "description": "Address 2 api_surface_coherence review issues",
-      "issue_ids": [
-        "review::.::holistic::api_surface_coherence::isPermanent_isTransient_param_type_mismatch",
-        "review::.::holistic::api_surface_coherence::parseApiJson_in_gh_api_utils"
-      ],
+      "issue_ids": [],
       "created_at": "2026-03-06T13:26:46+00:00",
       "updated_at": "2026-03-06T13:26:46+00:00",
       "auto": true,
@@ -1595,27 +1590,238 @@
     "auto/stale-review": {
       "name": "auto/stale-review",
       "description": "Re-review 13 stale subjective dimensions",
-      "issue_ids": [
-        "subjective::ai_generated_debt",
-        "subjective::api_surface_coherence",
-        "subjective::contract_coherence",
-        "subjective::convention_outlier",
-        "subjective::cross_module_architecture",
-        "subjective::design_coherence",
-        "subjective::error_consistency",
-        "subjective::logic_clarity",
-        "subjective::low_level_elegance",
-        "subjective::mid_level_elegance",
-        "subjective::naming_quality",
-        "subjective::package_organization",
-        "subjective::type_safety"
-      ],
+      "issue_ids": [],
       "created_at": "2026-03-06T13:26:46+00:00",
       "updated_at": "2026-03-06T13:26:46+00:00",
       "auto": true,
       "cluster_key": "subjective::stale",
       "action": "desloppify review --prepare --dimensions ai_generated_debt,api_surface_coherence,contract_coherence,convention_outlier,cross_module_architecture,design_coherence,error_consistency,logic_clarity,low_level_elegance,mid_level_elegance,naming_quality,package_organization,type_safety",
       "user_modified": false
+    },
+    "api-consolidation": {
+      "name": "api-consolidation",
+      "description": "Move misplaced utilities, add type overloads, narrow action parameter types \u2014 improves type_safety, api_surface_coherence",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+        "review::.::holistic::type_safety::interpolate_value_untyped_return",
+        "review::.::holistic::type_safety::action_param_typed_as_string"
+      ],
+      "created_at": "2026-03-18T11:51:23+00:00",
+      "updated_at": "2026-03-18T11:58:43+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Move parseApiJson to shared/json-utils.ts",
+          "detail": "Create a new shared JSON utility file by moving parseApiJson from src/shared/gh-api-utils.ts. Update imports in src/vcs/gitlab-pr-strategy.ts and src/vcs/graphql-commit-strategy.ts. Add re-export in src/shared/gh-api-utils.ts for backward compat.",
+          "effort": "small",
+          "issue_refs": [
+            "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module"
+          ],
+          "done": true
+        },
+        {
+          "title": "Add function overloads to interpolateValue",
+          "detail": "Add overloads: string->string, unknown[]->unknown[], Record->Record. Remove as-casts in env.ts:105 and xfg-template.ts:174.",
+          "effort": "small",
+          "issue_refs": [
+            "review::.::holistic::type_safety::interpolate_value_untyped_return"
+          ],
+          "done": true
+        },
+        {
+          "title": "Narrow action parameter types",
+          "detail": "Create shared SettingsAction union. Update countActions, formatRulesetAction, formatSettingsAction, formatPlanSummary to use it instead of bare string.",
+          "effort": "small",
+          "issue_refs": [
+            "review::.::holistic::type_safety::action_param_typed_as_string"
+          ],
+          "done": true
+        }
+      ]
+    },
+    "design-coherence-cleanup": {
+      "name": "design-coherence-cleanup",
+      "description": "Complete round 3 consolidation: use countActions utility, use formatCountEntry, single-pass countActions \u2014 improves design_coherence, logic_clarity",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+        "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+        "review::.::holistic::logic_clarity::count_actions_multi_pass"
+      ],
+      "created_at": "2026-03-18T11:51:24+00:00",
+      "updated_at": "2026-03-18T11:52:06+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Replace manual counting in diff.ts with countActions",
+          "detail": "Import countActions from base-processor.ts in rulesets/diff.ts. Replace lines 362-367 manual .filter() counting.",
+          "effort": "trivial",
+          "issue_refs": [
+            "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions"
+          ],
+          "done": true
+        },
+        {
+          "title": "Refactor formatSyncSummary and formatLifecycleSummary to use formatCountEntry",
+          "detail": "Update sync-report.ts:23-37 and lifecycle-report.ts:47-61 to delegate to formatCountEntry from settings-report.ts.",
+          "effort": "small",
+          "issue_refs": [
+            "review::.::holistic::design_coherence::incomplete_summary_format_consolidation"
+          ],
+          "done": true
+        },
+        {
+          "title": "Convert countActions to single-pass reduce",
+          "detail": "Replace 4 separate .filter() calls in base-processor.ts:116-125 with single reduce/for-loop.",
+          "effort": "trivial",
+          "issue_refs": [
+            "review::.::holistic::logic_clarity::count_actions_multi_pass"
+          ],
+          "done": true
+        }
+      ]
+    },
+    "module-boundary-fixes": {
+      "name": "module-boundary-fixes",
+      "description": "Fix vcs barrel exports, remove dead shared barrel, share PR strategy instance \u2014 improves cross_module_architecture, mid_level_elegance",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+        "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+        "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation"
+      ],
+      "created_at": "2026-03-18T11:51:24+00:00",
+      "updated_at": "2026-03-18T11:52:15+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Export createPR/mergePR from vcs barrel",
+          "detail": "Add createPR, mergePR exports to vcs/index.ts. Update pr-merge-handler.ts to import from ../vcs/index.js.",
+          "effort": "trivial",
+          "issue_refs": [
+            "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel"
+          ],
+          "done": true
+        },
+        {
+          "title": "Remove dead shared/index.ts barrel",
+          "detail": "Delete src/shared/index.ts. Verify zero consumers exist. Remove any references in tsconfig or package.json.",
+          "effort": "trivial",
+          "issue_refs": [
+            "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers"
+          ],
+          "done": true
+        },
+        {
+          "title": "Share PR strategy instance between createPR and mergePR",
+          "detail": "Refactor createPR/mergePR to accept optional pre-constructed strategy. PRMergeHandler constructs once and passes through.",
+          "effort": "small",
+          "issue_refs": [
+            "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation"
+          ],
+          "done": true
+        }
+      ]
+    },
+    "quick-wins": {
+      "name": "quick-wins",
+      "description": "Trivial fixes: simplify boolean return, remove formulaic comments, extract leaf renderer, defer sync-command singletons \u2014 improves logic_clarity, ai_generated_debt, low_level_elegance, initialization_coupling",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+        "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+        "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+        "review::.::holistic::initialization_coupling::sync_command_module_level_singletons"
+      ],
+      "created_at": "2026-03-18T11:51:29+00:00",
+      "updated_at": "2026-03-18T11:52:48+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Simplify isValidGitUrl to single boolean return",
+          "detail": "Replace if/return-true/return-false with return regex1.test(url) || regex2.test(url) in validator.ts:23-33.",
+          "effort": "trivial",
+          "issue_refs": [
+            "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean"
+          ],
+          "done": true
+        },
+        {
+          "title": "Remove formulaic cache comments",
+          "detail": "Remove 4 comments in repo-lifecycle-factory.ts: '// Check cache first' (lines 37,65) and '// Create provider/source' (lines 43,72).",
+          "effort": "trivial",
+          "issue_refs": [
+            "review::.::holistic::ai_generated_debt::formulaic_cache_comments"
+          ],
+          "done": true
+        },
+        {
+          "title": "Extract renderLeafNode from renderTree",
+          "detail": "Extract lines 214-262 of formatter.ts into renderLeafNode(child, style, indentStr, indent). Reduces nesting in renderTree.",
+          "effort": "small",
+          "issue_refs": [
+            "review::.::holistic::low_level_elegance::renderTree_nested_conditionals"
+          ],
+          "done": true
+        },
+        {
+          "title": "Defer sync-command.ts module-level singletons",
+          "detail": "Move defaultExecutor, logger, cwd, factory definitions inside runSync function body. Makes module side-effect-free at import time.",
+          "effort": "small",
+          "issue_refs": [
+            "review::.::holistic::initialization_coupling::sync_command_module_level_singletons"
+          ],
+          "done": true
+        }
+      ]
+    },
+    "test-coverage": {
+      "name": "test-coverage",
+      "description": "Write unit tests for gh-api-utils.ts pure functions and resolveGitHubToken branching \u2014 improves test_strategy",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::gh_api_utils_zero_coverage"
+      ],
+      "created_at": "2026-03-18T11:51:30+00:00",
+      "updated_at": "2026-03-18T11:53:42+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Write gh-api-utils.test.ts",
+          "detail": "Create test/unit/gh-api-utils.test.ts covering: parseApiJson (valid/invalid JSON), buildTokenEnv (with/without token), getHostnameFlag (github.com vs GHE), isHttp404Error (matching/non-matching), resolveGitHubToken (app token found, null, error fallback, null tokenManager).",
+          "effort": "medium",
+          "issue_refs": [
+            "review::.::holistic::test_strategy::gh_api_utils_zero_coverage"
+          ],
+          "done": true
+        }
+      ]
     }
   },
   "superseded": {
@@ -3294,15 +3500,260 @@
       "superseded_at": "2026-03-18T09:32:07+00:00",
       "remapped_to": null,
       "candidates": []
+    },
+    "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation": {
+      "original_id": "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "AuthenticatedGitOps forwards 15 ILocalGitOps methods unchanged due to merged IGitOps interface",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::abstraction_fitness::authenticated_git_ops_wide_delegation::786c07e9": {
+      "original_id": "review::.::holistic::abstraction_fitness::authenticated_git_ops_wide_delegation::786c07e9",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "AuthenticatedGitOps forwards 15 ILocalGitOps methods unchanged due to merged IGitOps interface",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::abstraction_fitness::processor_options_bag_threading::7d5953ca": {
+      "original_id": "review::.::holistic::abstraction_fitness::processor_options_bag_threading::7d5953ca",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "ProcessorOptions (13 fields) passes through multiple layers with each using a different subset",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::abstraction_fitness::processor_options_passthrough": {
+      "original_id": "review::.::holistic::abstraction_fitness::processor_options_passthrough",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "ProcessorOptions (11 fields) passes through FileSyncStrategy unchanged to FileSyncOrchestrator",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::ai_generated_debt::formulaic_cache_comments": {
+      "original_id": "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Formulaic '// Check cache first' and '// Create provider/source' comments restate obvious code",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::api_surface_coherence::isPermanent_isTransient_param_type_mismatch::bb322587": {
+      "original_id": "review::.::holistic::api_surface_coherence::isPermanent_isTransient_param_type_mismatch::bb322587",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "isPermanentError accepts `unknown` while sibling isTransientError accepts `Error` in the same module",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::api_surface_coherence::parseApiJson_in_gh_api_utils::e253c0c0": {
+      "original_id": "review::.::holistic::api_surface_coherence::parseApiJson_in_gh_api_utils::e253c0c0",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "parseApiJson is platform-agnostic but lives in gh-api-utils.ts, and throws GraphQLApiError for non-GraphQL parse failures",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module": {
+      "original_id": "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "parseApiJson is platform-agnostic but lives in gh-api-utils.ts, used by GitLab code",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel": {
+      "original_id": "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "sync/pr-merge-handler.ts imports createPR/mergePR from vcs/pr-creator.ts, bypassing vcs barrel",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers": {
+      "original_id": "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "shared/index.ts barrel has comprehensive exports but zero cross-module consumers",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::design_coherence::incomplete_summary_format_consolidation": {
+      "original_id": "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "formatSyncSummary and formatLifecycleSummary inline the same pattern that formatCountEntry already abstracts",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions": {
+      "original_id": "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "rulesets/diff.ts manually counts actions instead of using countActions from base-processor.ts",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement": {
+      "original_id": "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "shared/gh-api-utils.ts is GitHub-specific but placed in the platform-neutral shared/ module",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::initialization_coupling::sync_command_module_level_singletons": {
+      "original_id": "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "sync-command.ts module-level singletons freeze process.env.DEBUG and process.cwd() at import time",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::logic_clarity::count_actions_multi_pass": {
+      "original_id": "review::.::holistic::logic_clarity::count_actions_multi_pass",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "countActions iterates the changes array 4 times with separate filter calls",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean": {
+      "original_id": "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "isValidGitUrl uses if/return-true/return-false instead of a single boolean return",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::low_level_elegance::renderTree_nested_conditionals": {
+      "original_id": "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "renderTree in formatter.ts has 4-level nested conditionals over action/complexity combinations",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::mid_level_elegance::executor_optional_assertion::b0fd80b0": {
+      "original_id": "review::.::holistic::mid_level_elegance::executor_optional_assertion::b0fd80b0",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "ProcessorOptions.executor typed optional but SyncWorkflow uses non-null assertion at handoff",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::mid_level_elegance::pr_strategy_double_construction::48361bcc": {
+      "original_id": "review::.::holistic::mid_level_elegance::pr_strategy_double_construction::48361bcc",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "PRMergeHandler creates two strategy instances per workflow via createPR/mergePR free functions",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation": {
+      "original_id": "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "PR strategy instantiated 3 times per repo workflow via free function boundaries in pr-creator.ts",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::test_strategy::config_validators_transitive_only::877b0eab": {
+      "original_id": "review::.::holistic::test_strategy::config_validators_transitive_only::877b0eab",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Extracted config validator sub-modules (458 LOC total) have only transitive test coverage via parent",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::test_strategy::gh_api_utils_no_tests::ce97cb61": {
+      "original_id": "review::.::holistic::test_strategy::gh_api_utils_no_tests::ce97cb61",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "gh-api-utils.ts (175 LOC, 12 importers) has zero direct unit tests for its 6 exported functions",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::test_strategy::gh_api_utils_zero_coverage": {
+      "original_id": "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "gh-api-utils.ts (179 LOC, 9 importers) has zero direct unit tests for its 6 exported functions",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::type_safety::action_param_typed_as_string": {
+      "original_id": "review::.::holistic::type_safety::action_param_typed_as_string",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Action parameters typed as string instead of existing literal union aliases",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::type_safety::interpolate_value_untyped_return": {
+      "original_id": "review::.::holistic::type_safety::interpolate_value_untyped_return",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "interpolateValue returns unknown, forcing as-casts at every call site",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T09:32:52+00:00",
+      "remapped_to": null,
+      "candidates": []
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {
-    "strict": 84.2,
-    "overall": 84.3,
-    "objective": 96.7,
-    "verified": 95.8
-  },
+  "plan_start_scores": {},
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -6507,71 +6958,1755 @@
       "detail": {
         "scan_count": 127
       }
+    },
+    {
+      "timestamp": "2026-03-18T10:25:46+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation",
+          "review::.::holistic::abstraction_fitness::processor_options_passthrough",
+          "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+          "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+          "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+          "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+          "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+          "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+          "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement",
+          "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+          "review::.::holistic::logic_clarity::count_actions_multi_pass",
+          "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+          "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+          "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
+          "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
+          "review::.::holistic::type_safety::action_param_typed_as_string",
+          "review::.::holistic::type_safety::interpolate_value_untyped_return"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation",
+          "review::.::holistic::abstraction_fitness::processor_options_passthrough",
+          "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+          "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+          "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+          "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+          "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+          "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+          "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement",
+          "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+          "review::.::holistic::logic_clarity::count_actions_multi_pass",
+          "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+          "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+          "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
+          "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
+          "review::.::holistic::type_safety::action_param_typed_as_string",
+          "review::.::holistic::type_safety::interpolate_value_untyped_return"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 17,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 19,
+        "stale_pruned_from_queue": [
+          "review::.::holistic::abstraction_fitness::authenticated_git_ops_wide_delegation::786c07e9",
+          "review::.::holistic::abstraction_fitness::processor_options_bag_threading::7d5953ca",
+          "review::.::holistic::api_surface_coherence::isPermanent_isTransient_param_type_mismatch::bb322587",
+          "review::.::holistic::api_surface_coherence::parseApiJson_in_gh_api_utils::e253c0c0",
+          "review::.::holistic::authorization_consistency::force_merge_no_audit_log::4693670d",
+          "review::.::holistic::design_coherence::report_markdown_structure_duplication::59b8adb0",
+          "review::.::holistic::high_level_elegance::github_utils_in_shared::1983c60a",
+          "review::.::holistic::initialization_coupling::logger_env_read_at_import::8fdd0bd4",
+          "review::.::holistic::low_level_elegance::formatter_renderTree_nesting::144fc191",
+          "review::.::holistic::mid_level_elegance::executor_optional_assertion::b0fd80b0",
+          "review::.::holistic::mid_level_elegance::pr_strategy_double_construction::48361bcc",
+          "review::.::holistic::test_strategy::config_validators_transitive_only::877b0eab",
+          "review::.::holistic::test_strategy::gh_api_utils_no_tests::ce97cb61"
+        ],
+        "covered_subjective_pruned_from_queue": [
+          "subjective::abstraction_fitness",
+          "subjective::authorization_consistency",
+          "subjective::high_level_elegance",
+          "subjective::initialization_coupling",
+          "subjective::test_strategy",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::type_safety"
+        ],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:49:04+00:00",
+      "action": "triage_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 17,
+        "cited_ids": [],
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:50:08+00:00",
+      "action": "triage_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 17,
+        "cited_ids": [
+          "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation",
+          "review::.::holistic::abstraction_fitness::processor_options_passthrough",
+          "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+          "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+          "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+          "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+          "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+          "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+          "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement",
+          "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+          "review::.::holistic::logic_clarity::count_actions_multi_pass",
+          "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+          "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+          "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
+          "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
+          "review::.::holistic::type_safety::action_param_typed_as_string",
+          "review::.::holistic::type_safety::interpolate_value_untyped_return"
+        ],
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:50:14+00:00",
+      "action": "triage_confirm_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "All 17 issues verified against source code by 3 parallel subagents across dimensions: cross_module_architecture, high_level_elegance, initialization_coupling, mid_level_elegance, low_level_elegance, design_coherence, logic_clarity, ai_generated_debt, abstraction_fitness, type_safety, test_strategy, api_surface_coherence. Each has file/line citations and independent verdict."
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:50:49+00:00",
+      "action": "triage_reflect",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 17,
+        "reuse": false,
+        "recurring_dims": [
+          "abstraction_fitness",
+          "api_surface_coherence",
+          "design_coherence",
+          "high_level_elegance",
+          "initialization_coupling",
+          "logic_clarity",
+          "low_level_elegance",
+          "mid_level_elegance",
+          "test_strategy"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:50:54+00:00",
+      "action": "triage_confirm_reflect",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "Strategy defines 5 clusters (api-consolidation, design-coherence-cleanup, module-boundary-fixes, quick-wins, test-coverage) with 14 issues to fix and 3 to skip (authenticated_git_ops_delegation, processor_options_passthrough, gh_api_utils_shared_placement). Recurrence analysis covers abstraction_fitness, design_coherence, logic_clarity, type_safety, cross_module_architecture, api_surface_coherence, initialization_coupling, mid_level_elegance, low_level_elegance, test_strategy."
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:51:06+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Not-worth-it: correct Decorator pattern per SOLID. AuthenticatedGitOps forwards ILocalGitOps to this.localOps \u2014 standard composition. TypeScript lacks traits/mixins. Splitting interface would force consumers to accept two dependencies.",
+      "detail": {
+        "kind": "permanent",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:51:14+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::processor_options_passthrough"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "False positive: FileSyncOrchestrator selectively uses 5 of 11 ProcessorOptions fields, mapping into FileWriteContext and OrphanDeleteOptions. Does NOT pass through unchanged. Creating narrower type adds complexity without benefit.",
+      "detail": {
+        "kind": "permanent",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:51:16+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "False positive: gh-api-utils.ts is imported by 5+ modules (vcs/, settings/, lifecycle/, sync/, cli/). parseApiJson used by gitlab-pr-strategy.ts. Cross-module usage justifies shared/ placement. Moving to vcs/ would create worse coupling.",
+      "detail": {
+        "kind": "permanent",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:51:23+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "api-consolidation",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Move misplaced utilities, add type overloads, narrow action parameter types \u2014 improves type_safety, api_surface_coherence",
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:51:24+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "design-coherence-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Complete round 3 consolidation: use countActions utility, use formatCountEntry, single-pass countActions \u2014 improves design_coherence, logic_clarity",
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:51:24+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "module-boundary-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Fix vcs barrel exports, remove dead shared barrel, share PR strategy instance \u2014 improves cross_module_architecture, mid_level_elegance",
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:51:29+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Trivial fixes: simplify boolean return, remove formulaic comments, extract leaf renderer, defer sync-command singletons \u2014 improves logic_clarity, ai_generated_debt, low_level_elegance, initialization_coupling",
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:51:30+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "test-coverage",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Write unit tests for gh-api-utils.ts pure functions and resolveGitHubToken branching \u2014 improves test_strategy",
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:51:36+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+        "review::.::holistic::type_safety::interpolate_value_untyped_return",
+        "review::.::holistic::type_safety::action_param_typed_as_string"
+      ],
+      "cluster_name": "api-consolidation",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-18T11:51:37+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+        "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+        "review::.::holistic::logic_clarity::count_actions_multi_pass"
+      ],
+      "cluster_name": "design-coherence-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-18T11:51:38+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+        "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+        "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation"
+      ],
+      "cluster_name": "module-boundary-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-18T11:51:43+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+        "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+        "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+        "review::.::holistic::initialization_coupling::sync_command_module_level_singletons"
+      ],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-18T11:51:44+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::gh_api_utils_zero_coverage"
+      ],
+      "cluster_name": "test-coverage",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-18T11:51:49+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-consolidation",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:51:52+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-consolidation",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:51:54+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-consolidation",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:52:01+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "design-coherence-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:52:04+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "design-coherence-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:52:06+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "design-coherence-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:52:12+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-boundary-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:52:15+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-boundary-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:52:15+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-boundary-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:52:21+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:52:24+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:52:43+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:52:48+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:53:42+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "test-coverage",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:53:59+00:00",
+      "action": "triage_organize",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "cluster_count": 15,
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:54:47+00:00",
+      "action": "triage_confirm_organize",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "5 clusters match reflect blueprint exactly. 14 issues assigned across api-consolidation (type_safety, api_surface_coherence), design-coherence-cleanup (design_coherence, logic_clarity), module-boundary-fixes (cross_module_architecture, mid_level_elegance), quick-wins (logic_clarity, ai_generated_debt, low_level_elegance, initialization_coupling), test-coverage (test_strategy). 3 issues permanently skipped with per-issue verdicts.",
+        "coverage": "14/14"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:55:57+00:00",
+      "action": "triage_enrich",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "shallow_count": 0,
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:57:43+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-consolidation",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:58:43+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-consolidation",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:58:48+00:00",
+      "action": "triage_confirm_enrich",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "Fixed file path reference \u2014 removed non-existent path from step detail. All 14 steps across 5 clusters have concrete actions with existing file refs. Covers dimensions: type_safety, api_surface_coherence, design_coherence, logic_clarity, cross_module_architecture, mid_level_elegance, ai_generated_debt, low_level_elegance, initialization_coupling, test_strategy."
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:59:07+00:00",
+      "action": "triage_sense_check",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:59:13+00:00",
+      "action": "triage_confirm_sense_check",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "Verified dependencies: design-coherence-cleanup before api-consolidation (shared countActions in base-processor.ts), test-coverage last (parseApiJson move). All file paths confirmed. No circular deps. 14 issues in 5 clusters, 3 skipped. Covers type_safety, api_surface_coherence, design_coherence, logic_clarity, cross_module_architecture, mid_level_elegance, ai_generated_debt, low_level_elegance, initialization_coupling, test_strategy."
+      }
+    },
+    {
+      "timestamp": "2026-03-18T11:59:43+00:00",
+      "action": "triage_complete",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "strategy_len": 406,
+        "coverage": "14/14"
+      }
+    },
+    {
+      "timestamp": "2026-03-18T12:47:22+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved parseApiJson to shared/json-utils.ts. Re-exported from gh-api-utils.ts for backward compat. Updated gitlab-pr-strategy.ts and graphql-commit-strategy.ts imports.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-18T12:47:23+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved parseApiJson to shared/json-utils.ts. Re-exported from gh-api-utils.ts for backward compat. Updated gitlab-pr-strategy.ts and graphql-commit-strategy.ts imports.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Moved parseApiJson to shared/json-utils.ts. Re-exported from gh-api-utils.ts for backward compat. Updated gitlab-pr-strategy.ts and graphql-commit-strategy.ts imports. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-18T12:47:23+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::interpolate_value_untyped_return"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added function overloads for string, unknown[], and Record<string,unknown> inputs. Removed as-casts in env.ts and xfg-template.ts.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-18T12:47:24+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::type_safety::interpolate_value_untyped_return"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added function overloads for string, unknown[], and Record<string,unknown> inputs. Removed as-casts in env.ts and xfg-template.ts.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Added function overloads for string, unknown[], and Record<string,unknown> inputs. Removed as-casts in env.ts and xfg-template.ts. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-18T12:47:25+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::action_param_typed_as_string"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added SettingsAction union type. Narrowed countActions, formatRulesetAction, formatSettingsAction, formatPlanSummary from bare string.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-18T12:47:30+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "review::.::holistic::type_safety::action_param_typed_as_string"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-03-18T12:47:36+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::action_param_typed_as_string"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added SettingsAction union type. Narrowed countActions, formatRulesetAction, formatSettingsAction, formatPlanSummary from bare string.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-18T12:47:36+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::type_safety::action_param_typed_as_string"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added SettingsAction union type. Narrowed countActions, formatRulesetAction, formatSettingsAction, formatPlanSummary from bare string.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Added SettingsAction union type. Narrowed countActions, formatRulesetAction, formatSettingsAction, formatPlanSummary from bare string. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-18T12:47:42+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "stale_wontfix::src/vcs/pr-strategy.ts::smells::src/vcs/pr-strategy.ts::catch_return_default",
+        "stale_wontfix::src/vcs/pr-creator.ts::smells::src/vcs/pr-creator.ts::async_no_await",
+        "stale_wontfix::src/cli/sync-command.ts::smells::src/cli/sync-command.ts::async_no_await",
+        "stale_wontfix::src/cli/program.ts::smells::src/cli/program.ts::console_error_no_throw",
+        "stale_wontfix::src/cli/program.ts::test_coverage::src/cli/program.ts::untested_module",
+        "stale_wontfix::src/shared/gh-api-utils.ts::smells::src/shared/gh-api-utils.ts::async_no_await",
+        "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+        "review::.::holistic::type_safety::interpolate_value_untyped_return",
+        "review::.::holistic::type_safety::action_param_typed_as_string"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "api-consolidation cluster: parseApiJson move, interpolateValue overloads, SettingsAction union",
+      "detail": {
+        "sha": "99f8450bfc97",
+        "branch": "desloppify/round-4"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:17:41+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Replaced manual .filter() counting with countActions import from base-processor.ts",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:17:41+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Replaced manual .filter() counting with countActions import from base-processor.ts",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Replaced manual .filter() counting with countActions import from base-processor.ts and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:17:42+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::incomplete_summary_format_consolidation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Refactored formatSyncSummary and formatLifecycleSummary to use formatCountEntry",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:17:42+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::incomplete_summary_format_consolidation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Refactored formatSyncSummary and formatLifecycleSummary to use formatCountEntry",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Refactored formatSyncSummary and formatLifecycleSummary to use formatCountEntry and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:17:47+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::count_actions_multi_pass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Converted countActions from 4 separate .filter() calls to single-pass for-loop accumulation",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:17:52+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::count_actions_multi_pass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:17:53+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::count_actions_multi_pass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Converted countActions from 4 separate .filter() calls to single-pass for-loop accumulation",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:17:53+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::count_actions_multi_pass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Converted countActions from 4 separate .filter() calls to single-pass for-loop accumulation",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Converted countActions from 4 separate .filter() calls to single-pass for-loop accumulation and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:17:59+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+        "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+        "review::.::holistic::logic_clarity::count_actions_multi_pass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "design-coherence-cleanup cluster: countActions consolidation, formatCountEntry reuse, single-pass refactor",
+      "detail": {
+        "sha": "3b9db40b8563",
+        "branch": "desloppify/round-4"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:21:14+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:21:15+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Exported createPR/mergePR from vcs/index.ts. Updated pr-merge-handler.ts to import from barrel.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:21:15+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Exported createPR/mergePR from vcs/index.ts. Updated pr-merge-handler.ts to import from barrel.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Exported createPR/mergePR from vcs/index.ts. Updated pr-merge-handler.ts to import from barrel. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:21:19+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:21:20+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Deleted src/shared/index.ts \u2014 zero cross-module consumers, all 45+ files use direct imports",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:21:20+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Deleted src/shared/index.ts \u2014 zero cross-module consumers, all 45+ files use direct imports",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Deleted src/shared/index.ts \u2014 zero cross-module consumers, all 45+ files use direct imports and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:21:26+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:21:26+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added optional strategy param to createPR/mergePR. PRMergeHandler constructs once and shares.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:21:26+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added optional strategy param to createPR/mergePR. PRMergeHandler constructs once and shares.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Added optional strategy param to createPR/mergePR. PRMergeHandler constructs once and shares. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:21:32+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+        "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+        "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "module-boundary-fixes cluster: vcs barrel exports, dead shared barrel removal, shared PR strategy",
+      "detail": {
+        "sha": "8d06d267b6b4",
+        "branch": "desloppify/round-4"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:27:55+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:27:56+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Simplified isValidGitUrl from if/return-true/return-false to single return with || operator",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:27:56+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Simplified isValidGitUrl from if/return-true/return-false to single return with || operator",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Simplified isValidGitUrl from if/return-true/return-false to single return with || operator and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:28:00+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::formulaic_cache_comments"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:28:01+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::formulaic_cache_comments"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed 4 formulaic comments from repo-lifecycle-factory.ts: 'Check cache first' and 'Create provider/source'",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:28:01+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::formulaic_cache_comments"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed 4 formulaic comments from repo-lifecycle-factory.ts: 'Check cache first' and 'Create provider/source'",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Removed 4 formulaic comments from repo-lifecycle-factory.ts: 'Check cache first' and 'Create provider/source' and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:28:07+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "review::.::holistic::low_level_elegance::renderTree_nested_conditionals"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:28:07+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::low_level_elegance::renderTree_nested_conditionals"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Extracted renderLeafNode function from renderTree in formatter.ts, reducing nesting depth in the main loop",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:28:07+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::low_level_elegance::renderTree_nested_conditionals"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Extracted renderLeafNode function from renderTree in formatter.ts, reducing nesting depth in the main loop",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Extracted renderLeafNode function from renderTree in formatter.ts, reducing nesting depth in the main loop and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:28:13+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "review::.::holistic::initialization_coupling::sync_command_module_level_singletons"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:28:13+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::initialization_coupling::sync_command_module_level_singletons"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Deferred sync-command.ts module-level singletons (executor, logger, cwd, factories) to lazy initializers at call-time",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:28:13+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::initialization_coupling::sync_command_module_level_singletons"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Deferred sync-command.ts module-level singletons (executor, logger, cwd, factories) to lazy initializers at call-time",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Deferred sync-command.ts module-level singletons (executor, logger, cwd, factories) to lazy initializers at call-time and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:28:19+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+        "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+        "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+        "review::.::holistic::initialization_coupling::sync_command_module_level_singletons"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "quick-wins cluster: isValidGitUrl simplification, formulaic comments removal, renderLeafNode extraction, deferred singletons",
+      "detail": {
+        "sha": "d5101fafa778",
+        "branch": "desloppify/round-4"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:30:44+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::gh_api_utils_zero_coverage"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:30:45+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::gh_api_utils_zero_coverage"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Created test/unit/gh-api-utils.test.ts with 21 tests covering all 6 exported functions: getHostnameFlag, buildTokenEnv, isHttp404Error, parseApiJson, resolveGitHubToken, GhApiClient",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:30:45+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::gh_api_utils_zero_coverage"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Created test/unit/gh-api-utils.test.ts with 21 tests covering all 6 exported functions: getHostnameFlag, buildTokenEnv, isHttp404Error, parseApiJson, resolveGitHubToken, GhApiClient",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Created test/unit/gh-api-utils.test.ts with 21 tests covering all 6 exported functions: getHostnameFlag, buildTokenEnv, isHttp404Error, parseApiJson, resolveGitHubToken, GhApiClient and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:30:45+00:00",
+      "action": "cluster_done",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::gh_api_utils_zero_coverage"
+      ],
+      "cluster_name": "test-coverage",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:30:45+00:00",
+      "action": "sync_lifecycle_phase",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "phase": "workflow_postflight"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:30:49+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::gh_api_utils_zero_coverage"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "test-coverage cluster: gh-api-utils.test.ts with 21 tests for all 6 exported functions",
+      "detail": {
+        "sha": "de3e396c4fc3",
+        "branch": "desloppify/round-4"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:31:49+00:00",
+      "action": "done",
+      "issue_ids": [
+        "workflow::communicate-score"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Score communicated to user: strict 86.7/100 (+2.5 from plan start 84.2)",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:31:49+00:00",
+      "action": "sync_communicate_score",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "injected": true
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:31:49+00:00",
+      "action": "sync_create_plan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "injected": true
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:32:16+00:00",
+      "action": "done",
+      "issue_ids": [
+        "workflow::communicate-score"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Score communicated to user: strict 86.7/100 from plan start 84.2. 14 review issues fixed.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:32:16+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:32:16+00:00",
+      "action": "phase_transition_cleanup",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "phase": "workflow_postflight",
+        "pruned": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:32:16+00:00",
+      "action": "done",
+      "issue_ids": [
+        "workflow::create-plan"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Plan already created and executed during triage. 5 clusters completed, 3 issues skipped.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T09:32:16+00:00",
+      "action": "sync_create_plan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "injected": true
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:32:52+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "api-consolidation",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:32:52+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "design-coherence-cleanup",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:32:52+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "module-boundary-fixes",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:32:52+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:32:52+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "test-coverage",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:32:52+00:00",
+      "action": "reconcile",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation",
+        "review::.::holistic::abstraction_fitness::authenticated_git_ops_wide_delegation::786c07e9",
+        "review::.::holistic::abstraction_fitness::processor_options_bag_threading::7d5953ca",
+        "review::.::holistic::abstraction_fitness::processor_options_passthrough",
+        "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+        "review::.::holistic::api_surface_coherence::isPermanent_isTransient_param_type_mismatch::bb322587",
+        "review::.::holistic::api_surface_coherence::parseApiJson_in_gh_api_utils::e253c0c0",
+        "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+        "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+        "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+        "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+        "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+        "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement",
+        "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+        "review::.::holistic::logic_clarity::count_actions_multi_pass",
+        "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+        "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+        "review::.::holistic::mid_level_elegance::executor_optional_assertion::b0fd80b0",
+        "review::.::holistic::mid_level_elegance::pr_strategy_double_construction::48361bcc",
+        "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
+        "review::.::holistic::test_strategy::config_validators_transitive_only::877b0eab",
+        "review::.::holistic::test_strategy::gh_api_utils_no_tests::ce97cb61",
+        "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
+        "review::.::holistic::type_safety::action_param_typed_as_string",
+        "review::.::holistic::type_safety::interpolate_value_untyped_return"
+      ],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 25,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 5
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:32:52+00:00",
+      "action": "sync_communicate_score",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "injected": true
+      }
+    },
+    {
+      "timestamp": "2026-03-19T09:32:52+00:00",
+      "action": "sync_create_plan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "injected": true
+      }
+    },
+    {
+      "timestamp": "2026-03-19T10:06:59+00:00",
+      "action": "reopen",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T10:07:03+00:00",
+      "action": "reopen",
+      "issue_ids": [
+        "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T10:07:07+00:00",
+      "action": "reopen",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::processor_options_passthrough"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T10:07:15+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T10:07:21+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T10:07:27+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::processor_options_passthrough"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T10:10:27+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T10:10:28+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
     }
   ],
   "epic_triage_meta": {
     "triage_stages": {},
-    "issue_snapshot_hash": "1976c22c00814610",
+    "issue_snapshot_hash": "e785a1c650a0c5c7",
     "triaged_ids": [
-      "review::.::holistic::abstraction_fitness::authenticated_git_ops_wide_delegation::786c07e9",
-      "review::.::holistic::abstraction_fitness::processor_options_bag_threading::7d5953ca",
-      "review::.::holistic::api_surface_coherence::isPermanent_isTransient_param_type_mismatch::bb322587",
-      "review::.::holistic::api_surface_coherence::parseApiJson_in_gh_api_utils::e253c0c0",
-      "review::.::holistic::authorization_consistency::force_merge_no_audit_log::4693670d",
-      "review::.::holistic::design_coherence::report_markdown_structure_duplication::59b8adb0",
-      "review::.::holistic::high_level_elegance::github_utils_in_shared::1983c60a",
-      "review::.::holistic::initialization_coupling::logger_env_read_at_import::8fdd0bd4",
-      "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count::c56338c9",
-      "review::.::holistic::logic_clarity::unreachable_merge_mode_branches::7c8c5f31",
-      "review::.::holistic::low_level_elegance::formatter_renderTree_nesting::144fc191",
-      "review::.::holistic::mid_level_elegance::executor_optional_assertion::b0fd80b0",
-      "review::.::holistic::mid_level_elegance::pr_strategy_double_construction::48361bcc",
-      "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs::177793d7",
-      "review::.::holistic::test_strategy::config_validators_transitive_only::877b0eab",
-      "review::.::holistic::test_strategy::gh_api_utils_no_tests::ce97cb61"
+      "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation",
+      "review::.::holistic::abstraction_fitness::processor_options_passthrough",
+      "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+      "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+      "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+      "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+      "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+      "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+      "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement",
+      "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+      "review::.::holistic::logic_clarity::count_actions_multi_pass",
+      "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+      "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+      "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
+      "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
+      "review::.::holistic::type_safety::action_param_typed_as_string",
+      "review::.::holistic::type_safety::interpolate_value_untyped_return"
     ],
-    "strategy_summary": "Execute code-cleanup cluster first (3 quick-win fixes). Then work through remaining review items by confidence level. After clearing the review queue, re-review stale subjective dimensions to capture score improvements from all completed work.",
+    "strategy_summary": "Round 4 execution: 14 issues across 5 clusters. Order: design-coherence-cleanup (countActions consolidation) -> api-consolidation (type safety, parseApiJson move) -> module-boundary-fixes (barrel exports, shared barrel removal, PR strategy sharing) -> quick-wins (trivial refactors across 4 dimensions) -> test-coverage (gh-api-utils tests). 3 issues permanently skipped as false positives or not-worth-it.",
     "trigger": "manual_triage",
-    "last_completed_at": "2026-03-06T13:16:00+00:00",
+    "last_completed_at": "2026-03-18T11:59:43+00:00",
     "last_triage": {
-      "completed_at": "2026-03-06T13:16:00+00:00",
+      "completed_at": "2026-03-18T11:59:43+00:00",
       "stages": {
         "observe": {
           "stage": "observe",
-          "report": "Score checkpoint at 84.1 strict (+7.5 from plan start 76.6). Completed 4 clusters: stale-docs (4 items), param-sprawl (3 items), error-gaps (1 fixed + 2 wontfixed), type-narrowing (3 items). 24 issues resolved, 2 wontfixed. 9 subjective dimensions are stale \u2014 scores haven't updated from fixes yet. Biggest weighted drags remain elegance dimensions (mid 69.9%, high 82.7%, low 72.2%), contracts (74.5%), and type_safety (74.9%). Cross-module arch at 60.0% is the focus recommendation but marked stale with 0 open issues. 16 review issues remain open/uninvestigated. 19 planned items + 59 mechanical items still in queue. Key observation: many stale dimensions will likely score higher after re-review since we've fixed issues in contracts, type_safety, design_coherence, and api_surface_coherence.",
-          "cited_ids": [],
-          "timestamp": "2026-03-06T13:14:59+00:00",
-          "issue_count": 16,
-          "confirmed_at": "2026-03-06T13:15:05+00:00",
-          "confirmed_text": "I have thoroughly reviewed the 16 open issues across abstraction_fitness, api_surface_coherence, logic_clarity, mid_level_elegance, test_strategy, authorization_consistency, design_coherence, high_level_elegance, initialization_coupling, low_level_elegance, and package_organization dimensions."
+          "report": "OBSERVE STAGE: Verified all 17 open review issues against source code via 3 parallel subagents.\n\n[review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel] GENUINE. pr-merge-handler.ts line 2 imports createPR/mergePR directly from ../vcs/pr-creator.js. vcs/index.ts does NOT export these. Other sync/ files use the barrel (branch-manager imports getPRStrategy from vcs/index.js). Real boundary violation. Fix: export from vcs/index.ts.\n\n[review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers] GENUINE. shared/index.ts has 96 lines of re-exports but grep returns zero cross-module consumers. All 45+ files import directly from submodules. Barrel is dead code. Fix: remove it or adopt barrel imports consistently.\n\n[review::.::holistic::high_level_elegance::gh_api_utils_shared_placement] FALSE POSITIVE. gh-api-utils.ts is imported by 5+ modules (vcs/, settings/, lifecycle/, sync/, cli/). parseApiJson used by gitlab-pr-strategy.ts. Cross-module usage justifies shared/ placement. Moving to vcs/ would create worse coupling.\n\n[review::.::holistic::initialization_coupling::sync_command_module_level_singletons] GENUINE. sync-command.ts lines 42-53: module-level const assignments freeze process.env.DEBUG, process.cwd() at import time. However this is a CLI composition root \u2014 per CLAUDE.md singletons are acceptable here. Fix: move into runSync body to defer initialization.\n\n[review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation] EXAGGERATED. getPRStrategy() called in createPR() line 175 and mergePR() line 233 \u2014 2 instantiations, not 3. BranchManager.setupBranch creates a third via prStrategyFactory but that's a separate factory call. Strategies are lightweight. Fix: share strategy instance between createPR/mergePR.\n\n[review::.::holistic::low_level_elegance::renderTree_nested_conditionals] EXAGGERATED. renderTree in formatter.ts lines 200-267 has max 3 nesting levels (for loop -> else -> if/else-if chain), not 4. Function is 67 lines, each branch handles distinct rendering case. Minor improvement: extract leaf rendering helper.\n\n[review::.::holistic::design_coherence::incomplete_summary_format_consolidation] GENUINE. formatSyncSummary (sync-report.ts:23-37) and formatLifecycleSummary (lifecycle-report.ts:47-61) duplicate the \"N noun (X to verb1, Y to verb2)\" pattern that formatCountEntry in settings-report.ts:120-133 already abstracts. Fix: refactor to use formatCountEntry.\n\n[review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions] GENUINE. diff.ts lines 362-367 manually builds counts with 4 .filter() calls \u2014 exactly what countActions in base-processor.ts:116-125 does. processor.ts already imports countActions but diff.ts doesn't. Trivial fix.\n\n[review::.::holistic::logic_clarity::count_actions_multi_pass] GENUINE but low impact. countActions iterates 4x via .filter(). Arrays are small (rulesets per repo). Code smell is real but performance is irrelevant. Fix: single-pass reduce.\n\n[review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean] GENUINE. isValidGitUrl in validator.ts:23-33 uses if/return true twice then return false. Could be single return with ||. Very minor style issue.\n\n[review::.::holistic::ai_generated_debt::formulaic_cache_comments] GENUINE. repo-lifecycle-factory.ts getProvider (line 37) and getMigrationSource (line 65) have \"// Check cache first\" and \"// Create provider/source\" comments restating obvious Map.get() and switch logic. Remove 4 comments.\n\n[review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation] NOT-WORTH-IT. AuthenticatedGitOps implements IGitOps via standard Decorator pattern, forwarding 15 ILocalGitOps methods to this.localOps. Architecturally correct per SOLID. TypeScript lacks traits/mixins. Splitting interface would force consumers to accept two dependencies.\n\n[review::.::holistic::abstraction_fitness::processor_options_passthrough] FALSE POSITIVE. FileSyncOrchestrator.sync() selectively uses 5 of 11 ProcessorOptions fields (workDir, configId, dryRun, noDelete, hasAppCredentials), mapping them into FileWriteContext and OrphanDeleteOptions. Does NOT pass through unchanged. Creating narrower type adds complexity without benefit.\n\n[review::.::holistic::type_safety::action_param_typed_as_string] GENUINE. countActions accepts {action: string} despite existing RulesetAction, LabelAction, RepoSettingsAction unions. formatRulesetAction and formatSettingsAction in github-summary.ts also use bare string. Narrowing catches typos at compile time.\n\n[review::.::holistic::type_safety::interpolate_value_untyped_return] GENUINE. interpolateValue returns unknown despite type-preserving behavior. 2 call sites use as-casts (env.ts:105, xfg-template.ts:174). Function overloads would eliminate casts and verify type preservation.\n\n[review::.::holistic::test_strategy::gh_api_utils_zero_coverage] GENUINE. Zero test files for gh-api-utils.ts. 6 exported functions including pure functions (getHostnameFlag, buildTokenEnv, isHttp404Error, parseApiJson) trivially testable. resolveGitHubToken has meaningful branching.\n\n[review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module] GENUINE. parseApiJson wraps JSON.parse \u2014 zero GitHub logic. Imported by gitlab-pr-strategy.ts line 16. GitLab code importing from gh-named module is confusing. Move to shared/json-utils.ts.\n\nSummary: 11 genuine, 2 false-positive (gh_api_utils_shared_placement, processor_options_passthrough), 2 exaggerated (pr_strategy_triple_instantiation, renderTree_nested_conditionals), 1 not-worth-it (authenticated_git_ops_delegation), 1 genuine-but-low-severity (sync_command_module_level_singletons).",
+          "cited_ids": [
+            "review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation",
+            "review::.::holistic::abstraction_fitness::processor_options_passthrough",
+            "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+            "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+            "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+            "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+            "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+            "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+            "review::.::holistic::high_level_elegance::gh_api_utils_shared_placement",
+            "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+            "review::.::holistic::logic_clarity::count_actions_multi_pass",
+            "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+            "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+            "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
+            "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
+            "review::.::holistic::type_safety::action_param_typed_as_string",
+            "review::.::holistic::type_safety::interpolate_value_untyped_return"
+          ],
+          "timestamp": "2026-03-18T11:50:08+00:00",
+          "issue_count": 17,
+          "dimension_names": [
+            "abstraction_fitness",
+            "cross_module_architecture",
+            "design_coherence",
+            "logic_clarity",
+            "type_safety",
+            "ai_generated_debt",
+            "api_surface_coherence",
+            "high_level_elegance",
+            "initialization_coupling",
+            "low_level_elegance",
+            "mid_level_elegance",
+            "test_strategy"
+          ],
+          "dimension_counts": {
+            "cross_module_architecture": 2,
+            "high_level_elegance": 1,
+            "abstraction_fitness": 2,
+            "low_level_elegance": 1,
+            "mid_level_elegance": 1,
+            "test_strategy": 1,
+            "api_surface_coherence": 1,
+            "ai_generated_debt": 1,
+            "initialization_coupling": 1,
+            "design_coherence": 2,
+            "logic_clarity": 2,
+            "type_safety": 2
+          },
+          "assessments": [],
+          "confirmed_at": "2026-03-18T11:50:14+00:00",
+          "confirmed_text": "All 17 issues verified against source code by 3 parallel subagents across dimensions: cross_module_architecture, high_level_elegance, initialization_coupling, mid_level_elegance, low_level_elegance, design_coherence, logic_clarity, ai_generated_debt, abstraction_fitness, type_safety, test_strategy, api_surface_coherence. Each has file/line citations and independent verdict."
         },
         "reflect": {
           "stage": "reflect",
-          "report": "Comparing against completed work: We successfully completed 4 clusters targeting contracts (stale-docs fixed 3 docstring accuracy issues), design_coherence (param-sprawl reduced positional params via context objects), error_consistency (added try/catch to github-summary), and type_safety (linked validation arrays, narrowed types, removed double casts). The remaining 16 issues are in 11 dimensions \u2014 most are isolated findings rather than systemic patterns. Key strategic insight: 9 dimensions are stale. Re-reviewing stale dimensions (especially contracts, type_safety, error_consistency, design_coherence which had direct fixes) should yield score improvements without code changes. The highest-impact next actions are: 1) Re-review stale dimensions to capture score improvements from completed work, 2) Fix remaining elegance issues (biggest weighted drag), 3) Fix test_strategy and abstraction_fitness issues. The 2 wontfix items (closeExistingPR boolean return and git stderr string matching) are justified at the system boundary.",
-          "cited_ids": [],
-          "timestamp": "2026-03-06T13:15:16+00:00",
-          "issue_count": 16,
+          "report": "REFLECT STAGE: Strategy comparison against completed round 3 work and pattern analysis.\n\n## Recurrence Analysis\n\n9 dimensions have both open and recently resolved issues, indicating systemic patterns rather than one-off defects:\n\n1. **abstraction_fitness** (2 open / 2 resolved): Both rounds flagged AuthenticatedGitOps delegation and ProcessorOptions threading. The resolved issues (786c07e9, 7d5953ca) addressed the same patterns. The new issues [review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation] and [review::.::holistic::abstraction_fitness::processor_options_passthrough] are recurrences of the same structural concerns. Observe correctly identified both as not-worth-it/false-positive \u2014 the Decorator pattern and selective field usage are architecturally sound.\n\n2. **design_coherence** (2 open / 1 resolved): Resolved 59b8adb0 consolidated report markdown structure. New issues [review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions] and [review::.::holistic::design_coherence::incomplete_summary_format_consolidation] show the consolidation pattern wasn't fully applied. Both are genuine \u2014 countActions duplication in diff.ts and formatCountEntry duplication in sync/lifecycle reports.\n\n3. **logic_clarity** (2 open / 2 resolved): Resolved issues fixed redundant truthiness checks and unreachable branches. New [review::.::holistic::logic_clarity::count_actions_multi_pass] and [review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean] are smaller-scope clarity issues. Genuine but trivial \u2014 good cleanup candidates.\n\n4. **type_safety** (2 open / 0 resolved with recurrence): [review::.::holistic::type_safety::action_param_typed_as_string] and [review::.::holistic::type_safety::interpolate_value_untyped_return] are both genuine. interpolateValue overloads would improve type safety across multiple call sites.\n\n5. **cross_module_architecture** (2 open / 0 resolved with recurrence): [review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel] is a real boundary violation. [review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers] \u2014 the barrel was created in round 3 but never adopted. Decision needed: adopt or remove.\n\n## What Worked in Round 3\n\nRound 3 resolved 16 review issues across 12 dimensions and raised strict score from 84.2 to 86.7. The most impactful fixes were structural (consolidating report formatters, fixing type mismatches, removing unreachable code). The pattern: targeted fixes with clear before/after verification.\n\n## Strategy for Round 4\n\n**Skip (3 issues):**\n- [review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation] \u2014 not-worth-it, correct Decorator pattern\n- [review::.::holistic::abstraction_fitness::processor_options_passthrough] \u2014 false positive, selective field usage\n- [review::.::holistic::high_level_elegance::gh_api_utils_shared_placement] \u2014 false positive, cross-module usage justifies placement\n\n**Fix (14 issues) in priority order:**\n\nCluster 1 \u2014 \"API consolidation\" (high impact, touches shared utilities):\n- [review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module] \u2014 move parseApiJson to shared location\n- [review::.::holistic::type_safety::interpolate_value_untyped_return] \u2014 add function overloads\n- [review::.::holistic::type_safety::action_param_typed_as_string] \u2014 narrow action parameter types\n\nCluster 2 \u2014 \"Design coherence cleanup\" (medium impact, completes round 3 consolidation):\n- [review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions] \u2014 use countActions utility\n- [review::.::holistic::design_coherence::incomplete_summary_format_consolidation] \u2014 use formatCountEntry\n- [review::.::holistic::logic_clarity::count_actions_multi_pass] \u2014 single-pass countActions\n\nCluster 3 \u2014 \"Module boundary fixes\" (medium impact, architectural):\n- [review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel] \u2014 export from vcs barrel\n- [review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers] \u2014 remove unused barrel\n- [review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation] \u2014 share strategy instance\n\nCluster 4 \u2014 \"Quick wins\" (low effort, improves multiple dimensions):\n- [review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean] \u2014 simplify boolean return\n- [review::.::holistic::ai_generated_debt::formulaic_cache_comments] \u2014 remove 4 comments\n- [review::.::holistic::low_level_elegance::renderTree_nested_conditionals] \u2014 extract leaf helper\n- [review::.::holistic::initialization_coupling::sync_command_module_level_singletons] \u2014 defer initialization\n\nCluster 5 \u2014 \"Test coverage\" (high impact on test_strategy dimension):\n- [review::.::holistic::test_strategy::gh_api_utils_zero_coverage] \u2014 write unit tests\n\nThis ordering front-loads type safety and API coherence improvements (highest weighted score drags), then completes design coherence consolidation, then handles architectural boundaries, then quick wins, and finally test coverage.",
+          "cited_ids": [
+            "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+            "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+            "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+            "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+            "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+            "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+            "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+            "review::.::holistic::logic_clarity::count_actions_multi_pass",
+            "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+            "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+            "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
+            "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
+            "review::.::holistic::type_safety::action_param_typed_as_string",
+            "review::.::holistic::type_safety::interpolate_value_untyped_return"
+          ],
+          "timestamp": "2026-03-18T11:50:49+00:00",
+          "issue_count": 17,
+          "missing_issue_ids": [],
+          "duplicate_issue_ids": [],
           "recurring_dims": [
+            "abstraction_fitness",
             "api_surface_coherence",
             "design_coherence",
+            "high_level_elegance",
+            "initialization_coupling",
+            "logic_clarity",
             "low_level_elegance",
-            "mid_level_elegance"
+            "mid_level_elegance",
+            "test_strategy"
           ],
-          "confirmed_at": "2026-03-06T13:15:19+00:00",
-          "confirmed_text": "I have reflected on the api_surface_coherence, design_coherence, low_level_elegance, and mid_level_elegance recurring dimensions and identified that re-reviewing stale dimensions is the highest-ROI action."
+          "confirmed_at": "2026-03-18T11:50:54+00:00",
+          "confirmed_text": "Strategy defines 5 clusters (api-consolidation, design-coherence-cleanup, module-boundary-fixes, quick-wins, test-coverage) with 14 issues to fix and 3 to skip (authenticated_git_ops_delegation, processor_options_passthrough, gh_api_utils_shared_placement). Recurrence analysis covers abstraction_fitness, design_coherence, logic_clarity, type_safety, cross_module_architecture, api_surface_coherence, initialization_coupling, mid_level_elegance, low_level_elegance, test_strategy."
         },
         "organize": {
           "stage": "organize",
-          "report": "Organized remaining 16 review issues. Created code-cleanup cluster (3 items: redundant truthiness check, unreachable dead code branches, misplaced branch-utils.ts). Remaining 13 items are spread across diverse dimensions (abstraction_fitness, api_surface_coherence, authorization_consistency, design_coherence, mid_level_elegance, test_strategy, initialization_coupling, high_level_elegance) \u2014 these are isolated findings not worth clustering. Priority order: 1) code-cleanup cluster (quick wins, high confidence), 2) individual review fixes by confidence, 3) re-review stale dimensions after fixes.",
+          "report": "ORGANIZE STAGE: Created 5 clusters with 14 issues assigned, 3 issues permanently skipped.\n\nSkipped (3):\n- [review::.::holistic::abstraction_fitness::authenticated_git_ops_delegation] \u2014 not-worth-it, correct Decorator pattern\n- [review::.::holistic::abstraction_fitness::processor_options_passthrough] \u2014 false positive, selective field usage\n- [review::.::holistic::high_level_elegance::gh_api_utils_shared_placement] \u2014 false positive, cross-module usage justifies placement\n\nClusters created (5, 14 issues total):\n\n1. api-consolidation (3 issues, 3 steps): Move parseApiJson to shared/json-utils.ts, add interpolateValue overloads, narrow action parameter types. Touches type_safety, api_surface_coherence. Steps: small/small/small effort.\n\n2. design-coherence-cleanup (3 issues, 3 steps): Use countActions in diff.ts, use formatCountEntry in sync/lifecycle reports, single-pass countActions. Touches design_coherence, logic_clarity. Steps: trivial/small/trivial effort.\n\n3. module-boundary-fixes (3 issues, 3 steps): Export createPR/mergePR from vcs barrel, remove dead shared/index.ts, share PR strategy instance. Touches cross_module_architecture, mid_level_elegance. Steps: trivial/trivial/small effort.\n\n4. quick-wins (4 issues, 4 steps): Simplify isValidGitUrl, remove formulaic comments, extract renderLeafNode, defer sync-command singletons. Touches logic_clarity, ai_generated_debt, low_level_elegance, initialization_coupling. Steps: trivial/trivial/small/small effort.\n\n5. test-coverage (1 issue, 1 step): Write gh-api-utils.test.ts with tests for 6 exported functions. Touches test_strategy. Steps: medium effort.\n\nExecution order: api-consolidation -> design-coherence-cleanup -> module-boundary-fixes -> quick-wins -> test-coverage. Front-loads highest weighted score drags (elegance, type_safety, design_coherence).",
           "cited_ids": [],
-          "timestamp": "2026-03-06T13:15:51+00:00",
-          "issue_count": 5,
-          "confirmed_at": "2026-03-06T13:15:55+00:00",
-          "confirmed_text": "I have organized issues into code-cleanup, token-resolution, accepted-debt, stale-findings, and error-gaps clusters with actionable steps for each."
+          "timestamp": "2026-03-18T11:53:59+00:00",
+          "issue_count": 14,
+          "confirmed_at": "2026-03-18T11:54:47+00:00",
+          "confirmed_text": "5 clusters match reflect blueprint exactly. 14 issues assigned across api-consolidation (type_safety, api_surface_coherence), design-coherence-cleanup (design_coherence, logic_clarity), module-boundary-fixes (cross_module_architecture, mid_level_elegance), quick-wins (logic_clarity, ai_generated_debt, low_level_elegance, initialization_coupling), test-coverage (test_strategy). 3 issues permanently skipped with per-issue verdicts."
+        },
+        "enrich": {
+          "stage": "enrich",
+          "report": "ENRICH STAGE: All 5 new clusters already have executor-ready steps with detail, effort tags, and issue refs from the organize stage.\n\nCluster api-consolidation (3 steps):\n1. Move parseApiJson to shared/json-utils.ts [small] \u2014 refs: [review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module]\n2. Add function overloads to interpolateValue [small] \u2014 refs: [review::.::holistic::type_safety::interpolate_value_untyped_return]\n3. Narrow action parameter types [small] \u2014 refs: [review::.::holistic::type_safety::action_param_typed_as_string]\n\nCluster design-coherence-cleanup (3 steps):\n1. Replace manual counting in diff.ts with countActions [trivial] \u2014 refs: [review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions]\n2. Refactor formatSyncSummary/formatLifecycleSummary to use formatCountEntry [small] \u2014 refs: [review::.::holistic::design_coherence::incomplete_summary_format_consolidation]\n3. Convert countActions to single-pass reduce [trivial] \u2014 refs: [review::.::holistic::logic_clarity::count_actions_multi_pass]\n\nCluster module-boundary-fixes (3 steps):\n1. Export createPR/mergePR from vcs barrel [trivial] \u2014 refs: [review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel]\n2. Remove dead shared/index.ts barrel [trivial] \u2014 refs: [review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers]\n3. Share PR strategy instance between createPR/mergePR [small] \u2014 refs: [review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation]\n\nCluster quick-wins (4 steps):\n1. Simplify isValidGitUrl to single boolean return [trivial] \u2014 refs: [review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean]\n2. Remove formulaic cache comments [trivial] \u2014 refs: [review::.::holistic::ai_generated_debt::formulaic_cache_comments]\n3. Extract renderLeafNode from renderTree [small] \u2014 refs: [review::.::holistic::low_level_elegance::renderTree_nested_conditionals]\n4. Defer sync-command.ts module-level singletons [small] \u2014 refs: [review::.::holistic::initialization_coupling::sync_command_module_level_singletons]\n\nCluster test-coverage (1 step):\n1. Write gh-api-utils.test.ts [medium] \u2014 refs: [review::.::holistic::test_strategy::gh_api_utils_zero_coverage]\n\nNo additional enrichment needed \u2014 steps were created with full detail during organize.",
+          "timestamp": "2026-03-18T11:55:57+00:00",
+          "shallow_count": 0,
+          "confirmed_at": "2026-03-18T11:58:48+00:00",
+          "confirmed_text": "Fixed file path reference \u2014 removed non-existent path from step detail. All 14 steps across 5 clusters have concrete actions with existing file refs. Covers dimensions: type_safety, api_surface_coherence, design_coherence, logic_clarity, cross_module_architecture, mid_level_elegance, ai_generated_debt, low_level_elegance, initialization_coupling, test_strategy."
+        },
+        "sense-check": {
+          "stage": "sense-check",
+          "report": "SENSE-CHECK: Verified step accuracy and cross-cluster dependencies.\n\nDependency analysis:\n- design-coherence-cleanup step 1 (use countActions in diff.ts) and step 3 (single-pass countActions) are interdependent \u2014 step 3 modifies countActions which step 1 introduces as a dependency. Order: do step 3 first (improve countActions), then step 1 (import it in diff.ts). This is within the same cluster so ordering is controllable.\n- api-consolidation step 3 (narrow action types) touches base-processor.ts countActions signature, which overlaps with design-coherence-cleanup. Execute design-coherence-cleanup first to avoid merge conflicts.\n- module-boundary-fixes step 2 (remove shared/index.ts) is independent \u2014 zero consumers confirmed. No risk.\n- test-coverage depends on api-consolidation step 1 (parseApiJson may move). Execute test-coverage last.\n\nCorrected execution order: design-coherence-cleanup -> api-consolidation -> module-boundary-fixes -> quick-wins -> test-coverage.\n\nStep accuracy verification:\n- All file paths in steps exist on disk (verified src/shared/gh-api-utils.ts, src/shared/interpolation-engine.ts, src/settings/base-processor.ts, src/settings/rulesets/diff.ts, src/output/sync-report.ts, src/output/lifecycle-report.ts, src/vcs/index.ts, src/shared/index.ts, src/vcs/pr-creator.ts, src/config/validator.ts, src/lifecycle/repo-lifecycle-factory.ts, src/settings/rulesets/formatter.ts, src/cli/sync-command.ts, src/output/github-summary.ts)\n- Line number references checked against observe report citations\n- No circular dependencies between clusters\n- All 14 issues accounted for across 5 clusters, 3 permanently skipped\n\nNo blockers found. Plan is ready for execution.",
+          "timestamp": "2026-03-18T11:59:07+00:00",
+          "value_targets": [
+            "api-consolidation",
+            "design-coherence-cleanup",
+            "module-boundary-fixes",
+            "quick-wins",
+            "test-coverage"
+          ],
+          "confirmed_at": "2026-03-18T11:59:13+00:00",
+          "confirmed_text": "Verified dependencies: design-coherence-cleanup before api-consolidation (shared countActions in base-processor.ts), test-coverage last (parseApiJson move). All file paths confirmed. No circular deps. 14 issues in 5 clusters, 3 skipped. Covers type_safety, api_surface_coherence, design_coherence, logic_clarity, cross_module_architecture, mid_level_elegance, ai_generated_debt, low_level_elegance, initialization_coupling, test_strategy."
         }
       },
-      "strategy": "Execute code-cleanup cluster first (3 quick-win fixes). Then work through remaining review items by confidence level. After clearing the review queue, re-review stale subjective dimensions to capture score improvements from all completed work."
-    }
+      "strategy": "Round 4 execution: 14 issues across 5 clusters. Order: design-coherence-cleanup (countActions consolidation) -> api-consolidation (type safety, parseApiJson move) -> module-boundary-fixes (barrel exports, shared barrel removal, PR strategy sharing) -> quick-wins (trivial refactors across 4 dimensions) -> test-coverage (gh-api-utils tests). 3 issues permanently skipped as false positives or not-worth-it.",
+      "completion_mode": "manual_triage"
+    },
+    "issue_dispositions": {},
+    "last_completion_mode": "manual_triage"
   },
   "commit_log": [
     {
@@ -6663,19 +8798,127 @@
       "recorded_at": "2026-03-06T13:23:49+00:00",
       "note": "code-cleanup cluster: truthiness fix, exhaustive merge mode checks, branch-utils relocation",
       "cluster_name": null
+    },
+    {
+      "sha": "99f8450bfc97",
+      "branch": "desloppify/round-4",
+      "issue_ids": [
+        "stale_wontfix::src/vcs/pr-strategy.ts::smells::src/vcs/pr-strategy.ts::catch_return_default",
+        "stale_wontfix::src/vcs/pr-creator.ts::smells::src/vcs/pr-creator.ts::async_no_await",
+        "stale_wontfix::src/cli/sync-command.ts::smells::src/cli/sync-command.ts::async_no_await",
+        "stale_wontfix::src/cli/program.ts::smells::src/cli/program.ts::console_error_no_throw",
+        "stale_wontfix::src/cli/program.ts::test_coverage::src/cli/program.ts::untested_module",
+        "stale_wontfix::src/shared/gh-api-utils.ts::smells::src/shared/gh-api-utils.ts::async_no_await",
+        "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
+        "review::.::holistic::type_safety::interpolate_value_untyped_return",
+        "review::.::holistic::type_safety::action_param_typed_as_string"
+      ],
+      "recorded_at": "2026-03-18T12:47:42+00:00",
+      "note": "api-consolidation cluster: parseApiJson move, interpolateValue overloads, SettingsAction union",
+      "cluster_name": null
+    },
+    {
+      "sha": "3b9db40b8563",
+      "branch": "desloppify/round-4",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
+        "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
+        "review::.::holistic::logic_clarity::count_actions_multi_pass"
+      ],
+      "recorded_at": "2026-03-19T09:17:59+00:00",
+      "note": "design-coherence-cleanup cluster: countActions consolidation, formatCountEntry reuse, single-pass refactor",
+      "cluster_name": null
+    },
+    {
+      "sha": "8d06d267b6b4",
+      "branch": "desloppify/round-4",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
+        "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
+        "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation"
+      ],
+      "recorded_at": "2026-03-19T09:21:32+00:00",
+      "note": "module-boundary-fixes cluster: vcs barrel exports, dead shared barrel removal, shared PR strategy",
+      "cluster_name": null
+    },
+    {
+      "sha": "d5101fafa778",
+      "branch": "desloppify/round-4",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+        "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+        "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+        "review::.::holistic::initialization_coupling::sync_command_module_level_singletons"
+      ],
+      "recorded_at": "2026-03-19T09:28:19+00:00",
+      "note": "quick-wins cluster: isValidGitUrl simplification, formulaic comments removal, renderLeafNode extraction, deferred singletons",
+      "cluster_name": null
+    },
+    {
+      "sha": "de3e396c4fc3",
+      "branch": "desloppify/round-4",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::gh_api_utils_zero_coverage"
+      ],
+      "recorded_at": "2026-03-19T09:30:49+00:00",
+      "note": "test-coverage cluster: gh-api-utils.test.ts with 21 tests for all 6 exported functions",
+      "cluster_name": null
     }
   ],
-  "uncommitted_issues": [
-    "stale_wontfix::src/vcs/pr-strategy.ts::smells::src/vcs/pr-strategy.ts::catch_return_default",
-    "stale_wontfix::src/vcs/pr-creator.ts::smells::src/vcs/pr-creator.ts::async_no_await",
-    "stale_wontfix::src/cli/sync-command.ts::smells::src/cli/sync-command.ts::async_no_await",
-    "stale_wontfix::src/cli/program.ts::smells::src/cli/program.ts::console_error_no_throw",
-    "stale_wontfix::src/cli/program.ts::test_coverage::src/cli/program.ts::untested_module",
-    "stale_wontfix::src/shared/gh-api-utils.ts::smells::src/shared/gh-api-utils.ts::async_no_await"
-  ],
+  "uncommitted_issues": [],
   "commit_tracking_branch": null,
-  "scan_count_at_plan_start": 126,
   "refresh_state": {
-    "postflight_scan_completed_at_scan_count": 127
-  }
+    "subjective_review_completed_at_scan_count": 128,
+    "lifecycle_phase": "execute"
+  },
+  "subjective_defer_meta": {
+    "deferred_review_ids": [
+      "subjective::abstraction_fitness",
+      "subjective::ai_generated_debt",
+      "subjective::api_surface_coherence",
+      "subjective::authorization_consistency",
+      "subjective::contract_coherence",
+      "subjective::convention_outlier",
+      "subjective::cross_module_architecture",
+      "subjective::design_coherence",
+      "subjective::error_consistency",
+      "subjective::high_level_elegance",
+      "subjective::initialization_coupling",
+      "subjective::logic_clarity",
+      "subjective::low_level_elegance",
+      "subjective::mid_level_elegance",
+      "subjective::naming_quality",
+      "subjective::package_organization",
+      "subjective::test_strategy",
+      "subjective::type_safety"
+    ],
+    "last_deferred_scan": 128,
+    "last_deferred_at": "2026-03-18T10:25:46+00:00",
+    "defer_count": 1,
+    "first_deferred_scan": 128,
+    "first_deferred_at": "2026-03-18T10:25:46+00:00",
+    "deferred_stale_ids": [
+      "subjective::abstraction_fitness",
+      "subjective::ai_generated_debt",
+      "subjective::api_surface_coherence",
+      "subjective::cross_module_architecture",
+      "subjective::design_coherence",
+      "subjective::high_level_elegance",
+      "subjective::initialization_coupling",
+      "subjective::logic_clarity",
+      "subjective::low_level_elegance",
+      "subjective::mid_level_elegance",
+      "subjective::test_strategy",
+      "subjective::type_safety"
+    ],
+    "deferred_under_target_ids": [
+      "subjective::authorization_consistency",
+      "subjective::contract_coherence",
+      "subjective::convention_outlier",
+      "subjective::error_consistency",
+      "subjective::naming_quality",
+      "subjective::package_organization"
+    ]
+  },
+  "previous_plan_start_scores": {}
 }
