@@ -127,7 +127,7 @@ export function formatPRBody(
     },
   });
 
-  return result as string;
+  return result;
 }
 
 /**
