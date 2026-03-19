@@ -1,9 +1,32 @@
 import { describe, it } from "node:test";
 import { strict as assert } from "node:assert";
 
-import { AuthenticatedGitOps } from "../../src/vcs/authenticated-git-ops.js";
+import {
+  AuthenticatedGitOps,
+  type AuthenticatedGitOpsOptions,
+} from "../../src/vcs/authenticated-git-ops.js";
 import type { GitAuthOptions } from "../../src/vcs/types.js";
 import type { ILocalGitOps } from "../../src/vcs/types.js";
+import type { ICommandExecutor } from "../../src/shared/command-executor.js";
+import type { DebugLog } from "../../src/shared/logger.js";
+
+function createAuthOps(
+  localOps: ILocalGitOps,
+  executor: ICommandExecutor,
+  workDir: string,
+  retries: number,
+  auth?: GitAuthOptions,
+  log?: DebugLog
+): AuthenticatedGitOps {
+  return new AuthenticatedGitOps({
+    localOps,
+    executor,
+    workDir,
+    retries,
+    auth,
+    log,
+  });
+}
 
 // Minimal ILocalGitOps mock for tests that only exercise network methods
 function createMockLocalOps(): ILocalGitOps {
@@ -54,7 +77,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -82,7 +105,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -114,7 +137,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -140,7 +163,7 @@ describe("AuthenticatedGitOps", () => {
           throw new Error("remote not available");
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -173,7 +196,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -213,7 +236,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -247,7 +270,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -283,7 +306,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -317,7 +340,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -351,7 +374,7 @@ describe("AuthenticatedGitOps", () => {
           return "abc123\trefs/heads/main\n";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -384,7 +407,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -412,7 +435,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -439,7 +462,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -472,7 +495,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -504,7 +527,7 @@ describe("AuthenticatedGitOps", () => {
           return "abc123\trefs/heads/main\n";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -532,7 +555,7 @@ describe("AuthenticatedGitOps", () => {
           throw new Error("Command failed: git ls-remote");
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -566,7 +589,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -587,7 +610,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -611,7 +634,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -647,7 +670,7 @@ describe("AuthenticatedGitOps", () => {
           return "";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -673,7 +696,7 @@ describe("AuthenticatedGitOps", () => {
           throw new Error("remote not available");
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -705,7 +728,7 @@ describe("AuthenticatedGitOps", () => {
           throw new Error("remote not available");
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         createMockLocalOps(),
         mockExecutor,
         "/tmp/test",
@@ -738,7 +761,7 @@ describe("AuthenticatedGitOps", () => {
           branchCreated = branchName;
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",
@@ -757,7 +780,7 @@ describe("AuthenticatedGitOps", () => {
           calls.push(`writeFile:${fileName}:${content}`);
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",
@@ -777,7 +800,7 @@ describe("AuthenticatedGitOps", () => {
           called = true;
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",
@@ -795,7 +818,7 @@ describe("AuthenticatedGitOps", () => {
           return "file-content";
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",
@@ -812,7 +835,7 @@ describe("AuthenticatedGitOps", () => {
           return false;
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",
@@ -829,7 +852,7 @@ describe("AuthenticatedGitOps", () => {
           return true;
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",
@@ -846,7 +869,7 @@ describe("AuthenticatedGitOps", () => {
           return ["file1.ts", "file2.ts"];
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",
@@ -866,7 +889,7 @@ describe("AuthenticatedGitOps", () => {
           return true;
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",
@@ -883,7 +906,7 @@ describe("AuthenticatedGitOps", () => {
           return true;
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",
@@ -903,7 +926,7 @@ describe("AuthenticatedGitOps", () => {
           return true;
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",
@@ -921,7 +944,7 @@ describe("AuthenticatedGitOps", () => {
           deleted = true;
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",
@@ -939,7 +962,7 @@ describe("AuthenticatedGitOps", () => {
           return true;
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",
@@ -956,7 +979,7 @@ describe("AuthenticatedGitOps", () => {
           return { branch: "develop", method: "custom" };
         },
       };
-      const authOps = new AuthenticatedGitOps(
+      const authOps = createAuthOps(
         localOps,
         { exec: async () => "" },
         "/tmp/test",

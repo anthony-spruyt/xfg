@@ -13,15 +13,31 @@ import { SyncError } from "../shared/errors.js";
  * the remote origin. Subsequent operations (fetch, push, getDefaultBranch)
  * reuse that authenticated remote URL — no extra auth setup per operation.
  */
+export interface AuthenticatedGitOpsOptions {
+  localOps: ILocalGitOps;
+  executor: ICommandExecutor;
+  workDir: string;
+  retries: number;
+  auth?: GitAuthOptions;
+  log?: DebugLog;
+}
+
 export class AuthenticatedGitOps implements IGitOps {
-  constructor(
-    private readonly localOps: ILocalGitOps,
-    private readonly executor: ICommandExecutor,
-    private readonly workDir: string,
-    private readonly retries: number,
-    private readonly auth?: GitAuthOptions,
-    private readonly log?: DebugLog
-  ) {}
+  private readonly localOps: ILocalGitOps;
+  private readonly executor: ICommandExecutor;
+  private readonly workDir: string;
+  private readonly retries: number;
+  private readonly auth?: GitAuthOptions;
+  private readonly log?: DebugLog;
+
+  constructor(options: AuthenticatedGitOpsOptions) {
+    this.localOps = options.localOps;
+    this.executor = options.executor;
+    this.workDir = options.workDir;
+    this.retries = options.retries;
+    this.auth = options.auth;
+    this.log = options.log;
+  }
 
   private async execWithRetry(command: string): Promise<string> {
     return withRetry(() => this.executor.exec(command, this.workDir), {
