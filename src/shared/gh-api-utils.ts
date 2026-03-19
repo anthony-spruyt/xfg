@@ -4,8 +4,6 @@ import type { ICommandExecutor } from "./command-executor.js";
 import type { GitHubRepoInfo } from "./repo-detector.js";
 import { toErrorMessage } from "./type-guards.js";
 
-// Re-export parseApiJson from its canonical location for backward compatibility
-export { parseApiJson } from "./json-utils.js";
 import type { DebugLog } from "./logger.js";
 
 interface ITokenManager {

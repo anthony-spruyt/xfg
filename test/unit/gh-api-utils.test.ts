@@ -4,10 +4,10 @@ import {
   getHostnameFlag,
   buildTokenEnv,
   isHttp404Error,
-  parseApiJson,
   resolveGitHubToken,
   GhApiClient,
 } from "../../src/shared/gh-api-utils.js";
+import { parseApiJson } from "../../src/shared/json-utils.js";
 import type { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
 
 function makeRepoInfo(overrides: Partial<GitHubRepoInfo> = {}): GitHubRepoInfo {

@@ -1,12 +1,16 @@
 import type { FileContent, RepoConfig } from "../config/types.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
-import type { ILocalGitOps, IGitOps, GitAuthOptions } from "../vcs/types.js";
-import type { GitOpsOptions } from "../vcs/git-ops.js";
+import type {
+  ILocalGitOps,
+  IGitOps,
+  GitAuthOptions,
+  GitOpsOptions,
+  FileAction,
+} from "../vcs/index.js";
 import type { DiffStats } from "./diff-utils.js";
 import type { ILogger } from "../shared/logger.js";
 import type { XfgManifest } from "./manifest.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
-import type { FileAction } from "../vcs/types.js";
 
 export type GitOpsFactory = (
   options: GitOpsOptions,

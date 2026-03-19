@@ -1,5 +1,5 @@
 import { getCommitStrategy, type FileChange } from "../vcs/index.js";
-import type { ICommitStrategy } from "../vcs/types.js";
+import type { ICommitStrategy } from "../vcs/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import { getRepoDisplayName } from "../shared/repo-detector.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
