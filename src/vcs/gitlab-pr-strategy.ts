@@ -201,7 +201,13 @@ export class GitLabPRStrategy extends BasePRStrategy {
     const repoFlag = this.getRepoFlag(repoInfo);
 
     const descFile = join(workDir, this.bodyFilePath);
-    writeFileSync(descFile, body, "utf-8");
+    try {
+      writeFileSync(descFile, body, "utf-8");
+    } catch (err) {
+      throw new SyncError(
+        `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`
+      );
+    }
 
     // glab mr create with description from file
     const command = `glab mr create --source-branch ${escapeShellArg(branchName)} --target-branch ${escapeShellArg(baseBranch)} --title ${escapeShellArg(title)} --description "$(cat ${escapeShellArg(descFile)})" --yes -R ${escapeShellArg(repoFlag)}`;
