@@ -1,6 +1,11 @@
 import type { ILogger } from "../shared/logger.js";
-import { createPR, mergePR, type PRResult } from "../vcs/pr-creator.js";
-import type { PRMergeConfig } from "../vcs/index.js";
+import {
+  createPR,
+  mergePR,
+  getPRStrategy,
+  type PRResult,
+  type PRMergeConfig,
+} from "../vcs/index.js";
 import type {
   ProcessorResult,
   IPRMergeHandler,
@@ -21,6 +26,9 @@ export class PRMergeHandler implements IPRMergeHandler {
       fileChanges,
     } = input;
     this.log.info("Creating pull request...");
+    const strategy = options.dryRun
+      ? undefined
+      : getPRStrategy(repoInfo, options.executor, this.log);
     const prResult: PRResult = await createPR({
       repoInfo,
       branchName: options.branchName,
@@ -34,6 +42,7 @@ export class PRMergeHandler implements IPRMergeHandler {
       token: options.token,
       labels: repoConfig.prOptions?.labels,
       log: this.log,
+      strategy,
     });
 
     const mergeMode = repoConfig.prOptions?.merge ?? "auto";
@@ -59,6 +68,7 @@ export class PRMergeHandler implements IPRMergeHandler {
         executor: options.executor,
         token: options.token,
         log: this.log,
+        strategy,
       });
 
       mergeResult = {

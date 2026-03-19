@@ -7,6 +7,7 @@ import { PRWorkflowExecutor } from "./pr-strategy.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
   FileAction,
+  IPRStrategy,
   MergeResult,
   PRMergeConfig,
   PRResult,
@@ -35,6 +36,8 @@ interface PROptions {
   labels?: string[];
   /** Optional logger for PR strategy debug/warn/info messages */
   log?: IPRStrategyLogger;
+  /** Pre-constructed PR strategy to reuse (avoids redundant instantiation) */
+  strategy?: IPRStrategy;
 }
 
 export type { PRResult } from "./types.js";
@@ -172,8 +175,9 @@ export async function createPR(options: PROptions): Promise<PRResult> {
   }
 
   // Get the appropriate strategy and execute via workflow executor
-  const strategy = getPRStrategy(repoInfo, executor, log);
-  const workflow = new PRWorkflowExecutor(strategy);
+  const resolvedStrategy =
+    options.strategy ?? getPRStrategy(repoInfo, executor, log);
+  const workflow = new PRWorkflowExecutor(resolvedStrategy);
   return workflow.execute({
     repoInfo,
     title,
@@ -200,6 +204,8 @@ interface MergePROptions {
   token?: string;
   /** Optional logger for PR strategy debug/warn/info messages */
   log?: IPRStrategyLogger;
+  /** Pre-constructed PR strategy to reuse (avoids redundant instantiation) */
+  strategy?: IPRStrategy;
 }
 
 export async function mergePR(options: MergePROptions): Promise<MergeResult> {
@@ -230,8 +236,9 @@ export async function mergePR(options: MergePROptions): Promise<MergeResult> {
   }
 
   // Get the appropriate strategy and execute merge
-  const strategy = getPRStrategy(repoInfo, executor, log);
-  return strategy.merge({
+  const resolvedStrategy =
+    options.strategy ?? getPRStrategy(repoInfo, executor, log);
+  return resolvedStrategy.merge({
     prUrl,
     repoInfo,
     config: mergeConfig,
