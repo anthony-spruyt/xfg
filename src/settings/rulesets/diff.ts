@@ -1,10 +1,10 @@
 import { RULESET_COMPARABLE_FIELDS, type Ruleset } from "../../config/index.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { camelToSnake } from "../../shared/string-utils.js";
-import { countActions } from "../base-processor.js";
+import { countActions, type SettingsAction } from "../base-processor.js";
 import type { GitHubRuleset } from "./types.js";
 
-export type RulesetAction = "create" | "update" | "delete" | "unchanged";
+export type RulesetAction = SettingsAction;
 
 export interface RulesetChange {
   action: RulesetAction;

@@ -173,7 +173,10 @@ function renderLifecycleLines(
   }
 }
 
-function renderSyncLines(syncRepo: RepoFileChanges, diffLines: string[]): void {
+export function renderSyncLines(
+  syncRepo: RepoFileChanges,
+  diffLines: string[]
+): void {
   for (const file of syncRepo.files) {
     if (file.action === "create") {
       diffLines.push(`+ ${file.path}`);
