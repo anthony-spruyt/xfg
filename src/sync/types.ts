@@ -55,6 +55,7 @@ export interface IFileWriter {
 
 export interface OrphanProcessResult {
   manifest: XfgManifest;
+  existingManifest: XfgManifest | null;
   filesToDelete: string[];
 }
 

@@ -79,7 +79,11 @@ describe("FileSyncOrchestrator", () => {
       calls,
       processOrphans: () => {
         calls.processOrphans++;
-        return { manifest: { version: 4, configs: {} }, filesToDelete: [] };
+        return {
+          manifest: { version: 4, configs: {} },
+          existingManifest: null,
+          filesToDelete: [],
+        };
       },
       deleteOrphans: async () => {
         calls.deleteOrphans++;

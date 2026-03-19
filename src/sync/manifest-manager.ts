@@ -39,7 +39,7 @@ export class ManifestManager implements IManifestManager {
       filesWithDeleteOrphaned
     );
 
-    return { manifest, filesToDelete };
+    return { manifest, existingManifest, filesToDelete };
   }
 
   async deleteOrphans(
