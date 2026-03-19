@@ -1,0 +1,27 @@
+{
+  "assessments": {
+    "dependency_health": 96.0,
+    "authorization_consistency": 95.0,
+    "incomplete_migration": 95.0
+  },
+  "findings": [
+    {
+      "dimension": "incomplete_migration",
+      "identifier": "old_summary_api_coexistence",
+      "summary": "Old summary API (formatSummary/writeSummary) coexists with unified-summary \u2014 only tests use old path",
+      "related_files": [
+        "src/output/github-summary.ts",
+        "src/output/summary-utils.ts",
+        "src/output/index.ts"
+      ],
+      "evidence": [
+        "formatSummary, writeSummary, SummaryData, MergeOutcome, FileChanges, RepoResult are exported from github-summary.ts and re-exported through output/index.ts, but no production code imports them \u2014 only test/unit/github-summary.test.ts and test/unit/index.test.ts",
+        "buildRepoResult, toFileChanges, getMergeOutcome from summary-utils.ts are similarly test-only \u2014 no imports from src/cli/ or any production path",
+        "Production code uses writeUnifiedSummary from unified-summary.ts (imported in src/cli/sync-command.ts:91)",
+        "writeGitHubStepSummary (the low-level file writer) IS actively used in production by unified-summary.ts, sync-report.ts, settings-report.ts, and lifecycle-report.ts"
+      ],
+      "suggestion": "Assess whether the old summary test coverage is still needed. If the test scenarios are covered by unified-summary tests, remove formatSummary, writeSummary, shouldWriteSummary and the SummaryData/RepoResult/FileChanges types from github-summary.ts, remove buildRepoResult/toFileChanges/getMergeOutcome/buildErrorResult from summary-utils.ts, and update output/index.ts to stop re-exporting them. Keep writeGitHubStepSummary and MergeOutcome (if used elsewhere). This removes ~200 lines of dead production code and their test-only consumers.",
+      "confidence": "medium"
+    }
+  ]
+}

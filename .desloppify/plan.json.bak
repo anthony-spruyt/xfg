@@ -1,54 +1,13 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-19T12:47:37+00:00",
+  "updated": "2026-03-19T12:49:06+00:00",
   "queue_order": [
     "workflow::communicate-score",
     "workflow::create-plan"
   ],
   "deferred": [],
-  "skipped": {
-    "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented": {
-      "issue_id": "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this \u2014 the tense difference (to create vs created) is intentional: rulesets uses plan-tense for dry-run output while formatChangeSummary uses past-tense for apply results. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-19T12:24:40+00:00",
-      "review_after": null,
-      "skipped_at_scan": 131
-    },
-    "review::.::holistic::naming_quality::diff_action_vocabulary_divergence": {
-      "issue_id": "review::.::holistic::naming_quality::diff_action_vocabulary_divergence",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this \u2014 DiffAction uses add/change/remove for property-level diffing within a ruleset, while SettingsAction uses create/update/delete for entity-level operations. These are semantically different domains. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-19T12:36:51+00:00",
-      "review_after": null,
-      "skipped_at_scan": 131
-    },
-    "review::.::holistic::convention_outlier::azure_devops_prefix_drift": {
-      "issue_id": "review::.::holistic::convention_outlier::azure_devops_prefix_drift",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this \u2014 ado- prefix is a widely-used abbreviation for Azure DevOps used in lifecycle/migration context, while azure- is used in vcs for PR strategy. These serve different domains and renaming would break many imports for minimal benefit. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-19T12:37:40+00:00",
-      "review_after": null,
-      "skipped_at_scan": 131
-    },
-    "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map": {
-      "issue_id": "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this \u2014 the fileChanges Map mutation is bounded (one write per method: FileWriter populates, deleteOrphans adds deletes, saveUpdatedManifest adds manifest entry). The mutation contract is implicit but clear, and refactoring to return additions would require interface changes across IManifestManager with minimal practical benefit. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-19T12:43:50+00:00",
-      "review_after": null,
-      "skipped_at_scan": 131
-    }
-  },
+  "skipped": {},
   "active_cluster": null,
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
@@ -390,25 +349,25 @@
     "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40": {
       "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
       "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/security",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
       "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
       "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/security",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::FileAction": {
       "issue_id": "exports::src/vcs/index.ts::FileAction",
       "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/config/index.ts::ContentValue": {
       "issue_id": "exports::src/config/index.ts::ContentValue",
       "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "props::src/cli/types.ts::ApplyRepoSettingsContext": {
@@ -816,85 +775,85 @@
     "exports::src/vcs/index.ts::MergeResult": {
       "issue_id": "exports::src/vcs/index.ts::MergeResult",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::PRStrategyOptions": {
       "issue_id": "exports::src/vcs/index.ts::PRStrategyOptions",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::MergeOptions": {
       "issue_id": "exports::src/vcs/index.ts::MergeOptions",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::CloseExistingPROptions": {
       "issue_id": "exports::src/vcs/index.ts::CloseExistingPROptions",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::IPRStrategy": {
       "issue_id": "exports::src/vcs/index.ts::IPRStrategy",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::CommitOptions": {
       "issue_id": "exports::src/vcs/index.ts::CommitOptions",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::CommitResult": {
       "issue_id": "exports::src/vcs/index.ts::CommitResult",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::ICommitStrategy": {
       "issue_id": "exports::src/vcs/index.ts::ICommitStrategy",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::IGitOps": {
       "issue_id": "exports::src/vcs/index.ts::IGitOps",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::GitOpsOptions": {
       "issue_id": "exports::src/vcs/index.ts::GitOpsOptions",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::GitAuthOptions": {
       "issue_id": "exports::src/vcs/index.ts::GitAuthOptions",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::PRResult": {
       "issue_id": "exports::src/vcs/index.ts::PRResult",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::ILocalGitOps": {
       "issue_id": "exports::src/vcs/index.ts::ILocalGitOps",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "exports::src/vcs/index.ts::INetworkGitOps": {
       "issue_id": "exports::src/vcs/index.ts::INetworkGitOps",
       "created_at": "2026-03-06T13:26:46+00:00",
-      "cluster": "auto/exports",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "stale_wontfix::src/cli/sync-command.ts::smells::src/cli/sync-command.ts::async_no_await": {
@@ -972,91 +931,91 @@
     "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module": {
       "issue_id": "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
       "created_at": "2026-03-18T11:51:36+00:00",
-      "cluster": "api-consolidation",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::type_safety::interpolate_value_untyped_return": {
       "issue_id": "review::.::holistic::type_safety::interpolate_value_untyped_return",
       "created_at": "2026-03-18T11:51:36+00:00",
-      "cluster": "api-consolidation",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::type_safety::action_param_typed_as_string": {
       "issue_id": "review::.::holistic::type_safety::action_param_typed_as_string",
       "created_at": "2026-03-18T11:51:36+00:00",
-      "cluster": "api-consolidation",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions": {
       "issue_id": "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
       "created_at": "2026-03-18T11:51:37+00:00",
-      "cluster": "design-coherence-cleanup",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::design_coherence::incomplete_summary_format_consolidation": {
       "issue_id": "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
       "created_at": "2026-03-18T11:51:37+00:00",
-      "cluster": "design-coherence-cleanup",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::logic_clarity::count_actions_multi_pass": {
       "issue_id": "review::.::holistic::logic_clarity::count_actions_multi_pass",
       "created_at": "2026-03-18T11:51:37+00:00",
-      "cluster": "design-coherence-cleanup",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
       "created_at": "2026-03-18T11:51:38+00:00",
-      "cluster": "module-boundary-fixes",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers": {
       "issue_id": "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
       "created_at": "2026-03-18T11:51:38+00:00",
-      "cluster": "module-boundary-fixes",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation": {
       "issue_id": "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
       "created_at": "2026-03-18T11:51:38+00:00",
-      "cluster": "module-boundary-fixes",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean": {
       "issue_id": "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
       "created_at": "2026-03-18T11:51:43+00:00",
-      "cluster": "quick-wins",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments": {
       "issue_id": "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
       "created_at": "2026-03-18T11:51:43+00:00",
-      "cluster": "quick-wins",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals": {
       "issue_id": "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
       "created_at": "2026-03-18T11:51:43+00:00",
-      "cluster": "quick-wins",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons": {
       "issue_id": "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
       "created_at": "2026-03-18T11:51:43+00:00",
-      "cluster": "quick-wins",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::test_strategy::gh_api_utils_zero_coverage": {
       "issue_id": "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
       "created_at": "2026-03-18T11:51:44+00:00",
-      "cluster": "test-coverage",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "test_coverage::src/cli/program.ts::untested_module": {
       "issue_id": "test_coverage::src/cli/program.ts::untested_module",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "cluster": "auto/test_coverage",
+      "cluster": null,
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "test_coverage::src/shared/json-utils.ts::transitive_only": {
@@ -1067,229 +1026,229 @@
     },
     "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns": {
       "issue_id": "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns",
-      "cluster": "token-resolution",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels": {
       "issue_id": "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels",
-      "cluster": "token-resolution",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::mid_level_elegance::token-resolution-dual-path": {
       "issue_id": "review::.::holistic::mid_level_elegance::token-resolution-dual-path",
-      "cluster": "token-resolution",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param": {
       "issue_id": "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param",
-      "cluster": "accepted-debt",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return": {
       "issue_id": "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return",
-      "cluster": "accepted-debt",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check": {
       "issue_id": "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check",
-      "cluster": "accepted-debt",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::api_surface_coherence::FileChange-name-collision": {
       "issue_id": "review::.::holistic::api_surface_coherence::FileChange-name-collision",
-      "cluster": "stale-findings",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation": {
       "issue_id": "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation",
-      "cluster": "stale-findings",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::incomplete_migration::logger-process-env-direct-read": {
       "issue_id": "review::.::holistic::incomplete_migration::logger-process-env-direct-read",
-      "cluster": "stale-findings",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::cross_module_architecture::incomplete_shared_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::incomplete_shared_barrel",
-      "cluster": "barrel-hygiene",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::cross_module_architecture::incomplete_vcs_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::incomplete_vcs_barrel",
-      "cluster": "barrel-hygiene",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::cross_module_architecture::fileaction_imported_from_reexport": {
       "issue_id": "review::.::holistic::cross_module_architecture::fileaction_imported_from_reexport",
-      "cluster": "barrel-hygiene",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::cross_module_architecture::sync_types_imports_concrete_vcs_file": {
       "issue_id": "review::.::holistic::cross_module_architecture::sync_types_imports_concrete_vcs_file",
-      "cluster": "barrel-hygiene",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::mid_level_elegance::file_action_import_bypass": {
       "issue_id": "review::.::holistic::mid_level_elegance::file_action_import_bypass",
-      "cluster": "barrel-hygiene",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::cross_module_architecture::github_summary_process_env": {
       "issue_id": "review::.::holistic::cross_module_architecture::github_summary_process_env",
-      "cluster": "barrel-hygiene",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::design_coherence::duplicate_lifecycle_types": {
       "issue_id": "review::.::holistic::design_coherence::duplicate_lifecycle_types",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::naming_quality::lifecycle_report_input_redundant_type": {
       "issue_id": "review::.::holistic::naming_quality::lifecycle_report_input_redundant_type",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::convention_outlier::lifecycle_duplicate_interface": {
       "issue_id": "review::.::holistic::convention_outlier::lifecycle_duplicate_interface",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::convention_outlier::is_object_naming_drift": {
       "issue_id": "review::.::holistic::convention_outlier::is_object_naming_drift",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::naming_quality::isObject_vs_isPlainObject_divergence": {
       "issue_id": "review::.::holistic::naming_quality::isObject_vs_isPlainObject_divergence",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::low_level_elegance::manifest_migration_duplication": {
       "issue_id": "review::.::holistic::low_level_elegance::manifest_migration_duplication",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::low_level_elegance::validator_duplicate_group_checks": {
       "issue_id": "review::.::holistic::low_level_elegance::validator_duplicate_group_checks",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::contract_coherence::parseManifestContent_stale_docstring": {
       "issue_id": "review::.::holistic::contract_coherence::parseManifestContent_stale_docstring",
-      "cluster": "stale-docs",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::contract_coherence::resolveGitHubToken_skipped_docstring": {
       "issue_id": "review::.::holistic::contract_coherence::resolveGitHubToken_skipped_docstring",
-      "cluster": "stale-docs",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::contract_coherence::validateForSync_stale_throws_clause": {
       "issue_id": "review::.::holistic::contract_coherence::validateForSync_stale_throws_clause",
-      "cluster": "stale-docs",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::ai_generated_debt::restating_type_docstrings": {
       "issue_id": "review::.::holistic::ai_generated_debt::restating_type_docstrings",
-      "cluster": "stale-docs",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::design_coherence::validate_settings_param_sprawl": {
       "issue_id": "review::.::holistic::design_coherence::validate_settings_param_sprawl",
-      "cluster": "param-sprawl",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::api_surface_coherence::runLifecycleCheck_6_positional_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::runLifecycleCheck_6_positional_params",
-      "cluster": "param-sprawl",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::low_level_elegance::sync_command_positional_params": {
       "issue_id": "review::.::holistic::low_level_elegance::sync_command_positional_params",
-      "cluster": "param-sprawl",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::error_consistency::github_summary_no_error_handling": {
       "issue_id": "review::.::holistic::error_consistency::github_summary_no_error_handling",
-      "cluster": "error-gaps",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::error_consistency::close_pr_error_swallowed": {
       "issue_id": "review::.::holistic::error_consistency::close_pr_error_swallowed",
-      "cluster": "error-gaps",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::error_consistency::commit_error_string_matching": {
       "issue_id": "review::.::holistic::error_consistency::commit_error_string_matching",
-      "cluster": "error-gaps",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::type_safety::validation_arrays_not_type_linked": {
       "issue_id": "review::.::holistic::type_safety::validation_arrays_not_type_linked",
-      "cluster": "type-narrowing",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::type_safety::current_repo_settings_broad_string_types": {
       "issue_id": "review::.::holistic::type_safety::current_repo_settings_broad_string_types",
-      "cluster": "type-narrowing",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::type_safety::double_cast_in_merge_ruleset": {
       "issue_id": "review::.::holistic::type_safety::double_cast_in_merge_ruleset",
-      "cluster": "type-narrowing",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count": {
       "issue_id": "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count",
-      "cluster": "code-cleanup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::logic_clarity::unreachable_merge_mode_branches": {
       "issue_id": "review::.::holistic::logic_clarity::unreachable_merge_mode_branches",
-      "cluster": "code-cleanup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
     "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs": {
       "issue_id": "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs",
-      "cluster": "code-cleanup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00"
     },
@@ -1350,8 +1309,8 @@
     "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented": {
       "issue_id": "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented",
       "created_at": "2026-03-19T11:32:42+00:00",
-      "cluster": "consolidate-utilities",
-      "updated_at": "2026-03-19T11:32:42+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-19T12:49:06+00:00"
     },
     "review::.::holistic::type_safety::parallel_action_type_aliases": {
       "issue_id": "review::.::holistic::type_safety::parallel_action_type_aliases",
@@ -1380,14 +1339,14 @@
     "review::.::holistic::naming_quality::diff_action_vocabulary_divergence": {
       "issue_id": "review::.::holistic::naming_quality::diff_action_vocabulary_divergence",
       "created_at": "2026-03-19T11:33:40+00:00",
-      "cluster": "naming-alignment",
-      "updated_at": "2026-03-19T11:33:40+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-19T12:49:06+00:00"
     },
     "review::.::holistic::convention_outlier::azure_devops_prefix_drift": {
       "issue_id": "review::.::holistic::convention_outlier::azure_devops_prefix_drift",
       "created_at": "2026-03-19T11:33:41+00:00",
-      "cluster": "naming-alignment",
-      "updated_at": "2026-03-19T11:33:41+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-19T12:49:06+00:00"
     },
     "review::.::holistic::mid_level_elegance::redundant_manifest_load": {
       "issue_id": "review::.::holistic::mid_level_elegance::redundant_manifest_load",
@@ -1398,8 +1357,8 @@
     "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map": {
       "issue_id": "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map",
       "created_at": "2026-03-19T11:33:42+00:00",
-      "cluster": "mid-level-refactor",
-      "updated_at": "2026-03-19T11:33:42+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-19T12:49:06+00:00"
     },
     "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params",
@@ -1416,7 +1375,6 @@
         "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
         "test_coverage::src/config/validators/file-validator.ts::transitive_only",
         "test_coverage::src/config/validators/repo-settings-validator.ts::transitive_only",
-        "test_coverage::src/cli/program.ts::untested_module",
         "test_coverage::src/shared/file-status.ts::transitive_only",
         "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts",
         "test_coverage::src/cli/results-collector.ts::transitive_only",
@@ -1904,10 +1862,7 @@
     "auto/security": {
       "name": "auto/security",
       "description": "Fix 2 security issues",
-      "issue_ids": [
-        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
-        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41"
-      ],
+      "issue_ids": [],
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00",
       "auto": true,
@@ -1921,24 +1876,7 @@
     "auto/exports": {
       "name": "auto/exports",
       "description": "Fix 16 exports issues",
-      "issue_ids": [
-        "exports::src/vcs/index.ts::MergeResult",
-        "exports::src/vcs/index.ts::PRStrategyOptions",
-        "exports::src/vcs/index.ts::MergeOptions",
-        "exports::src/vcs/index.ts::CloseExistingPROptions",
-        "exports::src/vcs/index.ts::IPRStrategy",
-        "exports::src/vcs/index.ts::CommitOptions",
-        "exports::src/vcs/index.ts::CommitResult",
-        "exports::src/vcs/index.ts::ICommitStrategy",
-        "exports::src/vcs/index.ts::IGitOps",
-        "exports::src/vcs/index.ts::GitOpsOptions",
-        "exports::src/vcs/index.ts::GitAuthOptions",
-        "exports::src/vcs/index.ts::PRResult",
-        "exports::src/vcs/index.ts::FileAction",
-        "exports::src/config/index.ts::ContentValue",
-        "exports::src/vcs/index.ts::ILocalGitOps",
-        "exports::src/vcs/index.ts::INetworkGitOps"
-      ],
+      "issue_ids": [],
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-03-19T10:10:47+00:00",
       "auto": true,
@@ -2056,10 +1994,10 @@
       "name": "consolidate-utilities",
       "description": "Reuse existing shared utilities instead of reimplementing",
       "issue_ids": [
-        "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented",
         "review::.::holistic::design_coherence::labels_manual_filter_counting",
         "review::.::holistic::design_coherence::sync_diff_line_duplication",
-        "review::.::holistic::type_safety::parallel_action_type_aliases"
+        "review::.::holistic::type_safety::parallel_action_type_aliases",
+        "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented"
       ],
       "created_at": "2026-03-19T11:32:41+00:00",
       "updated_at": "2026-03-19T11:45:19+00:00",
@@ -2214,8 +2152,8 @@
       "name": "mid-level-refactor",
       "description": "Reduce redundant IO and implicit mutation contracts",
       "issue_ids": [
-        "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map",
-        "review::.::holistic::mid_level_elegance::redundant_manifest_load"
+        "review::.::holistic::mid_level_elegance::redundant_manifest_load",
+        "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map"
       ],
       "created_at": "2026-03-19T11:33:41+00:00",
       "updated_at": "2026-03-19T11:45:23+00:00",
@@ -4201,15 +4139,200 @@
       "superseded_at": "2026-03-19T09:32:52+00:00",
       "remapped_to": null,
       "candidates": []
+    },
+    "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments": {
+      "original_id": "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "'// No action needed' comments on no-op switch branches restate the obvious",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params": {
+      "original_id": "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "AuthenticatedGitOps constructor takes 6 positional params while sibling GitOps uses options bag",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::contract_coherence::format_pr_body_as_string_cast": {
+      "original_id": "review::.::holistic::contract_coherence::format_pr_body_as_string_cast",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "formatPRBody casts interpolateXfgContent union return as string instead of calling interpolateString",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::convention_outlier::azure_devops_prefix_drift": {
+      "original_id": "review::.::holistic::convention_outlier::azure_devops_prefix_drift",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Azure DevOps files use three different name prefixes: ado-, azure-, and AzureDevOps",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::convention_outlier::residual_filepath_comments": {
+      "original_id": "review::.::holistic::convention_outlier::residual_filepath_comments",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "5 of 105 source files have file-path comments at the top, the other 100 do not",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types": {
+      "original_id": "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "sync/ imports 12 types directly from vcs/types.js and vcs/git-ops.js instead of using vcs/index.js barrel",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::design_coherence::labels_manual_filter_counting": {
+      "original_id": "review::.::holistic::design_coherence::labels_manual_filter_counting",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "labels/formatter.ts uses 4 separate .filter() calls instead of countActions from base-processor.ts",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented": {
+      "original_id": "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "rulesets/diff.ts formatDiff re-implements summary formatting instead of using formatChangeSummary",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::design_coherence::sync_diff_line_duplication": {
+      "original_id": "review::.::holistic::design_coherence::sync_diff_line_duplication",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "File-action diff rendering duplicated between sync-report.ts and unified-summary.ts",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops": {
+      "original_id": "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "GitOps.getFileContent() uses (error as Error).message instead of toErrorMessage(error)",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency": {
+      "original_id": "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "writeFileSync error handling differs across PR strategies: Azure wraps, GitHub and GitLab do not",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale": {
+      "original_id": "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "parseApiJson backward-compat re-export in gh-api-utils.ts has 3 consumers that should import from json-utils.ts",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::low_level_elegance::inline_label_action_formatting": {
+      "original_id": "review::.::holistic::low_level_elegance::inline_label_action_formatting",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Inline ternary chain in github-summary.ts duplicates formatRulesetAction helper defined in same file",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::mid_level_elegance::redundant_manifest_load": {
+      "original_id": "review::.::holistic::mid_level_elegance::redundant_manifest_load",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "loadManifest called twice for the same sync: in FileSyncOrchestrator and inside ManifestManager.processOrphans",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map": {
+      "original_id": "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Mutable fileChanges Map passed across 3+ boundaries with implicit mutation contract",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::naming_quality::diff_action_vocabulary_divergence": {
+      "original_id": "review::.::holistic::naming_quality::diff_action_vocabulary_divergence",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "DiffAction uses 'add|change|remove' while all other action types use 'create|update|delete'",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::naming_quality::handle_commit_error_param_mismatch": {
+      "original_id": "review::.::holistic::naming_quality::handle_commit_error_param_mismatch",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "handleCommitError parameter named 'baseBranch' actually receives pushBranch from call site",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads": {
+      "original_id": "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "interpolateXfgContent returns TemplateContent union, requiring as-cast at call site",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::type_safety::parallel_action_type_aliases": {
+      "original_id": "review::.::holistic::type_safety::parallel_action_type_aliases",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Three independent type aliases define the same 'create'|'update'|'delete'|'unchanged' union",
+      "status": "superseded",
+      "superseded_at": "2026-03-19T12:49:06+00:00",
+      "remapped_to": null,
+      "candidates": []
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {
-    "strict": 88.0,
-    "overall": 92.3,
-    "objective": 95.6,
-    "verified": 95.6
-  },
+  "plan_start_scores": {},
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -11066,6 +11189,178 @@
       "detail": {
         "injected": true
       }
+    },
+    {
+      "timestamp": "2026-03-19T12:47:42+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
+        "review::.::holistic::convention_outlier::residual_filepath_comments",
+        "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
+        "review::.::holistic::naming_quality::handle_commit_error_param_mismatch",
+        "review::.::holistic::low_level_elegance::inline_label_action_formatting",
+        "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale",
+        "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types",
+        "review::.::holistic::design_coherence::labels_manual_filter_counting",
+        "review::.::holistic::design_coherence::sync_diff_line_duplication",
+        "review::.::holistic::type_safety::parallel_action_type_aliases",
+        "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads",
+        "review::.::holistic::contract_coherence::format_pr_body_as_string_cast",
+        "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency",
+        "review::.::holistic::mid_level_elegance::redundant_manifest_load",
+        "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Round 4 review fixes: 15 issues fixed, 4 skipped as false positives",
+      "detail": {
+        "sha": "f28132fcae21",
+        "branch": "desloppify/round-4"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T12:49:06+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "quick-cleanups",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T12:49:06+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "import-cleanup",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T12:49:06+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "consolidate-utilities",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T12:49:06+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "type-safety-fixes",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T12:49:06+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "error-handling",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T12:49:06+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "naming-alignment",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T12:49:06+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "mid-level-refactor",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T12:49:06+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "api-refactor",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-19T12:49:06+00:00",
+      "action": "reconcile",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
+        "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params",
+        "review::.::holistic::contract_coherence::format_pr_body_as_string_cast",
+        "review::.::holistic::convention_outlier::azure_devops_prefix_drift",
+        "review::.::holistic::convention_outlier::residual_filepath_comments",
+        "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types",
+        "review::.::holistic::design_coherence::labels_manual_filter_counting",
+        "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented",
+        "review::.::holistic::design_coherence::sync_diff_line_duplication",
+        "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
+        "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency",
+        "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale",
+        "review::.::holistic::low_level_elegance::inline_label_action_formatting",
+        "review::.::holistic::mid_level_elegance::redundant_manifest_load",
+        "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map",
+        "review::.::holistic::naming_quality::diff_action_vocabulary_divergence",
+        "review::.::holistic::naming_quality::handle_commit_error_param_mismatch",
+        "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads",
+        "review::.::holistic::type_safety::parallel_action_type_aliases"
+      ],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 19,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 8
+      }
+    },
+    {
+      "timestamp": "2026-03-19T12:49:06+00:00",
+      "action": "sync_communicate_score",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "injected": true
+      }
+    },
+    {
+      "timestamp": "2026-03-19T12:49:06+00:00",
+      "action": "sync_create_plan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "injected": true
+      }
     }
   ],
   "epic_triage_meta": {
@@ -11573,36 +11868,38 @@
       "recorded_at": "2026-03-19T09:30:49+00:00",
       "note": "test-coverage cluster: gh-api-utils.test.ts with 21 tests for all 6 exported functions",
       "cluster_name": null
+    },
+    {
+      "sha": "f28132fcae21",
+      "branch": "desloppify/round-4",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
+        "review::.::holistic::convention_outlier::residual_filepath_comments",
+        "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
+        "review::.::holistic::naming_quality::handle_commit_error_param_mismatch",
+        "review::.::holistic::low_level_elegance::inline_label_action_formatting",
+        "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale",
+        "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types",
+        "review::.::holistic::design_coherence::labels_manual_filter_counting",
+        "review::.::holistic::design_coherence::sync_diff_line_duplication",
+        "review::.::holistic::type_safety::parallel_action_type_aliases",
+        "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads",
+        "review::.::holistic::contract_coherence::format_pr_body_as_string_cast",
+        "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency",
+        "review::.::holistic::mid_level_elegance::redundant_manifest_load",
+        "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params"
+      ],
+      "recorded_at": "2026-03-19T12:47:42+00:00",
+      "note": "Round 4 review fixes: 15 issues fixed, 4 skipped as false positives",
+      "cluster_name": null
     }
   ],
-  "uncommitted_issues": [
-    "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
-    "review::.::holistic::convention_outlier::residual_filepath_comments",
-    "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
-    "review::.::holistic::naming_quality::handle_commit_error_param_mismatch",
-    "review::.::holistic::low_level_elegance::inline_label_action_formatting",
-    "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale",
-    "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types",
-    "review::.::holistic::design_coherence::labels_manual_filter_counting",
-    "review::.::holistic::design_coherence::sync_diff_line_duplication",
-    "review::.::holistic::type_safety::parallel_action_type_aliases",
-    "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads",
-    "review::.::holistic::contract_coherence::format_pr_body_as_string_cast",
-    "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency",
-    "review::.::holistic::mid_level_elegance::redundant_manifest_load",
-    "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params"
-  ],
+  "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 131,
     "lifecycle_phase": "workflow_postflight",
     "postflight_scan_completed_at_scan_count": 131
   },
-  "scan_count_at_plan_start": 130,
-  "previous_plan_start_scores": {
-    "strict": 86.4,
-    "overall": 90.8,
-    "objective": 95.6,
-    "verified": 95.6
-  }
+  "previous_plan_start_scores": {}
 }
