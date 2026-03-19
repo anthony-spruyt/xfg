@@ -1,10 +1,11 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-19T12:49:06+00:00",
+  "updated": "2026-03-19T12:57:28+00:00",
   "queue_order": [
     "workflow::communicate-score",
-    "workflow::create-plan"
+    "workflow::create-plan",
+    "review::.::holistic::incomplete_migration::old_summary_api_coexistence"
   ],
   "deferred": [],
   "skipped": {},
@@ -11360,6 +11361,44 @@
       "note": null,
       "detail": {
         "injected": true
+      }
+    },
+    {
+      "timestamp": "2026-03-19T12:57:28+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::incomplete_migration::old_summary_api_coexistence"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::incomplete_migration::old_summary_api_coexistence"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 1,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 6,
+        "stale_pruned_from_queue": [],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::authorization_consistency",
+          "subjective::dependency_health",
+          "subjective::incomplete_migration"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
       }
     }
   ],

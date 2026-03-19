@@ -1,10 +1,8 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-19T12:57:28+00:00",
+  "updated": "2026-03-19T12:58:41+00:00",
   "queue_order": [
-    "workflow::communicate-score",
-    "workflow::create-plan",
     "review::.::holistic::incomplete_migration::old_summary_api_coexistence"
   ],
   "deferred": [],
@@ -1926,29 +1924,21 @@
         {
           "title": "Remove No action needed comments and file-path comments",
           "detail": "Remove // No action needed from rulesets/processor.ts:148 and labels/processor.ts:149. Remove // src/path comments from sync-report.ts:1, lifecycle-report.ts:1, unified-summary.ts:1, sync-report-builder.ts:1, diff-algorithm.ts:1",
-          "issue_refs": [
-            "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
-            "review::.::holistic::convention_outlier::residual_filepath_comments"
-          ],
+          "issue_refs": [],
           "effort": "trivial",
           "done": true
         },
         {
           "title": "Fix toErrorMessage and param naming in git-ops and commit-push-manager",
           "detail": "git-ops.ts:141 replace (error as Error).message with toErrorMessage(error). commit-push-manager.ts:89 rename baseBranch param to pushBranch, update error message on line 107",
-          "issue_refs": [
-            "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
-            "review::.::holistic::naming_quality::handle_commit_error_param_mismatch"
-          ],
+          "issue_refs": [],
           "effort": "trivial",
           "done": true
         },
         {
           "title": "Replace inline ternary with formatRulesetAction in github-summary",
           "detail": "github-summary.ts:267-274 replace inline ternary chain with call to formatRulesetAction(detail.action)",
-          "issue_refs": [
-            "review::.::holistic::low_level_elegance::inline_label_action_formatting"
-          ],
+          "issue_refs": [],
           "effort": "trivial",
           "done": true
         }
@@ -1974,18 +1964,14 @@
         {
           "title": "Update parseApiJson imports to json-utils and remove re-export",
           "detail": "Update github-ruleset-strategy.ts, github-labels-strategy.ts, github-repo-settings-strategy.ts to import parseApiJson from shared/json-utils.js. Remove re-export from gh-api-utils.ts",
-          "issue_refs": [
-            "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale"
-          ],
+          "issue_refs": [],
           "effort": "trivial",
           "done": true
         },
         {
           "title": "Update sync files to import from vcs barrel",
           "detail": "Update sync/types.ts, branch-manager.ts, commit-message.ts, commit-push-manager.ts, file-sync-orchestrator.ts to import from vcs/index.js barrel",
-          "issue_refs": [
-            "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types"
-          ],
+          "issue_refs": [],
           "effort": "trivial",
           "done": true
         }
@@ -1997,8 +1983,8 @@
       "issue_ids": [
         "review::.::holistic::design_coherence::labels_manual_filter_counting",
         "review::.::holistic::design_coherence::sync_diff_line_duplication",
-        "review::.::holistic::type_safety::parallel_action_type_aliases",
-        "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented"
+        "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented",
+        "review::.::holistic::type_safety::parallel_action_type_aliases"
       ],
       "created_at": "2026-03-19T11:32:41+00:00",
       "updated_at": "2026-03-19T11:45:19+00:00",
@@ -2013,36 +1999,28 @@
         {
           "title": "Use countActions in labels formatter",
           "detail": "labels/formatter.ts:33-41 replace 4 .filter() calls with countActions from base-processor.ts",
-          "issue_refs": [
-            "review::.::holistic::design_coherence::labels_manual_filter_counting"
-          ],
+          "issue_refs": [],
           "effort": "small",
           "done": true
         },
         {
           "title": "Reuse renderSyncLines in sync-report",
           "detail": "sync-report.ts:97-109 replace inline diff rendering with renderSyncLines from unified-summary.ts",
-          "issue_refs": [
-            "review::.::holistic::design_coherence::sync_diff_line_duplication"
-          ],
+          "issue_refs": [],
           "effort": "small",
           "done": true
         },
         {
           "title": "Consolidate action type aliases to SettingsAction",
           "detail": "Replace RulesetAction in rulesets/diff.ts and LabelAction in labels/diff.ts with type aliases to SettingsAction",
-          "issue_refs": [
-            "review::.::holistic::type_safety::parallel_action_type_aliases"
-          ],
+          "issue_refs": [],
           "effort": "small",
           "done": true
         },
         {
           "title": "Parameterize formatChangeSummary for rulesets diff summary",
           "detail": "rulesets/diff.ts:367-372 use formatChangeSummary or parameterized variant instead of inline summary building",
-          "issue_refs": [
-            "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented"
-          ],
+          "issue_refs": [],
           "effort": "small",
           "done": true
         }
@@ -2052,8 +2030,8 @@
       "name": "type-safety-fixes",
       "description": "Add function overloads and remove unsafe casts",
       "issue_ids": [
-        "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads",
-        "review::.::holistic::contract_coherence::format_pr_body_as_string_cast"
+        "review::.::holistic::contract_coherence::format_pr_body_as_string_cast",
+        "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads"
       ],
       "created_at": "2026-03-19T11:32:43+00:00",
       "updated_at": "2026-03-19T11:45:39+00:00",
@@ -2068,18 +2046,14 @@
         {
           "title": "Add overloads to interpolateXfgContent and remove as-cast in pr-creator",
           "detail": "Add string/string[]/Record overloads to interpolateXfgContent in xfg-template.ts matching interpolateValue pattern",
-          "issue_refs": [
-            "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads"
-          ],
+          "issue_refs": [],
           "effort": "small",
           "done": true
         },
         {
           "title": "Remove as-string cast in pr-creator formatPRBody",
           "detail": "In src/vcs/pr-creator.ts line 130, remove the 'as string' cast on the return value of interpolateXfgContent. After adding overloads in step 1, the return type will be correctly inferred as string when string input is passed.",
-          "issue_refs": [
-            "review::.::holistic::contract_coherence::format_pr_body_as_string_cast"
-          ],
+          "issue_refs": [],
           "effort": "small",
           "done": true
         }
@@ -2104,9 +2078,7 @@
         {
           "title": "Add writeFileSync try-catch in GitHub and GitLab PR strategies",
           "detail": "Add try-catch around writeFileSync in github-pr-strategy.ts:140 and gitlab-pr-strategy.ts:204 matching azure-pr-strategy.ts pattern",
-          "issue_refs": [
-            "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency"
-          ],
+          "issue_refs": [],
           "effort": "trivial",
           "done": true
         }
@@ -2132,18 +2104,14 @@
         {
           "title": "Rename DiffAction values and fix Azure DevOps prefix drift",
           "detail": "diff-algorithm.ts:4 rename add->create, change->update, remove->delete. Update formatter.ts getActionStyle and all references",
-          "issue_refs": [
-            "review::.::holistic::naming_quality::diff_action_vocabulary_divergence"
-          ],
+          "issue_refs": [],
           "effort": "small",
           "done": true
         },
         {
           "title": "Standardize Azure DevOps file and class prefixes",
           "detail": "Evaluate Azure prefix drift \u2014 ado- vs azure- vs AzureDevOps. This may be a false positive if prefixes serve different domains",
-          "issue_refs": [
-            "review::.::holistic::convention_outlier::azure_devops_prefix_drift"
-          ],
+          "issue_refs": [],
           "effort": "small",
           "done": true
         }
@@ -2169,18 +2137,14 @@
         {
           "title": "Eliminate redundant loadManifest call",
           "detail": "Return existingManifest from processOrphans in OrphanProcessResult, remove loadManifest call from file-sync-orchestrator.ts:47",
-          "issue_refs": [
-            "review::.::holistic::mid_level_elegance::redundant_manifest_load"
-          ],
+          "issue_refs": [],
           "effort": "small",
           "done": true
         },
         {
           "title": "Return additions from deleteOrphans instead of mutating shared Map",
           "detail": "Have deleteOrphans and saveUpdatedManifest return additions instead of mutating shared fileChanges Map",
-          "issue_refs": [
-            "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map"
-          ],
+          "issue_refs": [],
           "effort": "small",
           "done": true
         }
@@ -2205,9 +2169,7 @@
         {
           "title": "Convert AuthenticatedGitOps constructor to options bag",
           "detail": "Create AuthenticatedGitOpsOptions interface, refactor constructor to accept options bag, update repository-processor.ts:61 call site",
-          "issue_refs": [
-            "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params"
-          ],
+          "issue_refs": [],
           "effort": "trivial",
           "done": true
         }
@@ -11400,6 +11362,20 @@
         "sync_status": "synced",
         "sync_message": null
       }
+    },
+    {
+      "timestamp": "2026-03-19T12:58:41+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
     }
   ],
   "epic_triage_meta": {
@@ -11939,6 +11915,5 @@
     "subjective_review_completed_at_scan_count": 131,
     "lifecycle_phase": "workflow_postflight",
     "postflight_scan_completed_at_scan_count": 131
-  },
-  "previous_plan_start_scores": {}
+  }
 }
