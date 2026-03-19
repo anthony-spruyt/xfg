@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-19T12:58:41+00:00",
+  "updated": "2026-03-19T13:00:51+00:00",
   "queue_order": [
     "review::.::holistic::incomplete_migration::old_summary_api_coexistence"
   ],
@@ -4295,7 +4295,12 @@
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {},
+  "plan_start_scores": {
+    "strict": 86.7,
+    "overall": 91.1,
+    "objective": 95.4,
+    "verified": 95.4
+  },
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -11376,6 +11381,111 @@
         "resurfaced_count": 0,
         "clusters_completed_count": 0
       }
+    },
+    {
+      "timestamp": "2026-03-19T12:59:57+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::incomplete_migration::old_summary_api_coexistence"
+        ],
+        "added_to_queue": [],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 0,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 6,
+        "stale_pruned_from_queue": [],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::authorization_consistency",
+          "subjective::dependency_health",
+          "subjective::incomplete_migration"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
+    },
+    {
+      "timestamp": "2026-03-19T13:00:16+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-19T13:00:16+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-19T13:00:16+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 136
+      }
+    },
+    {
+      "timestamp": "2026-03-19T13:00:51+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::incomplete_migration::old_summary_api_coexistence"
+        ],
+        "added_to_queue": [],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 0,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 6,
+        "stale_pruned_from_queue": [],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::authorization_consistency",
+          "subjective::incomplete_migration"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
     }
   ],
   "epic_triage_meta": {
@@ -11912,8 +12022,9 @@
   "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
-    "subjective_review_completed_at_scan_count": 131,
+    "subjective_review_completed_at_scan_count": 137,
     "lifecycle_phase": "workflow_postflight",
-    "postflight_scan_completed_at_scan_count": 131
-  }
+    "postflight_scan_completed_at_scan_count": 136
+  },
+  "scan_count_at_plan_start": 136
 }
