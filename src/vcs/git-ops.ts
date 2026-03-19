@@ -138,7 +138,7 @@ export class GitOps implements ILocalGitOps {
         return null;
       }
       this.log?.debug(
-        `Unexpected error reading ${fileName}: ${(error as Error).message}`
+        `Unexpected error reading ${fileName}: ${toErrorMessage(error)}`
       );
       return null;
     }

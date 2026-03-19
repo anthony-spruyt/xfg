@@ -1,4 +1,3 @@
-// src/output/sync-report.ts
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatCountEntry } from "./settings-report.js";

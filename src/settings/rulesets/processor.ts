@@ -145,7 +145,6 @@ export class RulesetProcessor implements IRulesetProcessor {
           break;
 
         case "unchanged":
-          // No action needed
           break;
       }
     }

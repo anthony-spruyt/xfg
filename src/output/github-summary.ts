@@ -264,14 +264,7 @@ export function formatSummary(data: SummaryData): string {
         lines.push("| Label | Action |");
         lines.push("|-------|--------|");
         for (const detail of result.labelsPlanDetails) {
-          const action =
-            detail.action === "create"
-              ? "+ Create"
-              : detail.action === "update"
-                ? "~ Update"
-                : detail.action === "delete"
-                  ? "- Delete"
-                  : "No change";
+          const action = formatRulesetAction(detail.action);
           const name = detail.newName
             ? `${detail.name} \u2192 ${detail.newName}`
             : detail.name;

@@ -1,4 +1,3 @@
-// src/output/unified-summary.ts
 import type { LifecycleReport, LifecycleAction } from "./lifecycle-report.js";
 import { hasLifecycleChanges } from "./lifecycle-report.js";
 import { writeGitHubStepSummary } from "./github-summary.js";

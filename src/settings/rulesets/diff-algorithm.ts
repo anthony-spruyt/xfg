@@ -1,4 +1,3 @@
-// src/settings/rulesets/diff-algorithm.ts
 import { isPlainObject } from "../../shared/type-guards.js";
 
 export type DiffAction = "add" | "change" | "remove";
