@@ -1,6 +1,7 @@
 // src/output/sync-report.ts
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
+import { formatCountEntry } from "./settings-report.js";
 import type { FileChangeDetail } from "../sync/types.js";
 
 export type ReportFileChange = FileChangeDetail;
@@ -21,19 +22,12 @@ export interface RepoFileChanges {
 }
 
 function formatSyncSummary(totals: SyncReport["totals"]): string {
-  const total = totals.files.create + totals.files.update + totals.files.delete;
-
-  if (total === 0) {
-    return "No changes";
-  }
-
-  const parts: string[] = [];
-  if (totals.files.create > 0) parts.push(`${totals.files.create} to create`);
-  if (totals.files.update > 0) parts.push(`${totals.files.update} to update`);
-  if (totals.files.delete > 0) parts.push(`${totals.files.delete} to delete`);
-
-  const fileWord = total === 1 ? "file" : "files";
-  return `Plan: ${total} ${fileWord} (${parts.join(", ")})`;
+  const entry = formatCountEntry("file", "files", [
+    { label: "to create", value: totals.files.create },
+    { label: "to update", value: totals.files.update },
+    { label: "to delete", value: totals.files.delete },
+  ]);
+  return entry ? `Plan: ${entry}` : "No changes";
 }
 
 export function formatSyncReportCLI(report: SyncReport): string[] {

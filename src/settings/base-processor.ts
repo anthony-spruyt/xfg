@@ -119,12 +119,16 @@ export interface ChangeCounts {
 export function countActions(
   changes: ReadonlyArray<{ action: SettingsAction }>
 ): ChangeCounts {
-  return {
-    create: changes.filter((c) => c.action === "create").length,
-    update: changes.filter((c) => c.action === "update").length,
-    delete: changes.filter((c) => c.action === "delete").length,
-    unchanged: changes.filter((c) => c.action === "unchanged").length,
+  const counts: ChangeCounts = {
+    create: 0,
+    update: 0,
+    delete: 0,
+    unchanged: 0,
   };
+  for (const c of changes) {
+    counts[c.action]++;
+  }
+  return counts;
 }
 
 export function formatChangeSummary(counts: ChangeCounts): string {

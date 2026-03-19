@@ -1,6 +1,7 @@
 import { RULESET_COMPARABLE_FIELDS, type Ruleset } from "../../config/index.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { camelToSnake } from "../../shared/string-utils.js";
+import { countActions } from "../base-processor.js";
 import type { GitHubRuleset } from "./types.js";
 
 export type RulesetAction = "create" | "update" | "delete" | "unchanged";
@@ -359,12 +360,7 @@ export function formatDiff(changes: RulesetChange[]): string {
   }
 
   // Summary
-  const counts = {
-    create: changes.filter((c) => c.action === "create").length,
-    update: changes.filter((c) => c.action === "update").length,
-    delete: changes.filter((c) => c.action === "delete").length,
-    unchanged: changes.filter((c) => c.action === "unchanged").length,
-  };
+  const counts = countActions(changes);
 
   lines.push("");
   lines.push("Summary:");
