@@ -1,9 +1,18 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-20T02:38:49+00:00",
+  "updated": "2026-03-20T02:58:25+00:00",
   "queue_order": [
-    "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+    "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params",
+    "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
+    "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
+    "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass",
+    "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
+    "review::.::holistic::high_level_elegance::orphaned_summary_utils",
+    "review::.::holistic::high_level_elegance::sync_command_dual_role",
+    "review::.::holistic::incomplete_migration::dead_old_summary_api",
+    "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
+    "review::.::holistic::type_safety::as_tresult_cast_in_guards"
   ],
   "deferred": [],
   "skipped": {},
@@ -1386,8 +1395,8 @@
     "review::.::holistic::incomplete_migration::old_summary_api_dead_code": {
       "issue_id": "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "output-dead-code",
-      "updated_at": "2026-03-20T02:17:40+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-20T02:58:25+00:00"
     },
     "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter": {
       "issue_id": "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
@@ -2245,9 +2254,6 @@
       "name": "output-structural-debt",
       "description": "Fix import cycle between sync-report.ts and unified-summary.ts, delete dead output barrel",
       "issue_ids": [
-        "output_sync_report_unified_summary_cycle",
-        "type_only_import_cycle_output",
-        "output_barrel_zero_consumers",
         "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
         "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
         "review::.::holistic::dependency_health::type_only_import_cycle_output"
@@ -2266,27 +2272,19 @@
           "title": "Create src/output/types.ts",
           "detail": "Move SyncReport, RepoFileChanges, ReportFileChange types from sync-report.ts to output/types.ts",
           "effort": "small",
-          "issue_refs": [
-            "output_sync_report_unified_summary_cycle",
-            "type_only_import_cycle_output"
-          ]
+          "issue_refs": []
         },
         {
           "title": "Update imports",
           "detail": "Change sync-report.ts to import SyncReport, RepoFileChanges from ./types.ts. Change unified-summary.ts to import SyncReport, RepoFileChanges from ./types.ts instead of from ./sync-report.ts. This breaks the circular dependency.",
           "effort": "small",
-          "issue_refs": [
-            "output_sync_report_unified_summary_cycle",
-            "type_only_import_cycle_output"
-          ]
+          "issue_refs": []
         },
         {
           "title": "Delete output/index.ts",
           "detail": "Delete the file src/output/index.ts entirely. It has zero consumers \u2014 grep confirms no imports reference this barrel. The shared barrel was previously deleted for the same reason.",
           "effort": "trivial",
-          "issue_refs": [
-            "output_barrel_zero_consumers"
-          ]
+          "issue_refs": []
         }
       ]
     },
@@ -2294,8 +2292,7 @@
       "name": "output-dead-code",
       "description": "Remove dead old summary API (formatSummary/writeSummary/SummaryData) superseded by unified-summary",
       "issue_ids": [
-        "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
-        "old_summary_api_dead_code"
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
       ],
       "created_at": "2026-03-20T02:17:17+00:00",
       "updated_at": "2026-03-20T02:22:02+00:00",
@@ -2311,17 +2308,13 @@
           "title": "Remove old summary API",
           "detail": "Delete formatSummary, writeSummary, shouldWriteSummary, SummaryData, RepoResult and related dead types from github-summary.ts. Delete all of summary-utils.ts. Keep writeGitHubStepSummary.",
           "effort": "medium",
-          "issue_refs": [
-            "old_summary_api_dead_code"
-          ]
+          "issue_refs": []
         },
         {
           "title": "Update tests",
           "detail": "Check test/unit/github-summary.test.ts and test/unit/summary-utils.test.ts for tests only exercising dead functions. If unified-summary.test.ts covers equivalent scenarios, delete the dead test files. Otherwise migrate relevant test cases.",
           "effort": "medium",
-          "issue_refs": [
-            "old_summary_api_dead_code"
-          ]
+          "issue_refs": []
         }
       ],
       "depends_on_clusters": [
@@ -2332,11 +2325,6 @@
       "name": "quick-consistency-fixes",
       "description": "Standalone 1-2 file fixes: restating comments, options bag, error wrapping, type alias usage",
       "issue_ids": [
-        "duplicated_restating_comments_formatter",
-        "restating_check_comments_repo_detector",
-        "inline_action_unions_github_summary",
-        "resolve_github_token_positional_params",
-        "gitops_writeFile_unwrapped_fs_errors",
         "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
         "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
         "review::.::holistic::type_safety::inline_action_unions_github_summary",
@@ -2357,41 +2345,31 @@
           "title": "Remove restating comments from formatter.ts",
           "detail": "In src/config/formatter.ts, remove the restating comments at lines 32-33 ('// Add yaml-language-server schema directive first') and 36-37 ('// Add custom header lines') in buildHeaderComment, and the identical comments at lines 57-58 and 61-62 in buildCommentOnlyYaml. The if-guards and parameter names already communicate intent.",
           "effort": "trivial",
-          "issue_refs": [
-            "duplicated_restating_comments_formatter"
-          ]
+          "issue_refs": []
         },
         {
           "title": "Remove restating comments from repo-detector.ts",
           "detail": "Remove 4 '// Check for X' comments in detectRepoType. Keep URL format comments in parseGitLabUrl.",
           "effort": "trivial",
-          "issue_refs": [
-            "restating_check_comments_repo_detector"
-          ]
+          "issue_refs": []
         },
         {
           "title": "Use SettingsAction type alias in github-summary.ts",
           "detail": "Replace inline 'create'|'update'|'delete'|'unchanged' with SettingsAction in RulesetPlanDetail and LabelsPlanDetail",
           "effort": "trivial",
-          "issue_refs": [
-            "inline_action_unions_github_summary"
-          ]
+          "issue_refs": []
         },
         {
           "title": "Convert resolveGitHubToken to options bag",
           "detail": "Create ResolveGitHubTokenOptions interface, refactor function signature, update 2 call sites",
           "effort": "small",
-          "issue_refs": [
-            "resolve_github_token_positional_params"
-          ]
+          "issue_refs": []
         },
         {
           "title": "Wrap GitOps filesystem errors in SyncError",
           "detail": "Add try-catch around writeFileSync/mkdirSync in writeFile(), chmodSync in setExecutable(), mkdirSync/rmSync in cleanWorkspace()",
           "effort": "small",
-          "issue_refs": [
-            "gitops_writeFile_unwrapped_fs_errors"
-          ]
+          "issue_refs": []
         }
       ]
     },
@@ -2399,8 +2377,6 @@
       "name": "cli-cleanup",
       "description": "Fix module-level singletons and add unit tests for CLI entry point",
       "issue_ids": [
-        "module_scope_lazy_singletons",
-        "untested_cli_entry_point",
         "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
         "review::.::holistic::test_strategy::untested_cli_entry_point"
       ],
@@ -2418,34 +2394,25 @@
           "title": "Move singletons to local scope",
           "detail": "Move _defaultExecutor and _logger inside runSync as local variables, created fresh each call",
           "effort": "small",
-          "issue_refs": [
-            "module_scope_lazy_singletons"
-          ]
+          "issue_refs": []
         },
         {
           "title": "Extract and test CLI validators",
           "detail": "Extract parseMergeMode and parseMergeStrategy as named exports, add unit tests in test/unit/program.test.ts",
           "effort": "small",
-          "issue_refs": [
-            "untested_cli_entry_point"
-          ]
+          "issue_refs": []
         },
         {
           "title": "Verify test coverage",
           "detail": "Run npm test and npm run test:typecheck to verify singleton refactor and validator extraction didn't break anything",
           "effort": "trivial",
-          "issue_refs": [
-            "module_scope_lazy_singletons",
-            "untested_cli_entry_point"
-          ]
+          "issue_refs": []
         },
         {
           "title": "Update imports if needed",
           "detail": "Check if parseMergeMode/parseMergeStrategy are referenced from program.ts inline callbacks, update to use the extracted exports",
           "effort": "trivial",
-          "issue_refs": [
-            "untested_cli_entry_point"
-          ]
+          "issue_refs": []
         }
       ]
     }
@@ -4820,12 +4787,31 @@
       "superseded_at": "2026-03-20T02:38:49+00:00",
       "remapped_to": null,
       "candidates": []
+    },
+    "review::.::holistic::incomplete_migration::old_summary_api_dead_code": {
+      "original_id": "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Old summary API (formatSummary/writeSummary/SummaryData) is dead production code, superseded by unified-summary",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:58:25+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass",
+        "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
+        "review::.::holistic::high_level_elegance::orphaned_summary_utils",
+        "review::.::holistic::high_level_elegance::sync_command_dual_role",
+        "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync"
+      ]
     }
   },
-  "promoted_ids": [
-    "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
-  ],
-  "plan_start_scores": {},
+  "promoted_ids": [],
+  "plan_start_scores": {
+    "strict": 92.2,
+    "overall": 92.8,
+    "objective": 96.5,
+    "verified": 96.5
+  },
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -12992,6 +12978,128 @@
         "resurfaced_count": 0,
         "clusters_completed_count": 3
       }
+    },
+    {
+      "timestamp": "2026-03-20T02:58:18+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params",
+          "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
+          "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
+          "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass",
+          "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
+          "review::.::holistic::high_level_elegance::orphaned_summary_utils",
+          "review::.::holistic::high_level_elegance::sync_command_dual_role",
+          "review::.::holistic::incomplete_migration::dead_old_summary_api",
+          "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
+          "review::.::holistic::type_safety::as_tresult_cast_in_guards"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params",
+          "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
+          "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
+          "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass",
+          "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
+          "review::.::holistic::high_level_elegance::orphaned_summary_utils",
+          "review::.::holistic::high_level_elegance::sync_command_dual_role",
+          "review::.::holistic::incomplete_migration::dead_old_summary_api",
+          "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
+          "review::.::holistic::type_safety::as_tresult_cast_in_guards"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 10,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 7,
+        "stale_pruned_from_queue": [
+          "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+        ],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:58:25+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "output-dead-code",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:58:25+00:00",
+      "action": "reconcile",
+      "issue_ids": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 1,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 1
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:58:25+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:58:25+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 141
+      }
     }
   ],
   "epic_triage_meta": {
@@ -13473,8 +13581,9 @@
   "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
-    "subjective_review_completed_at_scan_count": 138,
+    "subjective_review_completed_at_scan_count": 140,
     "lifecycle_phase": "workflow_postflight",
-    "postflight_scan_completed_at_scan_count": 138
-  }
+    "postflight_scan_completed_at_scan_count": 141
+  },
+  "scan_count_at_plan_start": 141
 }

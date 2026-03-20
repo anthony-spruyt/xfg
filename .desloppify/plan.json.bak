@@ -1,45 +1,22 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-20T02:37:43+00:00",
+  "updated": "2026-03-20T02:58:18+00:00",
   "queue_order": [
-    "output_sync_report_unified_summary_cycle",
-    "type_only_import_cycle_output",
-    "output_barrel_zero_consumers",
-    "duplicated_restating_comments_formatter",
-    "restating_check_comments_repo_detector",
-    "inline_action_unions_github_summary",
-    "resolve_github_token_positional_params",
-    "gitops_writeFile_unwrapped_fs_errors",
-    "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
-    "old_summary_api_dead_code",
-    "module_scope_lazy_singletons",
-    "untested_cli_entry_point"
+    "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params",
+    "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
+    "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
+    "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass",
+    "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
+    "review::.::holistic::high_level_elegance::orphaned_summary_utils",
+    "review::.::holistic::high_level_elegance::sync_command_dual_role",
+    "review::.::holistic::incomplete_migration::dead_old_summary_api",
+    "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
+    "review::.::holistic::type_safety::as_tresult_cast_in_guards"
   ],
   "deferred": [],
-  "skipped": {
-    "review::.::holistic::logic_clarity::async_no_await_pr_creator": {
-      "issue_id": "review::.::holistic::logic_clarity::async_no_await_pr_creator",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this against the code and I am not gaming the score. Removing async keyword is a behavioral noop \u2014 only affects stack traces. The async keyword documents intent.",
-      "created_at": "2026-03-20T02:18:40+00:00",
-      "review_after": null,
-      "skipped_at_scan": 138
-    },
-    "review::.::holistic::low_level_elegance::settings_report_parallel_rendering": {
-      "issue_id": "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this against the code and I am not gaming the score. Extracting a strategy pattern would add more abstraction complexity than the duplication it removes. YAGNI.",
-      "created_at": "2026-03-20T02:18:40+00:00",
-      "review_after": null,
-      "skipped_at_scan": 138
-    }
-  },
-  "active_cluster": "output-structural-debt",
+  "skipped": {},
+  "active_cluster": null,
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -2326,8 +2303,8 @@
       "name": "output-dead-code",
       "description": "Remove dead old summary API (formatSummary/writeSummary/SummaryData) superseded by unified-summary",
       "issue_ids": [
-        "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
-        "old_summary_api_dead_code"
+        "old_summary_api_dead_code",
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
       ],
       "created_at": "2026-03-20T02:17:17+00:00",
       "updated_at": "2026-03-20T02:22:02+00:00",
@@ -4598,28 +4575,264 @@
       "superseded_at": "2026-03-19T12:49:06+00:00",
       "remapped_to": null,
       "candidates": []
+    },
+    "duplicated_restating_comments_formatter": {
+      "original_id": "duplicated_restating_comments_formatter",
+      "original_detector": "",
+      "original_file": "",
+      "original_summary": "",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "gitops_writeFile_unwrapped_fs_errors": {
+      "original_id": "gitops_writeFile_unwrapped_fs_errors",
+      "original_detector": "",
+      "original_file": "",
+      "original_summary": "",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "inline_action_unions_github_summary": {
+      "original_id": "inline_action_unions_github_summary",
+      "original_detector": "",
+      "original_file": "",
+      "original_summary": "",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "module_scope_lazy_singletons": {
+      "original_id": "module_scope_lazy_singletons",
+      "original_detector": "",
+      "original_file": "",
+      "original_summary": "",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "old_summary_api_dead_code": {
+      "original_id": "old_summary_api_dead_code",
+      "original_detector": "",
+      "original_file": "",
+      "original_summary": "",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "output_barrel_zero_consumers": {
+      "original_id": "output_barrel_zero_consumers",
+      "original_detector": "",
+      "original_file": "",
+      "original_summary": "",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "output_sync_report_unified_summary_cycle": {
+      "original_id": "output_sync_report_unified_summary_cycle",
+      "original_detector": "",
+      "original_file": "",
+      "original_summary": "",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "resolve_github_token_positional_params": {
+      "original_id": "resolve_github_token_positional_params",
+      "original_detector": "",
+      "original_file": "",
+      "original_summary": "",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "restating_check_comments_repo_detector": {
+      "original_id": "restating_check_comments_repo_detector",
+      "original_detector": "",
+      "original_file": "",
+      "original_summary": "",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter": {
+      "original_id": "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "config/formatter.ts duplicates identical restating comments between buildHeaderComment and buildCommentOnlyYaml",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ]
+    },
+    "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector": {
+      "original_id": "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "repo-detector.ts has 10+ '// Check for X' and '// Handle X format' comments that restate matching logic",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ]
+    },
+    "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params": {
+      "original_id": "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "resolveGitHubToken takes 5 positional params instead of options bag",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ]
+    },
+    "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers": {
+      "original_id": "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "output/index.ts barrel has zero consumers \u2014 all external sites use direct file imports",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ]
+    },
+    "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle": {
+      "original_id": "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Import cycle between output/sync-report.ts and output/unified-summary.ts",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ]
+    },
+    "review::.::holistic::dependency_health::type_only_import_cycle_output": {
+      "original_id": "review::.::holistic::dependency_health::type_only_import_cycle_output",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Import cycle between sync-report.ts and unified-summary.ts (type-only on one side)",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ]
+    },
+    "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors": {
+      "original_id": "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "GitOps.writeFile() lets bare Node.js filesystem errors propagate, unlike sibling writeFileSync wrappers",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ]
+    },
+    "review::.::holistic::initialization_coupling::module_scope_lazy_singletons": {
+      "original_id": "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Module-level let singletons in sync-command.ts persist across multiple runSync calls",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ]
+    },
+    "review::.::holistic::logic_clarity::async_no_await_pr_creator": {
+      "original_id": "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "createPR and mergePR are async functions that never use await",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ]
+    },
+    "review::.::holistic::low_level_elegance::settings_report_parallel_rendering": {
+      "original_id": "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "formatSettingsReportCLI and renderRepoSettingsDiffLines repeat the same 3-way action branching over settings/rulesets/labels",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ]
+    },
+    "review::.::holistic::test_strategy::untested_cli_entry_point": {
+      "original_id": "review::.::holistic::test_strategy::untested_cli_entry_point",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "program.ts (101 LOC) has no unit tests for merge mode/strategy validation callbacks",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ]
+    },
+    "review::.::holistic::type_safety::inline_action_unions_github_summary": {
+      "original_id": "review::.::holistic::type_safety::inline_action_unions_github_summary",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "github-summary.ts inlines SettingsAction union despite importing it",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ]
+    },
+    "type_only_import_cycle_output": {
+      "original_id": "type_only_import_cycle_output",
+      "original_detector": "",
+      "original_file": "",
+      "original_summary": "",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": []
+    },
+    "untested_cli_entry_point": {
+      "original_id": "untested_cli_entry_point",
+      "original_detector": "",
+      "original_file": "",
+      "original_summary": "",
+      "status": "superseded",
+      "superseded_at": "2026-03-20T02:38:49+00:00",
+      "remapped_to": null,
+      "candidates": []
     }
   },
-  "promoted_ids": [
-    "output_sync_report_unified_summary_cycle",
-    "type_only_import_cycle_output",
-    "output_barrel_zero_consumers",
-    "duplicated_restating_comments_formatter",
-    "restating_check_comments_repo_detector",
-    "inline_action_unions_github_summary",
-    "resolve_github_token_positional_params",
-    "gitops_writeFile_unwrapped_fs_errors",
-    "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
-    "old_summary_api_dead_code",
-    "module_scope_lazy_singletons",
-    "untested_cli_entry_point"
-  ],
-  "plan_start_scores": {
-    "strict": 86.7,
-    "overall": 91.1,
-    "objective": 95.4,
-    "verified": 95.4
-  },
+  "promoted_ids": [],
+  "plan_start_scores": {},
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -12715,6 +12928,152 @@
         "sha": "cb55c09d8bcd",
         "branch": "desloppify/round-4"
       }
+    },
+    {
+      "timestamp": "2026-03-20T02:38:49+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "output-structural-debt",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:38:49+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "quick-consistency-fixes",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:38:49+00:00",
+      "action": "cluster_done",
+      "issue_ids": [],
+      "cluster_name": "cli-cleanup",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "cluster members no longer actionable in state"
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:38:49+00:00",
+      "action": "reconcile",
+      "issue_ids": [
+        "duplicated_restating_comments_formatter",
+        "gitops_writeFile_unwrapped_fs_errors",
+        "inline_action_unions_github_summary",
+        "module_scope_lazy_singletons",
+        "old_summary_api_dead_code",
+        "output_barrel_zero_consumers",
+        "output_sync_report_unified_summary_cycle",
+        "resolve_github_token_positional_params",
+        "restating_check_comments_repo_detector",
+        "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+        "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+        "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+        "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+        "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+        "review::.::holistic::dependency_health::type_only_import_cycle_output",
+        "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+        "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+        "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+        "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+        "review::.::holistic::test_strategy::untested_cli_entry_point",
+        "review::.::holistic::type_safety::inline_action_unions_github_summary",
+        "type_only_import_cycle_output",
+        "untested_cli_entry_point"
+      ],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 23,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 3
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:58:18+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params",
+          "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
+          "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
+          "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass",
+          "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
+          "review::.::holistic::high_level_elegance::orphaned_summary_utils",
+          "review::.::holistic::high_level_elegance::sync_command_dual_role",
+          "review::.::holistic::incomplete_migration::dead_old_summary_api",
+          "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
+          "review::.::holistic::type_safety::as_tresult_cast_in_guards"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params",
+          "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
+          "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
+          "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass",
+          "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
+          "review::.::holistic::high_level_elegance::orphaned_summary_utils",
+          "review::.::holistic::high_level_elegance::sync_command_dual_role",
+          "review::.::holistic::incomplete_migration::dead_old_summary_api",
+          "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
+          "review::.::holistic::type_safety::as_tresult_cast_in_guards"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 10,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 7,
+        "stale_pruned_from_queue": [
+          "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+        ],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
     }
   ],
   "epic_triage_meta": {
@@ -13196,9 +13555,8 @@
   "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
-    "subjective_review_completed_at_scan_count": 138,
+    "subjective_review_completed_at_scan_count": 140,
     "lifecycle_phase": "workflow_postflight",
     "postflight_scan_completed_at_scan_count": 138
-  },
-  "scan_count_at_plan_start": 136
+  }
 }

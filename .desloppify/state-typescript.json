@@ -1,19 +1,19 @@
 {
   "version": 3,
   "created": "2026-03-03T09:08:56+00:00",
-  "last_scan": "2026-03-20T02:38:49+00:00",
-  "scan_count": 139,
+  "last_scan": "2026-03-20T02:58:25+00:00",
+  "scan_count": 141,
   "overall_score": 92.8,
   "objective_score": 96.5,
   "strict_score": 92.2,
   "verified_strict_score": 96.5,
   "stats": {
-    "total": 1275,
+    "total": 1285,
     "auto_resolved": 1082,
     "deferred": 0,
     "false_positive": 11,
-    "fixed": 91,
-    "open": 91,
+    "fixed": 92,
+    "open": 100,
     "triaged_out": 0,
     "wontfix": 0,
     "by_tier": {
@@ -22,7 +22,7 @@
         "deferred": 0,
         "false_positive": 1,
         "fixed": 42,
-        "open": 0,
+        "open": 4,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -30,8 +30,8 @@
         "auto_resolved": 365,
         "deferred": 0,
         "false_positive": 9,
-        "fixed": 37,
-        "open": 21,
+        "fixed": 38,
+        "open": 26,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -72,7 +72,7 @@
         }
       },
       "warnings": [],
-      "updated_at": "2026-03-20T02:38:49+00:00"
+      "updated_at": "2026-03-20T02:58:25+00:00"
     }
   },
   "score_confidence": {
@@ -82,40 +82,32 @@
     "dimensions": []
   },
   "subjective_integrity": {
-    "status": "warn",
+    "status": "pass",
     "target_score": 95.0,
-    "matched_count": 1,
-    "matched_dimensions": [
-      "dependency_health"
-    ],
+    "matched_count": 0,
+    "matched_dimensions": [],
     "reset_dimensions": []
   },
   "subjective_assessments": {
     "cross_module_architecture": {
-      "score": 89.5,
-      "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-20T02:37:33+00:00"
-    },
-    "convention_outlier": {
-      "score": 93.0,
-      "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
-    },
-    "error_consistency": {
       "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-20T02:37:18+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
+    },
+    "convention_outlier": {
+      "score": 93.5,
+      "source": "holistic",
+      "assessed_at": "2026-03-20T02:58:18+00:00"
+    },
+    "error_consistency": {
+      "score": 92.5,
+      "source": "holistic",
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "abstraction_fitness": {
-      "score": 90.5,
+      "score": 89.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00",
+      "assessed_at": "2026-03-20T02:58:18+00:00",
       "components": [
         "Abstraction Leverage",
         "Indirection Cost",
@@ -125,120 +117,93 @@
         "Type Discipline"
       ],
       "component_scores": {
-        "Abstraction Leverage": 92.0,
+        "Abstraction Leverage": 91.0,
         "Indirection Cost": 88.0,
-        "Interface Honesty": 93.0,
-        "Delegation Density": 87.0,
+        "Interface Honesty": 92.0,
+        "Delegation Density": 95.0,
         "Definition Directness": 90.0,
         "Type Discipline": 93.0
       }
     },
     "api_surface_coherence": {
-      "score": 91.5,
+      "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-20T02:37:17+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "authorization_consistency": {
       "score": 94.0,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "ai_generated_debt": {
-      "score": 92.5,
+      "score": 93.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-20T02:37:16+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "incomplete_migration": {
-      "score": 96.0,
+      "score": 93.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "package_organization": {
-      "score": 92.5,
+      "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "high_level_elegance": {
       "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "mid_level_elegance": {
       "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "low_level_elegance": {
-      "score": 88.5,
-      "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_false_positive",
-      "stale_since": "2026-03-20T02:18:40+00:00"
-    },
-    "design_coherence": {
       "score": 90.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-03-20T02:38:49+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
+    },
+    "design_coherence": {
+      "score": 89.5,
+      "source": "holistic",
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "contract_coherence": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "dependency_health": {
-      "score": 95.0,
+      "score": 96.0,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-20T02:37:34+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "initialization_coupling": {
       "score": 93.0,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-20T02:37:34+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "logic_clarity": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_false_positive",
-      "stale_since": "2026-03-20T02:18:40+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "naming_quality": {
-      "score": 92.5,
+      "score": 92.0,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "test_strategy": {
-      "score": 90.5,
+      "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-20T02:37:35+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     },
     "type_safety": {
-      "score": 93.5,
+      "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-20T02:37:16+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00"
     }
   },
   "lang_capabilities": {
@@ -258,264 +223,6 @@
     "production": 105
   },
   "scan_history": [
-    {
-      "timestamp": "2026-03-06T08:53:44+00:00",
-      "lang": "typescript",
-      "strict_score": 76.6,
-      "verified_strict_score": 96.2,
-      "objective_score": 96.5,
-      "overall_score": 76.7,
-      "open": 158,
-      "diff_new": 33,
-      "diff_resolved": 22,
-      "ignored": 0,
-      "raw_issues": 148,
-      "suppressed_pct": 0.0,
-      "ignore_patterns": 0,
-      "subjective_integrity": {
-        "status": "warn",
-        "matched_count": 1,
-        "reset_count": 0,
-        "target_score": 95.0
-      },
-      "score_confidence": {
-        "status": "full",
-        "confidence": 1.0,
-        "detector_count": 0,
-        "dimension_count": 0
-      },
-      "dimension_scores": {
-        "Code quality": {
-          "score": 96.7,
-          "strict": 96.3
-        },
-        "Security": {
-          "score": 99.5,
-          "strict": 99.5
-        },
-        "File health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Duplication": {
-          "score": 97.1,
-          "strict": 97.1
-        },
-        "Test health": {
-          "score": 93.2,
-          "strict": 92.3
-        },
-        "Naming quality": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "Logic clarity": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "Type safety": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "Contracts": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "Error consistency": {
-          "score": 92.0,
-          "strict": 92.0
-        },
-        "Abstraction fit": {
-          "score": 88.0,
-          "strict": 88.0
-        },
-        "AI generated debt": {
-          "score": 97.0,
-          "strict": 97.0
-        },
-        "High elegance": {
-          "score": 90.0,
-          "strict": 90.0
-        },
-        "Mid elegance": {
-          "score": 86.0,
-          "strict": 86.0
-        },
-        "Low elegance": {
-          "score": 88.0,
-          "strict": 88.0
-        },
-        "Cross-module arch": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Init coupling": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "Convention drift": {
-          "score": 95.0,
-          "strict": 95.0
-        },
-        "Dep health": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "Test strategy": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "API coherence": {
-          "score": 84.0,
-          "strict": 84.0
-        },
-        "Auth consistency": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Stale migration": {
-          "score": 90.0,
-          "strict": 90.0
-        },
-        "Structure nav": {
-          "score": 92.0,
-          "strict": 92.0
-        },
-        "Design coherence": {
-          "score": 90.0,
-          "strict": 90.0
-        }
-      }
-    },
-    {
-      "timestamp": "2026-03-06T08:57:13+00:00",
-      "lang": "typescript",
-      "strict_score": 76.6,
-      "verified_strict_score": 96.2,
-      "objective_score": 96.5,
-      "overall_score": 76.7,
-      "open": 158,
-      "diff_new": 0,
-      "diff_resolved": 0,
-      "ignored": 0,
-      "raw_issues": 148,
-      "suppressed_pct": 0.0,
-      "ignore_patterns": 0,
-      "subjective_integrity": {
-        "status": "warn",
-        "matched_count": 1,
-        "reset_count": 0,
-        "target_score": 95.0
-      },
-      "score_confidence": {
-        "status": "full",
-        "confidence": 1.0,
-        "detector_count": 0,
-        "dimension_count": 0
-      },
-      "dimension_scores": {
-        "Code quality": {
-          "score": 96.7,
-          "strict": 96.3
-        },
-        "Security": {
-          "score": 99.5,
-          "strict": 99.5
-        },
-        "File health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Duplication": {
-          "score": 97.1,
-          "strict": 97.1
-        },
-        "Test health": {
-          "score": 93.2,
-          "strict": 92.3
-        },
-        "Naming quality": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "Logic clarity": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "Type safety": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "Contracts": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "Error consistency": {
-          "score": 92.0,
-          "strict": 92.0
-        },
-        "Abstraction fit": {
-          "score": 88.0,
-          "strict": 88.0
-        },
-        "AI generated debt": {
-          "score": 97.0,
-          "strict": 97.0
-        },
-        "High elegance": {
-          "score": 90.0,
-          "strict": 90.0
-        },
-        "Mid elegance": {
-          "score": 86.0,
-          "strict": 86.0
-        },
-        "Low elegance": {
-          "score": 88.0,
-          "strict": 88.0
-        },
-        "Cross-module arch": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Init coupling": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "Convention drift": {
-          "score": 95.0,
-          "strict": 95.0
-        },
-        "Dep health": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "Test strategy": {
-          "score": 0.0,
-          "strict": 0.0
-        },
-        "API coherence": {
-          "score": 84.0,
-          "strict": 84.0
-        },
-        "Auth consistency": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Stale migration": {
-          "score": 90.0,
-          "strict": 90.0
-        },
-        "Structure nav": {
-          "score": 92.0,
-          "strict": 92.0
-        },
-        "Design coherence": {
-          "score": 90.0,
-          "strict": 90.0
-        }
-      }
-    },
     {
       "timestamp": "2026-03-06T12:38:39+00:00",
       "lang": "typescript",
@@ -2837,6 +2544,264 @@
           "strict": 93.5
         }
       }
+    },
+    {
+      "timestamp": "2026-03-20T02:58:18+00:00",
+      "lang": "typescript",
+      "strict_score": 92.2,
+      "verified_strict_score": 96.5,
+      "objective_score": 96.5,
+      "overall_score": 92.8,
+      "open": 183,
+      "diff_new": 10,
+      "diff_resolved": 6,
+      "ignored": 0,
+      "raw_issues": 10,
+      "suppressed_pct": 0.0,
+      "ignore_patterns": 0,
+      "subjective_integrity": {
+        "status": "disabled",
+        "matched_count": 0,
+        "reset_count": 0,
+        "target_score": null
+      },
+      "score_confidence": {
+        "status": "full",
+        "confidence": 1.0,
+        "detector_count": 0,
+        "dimension_count": 0
+      },
+      "dimension_scores": {
+        "Code quality": {
+          "score": 96.3,
+          "strict": 92.9
+        },
+        "Security": {
+          "score": 99.0,
+          "strict": 94.0
+        },
+        "File health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Duplication": {
+          "score": 100.0,
+          "strict": 99.9
+        },
+        "Test health": {
+          "score": 91.3,
+          "strict": 87.5
+        },
+        "Abstraction fit": {
+          "score": 89.5,
+          "strict": 89.5
+        },
+        "AI generated debt": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "API coherence": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Auth consistency": {
+          "score": 94.0,
+          "strict": 94.0
+        },
+        "Contracts": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Convention drift": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "Cross-module arch": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Dep health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Design coherence": {
+          "score": 89.5,
+          "strict": 89.5
+        },
+        "Error consistency": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "High elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Stale migration": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "Init coupling": {
+          "score": 93.0,
+          "strict": 93.0
+        },
+        "Logic clarity": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Low elegance": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Mid elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Naming quality": {
+          "score": 92.0,
+          "strict": 92.0
+        },
+        "Structure nav": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Test strategy": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Type safety": {
+          "score": 92.5,
+          "strict": 92.5
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:58:25+00:00",
+      "lang": "typescript",
+      "strict_score": 92.2,
+      "verified_strict_score": 96.5,
+      "objective_score": 96.5,
+      "overall_score": 92.8,
+      "open": 100,
+      "diff_new": 0,
+      "diff_resolved": 6,
+      "ignored": 0,
+      "raw_issues": 49,
+      "suppressed_pct": 0.0,
+      "ignore_patterns": 0,
+      "subjective_integrity": {
+        "status": "pass",
+        "matched_count": 0,
+        "reset_count": 0,
+        "target_score": 95.0
+      },
+      "score_confidence": {
+        "status": "full",
+        "confidence": 1.0,
+        "detector_count": 0,
+        "dimension_count": 0
+      },
+      "dimension_scores": {
+        "Code quality": {
+          "score": 96.4,
+          "strict": 93.0
+        },
+        "Security": {
+          "score": 99.0,
+          "strict": 94.0
+        },
+        "File health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Duplication": {
+          "score": 100.0,
+          "strict": 99.9
+        },
+        "Test health": {
+          "score": 91.3,
+          "strict": 87.5
+        },
+        "Abstraction fit": {
+          "score": 89.5,
+          "strict": 89.5
+        },
+        "AI generated debt": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "API coherence": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Auth consistency": {
+          "score": 94.0,
+          "strict": 94.0
+        },
+        "Contracts": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Convention drift": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "Cross-module arch": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Dep health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Design coherence": {
+          "score": 89.5,
+          "strict": 89.5
+        },
+        "Error consistency": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "High elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Stale migration": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "Init coupling": {
+          "score": 93.0,
+          "strict": 93.0
+        },
+        "Logic clarity": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Low elegance": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Mid elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Naming quality": {
+          "score": 92.0,
+          "strict": 92.0
+        },
+        "Structure nav": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Test strategy": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Type safety": {
+          "score": 92.5,
+          "strict": 92.5
+        }
+      }
     }
   ],
   "tool_hash": "813e8f078156",
@@ -3032,19 +2997,19 @@
       }
     },
     "Abstraction fit": {
-      "score": 90.5,
-      "strict": 90.5,
-      "verified_strict_score": 90.5,
+      "score": 89.5,
+      "strict": 89.5,
+      "verified_strict_score": 89.5,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.905,
+          "pass_rate": 0.895,
           "failing": 0,
-          "weighted_failures": 0.95,
-          "assessment_score": 90.5,
+          "weighted_failures": 1.05,
+          "assessment_score": 89.5,
           "placeholder": false,
           "dimension_key": "abstraction_fitness",
           "configured_weight": 8.0,
@@ -3057,10 +3022,10 @@
             "Type Discipline"
           ],
           "component_scores": {
-            "Abstraction Leverage": 92.0,
+            "Abstraction Leverage": 91.0,
             "Indirection Cost": 88.0,
-            "Interface Honesty": 93.0,
-            "Delegation Density": 87.0,
+            "Interface Honesty": 92.0,
+            "Delegation Density": 95.0,
             "Definition Directness": 90.0,
             "Type Discipline": 93.0
           }
@@ -3068,19 +3033,19 @@
       }
     },
     "AI generated debt": {
-      "score": 92.5,
-      "strict": 92.5,
-      "verified_strict_score": 92.5,
+      "score": 93.5,
+      "strict": 93.5,
+      "verified_strict_score": 93.5,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.925,
+          "pass_rate": 0.935,
           "failing": 0,
-          "weighted_failures": 0.75,
-          "assessment_score": 92.5,
+          "weighted_failures": 0.65,
+          "assessment_score": 93.5,
           "placeholder": false,
           "dimension_key": "ai_generated_debt",
           "configured_weight": 1.0,
@@ -3089,19 +3054,19 @@
       }
     },
     "API coherence": {
-      "score": 91.5,
-      "strict": 91.5,
-      "verified_strict_score": 91.5,
+      "score": 92.5,
+      "strict": 92.5,
+      "verified_strict_score": 92.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.915,
-          "failing": 0,
-          "weighted_failures": 0.85,
-          "assessment_score": 91.5,
+          "pass_rate": 0.925,
+          "failing": 1,
+          "weighted_failures": 0.75,
+          "assessment_score": 92.5,
           "placeholder": false,
           "dimension_key": "api_surface_coherence",
           "configured_weight": 1.0,
@@ -3135,13 +3100,13 @@
       "strict": 92.5,
       "verified_strict_score": 92.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.925,
-          "failing": 0,
+          "failing": 1,
           "weighted_failures": 0.75,
           "assessment_score": 92.5,
           "placeholder": false,
@@ -3152,19 +3117,19 @@
       }
     },
     "Convention drift": {
-      "score": 93.0,
-      "strict": 93.0,
-      "verified_strict_score": 93.0,
+      "score": 93.5,
+      "strict": 93.5,
+      "verified_strict_score": 93.5,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.93,
+          "pass_rate": 0.935,
           "failing": 0,
-          "weighted_failures": 0.7,
-          "assessment_score": 93.0,
+          "weighted_failures": 0.65,
+          "assessment_score": 93.5,
           "placeholder": false,
           "dimension_key": "convention_outlier",
           "configured_weight": 1.0,
@@ -3173,6 +3138,48 @@
       }
     },
     "Cross-module arch": {
+      "score": 91.5,
+      "strict": 91.5,
+      "verified_strict_score": 91.5,
+      "checks": 10,
+      "failing": 2,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.915,
+          "failing": 2,
+          "weighted_failures": 0.85,
+          "assessment_score": 91.5,
+          "placeholder": false,
+          "dimension_key": "cross_module_architecture",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      }
+    },
+    "Dep health": {
+      "score": 96.0,
+      "strict": 96.0,
+      "verified_strict_score": 96.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.96,
+          "failing": 0,
+          "weighted_failures": 0.4,
+          "assessment_score": 96.0,
+          "placeholder": false,
+          "dimension_key": "dependency_health",
+          "configured_weight": 1.0,
+          "components": []
+        }
+      }
+    },
+    "Design coherence": {
       "score": 89.5,
       "strict": 89.5,
       "verified_strict_score": 89.5,
@@ -3187,48 +3194,6 @@
           "weighted_failures": 1.05,
           "assessment_score": 89.5,
           "placeholder": false,
-          "dimension_key": "cross_module_architecture",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      }
-    },
-    "Dep health": {
-      "score": 95.0,
-      "strict": 95.0,
-      "verified_strict_score": 95.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.95,
-          "failing": 0,
-          "weighted_failures": 0.5,
-          "assessment_score": 95.0,
-          "placeholder": false,
-          "dimension_key": "dependency_health",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      }
-    },
-    "Design coherence": {
-      "score": 90.5,
-      "strict": 90.5,
-      "verified_strict_score": 90.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.905,
-          "failing": 0,
-          "weighted_failures": 0.95,
-          "assessment_score": 90.5,
-          "placeholder": false,
           "dimension_key": "design_coherence",
           "configured_weight": 10.0,
           "components": []
@@ -3236,19 +3201,19 @@
       }
     },
     "Error consistency": {
-      "score": 91.5,
-      "strict": 91.5,
-      "verified_strict_score": 91.5,
+      "score": 92.5,
+      "strict": 92.5,
+      "verified_strict_score": 92.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.915,
-          "failing": 0,
-          "weighted_failures": 0.85,
-          "assessment_score": 91.5,
+          "pass_rate": 0.925,
+          "failing": 1,
+          "weighted_failures": 0.75,
+          "assessment_score": 92.5,
           "placeholder": false,
           "dimension_key": "error_consistency",
           "configured_weight": 3.0,
@@ -3261,13 +3226,13 @@
       "strict": 91.5,
       "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.915,
-          "failing": 0,
+          "failing": 2,
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
@@ -3278,19 +3243,19 @@
       }
     },
     "Stale migration": {
-      "score": 96.0,
-      "strict": 96.0,
-      "verified_strict_score": 96.0,
+      "score": 93.5,
+      "strict": 93.5,
+      "verified_strict_score": 93.5,
       "checks": 10,
       "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.96,
+          "pass_rate": 0.935,
           "failing": 1,
-          "weighted_failures": 0.4,
-          "assessment_score": 96.0,
+          "weighted_failures": 0.65,
+          "assessment_score": 93.5,
           "placeholder": false,
           "dimension_key": "incomplete_migration",
           "configured_weight": 1.0,
@@ -3324,13 +3289,13 @@
       "strict": 92.5,
       "verified_strict_score": 92.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.925,
-          "failing": 0,
+          "failing": 1,
           "weighted_failures": 0.75,
           "assessment_score": 92.5,
           "placeholder": false,
@@ -3341,19 +3306,19 @@
       }
     },
     "Low elegance": {
-      "score": 88.5,
-      "strict": 88.5,
-      "verified_strict_score": 88.5,
+      "score": 90.5,
+      "strict": 90.5,
+      "verified_strict_score": 90.5,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.885,
+          "pass_rate": 0.905,
           "failing": 0,
-          "weighted_failures": 1.15,
-          "assessment_score": 88.5,
+          "weighted_failures": 0.95,
+          "assessment_score": 90.5,
           "placeholder": false,
           "dimension_key": "low_level_elegance",
           "configured_weight": 12.0,
@@ -3383,19 +3348,19 @@
       }
     },
     "Naming quality": {
-      "score": 92.5,
-      "strict": 92.5,
-      "verified_strict_score": 92.5,
+      "score": 92.0,
+      "strict": 92.0,
+      "verified_strict_score": 92.0,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.925,
+          "pass_rate": 0.92,
           "failing": 0,
-          "weighted_failures": 0.75,
-          "assessment_score": 92.5,
+          "weighted_failures": 0.8,
+          "assessment_score": 92.0,
           "placeholder": false,
           "dimension_key": "naming_quality",
           "configured_weight": 2.0,
@@ -3404,19 +3369,19 @@
       }
     },
     "Structure nav": {
-      "score": 92.5,
-      "strict": 92.5,
-      "verified_strict_score": 92.5,
+      "score": 91.5,
+      "strict": 91.5,
+      "verified_strict_score": 91.5,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.925,
+          "pass_rate": 0.915,
           "failing": 0,
-          "weighted_failures": 0.75,
-          "assessment_score": 92.5,
+          "weighted_failures": 0.85,
+          "assessment_score": 91.5,
           "placeholder": false,
           "dimension_key": "package_organization",
           "configured_weight": 5.0,
@@ -3425,19 +3390,19 @@
       }
     },
     "Test strategy": {
-      "score": 90.5,
-      "strict": 90.5,
-      "verified_strict_score": 90.5,
+      "score": 91.5,
+      "strict": 91.5,
+      "verified_strict_score": 91.5,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.905,
+          "pass_rate": 0.915,
           "failing": 0,
-          "weighted_failures": 0.95,
-          "assessment_score": 90.5,
+          "weighted_failures": 0.85,
+          "assessment_score": 91.5,
           "placeholder": false,
           "dimension_key": "test_strategy",
           "configured_weight": 1.0,
@@ -3446,19 +3411,19 @@
       }
     },
     "Type safety": {
-      "score": 93.5,
-      "strict": 93.5,
-      "verified_strict_score": 93.5,
+      "score": 92.5,
+      "strict": 92.5,
+      "verified_strict_score": 92.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.935,
-          "failing": 0,
-          "weighted_failures": 0.65,
-          "assessment_score": 93.5,
+          "pass_rate": 0.925,
+          "failing": 1,
+          "weighted_failures": 0.75,
+          "assessment_score": 92.5,
           "placeholder": false,
           "dimension_key": "type_safety",
           "configured_weight": 12.0,
@@ -3471,7 +3436,7 @@
     "auto_fixers_available": 3,
     "zone_classification": 3,
     "dry_run_first": 3,
-    "report_scores": 99,
+    "report_scores": 100,
     "feedback_nudge": 3,
     "review_findings_pending": 3,
     "stagnant_nudge": 3,
@@ -3482,9 +3447,9 @@
   },
   "review_cache": {
     "holistic": {
-      "reviewed_at": "2026-03-20T02:10:35+00:00",
+      "reviewed_at": "2026-03-20T02:58:18+00:00",
       "file_count_at_review": 105,
-      "issue_count": 13,
+      "issue_count": 10,
       "reviewed_files_count": 0,
       "full_sweep_included": false
     },
@@ -3976,6 +3941,19 @@
       "attest": "",
       "import_file": "/workspaces/xfg/.desloppify/subagents/runs/20260320_013123/holistic_issues_merged.json",
       "packet_sha256": "d06132e957e4d937cc66b2690a3a9c7bb709aa97e284565e1e426bb48b01764b"
+    },
+    {
+      "timestamp": "2026-03-20T02:58:18+00:00",
+      "mode": "trusted_internal",
+      "trusted": true,
+      "reason": "trusted import-run replay from 20260320_023948",
+      "override_used": false,
+      "attested_external": false,
+      "provisional": false,
+      "provisional_count": 0,
+      "attest": "",
+      "import_file": "/workspaces/xfg/.desloppify/subagents/runs/20260320_023948/holistic_issues_merged.json",
+      "packet_sha256": "1786903c917f21c737ea0d527761c5870ef5346fb9c7b6232648364c865d908e"
     }
   ],
   "scan_metadata": {
@@ -4509,7 +4487,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4659,7 +4637,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4684,7 +4662,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4738,7 +4716,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4813,7 +4791,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4888,7 +4866,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -5366,19 +5344,19 @@
       "summary": "5 disconnected function clusters (15 functions) \u2014 likely mixed responsibilities",
       "detail": {
         "cluster_count": 5,
-        "family": "parseGitLabUrl, isGitLabRepo, isGitHubRepo, assertAzureDevOpsRepo",
+        "family": "isGitLabStyleUrl, assertGitHubRepo, isAzureDevOpsRepo, assertGitLabRepo",
         "families": [
-          "parseGitLabUrl",
-          "isGitLabRepo",
-          "isGitHubRepo",
-          "assertAzureDevOpsRepo",
+          "isGitLabStyleUrl",
+          "assertGitHubRepo",
+          "isAzureDevOpsRepo",
+          "assertGitLabRepo",
           "getRepoDisplayName"
         ]
       },
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:56+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6167,7 +6145,7 @@
       "status": "open",
       "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 3,
       "lang": "typescript",
@@ -6198,7 +6176,7 @@
       "status": "open",
       "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 3,
       "lang": "typescript",
@@ -6472,7 +6450,7 @@
       "status": "open",
       "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 3,
       "lang": "typescript",
@@ -7024,7 +7002,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7349,7 +7327,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7380,7 +7358,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7512,7 +7490,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7542,7 +7520,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7572,7 +7550,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7602,7 +7580,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7632,7 +7610,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7663,7 +7641,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7693,7 +7671,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7793,7 +7771,7 @@
       "status": "open",
       "note": "Reopened (\u00d78) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 8,
       "zone": "production",
@@ -7836,7 +7814,7 @@
       "status": "open",
       "note": "Reopened (\u00d78) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 8,
       "zone": "production",
@@ -21298,7 +21276,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T11:45:14+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -24566,7 +24544,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-04T00:19:16+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -24596,7 +24574,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-04T00:19:17+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -28495,7 +28473,7 @@
       "status": "open",
       "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-04T02:24:32+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 3,
       "lang": "typescript",
@@ -31136,7 +31114,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-04T07:57:21+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -35753,7 +35731,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-04T12:46:44+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -40676,7 +40654,7 @@
       "status": "open",
       "note": "Reopened (\u00d77) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-05T01:16:56+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 7,
       "lang": "typescript",
@@ -42852,7 +42830,7 @@
       "status": "open",
       "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-05T02:29:11+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 2,
       "lang": "typescript",
@@ -46287,7 +46265,7 @@
         "text": "I have actually Already marked false-positive \u2014 catch returns MergeResult with success:false, not silent failure and I am not gaming the score.",
         "attested_at": "2026-03-18T09:30:55+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-20T02:38:49+00:00",
+        "scan_verified_at": "2026-03-20T02:58:25+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -46940,7 +46918,7 @@
         "text": "I have actually Already marked false-positive \u2014 async needed for early-return dry-run paths and I am not gaming the score.",
         "attested_at": "2026-03-18T09:30:56+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-20T02:38:49+00:00",
+        "scan_verified_at": "2026-03-20T02:58:25+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -51003,7 +50981,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:52:20+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51033,7 +51011,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51063,7 +51041,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51093,7 +51071,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51128,7 +51106,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51159,7 +51137,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51189,7 +51167,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51220,7 +51198,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51250,7 +51228,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51312,7 +51290,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51342,7 +51320,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51372,7 +51350,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51402,7 +51380,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51462,7 +51440,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51492,7 +51470,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51522,7 +51500,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -53959,7 +53937,7 @@
         "text": "I have actually Already marked false-positive \u2014 runSync contains multiple await calls and I am not gaming the score.",
         "attested_at": "2026-03-18T09:30:57+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-20T02:38:49+00:00",
+        "scan_verified_at": "2026-03-20T02:58:25+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -53998,7 +53976,7 @@
         "text": "I have actually Already marked false-positive \u2014 console.error + process.exit(1) is correct CLI entry point pattern and I am not gaming the score.",
         "attested_at": "2026-03-18T09:31:02+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-20T02:38:49+00:00",
+        "scan_verified_at": "2026-03-20T02:58:25+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -54037,7 +54015,7 @@
         "text": "I have actually Already marked false-positive \u2014 CLI composition root excluded from coverage and I am not gaming the score.",
         "attested_at": "2026-03-18T09:31:04+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-20T02:38:49+00:00",
+        "scan_verified_at": "2026-03-20T02:58:25+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -54076,7 +54054,7 @@
         "text": "I have actually Already marked false-positive \u2014 has await tokenManager?.getTokenForRepo() and I am not gaming the score.",
         "attested_at": "2026-03-18T09:31:05+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-20T02:38:49+00:00",
+        "scan_verified_at": "2026-03-20T02:58:25+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -56582,7 +56560,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-19T12:49:02+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -56608,7 +56586,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-19T12:49:02+00:00",
-      "last_seen": "2026-03-20T02:38:49+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -57209,11 +57187,11 @@
         "reasoning": "",
         "summary_hash": "4eefe1a6"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "not reported in latest holistic re-import",
       "first_seen": "2026-03-20T02:10:34+00:00",
       "last_seen": "2026-03-20T02:10:34+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T02:58:18+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -57221,7 +57199,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "not reported in latest holistic re-import",
+        "attested_at": "2026-03-20T02:58:18+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::initialization_coupling::module_scope_lazy_singletons": {
       "id": "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
@@ -57357,7 +57341,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-20T02:38:47+00:00",
-      "last_seen": "2026-03-20T02:38:47+00:00",
+      "last_seen": "2026-03-20T02:58:25+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -57365,6 +57349,360 @@
       "origin": "scan",
       "lang": "typescript",
       "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass": {
+      "id": "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "output/github-summary.ts bypasses settings/ barrel to import SettingsAction from base-processor.ts",
+      "detail": {
+        "holistic": true,
+        "dimension": "cross_module_architecture",
+        "related_files": [
+          "src/output/github-summary.ts",
+          "src/settings/base-processor.ts",
+          "src/settings/index.ts"
+        ],
+        "evidence": [
+          "output/github-summary.ts line 4: import type { SettingsAction } from '../settings/base-processor.js' \u2014 SettingsAction is not exported through the settings/index.ts barrel despite being used by an external module"
+        ],
+        "suggestion": "Add 'export type { SettingsAction } from \"./base-processor.js\"' to src/settings/index.ts, then update the import in output/github-summary.ts to use '../settings/index.js'. This aligns with the existing barrel convention.",
+        "reasoning": "",
+        "summary_hash": "cafd9bb3"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-20T02:58:18+00:00",
+      "last_seen": "2026-03-20T02:58:18+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass": {
+      "id": "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "output/types.ts bypasses sync/ barrel to import FileChangeDetail from sync/types.ts",
+      "detail": {
+        "holistic": true,
+        "dimension": "cross_module_architecture",
+        "related_files": [
+          "src/output/types.ts",
+          "src/sync/types.ts",
+          "src/sync/index.ts"
+        ],
+        "evidence": [
+          "output/types.ts line 1: import type { FileChangeDetail } from '../sync/types.js' \u2014 FileChangeDetail is not exported through sync/index.ts despite being consumed by the output layer"
+        ],
+        "suggestion": "Add 'export type { FileChangeDetail } from \"./types.js\"' to src/sync/index.ts, then update the import in output/types.ts to use '../sync/index.js'. This maintains the barrel-as-public-API convention.",
+        "reasoning": "",
+        "summary_hash": "16a9c0e4"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-20T02:58:18+00:00",
+      "last_seen": "2026-03-20T02:58:18+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::high_level_elegance::orphaned_summary_utils": {
+      "id": "review::.::holistic::high_level_elegance::orphaned_summary_utils",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "output/summary-utils.ts has zero importers -- dead file confuses ownership of result-building logic",
+      "detail": {
+        "holistic": true,
+        "dimension": "high_level_elegance",
+        "related_files": [
+          "src/output/summary-utils.ts"
+        ],
+        "evidence": [
+          "Scan evidence shows 'orphaned: Orphaned file (92 LOC): zero importers, not an entry point'",
+          "Functions getMergeOutcome and buildRepoResult duplicate logic now inlined in sync-command.ts (determineMergeOutcome) and sync-report-builder.ts"
+        ],
+        "suggestion": "Delete src/output/summary-utils.ts entirely. Its functions are no longer referenced and their logic has been superseded by inline implementations elsewhere.",
+        "reasoning": "",
+        "summary_hash": "69911152"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-20T02:58:18+00:00",
+      "last_seen": "2026-03-20T02:58:18+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::high_level_elegance::sync_command_dual_role": {
+      "id": "review::.::holistic::high_level_elegance::sync_command_dual_role",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "sync-command.ts (671 LOC) conflates composition root with repo-processing orchestration",
+      "detail": {
+        "holistic": true,
+        "dimension": "high_level_elegance",
+        "related_files": [
+          "src/cli/sync-command.ts"
+        ],
+        "evidence": [
+          "File contains factory creation (createDefaultRulesetProcessorFactory etc.), per-repo orchestration (processSingleRepo, runLifecyclePhase, runFileSyncPhase), settings application (applyRepoSettings), and report display (displayReports)",
+          "RepoIterationContext interface groups 12+ fields for passing state through the orchestration loop, signaling that the orchestration belongs in its own module"
+        ],
+        "suggestion": "Extract the per-repo processing loop (processSingleRepo, runLifecyclePhase, runFileSyncPhase, applyRepoSettings, displayReports) into a dedicated src/cli/sync-orchestrator.ts, leaving sync-command.ts focused on wiring dependencies and invoking the orchestrator. This localizes orchestration changes without touching the composition root.",
+        "reasoning": "",
+        "summary_hash": "eab2bd41"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-20T02:58:18+00:00",
+      "last_seen": "2026-03-20T02:58:18+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync": {
+      "id": "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "GitOps.deleteFile() uses bare rmSync without SyncError wrapping, unlike fixed sibling methods",
+      "detail": {
+        "holistic": true,
+        "dimension": "error_consistency",
+        "related_files": [
+          "src/vcs/git-ops.ts"
+        ],
+        "evidence": [
+          "git-ops.ts line 261: rmSync(filePath) is called without try-catch, while writeFile() (line 97-106), cleanWorkspace() (line 60-69), and setExecutable() (line 121-127) all wrap their fs operations in try-catch throwing SyncError with toErrorMessage(error)"
+        ],
+        "suggestion": "Wrap the rmSync call in deleteFile() with try-catch throwing SyncError('Failed to delete file ${fileName}: ${toErrorMessage(error)}'), matching the pattern used by writeFile/cleanWorkspace/setExecutable.",
+        "reasoning": "",
+        "summary_hash": "acaf3297"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-20T02:58:18+00:00",
+      "last_seen": "2026-03-20T02:58:18+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params": {
+      "id": "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "IManifestManager.saveUpdatedManifest takes 5 positional params instead of options bag",
+      "detail": {
+        "holistic": true,
+        "dimension": "api_surface_coherence",
+        "related_files": [
+          "src/sync/types.ts",
+          "src/sync/manifest-manager.ts"
+        ],
+        "evidence": [
+          "saveUpdatedManifest(workDir: string, manifest: XfgManifest, existingManifest: XfgManifest | null, dryRun: boolean, fileChanges: Map<string, FileWriteResult>) at src/sync/types.ts:86-92 \u2014 5 positional params while codebase convention uses options bags for 3+ params"
+        ],
+        "suggestion": "Introduce a SaveManifestOptions interface with { workDir, manifest, existingManifest, dryRun, fileChanges } and update the IManifestManager interface and ManifestManager implementation to accept a single options bag, matching the pattern used by resolveGitHubToken, createPR, and AuthenticatedGitOps.",
+        "reasoning": "",
+        "summary_hash": "8212c5a1"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-20T02:58:18+00:00",
+      "last_seen": "2026-03-20T02:58:18+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::incomplete_migration::dead_old_summary_api": {
+      "id": "review::.::holistic::incomplete_migration::dead_old_summary_api",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "Old summary API (formatSummary/writeSummary/SummaryData) is dead production code, superseded by unified-summary",
+      "detail": {
+        "holistic": true,
+        "dimension": "incomplete_migration",
+        "related_files": [
+          "src/output/github-summary.ts",
+          "src/output/summary-utils.ts"
+        ],
+        "evidence": [
+          "formatSummary is only called by writeSummary (line 311 of github-summary.ts), and writeSummary has zero production callers \u2014 only test/unit/github-summary.test.ts calls it",
+          "summary-utils.ts has zero production importers \u2014 only test/unit/index.test.ts imports its exports (getMergeOutcome, toFileChanges, buildRepoResult, buildErrorResult)",
+          "sync-command.ts line 91 imports writeUnifiedSummary from unified-summary.ts, confirming the new path is the sole production path",
+          "sync-command.ts has its own determineMergeOutcome (line 138) independent of summary-utils.ts::getMergeOutcome",
+          "Scan evidence flags summary-utils.ts as orphaned dead code (92 LOC)"
+        ],
+        "suggestion": "Remove formatSummary, writeSummary, shouldWriteSummary, SummaryData, and all private helper functions only used by the old path (formatFileChanges, formatChangesColumn, formatStatus, formatResult, formatRulesetAction, formatRulesetProperties, formatPlanSummary, formatSettingsAction, escapeMarkdown) from github-summary.ts. Delete summary-utils.ts entirely. Move the shared types (MergeOutcome, FileChanges, RepoResult, RulesetPlanDetail, RepoSettingsPlanDetail, LabelsPlanDetail) that are still used elsewhere to a more appropriate location or remove if unused. Update or remove the corresponding test coverage in github-summary.test.ts and index.test.ts.",
+        "reasoning": "",
+        "summary_hash": "4eefe1a6"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-20T02:58:18+00:00",
+      "last_seen": "2026-03-20T02:58:18+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast": {
+      "id": "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "withGitHubGuards casts partial BaseProcessorResult objects as TResult, bypassing type safety",
+      "detail": {
+        "holistic": true,
+        "dimension": "contract_coherence",
+        "related_files": [
+          "src/settings/base-processor.ts"
+        ],
+        "evidence": [
+          "Lines 70-75, 79-84, 97-101: Three return paths construct objects with only BaseProcessorResult fields (success, repoName, message, skipped) then cast 'as TResult'. If TResult has required fields beyond BaseProcessorResult, the cast silently produces an incomplete object.",
+          "Currently safe because RulesetProcessorResult and LabelsProcessorResult only add optional fields (changes?, planOutput?), but the pattern is fragile \u2014 adding a required field to a result subtype would compile without warning but fail at runtime."
+        ],
+        "suggestion": "Require guards to provide a buildSkipResult factory: add a 'buildSkipResult(repoName: string, message: string): TResult' method to SettingsGuards, or have withGitHubGuards return BaseProcessorResult and let callers widen to their result type. This removes the unsafe cast while keeping the shared logic.",
+        "reasoning": "",
+        "summary_hash": "3c3f4e27"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-20T02:58:18+00:00",
+      "last_seen": "2026-03-20T02:58:18+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await": {
+      "id": "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "ManifestManager.deleteOrphans() is async but never awaits \u2014 body is entirely synchronous",
+      "detail": {
+        "holistic": true,
+        "dimension": "logic_clarity",
+        "related_files": [
+          "src/sync/manifest-manager.ts"
+        ],
+        "evidence": [
+          "deleteOrphans() at line 45 is marked async but only calls synchronous methods: gitOps.fileExists(), fileChanges.set(), gitOps.deleteFile(), log.info(), log.fileDiff(). No await anywhere in the function body.",
+          "The IManifestManager interface at src/sync/types.ts line 80 declares deleteOrphans as returning Promise<void>, which forces the async keyword in the implementation, but the operation is inherently synchronous."
+        ],
+        "suggestion": "Change the IManifestManager interface to declare deleteOrphans() as returning void instead of Promise<void>, and remove the async keyword from the implementation. Update the single call site in file-sync-orchestrator.ts (line 61) to remove the await. This accurately reflects the synchronous nature of the operation.",
+        "reasoning": "",
+        "summary_hash": "97030ef4"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-20T02:58:18+00:00",
+      "last_seen": "2026-03-20T02:58:18+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::type_safety::as_tresult_cast_in_guards": {
+      "id": "review::.::holistic::type_safety::as_tresult_cast_in_guards",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "withGitHubGuards casts partial objects as TResult, bypassing generic type checking",
+      "detail": {
+        "holistic": true,
+        "dimension": "type_safety",
+        "related_files": [
+          "src/settings/base-processor.ts"
+        ],
+        "evidence": [
+          "Lines 70-75, 79-84, 97-101 construct objects with only BaseProcessorResult fields {success, repoName, message, skipped?} and cast them 'as TResult'. TResult extends BaseProcessorResult but may have required extra fields the cast cannot verify."
+        ],
+        "suggestion": "This is safe in current usage because all TResult subtypes (RulesetProcessorResult, LabelsProcessorResult, RepoSettingsProcessorResult) only add optional fields. To make this compiler-verified, the guard return types could be changed to BaseProcessorResult for skip/error paths, with callers responsible for widening. However, this adds complexity for minimal safety gain \u2014 documenting the invariant (TResult must not have required fields beyond BaseProcessorResult) via a comment is the proportionate fix.",
+        "reasoning": "",
+        "summary_hash": "34ae9e2d"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-20T02:58:18+00:00",
+      "last_seen": "2026-03-20T02:58:18+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
       "suppression_pattern": null
@@ -57543,12 +57881,13 @@
       ]
     },
     "181f0d8a7efbf02a": {
-      "dismissed_at": "2026-03-20T02:10:34+00:00",
-      "reasoning": "async_no_await is primarily a logic_clarity concern, not design_coherence. The affected files are mostly test files and CLI entry points where async is required by framework contract or for future-proofing interface implementations.",
+      "dismissed_at": "2026-03-20T02:58:18+00:00",
+      "reasoning": "The async_no_await pattern across 13 files is a mix of interface compliance (implementing async interface methods), test setup functions, and functions that call async utilities. In src/shared/type-guards.ts, safeCleanup is correctly async because it awaits the fn() parameter. In test files, async is required by test framework contracts. These are independent occurrences, not a systemic design issue requiring architectural intervention.",
       "concern_type": "",
       "concern_file": "",
       "source_issue_ids": [
         "smells::src/cli/sync-command.ts::async_no_await",
+        "smells::src/shared/gh-api-utils.ts::async_no_await",
         "smells::src/shared/type-guards.ts::async_no_await",
         "smells::src/vcs/pr-creator.ts::async_no_await",
         "smells::test/integration/github-rulesets.test.ts::async_no_await",
@@ -57656,6 +57995,21 @@
       "concern_file": "",
       "source_issue_ids": [
         "boilerplate_duplication::src/settings/base-processor.ts::a0b594d3b7d32c32"
+      ]
+    },
+    "b3aeef706f04fca3": {
+      "dismissed_at": "2026-03-20T02:58:18+00:00",
+      "reasoning": "The switch_no_default pattern across 7 files is correct TypeScript practice. All instances switch on exhaustive union types (FileStatus, EditOp.type, DiffAction, SettingsAction) where TypeScript's type narrowing catches unhandled cases at compile time. Adding default cases would weaken type safety by hiding future union member additions. This is a deliberate convention, not a gap.",
+      "concern_type": "",
+      "concern_file": "",
+      "source_issue_ids": [
+        "smells::src/output/lifecycle-report.ts::switch_no_default",
+        "smells::src/output/unified-summary.ts::switch_no_default",
+        "smells::src/settings/labels/processor.ts::switch_no_default",
+        "smells::src/settings/rulesets/formatter.ts::switch_no_default",
+        "smells::src/settings/rulesets/processor.ts::switch_no_default",
+        "smells::src/shared/file-status.ts::switch_no_default",
+        "smells::src/sync/diff-utils.ts::switch_no_default"
       ]
     }
   }
