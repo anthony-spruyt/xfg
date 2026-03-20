@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-20T02:37:35+00:00",
+  "updated": "2026-03-20T02:37:43+00:00",
   "queue_order": [
     "output_sync_report_unified_summary_cycle",
     "type_only_import_cycle_output",
@@ -12692,6 +12692,29 @@
         "status": "fixed",
         "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing."
       }
+    },
+    {
+      "timestamp": "2026-03-20T02:37:43+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+        "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+        "review::.::holistic::type_safety::inline_action_unions_github_summary",
+        "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+        "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+        "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+        "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+        "review::.::holistic::dependency_health::type_only_import_cycle_output",
+        "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+        "review::.::holistic::test_strategy::untested_cli_entry_point"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed 10 review issues: import cycle, dead barrel, restating comments, type aliases, options bag, error wrapping, singletons, CLI validators",
+      "detail": {
+        "sha": "cb55c09d8bcd",
+        "branch": "desloppify/round-4"
+      }
     }
   ],
   "epic_triage_meta": {
@@ -13149,20 +13172,28 @@
       "recorded_at": "2026-03-19T12:47:42+00:00",
       "note": "Round 4 review fixes: 15 issues fixed, 4 skipped as false positives",
       "cluster_name": null
+    },
+    {
+      "sha": "cb55c09d8bcd",
+      "branch": "desloppify/round-4",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+        "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+        "review::.::holistic::type_safety::inline_action_unions_github_summary",
+        "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+        "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+        "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+        "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+        "review::.::holistic::dependency_health::type_only_import_cycle_output",
+        "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+        "review::.::holistic::test_strategy::untested_cli_entry_point"
+      ],
+      "recorded_at": "2026-03-20T02:37:43+00:00",
+      "note": "Fixed 10 review issues: import cycle, dead barrel, restating comments, type aliases, options bag, error wrapping, singletons, CLI validators",
+      "cluster_name": null
     }
   ],
-  "uncommitted_issues": [
-    "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
-    "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
-    "review::.::holistic::type_safety::inline_action_unions_github_summary",
-    "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
-    "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
-    "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
-    "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
-    "review::.::holistic::dependency_health::type_only_import_cycle_output",
-    "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
-    "review::.::holistic::test_strategy::untested_cli_entry_point"
-  ],
+  "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 138,
