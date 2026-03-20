@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-20T03:02:51+00:00",
+  "updated": "2026-03-20T03:03:13+00:00",
   "queue_order": [
     "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params",
     "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
@@ -4802,12 +4802,7 @@
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {
-    "strict": 92.2,
-    "overall": 92.8,
-    "objective": 96.5,
-    "verified": 96.5
-  },
+  "plan_start_scores": {},
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -13301,6 +13296,20 @@
         "sha": "afe2ff0c444e",
         "branch": "desloppify/round-4"
       }
+    },
+    {
+      "timestamp": "2026-03-20T03:03:13+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
     }
   ],
   "epic_triage_meta": {
@@ -13798,6 +13807,5 @@
     "subjective_review_completed_at_scan_count": 140,
     "lifecycle_phase": "workflow_postflight",
     "postflight_scan_completed_at_scan_count": 141
-  },
-  "scan_count_at_plan_start": 141
+  }
 }

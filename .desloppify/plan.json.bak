@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-20T03:02:41+00:00",
+  "updated": "2026-03-20T03:02:51+00:00",
   "queue_order": [
     "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params",
     "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
@@ -13284,6 +13284,23 @@
         "status": "fixed",
         "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing. I understand the plan may be stale and I am intentionally resolving ahead of triage."
       }
+    },
+    {
+      "timestamp": "2026-03-20T03:02:51+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
+        "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
+        "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
+        "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed 4 more review issues: deleteFile wrapping, async/no-await, barrel bypasses",
+      "detail": {
+        "sha": "afe2ff0c444e",
+        "branch": "desloppify/round-4"
+      }
     }
   ],
   "epic_triage_meta": {
@@ -13760,14 +13777,22 @@
       "recorded_at": "2026-03-20T02:37:43+00:00",
       "note": "Fixed 10 review issues: import cycle, dead barrel, restating comments, type aliases, options bag, error wrapping, singletons, CLI validators",
       "cluster_name": null
+    },
+    {
+      "sha": "afe2ff0c444e",
+      "branch": "desloppify/round-4",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
+        "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
+        "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
+        "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass"
+      ],
+      "recorded_at": "2026-03-20T03:02:51+00:00",
+      "note": "Fixed 4 more review issues: deleteFile wrapping, async/no-await, barrel bypasses",
+      "cluster_name": null
     }
   ],
-  "uncommitted_issues": [
-    "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
-    "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
-    "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
-    "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass"
-  ],
+  "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 140,
