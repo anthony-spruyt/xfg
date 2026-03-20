@@ -1,17 +1,13 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-20T02:58:25+00:00",
+  "updated": "2026-03-20T03:02:51+00:00",
   "queue_order": [
     "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params",
     "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
-    "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
-    "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass",
-    "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
     "review::.::holistic::high_level_elegance::orphaned_summary_utils",
     "review::.::holistic::high_level_elegance::sync_command_dual_role",
     "review::.::holistic::incomplete_migration::dead_old_summary_api",
-    "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
     "review::.::holistic::type_safety::as_tresult_cast_in_guards"
   ],
   "deferred": [],
@@ -13100,6 +13096,211 @@
       "detail": {
         "scan_count": 141
       }
+    },
+    {
+      "timestamp": "2026-03-20T03:02:13+00:00",
+      "action": "done",
+      "issue_ids": [
+        "deleteFile"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Wrapped rmSync in GitOps.deleteFile() with try-catch throwing SyncError, matching pattern in writeFile/cleanWorkspace/setExecutable",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T03:02:13+00:00",
+      "action": "done",
+      "issue_ids": [
+        "deleteOrphans"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed async keyword from ManifestManager.deleteOrphans() and interface, removed await at call site \u2014 method body is purely synchronous",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T03:02:14+00:00",
+      "action": "done",
+      "issue_ids": [
+        "bypasses.*barrel.*FileChangeDetail"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added FileChangeDetail to sync/index.ts barrel, changed output/types.ts to import from sync/index.js instead of sync/types.js",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T03:02:14+00:00",
+      "action": "done",
+      "issue_ids": [
+        "bypasses.*barrel.*SettingsAction"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added SettingsAction to settings/index.ts barrel, changed github-summary.ts to import from settings/index.js instead of base-processor.js",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T03:02:21+00:00",
+      "action": "done",
+      "issue_ids": [
+        "deleteFile"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Wrapped rmSync in GitOps.deleteFile() with try-catch throwing SyncError, matching pattern in writeFile/cleanWorkspace/setExecutable",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T03:02:22+00:00",
+      "action": "done",
+      "issue_ids": [
+        "deleteOrphans"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed async keyword from ManifestManager.deleteOrphans() and interface, removed await at call site",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T03:02:22+00:00",
+      "action": "done",
+      "issue_ids": [
+        "bypasses.*FileChangeDetail"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added FileChangeDetail to sync/index.ts barrel, changed output/types.ts to import from barrel",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T03:02:23+00:00",
+      "action": "done",
+      "issue_ids": [
+        "bypasses.*SettingsAction"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added SettingsAction to settings/index.ts barrel, changed github-summary.ts to import from barrel",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T03:02:39+00:00",
+      "action": "done",
+      "issue_ids": [
+        "gitops_deletefile_bare_rmsync"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Wrapped rmSync in GitOps.deleteFile() with try-catch throwing SyncError, matching pattern in writeFile/cleanWorkspace/setExecutable",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T03:02:39+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Wrapped rmSync in GitOps.deleteFile() with try-catch throwing SyncError, matching pattern in writeFile/cleanWorkspace/setExecutable",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing. I understand the plan may be stale and I am intentionally resolving ahead of triage."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T03:02:39+00:00",
+      "action": "done",
+      "issue_ids": [
+        "manifest_delete_orphans_async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed async keyword from ManifestManager.deleteOrphans() and changed interface return type from Promise<void> to void, removed await at call site",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T03:02:39+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed async keyword from ManifestManager.deleteOrphans() and changed interface return type from Promise<void> to void, removed await at call site",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing. I understand the plan may be stale and I am intentionally resolving ahead of triage."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T03:02:40+00:00",
+      "action": "done",
+      "issue_ids": [
+        "file_change_detail_barrel_bypass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added FileChangeDetail to sync/index.ts barrel export, changed output/types.ts to import from sync/index.js instead of sync/types.js",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T03:02:40+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added FileChangeDetail to sync/index.ts barrel export, changed output/types.ts to import from sync/index.js instead of sync/types.js",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing. I understand the plan may be stale and I am intentionally resolving ahead of triage."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T03:02:41+00:00",
+      "action": "done",
+      "issue_ids": [
+        "settings_action_barrel_bypass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added SettingsAction to settings/index.ts barrel export, changed github-summary.ts to import from settings/index.js instead of base-processor.js",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T03:02:41+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added SettingsAction to settings/index.ts barrel export, changed github-summary.ts to import from settings/index.js instead of base-processor.js",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing. I understand the plan may be stale and I am intentionally resolving ahead of triage."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T03:02:51+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
+        "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
+        "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
+        "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed 4 more review issues: deleteFile wrapping, async/no-await, barrel bypasses",
+      "detail": {
+        "sha": "afe2ff0c444e",
+        "branch": "desloppify/round-4"
+      }
     }
   ],
   "epic_triage_meta": {
@@ -13575,6 +13776,19 @@
       ],
       "recorded_at": "2026-03-20T02:37:43+00:00",
       "note": "Fixed 10 review issues: import cycle, dead barrel, restating comments, type aliases, options bag, error wrapping, singletons, CLI validators",
+      "cluster_name": null
+    },
+    {
+      "sha": "afe2ff0c444e",
+      "branch": "desloppify/round-4",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::gitops_deletefile_bare_rmsync",
+        "review::.::holistic::logic_clarity::manifest_delete_orphans_async_no_await",
+        "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
+        "review::.::holistic::cross_module_architecture::settings_action_barrel_bypass"
+      ],
+      "recorded_at": "2026-03-20T03:02:51+00:00",
+      "note": "Fixed 4 more review issues: deleteFile wrapping, async/no-await, barrel bypasses",
       "cluster_name": null
     }
   ],

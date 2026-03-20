@@ -12,8 +12,8 @@
     "auto_resolved": 1082,
     "deferred": 0,
     "false_positive": 11,
-    "fixed": 92,
-    "open": 100,
+    "fixed": 96,
+    "open": 96,
     "triaged_out": 0,
     "wontfix": 0,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 1,
-        "fixed": 42,
-        "open": 4,
+        "fixed": 44,
+        "open": 2,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -30,8 +30,8 @@
         "auto_resolved": 365,
         "deferred": 0,
         "false_positive": 9,
-        "fixed": 38,
-        "open": 26,
+        "fixed": 40,
+        "open": 24,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -92,7 +92,10 @@
     "cross_module_architecture": {
       "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:58:18+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-03-20T03:02:41+00:00"
     },
     "convention_outlier": {
       "score": 93.5,
@@ -102,7 +105,10 @@
     "error_consistency": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:58:18+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-03-20T03:02:39+00:00"
     },
     "abstraction_fitness": {
       "score": 89.5,
@@ -188,7 +194,10 @@
     "logic_clarity": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:58:18+00:00"
+      "assessed_at": "2026-03-20T02:58:18+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-03-20T03:02:39+00:00"
     },
     "naming_quality": {
       "score": 92.0,
@@ -3142,13 +3151,13 @@
       "strict": 91.5,
       "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.915,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
@@ -3205,13 +3214,13 @@
       "strict": 92.5,
       "verified_strict_score": 92.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.925,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.75,
           "assessment_score": 92.5,
           "placeholder": false,
@@ -3289,13 +3298,13 @@
       "strict": 92.5,
       "verified_strict_score": 92.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.925,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.75,
           "assessment_score": 92.5,
           "placeholder": false,
@@ -57375,11 +57384,11 @@
         "reasoning": "",
         "summary_hash": "cafd9bb3"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Added SettingsAction to settings/index.ts barrel export, changed github-summary.ts to import from settings/index.js instead of base-processor.js",
       "first_seen": "2026-03-20T02:58:18+00:00",
       "last_seen": "2026-03-20T02:58:18+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T03:02:41+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -57387,7 +57396,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing. I understand the plan may be stale and I am intentionally resolving ahead of triage.",
+        "attested_at": "2026-03-20T03:02:41+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass": {
       "id": "review::.::holistic::cross_module_architecture::file_change_detail_barrel_bypass",
@@ -57411,11 +57426,11 @@
         "reasoning": "",
         "summary_hash": "16a9c0e4"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Added FileChangeDetail to sync/index.ts barrel export, changed output/types.ts to import from sync/index.js instead of sync/types.js",
       "first_seen": "2026-03-20T02:58:18+00:00",
       "last_seen": "2026-03-20T02:58:18+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T03:02:40+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -57423,7 +57438,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing. I understand the plan may be stale and I am intentionally resolving ahead of triage.",
+        "attested_at": "2026-03-20T03:02:40+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::high_level_elegance::orphaned_summary_utils": {
       "id": "review::.::holistic::high_level_elegance::orphaned_summary_utils",
@@ -57515,11 +57536,11 @@
         "reasoning": "",
         "summary_hash": "acaf3297"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Wrapped rmSync in GitOps.deleteFile() with try-catch throwing SyncError, matching pattern in writeFile/cleanWorkspace/setExecutable",
       "first_seen": "2026-03-20T02:58:18+00:00",
       "last_seen": "2026-03-20T02:58:18+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T03:02:39+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -57527,7 +57548,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing. I understand the plan may be stale and I am intentionally resolving ahead of triage.",
+        "attested_at": "2026-03-20T03:02:39+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params": {
       "id": "review::.::holistic::api_surface_coherence::manifest_manager_save_positional_params",
@@ -57659,11 +57686,11 @@
         "reasoning": "",
         "summary_hash": "97030ef4"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Removed async keyword from ManifestManager.deleteOrphans() and changed interface return type from Promise<void> to void, removed await at call site",
       "first_seen": "2026-03-20T02:58:18+00:00",
       "last_seen": "2026-03-20T02:58:18+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T03:02:39+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -57671,7 +57698,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing. I understand the plan may be stale and I am intentionally resolving ahead of triage.",
+        "attested_at": "2026-03-20T03:02:39+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::type_safety::as_tresult_cast_in_guards": {
       "id": "review::.::holistic::type_safety::as_tresult_cast_in_guards",
