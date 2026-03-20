@@ -1,19 +1,11 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-20T02:23:27+00:00",
+  "updated": "2026-03-20T02:37:35+00:00",
   "queue_order": [
-    "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
-    "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
-    "review::.::holistic::dependency_health::type_only_import_cycle_output",
     "output_sync_report_unified_summary_cycle",
     "type_only_import_cycle_output",
     "output_barrel_zero_consumers",
-    "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
-    "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
-    "review::.::holistic::type_safety::inline_action_unions_github_summary",
-    "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
-    "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
     "duplicated_restating_comments_formatter",
     "restating_check_comments_repo_detector",
     "inline_action_unions_github_summary",
@@ -21,8 +13,6 @@
     "gitops_writeFile_unwrapped_fs_errors",
     "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
     "old_summary_api_dead_code",
-    "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
-    "review::.::holistic::test_strategy::untested_cli_entry_point",
     "module_scope_lazy_singletons",
     "untested_cli_entry_point"
   ],
@@ -49,7 +39,7 @@
       "skipped_at_scan": 138
     }
   },
-  "active_cluster": null,
+  "active_cluster": "output-structural-debt",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -1410,20 +1400,20 @@
     "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers": {
       "issue_id": "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
       "created_at": "2026-03-20T02:17:39+00:00",
-      "cluster": "output-structural-debt",
-      "updated_at": "2026-03-20T02:17:39+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-20T02:37:33+00:00"
     },
     "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle": {
       "issue_id": "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
       "created_at": "2026-03-20T02:17:39+00:00",
-      "cluster": "output-structural-debt",
-      "updated_at": "2026-03-20T02:17:39+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-20T02:37:33+00:00"
     },
     "review::.::holistic::dependency_health::type_only_import_cycle_output": {
       "issue_id": "review::.::holistic::dependency_health::type_only_import_cycle_output",
       "created_at": "2026-03-20T02:17:39+00:00",
-      "cluster": "output-structural-debt",
-      "updated_at": "2026-03-20T02:17:39+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-20T02:37:34+00:00"
     },
     "review::.::holistic::incomplete_migration::old_summary_api_dead_code": {
       "issue_id": "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
@@ -1434,44 +1424,44 @@
     "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter": {
       "issue_id": "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "quick-consistency-fixes",
-      "updated_at": "2026-03-20T02:17:40+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-20T02:37:15+00:00"
     },
     "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector": {
       "issue_id": "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "quick-consistency-fixes",
-      "updated_at": "2026-03-20T02:17:40+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-20T02:37:16+00:00"
     },
     "review::.::holistic::type_safety::inline_action_unions_github_summary": {
       "issue_id": "review::.::holistic::type_safety::inline_action_unions_github_summary",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "quick-consistency-fixes",
-      "updated_at": "2026-03-20T02:17:40+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-20T02:37:17+00:00"
     },
     "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "quick-consistency-fixes",
-      "updated_at": "2026-03-20T02:17:40+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-20T02:37:17+00:00"
     },
     "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors": {
       "issue_id": "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "quick-consistency-fixes",
-      "updated_at": "2026-03-20T02:17:40+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-20T02:37:18+00:00"
     },
     "review::.::holistic::initialization_coupling::module_scope_lazy_singletons": {
       "issue_id": "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "cli-cleanup",
-      "updated_at": "2026-03-20T02:17:40+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-20T02:37:34+00:00"
     },
     "review::.::holistic::test_strategy::untested_cli_entry_point": {
       "issue_id": "review::.::holistic::test_strategy::untested_cli_entry_point",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "cli-cleanup",
-      "updated_at": "2026-03-20T02:17:40+00:00"
+      "cluster": null,
+      "updated_at": "2026-03-20T02:37:35+00:00"
     }
   },
   "clusters": {
@@ -2287,12 +2277,12 @@
       "name": "output-structural-debt",
       "description": "Fix import cycle between sync-report.ts and unified-summary.ts, delete dead output barrel",
       "issue_ids": [
-        "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
-        "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
-        "review::.::holistic::dependency_health::type_only_import_cycle_output",
         "output_sync_report_unified_summary_cycle",
         "type_only_import_cycle_output",
-        "output_barrel_zero_consumers"
+        "output_barrel_zero_consumers",
+        "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+        "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+        "review::.::holistic::dependency_health::type_only_import_cycle_output"
       ],
       "created_at": "2026-03-20T02:17:17+00:00",
       "updated_at": "2026-03-20T02:22:45+00:00",
@@ -2374,16 +2364,16 @@
       "name": "quick-consistency-fixes",
       "description": "Standalone 1-2 file fixes: restating comments, options bag, error wrapping, type alias usage",
       "issue_ids": [
-        "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
-        "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
-        "review::.::holistic::type_safety::inline_action_unions_github_summary",
-        "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
-        "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
         "duplicated_restating_comments_formatter",
         "restating_check_comments_repo_detector",
         "inline_action_unions_github_summary",
         "resolve_github_token_positional_params",
-        "gitops_writeFile_unwrapped_fs_errors"
+        "gitops_writeFile_unwrapped_fs_errors",
+        "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+        "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+        "review::.::holistic::type_safety::inline_action_unions_github_summary",
+        "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+        "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors"
       ],
       "created_at": "2026-03-20T02:17:18+00:00",
       "updated_at": "2026-03-20T02:22:30+00:00",
@@ -2441,10 +2431,10 @@
       "name": "cli-cleanup",
       "description": "Fix module-level singletons and add unit tests for CLI entry point",
       "issue_ids": [
-        "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
-        "review::.::holistic::test_strategy::untested_cli_entry_point",
         "module_scope_lazy_singletons",
-        "untested_cli_entry_point"
+        "untested_cli_entry_point",
+        "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+        "review::.::holistic::test_strategy::untested_cli_entry_point"
       ],
       "created_at": "2026-03-20T02:17:18+00:00",
       "updated_at": "2026-03-20T02:22:01+00:00",
@@ -4611,17 +4601,9 @@
     }
   },
   "promoted_ids": [
-    "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
-    "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
-    "review::.::holistic::dependency_health::type_only_import_cycle_output",
     "output_sync_report_unified_summary_cycle",
     "type_only_import_cycle_output",
     "output_barrel_zero_consumers",
-    "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
-    "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
-    "review::.::holistic::type_safety::inline_action_unions_github_summary",
-    "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
-    "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
     "duplicated_restating_comments_formatter",
     "restating_check_comments_repo_detector",
     "inline_action_unions_github_summary",
@@ -4629,8 +4611,6 @@
     "gitops_writeFile_unwrapped_fs_errors",
     "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
     "old_summary_api_dead_code",
-    "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
-    "review::.::holistic::test_strategy::untested_cli_entry_point",
     "module_scope_lazy_singletons",
     "untested_cli_entry_point"
   ],
@@ -12451,6 +12431,267 @@
         "strategy_len": 388,
         "coverage": "11/11"
       }
+    },
+    {
+      "timestamp": "2026-03-20T02:23:49+00:00",
+      "action": "focus",
+      "issue_ids": [],
+      "cluster_name": "output-structural-debt",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "action": "set"
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:37:15+00:00",
+      "action": "done",
+      "issue_ids": [
+        "duplicated_restating_comments_formatter"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed 4 restating comments from buildHeaderComment and buildCommentOnlyYaml in src/config/formatter.ts",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:37:15+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed 4 restating comments from buildHeaderComment and buildCommentOnlyYaml in src/config/formatter.ts",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:37:16+00:00",
+      "action": "done",
+      "issue_ids": [
+        "restating_check_comments_repo_detector"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed 4 Check for X comments from detectRepoType in src/shared/repo-detector.ts, kept URL format comments",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:37:16+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed 4 Check for X comments from detectRepoType in src/shared/repo-detector.ts, kept URL format comments",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:37:16+00:00",
+      "action": "done",
+      "issue_ids": [
+        "inline_action_unions_github_summary"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Replaced inline action unions with imported SettingsAction type alias in RulesetPlanDetail and LabelsPlanDetail",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:37:17+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::type_safety::inline_action_unions_github_summary"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Replaced inline action unions with imported SettingsAction type alias in RulesetPlanDetail and LabelsPlanDetail",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:37:17+00:00",
+      "action": "done",
+      "issue_ids": [
+        "resolve_github_token_positional_params"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Converted resolveGitHubToken from 5 positional params to ResolveGitHubTokenOptions bag, updated 2 call sites and 7 tests",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:37:17+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Converted resolveGitHubToken from 5 positional params to ResolveGitHubTokenOptions bag, updated 2 call sites and 7 tests",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:37:17+00:00",
+      "action": "done",
+      "issue_ids": [
+        "gitops_writeFile_unwrapped_fs_errors"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Wrapped writeFile/cleanWorkspace/setExecutable fs operations in try-catch throwing SyncError in git-ops.ts",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:37:18+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Wrapped writeFile/cleanWorkspace/setExecutable fs operations in try-catch throwing SyncError in git-ops.ts",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:37:32+00:00",
+      "action": "done",
+      "issue_ids": [
+        "output_barrel_zero_consumers"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Deleted src/output/index.ts barrel file entirely \u2014 zero consumers confirmed by grep across src/ and test/",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:37:33+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Deleted src/output/index.ts barrel file entirely \u2014 zero consumers confirmed by grep across src/ and test/",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:37:33+00:00",
+      "action": "done",
+      "issue_ids": [
+        "output_sync_report_unified_summary_cycle"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Extracted SyncReport/RepoFileChanges/ReportFileChange types to src/output/types.ts, breaking the circular import",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:37:33+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Extracted SyncReport/RepoFileChanges/ReportFileChange types to src/output/types.ts, breaking the circular import",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:37:33+00:00",
+      "action": "done",
+      "issue_ids": [
+        "type_only_import_cycle_output"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Same fix as output_sync_report_unified_summary_cycle \u2014 extracted types to output/types.ts breaks both the value and type cycle",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:37:34+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::dependency_health::type_only_import_cycle_output"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Same fix as output_sync_report_unified_summary_cycle \u2014 extracted types to output/types.ts breaks both the value and type cycle",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:37:34+00:00",
+      "action": "done",
+      "issue_ids": [
+        "module_scope_lazy_singletons"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added reset of _defaultExecutor and _logger to undefined at the start of each runSync call in sync-command.ts",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:37:34+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::initialization_coupling::module_scope_lazy_singletons"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added reset of _defaultExecutor and _logger to undefined at the start of each runSync call in sync-command.ts",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:37:35+00:00",
+      "action": "done",
+      "issue_ids": [
+        "untested_cli_entry_point"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Extracted parseMergeMode and parseMergeStrategy as exported functions, added 13 unit tests in test/unit/program.test.ts",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:37:35+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::untested_cli_entry_point"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Extracted parseMergeMode and parseMergeStrategy as exported functions, added 13 unit tests in test/unit/program.test.ts",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing."
+      }
     }
   ],
   "epic_triage_meta": {
@@ -12910,7 +13151,18 @@
       "cluster_name": null
     }
   ],
-  "uncommitted_issues": [],
+  "uncommitted_issues": [
+    "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+    "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+    "review::.::holistic::type_safety::inline_action_unions_github_summary",
+    "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+    "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+    "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+    "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+    "review::.::holistic::dependency_health::type_only_import_cycle_output",
+    "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+    "review::.::holistic::test_strategy::untested_cli_entry_point"
+  ],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 138,

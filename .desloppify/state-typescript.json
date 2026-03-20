@@ -12,8 +12,8 @@
     "auto_resolved": 1145,
     "deferred": 0,
     "false_positive": 12,
-    "fixed": 81,
-    "open": 181,
+    "fixed": 91,
+    "open": 171,
     "triaged_out": 0,
     "wontfix": 0,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 1,
-        "fixed": 38,
-        "open": 4,
+        "fixed": 42,
+        "open": 0,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -30,8 +30,8 @@
         "auto_resolved": 420,
         "deferred": 0,
         "false_positive": 9,
-        "fixed": 31,
-        "open": 28,
+        "fixed": 37,
+        "open": 22,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -92,7 +92,10 @@
     "cross_module_architecture": {
       "score": 89.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:10:34+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-03-20T02:37:33+00:00"
     },
     "convention_outlier": {
       "score": 93.0,
@@ -102,7 +105,10 @@
     "error_consistency": {
       "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:10:34+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-03-20T02:37:18+00:00"
     },
     "abstraction_fitness": {
       "score": 90.5,
@@ -128,7 +134,10 @@
     "api_surface_coherence": {
       "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:10:34+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-03-20T02:37:17+00:00"
     },
     "authorization_consistency": {
       "score": 94.0,
@@ -138,7 +147,10 @@
     "ai_generated_debt": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:10:34+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-03-20T02:37:16+00:00"
     },
     "incomplete_migration": {
       "score": 96.0,
@@ -181,12 +193,18 @@
     "dependency_health": {
       "score": 95.0,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:10:34+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-03-20T02:37:34+00:00"
     },
     "initialization_coupling": {
       "score": 93.0,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:10:34+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-03-20T02:37:34+00:00"
     },
     "logic_clarity": {
       "score": 92.5,
@@ -204,12 +222,18 @@
     "test_strategy": {
       "score": 90.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:10:34+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-03-20T02:37:35+00:00"
     },
     "type_safety": {
       "score": 93.5,
       "source": "holistic",
-      "assessed_at": "2026-03-20T02:10:34+00:00"
+      "assessed_at": "2026-03-20T02:10:34+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-03-20T02:37:16+00:00"
     }
   },
   "lang_capabilities": {
@@ -3023,13 +3047,13 @@
       "strict": 92.5,
       "verified_strict_score": 92.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.925,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.75,
           "assessment_score": 92.5,
           "placeholder": false,
@@ -3044,13 +3068,13 @@
       "strict": 91.5,
       "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.915,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
@@ -3128,13 +3152,13 @@
       "strict": 89.5,
       "verified_strict_score": 89.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.895,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 1.05,
           "assessment_score": 89.5,
           "placeholder": false,
@@ -3149,13 +3173,13 @@
       "strict": 95.0,
       "verified_strict_score": 95.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.95,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.5,
           "assessment_score": 95.0,
           "placeholder": false,
@@ -3191,13 +3215,13 @@
       "strict": 91.5,
       "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.915,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
@@ -3254,13 +3278,13 @@
       "strict": 93.0,
       "verified_strict_score": 93.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.93,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.7,
           "assessment_score": 93.0,
           "placeholder": false,
@@ -3380,13 +3404,13 @@
       "strict": 90.5,
       "verified_strict_score": 90.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.905,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.95,
           "assessment_score": 90.5,
           "placeholder": false,
@@ -3401,13 +3425,13 @@
       "strict": 93.5,
       "verified_strict_score": 93.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.935,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.65,
           "assessment_score": 93.5,
           "placeholder": false,
@@ -56786,11 +56810,11 @@
         "reasoning": "",
         "summary_hash": "2e7ab5b5"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Extracted SyncReport/RepoFileChanges/ReportFileChange types to src/output/types.ts, breaking the circular import",
       "first_seen": "2026-03-20T02:10:34+00:00",
       "last_seen": "2026-03-20T02:10:34+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T02:37:33+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -56798,7 +56822,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing.",
+        "attested_at": "2026-03-20T02:37:33+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers": {
       "id": "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
@@ -56825,11 +56855,11 @@
         "reasoning": "",
         "summary_hash": "bcec1de4"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Deleted src/output/index.ts barrel file entirely \u2014 zero consumers confirmed by grep across src/ and test/",
       "first_seen": "2026-03-20T02:10:34+00:00",
       "last_seen": "2026-03-20T02:10:34+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T02:37:32+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -56837,7 +56867,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing.",
+        "attested_at": "2026-03-20T02:37:32+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors": {
       "id": "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
@@ -56860,11 +56896,11 @@
         "reasoning": "",
         "summary_hash": "10a935c5"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Wrapped writeFile/cleanWorkspace/setExecutable fs operations in try-catch throwing SyncError in git-ops.ts",
       "first_seen": "2026-03-20T02:10:34+00:00",
       "last_seen": "2026-03-20T02:10:34+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T02:37:18+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -56872,7 +56908,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing.",
+        "attested_at": "2026-03-20T02:37:18+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::dependency_health::type_only_import_cycle_output": {
       "id": "review::.::holistic::dependency_health::type_only_import_cycle_output",
@@ -56897,11 +56939,11 @@
         "reasoning": "",
         "summary_hash": "b60346e8"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Same fix as output_sync_report_unified_summary_cycle \u2014 extracted types to output/types.ts breaks both the value and type cycle",
       "first_seen": "2026-03-20T02:10:34+00:00",
       "last_seen": "2026-03-20T02:10:34+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T02:37:34+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -56909,7 +56951,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing.",
+        "attested_at": "2026-03-20T02:37:34+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::settings_report_parallel_rendering": {
       "id": "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
@@ -56974,11 +57022,11 @@
         "reasoning": "",
         "summary_hash": "51c3bc34"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Extracted parseMergeMode and parseMergeStrategy as exported functions, added 13 unit tests in test/unit/program.test.ts",
       "first_seen": "2026-03-20T02:10:34+00:00",
       "last_seen": "2026-03-20T02:10:34+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T02:37:35+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -56986,7 +57034,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing.",
+        "attested_at": "2026-03-20T02:37:35+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params": {
       "id": "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
@@ -57011,11 +57065,11 @@
         "reasoning": "",
         "summary_hash": "66b8245e"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Converted resolveGitHubToken from 5 positional params to ResolveGitHubTokenOptions bag, updated 2 call sites and 7 tests",
       "first_seen": "2026-03-20T02:10:34+00:00",
       "last_seen": "2026-03-20T02:10:34+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T02:37:17+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -57023,7 +57077,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing.",
+        "attested_at": "2026-03-20T02:37:17+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector": {
       "id": "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
@@ -57046,11 +57106,11 @@
         "reasoning": "",
         "summary_hash": "252be79c"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Removed 4 Check for X comments from detectRepoType in src/shared/repo-detector.ts, kept URL format comments",
       "first_seen": "2026-03-20T02:10:34+00:00",
       "last_seen": "2026-03-20T02:10:34+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T02:37:16+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -57058,7 +57118,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing.",
+        "attested_at": "2026-03-20T02:37:16+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter": {
       "id": "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
@@ -57081,11 +57147,11 @@
         "reasoning": "",
         "summary_hash": "ea2ae107"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Removed 4 restating comments from buildHeaderComment and buildCommentOnlyYaml in src/config/formatter.ts",
       "first_seen": "2026-03-20T02:10:34+00:00",
       "last_seen": "2026-03-20T02:10:34+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T02:37:15+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -57093,7 +57159,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing.",
+        "attested_at": "2026-03-20T02:37:15+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::incomplete_migration::old_summary_api_dead_code": {
       "id": "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
@@ -57154,11 +57226,11 @@
         "reasoning": "",
         "summary_hash": "5fd81d60"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Added reset of _defaultExecutor and _logger to undefined at the start of each runSync call in sync-command.ts",
       "first_seen": "2026-03-20T02:10:34+00:00",
       "last_seen": "2026-03-20T02:10:34+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T02:37:34+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -57166,7 +57238,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing.",
+        "attested_at": "2026-03-20T02:37:34+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::logic_clarity::async_no_await_pr_creator": {
       "id": "review::.::holistic::logic_clarity::async_no_await_pr_creator",
@@ -57229,11 +57307,11 @@
         "reasoning": "",
         "summary_hash": "44779ffd"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Replaced inline action unions with imported SettingsAction type alias in RulesetPlanDetail and LabelsPlanDetail",
       "first_seen": "2026-03-20T02:10:34+00:00",
       "last_seen": "2026-03-20T02:10:34+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-20T02:37:16+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -57241,7 +57319,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made the code change described in the note and I am not gaming the score by resolving without fixing.",
+        "attested_at": "2026-03-20T02:37:16+00:00",
+        "scan_verified": false
+      }
     }
   },
   "concern_dismissals": {
