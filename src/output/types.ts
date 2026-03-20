@@ -1,4 +1,4 @@
-import type { FileChangeDetail } from "../sync/types.js";
+import type { FileChangeDetail } from "../sync/index.js";
 
 export type ReportFileChange = FileChangeDetail;
 

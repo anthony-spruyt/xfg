@@ -58,7 +58,7 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
       filesWithDeleteOrphaned
     );
 
-    await this.manifestManager.deleteOrphans(
+    this.manifestManager.deleteOrphans(
       filesToDelete,
       { dryRun: dryRun, noDelete: noDelete },
       { gitOps: session.gitOps, log: this.log, fileChanges }

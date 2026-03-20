@@ -258,7 +258,13 @@ export class GitOps implements ILocalGitOps {
       return;
     }
 
-    rmSync(filePath);
+    try {
+      rmSync(filePath);
+    } catch (error) {
+      throw new SyncError(
+        `Failed to delete file '${fileName}': ${toErrorMessage(error)}`
+      );
+    }
   }
 
   /**

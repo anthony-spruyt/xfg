@@ -1,7 +1,7 @@
 import { appendFileSync } from "node:fs";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { DebugLog } from "../shared/logger.js";
-import type { SettingsAction } from "../settings/base-processor.js";
+import type { SettingsAction } from "../settings/index.js";
 
 export type MergeOutcome = "manual" | "auto" | "force" | "direct";
 

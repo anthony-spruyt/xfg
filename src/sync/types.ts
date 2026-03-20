@@ -81,7 +81,7 @@ export interface IManifestManager {
     filesToDelete: string[],
     options: OrphanDeleteOptions,
     deps: OrphanDeleteDeps
-  ): Promise<void>;
+  ): void;
 
   saveUpdatedManifest(
     workDir: string,
