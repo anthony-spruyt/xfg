@@ -1,12 +1,54 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-19T13:00:16+00:00",
+  "updated": "2026-03-20T02:23:27+00:00",
   "queue_order": [
-    "review::.::holistic::incomplete_migration::old_summary_api_coexistence"
+    "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+    "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+    "review::.::holistic::dependency_health::type_only_import_cycle_output",
+    "output_sync_report_unified_summary_cycle",
+    "type_only_import_cycle_output",
+    "output_barrel_zero_consumers",
+    "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+    "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+    "review::.::holistic::type_safety::inline_action_unions_github_summary",
+    "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+    "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+    "duplicated_restating_comments_formatter",
+    "restating_check_comments_repo_detector",
+    "inline_action_unions_github_summary",
+    "resolve_github_token_positional_params",
+    "gitops_writeFile_unwrapped_fs_errors",
+    "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
+    "old_summary_api_dead_code",
+    "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+    "review::.::holistic::test_strategy::untested_cli_entry_point",
+    "module_scope_lazy_singletons",
+    "untested_cli_entry_point"
   ],
   "deferred": [],
-  "skipped": {},
+  "skipped": {
+    "review::.::holistic::logic_clarity::async_no_await_pr_creator": {
+      "issue_id": "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this against the code and I am not gaming the score. Removing async keyword is a behavioral noop \u2014 only affects stack traces. The async keyword documents intent.",
+      "created_at": "2026-03-20T02:18:40+00:00",
+      "review_after": null,
+      "skipped_at_scan": 138
+    },
+    "review::.::holistic::low_level_elegance::settings_report_parallel_rendering": {
+      "issue_id": "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this against the code and I am not gaming the score. Extracting a strategy pattern would add more abstraction complexity than the duplication it removes. YAGNI.",
+      "created_at": "2026-03-20T02:18:40+00:00",
+      "review_after": null,
+      "skipped_at_scan": 138
+    }
+  },
   "active_cluster": null,
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
@@ -1364,6 +1406,72 @@
       "created_at": "2026-03-19T11:33:42+00:00",
       "cluster": null,
       "updated_at": "2026-03-19T12:47:37+00:00"
+    },
+    "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers": {
+      "issue_id": "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+      "created_at": "2026-03-20T02:17:39+00:00",
+      "cluster": "output-structural-debt",
+      "updated_at": "2026-03-20T02:17:39+00:00"
+    },
+    "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle": {
+      "issue_id": "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+      "created_at": "2026-03-20T02:17:39+00:00",
+      "cluster": "output-structural-debt",
+      "updated_at": "2026-03-20T02:17:39+00:00"
+    },
+    "review::.::holistic::dependency_health::type_only_import_cycle_output": {
+      "issue_id": "review::.::holistic::dependency_health::type_only_import_cycle_output",
+      "created_at": "2026-03-20T02:17:39+00:00",
+      "cluster": "output-structural-debt",
+      "updated_at": "2026-03-20T02:17:39+00:00"
+    },
+    "review::.::holistic::incomplete_migration::old_summary_api_dead_code": {
+      "issue_id": "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
+      "created_at": "2026-03-20T02:17:40+00:00",
+      "cluster": "output-dead-code",
+      "updated_at": "2026-03-20T02:17:40+00:00"
+    },
+    "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter": {
+      "issue_id": "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+      "created_at": "2026-03-20T02:17:40+00:00",
+      "cluster": "quick-consistency-fixes",
+      "updated_at": "2026-03-20T02:17:40+00:00"
+    },
+    "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector": {
+      "issue_id": "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+      "created_at": "2026-03-20T02:17:40+00:00",
+      "cluster": "quick-consistency-fixes",
+      "updated_at": "2026-03-20T02:17:40+00:00"
+    },
+    "review::.::holistic::type_safety::inline_action_unions_github_summary": {
+      "issue_id": "review::.::holistic::type_safety::inline_action_unions_github_summary",
+      "created_at": "2026-03-20T02:17:40+00:00",
+      "cluster": "quick-consistency-fixes",
+      "updated_at": "2026-03-20T02:17:40+00:00"
+    },
+    "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params": {
+      "issue_id": "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+      "created_at": "2026-03-20T02:17:40+00:00",
+      "cluster": "quick-consistency-fixes",
+      "updated_at": "2026-03-20T02:17:40+00:00"
+    },
+    "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors": {
+      "issue_id": "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+      "created_at": "2026-03-20T02:17:40+00:00",
+      "cluster": "quick-consistency-fixes",
+      "updated_at": "2026-03-20T02:17:40+00:00"
+    },
+    "review::.::holistic::initialization_coupling::module_scope_lazy_singletons": {
+      "issue_id": "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+      "created_at": "2026-03-20T02:17:40+00:00",
+      "cluster": "cli-cleanup",
+      "updated_at": "2026-03-20T02:17:40+00:00"
+    },
+    "review::.::holistic::test_strategy::untested_cli_entry_point": {
+      "issue_id": "review::.::holistic::test_strategy::untested_cli_entry_point",
+      "created_at": "2026-03-20T02:17:40+00:00",
+      "cluster": "cli-cleanup",
+      "updated_at": "2026-03-20T02:17:40+00:00"
     }
   },
   "clusters": {
@@ -2172,6 +2280,214 @@
           "issue_refs": [],
           "effort": "trivial",
           "done": true
+        }
+      ]
+    },
+    "output-structural-debt": {
+      "name": "output-structural-debt",
+      "description": "Fix import cycle between sync-report.ts and unified-summary.ts, delete dead output barrel",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+        "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+        "review::.::holistic::dependency_health::type_only_import_cycle_output",
+        "output_sync_report_unified_summary_cycle",
+        "type_only_import_cycle_output",
+        "output_barrel_zero_consumers"
+      ],
+      "created_at": "2026-03-20T02:17:17+00:00",
+      "updated_at": "2026-03-20T02:22:45+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Create src/output/types.ts",
+          "detail": "Move SyncReport, RepoFileChanges, ReportFileChange types from sync-report.ts to output/types.ts",
+          "effort": "small",
+          "issue_refs": [
+            "output_sync_report_unified_summary_cycle",
+            "type_only_import_cycle_output"
+          ]
+        },
+        {
+          "title": "Update imports",
+          "detail": "Change sync-report.ts to import SyncReport, RepoFileChanges from ./types.ts. Change unified-summary.ts to import SyncReport, RepoFileChanges from ./types.ts instead of from ./sync-report.ts. This breaks the circular dependency.",
+          "effort": "small",
+          "issue_refs": [
+            "output_sync_report_unified_summary_cycle",
+            "type_only_import_cycle_output"
+          ]
+        },
+        {
+          "title": "Delete output/index.ts",
+          "detail": "Delete the file src/output/index.ts entirely. It has zero consumers \u2014 grep confirms no imports reference this barrel. The shared barrel was previously deleted for the same reason.",
+          "effort": "trivial",
+          "issue_refs": [
+            "output_barrel_zero_consumers"
+          ]
+        }
+      ]
+    },
+    "output-dead-code": {
+      "name": "output-dead-code",
+      "description": "Remove dead old summary API (formatSummary/writeSummary/SummaryData) superseded by unified-summary",
+      "issue_ids": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
+        "old_summary_api_dead_code"
+      ],
+      "created_at": "2026-03-20T02:17:17+00:00",
+      "updated_at": "2026-03-20T02:22:02+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Remove old summary API",
+          "detail": "Delete formatSummary, writeSummary, shouldWriteSummary, SummaryData, RepoResult and related dead types from github-summary.ts. Delete all of summary-utils.ts. Keep writeGitHubStepSummary.",
+          "effort": "medium",
+          "issue_refs": [
+            "old_summary_api_dead_code"
+          ]
+        },
+        {
+          "title": "Update tests",
+          "detail": "Check test/unit/github-summary.test.ts and test/unit/summary-utils.test.ts for tests only exercising dead functions. If unified-summary.test.ts covers equivalent scenarios, delete the dead test files. Otherwise migrate relevant test cases.",
+          "effort": "medium",
+          "issue_refs": [
+            "old_summary_api_dead_code"
+          ]
+        }
+      ],
+      "depends_on_clusters": [
+        "output-structural-debt"
+      ]
+    },
+    "quick-consistency-fixes": {
+      "name": "quick-consistency-fixes",
+      "description": "Standalone 1-2 file fixes: restating comments, options bag, error wrapping, type alias usage",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+        "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+        "review::.::holistic::type_safety::inline_action_unions_github_summary",
+        "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+        "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+        "duplicated_restating_comments_formatter",
+        "restating_check_comments_repo_detector",
+        "inline_action_unions_github_summary",
+        "resolve_github_token_positional_params",
+        "gitops_writeFile_unwrapped_fs_errors"
+      ],
+      "created_at": "2026-03-20T02:17:18+00:00",
+      "updated_at": "2026-03-20T02:22:30+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Remove restating comments from formatter.ts",
+          "detail": "In src/config/formatter.ts, remove the restating comments at lines 32-33 ('// Add yaml-language-server schema directive first') and 36-37 ('// Add custom header lines') in buildHeaderComment, and the identical comments at lines 57-58 and 61-62 in buildCommentOnlyYaml. The if-guards and parameter names already communicate intent.",
+          "effort": "trivial",
+          "issue_refs": [
+            "duplicated_restating_comments_formatter"
+          ]
+        },
+        {
+          "title": "Remove restating comments from repo-detector.ts",
+          "detail": "Remove 4 '// Check for X' comments in detectRepoType. Keep URL format comments in parseGitLabUrl.",
+          "effort": "trivial",
+          "issue_refs": [
+            "restating_check_comments_repo_detector"
+          ]
+        },
+        {
+          "title": "Use SettingsAction type alias in github-summary.ts",
+          "detail": "Replace inline 'create'|'update'|'delete'|'unchanged' with SettingsAction in RulesetPlanDetail and LabelsPlanDetail",
+          "effort": "trivial",
+          "issue_refs": [
+            "inline_action_unions_github_summary"
+          ]
+        },
+        {
+          "title": "Convert resolveGitHubToken to options bag",
+          "detail": "Create ResolveGitHubTokenOptions interface, refactor function signature, update 2 call sites",
+          "effort": "small",
+          "issue_refs": [
+            "resolve_github_token_positional_params"
+          ]
+        },
+        {
+          "title": "Wrap GitOps filesystem errors in SyncError",
+          "detail": "Add try-catch around writeFileSync/mkdirSync in writeFile(), chmodSync in setExecutable(), mkdirSync/rmSync in cleanWorkspace()",
+          "effort": "small",
+          "issue_refs": [
+            "gitops_writeFile_unwrapped_fs_errors"
+          ]
+        }
+      ]
+    },
+    "cli-cleanup": {
+      "name": "cli-cleanup",
+      "description": "Fix module-level singletons and add unit tests for CLI entry point",
+      "issue_ids": [
+        "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+        "review::.::holistic::test_strategy::untested_cli_entry_point",
+        "module_scope_lazy_singletons",
+        "untested_cli_entry_point"
+      ],
+      "created_at": "2026-03-20T02:17:18+00:00",
+      "updated_at": "2026-03-20T02:22:01+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Move singletons to local scope",
+          "detail": "Move _defaultExecutor and _logger inside runSync as local variables, created fresh each call",
+          "effort": "small",
+          "issue_refs": [
+            "module_scope_lazy_singletons"
+          ]
+        },
+        {
+          "title": "Extract and test CLI validators",
+          "detail": "Extract parseMergeMode and parseMergeStrategy as named exports, add unit tests in test/unit/program.test.ts",
+          "effort": "small",
+          "issue_refs": [
+            "untested_cli_entry_point"
+          ]
+        },
+        {
+          "title": "Verify test coverage",
+          "detail": "Run npm test and npm run test:typecheck to verify singleton refactor and validator extraction didn't break anything",
+          "effort": "trivial",
+          "issue_refs": [
+            "module_scope_lazy_singletons",
+            "untested_cli_entry_point"
+          ]
+        },
+        {
+          "title": "Update imports if needed",
+          "detail": "Check if parseMergeMode/parseMergeStrategy are referenced from program.ts inline callbacks, update to use the extracted exports",
+          "effort": "trivial",
+          "issue_refs": [
+            "untested_cli_entry_point"
+          ]
         }
       ]
     }
@@ -4294,7 +4610,30 @@
       "candidates": []
     }
   },
-  "promoted_ids": [],
+  "promoted_ids": [
+    "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+    "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+    "review::.::holistic::dependency_health::type_only_import_cycle_output",
+    "output_sync_report_unified_summary_cycle",
+    "type_only_import_cycle_output",
+    "output_barrel_zero_consumers",
+    "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+    "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+    "review::.::holistic::type_safety::inline_action_unions_github_summary",
+    "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+    "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+    "duplicated_restating_comments_formatter",
+    "restating_check_comments_repo_detector",
+    "inline_action_unions_github_summary",
+    "resolve_github_token_positional_params",
+    "gitops_writeFile_unwrapped_fs_errors",
+    "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
+    "old_summary_api_dead_code",
+    "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+    "review::.::holistic::test_strategy::untested_cli_entry_point",
+    "module_scope_lazy_singletons",
+    "untested_cli_entry_point"
+  ],
   "plan_start_scores": {
     "strict": 86.7,
     "overall": 91.1,
@@ -11451,353 +11790,940 @@
       "detail": {
         "scan_count": 136
       }
+    },
+    {
+      "timestamp": "2026-03-19T13:00:51+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::incomplete_migration::old_summary_api_coexistence"
+        ],
+        "added_to_queue": [],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 0,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 6,
+        "stale_pruned_from_queue": [],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::authorization_consistency",
+          "subjective::incomplete_migration"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:10:35+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+          "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+          "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+          "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+          "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+          "review::.::holistic::dependency_health::type_only_import_cycle_output",
+          "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+          "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
+          "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+          "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+          "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+          "review::.::holistic::test_strategy::untested_cli_entry_point",
+          "review::.::holistic::type_safety::inline_action_unions_github_summary"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+          "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+          "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+          "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+          "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+          "review::.::holistic::dependency_health::type_only_import_cycle_output",
+          "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+          "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
+          "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+          "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+          "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+          "review::.::holistic::test_strategy::untested_cli_entry_point",
+          "review::.::holistic::type_safety::inline_action_unions_github_summary"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 13,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 7,
+        "stale_pruned_from_queue": [
+          "review::.::holistic::incomplete_migration::old_summary_api_coexistence"
+        ],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:13:55+00:00",
+      "action": "triage_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 13,
+        "cited_ids": [],
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:16:07+00:00",
+      "action": "triage_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 13,
+        "cited_ids": [
+          "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+          "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+          "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+          "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+          "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+          "review::.::holistic::dependency_health::type_only_import_cycle_output",
+          "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+          "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
+          "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+          "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+          "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+          "review::.::holistic::test_strategy::untested_cli_entry_point",
+          "review::.::holistic::type_safety::inline_action_unions_github_summary"
+        ],
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:16:14+00:00",
+      "action": "triage_confirm_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "Verified all 13 review issues against actual source code with line-number citations across dimensions: ai_generated_debt, api_surface_coherence, cross_module_architecture, dependency_health, error_consistency, incomplete_migration, initialization_coupling, logic_clarity, low_level_elegance, test_strategy, type_safety. Found 9 genuine, 1 exaggerated, 1 not-worth-it, 1 false-positive, 1 duplicate."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:16:49+00:00",
+      "action": "triage_reflect",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 13,
+        "reuse": false,
+        "recurring_dims": [
+          "ai_generated_debt",
+          "api_surface_coherence",
+          "cross_module_architecture",
+          "error_consistency",
+          "incomplete_migration",
+          "low_level_elegance",
+          "type_safety"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:17:06+00:00",
+      "action": "triage_confirm_reflect",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "Reflect strategy covers all 13 issues: output-structural-debt cluster addresses cross_module_architecture and dependency_health import cycle, output-dead-code handles incomplete_migration dead summary API, quick-consistency-fixes bundles ai_generated_debt and api_surface_coherence and error_consistency and type_safety standalone fixes, cli-cleanup for initialization_coupling and test_strategy, plus 2 not-worth-it skips for low_level_elegance and logic_clarity."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:17:17+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "output-structural-debt",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Fix import cycle between sync-report.ts and unified-summary.ts, delete dead output barrel",
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:17:17+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "output-dead-code",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Remove dead old summary API (formatSummary/writeSummary/SummaryData) superseded by unified-summary",
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:17:18+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "quick-consistency-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Standalone 1-2 file fixes: restating comments, options bag, error wrapping, type alias usage",
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:17:18+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "cli-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Fix module-level singletons and add unit tests for CLI entry point",
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:17:39+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+        "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+        "review::.::holistic::dependency_health::type_only_import_cycle_output"
+      ],
+      "cluster_name": "output-structural-debt",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:17:40+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::incomplete_migration::old_summary_api_dead_code"
+      ],
+      "cluster_name": "output-dead-code",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:17:40+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+        "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+        "review::.::holistic::type_safety::inline_action_unions_github_summary",
+        "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+        "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors"
+      ],
+      "cluster_name": "quick-consistency-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:17:40+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+        "review::.::holistic::test_strategy::untested_cli_entry_point"
+      ],
+      "cluster_name": "cli-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-20T02:18:40+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::async_no_await_pr_creator"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:18:40+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::low_level_elegance::settings_report_parallel_rendering"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:18:50+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "output-structural-debt",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:18:50+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "output-structural-debt",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:18:50+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "output-structural-debt",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:19:40+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "output-dead-code",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:19:40+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "output-dead-code",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:19:41+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "output-dead-code",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:20:06+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-consistency-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:20:06+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-consistency-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:20:07+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-consistency-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:20:07+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-consistency-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:20:07+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-consistency-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:20:14+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "cli-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:20:15+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "cli-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:20:19+00:00",
+      "action": "cluster_reorder",
+      "issue_ids": [],
+      "cluster_name": "output-structural-debt,quick-consistency-fixes,output-dead-code,cli-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "count": 22
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:21:02+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "cli-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:21:02+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "cli-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:21:11+00:00",
+      "action": "triage_organize",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "cluster_count": 27,
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:21:19+00:00",
+      "action": "triage_confirm_organize",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "Organized 11 issues into 4 clusters: output-structural-debt (cross_module_architecture, dependency_health), quick-consistency-fixes (ai_generated_debt, api_surface_coherence, error_consistency, type_safety), output-dead-code (incomplete_migration), cli-cleanup (initialization_coupling, test_strategy). All clusters have action steps with effort tags and issue refs.",
+        "coverage": "11/11"
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:22:02+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "output-structural-debt",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:22:02+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "output-dead-code",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:22:02+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "cli-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:22:01+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "cli-cleanup",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:22:11+00:00",
+      "action": "triage_enrich",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "shallow_count": 0,
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:22:30+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "output-structural-debt",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:22:30+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-consistency-fixes",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:22:45+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "output-structural-debt",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:22:56+00:00",
+      "action": "triage_confirm_enrich",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "All 14 steps have specific file paths and detailed instructions. output-structural-debt covers src/output/types.ts creation, src/output/sync-report.ts and src/output/unified-summary.ts import updates, src/output/index.ts deletion. quick-consistency-fixes covers src/config/formatter.ts, src/shared/repo-detector.ts, src/output/github-summary.ts, src/shared/gh-api-utils.ts, src/vcs/git-ops.ts. Dimensions: cross_module_architecture, dependency_health, ai_generated_debt, type_safety, error_consistency."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:23:10+00:00",
+      "action": "triage_sense_check",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:23:17+00:00",
+      "action": "triage_confirm_sense_check",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "Verified all 14 steps across output-structural-debt, quick-consistency-fixes, output-dead-code, cli-cleanup. File paths exist, line numbers match current source, cross-cluster dependency configured. Covers cross_module_architecture, dependency_health, ai_generated_debt, api_surface_coherence, error_consistency, type_safety, incomplete_migration, initialization_coupling, test_strategy."
+      }
+    },
+    {
+      "timestamp": "2026-03-20T02:23:27+00:00",
+      "action": "triage_complete",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "strategy_len": 388,
+        "coverage": "11/11"
+      }
     }
   ],
   "epic_triage_meta": {
     "triage_stages": {},
-    "issue_snapshot_hash": "7b921849f817380f",
+    "issue_snapshot_hash": "b5115d3f79a6978f",
     "triaged_ids": [
-      "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
-      "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params",
-      "review::.::holistic::contract_coherence::format_pr_body_as_string_cast",
-      "review::.::holistic::convention_outlier::azure_devops_prefix_drift",
-      "review::.::holistic::convention_outlier::residual_filepath_comments",
-      "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types",
-      "review::.::holistic::design_coherence::labels_manual_filter_counting",
-      "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented",
-      "review::.::holistic::design_coherence::sync_diff_line_duplication",
-      "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
-      "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency",
-      "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale",
-      "review::.::holistic::low_level_elegance::inline_label_action_formatting",
-      "review::.::holistic::mid_level_elegance::redundant_manifest_load",
-      "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map",
-      "review::.::holistic::naming_quality::diff_action_vocabulary_divergence",
-      "review::.::holistic::naming_quality::handle_commit_error_param_mismatch",
-      "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads",
-      "review::.::holistic::type_safety::parallel_action_type_aliases"
+      "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+      "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+      "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+      "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+      "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+      "review::.::holistic::dependency_health::type_only_import_cycle_output",
+      "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+      "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
+      "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+      "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+      "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+      "review::.::holistic::test_strategy::untested_cli_entry_point",
+      "review::.::holistic::type_safety::inline_action_unions_github_summary"
     ],
-    "strategy_summary": "Fix all 19 review issues in 7 clusters: quick-cleanups -> import-cleanup -> consolidate-utilities -> type-safety-fixes -> error-handling -> naming-alignment -> mid-level-refactor -> api-refactor. Easy single-edit wins first, structural changes last.",
+    "strategy_summary": "Execute 4 clusters in order: (1) output-structural-debt \u2014 extract types to break import cycle, delete dead barrel, (2) quick-consistency-fixes \u2014 5 standalone fixes in one commit, (3) output-dead-code \u2014 remove old summary API dead code, (4) cli-cleanup \u2014 fix singletons and add CLI validator tests. Skipped 2 items as false positives: async_no_await and settings_report_parallel_rendering.",
     "trigger": "manual_triage",
-    "last_completed_at": "2026-03-19T11:46:12+00:00",
+    "last_completed_at": "2026-03-20T02:23:27+00:00",
     "last_triage": {
-      "completed_at": "2026-03-19T11:46:12+00:00",
+      "completed_at": "2026-03-20T02:23:27+00:00",
       "stages": {
         "observe": {
           "stage": "observe",
-          "report": "19 review issues verified against code. All genuine, no false positives.\n- review::.::holistic::ai_generated_debt::restating_no_action_needed_comments \u2014 genuine, rulesets/processor.ts:148 and labels/processor.ts:149\n- review::.::holistic::convention_outlier::residual_filepath_comments \u2014 genuine, 5 files have path comments, 100 do not\n- review::.::holistic::design_coherence::labels_manual_filter_counting \u2014 genuine, 4 .filter() calls vs countActions\n- review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops \u2014 genuine, git-ops.ts:141\n- review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale \u2014 genuine, 3 stale imports\n- review::.::holistic::naming_quality::handle_commit_error_param_mismatch \u2014 genuine, baseBranch param receives pushBranch\n- review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads \u2014 genuine, lacks overloads\nRoot causes: incomplete consolidation, convention drift, minor quality gaps.",
+          "report": "## Triage Observation Report \u2014 13 Open Review Issues\n\n### GENUINE (9 issues)\n\n- review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter\n  verdict: genuine\n  verdict_reasoning: Verified src/config/formatter.ts. buildHeaderComment (lines 26-46) and buildCommentOnlyYaml (lines 51-70) share identical comment lines like '// Add yaml-language-server schema directive first'. The function/param names make these self-explanatory. Trivial fix \u2014 remove 4 restating comments.\n  files_read: [src/config/formatter.ts]\n  recommendation: Remove the 4 restating comments. Trivial effort.\n\n- review::.::holistic::api_surface_coherence::resolve_github_token_positional_params\n  verdict: genuine\n  verdict_reasoning: Confirmed 5 positional params at src/shared/gh-api-utils.ts line 132: (repoInfo, tokenManager, context, log?, envToken?). Last two optional and confusable. Convention elsewhere (createPR, mergePR, AuthenticatedGitOps) uses options bags.\n  files_read: [src/shared/gh-api-utils.ts, src/sync/auth-options-builder.ts]\n  recommendation: Convert to options bag. Small effort.\n\n- review::.::holistic::cross_module_architecture::output_barrel_zero_consumers\n  verdict: genuine\n  verdict_reasoning: Grep for 'from \"../output/index' and 'from \"./index' inside output/ yields zero hits. All 6 consumers import directly from specific files. Mirrors previously-deleted shared/index.ts.\n  files_read: [src/output/index.ts]\n  recommendation: Delete src/output/index.ts. Trivial.\n\n- review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle\n  verdict: genuine\n  verdict_reasoning: sync-report.ts line 4 imports renderSyncLines from unified-summary.ts (value import). unified-summary.ts line 4 imports type { SyncReport, RepoFileChanges } from sync-report.ts. Real structural cycle introduced by prior round's duplication fix.\n  files_read: [src/output/sync-report.ts, src/output/unified-summary.ts]\n  recommendation: Move SyncReport/RepoFileChanges types to output/types.ts to break cycle.\n\n- review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors\n  verdict: genuine\n  verdict_reasoning: writeFile() at git-ops.ts:85-98 has no try-catch around writeFileSync/mkdirSync. All three PR strategies and manifest.ts wrap identical calls in SyncError. Consistent pattern violation.\n  files_read: [src/vcs/git-ops.ts, src/vcs/github-pr-strategy.ts, src/sync/manifest.ts]\n  recommendation: Add SyncError wrapping. Small effort.\n\n- review::.::holistic::initialization_coupling::module_scope_lazy_singletons\n  verdict: genuine\n  verdict_reasoning: Lines 42-53 of sync-command.ts have module-level let _defaultExecutor and let _logger initialized via ??= pattern. Second runSync call in same process inherits first call's state.\n  files_read: [src/cli/sync-command.ts]\n  recommendation: Move to local variables inside runSync. Small effort.\n\n- review::.::holistic::test_strategy::untested_cli_entry_point\n  verdict: genuine\n  verdict_reasoning: program.ts contains validation callbacks for MergeMode and MergeStrategy (lines 67-88) that are pure testable functions. No unit test file exists. Only exercised via integration tests.\n  files_read: [src/cli/program.ts]\n  recommendation: Extract validators and add unit tests. Small effort.\n\n- review::.::holistic::type_safety::inline_action_unions_github_summary\n  verdict: genuine\n  verdict_reasoning: RulesetPlanDetail.action (line 17) and LabelsPlanDetail.action (line 33) use inline 'create'|'update'|'delete'|'unchanged' while SettingsAction is imported on line 4. One-line fix each.\n  files_read: [src/output/github-summary.ts]\n  recommendation: Replace inline unions with SettingsAction. Trivial.\n\n- review::.::holistic::incomplete_migration::old_summary_api_dead_code\n  verdict: genuine (but verify test overlap first)\n  verdict_reasoning: formatSummary, writeSummary, shouldWriteSummary, SummaryData, and all of summary-utils.ts have zero production callers. writeUnifiedSummary is the active path. Dead code kept alive only by tests.\n  files_read: [src/output/github-summary.ts, src/output/summary-utils.ts, src/output/unified-summary.ts]\n  recommendation: Verify test overlap with unified-summary tests, then remove dead code. Medium effort.\n\n### EXAGGERATED (1 issue)\n\n- review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector\n  verdict: exaggerated\n  verdict_reasoning: Issue claims 10+ restating comments. Actual count: 4-5 truly restating comments in detectRepoType (lines 159, 168, 175, 182). The URL parsing comments ('// Handle SSH format') document regex patterns and are useful for readability. Only the detectRepoType section comments are redundant.\n  files_read: [src/shared/repo-detector.ts]\n  recommendation: Remove only the 4 '// Check for X' comments in detectRepoType. Keep URL format comments. Trivial.\n\n### FALSE POSITIVE (1 issue)\n\n- review::.::holistic::logic_clarity::async_no_await_pr_creator\n  verdict: not-worth-it\n  verdict_reasoning: createPR and mergePR return delegate promises without await. Removing async is technically correct but the behavioral difference is negligible (only affects stack traces). The async keyword documents intent. Not worth touching.\n  files_read: [src/vcs/pr-creator.ts]\n  recommendation: Skip \u2014 not worth the churn.\n\n### DUPLICATE (2 issues are the same underlying cycle)\n\n- review::.::holistic::dependency_health::type_only_import_cycle_output\n  verdict: genuine (duplicate of output_sync_report_unified_summary_cycle)\n  verdict_reasoning: Same cycle as cross_module_architecture issue. sync-report.ts <-> unified-summary.ts. One reports the structural cycle, the other the type-only aspect. Fix one, fix both.\n  files_read: [src/output/sync-report.ts, src/output/unified-summary.ts]\n  recommendation: Deduplicate \u2014 fixing output_sync_report_unified_summary_cycle resolves this too.\n\n### NOT-WORTH-IT (1 issue)\n\n- review::.::holistic::low_level_elegance::settings_report_parallel_rendering\n  verdict: not-worth-it\n  verdict_reasoning: formatSettingsReportCLI and renderRepoSettingsDiffLines do share 3-way branching but serve different output targets (chalk vs plain text). Extracting a strategy would add indirection without meaningful complexity reduction. The functions may evolve independently.\n  files_read: [src/output/settings-report.ts]\n  recommendation: Skip \u2014 abstraction would add more complexity than it removes.",
           "cited_ids": [
-            "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
-            "review::.::holistic::convention_outlier::residual_filepath_comments",
-            "review::.::holistic::design_coherence::labels_manual_filter_counting",
-            "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
-            "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale",
-            "review::.::holistic::naming_quality::handle_commit_error_param_mismatch",
-            "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads"
+            "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+            "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+            "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+            "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+            "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+            "review::.::holistic::dependency_health::type_only_import_cycle_output",
+            "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+            "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
+            "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+            "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+            "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+            "review::.::holistic::test_strategy::untested_cli_entry_point",
+            "review::.::holistic::type_safety::inline_action_unions_github_summary"
           ],
-          "timestamp": "2026-03-19T11:30:58+00:00",
-          "issue_count": 19,
+          "timestamp": "2026-03-20T02:16:07+00:00",
+          "issue_count": 13,
           "dimension_names": [
-            "design_coherence",
-            "convention_outlier",
-            "error_consistency",
-            "mid_level_elegance",
-            "naming_quality",
-            "type_safety",
             "ai_generated_debt",
-            "api_surface_coherence",
-            "contract_coherence",
             "cross_module_architecture",
+            "api_surface_coherence",
+            "dependency_health",
+            "error_consistency",
             "incomplete_migration",
-            "low_level_elegance"
+            "initialization_coupling",
+            "logic_clarity",
+            "low_level_elegance",
+            "test_strategy",
+            "type_safety"
           ],
           "dimension_counts": {
-            "cross_module_architecture": 1,
-            "convention_outlier": 2,
-            "error_consistency": 2,
-            "naming_quality": 2,
+            "cross_module_architecture": 2,
+            "error_consistency": 1,
+            "dependency_health": 1,
             "low_level_elegance": 1,
-            "mid_level_elegance": 2,
+            "test_strategy": 1,
             "api_surface_coherence": 1,
-            "ai_generated_debt": 1,
+            "ai_generated_debt": 2,
             "incomplete_migration": 1,
-            "design_coherence": 3,
-            "contract_coherence": 1,
-            "type_safety": 2
+            "initialization_coupling": 1,
+            "logic_clarity": 1,
+            "type_safety": 1
           },
           "assessments": [],
-          "confirmed_at": "2026-03-19T11:31:11+00:00",
-          "confirmed_text": "I have thoroughly reviewed all 19 issues across design_coherence, convention_outlier, error_consistency, mid_level_elegance, naming_quality, type_safety and other dimensions. 7 hash IDs cited with file/line evidence verified against actual code. All issues confirmed genuine with no false positives."
+          "confirmed_at": "2026-03-20T02:16:14+00:00",
+          "confirmed_text": "Verified all 13 review issues against actual source code with line-number citations across dimensions: ai_generated_debt, api_surface_coherence, cross_module_architecture, dependency_health, error_consistency, incomplete_migration, initialization_coupling, logic_clarity, low_level_elegance, test_strategy, type_safety. Found 9 genuine, 1 exaggerated, 1 not-worth-it, 1 false-positive, 1 duplicate."
         },
         "reflect": {
           "stage": "reflect",
-          "report": "Round 4 continues round 3's consolidation trajectory. All 19 issues genuine.\n\nRecurring dimensions: design_coherence (2 resolved, 3 open) continues the utility consolidation pattern \u2014 countActions was fixed for rulesets but not labels/rulesets-summary. type_safety (2 resolved, 2 open) continues the overload pattern \u2014 interpolateValue was fixed but interpolateXfgContent wasn't. mid_level_elegance (1 resolved, 1 open) has new manifest/fileChanges issues. cross_module_architecture (2 resolved, 1 open) is the final barrel import cleanup. These are not loops \u2014 they are the natural tail of consolidation work that was partially completed in round 3.\n\n## Coverage Ledger\n- restating_no_action_needed_comments -> cluster \"quick-cleanups\"\n- residual_filepath_comments -> cluster \"quick-cleanups\"\n- to_error_message_inconsistency_git_ops -> cluster \"quick-cleanups\"\n- handle_commit_error_param_mismatch -> cluster \"quick-cleanups\"\n- inline_label_action_formatting -> cluster \"quick-cleanups\"\n- labels_manual_filter_counting -> cluster \"consolidate-utilities\"\n- sync_diff_line_duplication -> cluster \"consolidate-utilities\"\n- ruleset_diff_summary_reinvented -> cluster \"consolidate-utilities\"\n- parallel_action_type_aliases -> cluster \"consolidate-utilities\"\n- parseApiJson_backward_compat_reexport_stale -> cluster \"import-cleanup\"\n- sync_bypasses_vcs_barrel_for_types -> cluster \"import-cleanup\"\n- format_pr_body_as_string_cast -> cluster \"type-safety-fixes\"\n- interpolate_xfg_content_missing_overloads -> cluster \"type-safety-fixes\"\n- diff_action_vocabulary_divergence -> cluster \"naming-alignment\"\n- azure_devops_prefix_drift -> cluster \"naming-alignment\"\n- writefilesync_error_wrapping_inconsistency -> cluster \"error-handling\"\n- authenticated_git_ops_6_params -> cluster \"api-refactor\"\n- redundant_manifest_load -> cluster \"mid-level-refactor\"\n- shared_mutable_filechanges_map -> cluster \"mid-level-refactor\"",
+          "report": "## Reflect: Strategy for 13 Review Issues\n\n### Patterns & Themes\n\n1. **Output module structural debt** (3 issues): The import cycle between sync-report.ts and unified-summary.ts was introduced by a prior round fix. The dead barrel predates it. Fix the cycle by extracting types to output/types.ts, delete the barrel. This cluster unblocks cross_module_architecture and dependency_health scores.\n\n2. **Dead code from old summary API** (1 issue): Connected to cluster 1 \u2014 the barrel re-exports dead summary functions. Removing the barrel first makes this cleanup cleaner.\n\n3. **Quick consistency fixes** (5 issues): Each is standalone, touching 1-2 files. No dependencies between them. Can be parallelized.\n\n4. **CLI/composition root cleanup** (2 issues): Both in src/cli/. Could be done together.\n\n5. **Not-worth-it items** (2 issues): Skip both \u2014 async_no_await is behavioral noop, settings_report abstraction would add more complexity than removed.\n\n### Recommended Execution Order\n\n1. Output module cluster first (biggest score impact across 3 dimensions)\n2. Quick consistency fixes in parallel\n3. CLI cleanup last\n\n## Coverage Ledger\n\n- review::.::holistic::cross_module_architecture::output_barrel_zero_consumers -> cluster \"output-structural-debt\"\n- review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle -> cluster \"output-structural-debt\"\n- review::.::holistic::dependency_health::type_only_import_cycle_output -> cluster \"output-structural-debt\"\n- review::.::holistic::incomplete_migration::old_summary_api_dead_code -> cluster \"output-dead-code\"\n- review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter -> cluster \"quick-consistency-fixes\"\n- review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector -> cluster \"quick-consistency-fixes\"\n- review::.::holistic::type_safety::inline_action_unions_github_summary -> cluster \"quick-consistency-fixes\"\n- review::.::holistic::api_surface_coherence::resolve_github_token_positional_params -> cluster \"quick-consistency-fixes\"\n- review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors -> cluster \"quick-consistency-fixes\"\n- review::.::holistic::initialization_coupling::module_scope_lazy_singletons -> cluster \"cli-cleanup\"\n- review::.::holistic::test_strategy::untested_cli_entry_point -> cluster \"cli-cleanup\"\n- review::.::holistic::logic_clarity::async_no_await_pr_creator -> skip \"not-worth-it: removing async is behavioral noop, documents intent\"\n- review::.::holistic::low_level_elegance::settings_report_parallel_rendering -> skip \"not-worth-it: abstraction would add more complexity than it removes\"",
           "cited_ids": [
-            "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
-            "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params",
-            "review::.::holistic::contract_coherence::format_pr_body_as_string_cast",
-            "review::.::holistic::convention_outlier::azure_devops_prefix_drift",
-            "review::.::holistic::convention_outlier::residual_filepath_comments",
-            "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types",
-            "review::.::holistic::design_coherence::labels_manual_filter_counting",
-            "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented",
-            "review::.::holistic::design_coherence::sync_diff_line_duplication",
-            "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
-            "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency",
-            "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale",
-            "review::.::holistic::low_level_elegance::inline_label_action_formatting",
-            "review::.::holistic::mid_level_elegance::redundant_manifest_load",
-            "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map",
-            "review::.::holistic::naming_quality::diff_action_vocabulary_divergence",
-            "review::.::holistic::naming_quality::handle_commit_error_param_mismatch",
-            "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads",
-            "review::.::holistic::type_safety::parallel_action_type_aliases"
+            "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
+            "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
+            "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
+            "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
+            "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
+            "review::.::holistic::dependency_health::type_only_import_cycle_output",
+            "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
+            "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
+            "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
+            "review::.::holistic::test_strategy::untested_cli_entry_point",
+            "review::.::holistic::type_safety::inline_action_unions_github_summary"
           ],
-          "timestamp": "2026-03-19T11:31:39+00:00",
-          "issue_count": 19,
+          "timestamp": "2026-03-20T02:16:49+00:00",
+          "issue_count": 13,
           "missing_issue_ids": [],
           "duplicate_issue_ids": [],
           "recurring_dims": [
             "ai_generated_debt",
             "api_surface_coherence",
             "cross_module_architecture",
-            "design_coherence",
+            "error_consistency",
+            "incomplete_migration",
             "low_level_elegance",
-            "mid_level_elegance",
             "type_safety"
           ],
           "disposition_ledger": [
             {
-              "issue_id": "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
+              "issue_id": "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
               "decision": "cluster",
-              "target": "quick-cleanups"
+              "target": "output-structural-debt"
             },
             {
-              "issue_id": "review::.::holistic::convention_outlier::residual_filepath_comments",
+              "issue_id": "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
               "decision": "cluster",
-              "target": "quick-cleanups"
+              "target": "output-structural-debt"
             },
             {
-              "issue_id": "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
+              "issue_id": "review::.::holistic::dependency_health::type_only_import_cycle_output",
               "decision": "cluster",
-              "target": "quick-cleanups"
+              "target": "output-structural-debt"
             },
             {
-              "issue_id": "review::.::holistic::naming_quality::handle_commit_error_param_mismatch",
+              "issue_id": "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
               "decision": "cluster",
-              "target": "quick-cleanups"
+              "target": "output-dead-code"
             },
             {
-              "issue_id": "review::.::holistic::low_level_elegance::inline_label_action_formatting",
+              "issue_id": "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
               "decision": "cluster",
-              "target": "quick-cleanups"
+              "target": "quick-consistency-fixes"
             },
             {
-              "issue_id": "review::.::holistic::design_coherence::labels_manual_filter_counting",
+              "issue_id": "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
               "decision": "cluster",
-              "target": "consolidate-utilities"
+              "target": "quick-consistency-fixes"
             },
             {
-              "issue_id": "review::.::holistic::design_coherence::sync_diff_line_duplication",
+              "issue_id": "review::.::holistic::type_safety::inline_action_unions_github_summary",
               "decision": "cluster",
-              "target": "consolidate-utilities"
+              "target": "quick-consistency-fixes"
             },
             {
-              "issue_id": "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented",
+              "issue_id": "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
               "decision": "cluster",
-              "target": "consolidate-utilities"
+              "target": "quick-consistency-fixes"
             },
             {
-              "issue_id": "review::.::holistic::type_safety::parallel_action_type_aliases",
+              "issue_id": "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
               "decision": "cluster",
-              "target": "consolidate-utilities"
+              "target": "quick-consistency-fixes"
             },
             {
-              "issue_id": "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale",
+              "issue_id": "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
               "decision": "cluster",
-              "target": "import-cleanup"
+              "target": "cli-cleanup"
             },
             {
-              "issue_id": "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types",
+              "issue_id": "review::.::holistic::test_strategy::untested_cli_entry_point",
               "decision": "cluster",
-              "target": "import-cleanup"
+              "target": "cli-cleanup"
             },
             {
-              "issue_id": "review::.::holistic::contract_coherence::format_pr_body_as_string_cast",
-              "decision": "cluster",
-              "target": "type-safety-fixes"
+              "issue_id": "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+              "decision": "permanent_skip",
+              "target": "not-worth-it: removing async is behavioral noop, documents intent"
             },
             {
-              "issue_id": "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads",
-              "decision": "cluster",
-              "target": "type-safety-fixes"
-            },
-            {
-              "issue_id": "review::.::holistic::naming_quality::diff_action_vocabulary_divergence",
-              "decision": "cluster",
-              "target": "naming-alignment"
-            },
-            {
-              "issue_id": "review::.::holistic::convention_outlier::azure_devops_prefix_drift",
-              "decision": "cluster",
-              "target": "naming-alignment"
-            },
-            {
-              "issue_id": "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency",
-              "decision": "cluster",
-              "target": "error-handling"
-            },
-            {
-              "issue_id": "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params",
-              "decision": "cluster",
-              "target": "api-refactor"
-            },
-            {
-              "issue_id": "review::.::holistic::mid_level_elegance::redundant_manifest_load",
-              "decision": "cluster",
-              "target": "mid-level-refactor"
-            },
-            {
-              "issue_id": "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map",
-              "decision": "cluster",
-              "target": "mid-level-refactor"
+              "issue_id": "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+              "decision": "permanent_skip",
+              "target": "not-worth-it: abstraction would add more complexity than it removes"
             }
           ],
-          "confirmed_at": "2026-03-19T11:31:47+00:00",
-          "confirmed_text": "Blueprint has 7 concrete clusters with all 19 issues assigned. Recurring dimensions design_coherence, type_safety, mid_level_elegance, cross_module_architecture analyzed as consolidation tail, not loops. No skips \u2014 all issues are genuine and worth fixing."
+          "confirmed_at": "2026-03-20T02:17:06+00:00",
+          "confirmed_text": "Reflect strategy covers all 13 issues: output-structural-debt cluster addresses cross_module_architecture and dependency_health import cycle, output-dead-code handles incomplete_migration dead summary API, quick-consistency-fixes bundles ai_generated_debt and api_surface_coherence and error_consistency and type_safety standalone fixes, cli-cleanup for initialization_coupling and test_strategy, plus 2 not-worth-it skips for low_level_elegance and logic_clarity."
         },
         "organize": {
           "stage": "organize",
-          "report": "All 19 issues organized into 7 clusters with sufficient action steps. Execution order: quick-cleanups, import-cleanup, consolidate-utilities, type-safety-fixes, error-handling, naming-alignment, mid-level-refactor, api-refactor.",
+          "report": "## Organization Summary\n\nCreated 4 clusters covering 11 genuine issues, skipped 2 not-worth-it items as false positives.\n\n### Cluster Execution Order\n\n1. **output-structural-debt** (3 issues, 3 steps): Fix import cycle between sync-report.ts and unified-summary.ts by extracting types to output/types.ts, delete dead output barrel. Impacts cross_module_architecture and dependency_health scores.\n\n2. **quick-consistency-fixes** (5 issues, 5 steps): Independent standalone fixes \u2014 remove restating comments (formatter.ts, repo-detector.ts), use SettingsAction type alias, convert resolveGitHubToken to options bag, wrap GitOps fs errors in SyncError. All can be done in one commit.\n\n3. **output-dead-code** (1 issue, 2 steps, depends on output-structural-debt): Remove old summary API dead code. Barrel deletion in cluster 1 unblocks this.\n\n4. **cli-cleanup** (2 issues, 4 steps): Move module-level singletons to local scope, extract and unit-test CLI validators, verify test coverage, update imports.\n\n### Skipped Items\n\n- review::.::holistic::logic_clarity::async_no_await_pr_creator: behavioral noop, documents intent\n- review::.::holistic::low_level_elegance::settings_report_parallel_rendering: abstraction would add more complexity than it removes\n\n### Coverage\n\nAll 13 issues accounted for: 11 in clusters, 2 skipped as false positives.",
           "cited_ids": [],
-          "timestamp": "2026-03-19T11:38:44+00:00",
-          "issue_count": 19,
-          "confirmed_at": "2026-03-19T11:39:39+00:00",
-          "confirmed_text": "I have reviewed the cluster organization. 7 new clusters with all 19 review issues assigned and action steps enriched. Clusters organized by fix type for efficient batching. Execution order prioritizes quick-cleanups first for maximum early impact on design_coherence and other low-scoring dimensions."
+          "timestamp": "2026-03-20T02:21:11+00:00",
+          "issue_count": 11,
+          "confirmed_at": "2026-03-20T02:21:19+00:00",
+          "confirmed_text": "Organized 11 issues into 4 clusters: output-structural-debt (cross_module_architecture, dependency_health), quick-consistency-fixes (ai_generated_debt, api_surface_coherence, error_consistency, type_safety), output-dead-code (incomplete_migration), cli-cleanup (initialization_coupling, test_strategy). All clusters have action steps with effort tags and issue refs."
         },
         "enrich": {
           "stage": "enrich",
-          "report": "All 7 new clusters fully enriched with detail and issue-refs on every step. Each step has specific file paths and line numbers from the review evidence. Issue refs link steps to their corresponding review findings for auto-completion tracking. Steps are executor-ready.",
-          "timestamp": "2026-03-19T11:45:04+00:00",
+          "report": "## Enrichment Summary\n\nAll 4 clusters enriched with detail and issue refs on every step:\n\n### output-structural-debt (3 steps, all with refs)\nSteps cover type extraction, import updates, and barrel deletion.\n\n### quick-consistency-fixes (5 steps, all with refs)\nSteps cover comment cleanup, type alias usage, options bag conversion, error wrapping.\n\n### output-dead-code (2 steps, all with refs)\nSteps cover dead code removal and test cleanup/migration.\n\n### cli-cleanup (4 steps, all with refs)\nSteps cover singleton refactor, validator extraction with tests, verification, and import updates.\n\nTotal: 14 steps across 4 clusters, 11 issues, all executor-ready.",
+          "timestamp": "2026-03-20T02:22:11+00:00",
           "shallow_count": 0,
-          "confirmed_at": "2026-03-19T11:45:42+00:00",
-          "confirmed_text": "All 17 steps across 7 clusters have detail with file paths, issue-refs, and effort tags. Steps for design_coherence, type_safety, error_consistency, naming_quality dimensions are executor-ready with specific locations and actions."
+          "confirmed_at": "2026-03-20T02:22:56+00:00",
+          "confirmed_text": "All 14 steps have specific file paths and detailed instructions. output-structural-debt covers src/output/types.ts creation, src/output/sync-report.ts and src/output/unified-summary.ts import updates, src/output/index.ts deletion. quick-consistency-fixes covers src/config/formatter.ts, src/shared/repo-detector.ts, src/output/github-summary.ts, src/shared/gh-api-utils.ts, src/vcs/git-ops.ts. Dimensions: cross_module_architecture, dependency_health, ai_generated_debt, type_safety, error_consistency."
         },
         "sense-check": {
           "stage": "sense-check",
-          "report": "Verified key steps against code: src/settings/rulesets/processor.ts:148 has '// No action needed' comment (confirmed). src/vcs/git-ops.ts:141 uses (error as Error).message not toErrorMessage (confirmed). src/settings/labels/formatter.ts:33-41 has 4 .filter() calls (confirmed). src/shared/xfg-template.ts:160 lacks overloads unlike src/shared/interpolation-engine.ts (confirmed). Cross-cluster dependency: type-safety-fixes step 1 must finish before step 2. naming-alignment should run after consolidate-utilities since both touch settings types.",
-          "timestamp": "2026-03-19T11:46:03+00:00",
+          "report": "## Sense Check\n\n### Cross-cluster dependencies\n- output-dead-code depends on output-structural-debt (barrel deletion). Dependency already configured.\n- quick-consistency-fixes and cli-cleanup are fully independent of each other and of the output clusters.\n\n### Step accuracy verification\n- All file paths verified to exist on disk\n- Line numbers in formatter.ts comments verified (lines 32-37, 57-62)\n- resolveGitHubToken confirmed at gh-api-utils.ts line 132 with 5 params\n- GitOps.writeFile confirmed at git-ops.ts line 85-98 with no try-catch\n- output/index.ts confirmed to exist with zero consumers\n- sync-report.ts and unified-summary.ts circular imports confirmed at line 4 of each\n- sync-command.ts module-level lets confirmed at lines 42-53\n- program.ts validation callbacks confirmed at lines 67-88\n- github-summary.ts inline unions confirmed at lines 17 and 33, SettingsAction import at line 4\n\n### Risk assessment\n- output-dead-code is the riskiest cluster \u2014 removing dead code may break tests. Mitigation: step 2 explicitly checks test overlap before deletion.\n- All other clusters are low-risk: comment removal, type alias usage, import reorganization.\n\n### No issues found with the plan structure.",
+          "timestamp": "2026-03-20T02:23:10+00:00",
           "value_targets": [
-            "quick-cleanups",
-            "import-cleanup",
-            "consolidate-utilities",
-            "type-safety-fixes",
-            "error-handling",
-            "naming-alignment",
-            "mid-level-refactor",
-            "api-refactor"
+            "output-structural-debt",
+            "output-dead-code",
+            "quick-consistency-fixes",
+            "cli-cleanup"
           ],
-          "confirmed_at": "2026-03-19T11:46:08+00:00",
-          "confirmed_text": "Sense-check verified 4 file paths against current code for design_coherence, type_safety, error_consistency dimensions. Cross-cluster dependencies documented. All steps accurate and executor-ready."
+          "confirmed_at": "2026-03-20T02:23:17+00:00",
+          "confirmed_text": "Verified all 14 steps across output-structural-debt, quick-consistency-fixes, output-dead-code, cli-cleanup. File paths exist, line numbers match current source, cross-cluster dependency configured. Covers cross_module_architecture, dependency_health, ai_generated_debt, api_surface_coherence, error_consistency, type_safety, incomplete_migration, initialization_coupling, test_strategy."
         }
       },
-      "strategy": "Fix all 19 review issues in 7 clusters: quick-cleanups -> import-cleanup -> consolidate-utilities -> type-safety-fixes -> error-handling -> naming-alignment -> mid-level-refactor -> api-refactor. Easy single-edit wins first, structural changes last.",
+      "strategy": "Execute 4 clusters in order: (1) output-structural-debt \u2014 extract types to break import cycle, delete dead barrel, (2) quick-consistency-fixes \u2014 5 standalone fixes in one commit, (3) output-dead-code \u2014 remove old summary API dead code, (4) cli-cleanup \u2014 fix singletons and add CLI validator tests. Skipped 2 items as false positives: async_no_await and settings_report_parallel_rendering.",
       "completion_mode": "manual_triage"
     },
     "issue_dispositions": {
-      "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments": {
+      "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers": {
         "decision": "cluster",
-        "target": "quick-cleanups",
+        "target": "output-structural-debt",
         "decision_source": "reflect"
       },
-      "review::.::holistic::convention_outlier::residual_filepath_comments": {
+      "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle": {
         "decision": "cluster",
-        "target": "quick-cleanups",
+        "target": "output-structural-debt",
         "decision_source": "reflect"
       },
-      "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops": {
+      "review::.::holistic::dependency_health::type_only_import_cycle_output": {
         "decision": "cluster",
-        "target": "quick-cleanups",
+        "target": "output-structural-debt",
         "decision_source": "reflect"
       },
-      "review::.::holistic::naming_quality::handle_commit_error_param_mismatch": {
+      "review::.::holistic::incomplete_migration::old_summary_api_dead_code": {
         "decision": "cluster",
-        "target": "quick-cleanups",
+        "target": "output-dead-code",
         "decision_source": "reflect"
       },
-      "review::.::holistic::low_level_elegance::inline_label_action_formatting": {
+      "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter": {
         "decision": "cluster",
-        "target": "quick-cleanups",
+        "target": "quick-consistency-fixes",
         "decision_source": "reflect"
       },
-      "review::.::holistic::design_coherence::labels_manual_filter_counting": {
+      "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector": {
         "decision": "cluster",
-        "target": "consolidate-utilities",
+        "target": "quick-consistency-fixes",
         "decision_source": "reflect"
       },
-      "review::.::holistic::design_coherence::sync_diff_line_duplication": {
+      "review::.::holistic::type_safety::inline_action_unions_github_summary": {
         "decision": "cluster",
-        "target": "consolidate-utilities",
+        "target": "quick-consistency-fixes",
         "decision_source": "reflect"
       },
-      "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented": {
+      "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params": {
         "decision": "cluster",
-        "target": "consolidate-utilities",
+        "target": "quick-consistency-fixes",
         "decision_source": "reflect"
       },
-      "review::.::holistic::type_safety::parallel_action_type_aliases": {
+      "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors": {
         "decision": "cluster",
-        "target": "consolidate-utilities",
+        "target": "quick-consistency-fixes",
         "decision_source": "reflect"
       },
-      "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale": {
+      "review::.::holistic::initialization_coupling::module_scope_lazy_singletons": {
         "decision": "cluster",
-        "target": "import-cleanup",
+        "target": "cli-cleanup",
         "decision_source": "reflect"
       },
-      "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types": {
+      "review::.::holistic::test_strategy::untested_cli_entry_point": {
         "decision": "cluster",
-        "target": "import-cleanup",
+        "target": "cli-cleanup",
         "decision_source": "reflect"
       },
-      "review::.::holistic::contract_coherence::format_pr_body_as_string_cast": {
-        "decision": "cluster",
-        "target": "type-safety-fixes",
+      "review::.::holistic::logic_clarity::async_no_await_pr_creator": {
+        "decision": "skip",
+        "target": "not-worth-it: removing async is behavioral noop, documents intent",
         "decision_source": "reflect"
       },
-      "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads": {
-        "decision": "cluster",
-        "target": "type-safety-fixes",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::naming_quality::diff_action_vocabulary_divergence": {
-        "decision": "cluster",
-        "target": "naming-alignment",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::convention_outlier::azure_devops_prefix_drift": {
-        "decision": "cluster",
-        "target": "naming-alignment",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency": {
-        "decision": "cluster",
-        "target": "error-handling",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params": {
-        "decision": "cluster",
-        "target": "api-refactor",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::mid_level_elegance::redundant_manifest_load": {
-        "decision": "cluster",
-        "target": "mid-level-refactor",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map": {
-        "decision": "cluster",
-        "target": "mid-level-refactor",
+      "review::.::holistic::low_level_elegance::settings_report_parallel_rendering": {
+        "decision": "skip",
+        "target": "not-worth-it: abstraction would add more complexity than it removes",
         "decision_source": "reflect"
       }
     },
@@ -11987,9 +12913,9 @@
   "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
-    "subjective_review_completed_at_scan_count": 135,
+    "subjective_review_completed_at_scan_count": 138,
     "lifecycle_phase": "workflow_postflight",
-    "postflight_scan_completed_at_scan_count": 136
+    "postflight_scan_completed_at_scan_count": 138
   },
   "scan_count_at_plan_start": 136
 }
