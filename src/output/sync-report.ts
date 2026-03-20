@@ -2,24 +2,9 @@ import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatCountEntry } from "./settings-report.js";
 import { renderSyncLines } from "./unified-summary.js";
-import type { FileChangeDetail } from "../sync/types.js";
+import type { SyncReport, RepoFileChanges, ReportFileChange } from "./types.js";
 
-export type ReportFileChange = FileChangeDetail;
-
-export interface SyncReport {
-  repos: RepoFileChanges[];
-  totals: {
-    files: { create: number; update: number; delete: number };
-  };
-}
-
-export interface RepoFileChanges {
-  repoName: string;
-  files: ReportFileChange[];
-  prUrl?: string;
-  mergeOutcome?: "manual" | "auto" | "force" | "direct";
-  error?: string;
-}
+export type { SyncReport, RepoFileChanges, ReportFileChange };
 
 function formatSyncSummary(totals: SyncReport["totals"]): string {
   const entry = formatCountEntry("file", "files", [

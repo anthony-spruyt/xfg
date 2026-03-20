@@ -57,10 +57,16 @@ export class GitOps implements ILocalGitOps {
   }
 
   cleanWorkspace(): void {
-    if (existsSync(this._workDir)) {
-      rmSync(this._workDir, { recursive: true, force: true });
+    try {
+      if (existsSync(this._workDir)) {
+        rmSync(this._workDir, { recursive: true, force: true });
+      }
+      mkdirSync(this._workDir, { recursive: true });
+    } catch (error) {
+      throw new SyncError(
+        `Failed to clean workspace '${this._workDir}': ${toErrorMessage(error)}`
+      );
     }
-    mkdirSync(this._workDir, { recursive: true });
   }
 
   /**
@@ -88,12 +94,16 @@ export class GitOps implements ILocalGitOps {
     }
     const filePath = this.validatePath(fileName);
 
-    // Create parent directories if they don't exist
-    mkdirSync(dirname(filePath), { recursive: true });
+    try {
+      mkdirSync(dirname(filePath), { recursive: true });
 
-    // Normalize trailing newline - ensure exactly one
-    const normalized = content.endsWith("\n") ? content : content + "\n";
-    writeFileSync(filePath, normalized, "utf-8");
+      const normalized = content.endsWith("\n") ? content : content + "\n";
+      writeFileSync(filePath, normalized, "utf-8");
+    } catch (error) {
+      throw new SyncError(
+        `Failed to write file '${fileName}': ${toErrorMessage(error)}`
+      );
+    }
   }
 
   /**
@@ -108,8 +118,13 @@ export class GitOps implements ILocalGitOps {
     }
     const filePath = this.validatePath(fileName);
 
-    // Set filesystem permissions (755 = rwxr-xr-x)
-    chmodSync(filePath, 0o755);
+    try {
+      chmodSync(filePath, 0o755);
+    } catch (error) {
+      throw new SyncError(
+        `Failed to set executable permissions on '${fileName}': ${toErrorMessage(error)}`
+      );
+    }
 
     // Also update git's index so the executable bit is committed
     const relativePath = relative(this._workDir, filePath);

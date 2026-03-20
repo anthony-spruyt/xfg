@@ -14,7 +14,7 @@ export interface FileChanges {
 
 export interface RulesetPlanDetail {
   name: string;
-  action: "create" | "update" | "delete" | "unchanged";
+  action: SettingsAction;
   propertyCount?: number;
   propertyChanges?: {
     added: number;
@@ -30,7 +30,7 @@ export interface RepoSettingsPlanDetail {
 
 export interface LabelsPlanDetail {
   name: string;
-  action: "create" | "update" | "delete" | "unchanged";
+  action: SettingsAction;
   newName?: string;
 }
 

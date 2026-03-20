@@ -104,11 +104,11 @@ describe("resolveGitHubToken", () => {
     const tokenManager = {
       getTokenForRepo: async () => "app-token-123",
     };
-    const result = await resolveGitHubToken(
+    const result = await resolveGitHubToken({
       repoInfo,
       tokenManager,
-      "test-context"
-    );
+      context: "test-context",
+    });
     assert.deepEqual(result, { token: "app-token-123", skipped: false });
   });
 
@@ -116,22 +116,21 @@ describe("resolveGitHubToken", () => {
     const tokenManager = {
       getTokenForRepo: async () => null,
     };
-    const result = await resolveGitHubToken(
+    const result = await resolveGitHubToken({
       repoInfo,
       tokenManager,
-      "test-context"
-    );
+      context: "test-context",
+    });
     assert.deepEqual(result, { token: undefined, skipped: true });
   });
 
   test("falls back to envToken when no token manager", async () => {
-    const result = await resolveGitHubToken(
+    const result = await resolveGitHubToken({
       repoInfo,
-      null,
-      "test-context",
-      undefined,
-      "env-token"
-    );
+      tokenManager: null,
+      context: "test-context",
+      envToken: "env-token",
+    });
     assert.deepEqual(result, { token: "env-token", skipped: false });
   });
 
@@ -141,13 +140,12 @@ describe("resolveGitHubToken", () => {
         throw new Error("auth failed");
       },
     };
-    const result = await resolveGitHubToken(
+    const result = await resolveGitHubToken({
       repoInfo,
       tokenManager,
-      "test-context",
-      undefined,
-      "fallback-token"
-    );
+      context: "test-context",
+      envToken: "fallback-token",
+    });
     assert.deepEqual(result, { token: "fallback-token", skipped: false });
   });
 
@@ -157,11 +155,11 @@ describe("resolveGitHubToken", () => {
         throw new Error("auth failed");
       },
     };
-    const result = await resolveGitHubToken(
+    const result = await resolveGitHubToken({
       repoInfo,
       tokenManager,
-      "test-context"
-    );
+      context: "test-context",
+    });
     assert.deepEqual(result, { token: undefined, skipped: false });
   });
 
@@ -173,13 +171,13 @@ describe("resolveGitHubToken", () => {
         throw new Error("auth failed");
       },
     };
-    await resolveGitHubToken(
+    await resolveGitHubToken({
       repoInfo,
       tokenManager,
-      "my-repo",
+      context: "my-repo",
       log,
-      "fallback"
-    );
+      envToken: "fallback",
+    });
     assert.equal(debugMessages.length, 1);
     assert.match(debugMessages[0], /auth failed/);
     assert.match(debugMessages[0], /my-repo/);
@@ -194,7 +192,12 @@ describe("resolveGitHubToken", () => {
         throw new Error("auth failed");
       },
     };
-    await resolveGitHubToken(repoInfo, tokenManager, "my-repo", log);
+    await resolveGitHubToken({
+      repoInfo,
+      tokenManager,
+      context: "my-repo",
+      log,
+    });
     assert.match(debugMessages[0], /no fallback token available/);
   });
 });

@@ -1,10 +1,7 @@
 import { describe, it } from "node:test";
 import { strict as assert } from "node:assert";
 
-import {
-  AuthenticatedGitOps,
-  type AuthenticatedGitOpsOptions,
-} from "../../src/vcs/authenticated-git-ops.js";
+import { AuthenticatedGitOps } from "../../src/vcs/authenticated-git-ops.js";
 import type { GitAuthOptions } from "../../src/vcs/types.js";
 import type { ILocalGitOps } from "../../src/vcs/types.js";
 import type { ICommandExecutor } from "../../src/shared/command-executor.js";

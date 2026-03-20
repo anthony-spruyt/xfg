@@ -124,18 +124,23 @@ export class GhApiClient {
   }
 }
 
+export interface ResolveGitHubTokenOptions {
+  repoInfo: GitHubRepoInfo;
+  tokenManager: ITokenManager | null;
+  context: string;
+  log?: DebugLog;
+  envToken?: string;
+}
+
 /**
  * Resolve a GitHub token for a repo: GitHub App token → envToken fallback.
  * Returns { token, skipped } where skipped=true means no App installation found
  * for this owner (token will be undefined). Both sync and settings paths use this.
  */
 export async function resolveGitHubToken(
-  repoInfo: GitHubRepoInfo,
-  tokenManager: ITokenManager | null,
-  context: string,
-  log?: DebugLog,
-  envToken?: string
+  options: ResolveGitHubTokenOptions
 ): Promise<{ token: string | undefined; skipped: boolean }> {
+  const { repoInfo, tokenManager, context, log, envToken } = options;
   try {
     const appToken = await tokenManager?.getTokenForRepo(repoInfo);
     if (appToken === null) {

@@ -399,13 +399,13 @@ async function processSingleRepo(
 
   const repoToken = isGitHubRepo(repoInfo)
     ? (
-        await resolveGitHubToken(
-          repoInfo as GitHubRepoInfo,
-          ctx.tokenManager,
-          repoName,
-          getLogger(),
-          process.env.GH_TOKEN
-        )
+        await resolveGitHubToken({
+          repoInfo: repoInfo as GitHubRepoInfo,
+          tokenManager: ctx.tokenManager,
+          context: repoName,
+          log: getLogger(),
+          envToken: process.env.GH_TOKEN,
+        })
       ).token
     : undefined;
 
@@ -570,6 +570,10 @@ export async function runSync(
   options: SyncOptions,
   deps: SyncDependencies = {}
 ): Promise<void> {
+  // Reset module-level singletons to ensure fresh state per invocation
+  _defaultExecutor = undefined;
+  _logger = undefined;
+
   const {
     lifecycleManager,
     rulesetProcessorFactory = createDefaultRulesetProcessorFactory(),

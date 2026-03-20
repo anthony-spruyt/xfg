@@ -29,13 +29,13 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
     }
 
     // Otherwise resolve via token manager / env fallback
-    const resolved = await resolveGitHubToken(
+    const resolved = await resolveGitHubToken({
       repoInfo,
-      this.tokenManager,
-      repoName,
-      this.log,
-      this.envToken
-    );
+      tokenManager: this.tokenManager,
+      context: repoName,
+      log: this.log,
+      envToken: this.envToken,
+    });
 
     if (resolved.skipped) {
       return {
