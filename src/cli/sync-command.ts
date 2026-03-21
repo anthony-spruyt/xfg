@@ -542,6 +542,7 @@ async function runFileSyncPhase(
       fileChanges: (result.fileChanges ?? []).map((f) => ({
         path: f.path,
         action: f.action,
+        ...(f.diffLines ? { diffLines: f.diffLines } : {}),
       })),
       prUrl: result.prUrl,
       mergeOutcome,

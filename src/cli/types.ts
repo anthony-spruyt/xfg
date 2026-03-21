@@ -49,7 +49,11 @@ export interface SyncOptions extends SharedOptions {
 export interface SyncResultEntry {
   repoName: string;
   success: boolean;
-  fileChanges: Array<{ path: string; action: "create" | "update" | "delete" }>;
+  fileChanges: Array<{
+    path: string;
+    action: "create" | "update" | "delete";
+    diffLines?: string[];
+  }>;
   prUrl?: string;
   mergeOutcome?: "manual" | "auto" | "force" | "direct";
   error?: string;
