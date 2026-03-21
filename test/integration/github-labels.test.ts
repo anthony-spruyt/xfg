@@ -10,6 +10,7 @@ import {
   createRepo,
   deleteRepo,
   writeConfig,
+  withTestRetry,
 } from "./test-helpers.js";
 
 const OWNER = "spruyt-labs";
@@ -157,11 +158,18 @@ repos:
     const output = runSync(updateConfig);
     console.log(output);
 
-    const labelsAfter = getLabels();
-    const bugLabel = findLabel(labelsAfter, "xfg-test-bug");
-    assert.ok(bugLabel);
-    assert.equal(bugLabel.color, "ff0000");
-    assert.equal(bugLabel.description, "Updated bug description");
+    // GitHub API is eventually consistent — label updates may not be
+    // immediately visible on subsequent GET requests.
+    withTestRetry(
+      () => {
+        const labelsAfter = getLabels();
+        const bugLabel = findLabel(labelsAfter, "xfg-test-bug");
+        assert.ok(bugLabel);
+        assert.equal(bugLabel.color, "ff0000");
+        assert.equal(bugLabel.description, "Updated bug description");
+      },
+      { retries: 3, baseDelayMs: 2000, description: "label update consistency" }
+    );
   });
 
   test("settings renames a label", () => {
