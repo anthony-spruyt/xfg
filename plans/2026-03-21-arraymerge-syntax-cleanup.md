@@ -26,7 +26,7 @@ In the `deepMerge` describe block, replace these tests:
 
 1. Replace `"appends arrays when $arrayMerge: append in overlay"` (line 71) — change `values:` to `$values:`
 2. Replace `"prepends arrays when $arrayMerge: prepend"` (line 87) — change `values:` to `$values:`
-3. Replace `"strips $arrayMerge directive from output"` (line 167) — change `values:` to `$values:`, also assert `$values` is stripped
+3. Replace `"strips $arrayMerge directive from output"` (line 167) — replace with meaningful assertion that merged result is correct and directive-free
 4. Update the `createContext` helper (lines 12-19) to remove `arrayStrategies`:
 
 ```typescript
@@ -44,7 +44,8 @@ function createContext(
 7. Remove `"$arrayMerge in nested object sets strategy for child array"` (line 181) — tested sibling syntax in nested objects, no longer applicable
 8. Add new test: `"different strategies for sibling arrays"` — verifies per-field control with `$arrayMerge` + `$values` on two sibling array fields
 9. Add new test: `"$arrayMerge without $values falls through to normal merge"` — overlay object with `$arrayMerge` but no `$values` key falls through to normal merge (overlay wins)
-10. Add new test: `"$values is stripped from output"` — ensure `$values` doesn't leak
+10. Add new test: `"$arrayMerge + $values with non-array base falls through to overlay wins"` — documents that when base value is not an array, directive can't merge and overlay object wins as-is
+11. Add new test: `"$values is stripped from output"` — ensure `$values` doesn't leak
 
 ```typescript
 // Test 1 replacement (line 71):
@@ -72,12 +73,11 @@ test("replaces arrays with $arrayMerge: replace + $values directive", () => {
 });
 
 // Test 3 replacement (line 167):
-test("strips $arrayMerge and $values directives from output", () => {
+test("$arrayMerge + $values produces merged array without directive keys", () => {
   const base = { items: [1, 2] };
   const overlay = { items: { $arrayMerge: "append", $values: [3] } };
   const result = deepMerge(base, overlay, createContext());
-  assert.equal("$arrayMerge" in result, false);
-  assert.equal("$values" in result, false);
+  assert.deepEqual(result, { items: [1, 2, 3] });
 });
 
 // New test 7:
@@ -106,6 +106,22 @@ test("$arrayMerge without $values falls through to normal merge", () => {
   // No $values, so the directive object replaces the base array (overlay wins).
   // $arrayMerge is NOT stripped here — stripMergeDirectives handles that later.
   assert.deepEqual(result, { items: { $arrayMerge: "append", other: "key" } });
+});
+
+// New test 8b:
+test("$arrayMerge + $values with non-array base falls through to overlay wins", () => {
+  const base = { items: "not-an-array" };
+  const overlay = { items: { $arrayMerge: "append", $values: [1, 2] } };
+  const result = deepMerge(
+    base,
+    overlay as Record<string, unknown>,
+    createContext()
+  );
+  // Base is not an array, so the directive can't merge — overlay object wins as-is.
+  // stripMergeDirectives (called by normalizer) will clean up $ keys later.
+  assert.deepEqual(result, {
+    items: { $arrayMerge: "append", $values: [1, 2] },
+  });
 });
 
 // New test 9:
