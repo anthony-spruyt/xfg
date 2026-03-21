@@ -195,6 +195,58 @@ function getActionStyle(action: DiffAction): {
 }
 
 /**
+ * Render a leaf tree node (no children) with its value.
+ */
+function renderLeafNode(
+  child: TreeNode,
+  style: { symbol: string; color: (s: string) => string },
+  indentStr: string,
+  indent: number
+): string[] {
+  const lines: string[] = [];
+  const hasComplexNew =
+    isPlainObject(child.newValue) ||
+    (Array.isArray(child.newValue) &&
+      child.newValue.some((v) => isPlainObject(v)));
+  const hasComplexOld =
+    isPlainObject(child.oldValue) ||
+    (Array.isArray(child.oldValue) &&
+      (child.oldValue as unknown[]).some((v) => isPlainObject(v)));
+
+  if (child.action === "add" && hasComplexNew) {
+    lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));
+    lines.push(...renderNestedValue(child.newValue, child.action, indent + 1));
+  } else if (child.action === "remove" && hasComplexOld) {
+    lines.push(
+      style.color(`${indentStr}${style.symbol} ${child.name} (removed):`)
+    );
+    lines.push(...renderNestedValue(child.oldValue, child.action, indent + 1));
+  } else if (child.action === "change" && (hasComplexNew || hasComplexOld)) {
+    lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));
+    if (hasComplexOld) {
+      lines.push(...renderNestedValue(child.oldValue, "remove", indent + 1));
+    }
+    if (hasComplexNew) {
+      lines.push(...renderNestedValue(child.newValue, "add", indent + 1));
+    }
+  } else {
+    let valuePart = "";
+    if (child.action === "change") {
+      valuePart = `: ${formatValue(child.oldValue)} → ${formatValue(child.newValue)}`;
+    } else if (child.action === "add") {
+      valuePart = `: ${formatValue(child.newValue)}`;
+    } else if (child.action === "remove") {
+      valuePart = ` (was: ${formatValue(child.oldValue)})`;
+    }
+    lines.push(
+      style.color(`${indentStr}${style.symbol} ${child.name}${valuePart}`)
+    );
+  }
+
+  return lines;
+}
+
+/**
  * Recursively render tree nodes to formatted lines.
  */
 function renderTree(node: TreeNode, indent: number = 0): string[] {
@@ -212,54 +264,7 @@ function renderTree(node: TreeNode, indent: number = 0): string[] {
       lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));
       lines.push(...renderTree(child, indent + 1));
     } else {
-      // Leaf node with value
-      const hasComplexNew =
-        isPlainObject(child.newValue) ||
-        (Array.isArray(child.newValue) &&
-          child.newValue.some((v) => isPlainObject(v)));
-      const hasComplexOld =
-        isPlainObject(child.oldValue) ||
-        (Array.isArray(child.oldValue) &&
-          (child.oldValue as unknown[]).some((v) => isPlainObject(v)));
-
-      if (child.action === "add" && hasComplexNew) {
-        lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));
-        lines.push(
-          ...renderNestedValue(child.newValue, child.action, indent + 1)
-        );
-      } else if (child.action === "remove" && hasComplexOld) {
-        lines.push(
-          style.color(`${indentStr}${style.symbol} ${child.name} (removed):`)
-        );
-        lines.push(
-          ...renderNestedValue(child.oldValue, child.action, indent + 1)
-        );
-      } else if (
-        child.action === "change" &&
-        (hasComplexNew || hasComplexOld)
-      ) {
-        lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));
-        if (hasComplexOld) {
-          lines.push(
-            ...renderNestedValue(child.oldValue, "remove", indent + 1)
-          );
-        }
-        if (hasComplexNew) {
-          lines.push(...renderNestedValue(child.newValue, "add", indent + 1));
-        }
-      } else {
-        let valuePart = "";
-        if (child.action === "change") {
-          valuePart = `: ${formatValue(child.oldValue)} → ${formatValue(child.newValue)}`;
-        } else if (child.action === "add") {
-          valuePart = `: ${formatValue(child.newValue)}`;
-        } else if (child.action === "remove") {
-          valuePart = ` (was: ${formatValue(child.oldValue)})`;
-        }
-        lines.push(
-          style.color(`${indentStr}${style.symbol} ${child.name}${valuePart}`)
-        );
-      }
+      lines.push(...renderLeafNode(child, style, indentStr, indent));
     }
   }
 

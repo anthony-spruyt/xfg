@@ -156,7 +156,6 @@ export function detectRepoType(
   gitUrl: string,
   context?: RepoDetectorContext
 ): RepoType {
-  // Check for GitHub Enterprise hosts first (if configured)
   if (context?.githubHosts?.length) {
     const host = extractHostFromUrl(gitUrl)?.toLowerCase();
     const normalizedHosts = context.githubHosts.map((h) => h.toLowerCase());
@@ -165,21 +164,18 @@ export function detectRepoType(
     }
   }
 
-  // Check for Azure DevOps formats (most specific patterns)
   for (const pattern of AZURE_DEVOPS_URL_PATTERNS) {
     if (pattern.test(gitUrl)) {
       return "azure-devops";
     }
   }
 
-  // Check for GitHub formats
   for (const pattern of GITHUB_URL_PATTERNS) {
     if (pattern.test(gitUrl)) {
       return "github";
     }
   }
 
-  // Check for GitLab SaaS formats
   for (const pattern of GITLAB_SAAS_URL_PATTERNS) {
     if (pattern.test(gitUrl)) {
       return "gitlab";

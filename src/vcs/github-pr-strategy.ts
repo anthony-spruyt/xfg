@@ -137,7 +137,13 @@ export class GitHubPRStrategy extends BasePRStrategy {
     assertGitHubRepo(repoInfo, "GitHub PR strategy");
 
     const bodyFile = join(workDir, this.bodyFilePath);
-    writeFileSync(bodyFile, body, "utf-8");
+    try {
+      writeFileSync(bodyFile, body, "utf-8");
+    } catch (err) {
+      throw new SyncError(
+        `Failed to write PR description to ${bodyFile}: ${toErrorMessage(err)}`
+      );
+    }
 
     const tokenEnv = buildTokenEnv(token);
     let command = `gh pr create --title ${escapeShellArg(title)} --body-file ${escapeShellArg(bodyFile)} --base ${escapeShellArg(baseBranch)} --head ${escapeShellArg(branchName)}`;

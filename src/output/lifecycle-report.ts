@@ -1,6 +1,6 @@
-// src/output/lifecycle-report.ts
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
+import { formatCountEntry } from "./settings-report.js";
 
 export interface LifecycleReport {
   actions: LifecycleAction[];
@@ -45,19 +45,12 @@ export function buildLifecycleReport(
 }
 
 function formatLifecycleSummary(totals: LifecycleReport["totals"]): string {
-  const total = totals.created + totals.forked + totals.migrated;
-
-  if (total === 0) {
-    return "No changes";
-  }
-
-  const parts: string[] = [];
-  if (totals.created > 0) parts.push(`${totals.created} to create`);
-  if (totals.forked > 0) parts.push(`${totals.forked} to fork`);
-  if (totals.migrated > 0) parts.push(`${totals.migrated} to migrate`);
-
-  const repoWord = total === 1 ? "repo" : "repos";
-  return `Plan: ${total} ${repoWord} (${parts.join(", ")})`;
+  const entry = formatCountEntry("repo", "repos", [
+    { label: "to create", value: totals.created },
+    { label: "to fork", value: totals.forked },
+    { label: "to migrate", value: totals.migrated },
+  ]);
+  return entry ? `Plan: ${entry}` : "No changes";
 }
 
 /**

@@ -863,7 +863,7 @@ describe("formatSummary", () => {
         assert.ok(markdown.includes("- Delete"));
       });
 
-      test("renders unchanged labels as 'No change'", () => {
+      test("renders unchanged labels as '= Unchanged'", () => {
         const result: RepoResult = {
           repoName: "org/repo",
           status: "succeeded",
@@ -883,7 +883,7 @@ describe("formatSummary", () => {
         const markdown = formatSummary(data);
 
         assert.ok(markdown.includes("keep-me"));
-        assert.ok(markdown.includes("No change"));
+        assert.ok(markdown.includes("= Unchanged"));
       });
 
       test("shows labels plan summary in changes column", () => {

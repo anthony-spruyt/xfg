@@ -13,7 +13,7 @@ import type {
 } from "./types.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { ICommandExecutor, getStderr } from "../shared/command-executor.js";
-import { parseApiJson } from "../shared/gh-api-utils.js";
+import { parseApiJson } from "../shared/json-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
@@ -201,7 +201,13 @@ export class GitLabPRStrategy extends BasePRStrategy {
     const repoFlag = this.getRepoFlag(repoInfo);
 
     const descFile = join(workDir, this.bodyFilePath);
-    writeFileSync(descFile, body, "utf-8");
+    try {
+      writeFileSync(descFile, body, "utf-8");
+    } catch (err) {
+      throw new SyncError(
+        `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`
+      );
+    }
 
     // glab mr create with description from file
     const command = `glab mr create --source-branch ${escapeShellArg(branchName)} --target-branch ${escapeShellArg(baseBranch)} --title ${escapeShellArg(title)} --description "$(cat ${escapeShellArg(descFile)})" --yes -R ${escapeShellArg(repoFlag)}`;

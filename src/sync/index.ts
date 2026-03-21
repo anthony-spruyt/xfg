@@ -1,5 +1,6 @@
 export type { DiffStats } from "./diff-utils.js";
 export type {
+  FileChangeDetail,
   GitOpsFactory,
   IAuthOptionsBuilder,
   IBranchManager,

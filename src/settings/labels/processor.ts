@@ -146,7 +146,6 @@ export class LabelsProcessor implements ILabelsProcessor {
           break;
 
         case "unchanged":
-          // No action needed
           break;
       }
     }

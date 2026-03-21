@@ -3,7 +3,7 @@ import { withRetry } from "./retry-utils.js";
 import type { ICommandExecutor } from "./command-executor.js";
 import type { GitHubRepoInfo } from "./repo-detector.js";
 import { toErrorMessage } from "./type-guards.js";
-import { SyncError } from "./errors.js";
+
 import type { DebugLog } from "./logger.js";
 
 interface ITokenManager {
@@ -124,18 +124,23 @@ export class GhApiClient {
   }
 }
 
+export interface ResolveGitHubTokenOptions {
+  repoInfo: GitHubRepoInfo;
+  tokenManager: ITokenManager | null;
+  context: string;
+  log?: DebugLog;
+  envToken?: string;
+}
+
 /**
  * Resolve a GitHub token for a repo: GitHub App token → envToken fallback.
  * Returns { token, skipped } where skipped=true means no App installation found
  * for this owner (token will be undefined). Both sync and settings paths use this.
  */
 export async function resolveGitHubToken(
-  repoInfo: GitHubRepoInfo,
-  tokenManager: ITokenManager | null,
-  context: string,
-  log?: DebugLog,
-  envToken?: string
+  options: ResolveGitHubTokenOptions
 ): Promise<{ token: string | undefined; skipped: boolean }> {
+  const { repoInfo, tokenManager, context, log, envToken } = options;
   try {
     const appToken = await tokenManager?.getTokenForRepo(repoInfo);
     if (appToken === null) {
@@ -160,20 +165,4 @@ export async function resolveGitHubToken(
  */
 export function isHttp404Error(error: unknown): boolean {
   return toErrorMessage(error).includes("HTTP 404");
-}
-
-/**
- * Parse a JSON API response with a contextual error message.
- * Wraps JSON.parse so callers get "Failed to parse <context>: ..." instead of
- * a bare "Unexpected token" SyntaxError.
- */
-export function parseApiJson<T>(response: string, context: string): T {
-  try {
-    return JSON.parse(response) as T;
-  } catch (error) {
-    const preview = response.slice(0, 200);
-    throw new SyncError(
-      `Failed to parse ${context}: ${toErrorMessage(error)} — ${preview}`
-    );
-  }
 }

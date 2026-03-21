@@ -158,6 +158,26 @@ function buildXfgConfig(
  * @returns Content with interpolated values
  */
 export function interpolateXfgContent(
+  content: string,
+  ctx: XfgTemplateContext,
+  options?: XfgInterpolationOptions
+): string;
+export function interpolateXfgContent(
+  content: string[],
+  ctx: XfgTemplateContext,
+  options?: XfgInterpolationOptions
+): string[];
+export function interpolateXfgContent(
+  content: Record<string, unknown>,
+  ctx: XfgTemplateContext,
+  options?: XfgInterpolationOptions
+): Record<string, unknown>;
+export function interpolateXfgContent(
+  content: TemplateContent,
+  ctx: XfgTemplateContext,
+  options?: XfgInterpolationOptions
+): TemplateContent;
+export function interpolateXfgContent(
   content: TemplateContent,
   ctx: XfgTemplateContext,
   options: XfgInterpolationOptions = DEFAULT_OPTIONS
@@ -171,5 +191,5 @@ export function interpolateXfgContent(
     return content.map((line) => interpolateString(line, config));
   }
 
-  return interpolateValue(content, config) as Record<string, unknown>;
+  return interpolateValue(content, config);
 }

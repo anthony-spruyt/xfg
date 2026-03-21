@@ -1,39 +1,18 @@
-// src/output/sync-report.ts
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
-import type { FileChangeDetail } from "../sync/types.js";
+import { formatCountEntry } from "./settings-report.js";
+import { renderSyncLines } from "./unified-summary.js";
+import type { SyncReport, RepoFileChanges, ReportFileChange } from "./types.js";
 
-export type ReportFileChange = FileChangeDetail;
-
-export interface SyncReport {
-  repos: RepoFileChanges[];
-  totals: {
-    files: { create: number; update: number; delete: number };
-  };
-}
-
-export interface RepoFileChanges {
-  repoName: string;
-  files: ReportFileChange[];
-  prUrl?: string;
-  mergeOutcome?: "manual" | "auto" | "force" | "direct";
-  error?: string;
-}
+export type { SyncReport, RepoFileChanges, ReportFileChange };
 
 function formatSyncSummary(totals: SyncReport["totals"]): string {
-  const total = totals.files.create + totals.files.update + totals.files.delete;
-
-  if (total === 0) {
-    return "No changes";
-  }
-
-  const parts: string[] = [];
-  if (totals.files.create > 0) parts.push(`${totals.files.create} to create`);
-  if (totals.files.update > 0) parts.push(`${totals.files.update} to update`);
-  if (totals.files.delete > 0) parts.push(`${totals.files.delete} to delete`);
-
-  const fileWord = total === 1 ? "file" : "files";
-  return `Plan: ${total} ${fileWord} (${parts.join(", ")})`;
+  const entry = formatCountEntry("file", "files", [
+    { label: "to create", value: totals.files.create },
+    { label: "to update", value: totals.files.update },
+    { label: "to delete", value: totals.files.delete },
+  ]);
+  return entry ? `Plan: ${entry}` : "No changes";
 }
 
 export function formatSyncReportCLI(report: SyncReport): string[] {
@@ -100,19 +79,7 @@ export function formatSyncReportMarkdown(
 
     diffLines.push(`@@ ${repo.repoName} @@`);
 
-    for (const file of repo.files) {
-      if (file.action === "create") {
-        diffLines.push(`+ ${file.path}`);
-      } else if (file.action === "update") {
-        diffLines.push(`! ${file.path}`);
-      } else if (file.action === "delete") {
-        diffLines.push(`- ${file.path}`);
-      }
-    }
-
-    if (repo.error) {
-      diffLines.push(`- Error: ${repo.error}`);
-    }
+    renderSyncLines(repo, diffLines);
   }
 
   if (diffLines.length > 0) {

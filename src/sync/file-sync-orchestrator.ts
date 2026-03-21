@@ -1,9 +1,9 @@
 import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { ILogger } from "../shared/logger.js";
-import type { FileAction } from "../vcs/types.js";
+import type { FileAction } from "../vcs/index.js";
 import { incrementDiffStats } from "./diff-utils.js";
-import { loadManifest } from "./manifest.js";
+
 import type {
   IFileWriter,
   IManifestManager,
@@ -44,19 +44,21 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
       { gitOps: session.gitOps, log: this.log }
     );
 
-    const existingManifest = loadManifest(workDir, this.log);
     const filesWithDeleteOrphaned = new Map<string, boolean | undefined>(
       repoConfig.files.map((f) => [f.fileName, f.deleteOrphaned])
     );
 
-    const { manifest: newManifest, filesToDelete } =
-      this.manifestManager.processOrphans(
-        workDir,
-        configId,
-        filesWithDeleteOrphaned
-      );
+    const {
+      manifest: newManifest,
+      existingManifest,
+      filesToDelete,
+    } = this.manifestManager.processOrphans(
+      workDir,
+      configId,
+      filesWithDeleteOrphaned
+    );
 
-    await this.manifestManager.deleteOrphans(
+    this.manifestManager.deleteOrphans(
       filesToDelete,
       { dryRun: dryRun, noDelete: noDelete },
       { gitOps: session.gitOps, log: this.log, fileChanges }

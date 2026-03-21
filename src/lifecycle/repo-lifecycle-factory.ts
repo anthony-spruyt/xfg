@@ -34,13 +34,11 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
   }
 
   getProvider(platform: LifecyclePlatform): IRepoLifecycleProvider {
-    // Check cache first
     const cached = this.providers.get(platform);
     if (cached) {
       return cached;
     }
 
-    // Create provider
     let provider: IRepoLifecycleProvider;
     switch (platform) {
       case "github":
@@ -63,13 +61,11 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
   }
 
   getMigrationSource(platform: LifecyclePlatform): IMigrationSource {
-    // Check cache first
     const cached = this.sources.get(platform);
     if (cached) {
       return cached;
     }
 
-    // Create source
     let source: IMigrationSource;
     switch (platform) {
       case "azure-devops":

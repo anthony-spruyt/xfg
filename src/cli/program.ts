@@ -44,6 +44,30 @@ function addSharedOptions(cmd: Command): Command {
 }
 
 // =============================================================================
+// Validators
+// =============================================================================
+
+export function parseMergeMode(value: string): MergeMode {
+  const valid: MergeMode[] = ["manual", "auto", "force", "direct"];
+  if (!valid.includes(value as MergeMode)) {
+    throw new ValidationError(
+      `Invalid merge mode: ${value}. Valid: ${valid.join(", ")}`
+    );
+  }
+  return value as MergeMode;
+}
+
+export function parseMergeStrategy(value: string): MergeStrategy {
+  const valid: MergeStrategy[] = ["merge", "squash", "rebase"];
+  if (!valid.includes(value as MergeStrategy)) {
+    throw new ValidationError(
+      `Invalid merge strategy: ${value}. Valid: ${valid.join(", ")}`
+    );
+  }
+  return value as MergeStrategy;
+}
+
+// =============================================================================
 // CLI Program
 // =============================================================================
 
@@ -64,28 +88,12 @@ const syncCommand = new Command("sync")
   .option(
     "-m, --merge <mode>",
     "PR merge mode: manual, auto (default, merge when checks pass), force (bypass requirements), direct (push to default branch, no PR)",
-    (value: string): MergeMode => {
-      const valid: MergeMode[] = ["manual", "auto", "force", "direct"];
-      if (!valid.includes(value as MergeMode)) {
-        throw new ValidationError(
-          `Invalid merge mode: ${value}. Valid: ${valid.join(", ")}`
-        );
-      }
-      return value as MergeMode;
-    }
+    parseMergeMode
   )
   .option(
     "--merge-strategy <strategy>",
     "Merge strategy: merge, squash (default), rebase",
-    (value: string): MergeStrategy => {
-      const valid: MergeStrategy[] = ["merge", "squash", "rebase"];
-      if (!valid.includes(value as MergeStrategy)) {
-        throw new ValidationError(
-          `Invalid merge strategy: ${value}. Valid: ${valid.join(", ")}`
-        );
-      }
-      return value as MergeStrategy;
-    }
+    parseMergeStrategy
   )
   .option("--delete-branch", "Delete source branch after merge")
   .action((opts) => {

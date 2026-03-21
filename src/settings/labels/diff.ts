@@ -2,8 +2,9 @@ import type { Label } from "../../config/types.js";
 import type { GitHubLabel } from "./types.js";
 import { normalizeColor } from "./converter.js";
 import { ValidationError } from "../../shared/errors.js";
+import type { SettingsAction } from "../base-processor.js";
 
-export type LabelAction = "create" | "update" | "delete" | "unchanged";
+export type LabelAction = SettingsAction;
 
 export interface LabelChange {
   action: LabelAction;

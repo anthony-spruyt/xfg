@@ -1,5 +1,8 @@
 // Base processor
-export { type ISettingsProcessor } from "./base-processor.js";
+export {
+  type ISettingsProcessor,
+  type SettingsAction,
+} from "./base-processor.js";
 
 // Rulesets
 export {

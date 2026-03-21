@@ -102,10 +102,7 @@ export function interpolateEnvVars(
   json: Record<string, unknown>,
   options: EnvInterpolationOptions
 ): Record<string, unknown> {
-  return interpolateValue(json, buildEnvConfig(options)) as Record<
-    string,
-    unknown
-  >;
+  return interpolateValue(json, buildEnvConfig(options));
 }
 
 /**

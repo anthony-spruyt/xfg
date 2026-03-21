@@ -1,5 +1,5 @@
 import { getCommitStrategy, type FileChange } from "../vcs/index.js";
-import type { ICommitStrategy } from "../vcs/types.js";
+import type { ICommitStrategy } from "../vcs/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import { getRepoDisplayName } from "../shared/repo-detector.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
@@ -86,7 +86,7 @@ export class CommitPushManager implements ICommitPushManager {
   private handleCommitError(
     error: unknown,
     isDirectMode: boolean,
-    baseBranch: string,
+    pushBranch: string,
     repoInfo: CommitPushOptions["repoInfo"]
   ): CommitPushResult {
     const repoName = getRepoDisplayName(repoInfo);
@@ -104,7 +104,7 @@ export class CommitPushManager implements ICommitPushManager {
           success: false,
           repoName,
           message:
-            `Push to '${baseBranch}' was rejected (likely branch protection). ` +
+            `Push to '${pushBranch}' was rejected (likely branch protection). ` +
             `To use 'direct' mode, the target branch must allow direct pushes. ` +
             `Use 'merge: force' to create a PR and merge with admin privileges.`,
         },

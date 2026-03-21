@@ -1,4 +1,4 @@
-import type { FileAction } from "../vcs/types.js";
+import type { FileAction } from "../vcs/index.js";
 
 /**
  * Format a commit message based on the files being changed.
