@@ -261,6 +261,112 @@ describe("FileWriter", () => {
       assert.equal(executableFiles[0], "script.sh");
     });
 
+    test("populates diffLines for JSON files in dry-run", async () => {
+      const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
+        wouldChange: true,
+        fileContent: '{"old": true}\n',
+        fileExists: false,
+        fileExistsOnBranch: false,
+      });
+      const { mock: mockLogger } = createMockLogger();
+
+      const writer = new FileWriter();
+      const files: FileContent[] = [
+        { fileName: "config.json", content: { new: true } },
+      ];
+
+      const result = await writer.writeFiles(
+        files,
+        {
+          repoInfo: mockRepoInfo,
+          baseBranch: "main",
+          workDir,
+          dryRun: true,
+          noDelete: false,
+          configId: "test",
+        },
+        { gitOps: mockGitOps, log: mockLogger }
+      );
+
+      const entry = result.fileChanges.get("config.json");
+      assert.ok(entry);
+      assert.ok(entry.diffLines);
+      assert.ok(entry.diffLines.length > 0);
+      // Raw lines, no ANSI codes
+      const ansiRegex = new RegExp(
+        String.fromCharCode(0x1b) + "\\[[0-9;]*m",
+        "g"
+      );
+      for (const line of entry.diffLines) {
+        assert.equal(line, line.replace(ansiRegex, ""));
+      }
+    });
+
+    test("populates diffLines for JSON files in apply mode", async () => {
+      const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
+        wouldChange: true,
+        fileContent: null,
+        fileExists: false,
+        fileExistsOnBranch: false,
+      });
+      const { mock: mockLogger } = createMockLogger();
+
+      const writer = new FileWriter();
+      const files: FileContent[] = [
+        { fileName: "config.json", content: { key: "value" } },
+      ];
+
+      const result = await writer.writeFiles(
+        files,
+        {
+          repoInfo: mockRepoInfo,
+          baseBranch: "main",
+          workDir,
+          dryRun: false,
+          noDelete: false,
+          configId: "test",
+        },
+        { gitOps: mockGitOps, log: mockLogger }
+      );
+
+      const entry = result.fileChanges.get("config.json");
+      assert.ok(entry);
+      assert.ok(entry.diffLines);
+      assert.ok(entry.diffLines.length > 0);
+    });
+
+    test("does not populate diffLines for non-structured files", async () => {
+      const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
+        wouldChange: true,
+        fileContent: null,
+        fileExists: false,
+        fileExistsOnBranch: false,
+      });
+      const { mock: mockLogger } = createMockLogger();
+
+      const writer = new FileWriter();
+      const files: FileContent[] = [
+        { fileName: "script.sh", content: "#!/bin/bash\necho hello" },
+      ];
+
+      const result = await writer.writeFiles(
+        files,
+        {
+          repoInfo: mockRepoInfo,
+          baseBranch: "main",
+          workDir,
+          dryRun: true,
+          noDelete: false,
+          configId: "test",
+        },
+        { gitOps: mockGitOps, log: mockLogger }
+      );
+
+      const entry = result.fileChanges.get("script.sh");
+      assert.ok(entry);
+      assert.equal(entry.diffLines, undefined);
+    });
+
     test("warns when creating new executable file under GitHub App auth", async () => {
       const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
         fileExists: false,

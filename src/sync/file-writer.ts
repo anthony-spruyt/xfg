@@ -8,6 +8,8 @@ import {
   generateDiff,
   createDiffStats,
   incrementDiffStats,
+  computeUnifiedDiff,
+  isStructuredDataFile,
 } from "./diff-utils.js";
 import type {
   IFileWriter,
@@ -109,11 +111,21 @@ export class FileWriter implements IFileWriter {
       const changed = gitOps.wouldChange(file.fileName, fileContent);
 
       if (changed) {
-        fileChanges.set(file.fileName, {
+        const writeResult: FileWriteResult = {
           fileName: file.fileName,
           content: fileContent,
           action,
-        });
+        };
+
+        // Compute raw diff lines for structured data files (all modes)
+        if (isStructuredDataFile(file.fileName)) {
+          writeResult.diffLines = computeUnifiedDiff(
+            existingContent,
+            fileContent
+          );
+        }
+
+        fileChanges.set(file.fileName, writeResult);
       }
 
       if (dryRun) {
