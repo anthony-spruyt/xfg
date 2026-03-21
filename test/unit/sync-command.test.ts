@@ -1130,6 +1130,50 @@ ${VALID_RULESET}
     });
   });
 
+  describe("diffLines propagation", () => {
+    test("propagates diffLines from processor result to CLI output", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+`
+      );
+
+      const diffLines = ["@@ -1,1 +1,1 @@", "-old", "+new"];
+      const mockProcessor = createMockProcessor({
+        success: true,
+        message: "PR created",
+        fileChanges: [
+          {
+            path: "config.json",
+            action: "update" as const,
+            diffLines,
+          },
+        ],
+      });
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("-old"),
+        "Should include diff removal line in CLI output"
+      );
+      assert.ok(
+        output.includes("+new"),
+        "Should include diff addition line in CLI output"
+      );
+    });
+  });
+
   describe("merge mode warnings", () => {
     test("warns when mergeStrategy is set with direct merge mode", async () => {
       writeFileSync(
