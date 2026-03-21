@@ -302,7 +302,7 @@
           "oneOf": [
             {
               "type": "object",
-              "description": "Object content overlay for JSON/YAML files. Use $arrayMerge directive to control array merging.",
+              "description": "Object content overlay for JSON/YAML files. Use $arrayMerge + $values directives to control per-field array merging.",
               "additionalProperties": true
             },
             {

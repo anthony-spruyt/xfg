@@ -28,7 +28,7 @@ repos:
           team: platform
           features:
             $arrayMerge: append
-            values:
+            $values:
               - tracing
               - rate-limiting
 

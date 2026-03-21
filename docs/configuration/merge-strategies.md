@@ -40,11 +40,7 @@ Use file-level when all arrays in a file should merge the same way. Use inline `
 
 ## Inline Array Merge Directive
 
-For granular control, use the `$arrayMerge` directive within the content. There are two syntax variants:
-
-### Syntax 1: Wrapped with `values`
-
-Wrap the array items in a `values` key alongside the `$arrayMerge` directive:
+For per-field control, use `$arrayMerge` and `$values` directives on individual array fields:
 
 ```yaml
 files:
@@ -59,14 +55,14 @@ repos:
         content:
           features:
             $arrayMerge: append
-            values: ["custom-feature"]
+            $values: ["custom-feature"]
 ```
 
 Result: `["core", "monitoring", "custom-feature"]`
 
-### Syntax 2: Sibling Directive
+### Per-Array Control
 
-Place `$arrayMerge` as a sibling to array fields. The strategy applies to ALL child arrays in that object:
+Each array field gets its own directive, so sibling arrays can use different strategies:
 
 ```yaml
 files:
@@ -80,40 +76,43 @@ repos:
     files:
       config.json:
         content:
-          $arrayMerge: append
-          features: ["custom-feature"]
-          tags: ["team-a"]
+          features:
+            $arrayMerge: append
+            $values: ["custom-feature"]
+          tags:
+            $arrayMerge: prepend
+            $values: ["priority"]
 ```
 
 Result:
 
 - `features`: `["core", "monitoring", "custom-feature"]`
-- `tags`: `["production", "team-a"]`
+- `tags`: `["priority", "production"]`
 
 ### All Strategies
 
 ```yaml
-# append - add after base items
+# append — add after base items
 features:
   $arrayMerge: append
-  values: ["new-item"]
+  $values: ["new-item"]
 # Base ["a", "b"] + overlay ["c"] = ["a", "b", "c"]
 
-# prepend - add before base items
+# prepend — add before base items
 features:
   $arrayMerge: prepend
-  values: ["new-item"]
+  $values: ["new-item"]
 # Base ["a", "b"] + overlay ["c"] = ["c", "a", "b"]
 
-# replace - completely replace base (default behavior)
+# replace — completely replace base (default behavior)
 features:
   $arrayMerge: replace
-  values: ["new-item"]
+  $values: ["new-item"]
 # Base ["a", "b"] + overlay ["c"] = ["c"]
 ```
 
 !!! note "Directives are stripped"
-    The `$arrayMerge` and `values` keys are internal directives and do not appear in the final output.
+    Both `$arrayMerge` and `$values` are internal directives and do not appear in the final output.
 
 ## Text File Merge Strategies
 

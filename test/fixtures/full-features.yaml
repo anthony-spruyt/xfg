@@ -46,11 +46,11 @@ repos:
         content:
           features:
             $arrayMerge: append
-            values:
+            $values:
               - custom-feature
           tags:
             $arrayMerge: append
-            values:
+            $values:
               - extra-tag
 
   # Test 5: Array merge with $arrayMerge: prepend
@@ -60,5 +60,5 @@ repos:
         content:
           features:
             $arrayMerge: prepend
-            values:
+            $values:
               - priority-feature

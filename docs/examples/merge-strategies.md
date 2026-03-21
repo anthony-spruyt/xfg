@@ -63,8 +63,6 @@ repos:
 
 For per-repo array control without setting a file-level strategy, use the `$arrayMerge` directive within content.
 
-### Wrapped Syntax
-
 ```yaml
 id: my-org-config
 files:
@@ -81,7 +79,7 @@ repos:
         content:
           features:
             $arrayMerge: append
-            values: ["tracing", "rate-limiting"]
+            $values: ["tracing", "rate-limiting"]
 
   # Data team - prepend their plugin
   - git: git@github.com:org/data-pipeline.git
@@ -90,7 +88,7 @@ repos:
         content:
           plugins:
             $arrayMerge: prepend
-            values: ["data-transform"]
+            $values: ["data-transform"]
 ```
 
 **api-gateway result:**
@@ -111,33 +109,6 @@ repos:
 }
 ```
 
-### Sibling Syntax
+### Per-Array Control
 
-Use `$arrayMerge` as a sibling key to apply the strategy to all arrays in that object:
-
-```yaml
-id: my-org-config
-files:
-  config.json:
-    content:
-      features: ["core"]
-      tags: ["standard"]
-
-repos:
-  - git: git@github.com:org/repo.git
-    files:
-      config.json:
-        content:
-          $arrayMerge: append
-          features: ["custom"]
-          tags: ["team-a"]
-```
-
-**Result** (both arrays appended):
-
-```json
-{
-  "features": ["core", "custom"],
-  "tags": ["standard", "team-a"]
-}
-```
+Each array field specifies its own `$arrayMerge` + `$values`, so sibling arrays can use different strategies independently.
