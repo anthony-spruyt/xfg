@@ -12,6 +12,7 @@ import {
   writeConfig,
   resetTestRepo,
   waitForCommitVerified,
+  waitForPrVisible,
 } from "./test-helpers.js";
 
 const OWNER = "spruyt-labs";
@@ -77,9 +78,8 @@ repos:
     const output = exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
     console.log(output);
 
-    const prNumber = exec(
-      `gh api repos/${testRepo}/pulls --jq '.[] | select(.head.ref == "${SYNC_BRANCH}") | .number'`
-    );
+    const pr = waitForPrVisible(testRepo, SYNC_BRANCH, "number");
+    const prNumber = String(pr.number);
     assert.ok(prNumber, `Expected PR on ${SYNC_BRANCH}`);
 
     const commitSha = exec(
@@ -338,10 +338,8 @@ repos:
     const output = exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
     console.log(output);
 
-    const prNumber = exec(
-      `gh api repos/${signedTestRepo}/pulls --jq '.[] | select(.head.ref == "${SYNC_BRANCH}") | .number'`
-    );
-    assert.ok(prNumber);
+    const pr = waitForPrVisible(signedTestRepo, SYNC_BRANCH, "number");
+    assert.ok(pr.number);
 
     const commitSha = exec(
       `gh api repos/${signedTestRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
