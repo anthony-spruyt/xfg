@@ -173,40 +173,70 @@ function projectObjects(
   return result;
 }
 
+/**
+ * Candidate keys for matching array items by identity rather than index.
+ * Order matters — first key found across all items wins.
+ */
+const MATCH_KEY_CANDIDATES = ["type", "actor_id"] as const;
+
+/**
+ * Finds a key that uniquely identifies items in both arrays.
+ * Returns the first candidate key present in every item of both arrays, or undefined.
+ */
+function findMatchKey(
+  current: unknown[],
+  desired: unknown[]
+): string | undefined {
+  const allItems = [...current, ...desired];
+  if (allItems.length === 0) return undefined;
+
+  for (const candidate of MATCH_KEY_CANDIDATES) {
+    const everyItemHasKey = allItems.every(
+      (item) =>
+        isPlainObject(item) && candidate in (item as Record<string, unknown>)
+    );
+    if (everyItemHasKey) return candidate;
+  }
+
+  return undefined;
+}
+
 function projectArrays(current: unknown[], desired: unknown[]): unknown[] {
   // Primitive arrays — return current as-is
   if (desired.length === 0 || !isPlainObject(desired[0])) {
     return current;
   }
 
-  // Arrays of objects — match by `type` field if available
-  const hasType = desired.every(
-    (item) => isPlainObject(item) && "type" in (item as Record<string, unknown>)
-  );
+  // Arrays of objects — match by identifying key if available
+  const matchKey = findMatchKey(current, desired);
 
-  if (hasType) {
-    return matchByType(current, desired);
+  if (matchKey) {
+    return matchByKey(current, desired, matchKey);
   }
 
   // Fallback: match by index
   return matchByIndex(current, desired);
 }
 
-function matchByType(current: unknown[], desired: unknown[]): unknown[] {
-  const currentByType = new Map<string, unknown>();
+function matchByKey(
+  current: unknown[],
+  desired: unknown[],
+  key: string
+): unknown[] {
+  const currentByKey = new Map<unknown, unknown>();
   for (const item of current) {
     if (isPlainObject(item)) {
-      const type = (item as Record<string, unknown>).type as string;
-      if (type) currentByType.set(type, item);
+      const keyValue = (item as Record<string, unknown>)[key];
+      if (keyValue !== undefined) currentByKey.set(keyValue, item);
     }
   }
 
-  const desiredTypes = new Set<string>();
+  const desiredKeys = new Set<unknown>();
   const result: unknown[] = [];
   for (const desiredItem of desired) {
-    const type = (desiredItem as Record<string, unknown>).type as string;
-    desiredTypes.add(type);
-    const currentItem = currentByType.get(type);
+    const keyValue = (desiredItem as Record<string, unknown>)[key];
+    desiredKeys.add(keyValue);
+    const currentItem = currentByKey.get(keyValue);
     if (currentItem) {
       result.push(projectToDesiredShape(currentItem, desiredItem));
     }
@@ -217,8 +247,8 @@ function matchByType(current: unknown[], desired: unknown[]): unknown[] {
   // deepEqual must detect (length mismatch). Fixes #549.
   for (const item of current) {
     if (isPlainObject(item)) {
-      const type = (item as Record<string, unknown>).type as string;
-      if (type && !desiredTypes.has(type)) {
+      const keyValue = (item as Record<string, unknown>)[key];
+      if (keyValue !== undefined && !desiredKeys.has(keyValue)) {
         result.push(item);
       }
     }

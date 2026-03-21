@@ -897,6 +897,99 @@ describe("diffRulesets bypass_actors null vs empty array", () => {
   });
 });
 
+describe("diffRulesets bypass_actors ordering (#622)", () => {
+  test("reordered bypass_actors should be unchanged, not update", () => {
+    // Exact scenario from #622: API returns actors in different order
+    const current: GitHubRuleset[] = [
+      {
+        id: 1,
+        name: "pr-rules",
+        target: "branch",
+        enforcement: "active",
+        bypass_actors: [
+          { actor_id: 2740, actor_type: "Team", bypass_mode: "always" },
+          {
+            actor_id: 2719952,
+            actor_type: "Integration",
+            bypass_mode: "always",
+          },
+        ],
+        rules: [{ type: "pull_request" }],
+        conditions: {
+          ref_name: { include: ["refs/heads/main"], exclude: [] },
+        },
+      },
+    ];
+    const desired = new Map<string, Ruleset>([
+      [
+        "pr-rules",
+        {
+          target: "branch",
+          enforcement: "active",
+          bypassActors: [
+            {
+              actorId: 2719952,
+              actorType: "Integration",
+              bypassMode: "always",
+            },
+            { actorId: 2740, actorType: "Team", bypassMode: "always" },
+          ],
+          rules: [{ type: "pull_request" }],
+          conditions: {
+            refName: { include: ["refs/heads/main"], exclude: [] },
+          },
+        },
+      ],
+    ]);
+
+    const changes = diffRulesets(current, desired, false);
+
+    assert.equal(changes.length, 1);
+    assert.equal(changes[0].action, "unchanged");
+  });
+
+  test("actual bypass_actors change detected even with reordering", () => {
+    const current: GitHubRuleset[] = [
+      {
+        id: 1,
+        name: "pr-rules",
+        target: "branch",
+        enforcement: "active",
+        bypass_actors: [
+          { actor_id: 2740, actor_type: "Team", bypass_mode: "always" },
+          {
+            actor_id: 2719952,
+            actor_type: "Integration",
+            bypass_mode: "always",
+          },
+        ],
+      },
+    ];
+    const desired = new Map<string, Ruleset>([
+      [
+        "pr-rules",
+        {
+          target: "branch",
+          enforcement: "active",
+          bypassActors: [
+            {
+              actorId: 2719952,
+              actorType: "Integration",
+              bypassMode: "pull_request",
+            },
+            { actorId: 2740, actorType: "Team", bypassMode: "always" },
+          ],
+        },
+      ],
+    ]);
+
+    const changes = diffRulesets(current, desired, false);
+
+    assert.equal(changes.length, 1);
+    assert.equal(changes[0].action, "update");
+  });
+});
+
 describe("desired-state orphan detection", () => {
   test("deleteOrphaned: true deletes ALL current rulesets not in desired", () => {
     const current: GitHubRuleset[] = [
@@ -1223,7 +1316,7 @@ describe("projectToDesiredShape", () => {
     });
   });
 
-  test("falls back to index matching when no type field", () => {
+  test("matches by actor_id when no type field present", () => {
     const current = {
       bypass_actors: [
         {
@@ -1327,5 +1420,101 @@ describe("projectToDesiredShape", () => {
     const result = projectToDesiredShape(current, desired);
 
     assert.deepEqual(result, {});
+  });
+
+  test("matches bypass_actors by actor_id regardless of order", () => {
+    // Regression: #622 — API returns bypass_actors in different order
+    // causing false diffs and infinite ping-pong updates
+    const current = {
+      bypass_actors: [
+        { actor_id: 2740, actor_type: "Team", bypass_mode: "always" },
+        {
+          actor_id: 2719952,
+          actor_type: "DeployKey",
+          bypass_mode: "pull_request",
+        },
+      ],
+    };
+    const desired = {
+      bypass_actors: [
+        {
+          actor_id: 2719952,
+          actor_type: "DeployKey",
+          bypass_mode: "pull_request",
+        },
+        { actor_id: 2740, actor_type: "Team", bypass_mode: "always" },
+      ],
+    };
+
+    const result = projectToDesiredShape(current, desired);
+
+    // Should reorder current to match desired's order, making them equal
+    assert.deepEqual(result, {
+      bypass_actors: [
+        {
+          actor_id: 2719952,
+          actor_type: "DeployKey",
+          bypass_mode: "pull_request",
+        },
+        { actor_id: 2740, actor_type: "Team", bypass_mode: "always" },
+      ],
+    });
+  });
+
+  test("detects actual bypass_actors changes even with actor_id matching", () => {
+    const current = {
+      bypass_actors: [
+        { actor_id: 2740, actor_type: "Team", bypass_mode: "always" },
+        {
+          actor_id: 2719952,
+          actor_type: "DeployKey",
+          bypass_mode: "pull_request",
+        },
+      ],
+    };
+    const desired = {
+      bypass_actors: [
+        {
+          actor_id: 2719952,
+          actor_type: "DeployKey",
+          bypass_mode: "always",
+        },
+        { actor_id: 2740, actor_type: "Team", bypass_mode: "always" },
+      ],
+    };
+
+    const result = projectToDesiredShape(current, desired);
+
+    // actor_id 2719952 changed bypass_mode from pull_request to always
+    assert.deepEqual(result, {
+      bypass_actors: [
+        {
+          actor_id: 2719952,
+          actor_type: "DeployKey",
+          bypass_mode: "pull_request",
+        },
+        { actor_id: 2740, actor_type: "Team", bypass_mode: "always" },
+      ],
+    });
+  });
+
+  test("preserves current-only bypass_actors for removal detection", () => {
+    // Similar to #549 regression test but for actor_id matching
+    const current = {
+      bypass_actors: [
+        { actor_id: 1, actor_type: "Team", bypass_mode: "always" },
+        { actor_id: 2, actor_type: "User", bypass_mode: "always" },
+      ],
+    };
+    const desired = {
+      bypass_actors: [
+        { actor_id: 1, actor_type: "Team", bypass_mode: "always" },
+      ],
+    };
+
+    const result = projectToDesiredShape(current, desired);
+
+    // Should keep the extra item so deepEqual detects the removal
+    assert.equal((result as Record<string, unknown[]>).bypass_actors.length, 2);
   });
 });
