@@ -510,7 +510,7 @@ describe("normalizeConfig", () => {
             files: {
               "config.json": {
                 content: {
-                  items: { $arrayMerge: "append", values: ["b"] },
+                  items: { $arrayMerge: "append", $values: ["b"] },
                 },
               },
             },
@@ -521,6 +521,7 @@ describe("normalizeConfig", () => {
       const result = normalizeConfig(raw, process.env);
       const jsonStr = JSON.stringify(result.repos[0].files[0].content);
       assert.ok(!jsonStr.includes("$arrayMerge"));
+      assert.ok(!jsonStr.includes("$values"));
     });
   });
 
