@@ -11,6 +11,7 @@
         ".editorconfig",
         ".eslintrc.json",
         ".github/actionlint.yaml",
+        ".github/CODEOWNERS",
         ".github/renovate.json5",
         ".github/workflows/ci.yaml",
         ".github/workflows/trivy-scan.yaml",

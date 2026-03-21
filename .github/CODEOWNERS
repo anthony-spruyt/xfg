@@ -1,0 +1,3 @@
+# Protect CI/CD configuration from unauthorized changes
+.github/workflows/ @anthony-spruyt
+.github/actions/   @anthony-spruyt
