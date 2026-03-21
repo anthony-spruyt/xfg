@@ -39,14 +39,14 @@ export class ManifestManager implements IManifestManager {
       filesWithDeleteOrphaned
     );
 
-    return { manifest, filesToDelete };
+    return { manifest, existingManifest, filesToDelete };
   }
 
-  async deleteOrphans(
+  deleteOrphans(
     filesToDelete: string[],
     options: OrphanDeleteOptions,
     deps: OrphanDeleteDeps
-  ): Promise<void> {
+  ): void {
     const { dryRun, noDelete } = options;
     const { gitOps, log, fileChanges } = deps;
 

@@ -6,10 +6,10 @@ import {
 } from "../../shared/repo-detector.js";
 import {
   GhApiClient,
-  parseApiJson,
   isHttp404Error,
   type GhApiOptions,
 } from "../../shared/gh-api-utils.js";
+import { parseApiJson } from "../../shared/json-utils.js";
 import type { GitHubRepoSettings } from "../../config/index.js";
 import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
 import { camelToSnake } from "../../shared/string-utils.js";

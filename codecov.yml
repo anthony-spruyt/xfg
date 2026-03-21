@@ -24,6 +24,7 @@ ignore:
   - "src/cli/types.ts"
   - "src/config/types.ts"
   - "src/lifecycle/types.ts"
+  - "src/output/types.ts"
   - "src/sync/types.ts"
   - "src/vcs/types.ts"
   - "src/settings/rulesets/types.ts"

@@ -1,4 +1,3 @@
-// src/cli/sync-report-builder.ts
 import type {
   SyncReport,
   RepoFileChanges,

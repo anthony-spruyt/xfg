@@ -29,12 +29,10 @@ function buildHeaderComment(
 ): string | undefined {
   const lines: string[] = [];
 
-  // Add yaml-language-server schema directive first (if present)
   if (schemaUrl) {
     lines.push(` yaml-language-server: $schema=${schemaUrl}`);
   }
 
-  // Add custom header lines (with space prefix for proper formatting)
   if (header && header.length > 0) {
     lines.push(...header.map((h) => ` ${h}`));
   }
@@ -54,12 +52,10 @@ function buildCommentOnlyYaml(
 ): string | undefined {
   const lines: string[] = [];
 
-  // Add yaml-language-server schema directive first (if present)
   if (schemaUrl) {
     lines.push(`# yaml-language-server: $schema=${schemaUrl}`);
   }
 
-  // Add custom header lines
   if (header && header.length > 0) {
     lines.push(...header.map((h) => `# ${h}`));
   }

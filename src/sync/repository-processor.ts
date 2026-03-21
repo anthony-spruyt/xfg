@@ -58,14 +58,14 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       gitOpsFactory ??
       ((opts, auth, retries) => {
         const gitOps = new GitOps({ ...opts, log: log });
-        return new AuthenticatedGitOps(
-          gitOps,
-          opts.executor,
-          opts.workDir,
-          retries ?? 3,
+        return new AuthenticatedGitOps({
+          localOps: gitOps,
+          executor: opts.executor,
+          workDir: opts.workDir,
+          retries: retries ?? 3,
           auth,
-          log
-        );
+          log,
+        });
       });
 
     const tokenManager = components?.tokenManager ?? null;

@@ -16,6 +16,7 @@ import {
   validateBranchName,
 } from "../../src/shared/branch-utils.js";
 import { ICommandExecutor } from "../../src/shared/command-executor.js";
+import { SyncError } from "../../src/shared/errors.js";
 
 const stubExecutor: ICommandExecutor = { exec: async () => "" };
 
@@ -284,6 +285,24 @@ describe("GitOps", () => {
       assert.ok(existsSync(workDir));
       assert.ok(!existsSync(join(workDir, "nested")));
     });
+
+    test("wraps filesystem errors in SyncError", () => {
+      // Use a path through a file (not a directory) to trigger ENOTDIR
+      const blockingFile = join(testDir, "blocking-file");
+      writeFileSync(blockingFile, "I am a file");
+      const badWorkDir = join(blockingFile, "impossible");
+
+      const gitOps = new GitOps({
+        workDir: badWorkDir,
+        executor: stubExecutor,
+      });
+      assert.throws(
+        () => gitOps.cleanWorkspace(),
+        (err: unknown) =>
+          err instanceof SyncError &&
+          err.message.includes("Failed to clean workspace")
+      );
+    });
   });
 
   describe("writeFile", () => {
@@ -318,6 +337,18 @@ describe("GitOps", () => {
       gitOps.writeFile("test.json", "content");
 
       assert.ok(!existsSync(join(workDir, "test.json")));
+    });
+
+    test("wraps filesystem errors in SyncError", () => {
+      // Place a file where writeFile expects to create a directory
+      writeFileSync(join(workDir, "blocker"), "I am a file");
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
+      assert.throws(
+        () => gitOps.writeFile("blocker/sub/test.json", "content"),
+        (err: unknown) =>
+          err instanceof SyncError &&
+          err.message.includes("Failed to write file")
+      );
     });
   });
 
@@ -656,6 +687,17 @@ describe("GitOps", () => {
         "File should not be executable in dry-run mode"
       );
     });
+
+    test("wraps chmod errors in SyncError", async () => {
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
+      // File doesn't exist, so chmodSync will throw ENOENT
+      await assert.rejects(
+        async () => gitOps.setExecutable("nonexistent.sh"),
+        (err: unknown) =>
+          err instanceof SyncError &&
+          err.message.includes("Failed to set executable permissions")
+      );
+    });
   });
 
   describe("commit", () => {
@@ -928,6 +970,22 @@ describe("GitOps", () => {
       gitOps.deleteFile("subdir/nested.json");
 
       assert.ok(!existsSync(filePath));
+    });
+
+    test("wraps filesystem errors in SyncError", () => {
+      // Create a directory where deleteFile expects a file — rmSync on a
+      // non-empty directory without { recursive: true } throws ENOTEMPTY/EISDIR
+      const dirPath = join(workDir, "actually-a-dir");
+      mkdirSync(dirPath, { recursive: true });
+      writeFileSync(join(dirPath, "child.txt"), "content");
+
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
+      assert.throws(
+        () => gitOps.deleteFile("actually-a-dir"),
+        (err: unknown) =>
+          err instanceof SyncError &&
+          err.message.includes("Failed to delete file")
+      );
     });
   });
 

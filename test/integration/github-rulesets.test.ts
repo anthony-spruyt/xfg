@@ -36,11 +36,8 @@ function deleteRulesetIfExists(): void {
   }
 }
 
-async function waitForRulesetVisible(
-  rulesetId: number,
-  timeoutMs = 30000
-): Promise<void> {
-  return waitForRulesetVisibleBase(testRepo, rulesetId, timeoutMs);
+function waitForRulesetVisible(rulesetId: number): void {
+  waitForRulesetVisibleBase(testRepo, rulesetId);
 }
 
 function makeConfig(): string {
@@ -116,7 +113,7 @@ describe("GitHub Settings Integration Test", () => {
     assert.equal(ruleset.enforcement, "active");
     assert.equal(ruleset.target, "branch");
 
-    await waitForRulesetVisible(ruleset.id);
+    waitForRulesetVisible(ruleset.id);
   });
 
   test("settings updates an existing ruleset", async () => {
@@ -131,7 +128,7 @@ describe("GitHub Settings Integration Test", () => {
       `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
     );
     const rulesetBefore = JSON.parse(rulesetCreated);
-    await waitForRulesetVisible(rulesetBefore.id);
+    waitForRulesetVisible(rulesetBefore.id);
 
     console.log("\nRunning xfg sync again (update)...");
     exec(`node dist/cli.js sync --config ${configPath}`, {

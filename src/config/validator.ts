@@ -21,15 +21,8 @@ const CONFIG_ID_MAX_LENGTH = 64;
  * Supports SSH (git@host:path) and HTTPS (https://host/path) formats.
  */
 function isValidGitUrl(url: string): boolean {
-  // SSH format: git@hostname:path
-  if (/^git@[^:]+:.+$/.test(url)) {
-    return true;
-  }
-  // HTTPS format: https://hostname/path
-  if (/^https?:\/\/[^/]+\/.+$/.test(url)) {
-    return true;
-  }
-  return false;
+  // SSH format: git@hostname:path  OR  HTTPS format: https://hostname/path
+  return /^git@[^:]+:.+$/.test(url) || /^https?:\/\/[^/]+\/.+$/.test(url);
 }
 
 /**

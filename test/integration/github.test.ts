@@ -12,6 +12,7 @@ import {
   writeConfig,
   resetTestRepo,
   waitForFileVisible as waitForFileVisibleBase,
+  waitForPrVisible,
 } from "./test-helpers.js";
 
 const OWNER = "spruyt-labs";
@@ -22,11 +23,8 @@ let repoName: string;
 let testRepo: string;
 let tmpDir: string;
 
-async function waitForFileVisible(
-  filePath: string,
-  timeoutMs = 10000
-): Promise<string> {
-  return waitForFileVisibleBase(testRepo, filePath, timeoutMs);
+function waitForFileVisible(filePath: string): string {
+  return waitForFileVisibleBase(testRepo, filePath);
 }
 
 describe("GitHub Integration Test", () => {
@@ -83,14 +81,9 @@ repos:
     });
     console.log(output);
 
-    const prList = exec(
-      `gh pr list --repo ${testRepo} --head ${BRANCH_NAME} --json number,title,url --jq '.[0]'`
-    );
-    assert.ok(prList, "Expected a PR to be created");
-
-    const pr = JSON.parse(prList);
+    const pr = waitForPrVisible(testRepo, BRANCH_NAME);
     assert.ok(pr.number);
-    assert.ok(pr.title.includes("sync"));
+    assert.ok((pr.title as string).includes("sync"));
 
     const fileContent = exec(
       `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
@@ -134,20 +127,14 @@ repos:
 
     exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
 
-    const prNumberBefore = parseInt(
-      exec(
-        `gh pr list --repo ${testRepo} --head ${BRANCH_NAME} --json number --jq '.[0].number'`
-      ),
-      10
-    );
+    const prBefore = waitForPrVisible(testRepo, BRANCH_NAME, "number");
+    const prNumberBefore = prBefore.number as number;
     assert.ok(prNumberBefore);
 
     exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
 
-    const prListAfter = exec(
-      `gh pr list --repo ${testRepo} --head ${BRANCH_NAME} --json number --jq '.[0]'`
-    );
-    assert.ok(prListAfter);
+    const prAfter = waitForPrVisible(testRepo, BRANCH_NAME, "number");
+    assert.ok(prAfter.number);
 
     try {
       const oldPRState = exec(
@@ -218,12 +205,9 @@ repos:
 
     exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
 
-    const prInfo = exec(
-      `gh pr list --repo ${testRepo} --head ${testBranch} --json number,title --jq '.[0]'`
-    );
-    const pr = JSON.parse(prInfo);
-    assert.ok(pr.title.includes("changed-test.json"));
-    assert.ok(!pr.title.includes("unchanged-test.json"));
+    const pr = waitForPrVisible(testRepo, testBranch, "number,title");
+    assert.ok((pr.title as string).includes("changed-test.json"));
+    assert.ok(!(pr.title as string).includes("unchanged-test.json"));
   });
 
   test("template feature interpolates xfg variables in files and PR body", async () => {
@@ -267,10 +251,7 @@ repos:
 
     exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
 
-    const prInfo = exec(
-      `gh pr list --repo ${testRepo} --head ${testBranch} --json number,title --jq '.[0]'`
-    );
-    const pr = JSON.parse(prInfo);
+    const pr = waitForPrVisible(testRepo, testBranch, "number,title");
 
     const fileContent = exec(
       `gh api repos/${testRepo}/contents/${templateFile}?ref=${testBranch} --jq '.content' | base64 -d`
@@ -320,7 +301,7 @@ repos:
     });
     assert.ok(output.includes("Pushed directly") || output.includes("direct"));
 
-    const fileContent = await waitForFileVisible(directFile);
+    const fileContent = waitForFileVisible(directFile);
     const json = JSON.parse(fileContent);
     assert.equal(json.directMode, true);
   });
@@ -410,10 +391,8 @@ repos:
 
     exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
 
-    const prInfo1 = exec(
-      `gh pr list --repo ${testRepo} --head ${testBranch} --json number --jq '.[0].number'`
-    );
-    assert.ok(prInfo1);
+    const pr1 = waitForPrVisible(testRepo, testBranch, "number");
+    assert.ok(pr1.number);
 
     // Advance main
     const mainSha = exec(
@@ -427,10 +406,8 @@ repos:
       cwd: projectRoot,
     });
 
-    const prInfo2 = exec(
-      `gh pr list --repo ${testRepo} --head ${testBranch} --json number --jq '.[0]'`
-    );
-    assert.ok(prInfo2);
+    const pr2 = waitForPrVisible(testRepo, testBranch, "number");
+    assert.ok(pr2.number);
     // Verify sync produced output (check mark or repo reference)
     const url = new URL(`https://github.com/${testRepo}`);
     assert.ok(
@@ -475,10 +452,8 @@ repos:
 
     exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
 
-    const prInfo = exec(
-      `gh pr list --repo ${testRepo} --head ${testBranch} --json number --jq '.[0]'`
-    );
-    assert.ok(prInfo);
+    const prInfo = waitForPrVisible(testRepo, testBranch, "number");
+    assert.ok(prInfo.number);
 
     const fileContent = exec(
       `gh api repos/${testRepo}/contents/${orphanBranchFile}?ref=${testBranch} --jq '.content' | base64 -d`
@@ -510,10 +485,8 @@ repos:
       cwd: projectRoot,
     });
 
-    const prInfo = exec(
-      `gh pr list --repo ${testRepo} --head ${testBranch} --json number --jq '.[0]'`
-    );
-    assert.ok(prInfo);
+    const prInfo = waitForPrVisible(testRepo, testBranch, "number");
+    assert.ok(prInfo.number);
 
     const fileContent = exec(
       `gh api repos/${testRepo}/contents/${testFile}?ref=${testBranch} --jq '.content' | base64 -d`
@@ -545,10 +518,8 @@ repos:
       cwd: projectRoot,
     });
 
-    const prInfo = exec(
-      `gh pr list --repo ${testRepo} --head ${testBranch} --json number --jq '.[0]'`
-    );
-    assert.ok(prInfo);
+    const prInfo = waitForPrVisible(testRepo, testBranch, "number");
+    assert.ok(prInfo.number);
 
     const fileContent = exec(
       `gh api repos/${testRepo}/contents/${testFile}?ref=${testBranch} --jq '.content' | base64 -d`
@@ -617,11 +588,10 @@ repos:
 
     exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
 
-    const prInfo = exec(
-      `gh pr list --repo ${testRepo} --head ${prLabelsBranch} --json number,labels --jq '.[0]'`
+    const pr = waitForPrVisible(testRepo, prLabelsBranch, "number,labels");
+    const labelNames: string[] = (pr.labels as Array<{ name: string }>).map(
+      (l) => l.name
     );
-    const pr = JSON.parse(prInfo);
-    const labelNames: string[] = pr.labels.map((l: { name: string }) => l.name);
     assert.ok(labelNames.includes("bug"));
     assert.ok(labelNames.includes("enhancement"));
   });
@@ -654,11 +624,14 @@ repos:
 
     exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
 
-    const prInfo = exec(
-      `gh pr list --repo ${testRepo} --head ${prLabelsOverrideBranch} --json number,labels --jq '.[0]'`
+    const pr = waitForPrVisible(
+      testRepo,
+      prLabelsOverrideBranch,
+      "number,labels"
     );
-    const pr = JSON.parse(prInfo);
-    const labelNames: string[] = pr.labels.map((l: { name: string }) => l.name);
+    const labelNames: string[] = (pr.labels as Array<{ name: string }>).map(
+      (l) => l.name
+    );
     assert.ok(labelNames.includes("documentation"));
     assert.ok(!labelNames.includes("bug"));
     assert.ok(!labelNames.includes("enhancement"));

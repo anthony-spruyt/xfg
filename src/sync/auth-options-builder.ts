@@ -1,6 +1,6 @@
 import { RepoInfo, isGitHubRepo } from "../shared/repo-detector.js";
 import type { GitHubRepoInfo } from "../shared/repo-detector.js";
-import type { GitAuthOptions } from "../vcs/types.js";
+import type { GitAuthOptions } from "../vcs/index.js";
 import { GitHubAppTokenManager } from "../vcs/github-app-token-manager.js";
 import type { AuthResult, IAuthOptionsBuilder } from "./types.js";
 import type { ILogger } from "../shared/logger.js";
@@ -29,13 +29,13 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
     }
 
     // Otherwise resolve via token manager / env fallback
-    const resolved = await resolveGitHubToken(
+    const resolved = await resolveGitHubToken({
       repoInfo,
-      this.tokenManager,
-      repoName,
-      this.log,
-      this.envToken
-    );
+      tokenManager: this.tokenManager,
+      context: repoName,
+      log: this.log,
+      envToken: this.envToken,
+    });
 
     if (resolved.skipped) {
       return {

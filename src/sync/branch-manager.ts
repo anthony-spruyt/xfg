@@ -1,5 +1,5 @@
 import { getPRStrategy } from "../vcs/index.js";
-import type { IPRStrategy } from "../vcs/types.js";
+import type { IPRStrategy } from "../vcs/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { IBranchManager, BranchSetupOptions } from "./types.js";

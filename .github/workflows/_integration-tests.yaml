@@ -185,11 +185,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         run: |
           echo "Verifying PR was created..."
-          PR_INFO=$(gh pr list --repo spruyt-labs/${{ steps.ephemeral.outputs.repo_name }} --head chore/sync-my-config --json number,title,url --jq '.[0]')
-          if [ -z "$PR_INFO" ]; then
-            echo "ERROR: No PR was created"
-            exit 1
-          fi
+          PR_INFO=$(.github/scripts/wait-for-pr.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "chore/sync-my-config")
           echo "PR created successfully:"
           echo "$PR_INFO" | jq .
 
@@ -264,11 +260,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         run: |
           echo "Verifying PR was created..."
-          PR_INFO=$(gh pr list --repo spruyt-labs/${{ steps.ephemeral.outputs.repo_name }} --head chore/sync-app-test --json number,title,url --jq '.[0]')
-          if [ -z "$PR_INFO" ]; then
-            echo "ERROR: No PR was created"
-            exit 1
-          fi
+          PR_INFO=$(.github/scripts/wait-for-pr.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "chore/sync-app-test")
           echo "PR created successfully:"
           echo "$PR_INFO" | jq .
 

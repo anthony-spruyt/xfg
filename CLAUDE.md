@@ -93,6 +93,20 @@ This codebase follows SOLID principles strictly. Do NOT violate these:
 - `.sh` files auto-marked executable unless `executable: false`
 - PR branch default: `chore/sync-config` (reuses existing branch/PR if found)
 
+## Desloppify False Positives
+
+**NEVER use `--permanent` (wontfix) for false positives.** Use `--false-positive` instead. Wontfix tanks strict score. This has been violated multiple times — DO NOT repeat.
+
+```bash
+# CORRECT — false positive or not-worth-it:
+desloppify plan skip --false-positive "<id>" --attest "..."
+
+# WRONG — this is wontfix and penalizes strict score:
+desloppify plan skip --permanent "<id>" --note "..." --attest "..."
+```
+
+Only use `--permanent` for genuine issues deliberately accepted as technical debt.
+
 ## Desloppify Reviews
 
 When running blind subjective reviews (subagent reviewers), ALWAYS instruct them to follow SOLID principles and composition over inheritance:

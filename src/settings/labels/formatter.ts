@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import type { LabelChange, LabelAction } from "./diff.js";
 import type { Label } from "../../config/types.js";
+import { countActions } from "../base-processor.js";
 
 export interface LabelsPlanEntry {
   name: string;
@@ -30,15 +31,16 @@ export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
   const lines: string[] = [];
   const entries: LabelsPlanEntry[] = [];
 
+  const {
+    create: creates,
+    update: updates,
+    delete: deletes,
+    unchanged,
+  } = countActions(changes);
   const createChanges = changes.filter((c) => c.action === "create");
   const updateChanges = changes.filter((c) => c.action === "update");
   const deleteChanges = changes.filter((c) => c.action === "delete");
   const unchangedItems = changes.filter((c) => c.action === "unchanged");
-
-  const creates = createChanges.length;
-  const updates = updateChanges.length;
-  const deletes = deleteChanges.length;
-  const unchanged = unchangedItems.length;
 
   // Format creates
   if (createChanges.length > 0) {

@@ -1,8 +1,7 @@
-// src/output/unified-summary.ts
 import type { LifecycleReport, LifecycleAction } from "./lifecycle-report.js";
 import { hasLifecycleChanges } from "./lifecycle-report.js";
 import { writeGitHubStepSummary } from "./github-summary.js";
-import type { SyncReport, RepoFileChanges } from "./sync-report.js";
+import type { SyncReport, RepoFileChanges } from "./types.js";
 import type { SettingsReport } from "./settings-report.js";
 import {
   renderRepoSettingsDiffLines,
@@ -174,7 +173,10 @@ function renderLifecycleLines(
   }
 }
 
-function renderSyncLines(syncRepo: RepoFileChanges, diffLines: string[]): void {
+export function renderSyncLines(
+  syncRepo: RepoFileChanges,
+  diffLines: string[]
+): void {
   for (const file of syncRepo.files) {
     if (file.action === "create") {
       diffLines.push(`+ ${file.path}`);
