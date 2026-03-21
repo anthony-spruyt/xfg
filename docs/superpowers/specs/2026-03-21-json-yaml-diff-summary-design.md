@@ -139,11 +139,12 @@ After each file path line, map raw `diffLines` through `formatDiffLine()` for ch
 
 | File | Change |
 |------|--------|
-| `src/sync/diff-utils.ts` | Extract `computeUnifiedDiff()` from `generateDiff()`; add `isStructuredDataFile()`; clean up unused `_fileName` param |
+| `src/sync/diff-utils.ts` | Extract `computeUnifiedDiff()` from `generateDiff()`; add `isStructuredDataFile()`; clean up unused `_fileName` param; export new functions |
+| `src/sync/index.ts` | Add barrel exports for `computeUnifiedDiff`, `isStructuredDataFile`, `formatDiffLine` |
 | `src/sync/types.ts` | Add `diffLines?` to `FileWriteResult` and `FileChangeDetail` |
 | `src/sync/file-writer.ts` | Compute and attach `diffLines` on `FileWriteResult` for JSON/YAML files (both dry-run and apply) |
 | `src/sync/file-sync-strategy.ts` | Pass through `diffLines` from `FileWriteResult` to `FileChangeDetail` via `fileChanges` map lookup |
-| `src/sync/manifest.ts` | Read old content and compute `diffLines` for JSON/YAML orphans before deletion; compute `diffLines` for `.xfg.json` manifest changes in `saveUpdatedManifest` |
+| `src/sync/manifest-manager.ts` | Read old content and compute `diffLines` for JSON/YAML orphans before deletion; compute `diffLines` for `.xfg.json` manifest changes in `saveUpdatedManifest` |
 | `src/cli/sync-report-builder.ts` | Carry `diffLines` through in `buildSyncReport()` mapping |
 | `src/output/unified-summary.ts` | `renderSyncLines()` appends raw diff lines after file path |
 | `src/output/sync-report.ts` | `formatSyncReportCLI()` renders chalk-formatted, indented diff lines; markdown gets diffs via `renderSyncLines` |
@@ -157,7 +158,7 @@ After each file path line, map raw `diffLines` through `formatDiffLine()` for ch
 - **`sync-report-builder.test.ts`** — `diffLines` preserved through `buildSyncReport()` pipeline
 - **`unified-summary.test.ts`** — `renderSyncLines` includes diff lines when present, excludes when absent
 - **`sync-report.test.ts`** — CLI formatter renders chalk-formatted diffs with correct indentation; markdown formatter includes raw diffs
-- **`manifest.test.ts`** — `diffLines` computed for JSON/YAML orphan deletes, absent for non-JSON/YAML orphans; `saveUpdatedManifest` computes `diffLines` for `.xfg.json` changes
+- **`manifest-manager.test.ts`** — `diffLines` computed for JSON/YAML orphan deletes, absent for non-JSON/YAML orphans; `saveUpdatedManifest` computes `diffLines` for `.xfg.json` changes
 - **Edge cases** — empty files, files with no changes (no diff lines), new files (all additions), deleted files (all removals)
 
 ## Docs Updates
