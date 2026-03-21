@@ -1,6 +1,6 @@
 /**
  * Deep merge utilities for JSON configuration objects.
- * Supports configurable array merge strategies via $arrayMerge directive.
+ * Supports per-field array merge strategies via $arrayMerge + $values directives.
  */
 
 import { isPlainObject } from "../shared/type-guards.js";
@@ -24,7 +24,6 @@ const arrayMergeStrategies: Map<ArrayMergeStrategy, ArrayMergeHandler> =
   ]);
 
 export interface MergeContext {
-  arrayStrategies: Map<string, ArrayMergeStrategy>;
   defaultArrayStrategy: ArrayMergeStrategy;
 }
 
@@ -45,109 +44,55 @@ function mergeArrays(
 }
 
 /**
- * Extract array values from an overlay object that uses the directive syntax:
- * { $arrayMerge: 'append', values: [1, 2, 3] }
- *
- * Or just return the array if it's already an array.
- */
-function extractArrayFromOverlay(overlay: unknown): unknown[] | null {
-  if (Array.isArray(overlay)) {
-    return overlay;
-  }
-
-  if (isPlainObject(overlay) && "values" in overlay) {
-    const values = overlay.values;
-    if (Array.isArray(values)) {
-      return values;
-    }
-  }
-
-  return null;
-}
-
-/**
- * Get merge strategy from an overlay object's $arrayMerge directive.
- */
-function getStrategyFromOverlay(overlay: unknown): ArrayMergeStrategy | null {
-  if (isPlainObject(overlay) && "$arrayMerge" in overlay) {
-    const strategy = overlay.$arrayMerge;
-    if (
-      strategy === "replace" ||
-      strategy === "append" ||
-      strategy === "prepend"
-    ) {
-      return strategy;
-    }
-  }
-  return null;
-}
-
-/**
  * Deep merge two objects with configurable array handling.
  *
  * @param base - The base object
  * @param overlay - The overlay object (values override base)
  * @param ctx - Merge context with array strategies
- * @param path - Current path for strategy lookup (internal)
  */
 export function deepMerge(
   base: Record<string, unknown>,
   overlay: Record<string, unknown>,
-  ctx: MergeContext,
-  path: string = ""
+  ctx: MergeContext
 ): Record<string, unknown> {
   const result: Record<string, unknown> = { ...base };
-
-  // Check for $arrayMerge directive at this level (applies to child arrays)
-  const levelStrategy = getStrategyFromOverlay(overlay);
 
   for (const [key, overlayValue] of Object.entries(overlay)) {
     // Skip directive keys in output
     if (key.startsWith("$")) continue;
 
-    const currentPath = path ? `${path}.${key}` : key;
     const baseValue = base[key];
 
-    // If overlay is an object with $arrayMerge directive for an array field
+    // Per-field $arrayMerge + $values directive
     if (isPlainObject(overlayValue) && "$arrayMerge" in overlayValue) {
-      const strategy = getStrategyFromOverlay(overlayValue);
-      const overlayArray = extractArrayFromOverlay(overlayValue);
+      const strategy = overlayValue.$arrayMerge;
+      const values = overlayValue.$values;
 
-      if (strategy && overlayArray && Array.isArray(baseValue)) {
-        result[key] = mergeArrays(baseValue, overlayArray, strategy);
+      if (
+        (strategy === "replace" ||
+          strategy === "append" ||
+          strategy === "prepend") &&
+        Array.isArray(values) &&
+        Array.isArray(baseValue)
+      ) {
+        result[key] = mergeArrays(baseValue, values, strategy);
         continue;
       }
     }
 
-    // Both are arrays - apply strategy
+    // Both are arrays — use default strategy
     if (Array.isArray(baseValue) && Array.isArray(overlayValue)) {
-      // Check for level-specific strategy, then path-specific, then default
-      const strategy =
-        levelStrategy ??
-        ctx.arrayStrategies.get(currentPath) ??
-        ctx.defaultArrayStrategy;
-      result[key] = mergeArrays(baseValue, overlayValue, strategy);
+      result[key] = mergeArrays(
+        baseValue,
+        overlayValue,
+        ctx.defaultArrayStrategy
+      );
       continue;
     }
 
-    // Both are plain objects - recurse
+    // Both are plain objects — recurse
     if (isPlainObject(baseValue) && isPlainObject(overlayValue)) {
-      // Extract $arrayMerge for child paths if present
-      if ("$arrayMerge" in overlayValue) {
-        const childStrategy = getStrategyFromOverlay(overlayValue);
-        if (childStrategy) {
-          // Apply to all immediate child arrays
-          for (const childKey of Object.keys(overlayValue)) {
-            if (!childKey.startsWith("$")) {
-              const childPath = currentPath
-                ? `${currentPath}.${childKey}`
-                : childKey;
-              ctx.arrayStrategies.set(childPath, childStrategy);
-            }
-          }
-        }
-      }
-      result[key] = deepMerge(baseValue, overlayValue, ctx, currentPath);
+      result[key] = deepMerge(baseValue, overlayValue, ctx);
       continue;
     }
 
@@ -192,7 +137,6 @@ export function createMergeContext(
   defaultStrategy: ArrayMergeStrategy = "replace"
 ): MergeContext {
   return {
-    arrayStrategies: new Map(),
     defaultArrayStrategy: defaultStrategy,
   };
 }
