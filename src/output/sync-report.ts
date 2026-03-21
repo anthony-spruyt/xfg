@@ -2,7 +2,7 @@ import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatCountEntry } from "./settings-report.js";
 import { renderSyncLines } from "./unified-summary.js";
-import { formatDiffLine } from "../sync/diff-utils.js";
+import { formatDiffLine } from "../sync/index.js";
 import type { SyncReport, RepoFileChanges, ReportFileChange } from "./types.js";
 
 export type { SyncReport, RepoFileChanges, ReportFileChange };
