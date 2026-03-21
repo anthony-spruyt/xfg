@@ -47,8 +47,80 @@ const TRANSIENT_ERROR_PATTERNS = [
 ];
 
 /**
+ * Unified retry primitive for integration tests.
+ * Uses synchronous exponential backoff with Atomics.wait.
+ *
+ * @param fn - Function to retry. Returns a value on success, throws on failure.
+ * @param options.retries - Number of retries (default: 6)
+ * @param options.baseDelayMs - Base delay in ms, doubles each retry (default: 2000)
+ * @param options.description - Human-readable description for log messages
+ */
+export function withTestRetry<T>(
+  fn: () => T,
+  options?: {
+    retries?: number;
+    baseDelayMs?: number;
+    description?: string;
+  }
+): T {
+  const retries = options?.retries ?? 6;
+  const baseDelayMs = options?.baseDelayMs ?? 2000;
+  const description = options?.description ?? "operation";
+
+  for (let attempt = 1; attempt <= retries + 1; attempt++) {
+    try {
+      return fn();
+    } catch (error) {
+      const isPermanent =
+        error instanceof Error &&
+        "permanent" in error &&
+        (error as { permanent: boolean }).permanent;
+      if (attempt > retries || isPermanent) {
+        throw error instanceof Error
+          ? error
+          : new Error(
+              `${description}: failed after ${retries} retries: ${String(error)}`
+            );
+      }
+      const delay = baseDelayMs * 2 ** (attempt - 1);
+      console.log(
+        `  ${description}: attempt ${attempt}/${retries + 1} failed, retrying in ${delay}ms...`
+      );
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delay);
+    }
+  }
+
+  // Unreachable — loop always returns or throws
+  throw new Error("withTestRetry: unexpected code path");
+}
+
+/**
+ * Polls until a PR is visible on a given head branch.
+ * Handles GitHub API eventual consistency after PR creation.
+ *
+ * Note: repo and headBranch are controlled test constants, not user input.
+ */
+export function waitForPrVisible(
+  repo: string,
+  headBranch: string,
+  fields = "number,title,url"
+): Record<string, unknown> {
+  return withTestRetry(
+    () => {
+      const result = exec(
+        `gh pr list --repo ${repo} --head ${headBranch} --json ${fields} --jq '.[0]'`
+      );
+      if (!result) {
+        throw new Error("PR not visible yet");
+      }
+      return JSON.parse(result) as Record<string, unknown>;
+    },
+    { description: `PR on ${headBranch} visible in ${repo}` }
+  );
+}
+
+/**
  * Executes a shell command with synchronous retry for transient GitHub API errors.
- * Uses Atomics.wait for synchronous sleep (same approach as waitForRepoReady).
  *
  * Note: All command arguments are constructed from controlled test constants
  * (owner, repoName from generateRepoName), not user input.
