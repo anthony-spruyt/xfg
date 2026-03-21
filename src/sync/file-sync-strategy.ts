@@ -36,10 +36,21 @@ export class FileSyncStrategy implements IWorkStrategy {
 
     const fileChangeDetails = changedFiles
       .filter((f) => f.action !== "skip")
-      .map((f) => ({
-        path: f.fileName,
-        action: f.action as "create" | "update" | "delete",
-      }));
+      .map((f) => {
+        const detail: {
+          path: string;
+          action: "create" | "update" | "delete";
+          diffLines?: string[];
+        } = {
+          path: f.fileName,
+          action: f.action as "create" | "update" | "delete",
+        };
+        const writeResult = fileChanges.get(f.fileName);
+        if (writeResult?.diffLines) {
+          detail.diffLines = writeResult.diffLines;
+        }
+        return detail;
+      });
 
     return {
       fileChanges,
