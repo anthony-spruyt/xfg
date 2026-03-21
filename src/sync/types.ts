@@ -22,6 +22,7 @@ export interface FileWriteResult {
   fileName: string;
   content: string | null;
   action: "create" | "update" | "delete" | "skip";
+  diffLines?: string[];
 }
 
 export interface FileWriteContext {
@@ -180,6 +181,7 @@ export interface ProcessorOptions {
 export interface FileChangeDetail {
   path: string;
   action: "create" | "update" | "delete";
+  diffLines?: string[];
 }
 
 export interface ProcessorResult {

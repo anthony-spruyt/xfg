@@ -165,6 +165,91 @@ describe("formatSyncReportCLI", () => {
   });
 });
 
+describe("formatSyncReportCLI with diffLines", () => {
+  test("renders diff lines with indentation for JSON files", () => {
+    const report: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [
+            {
+              path: "config.json",
+              action: "update",
+              diffLines: ["@@ -1,1 +1,1 @@", "-old", "+new"],
+            },
+          ],
+        },
+      ],
+      totals: { files: { create: 0, update: 1, delete: 0 } },
+    };
+
+    const lines = formatSyncReportCLI(report);
+    const output = lines.join("\n");
+
+    // Strip ANSI codes for assertion
+    const ansiRegex = new RegExp(
+      String.fromCharCode(0x1b) + "\\[[0-9;]*m",
+      "g"
+    );
+    const raw = output.replace(ansiRegex, "");
+
+    assert.ok(
+      raw.includes("      @@ -1,1 +1,1 @@"),
+      "should have indented hunk header"
+    );
+    assert.ok(raw.includes("      -old"), "should have indented removal");
+    assert.ok(raw.includes("      +new"), "should have indented addition");
+  });
+
+  test("does not render diff lines when absent", () => {
+    const report: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [{ path: "script.sh", action: "create" }],
+        },
+      ],
+      totals: { files: { create: 1, update: 0, delete: 0 } },
+    };
+
+    const lines = formatSyncReportCLI(report);
+    const output = lines.join("\n");
+    const ansiRegex = new RegExp(
+      String.fromCharCode(0x1b) + "\\[[0-9;]*m",
+      "g"
+    );
+    const raw = output.replace(ansiRegex, "");
+
+    assert.ok(!raw.includes("@@"), "should not have hunk headers");
+  });
+});
+
+describe("formatSyncReportMarkdown with diffLines", () => {
+  test("includes diff lines in markdown output", () => {
+    const report: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [
+            {
+              path: "config.json",
+              action: "update",
+              diffLines: ["@@ -1,1 +1,1 @@", "-old", "+new"],
+            },
+          ],
+        },
+      ],
+      totals: { files: { create: 0, update: 1, delete: 0 } },
+    };
+
+    const markdown = formatSyncReportMarkdown(report, true);
+
+    assert.ok(markdown.includes("@@ -1,1 +1,1 @@"));
+    assert.ok(markdown.includes("-old"));
+    assert.ok(markdown.includes("+new"));
+  });
+});
+
 describe("formatSyncReportMarkdown", () => {
   test("includes dry run warning when dryRun=true", () => {
     const report: SyncReport = {

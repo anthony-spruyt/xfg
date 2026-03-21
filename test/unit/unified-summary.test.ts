@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import {
   formatUnifiedSummaryMarkdown,
   writeUnifiedSummary,
+  renderSyncLines,
 } from "../../src/output/unified-summary.js";
 import type { LifecycleReport } from "../../src/output/lifecycle-report.js";
 import type { SyncReport } from "../../src/output/sync-report.js";
@@ -980,6 +981,92 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
     assert.equal(markdown, "");
+  });
+});
+
+describe("renderSyncLines with diffLines", () => {
+  test("appends diff lines after file path for updates", () => {
+    const diffLines: string[] = [];
+    renderSyncLines(
+      {
+        repoName: "org/repo",
+        files: [
+          {
+            path: "config.json",
+            action: "update",
+            diffLines: ["@@ -1,1 +1,1 @@", "-old", "+new"],
+          },
+        ],
+      },
+      diffLines
+    );
+
+    assert.deepEqual(diffLines, [
+      "! config.json",
+      "@@ -1,1 +1,1 @@",
+      "-old",
+      "+new",
+    ]);
+  });
+
+  test("appends diff lines after file path for creates", () => {
+    const diffLines: string[] = [];
+    renderSyncLines(
+      {
+        repoName: "org/repo",
+        files: [
+          {
+            path: "config.json",
+            action: "create",
+            diffLines: ["@@ -0,0 +1,1 @@", '+{"key": "value"}'],
+          },
+        ],
+      },
+      diffLines
+    );
+
+    assert.deepEqual(diffLines, [
+      "+ config.json",
+      "@@ -0,0 +1,1 @@",
+      '+{"key": "value"}',
+    ]);
+  });
+
+  test("does not append diff lines when absent", () => {
+    const diffLines: string[] = [];
+    renderSyncLines(
+      {
+        repoName: "org/repo",
+        files: [{ path: "script.sh", action: "create" }],
+      },
+      diffLines
+    );
+
+    assert.deepEqual(diffLines, ["+ script.sh"]);
+  });
+
+  test("appends diff lines for deleted files", () => {
+    const diffLines: string[] = [];
+    renderSyncLines(
+      {
+        repoName: "org/repo",
+        files: [
+          {
+            path: "old.yaml",
+            action: "delete",
+            diffLines: ["@@ -1,2 +0,0 @@", "-key: value", "-other: thing"],
+          },
+        ],
+      },
+      diffLines
+    );
+
+    assert.deepEqual(diffLines, [
+      "- old.yaml",
+      "@@ -1,2 +0,0 @@",
+      "-key: value",
+      "-other: thing",
+    ]);
   });
 });
 

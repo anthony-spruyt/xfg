@@ -20,10 +20,13 @@ export function buildSyncReport(results: SyncResultInput[]): SyncReport {
   };
 
   for (const result of results) {
-    const files: ReportFileChange[] = result.fileChanges.map((f) => ({
-      path: f.path,
-      action: f.action,
-    }));
+    const files: ReportFileChange[] = result.fileChanges.map((f) => {
+      const entry: ReportFileChange = { path: f.path, action: f.action };
+      if (f.diffLines) {
+        entry.diffLines = f.diffLines;
+      }
+      return entry;
+    });
 
     // Count totals
     for (const file of files) {
