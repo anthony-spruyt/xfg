@@ -6,6 +6,8 @@
 
 **Architecture:** The `deepMerge` function in `merge.ts` currently supports two `$arrayMerge` syntaxes: (1) wrapped — `{ $arrayMerge: "append", values: [...] }` per field, and (2) sibling — `$arrayMerge` as a sibling key applying to all child arrays. Both are removed and replaced with one syntax: `{ $arrayMerge: "append", $values: [...] }` per field. This eliminates the `values` key collision risk (not `$`-prefixed), removes the sibling syntax's side-effect mutation of `MergeContext.arrayStrategies`, and provides explicit per-array control. The `MergeContext.arrayStrategies` map becomes dead code and is removed. `stripMergeDirectives` already strips all `$`-prefixed keys, so `$values` is automatically cleaned.
 
+**Breaking Change:** Configs using the old `values:` key (without `$` prefix) in `$arrayMerge` directives will silently stop merging — the directive object will replace the base array instead. Users must update `values:` to `$values:` in their config files. The sibling `$arrayMerge` syntax (applying one strategy to all child arrays) is also removed — each array field must specify its own `$arrayMerge` + `$values` directive.
+
 **Tech Stack:** TypeScript, node:test
 
 ---
@@ -25,12 +27,24 @@ In the `deepMerge` describe block, replace these tests:
 1. Replace `"appends arrays when $arrayMerge: append in overlay"` (line 71) — change `values:` to `$values:`
 2. Replace `"prepends arrays when $arrayMerge: prepend"` (line 87) — change `values:` to `$values:`
 3. Replace `"strips $arrayMerge directive from output"` (line 167) — change `values:` to `$values:`, also assert `$values` is stripped
-4. Remove `"appends arrays when $arrayMerge: append with array syntax"` (line 78) — tested sibling via pre-set `ctx.arrayStrategies`, no longer applicable
-5. Remove `"uses context arrayStrategies for path-specific merge"` (line 94) — tested `arrayStrategies` map, no longer applicable
-6. Remove `"$arrayMerge in nested object sets strategy for child array"` (line 181) — tested sibling syntax in nested objects, no longer applicable
-7. Add new test: `"different strategies for sibling arrays"` — verifies per-field control with `$arrayMerge` + `$values` on two sibling array fields
-8. Add new test: `"$arrayMerge without $values is ignored"` — overlay object with `$arrayMerge` but no `$values` key falls through to normal merge
-9. Add new test: `"$values is stripped from output"` — ensure `$values` doesn't leak
+4. Update the `createContext` helper (lines 12-19) to remove `arrayStrategies`:
+
+```typescript
+function createContext(
+  defaultStrategy: ArrayMergeStrategy = "replace"
+): MergeContext {
+  return {
+    defaultArrayStrategy: defaultStrategy,
+  };
+}
+```
+
+5. Remove `"appends arrays when $arrayMerge: append with array syntax"` (line 78) — tested sibling via pre-set `ctx.arrayStrategies`, no longer applicable
+6. Remove `"uses context arrayStrategies for path-specific merge"` (line 94) — tested `arrayStrategies` map, no longer applicable
+7. Remove `"$arrayMerge in nested object sets strategy for child array"` (line 181) — tested sibling syntax in nested objects, no longer applicable
+8. Add new test: `"different strategies for sibling arrays"` — verifies per-field control with `$arrayMerge` + `$values` on two sibling array fields
+9. Add new test: `"$arrayMerge without $values falls through to normal merge"` — overlay object with `$arrayMerge` but no `$values` key falls through to normal merge (overlay wins)
+10. Add new test: `"$values is stripped from output"` — ensure `$values` doesn't leak
 
 ```typescript
 // Test 1 replacement (line 71):
@@ -47,6 +61,14 @@ test("prepends arrays with $arrayMerge + $values directive", () => {
   const overlay = { items: { $arrayMerge: "prepend", $values: [3, 4] } };
   const result = deepMerge(base, overlay, createContext());
   assert.deepEqual(result, { items: [3, 4, 1, 2] });
+});
+
+// Test for replace + $values:
+test("replaces arrays with $arrayMerge: replace + $values directive", () => {
+  const base = { items: [1, 2, 3] };
+  const overlay = { items: { $arrayMerge: "replace", $values: [4, 5] } };
+  const result = deepMerge(base, overlay, createContext());
+  assert.deepEqual(result, { items: [4, 5] });
 });
 
 // Test 3 replacement (line 167):
@@ -81,8 +103,9 @@ test("$arrayMerge without $values falls through to normal merge", () => {
     overlay as Record<string, unknown>,
     createContext()
   );
-  // No $values, so the directive object replaces the base array (overlay wins)
-  assert.deepEqual(result, { items: { other: "key" } });
+  // No $values, so the directive object replaces the base array (overlay wins).
+  // $arrayMerge is NOT stripped here — stripMergeDirectives handles that later.
+  assert.deepEqual(result, { items: { $arrayMerge: "append", other: "key" } });
 });
 
 // New test 9:
@@ -133,8 +156,7 @@ export function createMergeContext(
 export function deepMerge(
   base: Record<string, unknown>,
   overlay: Record<string, unknown>,
-  ctx: MergeContext,
-  path: string = ""
+  ctx: MergeContext
 ): Record<string, unknown> {
   const result: Record<string, unknown> = { ...base };
 
@@ -173,8 +195,7 @@ export function deepMerge(
 
     // Both are plain objects — recurse
     if (isPlainObject(baseValue) && isPlainObject(overlayValue)) {
-      const currentPath = path ? `${path}.${key}` : key;
-      result[key] = deepMerge(baseValue, overlayValue, ctx, currentPath);
+      result[key] = deepMerge(baseValue, overlayValue, ctx);
       continue;
     }
 
@@ -193,7 +214,7 @@ Key changes from old implementation:
 - `$values` instead of `values` in the directive check
 - `getStrategyFromOverlay` inlined as a simple triple-check
 - `extractArrayFromOverlay` replaced with direct `Array.isArray(overlayValue.$values)` check
-- `currentPath` only computed when recursing into objects (minor cleanup)
+- `path` parameter removed (was only used for `arrayStrategies` lookups)
 
 5. **Update module doc comment** (line 3):
 
