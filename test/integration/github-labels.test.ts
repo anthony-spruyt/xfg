@@ -10,6 +10,7 @@ import {
   createRepo,
   deleteRepo,
   writeConfig,
+  withTestRetry,
 } from "./test-helpers.js";
 
 const OWNER = "spruyt-labs";
@@ -117,15 +118,22 @@ describe("GitHub Labels Integration Test", () => {
     const output = runSync(configPath);
     console.log(output);
 
-    const labelsAfter = getLabels();
-    const bugLabel = findLabel(labelsAfter, "xfg-test-bug");
-    assert.ok(bugLabel);
-    assert.equal(bugLabel.color, "d73a4a");
-    assert.equal(bugLabel.description, "Something isn't working");
+    // GitHub API is eventually consistent — label creates may not be
+    // immediately visible on subsequent GET requests.
+    withTestRetry(
+      () => {
+        const labelsAfter = getLabels();
+        const bugLabel = findLabel(labelsAfter, "xfg-test-bug");
+        assert.ok(bugLabel);
+        assert.equal(bugLabel.color, "d73a4a");
+        assert.equal(bugLabel.description, "Something isn't working");
 
-    const featureLabel = findLabel(labelsAfter, "xfg-test-feature");
-    assert.ok(featureLabel);
-    assert.equal(featureLabel.color, "a2eeef");
+        const featureLabel = findLabel(labelsAfter, "xfg-test-feature");
+        assert.ok(featureLabel);
+        assert.equal(featureLabel.color, "a2eeef");
+      },
+      { retries: 3, baseDelayMs: 2000, description: "label create consistency" }
+    );
   });
 
   test("settings updates label color and description", () => {
@@ -157,11 +165,18 @@ repos:
     const output = runSync(updateConfig);
     console.log(output);
 
-    const labelsAfter = getLabels();
-    const bugLabel = findLabel(labelsAfter, "xfg-test-bug");
-    assert.ok(bugLabel);
-    assert.equal(bugLabel.color, "ff0000");
-    assert.equal(bugLabel.description, "Updated bug description");
+    // GitHub API is eventually consistent — label updates may not be
+    // immediately visible on subsequent GET requests.
+    withTestRetry(
+      () => {
+        const labelsAfter = getLabels();
+        const bugLabel = findLabel(labelsAfter, "xfg-test-bug");
+        assert.ok(bugLabel);
+        assert.equal(bugLabel.color, "ff0000");
+        assert.equal(bugLabel.description, "Updated bug description");
+      },
+      { retries: 3, baseDelayMs: 2000, description: "label update consistency" }
+    );
   });
 
   test("settings renames a label", () => {
@@ -193,9 +208,16 @@ repos:
 
     runSync(renameConfig);
 
-    const labelsAfter = getLabels();
-    assert.equal(findLabel(labelsAfter, "xfg-test-bug"), undefined);
-    assert.ok(findLabel(labelsAfter, "xfg-test-defect"));
+    // GitHub API is eventually consistent — renamed labels may still
+    // appear under the old name on immediate GET requests.
+    withTestRetry(
+      () => {
+        const labelsAfter = getLabels();
+        assert.equal(findLabel(labelsAfter, "xfg-test-bug"), undefined);
+        assert.ok(findLabel(labelsAfter, "xfg-test-defect"));
+      },
+      { retries: 3, baseDelayMs: 2000, description: "label rename consistency" }
+    );
   });
 
   test("settings is idempotent when labels already match", () => {
@@ -250,9 +272,18 @@ repos:
 
     runSync(phase1Config);
 
-    const labelsPhase1 = getLabels();
-    assert.ok(findLabel(labelsPhase1, "xfg-test-bug"));
-    assert.ok(findLabel(labelsPhase1, "xfg-test-feature"));
+    withTestRetry(
+      () => {
+        const labelsPhase1 = getLabels();
+        assert.ok(findLabel(labelsPhase1, "xfg-test-bug"));
+        assert.ok(findLabel(labelsPhase1, "xfg-test-feature"));
+      },
+      {
+        retries: 3,
+        baseDelayMs: 2000,
+        description: "label create consistency (phase 1)",
+      }
+    );
 
     const phase2Config = writeConfig(
       tmpDir,
@@ -279,8 +310,13 @@ repos:
 
     runSync(phase2Config);
 
-    const labelsPhase2 = getLabels();
-    assert.ok(findLabel(labelsPhase2, "xfg-test-bug"));
-    assert.equal(findLabel(labelsPhase2, "xfg-test-feature"), undefined);
+    withTestRetry(
+      () => {
+        const labelsPhase2 = getLabels();
+        assert.ok(findLabel(labelsPhase2, "xfg-test-bug"));
+        assert.equal(findLabel(labelsPhase2, "xfg-test-feature"), undefined);
+      },
+      { retries: 3, baseDelayMs: 2000, description: "label delete consistency" }
+    );
   });
 });

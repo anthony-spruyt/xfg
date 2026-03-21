@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: anthony-spruyt/xfg@v4
+      - uses: anthony-spruyt/xfg@v5
         with:
           config: ./sync-config.yaml
           github-token: ${{ secrets.GH_PAT }} # PAT with repo scope for cross-repo access

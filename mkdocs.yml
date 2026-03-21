@@ -108,6 +108,7 @@ nav:
       - CLI Options: reference/cli-options.md
       - Config Schema: reference/config-schema.md
   - Migration:
+      - v4 to v5: migration-v5.md
       - v3 to v4: migration-v4.md
   - Troubleshooting: troubleshooting.md
   - Security:

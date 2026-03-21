@@ -1,4 +1,4 @@
-import { Document, stringify } from "yaml";
+import { Document, isScalar, Scalar, stringify, visit } from "yaml";
 
 type OutputFormat = "json" | "json5" | "yaml";
 
@@ -114,10 +114,22 @@ export function convertContentToString(
       }
     }
 
-    // Quote all string values for YAML 1.1 compatibility.
-    // The yaml library outputs YAML 1.2 where "06:00" is a plain string,
-    // but many tools (e.g., Dependabot) use YAML 1.1 parsers that interpret
-    // unquoted values like "06:00" as sexagesimal (360) or "yes"/"no" as booleans.
+    // Use BLOCK_LITERAL (|) for multi-line string values to preserve readability.
+    // Single-line strings remain QUOTE_DOUBLE via defaultStringType for YAML 1.1
+    // compatibility (prevents "06:00" as sexagesimal, "yes"/"no" as booleans).
+    visit(doc, {
+      Scalar(key, node) {
+        if (
+          key === "value" &&
+          isScalar(node) &&
+          typeof node.value === "string" &&
+          node.value.includes("\n")
+        ) {
+          node.type = Scalar.BLOCK_LITERAL;
+        }
+      },
+    });
+
     return stringify(doc, {
       indent: 2,
       defaultStringType: "QUOTE_DOUBLE",

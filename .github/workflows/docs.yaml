@@ -59,8 +59,14 @@ jobs:
           mike deploy --config-file /tmp/v3-docs/mkdocs.yml 3.x
           git worktree remove /tmp/v3-docs
 
-      - name: Build v4 docs from main
-        run: mike deploy --update-aliases --alias-type copy 4.x latest
+      - name: Build v4 docs from tag
+        run: |
+          git worktree add /tmp/v4-docs v4.0.5
+          mike deploy --config-file /tmp/v4-docs/mkdocs.yml 4.x
+          git worktree remove /tmp/v4-docs
+
+      - name: Build v5 docs from main
+        run: mike deploy --update-aliases --alias-type copy 5.x latest
 
       - name: Set default version
         run: mike set-default latest
