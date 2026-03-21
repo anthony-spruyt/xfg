@@ -90,7 +90,7 @@ repos:
     );
     assert.notStrictEqual(author, "github-actions[bot]");
 
-    await waitForCommitVerified(testRepo, commitSha);
+    waitForCommitVerified(testRepo, commitSha);
   });
 
   test("direct mode pushes verified commit to main", async () => {
@@ -123,7 +123,7 @@ repos:
     );
     assert.notStrictEqual(author, "github-actions[bot]");
 
-    await waitForCommitVerified(testRepo, mainSha);
+    waitForCommitVerified(testRepo, mainSha);
   });
 
   test("settings command with bypass_actors is idempotent", () => {
@@ -346,6 +346,6 @@ repos:
     const commitSha = exec(
       `gh api repos/${signedTestRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
     );
-    await waitForCommitVerified(signedTestRepo, commitSha);
+    waitForCommitVerified(signedTestRepo, commitSha);
   });
 });

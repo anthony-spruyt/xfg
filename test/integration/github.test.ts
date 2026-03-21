@@ -22,11 +22,8 @@ let repoName: string;
 let testRepo: string;
 let tmpDir: string;
 
-async function waitForFileVisible(
-  filePath: string,
-  timeoutMs = 10000
-): Promise<string> {
-  return waitForFileVisibleBase(testRepo, filePath, timeoutMs);
+function waitForFileVisible(filePath: string): string {
+  return waitForFileVisibleBase(testRepo, filePath);
 }
 
 describe("GitHub Integration Test", () => {
@@ -320,7 +317,7 @@ repos:
     });
     assert.ok(output.includes("Pushed directly") || output.includes("direct"));
 
-    const fileContent = await waitForFileVisible(directFile);
+    const fileContent = waitForFileVisible(directFile);
     const json = JSON.parse(fileContent);
     assert.equal(json.directMode, true);
   });

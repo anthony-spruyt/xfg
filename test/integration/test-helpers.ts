@@ -131,143 +131,128 @@ export function execWithRetry(
   retries = 3,
   delayMs = 2000
 ): string {
-  for (let attempt = 1; attempt <= retries + 1; attempt++) {
-    try {
-      return exec(command, options);
-    } catch (error) {
-      const err = error as {
-        stderr?: string;
-        stdout?: string;
-        message?: string;
-      };
-      const errorText = `${err.message ?? ""} ${err.stderr ?? ""} ${err.stdout ?? ""}`;
-      const isTransient = TRANSIENT_ERROR_PATTERNS.some((p) =>
-        p.test(errorText)
-      );
-
-      if (!isTransient || attempt > retries) {
+  return withTestRetry(
+    () => {
+      try {
+        return exec(command, options);
+      } catch (error) {
+        const err = error as {
+          stderr?: string;
+          stdout?: string;
+          message?: string;
+        };
+        const errorText = `${err.message ?? ""} ${err.stderr ?? ""} ${err.stdout ?? ""}`;
+        const isTransient = TRANSIENT_ERROR_PATTERNS.some((p) =>
+          p.test(errorText)
+        );
+        if (!isTransient) {
+          throw Object.assign(new Error(`Permanent error: ${errorText}`), {
+            permanent: true,
+          });
+        }
         throw error;
       }
-
-      const backoff = delayMs * attempt;
-      console.log(
-        `  Transient error on attempt ${attempt}/${retries + 1}, retrying in ${backoff}ms...`
-      );
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, backoff);
+    },
+    {
+      retries,
+      baseDelayMs: delayMs,
+      description: `exec: ${command.slice(0, 80)}`,
     }
-  }
-
-  // Unreachable — loop always throws on final attempt failure
-  throw new Error("execWithRetry: unexpected code path");
+  );
 }
 
 /**
  * Polls GitHub API until a file is visible, handling eventual consistency.
- * This prevents flaky tests where a newly pushed file isn't immediately
- * visible through the contents API.
  *
  * Note: The repo and filePath are hardcoded test constants, not user input.
  */
-export async function waitForFileVisible(
+export function waitForFileVisible(
   repo: string,
   filePath: string,
-  timeoutMs = 10000,
   envOptions?: { env: Record<string, string | undefined> }
-): Promise<string> {
-  const startTime = Date.now();
-  const pollInterval = 500;
-
-  while (Date.now() - startTime < timeoutMs) {
-    try {
-      const content = exec(
-        `gh api repos/${repo}/contents/${filePath} --jq '.content' | base64 -d`,
-        envOptions
-      );
-      if (content && !content.includes("Not Found")) {
-        console.log(
-          `  File ${filePath} visible after ${Date.now() - startTime}ms`
+): string {
+  return withTestRetry(
+    () => {
+      let content: string;
+      try {
+        content = exec(
+          `gh api repos/${repo}/contents/${filePath} --jq '.content' | base64 -d`,
+          envOptions
         );
-        return content;
+      } catch {
+        throw new Error(`File ${filePath} not visible yet (API error)`);
       }
-    } catch {
-      // API call failed, continue polling
-    }
-    await new Promise((resolve) => setTimeout(resolve, pollInterval));
-  }
-
-  throw new Error(
-    `File ${filePath} not visible in ${repo} after ${timeoutMs}ms (GitHub API eventual consistency)`
+      if (!content || content.includes("Not Found")) {
+        throw new Error(`File ${filePath} not visible yet`);
+      }
+      return content;
+    },
+    { description: `file ${filePath} visible in ${repo}` }
   );
 }
 
 /**
  * Polls GitHub API until a ruleset is visible, handling eventual consistency.
- * This prevents flaky tests where a newly created ruleset isn't immediately
- * visible in the list endpoint.
  *
  * Note: The repo is a hardcoded constant and rulesetId is from trusted API responses.
  */
-export async function waitForRulesetVisible(
+export function waitForRulesetVisible(
   repo: string,
   rulesetId: number,
-  timeoutMs = 30000,
   envOptions?: { env: Record<string, string | undefined> }
-): Promise<void> {
-  const startTime = Date.now();
-  const pollInterval = 500;
-
-  while (Date.now() - startTime < timeoutMs) {
-    try {
-      const result = exec(
-        `gh api repos/${repo}/rulesets --jq '.[] | select(.id == ${rulesetId}) | .id'`,
-        envOptions
-      );
-      if (result.trim() === String(rulesetId)) {
-        console.log(
-          `  Ruleset ${rulesetId} visible after ${Date.now() - startTime}ms`
+): void {
+  withTestRetry(
+    () => {
+      let result: string;
+      try {
+        result = exec(
+          `gh api repos/${repo}/rulesets --jq '.[] | select(.id == ${rulesetId}) | .id'`,
+          envOptions
         );
-        return;
+      } catch {
+        throw new Error(`Ruleset ${rulesetId} not visible yet (API error)`);
       }
-    } catch {
-      // API call failed, continue polling
-    }
-    await new Promise((resolve) => setTimeout(resolve, pollInterval));
-  }
-
-  throw new Error(
-    `Ruleset ${rulesetId} not visible in ${repo} after ${timeoutMs}ms (GitHub API eventual consistency)`
+      if (result.trim() !== String(rulesetId)) {
+        throw new Error(`Ruleset ${rulesetId} not visible yet`);
+      }
+      console.log(`  Ruleset ${rulesetId} visible`);
+    },
+    { description: `ruleset ${rulesetId} visible in ${repo}` }
   );
 }
 
 /**
  * Waits for a file to be deleted (returns 404).
  * Useful when verifying orphan cleanup.
+ *
+ * Note: inverted semantics — success is when the API call throws (404 = file gone).
  */
-export async function waitForFileDeleted(
+export function waitForFileDeleted(
   repo: string,
   filePath: string,
-  timeoutMs = 10000,
   envOptions?: { env: Record<string, string | undefined> }
-): Promise<void> {
-  const startTime = Date.now();
-  const pollInterval = 500;
-
-  while (Date.now() - startTime < timeoutMs) {
-    try {
-      exec(`gh api repos/${repo}/contents/${filePath} --jq '.sha'`, envOptions);
-      // File still exists, continue polling
-    } catch {
-      // 404 - file is deleted
-      console.log(
-        `  File ${filePath} confirmed deleted after ${Date.now() - startTime}ms`
-      );
-      return;
-    }
-    await new Promise((resolve) => setTimeout(resolve, pollInterval));
-  }
-
-  throw new Error(
-    `File ${filePath} still exists in ${repo} after ${timeoutMs}ms`
+): void {
+  withTestRetry(
+    () => {
+      try {
+        exec(
+          `gh api repos/${repo}/contents/${filePath} --jq '.sha'`,
+          envOptions
+        );
+        // If exec succeeded, file still exists — throw to trigger retry
+        throw new Error(`File ${filePath} still exists`);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message === `File ${filePath} still exists`
+        ) {
+          throw error;
+        }
+        // exec() threw — file is gone (404)
+        console.log(`  File ${filePath} confirmed deleted`);
+      }
+    },
+    { description: `file ${filePath} deleted in ${repo}` }
   );
 }
 
@@ -305,39 +290,36 @@ export function listLabels(
 
 /**
  * Polls GitHub API until a commit's verification.verified field is "true".
- * GitHub's API has eventual consistency — verification metadata may lag.
+ * Uses longer base delay (5s) since commit verification typically takes 10-30s.
  *
  * Note: The repo and sha are hardcoded test constants, not user input.
  */
-export async function waitForCommitVerified(
-  repo: string,
-  sha: string,
-  timeoutMs = 120000
-): Promise<void> {
-  const startTime = Date.now();
-  const pollInterval = 5000;
-
-  while (Date.now() - startTime < timeoutMs) {
-    try {
-      const verified = exec(
-        `gh api repos/${repo}/commits/${sha} --jq '.commit.verification.verified'`
-      );
-      if (verified === "true") {
-        console.log(
-          `  Commit ${sha.slice(0, 7)} verified after ${Date.now() - startTime}ms`
+export function waitForCommitVerified(repo: string, sha: string): void {
+  withTestRetry(
+    () => {
+      let verified: string;
+      try {
+        verified = exec(
+          `gh api repos/${repo}/commits/${sha} --jq '.commit.verification.verified'`
         );
-        return;
+      } catch {
+        throw new Error(`Commit ${sha} not verified yet (API error)`);
       }
-      console.log(
-        `  Commit ${sha.slice(0, 7)} verified: ${verified} (waiting...)`
-      );
-    } catch {
-      // API call failed, continue polling
+      if (verified !== "true") {
+        console.log(
+          `  Commit ${sha.slice(0, 7)} verified: ${verified} (waiting...)`
+        );
+        throw new Error(
+          `Commit ${sha} not verified yet (verified=${verified})`
+        );
+      }
+      console.log(`  Commit ${sha.slice(0, 7)} verified`);
+    },
+    {
+      baseDelayMs: 5000,
+      description: `commit ${sha.slice(0, 7)} verified in ${repo}`,
     }
-    await new Promise((resolve) => setTimeout(resolve, pollInterval));
-  }
-
-  throw new Error(`Commit ${sha} not verified in ${repo} after ${timeoutMs}ms`);
+  );
 }
 
 // --- Lifecycle test helpers ---
@@ -390,35 +372,19 @@ export function createRepo(
 
 /**
  * Polls until fine-grained PAT permissions have propagated to a newly created repo.
- * When a fine-grained PAT is scoped to "All repositories", permissions like
- * issues:write and pull_requests:write may take seconds to propagate to
- * dynamically created repos, even though administration and contents scopes
- * are available immediately.
  */
 function waitForRepoReady(
   repo: string,
-  envOptions?: { env: Record<string, string | undefined> },
-  timeoutMs = 30000,
-  pollMs = 2000
+  envOptions?: { env: Record<string, string | undefined> }
 ): void {
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < timeoutMs) {
-    try {
+  withTestRetry(
+    () => {
       // The labels endpoint requires issues:write — if this succeeds,
       // all permission scopes have propagated to the new repo
       exec(`gh api repos/${repo}/labels --jq '.[0].name'`, envOptions);
-      console.log(`  Repo permissions ready after ${Date.now() - startTime}ms`);
-      return;
-    } catch {
-      // Permission not yet propagated, continue polling
-    }
-    // Synchronous sleep — Atomics.wait on a dummy SharedArrayBuffer
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, pollMs);
-  }
-
-  throw new Error(
-    `Repo ${repo} permissions not ready after ${timeoutMs}ms — check PAT repository scope`
+      console.log(`  Repo permissions ready`);
+    },
+    { retries: 4, description: `repo ${repo} permissions ready` }
   );
 }
 
