@@ -545,3 +545,65 @@ describe("convertContentToString YAML string quoting", () => {
     assert.ok(result.includes('- "maybe"'), "maybe in array should be quoted");
   });
 });
+
+describe("convertContentToString YAML block scalar preservation", () => {
+  test("uses block literal for multi-line strings", () => {
+    const content = {
+      ignore: "*.sops.*\ntalos/\nclusterconfig/\nlegacy/\n",
+    };
+    const result = convertContentToString(content, ".yamllint.yml");
+    assert.ok(
+      result.includes("ignore: |\n"),
+      `Expected block literal style, got: ${result}`
+    );
+    assert.ok(
+      result.includes("  *.sops.*\n"),
+      `Expected indented content, got: ${result}`
+    );
+  });
+
+  test("still quotes single-line strings for YAML 1.1 compatibility", () => {
+    const content = {
+      time: "06:00",
+      name: "hello",
+    };
+    const result = convertContentToString(content, "config.yaml");
+    assert.ok(
+      result.includes('time: "06:00"'),
+      `Expected quoted time, got: ${result}`
+    );
+    assert.ok(
+      result.includes('name: "hello"'),
+      `Expected quoted name, got: ${result}`
+    );
+  });
+
+  test("uses block literal for multi-line strings in nested objects", () => {
+    const content = {
+      rules: {
+        ignore: "path1/\npath2/\n",
+        severity: "warning",
+      },
+    };
+    const result = convertContentToString(content, "config.yaml");
+    assert.ok(
+      result.includes("ignore: |\n"),
+      `Expected block literal for nested multi-line, got: ${result}`
+    );
+    assert.ok(
+      result.includes('severity: "warning"'),
+      `Expected quoted single-line, got: ${result}`
+    );
+  });
+
+  test("uses block literal for multi-line string without trailing newline", () => {
+    const content = {
+      script: "line1\nline2",
+    };
+    const result = convertContentToString(content, "config.yaml");
+    assert.ok(
+      result.includes("script: |-\n"),
+      `Expected block strip style for no trailing newline, got: ${result}`
+    );
+  });
+});
