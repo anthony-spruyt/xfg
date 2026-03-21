@@ -113,7 +113,14 @@ export function waitForPrVisible(
       if (!result) {
         throw new Error("PR not visible yet");
       }
-      return JSON.parse(result) as Record<string, unknown>;
+      const parsed = JSON.parse(result) as Record<string, unknown>;
+      // GitHub API eventual consistency can return a PR with zero/default
+      // field values before it's fully indexed. PR numbers are always >= 1,
+      // so a zero number means the PR isn't ready yet.
+      if ("number" in parsed && !parsed.number) {
+        throw new Error("PR visible but number not populated yet");
+      }
+      return parsed;
     },
     { description: `PR on ${headBranch} visible in ${repo}` }
   );
