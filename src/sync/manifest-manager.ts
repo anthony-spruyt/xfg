@@ -7,6 +7,7 @@ import {
   MANIFEST_FILENAME,
   type XfgManifest,
 } from "./manifest.js";
+import { computeUnifiedDiff, isStructuredDataFile } from "./diff-utils.js";
 import type {
   IManifestManager,
   OrphanProcessResult,
@@ -67,11 +68,20 @@ export class ManifestManager implements IManifestManager {
         continue;
       }
 
-      fileChanges.set(fileName, {
+      const writeResult: FileWriteResult = {
         fileName,
         content: null,
         action: "delete",
-      });
+      };
+
+      if (isStructuredDataFile(fileName)) {
+        const existingContent = gitOps.getFileContent(fileName);
+        if (existingContent !== null) {
+          writeResult.diffLines = computeUnifiedDiff(existingContent, null);
+        }
+      }
+
+      fileChanges.set(fileName, writeResult);
 
       if (dryRun) {
         log.fileDiff(fileName, "DELETED", []);
@@ -106,11 +116,22 @@ export class ManifestManager implements IManifestManager {
     const manifestExisted = existsSync(join(workDir, MANIFEST_FILENAME));
     const manifestContent = JSON.stringify(manifest, null, 2) + "\n";
 
-    fileChanges.set(MANIFEST_FILENAME, {
+    const writeResult: FileWriteResult = {
       fileName: MANIFEST_FILENAME,
       content: manifestContent,
       action: manifestExisted ? "update" : "create",
-    });
+    };
+
+    // Compute diff for the manifest (it's a JSON file)
+    const oldManifestContent = existingManifest
+      ? JSON.stringify(existingManifest, null, 2) + "\n"
+      : null;
+    writeResult.diffLines = computeUnifiedDiff(
+      oldManifestContent,
+      manifestContent
+    );
+
+    fileChanges.set(MANIFEST_FILENAME, writeResult);
 
     if (!dryRun) {
       saveManifest(workDir, manifest);

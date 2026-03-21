@@ -28,47 +28,87 @@ interface DiffHunk {
 }
 
 /**
- * Generate a unified diff between old and new content.
- * Returns an array of formatted diff lines.
+ * Check if a file is a structured data file (JSON, JSON5, YAML, YML).
  */
-export function generateDiff(
+export function isStructuredDataFile(fileName: string): boolean {
+  return /\.(json|json5|ya?ml)$/i.test(fileName);
+}
+
+/**
+ * Compute a unified diff between old and new content.
+ * Returns raw diff lines (no ANSI formatting).
+ *
+ * - oldContent === null → new file (all additions)
+ * - newContent === null → deleted file (all removals)
+ * - both null → empty array
+ */
+export function computeUnifiedDiff(
   oldContent: string | null,
-  newContent: string,
-  _fileName: string,
+  newContent: string | null,
   contextLines: number = 3
 ): string[] {
-  const oldLines = oldContent ? oldContent.split("\n") : [];
-  const newLines = newContent.split("\n");
+  if (oldContent === null && newContent === null) {
+    return [];
+  }
 
-  // For new files, show all lines as additions
+  // New file: all additions
   if (oldContent === null) {
-    const result: string[] = [];
-    for (const line of newLines) {
-      result.push(formatDiffLine(`+${line}`));
+    const newLines = newContent!.split("\n");
+    // Filter trailing empty string from split
+    const lines =
+      newLines[newLines.length - 1] === "" ? newLines.slice(0, -1) : newLines;
+    if (lines.length === 0) return [];
+    const result: string[] = [`@@ -0,0 +1,${lines.length} @@`];
+    for (const line of lines) {
+      result.push(`+${line}`);
     }
     return result;
   }
 
-  // Simple LCS-based diff algorithm
-  const hunks = computeDiffHunks(oldLines, newLines, contextLines);
-
-  if (hunks.length === 0) {
-    return [];
+  // Deleted file: all removals
+  if (newContent === null) {
+    const oldLines = oldContent.split("\n");
+    const lines =
+      oldLines[oldLines.length - 1] === "" ? oldLines.slice(0, -1) : oldLines;
+    if (lines.length === 0) return [];
+    const result: string[] = [`@@ -1,${lines.length} +0,0 @@`];
+    for (const line of lines) {
+      result.push(`-${line}`);
+    }
+    return result;
   }
+
+  // Modified file: LCS diff
+  const oldLines = oldContent.split("\n");
+  const newLines = newContent.split("\n");
+
+  const hunks = computeDiffHunks(oldLines, newLines, contextLines);
+  if (hunks.length === 0) return [];
 
   const result: string[] = [];
   for (const hunk of hunks) {
     result.push(
-      formatDiffLine(
-        `@@ -${hunk.oldStart},${hunk.oldCount} +${hunk.newStart},${hunk.newCount} @@`
-      )
+      `@@ -${hunk.oldStart},${hunk.oldCount} +${hunk.newStart},${hunk.newCount} @@`
     );
     for (const line of hunk.lines) {
-      result.push(formatDiffLine(line));
+      result.push(line);
     }
   }
-
   return result;
+}
+
+/**
+ * Generate a unified diff between old and new content.
+ * Returns an array of formatted (chalk-colored) diff lines.
+ */
+export function generateDiff(
+  oldContent: string | null,
+  newContent: string,
+  contextLines: number = 3
+): string[] {
+  return computeUnifiedDiff(oldContent, newContent, contextLines).map(
+    formatDiffLine
+  );
 }
 
 /**

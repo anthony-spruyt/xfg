@@ -33,6 +33,26 @@ The `--dry-run` flag lets you preview changes without actually making them.
 xfg sync --config ./config.yaml --dry-run
 ```
 
+### Content Diffs for JSON/YAML Files
+
+For structured data files (`.json`, `.json5`, `.yaml`, `.yml`), xfg shows unified content diffs in both CLI output and GitHub Step Summary. This applies to all modes (dry-run and apply) and all actions (create, update, delete).
+
+```text
+~ org/repo
+    ~ config.json
+      @@ -1,3 +1,3 @@
+       {
+      -  "old": true
+      +  "new": true
+       }
+    + new-config.yaml
+      @@ -0,0 +1,2 @@
+      +key: value
+      +other: setting
+```
+
+Non-structured files (`.sh`, `.md`, `.txt`, etc.) show only the file path without content diffs.
+
 ## CLI Options
 
 | Option             | Alias | Description                                                                    | Required |

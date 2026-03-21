@@ -52,6 +52,37 @@ describe("buildSyncReport", () => {
     assert.equal(report.repos[0].mergeOutcome, "manual");
   });
 
+  test("preserves diffLines through the pipeline", () => {
+    const diffLines = ["@@ -1,1 +1,1 @@", "-old", "+new"];
+    const results = [
+      {
+        repoName: "org/repo",
+        success: true,
+        fileChanges: [
+          { path: "config.json", action: "update" as const, diffLines },
+        ],
+      },
+    ];
+
+    const report = buildSyncReport(results);
+
+    assert.deepEqual(report.repos[0].files[0].diffLines, diffLines);
+  });
+
+  test("handles files without diffLines", () => {
+    const results = [
+      {
+        repoName: "org/repo",
+        success: true,
+        fileChanges: [{ path: "script.sh", action: "create" as const }],
+      },
+    ];
+
+    const report = buildSyncReport(results);
+
+    assert.equal(report.repos[0].files[0].diffLines, undefined);
+  });
+
   test("builds report with error", () => {
     const results = [
       {

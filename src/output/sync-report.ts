@@ -2,6 +2,7 @@ import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatCountEntry } from "./settings-report.js";
 import { renderSyncLines } from "./unified-summary.js";
+import { formatDiffLine } from "../sync/index.js";
 import type { SyncReport, RepoFileChanges, ReportFileChange } from "./types.js";
 
 export type { SyncReport, RepoFileChanges, ReportFileChange };
@@ -34,6 +35,13 @@ export function formatSyncReportCLI(report: SyncReport): string[] {
         lines.push(chalk.yellow(`    ~ ${file.path}`));
       } else if (file.action === "delete") {
         lines.push(chalk.red(`    - ${file.path}`));
+      }
+
+      // Content diff for structured data files
+      if (file.diffLines) {
+        for (const diffLine of file.diffLines) {
+          lines.push(`      ${formatDiffLine(diffLine)}`);
+        }
       }
     }
 
