@@ -10,28 +10,24 @@
       
       
       
-        <link rel="canonical" href="https://anthony-spruyt.github.io/xfg/4.x/usage/">
+        <link rel="canonical" href="https://anthony-spruyt.github.io/xfg/4.x/superpowers/specs/2026-03-21-json-yaml-diff-summary-design/">
       
       
-        <link rel="prev" href="../getting-started/prerequisites/">
       
       
-        <link rel="next" href="../configuration/">
-      
-      
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
     
     
       
-        <title>Usage - xfg</title>
+        <title>JSON/YAML Content Diff in Summary Output - xfg</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.84d31ad4.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.84d31ad4.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -50,7 +46,7 @@
       
     
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -76,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#usage" class="md-skip">
+        <a href="#jsonyaml-content-diff-in-summary-output" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +90,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="xfg" class="md-header__button md-logo" aria-label="xfg" data-md-component="logo">
+    <a href="../../.." title="xfg" class="md-header__button md-logo" aria-label="xfg" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Usage
+              JSON/YAML Content Diff in Summary Output
             
           </span>
         </div>
@@ -227,7 +223,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -246,7 +242,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../use-cases/" class="md-tabs__link">
+      <a href="../../../use-cases/" class="md-tabs__link">
         
   
   
@@ -267,7 +263,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../getting-started/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
@@ -283,11 +279,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../../../usage/" class="md-tabs__link">
         
   
   
@@ -308,7 +302,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../configuration/" class="md-tabs__link">
+        <a href="../../../configuration/" class="md-tabs__link">
           
   
   
@@ -328,7 +322,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../examples/" class="md-tabs__link">
+        <a href="../../../examples/" class="md-tabs__link">
           
   
   
@@ -348,7 +342,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../platforms/" class="md-tabs__link">
+        <a href="../../../platforms/" class="md-tabs__link">
           
   
   
@@ -368,7 +362,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../ci-cd/" class="md-tabs__link">
+        <a href="../../../ci-cd/" class="md-tabs__link">
           
   
   
@@ -388,7 +382,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../reference/cli-options/" class="md-tabs__link">
+        <a href="../../../reference/cli-options/" class="md-tabs__link">
           
   
   
@@ -408,7 +402,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../migration-v4/" class="md-tabs__link">
+        <a href="../../../migration-v4/" class="md-tabs__link">
           
   
   
@@ -426,7 +420,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../troubleshooting/" class="md-tabs__link">
+      <a href="../../../troubleshooting/" class="md-tabs__link">
         
   
   
@@ -447,7 +441,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../security/secret-rotation/" class="md-tabs__link">
+        <a href="../../../security/secret-rotation/" class="md-tabs__link">
           
   
   
@@ -465,7 +459,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../ide-integration/" class="md-tabs__link">
+      <a href="../../../ide-integration/" class="md-tabs__link">
         
   
   
@@ -500,7 +494,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="xfg" class="md-nav__button md-logo" aria-label="xfg" data-md-component="logo">
+    <a href="../../.." title="xfg" class="md-nav__button md-logo" aria-label="xfg" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -530,7 +524,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -552,7 +546,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-cases/" class="md-nav__link">
+      <a href="../../../use-cases/" class="md-nav__link">
         
   
   
@@ -619,7 +613,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
+      <a href="../../../getting-started/" class="md-nav__link">
         
   
   
@@ -642,7 +636,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/prerequisites/" class="md-nav__link">
+      <a href="../../../getting-started/prerequisites/" class="md-nav__link">
         
   
   
@@ -669,32 +663,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Usage
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../usage/" class="md-nav__link">
         
   
   
@@ -705,86 +677,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#basic-usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      Basic Usage
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#dry-run-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      Dry-Run Mode
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Dry-Run Mode">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#content-diffs-for-jsonyaml-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      Content Diffs for JSON/YAML Files
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cli-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      CLI Options
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#console-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      Console Output
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#created-prs" class="md-nav__link">
-    <span class="md-ellipsis">
-      Created PRs
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -841,7 +733,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
+      <a href="../../../configuration/" class="md-nav__link">
         
   
   
@@ -864,7 +756,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/content-types/" class="md-nav__link">
+      <a href="../../../configuration/content-types/" class="md-nav__link">
         
   
   
@@ -887,7 +779,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/inheritance/" class="md-nav__link">
+      <a href="../../../configuration/inheritance/" class="md-nav__link">
         
   
   
@@ -910,7 +802,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/groups/" class="md-nav__link">
+      <a href="../../../configuration/groups/" class="md-nav__link">
         
   
   
@@ -933,7 +825,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/env-variables/" class="md-nav__link">
+      <a href="../../../configuration/env-variables/" class="md-nav__link">
         
   
   
@@ -956,7 +848,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/templating/" class="md-nav__link">
+      <a href="../../../configuration/templating/" class="md-nav__link">
         
   
   
@@ -979,7 +871,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/merge-strategies/" class="md-nav__link">
+      <a href="../../../configuration/merge-strategies/" class="md-nav__link">
         
   
   
@@ -1002,7 +894,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/file-references/" class="md-nav__link">
+      <a href="../../../configuration/file-references/" class="md-nav__link">
         
   
   
@@ -1025,7 +917,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/pr-options/" class="md-nav__link">
+      <a href="../../../configuration/pr-options/" class="md-nav__link">
         
   
   
@@ -1048,7 +940,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/pr-templates/" class="md-nav__link">
+      <a href="../../../configuration/pr-templates/" class="md-nav__link">
         
   
   
@@ -1071,7 +963,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/lifecycle/" class="md-nav__link">
+      <a href="../../../configuration/lifecycle/" class="md-nav__link">
         
   
   
@@ -1094,7 +986,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/repo-settings/" class="md-nav__link">
+      <a href="../../../configuration/repo-settings/" class="md-nav__link">
         
   
   
@@ -1117,7 +1009,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/rulesets/" class="md-nav__link">
+      <a href="../../../configuration/rulesets/" class="md-nav__link">
         
   
   
@@ -1140,7 +1032,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/labels/" class="md-nav__link">
+      <a href="../../../configuration/labels/" class="md-nav__link">
         
   
   
@@ -1215,7 +1107,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/" class="md-nav__link">
+      <a href="../../../examples/" class="md-nav__link">
         
   
   
@@ -1238,7 +1130,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/multi-file-sync/" class="md-nav__link">
+      <a href="../../../examples/multi-file-sync/" class="md-nav__link">
         
   
   
@@ -1261,7 +1153,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/shared-config/" class="md-nav__link">
+      <a href="../../../examples/shared-config/" class="md-nav__link">
         
   
   
@@ -1284,7 +1176,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/env-specific/" class="md-nav__link">
+      <a href="../../../examples/env-specific/" class="md-nav__link">
         
   
   
@@ -1307,7 +1199,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/merge-strategies/" class="md-nav__link">
+      <a href="../../../examples/merge-strategies/" class="md-nav__link">
         
   
   
@@ -1330,7 +1222,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/create-only/" class="md-nav__link">
+      <a href="../../../examples/create-only/" class="md-nav__link">
         
   
   
@@ -1353,7 +1245,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/yaml-comments/" class="md-nav__link">
+      <a href="../../../examples/yaml-comments/" class="md-nav__link">
         
   
   
@@ -1376,7 +1268,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/text-files/" class="md-nav__link">
+      <a href="../../../examples/text-files/" class="md-nav__link">
         
   
   
@@ -1399,7 +1291,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/executable-files/" class="md-nav__link">
+      <a href="../../../examples/executable-files/" class="md-nav__link">
         
   
   
@@ -1422,7 +1314,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/subdirectory-paths/" class="md-nav__link">
+      <a href="../../../examples/subdirectory-paths/" class="md-nav__link">
         
   
   
@@ -1445,7 +1337,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/file-references/" class="md-nav__link">
+      <a href="../../../examples/file-references/" class="md-nav__link">
         
   
   
@@ -1468,7 +1360,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/auto-merge/" class="md-nav__link">
+      <a href="../../../examples/auto-merge/" class="md-nav__link">
         
   
   
@@ -1491,7 +1383,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/delete-orphaned/" class="md-nav__link">
+      <a href="../../../examples/delete-orphaned/" class="md-nav__link">
         
   
   
@@ -1566,7 +1458,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../platforms/" class="md-nav__link">
+      <a href="../../../platforms/" class="md-nav__link">
         
   
   
@@ -1589,7 +1481,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../platforms/github/" class="md-nav__link">
+      <a href="../../../platforms/github/" class="md-nav__link">
         
   
   
@@ -1612,7 +1504,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../platforms/github-app/" class="md-nav__link">
+      <a href="../../../platforms/github-app/" class="md-nav__link">
         
   
   
@@ -1635,7 +1527,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../platforms/azure-devops/" class="md-nav__link">
+      <a href="../../../platforms/azure-devops/" class="md-nav__link">
         
   
   
@@ -1658,7 +1550,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../platforms/gitlab/" class="md-nav__link">
+      <a href="../../../platforms/gitlab/" class="md-nav__link">
         
   
   
@@ -1733,7 +1625,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ci-cd/" class="md-nav__link">
+      <a href="../../../ci-cd/" class="md-nav__link">
         
   
   
@@ -1756,7 +1648,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ci-cd/github-actions/" class="md-nav__link">
+      <a href="../../../ci-cd/github-actions/" class="md-nav__link">
         
   
   
@@ -1779,7 +1671,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ci-cd/azure-pipelines/" class="md-nav__link">
+      <a href="../../../ci-cd/azure-pipelines/" class="md-nav__link">
         
   
   
@@ -1854,7 +1746,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/cli-options/" class="md-nav__link">
+      <a href="../../../reference/cli-options/" class="md-nav__link">
         
   
   
@@ -1877,7 +1769,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reference/config-schema/" class="md-nav__link">
+      <a href="../../../reference/config-schema/" class="md-nav__link">
         
   
   
@@ -1952,7 +1844,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../migration-v4/" class="md-nav__link">
+      <a href="../../../migration-v4/" class="md-nav__link">
         
   
   
@@ -1982,7 +1874,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../troubleshooting/" class="md-nav__link">
+      <a href="../../../troubleshooting/" class="md-nav__link">
         
   
   
@@ -2049,7 +1941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../security/secret-rotation/" class="md-nav__link">
+      <a href="../../../security/secret-rotation/" class="md-nav__link">
         
   
   
@@ -2079,7 +1971,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ide-integration/" class="md-nav__link">
+      <a href="../../../ide-integration/" class="md-nav__link">
         
   
   
@@ -2121,28 +2013,82 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#basic-usage" class="md-nav__link">
+  <a href="#problem" class="md-nav__link">
     <span class="md-ellipsis">
-      Basic Usage
+      Problem
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#dry-run-mode" class="md-nav__link">
+  <a href="#decision-summary" class="md-nav__link">
     <span class="md-ellipsis">
-      Dry-Run Mode
+      Decision Summary
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Dry-Run Mode">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design" class="md-nav__link">
+    <span class="md-ellipsis">
+      Design
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#content-diffs-for-jsonyaml-files" class="md-nav__link">
+  <a href="#1-refactor-generatediff-separate-computation-from-formatting" class="md-nav__link">
     <span class="md-ellipsis">
-      Content Diffs for JSON/YAML Files
+      1. Refactor generateDiff — Separate Computation from Formatting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-extend-data-types-with-optional-diff-lines" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Extend Data Types with Optional Diff Lines
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-file-extension-filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. File Extension Filter
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-populating-diff-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Populating Diff Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-carrying-difflines-through-the-report-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Carrying diffLines Through the Report Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-rendering-diffs-in-summary-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Rendering Diffs in Summary Output
     </span>
   </a>
   
@@ -2154,27 +2100,27 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cli-options" class="md-nav__link">
+  <a href="#files-changed" class="md-nav__link">
     <span class="md-ellipsis">
-      CLI Options
+      Files Changed
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#console-output" class="md-nav__link">
+  <a href="#testing-95-coverage-target" class="md-nav__link">
     <span class="md-ellipsis">
-      Console Output
+      Testing (95% coverage target)
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#created-prs" class="md-nav__link">
+  <a href="#docs-updates" class="md-nav__link">
     <span class="md-ellipsis">
-      Created PRs
+      Docs Updates
     </span>
   </a>
   
@@ -2199,153 +2145,169 @@
   
 
 
-<h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h1>
-<p>xfg uses a single <code>sync</code> command to handle file synchronization, repository settings, rulesets, and labels.</p>
-<h2 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Sync files, settings, rulesets, and labels</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Dry run — preview changes without applying</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--dry-run
-</span></code></pre></div>
-<h2 id="dry-run-mode">Dry-Run Mode<a class="headerlink" href="#dry-run-mode" title="Permanent link">&para;</a></h2>
-<p>The <code>--dry-run</code> flag lets you preview changes without actually making them.</p>
-<p><strong>For files:</strong></p>
+<h1 id="jsonyaml-content-diff-in-summary-output">JSON/YAML Content Diff in Summary Output<a class="headerlink" href="#jsonyaml-content-diff-in-summary-output" title="Permanent link">&para;</a></h1>
+<p><strong>Issue:</strong> <a href="https://github.com/anthony-spruyt/xfg/issues/599">#599</a>
+<strong>Date:</strong> 2026-03-21</p>
+<h2 id="problem">Problem<a class="headerlink" href="#problem" title="Permanent link">&para;</a></h2>
+<p>When xfg syncs files, the summary output (CLI report and GitHub Step Summary) only shows which files changed and their action (create/update/delete). For JSON and YAML files — the structured config files that are xfg's core concern — there is no way to see <em>what</em> changed without opening a PR or inspecting the repo directly. This is especially problematic in direct merge mode where there is no PR diff to review.</p>
+<h2 id="decision-summary">Decision Summary<a class="headerlink" href="#decision-summary" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Files are compared but not written</li>
-<li>Commits and pushes are skipped</li>
-<li>PRs are not created</li>
+<li>Show unified content diffs for JSON/YAML files (<code>.json</code>, <code>.json5</code>, <code>.yaml</code>, <code>.yml</code>) in both CLI and GitHub Step Summary output</li>
+<li>Diffs shown in all modes (dry-run and apply) — drift means applied changes may differ from a prior plan</li>
+<li>Full diff always, no truncation — xfg-managed config files are typically small</li>
+<li>Deleted files show full content as removals (consistent with new files showing all additions, Terraform-style)</li>
 </ul>
-<p><strong>For settings:</strong></p>
+<h2 id="design">Design<a class="headerlink" href="#design" title="Permanent link">&para;</a></h2>
+<h3 id="1-refactor-generatediff-separate-computation-from-formatting">1. Refactor <code>generateDiff</code> — Separate Computation from Formatting<a class="headerlink" href="#1-refactor-generatediff-separate-computation-from-formatting" title="Permanent link">&para;</a></h3>
+<p><code>generateDiff()</code> in <code>src/sync/diff-utils.ts</code> currently couples diff computation with chalk formatting. Split into:</p>
 <ul>
-<li>Rulesets are compared but not created/updated/deleted</li>
-<li>Labels are compared but not created/updated/deleted</li>
-<li>Repository settings are compared but not applied</li>
-<li>Shows planned changes (create, update, delete, unchanged)</li>
+<li><strong><code>computeUnifiedDiff(oldContent: string | null, newContent: string | null, contextLines?: number): string[]</code></strong> — returns raw diff lines (<code>+</code>, <code>-</code>, <code>@@</code>, <code></code> prefixed), including <code>@@</code> hunk headers. Three special cases handled symmetrically:</li>
+<li><strong>New file</strong> (<code>oldContent === null</code>): emits <code>@@ -0,0 +1,N @@</code> header followed by all lines as <code>+</code> additions</li>
+<li><strong>Deleted file</strong> (<code>newContent === null</code>): emits <code>@@ -1,N +0,0 @@</code> header followed by all lines as <code>-</code> removals</li>
+<li><strong>No changes</strong>: returns empty array</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--dry-run
+<p>For modified files, uses LCS algorithm to produce standard unified diff hunks with context. Pure computation, no formatting.
+- <strong><code>generateDiff()</code></strong> — becomes a thin wrapper: calls <code>computeUnifiedDiff()</code> then maps through <code>formatDiffLine()</code> for chalk output. Existing callers unchanged. The unused <code>_fileName</code> parameter is cleaned up.</p>
+<h3 id="2-extend-data-types-with-optional-diff-lines">2. Extend Data Types with Optional Diff Lines<a class="headerlink" href="#2-extend-data-types-with-optional-diff-lines" title="Permanent link">&para;</a></h3>
+<p><strong><code>FileWriteResult</code></strong> (<code>src/sync/types.ts</code>):</p>
+<div class="language-typescript highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">interface</span><span class="w"> </span><span class="nx">FileWriteResult</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nx">fileName</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nx">action</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;create&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;update&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;delete&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;skip&quot;</span><span class="p">;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nx">diffLines?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">[];</span><span class="w">  </span><span class="c1">// raw unified diff lines, only for JSON/YAML files</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">}</span>
 </span></code></pre></div>
-<h3 id="content-diffs-for-jsonyaml-files">Content Diffs for JSON/YAML Files<a class="headerlink" href="#content-diffs-for-jsonyaml-files" title="Permanent link">&para;</a></h3>
-<p>For structured data files (<code>.json</code>, <code>.json5</code>, <code>.yaml</code>, <code>.yml</code>), xfg shows unified content diffs in both CLI output and GitHub Step Summary. This applies to all modes (dry-run and apply) and all actions (create, update, delete).</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>~ org/repo
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    ~ config.json
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>      @@ -1,3 +1,3 @@
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>       {
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>      -  &quot;old&quot;: true
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>      +  &quot;new&quot;: true
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>       }
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    + new-config.yaml
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>      @@ -0,0 +1,2 @@
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>      +key: value
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>      +other: setting
+<p>Note: <code>diffLines</code> is computed and attached in <code>FileWriter.writeFiles()</code> where both old and new content are in scope. No <code>oldContent</code> field needed — the diff is computed at the point where content is available, not threaded through as raw content.</p>
+<p><strong><code>FileChangeDetail</code></strong> (<code>src/sync/types.ts</code>):</p>
+<div class="language-typescript highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">interface</span><span class="w"> </span><span class="nx">FileChangeDetail</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nx">path</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nx">action</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;create&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;update&quot;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s2">&quot;delete&quot;</span><span class="p">;</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nx">diffLines?</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">[];</span><span class="w">  </span><span class="c1">// raw unified diff lines, only for JSON/YAML files</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>Non-structured files (<code>.sh</code>, <code>.md</code>, <code>.txt</code>, etc.) show only the file path without content diffs.</p>
-<h2 id="cli-options">CLI Options<a class="headerlink" href="#cli-options" title="Permanent link">&para;</a></h2>
+<p>Diff lines are stored raw (no chalk). The rendering layer decides formatting — data is format-agnostic.</p>
+<h3 id="3-file-extension-filter">3. File Extension Filter<a class="headerlink" href="#3-file-extension-filter" title="Permanent link">&para;</a></h3>
+<p>A single utility function in <code>src/sync/diff-utils.ts</code>:</p>
+<div class="language-typescript highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">export</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">isStructuredDataFile</span><span class="p">(</span><span class="nx">fileName</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="sr">/\.(json|json5|ya?ml)$/i</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">fileName</span><span class="p">);</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Called in two places:</p>
+<ol>
+<li><strong><code>FileWriter.writeFiles()</code></strong> — compute and attach <code>diffLines</code> on <code>FileWriteResult</code> only for matching files</li>
+<li><strong><code>ManifestManager.deleteOrphans()</code></strong> — read old content and compute <code>diffLines</code> for matching orphan files before recording deletion</li>
+</ol>
+<h3 id="4-populating-diff-data">4. Populating Diff Data<a class="headerlink" href="#4-populating-diff-data" title="Permanent link">&para;</a></h3>
+<p><strong><code>FileWriter.writeFiles()</code></strong> (<code>src/sync/file-writer.ts</code>):
+- Already reads <code>existingContent</code> via <code>gitOps.getFileContent()</code> and has <code>fileContent</code> (new content) in scope
+- Already calls <code>generateDiff()</code> for dry-run logging
+- For JSON/YAML files (both dry-run and apply), call <code>computeUnifiedDiff(existingContent, fileContent)</code> and attach the result as <code>diffLines</code> on the <code>FileWriteResult</code>
+- This is the natural computation point — both content values are already available here, avoiding the need to thread raw content through multiple layers
+- <strong>Implementation note:</strong> the current code only computes diffs inside the <code>if (dryRun)</code> block. The <code>computeUnifiedDiff</code> call for structured data files must be placed outside the dry-run conditional (guarded by <code>isStructuredDataFile &amp;&amp; changed</code>), while <code>generateDiff</code> (chalk-formatted, for console logging) stays inside the <code>dryRun</code> block</p>
+<p><strong><code>FileSyncStrategy.execute()</code></strong> (<code>src/sync/file-sync-strategy.ts</code>):
+- Already maps <code>FileWriteResult</code> to <code>FileChangeDetail</code> via <code>changedFiles</code> (which only has <code>fileName</code> and <code>action</code>)
+- Change: look up the <code>FileWriteResult</code> from the <code>fileChanges</code> map (already available in <code>FileSyncResult</code>) using <code>f.fileName</code> as the key, to carry <code>diffLines</code> through to <code>FileChangeDetail</code>
+- No diff computation here — just pass through pre-computed <code>diffLines</code></p>
+<p><strong><code>ManifestManager.deleteOrphans()</code></strong> (<code>src/sync/manifest.ts</code>):
+- <code>deleteOrphans()</code> receives <code>deps.gitOps</code> typed as <code>ILocalGitOps</code>, which exposes <code>getFileContent()</code>
+- For JSON/YAML orphan files, read existing content via <code>gitOps.getFileContent()</code>, compute <code>diffLines</code> using <code>computeUnifiedDiff(existingContent, null)</code> (deletion sentinel — produces all lines as <code>-</code> removals with <code>@@ -1,N +0,0 @@</code> header), and attach to the <code>FileWriteResult</code></p>
+<p><strong><code>ManifestManager.saveUpdatedManifest()</code></strong> (<code>src/sync/manifest.ts</code>):
+- <code>.xfg.json</code> is a JSON file that matches <code>isStructuredDataFile</code>
+- When the manifest changes (create or update), compute <code>diffLines</code> using <code>computeUnifiedDiff()</code> with the existing manifest content and new manifest content, and attach to the <code>FileWriteResult</code></p>
+<h3 id="5-carrying-difflines-through-the-report-pipeline">5. Carrying <code>diffLines</code> Through the Report Pipeline<a class="headerlink" href="#5-carrying-difflines-through-the-report-pipeline" title="Permanent link">&para;</a></h3>
+<p><strong><code>buildSyncReport()</code></strong> (<code>src/cli/sync-report-builder.ts</code>):
+- Currently maps <code>FileChangeDetail</code> to <code>ReportFileChange</code> keeping only <code>path</code> and <code>action</code>, which would drop <code>diffLines</code>
+- Update the mapping to include <code>diffLines</code> when present: <code>{ path: f.path, action: f.action, diffLines: f.diffLines }</code></p>
+<p><strong><code>ReportFileChange</code></strong> (<code>src/output/types.ts</code>):
+- This is a type alias for <code>FileChangeDetail</code>, so it automatically gains <code>diffLines</code> when <code>FileChangeDetail</code> is updated — no change needed here</p>
+<h3 id="6-rendering-diffs-in-summary-output">6. Rendering Diffs in Summary Output<a class="headerlink" href="#6-rendering-diffs-in-summary-output" title="Permanent link">&para;</a></h3>
+<p><strong>GitHub Step Summary (markdown)</strong> — <code>renderSyncLines()</code> in <code>src/output/unified-summary.ts</code>:
+After the file path line, append raw <code>diffLines</code> directly. They render correctly inside the existing <code>```diff ```</code> block:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>@@ my-org/my-repo @@
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>! .eslintrc.json
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>@@ -1,3 +1,4 @@
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a> {
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>-  &quot;semi&quot;: true
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>+  &quot;semi&quot;: true,
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>+  &quot;trailing-comma&quot;: &quot;all&quot;
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a> }
+</span></code></pre></div>
+<p>Same applies to <code>formatSyncReportMarkdown()</code> in <code>src/output/sync-report.ts</code> which calls <code>renderSyncLines</code>.</p>
+<p><strong>CLI output</strong> — <code>formatSyncReportCLI()</code> in <code>src/output/sync-report.ts</code>:
+After each file path line, map raw <code>diffLines</code> through <code>formatDiffLine()</code> for chalk coloring. Each diff line gets a fixed 6-space indent prepended (the raw diff lines already contain their own <code>+</code>/<code>-</code>/<code></code> prefixes):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>~ my-org/my-repo
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    ~ .eslintrc.json
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>      @@ -1,3 +1,4 @@
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>       {
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>      -  &quot;semi&quot;: true
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>      +  &quot;semi&quot;: true,
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>      +  &quot;trailing-comma&quot;: &quot;all&quot;
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>       }
+</span></code></pre></div>
+<p><code>formatDiffLine</code> is imported from <code>src/sync/diff-utils.ts</code>. The <code>output/</code> module already imports from <code>sync/</code> (e.g., <code>output/types.ts</code> imports <code>FileChangeDetail</code> from <code>sync/index.ts</code>), so this does not introduce a new dependency direction.</p>
+<h2 id="files-changed">Files Changed<a class="headerlink" href="#files-changed" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Option</th>
-<th>Alias</th>
-<th>Description</th>
-<th>Required</th>
+<th>File</th>
+<th>Change</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>--config</code></td>
-<td><code>-c</code></td>
-<td>Path to YAML config file</td>
-<td>Yes</td>
+<td><code>src/sync/diff-utils.ts</code></td>
+<td>Extract <code>computeUnifiedDiff()</code> from <code>generateDiff()</code>; add <code>isStructuredDataFile()</code>; clean up unused <code>_fileName</code> param; export new functions</td>
 </tr>
 <tr>
-<td><code>--dry-run</code></td>
-<td><code>-d</code></td>
-<td>Show what would be done without making changes</td>
-<td>No</td>
+<td><code>src/sync/index.ts</code></td>
+<td>Add barrel exports for <code>computeUnifiedDiff</code>, <code>isStructuredDataFile</code>, <code>formatDiffLine</code></td>
 </tr>
 <tr>
-<td><code>--work-dir</code></td>
-<td><code>-w</code></td>
-<td>Temporary directory for cloning (default: <code>./tmp</code>)</td>
-<td>No</td>
+<td><code>src/sync/types.ts</code></td>
+<td>Add <code>diffLines?</code> to <code>FileWriteResult</code> and <code>FileChangeDetail</code></td>
 </tr>
 <tr>
-<td><code>--retries</code></td>
-<td><code>-r</code></td>
-<td>Number of retries for network operations (default: 3)</td>
-<td>No</td>
+<td><code>src/sync/file-writer.ts</code></td>
+<td>Compute and attach <code>diffLines</code> on <code>FileWriteResult</code> for JSON/YAML files (both dry-run and apply)</td>
 </tr>
 <tr>
-<td><code>--branch</code></td>
-<td><code>-b</code></td>
-<td>Override branch name (default: <code>chore/sync-{filename}</code> or <code>chore/sync-config</code>)</td>
-<td>No</td>
+<td><code>src/sync/file-sync-strategy.ts</code></td>
+<td>Pass through <code>diffLines</code> from <code>FileWriteResult</code> to <code>FileChangeDetail</code> via <code>fileChanges</code> map lookup</td>
 </tr>
 <tr>
-<td><code>--merge</code></td>
-<td><code>-m</code></td>
-<td>PR merge mode: <code>manual</code>, <code>auto</code> (default), <code>force</code> (bypass checks), <code>direct</code></td>
-<td>No</td>
+<td><code>src/sync/manifest-manager.ts</code></td>
+<td>Read old content and compute <code>diffLines</code> for JSON/YAML orphans before deletion; compute <code>diffLines</code> for <code>.xfg.json</code> manifest changes in <code>saveUpdatedManifest</code></td>
 </tr>
 <tr>
-<td><code>--merge-strategy</code></td>
-<td></td>
-<td>Merge strategy: <code>merge</code>, <code>squash</code> (default), <code>rebase</code></td>
-<td>No</td>
+<td><code>src/cli/sync-report-builder.ts</code></td>
+<td>Carry <code>diffLines</code> through in <code>buildSyncReport()</code> mapping</td>
 </tr>
 <tr>
-<td><code>--delete-branch</code></td>
-<td></td>
-<td>Delete source branch after merge</td>
-<td>No</td>
+<td><code>src/output/unified-summary.ts</code></td>
+<td><code>renderSyncLines()</code> appends raw diff lines after file path</td>
 </tr>
 <tr>
-<td><code>--no-delete</code></td>
-<td></td>
-<td>Skip deletion of orphaned files, rulesets, and labels</td>
-<td>No</td>
+<td><code>src/output/sync-report.ts</code></td>
+<td><code>formatSyncReportCLI()</code> renders chalk-formatted, indented diff lines; markdown gets diffs via <code>renderSyncLines</code></td>
 </tr>
 </tbody>
 </table>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Settings management (rulesets, labels, repo settings) only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.</p>
-</div>
-<h2 id="console-output">Console Output<a class="headerlink" href="#console-output" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>[1/3] Processing example-org/repo1...
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  ✓ Cloned repository
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  ✓ Closed existing PR and deleted branch
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  ✓ Created branch chore/sync-config
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  ✓ Wrote .eslintrc.json
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>  ✓ Wrote .prettierrc.yaml
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>  ✓ Committed changes
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>  ✓ Pushed to remote
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>  ✓ Created PR: https://github.com/example-org/repo1/pull/42
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>[2/3] Processing example-org/repo2...
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>  ✓ Cloned repository
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>  ✓ Created branch chore/sync-config
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>  ✓ Wrote .eslintrc.json
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>  ✓ Wrote .prettierrc.yaml
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>  ⊘ No changes detected, skipping
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>[3/3] Processing example-org/repo3...
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>  ✓ Cloned repository
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>  ✓ Created branch chore/sync-config
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>  ✓ Wrote .eslintrc.json
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>  ✓ Wrote .prettierrc.yaml
-</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>  ✓ Committed changes
-</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>  ✓ Pushed to remote
-</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>  ✓ Created PR: https://github.com/example-org/repo3/pull/15
-</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>
-</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>Summary: 2 succeeded, 1 skipped, 0 failed
-</span></code></pre></div>
-<h2 id="created-prs">Created PRs<a class="headerlink" href="#created-prs" title="Permanent link">&para;</a></h2>
-<p>The tool creates PRs with:</p>
+<h2 id="testing-95-coverage-target">Testing (95% coverage target)<a class="headerlink" href="#testing-95-coverage-target" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Title:</strong> <code>chore: sync config files</code> (or lists files if ≤3)</li>
-<li><strong>Branch:</strong> <code>chore/sync-config</code> (or custom <code>--branch</code>)</li>
-<li><strong>Body:</strong> Describes the sync action and lists changed files</li>
+<li><strong><code>computeUnifiedDiff()</code></strong> — new file (<code>oldContent=null</code>, <code>@@ -0,0 +1,N @@</code> + all additions), modified file (hunks with context), deleted file (<code>newContent=null</code>, <code>@@ -1,N +0,0 @@</code> + all removals), no changes (empty result)</li>
+<li><strong><code>isStructuredDataFile()</code></strong> — all extensions (<code>.json</code>, <code>.json5</code>, <code>.yaml</code>, <code>.yml</code>), negatives (<code>.sh</code>, <code>.md</code>, <code>.ts</code>), case insensitivity</li>
+<li><strong><code>file-writer.test.ts</code></strong> — <code>diffLines</code> populated for JSON/YAML in both dry-run and apply; absent for non-JSON/YAML files</li>
+<li><strong><code>file-sync-strategy.test.ts</code></strong> — <code>diffLines</code> carried through to <code>FileChangeDetail</code> for JSON/YAML; absent for <code>.sh</code></li>
+<li><strong><code>sync-report-builder.test.ts</code></strong> — <code>diffLines</code> preserved through <code>buildSyncReport()</code> pipeline</li>
+<li><strong><code>unified-summary.test.ts</code></strong> — <code>renderSyncLines</code> includes diff lines when present, excludes when absent</li>
+<li><strong><code>sync-report.test.ts</code></strong> — CLI formatter renders chalk-formatted diffs with correct indentation; markdown formatter includes raw diffs</li>
+<li><strong><code>manifest-manager.test.ts</code></strong> — <code>diffLines</code> computed for JSON/YAML orphan deletes, absent for non-JSON/YAML orphans; <code>saveUpdatedManifest</code> computes <code>diffLines</code> for <code>.xfg.json</code> changes</li>
+<li><strong>Edge cases</strong> — empty files, files with no changes (no diff lines), new files (all additions), deleted files (all removals)</li>
+</ul>
+<h2 id="docs-updates">Docs Updates<a class="headerlink" href="#docs-updates" title="Permanent link">&para;</a></h2>
+<ul>
+<li>GitHub Pages (<code>docs/</code>) — update the page covering sync output / plan output to mention JSON/YAML content diffs in CLI and GitHub Step Summary</li>
+<li><code>README.md</code> — no change (badges/quick start only)</li>
 </ul>
 
 
@@ -2403,10 +2365,10 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.f55a23d4.min.js"></script>
       
     
   </body>
