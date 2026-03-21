@@ -20,8 +20,13 @@ When xfg syncs files, the summary output (CLI report and GitHub Step Summary) on
 
 `generateDiff()` in `src/sync/diff-utils.ts` currently couples diff computation with chalk formatting. Split into:
 
-- **`computeUnifiedDiff(oldContent: string | null, newContent: string, contextLines?: number): string[]`** — returns raw diff lines (`+`, `-`, `@@`, ` ` prefixed). Pure computation, no formatting.
-- **`generateDiff()`** — becomes a thin wrapper: calls `computeUnifiedDiff()` then maps through `formatDiffLine()` for chalk output. Existing callers unchanged.
+- **`computeUnifiedDiff(oldContent: string | null, newContent: string | null, contextLines?: number): string[]`** — returns raw diff lines (`+`, `-`, `@@`, ` ` prefixed), including `@@` hunk headers. Three special cases handled symmetrically:
+  - **New file** (`oldContent === null`): emits `@@ -0,0 +1,N @@` header followed by all lines as `+` additions
+  - **Deleted file** (`newContent === null`): emits `@@ -1,N +0,0 @@` header followed by all lines as `-` removals
+  - **No changes**: returns empty array
+
+  For modified files, uses LCS algorithm to produce standard unified diff hunks with context. Pure computation, no formatting.
+- **`generateDiff()`** — becomes a thin wrapper: calls `computeUnifiedDiff()` then maps through `formatDiffLine()` for chalk output. Existing callers unchanged. The unused `_fileName` parameter is cleaned up.
 
 ### 2. Extend Data Types with Optional Diff Lines
 
@@ -31,10 +36,12 @@ When xfg syncs files, the summary output (CLI report and GitHub Step Summary) on
 interface FileWriteResult {
   fileName: string;
   content: string | null;
-  oldContent?: string | null;  // only populated for JSON/YAML files
   action: "create" | "update" | "delete" | "skip";
+  diffLines?: string[];  // raw unified diff lines, only for JSON/YAML files
 }
 ```
+
+Note: `diffLines` is computed and attached in `FileWriter.writeFiles()` where both old and new content are in scope. No `oldContent` field needed — the diff is computed at the point where content is available, not threaded through as raw content.
 
 **`FileChangeDetail`** (`src/sync/types.ts`):
 
@@ -53,34 +60,48 @@ Diff lines are stored raw (no chalk). The rendering layer decides formatting —
 A single utility function in `src/sync/diff-utils.ts`:
 
 ```typescript
-function isStructuredDataFile(fileName: string): boolean {
+export function isStructuredDataFile(fileName: string): boolean {
   return /\.(json|json5|ya?ml)$/i.test(fileName);
 }
 ```
 
-Called in three places:
+Called in two places:
 
-1. **`FileWriter.writeFiles()`** — store `oldContent` on `FileWriteResult` only for matching files
-2. **`FileSyncStrategy.execute()`** — compute `diffLines` via `computeUnifiedDiff()` only for matching files
-3. **`ManifestManager.deleteOrphans()`** — read old content for matching orphan files before recording deletion
+1. **`FileWriter.writeFiles()`** — compute and attach `diffLines` on `FileWriteResult` only for matching files
+2. **`ManifestManager.deleteOrphans()`** — read old content and compute `diffLines` for matching orphan files before recording deletion
 
 ### 4. Populating Diff Data
 
 **`FileWriter.writeFiles()`** (`src/sync/file-writer.ts`):
-- Already reads `existingContent` via `gitOps.getFileContent()` and `fileContent` (the new content)
-- For JSON/YAML files, store `oldContent: existingContent` on the `FileWriteResult`
-- No diff computation here — just carry the content forward
+- Already reads `existingContent` via `gitOps.getFileContent()` and has `fileContent` (new content) in scope
+- Already calls `generateDiff()` for dry-run logging
+- For JSON/YAML files (both dry-run and apply), call `computeUnifiedDiff(existingContent, fileContent)` and attach the result as `diffLines` on the `FileWriteResult`
+- This is the natural computation point — both content values are already available here, avoiding the need to thread raw content through multiple layers
+- **Implementation note:** the current code only computes diffs inside the `if (dryRun)` block. The `computeUnifiedDiff` call for structured data files must be placed outside the dry-run conditional (guarded by `isStructuredDataFile && changed`), while `generateDiff` (chalk-formatted, for console logging) stays inside the `dryRun` block
 
 **`FileSyncStrategy.execute()`** (`src/sync/file-sync-strategy.ts`):
-- Already maps `FileWriteResult` to `FileChangeDetail`
-- For JSON/YAML files with content available, call `computeUnifiedDiff(oldContent, newContent)` and attach resulting `diffLines`
-- For non-JSON/YAML files, `diffLines` remains `undefined`
+- Already maps `FileWriteResult` to `FileChangeDetail` via `changedFiles` (which only has `fileName` and `action`)
+- Change: look up the `FileWriteResult` from the `fileChanges` map (already available in `FileSyncResult`) using `f.fileName` as the key, to carry `diffLines` through to `FileChangeDetail`
+- No diff computation here — just pass through pre-computed `diffLines`
 
 **`ManifestManager.deleteOrphans()`** (`src/sync/manifest.ts`):
-- For JSON/YAML orphan files, read existing content via `gitOps.getFileContent()` before recording deletion
-- Store as `oldContent` on the `FileWriteResult` so `FileSyncStrategy` can compute the diff
+- `deleteOrphans()` receives `deps.gitOps` typed as `ILocalGitOps`, which exposes `getFileContent()`
+- For JSON/YAML orphan files, read existing content via `gitOps.getFileContent()`, compute `diffLines` using `computeUnifiedDiff(existingContent, null)` (deletion sentinel — produces all lines as `-` removals with `@@ -1,N +0,0 @@` header), and attach to the `FileWriteResult`
 
-### 5. Rendering Diffs in Summary Output
+**`ManifestManager.saveUpdatedManifest()`** (`src/sync/manifest.ts`):
+- `.xfg.json` is a JSON file that matches `isStructuredDataFile`
+- When the manifest changes (create or update), compute `diffLines` using `computeUnifiedDiff()` with the existing manifest content and new manifest content, and attach to the `FileWriteResult`
+
+### 5. Carrying `diffLines` Through the Report Pipeline
+
+**`buildSyncReport()`** (`src/cli/sync-report-builder.ts`):
+- Currently maps `FileChangeDetail` to `ReportFileChange` keeping only `path` and `action`, which would drop `diffLines`
+- Update the mapping to include `diffLines` when present: `{ path: f.path, action: f.action, diffLines: f.diffLines }`
+
+**`ReportFileChange`** (`src/output/types.ts`):
+- This is a type alias for `FileChangeDetail`, so it automatically gains `diffLines` when `FileChangeDetail` is updated — no change needed here
+
+### 6. Rendering Diffs in Summary Output
 
 **GitHub Step Summary (markdown)** — `renderSyncLines()` in `src/output/unified-summary.ts`:
 After the file path line, append raw `diffLines` directly. They render correctly inside the existing `` ```diff ``` `` block:
@@ -99,7 +120,7 @@ After the file path line, append raw `diffLines` directly. They render correctly
 Same applies to `formatSyncReportMarkdown()` in `src/output/sync-report.ts` which calls `renderSyncLines`.
 
 **CLI output** — `formatSyncReportCLI()` in `src/output/sync-report.ts`:
-After each file path line, map raw `diffLines` through `formatDiffLine()` for chalk coloring, indented under the file listing:
+After each file path line, map raw `diffLines` through `formatDiffLine()` for chalk coloring. Each diff line gets a fixed 6-space indent prepended (the raw diff lines already contain their own `+`/`-`/` ` prefixes):
 
 ```
 ~ my-org/my-repo
@@ -112,28 +133,32 @@ After each file path line, map raw `diffLines` through `formatDiffLine()` for ch
        }
 ```
 
+`formatDiffLine` is imported from `src/sync/diff-utils.ts`. The `output/` module already imports from `sync/` (e.g., `output/types.ts` imports `FileChangeDetail` from `sync/index.ts`), so this does not introduce a new dependency direction.
+
 ## Files Changed
 
 | File | Change |
 |------|--------|
-| `src/sync/diff-utils.ts` | Extract `computeUnifiedDiff()` from `generateDiff()`; add `isStructuredDataFile()` |
-| `src/sync/types.ts` | Add `oldContent?` to `FileWriteResult`; add `diffLines?` to `FileChangeDetail` |
-| `src/sync/file-writer.ts` | Store `oldContent` on result for JSON/YAML files |
-| `src/sync/file-sync-strategy.ts` | Compute `diffLines` via `computeUnifiedDiff()` when building `FileChangeDetail` |
-| `src/sync/manifest.ts` | Read old content for JSON/YAML orphans before deletion |
+| `src/sync/diff-utils.ts` | Extract `computeUnifiedDiff()` from `generateDiff()`; add `isStructuredDataFile()`; clean up unused `_fileName` param |
+| `src/sync/types.ts` | Add `diffLines?` to `FileWriteResult` and `FileChangeDetail` |
+| `src/sync/file-writer.ts` | Compute and attach `diffLines` on `FileWriteResult` for JSON/YAML files (both dry-run and apply) |
+| `src/sync/file-sync-strategy.ts` | Pass through `diffLines` from `FileWriteResult` to `FileChangeDetail` via `fileChanges` map lookup |
+| `src/sync/manifest.ts` | Read old content and compute `diffLines` for JSON/YAML orphans before deletion; compute `diffLines` for `.xfg.json` manifest changes in `saveUpdatedManifest` |
+| `src/cli/sync-report-builder.ts` | Carry `diffLines` through in `buildSyncReport()` mapping |
 | `src/output/unified-summary.ts` | `renderSyncLines()` appends raw diff lines after file path |
-| `src/output/sync-report.ts` | `formatSyncReportCLI()` renders chalk-formatted diff lines; markdown gets diffs via `renderSyncLines` |
+| `src/output/sync-report.ts` | `formatSyncReportCLI()` renders chalk-formatted, indented diff lines; markdown gets diffs via `renderSyncLines` |
 
 ## Testing (95% coverage target)
 
-- **`computeUnifiedDiff()`** — new file, modified file, deleted file (all lines removed), no changes (empty result)
+- **`computeUnifiedDiff()`** — new file (`oldContent=null`, `@@ -0,0 +1,N @@` + all additions), modified file (hunks with context), deleted file (`newContent=null`, `@@ -1,N +0,0 @@` + all removals), no changes (empty result)
 - **`isStructuredDataFile()`** — all extensions (`.json`, `.json5`, `.yaml`, `.yml`), negatives (`.sh`, `.md`, `.ts`), case insensitivity
-- **`file-writer.test.ts`** — `oldContent` populated for JSON/YAML, absent for others
-- **`file-sync-strategy.test.ts`** — `diffLines` on `FileChangeDetail` for JSON/YAML, absent for `.sh`
+- **`file-writer.test.ts`** — `diffLines` populated for JSON/YAML in both dry-run and apply; absent for non-JSON/YAML files
+- **`file-sync-strategy.test.ts`** — `diffLines` carried through to `FileChangeDetail` for JSON/YAML; absent for `.sh`
+- **`sync-report-builder.test.ts`** — `diffLines` preserved through `buildSyncReport()` pipeline
 - **`unified-summary.test.ts`** — `renderSyncLines` includes diff lines when present, excludes when absent
-- **`sync-report.test.ts`** — CLI formatter renders chalk-formatted diffs; markdown formatter includes raw diffs
-- **`manifest.test.ts`** — old content read for JSON/YAML orphan deletes
-- **Edge cases** — empty files, files with no changes, new files (all additions), deleted files (all removals)
+- **`sync-report.test.ts`** — CLI formatter renders chalk-formatted diffs with correct indentation; markdown formatter includes raw diffs
+- **`manifest.test.ts`** — `diffLines` computed for JSON/YAML orphan deletes, absent for non-JSON/YAML orphans; `saveUpdatedManifest` computes `diffLines` for `.xfg.json` changes
+- **Edge cases** — empty files, files with no changes (no diff lines), new files (all additions), deleted files (all removals)
 
 ## Docs Updates
 
