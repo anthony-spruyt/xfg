@@ -185,6 +185,10 @@ export function renderSyncLines(
     } else if (file.action === "delete") {
       diffLines.push(`- ${file.path}`);
     }
+
+    if (file.diffLines) {
+      diffLines.push(...file.diffLines);
+    }
   }
 
   if (syncRepo.error) {

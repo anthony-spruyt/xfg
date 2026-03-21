@@ -124,6 +124,110 @@ describe("FileSyncStrategy", () => {
     assert.equal(result.fileChangeDetails[0].action, "create");
   });
 
+  test("carries diffLines from fileChanges to fileChangeDetails", async () => {
+    const mockDiffLines = ["@@ -0,0 +1,1 @@", "+new content"];
+    const mockOrchestrator: IFileSyncOrchestrator = {
+      async sync() {
+        return {
+          fileChanges: new Map([
+            [
+              "config.json",
+              {
+                fileName: "config.json",
+                content: '{"new": true}\n',
+                action: "create" as const,
+                diffLines: mockDiffLines,
+              },
+            ],
+          ]),
+          diffStats: {
+            newCount: 1,
+            modifiedCount: 0,
+            unchangedCount: 0,
+            deletedCount: 0,
+          },
+          changedFiles: [
+            { fileName: "config.json", action: "create" as const },
+          ],
+          hasChanges: true,
+        };
+      },
+    };
+
+    const strategy = new FileSyncStrategy(mockOrchestrator);
+    const { gitOps } = createMockAuthenticatedGitOps({ hasChanges: true });
+    const session: SessionContext = {
+      gitOps,
+      baseBranch: "main",
+      cleanup: () => {},
+    };
+
+    const result = await strategy.execute(
+      mockRepoConfig,
+      mockRepoInfo,
+      session,
+      {
+        branchName: "test",
+        workDir: "/tmp",
+        configId: "test",
+        executor: createMockExecutor().mock,
+      }
+    );
+
+    assert.ok(result);
+    assert.deepEqual(result.fileChangeDetails[0].diffLines, mockDiffLines);
+  });
+
+  test("does not include diffLines when absent from fileChanges", async () => {
+    const mockOrchestrator: IFileSyncOrchestrator = {
+      async sync() {
+        return {
+          fileChanges: new Map([
+            [
+              "script.sh",
+              {
+                fileName: "script.sh",
+                content: "#!/bin/bash",
+                action: "create" as const,
+              },
+            ],
+          ]),
+          diffStats: {
+            newCount: 1,
+            modifiedCount: 0,
+            unchangedCount: 0,
+            deletedCount: 0,
+          },
+          changedFiles: [{ fileName: "script.sh", action: "create" as const }],
+          hasChanges: true,
+        };
+      },
+    };
+
+    const strategy = new FileSyncStrategy(mockOrchestrator);
+    const { gitOps } = createMockAuthenticatedGitOps({ hasChanges: true });
+    const session: SessionContext = {
+      gitOps,
+      baseBranch: "main",
+      cleanup: () => {},
+    };
+
+    const result = await strategy.execute(
+      mockRepoConfig,
+      mockRepoInfo,
+      session,
+      {
+        branchName: "test",
+        workDir: "/tmp",
+        configId: "test",
+        executor: createMockExecutor().mock,
+      }
+    );
+
+    assert.ok(result);
+    assert.equal(result.fileChangeDetails[0].diffLines, undefined);
+  });
+
   test("filters out skip actions from fileChangeDetails", async () => {
     const mockOrchestrator: IFileSyncOrchestrator = {
       async sync() {
