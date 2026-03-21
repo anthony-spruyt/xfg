@@ -155,6 +155,50 @@ describe("ManifestManager", () => {
 
       assert.equal(deletedFiles.length, 0);
     });
+
+    test("attaches diffLines for JSON orphan deletions", () => {
+      const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
+        fileExists: () => true,
+        fileContent: '{"key": "value"}\n',
+      });
+      const { mock: mockLogger } = createMockLogger();
+
+      const manager = new ManifestManager();
+      const fileChanges = new Map<string, FileWriteResult>();
+
+      manager.deleteOrphans(
+        ["old-config.json"],
+        { dryRun: false, noDelete: false },
+        { gitOps: mockGitOps, log: mockLogger, fileChanges }
+      );
+
+      const entry = fileChanges.get("old-config.json");
+      assert.ok(entry);
+      assert.ok(entry.diffLines);
+      assert.ok(entry.diffLines.length > 0);
+      assert.ok(entry.diffLines.some((l) => l.startsWith("-")));
+    });
+
+    test("does not attach diffLines for non-JSON orphan deletions", () => {
+      const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
+        fileExists: () => true,
+        fileContent: "#!/bin/bash\necho hello",
+      });
+      const { mock: mockLogger } = createMockLogger();
+
+      const manager = new ManifestManager();
+      const fileChanges = new Map<string, FileWriteResult>();
+
+      manager.deleteOrphans(
+        ["script.sh"],
+        { dryRun: false, noDelete: false },
+        { gitOps: mockGitOps, log: mockLogger, fileChanges }
+      );
+
+      const entry = fileChanges.get("script.sh");
+      assert.ok(entry);
+      assert.equal(entry.diffLines, undefined);
+    });
   });
 
   describe("saveManifest", () => {
@@ -172,6 +216,38 @@ describe("ManifestManager", () => {
 
       assert.equal(existsSync(join(workDir, MANIFEST_FILENAME)), true);
       assert.equal(fileChanges.get(MANIFEST_FILENAME)?.action, "create");
+    });
+
+    test("attaches diffLines when manifest is updated", () => {
+      const manager = new ManifestManager();
+      const fileChanges = new Map<string, FileWriteResult>();
+      const existingManifest = {
+        version: 4 as const,
+        configs: { old: { files: ["a.json"] } },
+      };
+      const newManifest = {
+        version: 4 as const,
+        configs: { new: { files: ["b.json"] } },
+      };
+
+      // Write existing manifest so manifestExisted = true
+      writeFileSync(
+        join(workDir, MANIFEST_FILENAME),
+        JSON.stringify(existingManifest, null, 2) + "\n"
+      );
+
+      manager.saveUpdatedManifest(
+        workDir,
+        newManifest,
+        existingManifest,
+        false,
+        fileChanges
+      );
+
+      const entry = fileChanges.get(MANIFEST_FILENAME);
+      assert.ok(entry);
+      assert.ok(entry.diffLines);
+      assert.ok(entry.diffLines.length > 0);
     });
 
     test("does not save in dryRun mode", () => {
