@@ -7,6 +7,8 @@ import {
   incrementDiffStats,
   formatStatusBadge,
   formatDiffLine,
+  computeUnifiedDiff,
+  isStructuredDataFile,
 } from "../../src/sync/diff-utils.js";
 
 describe("getFileStatus", () => {
@@ -91,7 +93,7 @@ describe("formatDiffLine", () => {
 
 describe("generateDiff", () => {
   test("shows all lines as additions for new files", () => {
-    const result = generateDiff(null, "line1\nline2\n", "test.txt");
+    const result = generateDiff(null, "line1\nline2\n");
     assert.ok(result.length > 0);
     // All lines should be additions (contain +)
     const ansiRegex = new RegExp(
@@ -104,14 +106,14 @@ describe("generateDiff", () => {
 
   test("returns empty array when content is identical", () => {
     const content = "same content\n";
-    const result = generateDiff(content, content, "test.txt");
+    const result = generateDiff(content, content);
     assert.equal(result.length, 0);
   });
 
   test("shows additions and deletions for modified files", () => {
     const oldContent = "line1\nline2\nline3\n";
     const newContent = "line1\nmodified\nline3\n";
-    const result = generateDiff(oldContent, newContent, "test.txt");
+    const result = generateDiff(oldContent, newContent);
 
     // Should have some output
     assert.ok(result.length > 0);
@@ -132,19 +134,19 @@ describe("generateDiff", () => {
   });
 
   test("handles empty old content", () => {
-    const result = generateDiff("", "new content\n", "test.txt");
+    const result = generateDiff("", "new content\n");
     assert.ok(result.length > 0);
   });
 
   test("handles empty new content", () => {
-    const result = generateDiff("old content\n", "", "test.txt");
+    const result = generateDiff("old content\n", "");
     assert.ok(result.length > 0);
   });
 
   test("handles multiline changes", () => {
     const oldContent = "a\nb\nc\nd\ne\n";
     const newContent = "a\nx\ny\nd\ne\n";
-    const result = generateDiff(oldContent, newContent, "test.txt");
+    const result = generateDiff(oldContent, newContent);
     assert.ok(result.length > 0);
   });
 });
@@ -208,10 +210,93 @@ describe("diffStats", () => {
   });
 });
 
+describe("computeUnifiedDiff", () => {
+  test("returns all additions with hunk header for new file", () => {
+    const lines = computeUnifiedDiff(null, "line1\nline2\n");
+    assert.ok(lines.length > 0);
+    assert.ok(lines[0].startsWith("@@ -0,0 +1,"));
+    assert.ok(lines.slice(1).every((l) => l.startsWith("+")));
+  });
+
+  test("returns all removals with hunk header for deleted file", () => {
+    const lines = computeUnifiedDiff("line1\nline2\n", null);
+    assert.ok(lines.length > 0);
+    assert.ok(lines[0].startsWith("@@ -1,"));
+    assert.ok(lines[0].includes("+0,0"));
+    assert.ok(lines.slice(1).every((l) => l.startsWith("-")));
+  });
+
+  test("returns empty array when content is identical", () => {
+    const content = "same\n";
+    assert.deepEqual(computeUnifiedDiff(content, content), []);
+  });
+
+  test("returns raw lines without ANSI codes", () => {
+    const lines = computeUnifiedDiff(null, "hello\n");
+    const ansiRegex = new RegExp(
+      String.fromCharCode(0x1b) + "\\[[0-9;]*m",
+      "g"
+    );
+    for (const line of lines) {
+      assert.equal(line, line.replace(ansiRegex, ""));
+    }
+  });
+
+  test("returns hunks with context for modified file", () => {
+    const lines = computeUnifiedDiff("a\nb\nc\n", "a\nx\nc\n");
+    assert.ok(lines.some((l) => l.startsWith("@@")));
+    assert.ok(lines.some((l) => l === "-b"));
+    assert.ok(lines.some((l) => l === "+x"));
+  });
+
+  test("returns empty array when both null", () => {
+    assert.deepEqual(computeUnifiedDiff(null, null), []);
+  });
+});
+
+describe("isStructuredDataFile", () => {
+  test("matches .json", () => {
+    assert.equal(isStructuredDataFile("config.json"), true);
+  });
+
+  test("matches .json5", () => {
+    assert.equal(isStructuredDataFile("config.json5"), true);
+  });
+
+  test("matches .yaml", () => {
+    assert.equal(isStructuredDataFile("config.yaml"), true);
+  });
+
+  test("matches .yml", () => {
+    assert.equal(isStructuredDataFile("ci.yml"), true);
+  });
+
+  test("is case insensitive", () => {
+    assert.equal(isStructuredDataFile("Config.JSON"), true);
+    assert.equal(isStructuredDataFile("Config.YAML"), true);
+  });
+
+  test("rejects .sh", () => {
+    assert.equal(isStructuredDataFile("script.sh"), false);
+  });
+
+  test("rejects .md", () => {
+    assert.equal(isStructuredDataFile("README.md"), false);
+  });
+
+  test("rejects .ts", () => {
+    assert.equal(isStructuredDataFile("index.ts"), false);
+  });
+
+  test("matches nested paths", () => {
+    assert.equal(isStructuredDataFile(".github/workflows/ci.yml"), true);
+  });
+});
+
 describe("generateDiff edge cases", () => {
   test("returns empty array when content is identical", () => {
     const content = "line 1\nline 2\nline 3";
-    const lines = generateDiff(content, content, "test.txt");
+    const lines = generateDiff(content, content);
     assert.equal(lines.length, 0);
   });
 
@@ -220,7 +305,7 @@ describe("generateDiff edge cases", () => {
     const oldContent = "line 1\nline 2\nline 3\nline 4\nline 5";
     const newContent = "changed 1\nline 2\nline 3\nline 4\nchanged 5";
 
-    const lines = generateDiff(oldContent, newContent, "test.txt", 1);
+    const lines = generateDiff(oldContent, newContent, 1);
     // Changes should produce diff output
     assert.ok(lines.length > 0);
   });
@@ -235,7 +320,7 @@ describe("generateDiff edge cases", () => {
     newLines[19] = "changed last";
     const newContent = newLines.join("\n");
 
-    const lines = generateDiff(oldContent, newContent, "test.txt", 1);
+    const lines = generateDiff(oldContent, newContent, 1);
     // With only 1 line of context, should have diff output
     assert.ok(lines.length >= 1);
   });
@@ -244,7 +329,7 @@ describe("generateDiff edge cases", () => {
     const oldContent = "line 1\nline 2\nline 3\nline 4\nline 5";
     const newContent = "line 1\nline 2\nchanged 3\nline 4\nline 5";
 
-    const lines = generateDiff(oldContent, newContent, "test.txt", 1);
+    const lines = generateDiff(oldContent, newContent, 1);
     assert.ok(lines.length > 0);
     // Should have both deletions and insertions in output
     const hasDelete = lines.some((l) => l.includes("-line 3"));

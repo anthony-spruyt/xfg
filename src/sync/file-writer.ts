@@ -120,11 +120,7 @@ export class FileWriter implements IFileWriter {
         const status = getFileStatus(existingContent !== null, changed);
         incrementDiffStats(diffStats, status);
 
-        const diffLines = generateDiff(
-          existingContent,
-          fileContent,
-          file.fileName
-        );
+        const diffLines = generateDiff(existingContent, fileContent);
         log.fileDiff(file.fileName, status, diffLines);
       } else if (changed) {
         incrementDiffStats(diffStats, action === "create" ? "NEW" : "MODIFIED");
