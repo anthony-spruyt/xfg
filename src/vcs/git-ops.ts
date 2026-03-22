@@ -175,10 +175,14 @@ export class GitOps implements ILocalGitOps {
       const existingContent = readFileSync(filePath, "utf-8");
       return existingContent !== newContent;
     } catch (error) {
-      this.log?.debug(
-        `Failed to read ${fileName} for comparison: ${toErrorMessage(error)}`
-      );
-      return true;
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === "ENOENT" || code === "EACCES") {
+        this.log?.debug(
+          `Failed to read ${fileName} for comparison: ${toErrorMessage(error)}`
+        );
+        return true;
+      }
+      throw error;
     }
   }
 

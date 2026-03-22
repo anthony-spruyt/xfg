@@ -288,11 +288,9 @@ export function formatPropertyTree(diffs: PropertyDiff[]): string[] {
  * Delegates to renderNestedObject which handles recursive rendering.
  */
 function formatFullConfig(ruleset: Ruleset, indent: number = 2): string[] {
-  return renderNestedObject(
-    ruleset as unknown as Record<string, unknown>,
-    "add",
-    indent
-  );
+  // Object.entries works on any object; the cast avoids a double assertion
+  const entries = Object.entries(ruleset) as [string, unknown][];
+  return renderNestedObject(Object.fromEntries(entries), "add", indent);
 }
 
 /**
