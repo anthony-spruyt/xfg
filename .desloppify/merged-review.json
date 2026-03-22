@@ -1,0 +1,81 @@
+{
+  "assessments": {
+    "design_coherence": 90.5,
+    "high_level_elegance": 92.0,
+    "type_safety": 92.5,
+    "error_consistency": 91.5,
+    "abstraction_fitness": 91.0,
+    "low_level_elegance": 90.5,
+    "mid_level_elegance": 90.5
+  },
+  "findings": [
+    {
+      "dimension": "design_coherence",
+      "identifier": "dynamic_object_assign_in_runAndCollect",
+      "summary": "runAndCollect uses Object.assign with dynamic resultKey instead of typed assignment",
+      "related_files": [
+        "src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "Line 267: Object.assign(entry, { [resultKey]: result }) uses a string union ('rulesetResult' | 'labelsResult' | 'settingsResult') as a computed property key, bypassing TypeScript structural checks on the ProcessorResults type"
+      ],
+      "suggestion": "Replace dynamic Object.assign with a direct typed assignment: entry[resultKey] = result. If ProcessorResults already has these as optional fields, direct indexing is type-safe and clearer. If the types don't align, that's a signal the abstraction is papering over a type mismatch.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "type_safety",
+      "identifier": "filter_then_cast_action_narrowing",
+      "summary": "Action union types narrowed via as-cast after filter instead of type predicate",
+      "related_files": [
+        "src/cli/settings-report-builder.ts",
+        "src/sync/file-sync-strategy.ts"
+      ],
+      "evidence": [
+        "settings-report-builder.ts:76 casts entry.action as 'create' | 'update' | 'delete' after filtering unchanged entries at line 73",
+        "settings-report-builder.ts:93 same pattern for labels entries",
+        "file-sync-strategy.ts:43 casts f.action as 'create' | 'update' | 'delete' after filtering skip at line 39"
+      ],
+      "suggestion": "Add a type predicate function like isActiveAction(action: SettingsAction): action is 'create' | 'update' | 'delete' that uses the filter callback, so the compiler verifies the narrowing. This is a one-function addition to base-processor.ts that eliminates 3+ unchecked casts.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "wouldChange_swallows_all_errors",
+      "summary": "wouldChange() treats all read errors as 'file changed', masking disk/permission errors",
+      "related_files": [
+        "src/vcs/git-ops.ts"
+      ],
+      "evidence": [
+        "Lines 174-182: catch block logs at debug level and returns true for any error including EMFILE, EIO, EPERM. Only the happy path (successful read) produces an accurate comparison."
+      ],
+      "suggestion": "Apply the same ENOENT/EACCES pattern used in getFileContent: return true for expected filesystem errors, re-throw unexpected ones. This surfaces real I/O problems instead of silently triggering unnecessary file rewrites.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "error_consistency",
+      "identifier": "fileExistsOnBranch_catches_all",
+      "summary": "fileExistsOnBranch() treats any git show error as 'file not found', including corruption or network errors",
+      "related_files": [
+        "src/vcs/git-ops.ts"
+      ],
+      "evidence": [
+        "Lines 222-234: catch block returns false for all errors. A corrupt git index or unexpected git failure would be indistinguishable from a missing file, potentially causing incorrect createOnly behavior."
+      ],
+      "suggestion": "Check the error message for expected patterns (e.g., 'does not exist', 'not found') and re-throw others. This is consistent with the isRepoNotFoundError pattern in github-lifecycle-provider.ts which distinguishes 'not found' from other errors.",
+      "confidence": "low"
+    },
+    {
+      "dimension": "mid_level_elegance",
+      "identifier": "dynamic_property_injection_settings_collector",
+      "summary": "runAndCollect uses Object.assign with dynamic key to populate ProcessorResults, bypassing type safety",
+      "related_files": [
+        "src/cli/sync-command.ts"
+      ],
+      "evidence": [
+        "Line 267: Object.assign(entry, { [resultKey]: result }) uses a stringly-typed resultKey parameter ('rulesetResult' | 'labelsResult' | 'settingsResult') to dynamically set properties on ProcessorResults, acknowledged by comment 'Dynamic property access: result types are structurally compatible at runtime'"
+      ],
+      "suggestion": "Replace the generic runAndCollect with three direct assignment calls. Each settings descriptor's run() callback can directly assign to the typed field: entry.rulesetResult = result, entry.labelsResult = result, entry.settingsResult = result. This eliminates the dynamic key indirection while keeping the code just as concise \u2014 the SettingsDescriptor type already knows which key it targets.",
+      "confidence": "medium"
+    }
+  ]
+}

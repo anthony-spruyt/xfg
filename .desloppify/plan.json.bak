@@ -1,21 +1,107 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-22T07:41:28+00:00",
+  "updated": "2026-03-22T07:53:22+00:00",
   "queue_order": [
-    "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
-    "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
-    "review::.::holistic::convention_outlier::mixed_assert_import_styles",
-    "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
-    "review::.::holistic::naming_quality::factory_get_vs_create_prefix",
-    "review::.::holistic::test_strategy::vcs_mock_executor_duplication",
-    "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
-    "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
-    "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
-    "review::.::holistic::logic_clarity::identical_json5_json_branches"
+    "review::.::holistic::design_coherence::dynamic_object_assign_in_runAndCollect",
+    "review::.::holistic::error_consistency::fileExistsOnBranch_catches_all",
+    "review::.::holistic::error_consistency::wouldChange_swallows_all_errors",
+    "review::.::holistic::mid_level_elegance::dynamic_property_injection_settings_collector",
+    "review::.::holistic::type_safety::filter_then_cast_action_narrowing"
   ],
   "deferred": [],
-  "skipped": {},
+  "skipped": {
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this finding - secretScanning is a GitHub API property name for the secret scanning feature, not an actual hardcoded secret. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-22T07:47:03+00:00",
+      "review_after": null,
+      "skipped_at_scan": 155
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this finding - secretScanningPushProtection is a GitHub API property name for the secret scanning push protection feature, not an actual hardcoded secret. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-22T07:47:04+00:00",
+      "review_after": null,
+      "skipped_at_scan": 155
+    },
+    "smells::src/cli/program.ts::console_error_no_throw": {
+      "issue_id": "smells::src/cli/program.ts::console_error_no_throw",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this finding - console.error is followed by process.exit(1) which terminates the process, equivalent to throw/return. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-22T07:47:12+00:00",
+      "review_after": null,
+      "skipped_at_scan": 155
+    },
+    "smells::src/vcs/pr-strategy.ts::catch_return_default": {
+      "issue_id": "smells::src/vcs/pr-strategy.ts::catch_return_default",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this finding - executeMergeCommand uses the Result pattern intentionally, converting exceptions to MergeResult objects. The catch now logs via this.log.warn before returning. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-22T07:47:15+00:00",
+      "review_after": null,
+      "skipped_at_scan": 155
+    },
+    "smells::src/cli/sync-command.ts::async_no_await": {
+      "issue_id": "smells::src/cli/sync-command.ts::async_no_await",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this finding - runSync at line 604 uses await at line 659 and buildSettingsDescriptors delegates to runAndCollect which uses await. The detector incorrectly flags these. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-22T07:47:17+00:00",
+      "review_after": null,
+      "skipped_at_scan": 155
+    },
+    "smells::src/shared/gh-api-utils.ts::async_no_await": {
+      "issue_id": "smells::src/shared/gh-api-utils.ts::async_no_await",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this finding - resolveGitHubToken at line 140 uses await at line 145 (await tokenManager?.getTokenForRepo). Detector incorrectly flags it. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-22T07:47:24+00:00",
+      "review_after": null,
+      "skipped_at_scan": 155
+    },
+    "smells::src/vcs/pr-creator.ts::async_no_await": {
+      "issue_id": "smells::src/vcs/pr-creator.ts::async_no_await",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this finding - createPR and mergePR are not async functions, they return Promise directly. The detector incorrectly identifies them as async-no-await. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-22T07:47:26+00:00",
+      "review_after": null,
+      "skipped_at_scan": 155
+    },
+    "test_coverage::src/cli/program.ts::untested_module": {
+      "issue_id": "test_coverage::src/cli/program.ts::untested_module",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this finding - program.ts is a CLI entry point (composition root) that wires Commander.js options. It is tested via integration tests, not unit tests. CLI entry points are composition roots not suitable for unit testing. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-22T07:47:33+00:00",
+      "review_after": null,
+      "skipped_at_scan": 155
+    },
+    "smells::src/cli/sync-command.ts::nested_closure": {
+      "issue_id": "smells::src/cli/sync-command.ts::nested_closure",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this finding - the nested closures in applyRepoSettings were refactored to module-level buildSettingsDescriptors and runAndCollect functions. The remaining thin arrow delegates are not deeply nested. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-22T07:48:16+00:00",
+      "review_after": null,
+      "skipped_at_scan": 155
+    }
+  },
   "active_cluster": null,
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
@@ -6403,18 +6489,7 @@
       ]
     }
   },
-  "promoted_ids": [
-    "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
-    "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
-    "review::.::holistic::convention_outlier::mixed_assert_import_styles",
-    "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
-    "review::.::holistic::naming_quality::factory_get_vs_create_prefix",
-    "review::.::holistic::test_strategy::vcs_mock_executor_duplication",
-    "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
-    "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
-    "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
-    "review::.::holistic::logic_clarity::identical_json5_json_branches"
-  ],
+  "promoted_ids": [],
   "plan_start_scores": {},
   "execution_log": [
     {
@@ -22107,6 +22182,204 @@
       "actor": "user",
       "note": "Removed formatPropertyTree export from rulesets/index.ts barrel file - tests import directly from formatter.js",
       "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:41:29+00:00",
+      "action": "done",
+      "issue_ids": [
+        "exports::src/vcs/index.ts::INetworkGitOps"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed INetworkGitOps type export from vcs/index.ts barrel file - tests import directly from types.js",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:47:03+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:47:04+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:47:12+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/program.ts::console_error_no_throw"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:47:15+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/vcs/pr-strategy.ts::catch_return_default"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:47:17+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:47:24+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/shared/gh-api-utils.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:47:26+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/vcs/pr-creator.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:47:33+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "test_coverage::src/cli/program.ts::untested_module"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:48:16+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::nested_closure"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:53:22+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::design_coherence::dynamic_object_assign_in_runAndCollect",
+          "review::.::holistic::error_consistency::fileExistsOnBranch_catches_all",
+          "review::.::holistic::error_consistency::wouldChange_swallows_all_errors",
+          "review::.::holistic::mid_level_elegance::dynamic_property_injection_settings_collector",
+          "review::.::holistic::type_safety::filter_then_cast_action_narrowing"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::design_coherence::dynamic_object_assign_in_runAndCollect",
+          "review::.::holistic::error_consistency::fileExistsOnBranch_catches_all",
+          "review::.::holistic::error_consistency::wouldChange_swallows_all_errors",
+          "review::.::holistic::mid_level_elegance::dynamic_property_injection_settings_collector",
+          "review::.::holistic::type_safety::filter_then_cast_action_narrowing"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 5,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 21,
+        "stale_pruned_from_queue": [
+          "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
+          "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
+          "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
+          "review::.::holistic::convention_outlier::mixed_assert_import_styles",
+          "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
+          "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
+          "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
+          "review::.::holistic::logic_clarity::identical_json5_json_branches",
+          "review::.::holistic::naming_quality::factory_get_vs_create_prefix",
+          "review::.::holistic::test_strategy::vcs_mock_executor_duplication"
+        ],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
     }
   ],
   "epic_triage_meta": {
@@ -22553,7 +22826,6 @@
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 147,
-    "lifecycle_phase": "execute",
-    "postflight_scan_completed_at_scan_count": 153
+    "lifecycle_phase": "execute"
   }
 }
