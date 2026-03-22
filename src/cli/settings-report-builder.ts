@@ -1,10 +1,4 @@
-import type {
-  SettingsReport,
-  RepoChanges,
-  SettingChange,
-  RulesetChange,
-  LabelChange,
-} from "../output/settings-report.js";
+import type { SettingsReport, RepoChanges } from "../output/settings-report.js";
 import type {
   RepoSettingsPlanEntry,
   RulesetPlanEntry,

@@ -1,7 +1,7 @@
 import type { LifecycleReport, LifecycleAction } from "./lifecycle-report.js";
 import { hasLifecycleChanges } from "./lifecycle-report.js";
 import { writeGitHubStepSummary } from "./github-summary.js";
-import type { SyncReport, RepoFileChanges } from "./types.js";
+import type { SyncReport } from "./types.js";
 import { renderSyncLines } from "./sync-report.js";
 import type { SettingsReport } from "./settings-report.js";
 import {
