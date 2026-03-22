@@ -50,6 +50,8 @@ else
   rm -rf "$REPO_ROOT/.output"
   mkdir "$REPO_ROOT/.output"
 
+  LINT_EXIT_CODE=0
+
   docker run \
     -a STDOUT \
     -a STDERR \
@@ -63,14 +65,13 @@ else
     -e REPORT_OUTPUT_FOLDER="/tmp/lint/.output" \
     -v "$REPO_ROOT:/tmp/lint:rw" \
     --rm \
-    "$MEGALINTER_IMAGE"
-
-  LINT_EXIT_CODE=$?
+    "$MEGALINTER_IMAGE" ||
+    LINT_EXIT_CODE=$?
 
   # Copy fixed files back to workspace
   if compgen -G "$REPO_ROOT/.output/updated_sources/*" >/dev/null; then
     cp -r "$REPO_ROOT/.output/updated_sources"/* "$REPO_ROOT/"
   fi
 
-  exit $LINT_EXIT_CODE
+  exit "$LINT_EXIT_CODE"
 fi

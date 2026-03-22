@@ -1,6 +1,6 @@
 {
   "$generated": "This file is automatically updated - do not modify directly",
-  "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/prettierrc.json",
+  "$schema": "https://raw.githubusercontent.com/DavidAnson/markdownlint/main/schema/markdownlint-config-schema.json",
   "MD004": false,
   "MD007": {
     "indent": 2
