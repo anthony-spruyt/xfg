@@ -202,6 +202,24 @@ describe("manifest", () => {
       const result = parseManifestContent(JSON.stringify(v1));
       assert.equal(result, null);
     });
+
+    test("logs debug message for v1 manifest when logger provided", () => {
+      const v1 = { version: 1, managedFiles: ["file.txt"] };
+      const messages: string[] = [];
+      const log = { debug: (m: string) => messages.push(m), warn: () => {} };
+      const result = parseManifestContent(JSON.stringify(v1), log);
+      assert.equal(result, null);
+      assert.ok(messages.some((m) => m.includes("V1 manifest")));
+    });
+
+    test("returns null and warns for unrecognized manifest format", () => {
+      const unknown = { something: "else" };
+      const warnings: string[] = [];
+      const log = { debug: () => {}, warn: (m: string) => warnings.push(m) };
+      const result = parseManifestContent(JSON.stringify(unknown), log);
+      assert.equal(result, null);
+      assert.ok(warnings.some((m) => m.includes("Unrecognized")));
+    });
   });
 
   describe("saveManifest", () => {
