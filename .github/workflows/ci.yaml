@@ -19,6 +19,40 @@ permissions:
   security-events: "write"
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code-changed: ${{ steps.filter.outputs.code-changed }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
+      - name: Check for integration-relevant changes
+        id: filter
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          COMMIT_SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            CHANGED=$(git diff --name-only "origin/${BASE_REF}..${COMMIT_SHA}")
+          else
+            CHANGED=$(git diff --name-only HEAD~1)
+          fi
+
+          if echo "$CHANGED" | grep -qE '^(src/|test/|scripts/|package\.json$|package-lock\.json$)'; then
+            echo "code-changed=true" >> "$GITHUB_OUTPUT"
+            echo "Code changes detected"
+          else
+            echo "code-changed=false" >> "$GITHUB_OUTPUT"
+            echo "No code changes, will skip build and integration tests"
+          fi
+          echo "Changed files:"
+          echo "$CHANGED"
+
   lint:
     if: github.event_name == 'pull_request'
     uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@main"
@@ -27,7 +61,8 @@ jobs:
   build:
     needs:
       - "lint"
-    if: ${{ !failure() && !cancelled() }}
+      - "check-changes"
+    if: ${{ !failure() && !cancelled() && needs.check-changes.outputs.code-changed == 'true' }}
     runs-on: ubuntu-latest
 
     concurrency:
@@ -79,13 +114,15 @@ jobs:
   integration-tests:
     needs:
       - "build"
-    if: ${{ !failure() && !cancelled() }}
+      - "check-changes"
+    if: ${{ !failure() && !cancelled() && needs.check-changes.outputs.code-changed == 'true' }}
     uses: ./.github/workflows/_integration-tests.yaml
     secrets: "inherit"
 
   # Summary job for branch protection - references reusable workflow job
   summary:
     needs:
+      - "check-changes"
       - "lint"
       - "build"
       - "integration-tests"
