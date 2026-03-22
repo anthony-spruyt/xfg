@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-22T09:38:14+00:00",
+  "updated": "2026-03-22T09:38:28+00:00",
   "queue_order": [
     "review::.::holistic::ai_generated_debt::residual_restating_jsdoc",
     "review::.::holistic::api_surface_coherence::repo_settings_strategy_naming_divergence",
@@ -6425,7 +6425,12 @@
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {},
+  "plan_start_scores": {
+    "strict": 90.5,
+    "overall": 91.9,
+    "objective": 96.0,
+    "verified": 95.7
+  },
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -22838,6 +22843,40 @@
         "sync_status": "synced",
         "sync_message": null
       }
+    },
+    {
+      "timestamp": "2026-03-22T09:38:28+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T09:38:28+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T09:38:28+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 170
+      }
     }
   ],
   "epic_triage_meta": {
@@ -23285,6 +23324,7 @@
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 169,
     "lifecycle_phase": "execute",
-    "postflight_scan_completed_at_scan_count": 164
-  }
+    "postflight_scan_completed_at_scan_count": 170
+  },
+  "scan_count_at_plan_start": 170
 }

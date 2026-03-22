@@ -1,5 +1,5 @@
 {
-  "target_strict_score": 95,
+  "target_strict_score": 100,
   "review_max_age_days": 30,
   "review_batch_max_files": 80,
   "holistic_max_age_days": 30,
