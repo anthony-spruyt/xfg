@@ -1,9 +1,24 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-22T06:30:12+00:00",
+  "updated": "2026-03-22T06:48:45+00:00",
   "queue_order": [
-    "workflow::create-plan"
+    "workflow::create-plan",
+    "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
+    "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
+    "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
+    "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
+    "review::.::holistic::convention_outlier::mixed_assert_import_styles",
+    "review::.::holistic::convention_outlier::mixed_test_file_organization",
+    "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
+    "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
+    "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
+    "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+    "review::.::holistic::logic_clarity::identical_json5_json_branches",
+    "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+    "review::.::holistic::naming_quality::factory_get_vs_create_prefix",
+    "review::.::holistic::test_strategy::vcs_mock_executor_duplication",
+    "review::.::holistic::type_safety::normalizer_merge_boundary_casts"
   ],
   "deferred": [],
   "skipped": {
@@ -21587,6 +21602,100 @@
         "kind": "false_positive",
         "reason": null
       }
+    },
+    {
+      "timestamp": "2026-03-22T06:48:12+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
+          "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
+          "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
+          "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
+          "review::.::holistic::convention_outlier::mixed_assert_import_styles",
+          "review::.::holistic::convention_outlier::mixed_test_file_organization",
+          "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
+          "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
+          "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
+          "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+          "review::.::holistic::logic_clarity::identical_json5_json_branches",
+          "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+          "review::.::holistic::naming_quality::factory_get_vs_create_prefix",
+          "review::.::holistic::test_strategy::vcs_mock_executor_duplication",
+          "review::.::holistic::type_safety::normalizer_merge_boundary_casts"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
+          "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
+          "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
+          "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
+          "review::.::holistic::convention_outlier::mixed_assert_import_styles",
+          "review::.::holistic::convention_outlier::mixed_test_file_organization",
+          "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
+          "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
+          "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
+          "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+          "review::.::holistic::logic_clarity::identical_json5_json_branches",
+          "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+          "review::.::holistic::naming_quality::factory_get_vs_create_prefix",
+          "review::.::holistic::test_strategy::vcs_mock_executor_duplication",
+          "review::.::holistic::type_safety::normalizer_merge_boundary_casts"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 13,
+        "diff_reopened": 2,
+        "diff_auto_resolved": 8,
+        "stale_pruned_from_queue": [],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T06:48:45+00:00",
+      "action": "done",
+      "issue_ids": [
+        "workflow::post-flight-scan"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Post-flight scan deferred \u2014 will scan after clearing the review work queue to avoid breaking triage state",
+      "detail": {}
     }
   ],
   "epic_triage_meta": {
@@ -22032,7 +22141,7 @@
   "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
-    "subjective_review_completed_at_scan_count": 144,
+    "subjective_review_completed_at_scan_count": 147,
     "lifecycle_phase": "execute"
   },
   "scan_count_at_plan_start": 146
