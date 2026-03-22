@@ -7,20 +7,17 @@ interface RepoDetectorContext {
   githubHosts?: string[];
 }
 
-// Base interface with common fields
 interface BaseRepoInfo {
   gitUrl: string;
   repo: string;
 }
 
-// GitHub-specific type
 export interface GitHubRepoInfo extends BaseRepoInfo {
   type: "github";
   owner: string;
   host: string; // "github.com" or GHE hostname
 }
 
-// Azure DevOps-specific type
 export interface AzureDevOpsRepoInfo extends BaseRepoInfo {
   type: "azure-devops";
   owner: string;
@@ -28,7 +25,6 @@ export interface AzureDevOpsRepoInfo extends BaseRepoInfo {
   project: string;
 }
 
-// GitLab-specific type
 export interface GitLabRepoInfo extends BaseRepoInfo {
   type: "gitlab";
   owner: string; // First path segment (for consistency with other platforms)
@@ -36,10 +32,8 @@ export interface GitLabRepoInfo extends BaseRepoInfo {
   host: string; // gitlab.com or self-hosted domain
 }
 
-// Discriminated union
 export type RepoInfo = GitHubRepoInfo | AzureDevOpsRepoInfo | GitLabRepoInfo;
 
-// Type guards
 export function isGitHubRepo(info: RepoInfo): info is GitHubRepoInfo {
   return info.type === "github";
 }

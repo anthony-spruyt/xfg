@@ -140,6 +140,8 @@ export class FileWriter implements IFileWriter {
       }
     }
 
+    // Separate pass for executable permissions: git add must happen after file
+    // content is written, and setExecutable needs the file to already be tracked.
     for (const file of files) {
       const tracked = fileChanges.get(file.fileName);
       if (tracked?.action === "skip") {
