@@ -1,32 +1,46 @@
 {
-  "command": "resolve",
-  "patterns": [
-    "exports::src/shared/gh-api-utils.ts::ResolveGitHubTokenOptions"
-  ],
-  "status": "fixed",
-  "resolved": [
-    "exports::src/shared/gh-api-utils.ts::ResolveGitHubTokenOptions"
-  ],
-  "count": 1,
-  "next_command": "desloppify next",
-  "overall_score": 91.0,
-  "objective_score": 95.2,
-  "strict_score": 86.5,
-  "verified_strict_score": 95.0,
-  "prev_overall_score": 91.0,
-  "prev_objective_score": 95.1,
-  "prev_strict_score": 86.5,
-  "prev_verified_strict_score": 95.0,
-  "attestation": "I have actually Removed export keyword - interface only used internally and I am not gaming the score.",
+  "command": "show",
+  "query": "cycles::src/output",
+  "status_filter": "open",
+  "total": 1,
+  "summary": {
+    "by_tier": {
+      "T3": 1
+    },
+    "by_detector": {
+      "cycles": 1
+    },
+    "files": 1
+  },
+  "by_file": {
+    "src/output/sync-report.ts": [
+      {
+        "id": "cycles::src/output/sync-report.ts::src/output/sync-report.ts::src/output/unified-summary.ts",
+        "tier": 3,
+        "confidence": "high",
+        "summary": "Import cycle (2 files): src/output/sync-report.ts -> src/output/unified-summary.ts",
+        "detail": {
+          "files": [
+            "src/output/sync-report.ts",
+            "src/output/unified-summary.ts"
+          ],
+          "length": 2
+        }
+      }
+    ]
+  },
+  "total_matching": 1,
+  "noise_budget": 0,
+  "noise_global_budget": 0,
   "narrative": {
-    "phase": "refinement",
-    "headline": "All T1 items cleared!",
+    "phase": "stagnation",
+    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. All T1 items cleared!",
     "dimensions": {
       "lowest_dimensions": [
         {
           "name": "Code quality",
-          "strict": 26.2,
-          "failing": 62,
+          "strict": 27.9,
+          "failing": 43,
           "impact": 0.0
         },
         {
@@ -47,9 +61,9 @@
       "biggest_gap_dimensions": [
         {
           "name": "Code quality",
-          "lenient": 93.2,
-          "strict": 26.2,
-          "gap": 67.0,
+          "lenient": 96.2,
+          "strict": 27.9,
+          "gap": 68.3,
           "wontfix_count": 0
         },
         {
@@ -61,8 +75,8 @@
         },
         {
           "name": "Security",
-          "lenient": 99.5,
-          "strict": 94.5,
+          "lenient": 99.0,
+          "strict": 94.0,
           "gap": 5.0,
           "wontfix_count": 0
         }
@@ -70,7 +84,7 @@
       "stagnant_dimensions": [
         {
           "name": "Security",
-          "strict": 94.5,
+          "strict": 94.0,
           "stuck_scans": 5
         },
         {
@@ -127,17 +141,6 @@
     },
     "actions": [
       {
-        "type": "auto_fix",
-        "detector": "unused",
-        "count": 1,
-        "description": "1 unused issues \u2014 run `desloppify autofix unused-imports --dry-run` to preview, then apply",
-        "command": "desloppify autofix unused-imports --dry-run",
-        "impact": 0.0,
-        "dimension": "Code quality",
-        "priority": 1,
-        "lane": "cleanup"
-      },
-      {
         "type": "reorganize",
         "detector": "flat_dirs",
         "count": 1,
@@ -145,7 +148,7 @@
         "command": "desloppify show flat_dirs --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 2,
+        "priority": 1,
         "lane": "restructure"
       },
       {
@@ -156,7 +159,7 @@
         "command": "desloppify show single_use --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 3,
+        "priority": 2,
         "lane": "restructure"
       },
       {
@@ -167,7 +170,7 @@
         "command": "desloppify show cycles --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 4,
+        "priority": 3,
         "lane": "restructure"
       },
       {
@@ -178,7 +181,7 @@
         "command": "desloppify show facade --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 5,
+        "priority": 4,
         "lane": "restructure"
       },
       {
@@ -189,7 +192,7 @@
         "command": "desloppify show structural --status open",
         "impact": 0.0,
         "dimension": "File health",
-        "priority": 6,
+        "priority": 5,
         "lane": "refactor_0"
       },
       {
@@ -200,7 +203,7 @@
         "command": "desloppify show props --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 7,
+        "priority": 6,
         "lane": "refactor_0"
       },
       {
@@ -211,7 +214,7 @@
         "command": "desloppify show test_coverage --status open",
         "impact": 0.0,
         "dimension": "Test health",
-        "priority": 8,
+        "priority": 7,
         "lane": "test_coverage"
       },
       {
@@ -222,7 +225,7 @@
         "command": "desloppify show signature --status open",
         "impact": 0.0,
         "dimension": "Unknown",
-        "priority": 9,
+        "priority": 8,
         "lane": "refactor_0"
       },
       {
@@ -233,7 +236,7 @@
         "command": "desloppify show responsibility_cohesion --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 10,
+        "priority": 9,
         "lane": "refactor_0"
       },
       {
@@ -244,7 +247,7 @@
         "command": "desloppify show boilerplate_duplication --status open",
         "impact": 0.0,
         "dimension": "Duplication",
-        "priority": 11,
+        "priority": 10,
         "lane": "refactor_0"
       },
       {
@@ -255,19 +258,30 @@
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 12,
+        "priority": 11,
         "lane": "refactor_0"
       },
       {
         "type": "manual_fix",
         "detector": "exports",
-        "count": 20,
-        "description": "20 exports work items \u2014 run `knip --fix` to remove dead exports",
+        "count": 1,
+        "description": "1 exports work items \u2014 run `knip --fix` to remove dead exports",
         "command": "desloppify show exports --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 13,
+        "priority": 12,
         "lane": "refactor_1"
+      },
+      {
+        "type": "manual_fix",
+        "detector": "security",
+        "count": 2,
+        "description": "2 security work items \u2014 review and fix security issues \u2014 prioritize by severity",
+        "command": "desloppify show security --status open",
+        "impact": 0.0,
+        "dimension": "Security",
+        "priority": 13,
+        "lane": "refactor_2"
       },
       {
         "type": "debt_review",
@@ -281,28 +295,19 @@
     ],
     "strategy": {
       "fixer_leverage": {
-        "auto_fixable_count": 1,
-        "total_count": 177,
-        "coverage": 0.006,
+        "auto_fixable_count": 0,
+        "total_count": 159,
+        "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
       },
       "lanes": {
-        "cleanup": {
-          "actions": [
-            1
-          ],
-          "file_count": 1,
-          "total_impact": 0.0,
-          "automation": "full",
-          "run_first": true
-        },
         "restructure": {
           "actions": [
+            1,
             2,
             3,
-            4,
-            5
+            4
           ],
           "file_count": 5,
           "total_impact": 0.0,
@@ -311,12 +316,12 @@
         },
         "refactor_0": {
           "actions": [
+            5,
             6,
-            7,
+            8,
             9,
             10,
-            11,
-            12
+            11
           ],
           "file_count": 88,
           "total_impact": 0.0,
@@ -325,16 +330,25 @@
         },
         "refactor_1": {
           "actions": [
+            12
+          ],
+          "file_count": 1,
+          "total_impact": 0.0,
+          "automation": "manual",
+          "run_first": false
+        },
+        "refactor_2": {
+          "actions": [
             13
           ],
-          "file_count": 4,
+          "file_count": 1,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "test_coverage": {
           "actions": [
-            8
+            7
           ],
           "file_count": 11,
           "total_impact": 0.0,
@@ -352,28 +366,10 @@
         }
       },
       "can_parallelize": true,
-      "hint": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify."
+      "hint": "5 independent workstreams, safe to parallelize. Rescan after each phase to verify."
     },
     "tools": {
       "fixers": [
-        {
-          "name": "unused-imports",
-          "detector": "unused",
-          "open_count": 1,
-          "command": "desloppify autofix unused-imports --dry-run"
-        },
-        {
-          "name": "unused-vars",
-          "detector": "unused",
-          "open_count": 1,
-          "command": "desloppify autofix unused-vars --dry-run"
-        },
-        {
-          "name": "unused-params",
-          "detector": "unused",
-          "open_count": 1,
-          "command": "desloppify autofix unused-params --dry-run"
-        },
         {
           "name": "dead-useeffect",
           "detector": "smells",
@@ -408,15 +404,15 @@
       "overall_gap": 2.9,
       "wontfix_count": 0,
       "worst_dimension": "Code quality",
-      "worst_gap": 67.0,
-      "trend": "growing"
+      "worst_gap": 68.3,
+      "trend": "stable"
     },
     "milestone": "All T1 items cleared!",
     "primary_action": {
-      "command": "desloppify autofix unused-imports --dry-run",
-      "description": "1 unused issues \u2014 run `desloppify autofix unused-imports --dry-run` to preview, then apply"
+      "command": "desloppify show flat_dirs --status open",
+      "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "4 independent workstreams, safe to parallelize. Rescan after each phase to verify.",
+    "why_now": "5 independent workstreams, safe to parallelize. Rescan after each phase to verify.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -435,36 +431,19 @@
       "state": "below",
       "warning": null
     },
-    "reminders": [
-      {
-        "type": "rereview_needed",
-        "message": "Subjective results may be stale after resolve. Re-run `desloppify review --prepare` to refresh, or reset with `desloppify scan --reset-subjective` before a clean rerun.",
-        "command": "desloppify review --prepare",
-        "priority": 1,
-        "severity": "high"
-      },
-      {
-        "type": "rescan_needed",
-        "message": "Rescan to verify \u2014 cascading effects may create new issues.",
-        "command": "desloppify scan",
-        "priority": 1,
-        "severity": "high"
-      }
-    ],
+    "reminders": [],
     "reminder_history": {
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 3,
-      "report_scores": 103,
+      "report_scores": 104,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
       "review_not_run": 3,
       "badge_recommendation": 3,
       "review_issues_pending": 3,
-      "wontfix_growing": 3,
-      "rereview_needed": 1,
-      "rescan_needed": 1
+      "wontfix_growing": 3
     }
   },
   "config": {
