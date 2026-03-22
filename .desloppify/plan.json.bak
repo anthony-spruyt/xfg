@@ -1,107 +1,14 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-22T07:53:22+00:00",
+  "updated": "2026-03-22T08:59:03+00:00",
   "queue_order": [
-    "review::.::holistic::design_coherence::dynamic_object_assign_in_runAndCollect",
-    "review::.::holistic::error_consistency::fileExistsOnBranch_catches_all",
-    "review::.::holistic::error_consistency::wouldChange_swallows_all_errors",
-    "review::.::holistic::mid_level_elegance::dynamic_property_injection_settings_collector",
-    "review::.::holistic::type_safety::filter_then_cast_action_narrowing"
+    "review::.::holistic::convention_outlier::test_assert_import_drift",
+    "review::.::holistic::cross_module_architecture::config_barrel_bypass_for_available_types",
+    "review::.::holistic::cross_module_architecture::config_barrel_missing_filecontent_contentvalue"
   ],
   "deferred": [],
-  "skipped": {
-    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40": {
-      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding - secretScanning is a GitHub API property name for the secret scanning feature, not an actual hardcoded secret. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-22T07:47:03+00:00",
-      "review_after": null,
-      "skipped_at_scan": 155
-    },
-    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
-      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding - secretScanningPushProtection is a GitHub API property name for the secret scanning push protection feature, not an actual hardcoded secret. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-22T07:47:04+00:00",
-      "review_after": null,
-      "skipped_at_scan": 155
-    },
-    "smells::src/cli/program.ts::console_error_no_throw": {
-      "issue_id": "smells::src/cli/program.ts::console_error_no_throw",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding - console.error is followed by process.exit(1) which terminates the process, equivalent to throw/return. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-22T07:47:12+00:00",
-      "review_after": null,
-      "skipped_at_scan": 155
-    },
-    "smells::src/vcs/pr-strategy.ts::catch_return_default": {
-      "issue_id": "smells::src/vcs/pr-strategy.ts::catch_return_default",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding - executeMergeCommand uses the Result pattern intentionally, converting exceptions to MergeResult objects. The catch now logs via this.log.warn before returning. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-22T07:47:15+00:00",
-      "review_after": null,
-      "skipped_at_scan": 155
-    },
-    "smells::src/cli/sync-command.ts::async_no_await": {
-      "issue_id": "smells::src/cli/sync-command.ts::async_no_await",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding - runSync at line 604 uses await at line 659 and buildSettingsDescriptors delegates to runAndCollect which uses await. The detector incorrectly flags these. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-22T07:47:17+00:00",
-      "review_after": null,
-      "skipped_at_scan": 155
-    },
-    "smells::src/shared/gh-api-utils.ts::async_no_await": {
-      "issue_id": "smells::src/shared/gh-api-utils.ts::async_no_await",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding - resolveGitHubToken at line 140 uses await at line 145 (await tokenManager?.getTokenForRepo). Detector incorrectly flags it. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-22T07:47:24+00:00",
-      "review_after": null,
-      "skipped_at_scan": 155
-    },
-    "smells::src/vcs/pr-creator.ts::async_no_await": {
-      "issue_id": "smells::src/vcs/pr-creator.ts::async_no_await",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding - createPR and mergePR are not async functions, they return Promise directly. The detector incorrectly identifies them as async-no-await. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-22T07:47:26+00:00",
-      "review_after": null,
-      "skipped_at_scan": 155
-    },
-    "test_coverage::src/cli/program.ts::untested_module": {
-      "issue_id": "test_coverage::src/cli/program.ts::untested_module",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding - program.ts is a CLI entry point (composition root) that wires Commander.js options. It is tested via integration tests, not unit tests. CLI entry points are composition roots not suitable for unit testing. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-22T07:47:33+00:00",
-      "review_after": null,
-      "skipped_at_scan": 155
-    },
-    "smells::src/cli/sync-command.ts::nested_closure": {
-      "issue_id": "smells::src/cli/sync-command.ts::nested_closure",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding - the nested closures in applyRepoSettings were refactored to module-level buildSettingsDescriptors and runAndCollect functions. The remaining thin arrow delegates are not deeply nested. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-22T07:48:16+00:00",
-      "review_after": null,
-      "skipped_at_scan": 155
-    }
-  },
+  "skipped": {},
   "active_cluster": null,
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
@@ -6487,10 +6394,30 @@
         "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
         "review::.::holistic::convention_outlier::mixed_assert_import_styles"
       ]
+    },
+    "smells::src/cli/sync-command.ts::nested_closure": {
+      "original_id": "smells::src/cli/sync-command.ts::nested_closure",
+      "original_detector": "smells",
+      "original_file": "src/cli/sync-command.ts",
+      "original_summary": "1x Deeply nested closures \u2014 extract to module level",
+      "status": "superseded",
+      "superseded_at": "2026-03-22T08:59:03+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "smells::src/cli/sync-command.ts::async_no_await",
+        "smells::src/cli/sync-command.ts::as_any_cast",
+        "smells::src/cli/sync-command.ts::high_cyclomatic_complexity",
+        "smells::src/cli/sync-command.ts::stub_function"
+      ]
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {},
+  "plan_start_scores": {
+    "strict": 89.0,
+    "overall": 91.3,
+    "objective": 90.3,
+    "verified": 89.8
+  },
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -22380,6 +22307,89 @@
         "sync_status": "synced",
         "sync_message": null
       }
+    },
+    {
+      "timestamp": "2026-03-22T07:54:12+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::convention_outlier::test_assert_import_drift",
+          "review::.::holistic::cross_module_architecture::config_barrel_bypass_for_available_types",
+          "review::.::holistic::cross_module_architecture::config_barrel_missing_filecontent_contentvalue"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::convention_outlier::test_assert_import_drift",
+          "review::.::holistic::cross_module_architecture::config_barrel_bypass_for_available_types",
+          "review::.::holistic::cross_module_architecture::config_barrel_missing_filecontent_contentvalue"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 3,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 14,
+        "stale_pruned_from_queue": [
+          "review::.::holistic::design_coherence::dynamic_object_assign_in_runAndCollect",
+          "review::.::holistic::error_consistency::fileExistsOnBranch_catches_all",
+          "review::.::holistic::error_consistency::wouldChange_swallows_all_errors",
+          "review::.::holistic::mid_level_elegance::dynamic_property_injection_settings_collector",
+          "review::.::holistic::type_safety::filter_then_cast_action_narrowing"
+        ],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T08:59:03+00:00",
+      "action": "reconcile",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::nested_closure"
+      ],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 1,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T08:59:03+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T08:59:03+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 158
+      }
     }
   ],
   "epic_triage_meta": {
@@ -22826,6 +22836,8 @@
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 147,
-    "lifecycle_phase": "execute"
-  }
+    "lifecycle_phase": "execute",
+    "postflight_scan_completed_at_scan_count": 158
+  },
+  "scan_count_at_plan_start": 158
 }

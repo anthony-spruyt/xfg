@@ -1,125 +1,12 @@
 {
-  "command": "review",
-  "action": "import",
-  "mode": "holistic",
-  "diff": {
-    "new": 3,
-    "auto_resolved": 14,
-    "reopened": 0,
-    "total_current": 3,
-    "suspect_detectors": [
-      "boilerplate_duplication",
-      "exports",
-      "facade",
-      "flat_dirs",
-      "props",
-      "responsibility_cohesion",
-      "review",
-      "signature",
-      "single_use",
-      "smells",
-      "structural",
-      "test_coverage",
-      "unused"
-    ],
-    "chronic_reopeners": [
-      {
-        "id": "facade::src/settings/labels/index.ts",
-        "detector": "facade",
-        "file": "src/settings/labels/index.ts",
-        "tier": 2,
-        "confidence": "medium",
-        "summary": "Re-export facade (8 LOC): imports from ./formatter.js, ./processor.js, ./github-labels-strategy.js (1 importers)",
-        "detail": {
-          "loc": 8,
-          "importers": 1,
-          "imports_from": [
-            "./formatter.js",
-            "./processor.js",
-            "./github-labels-strategy.js"
-          ],
-          "kind": "file"
-        },
-        "status": "open",
-        "note": "Reopened (\u00d77) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-05T01:16:56+00:00",
-        "last_seen": "2026-03-22T07:40:47+00:00",
-        "resolved_at": null,
-        "reopen_count": 7,
-        "lang": "typescript",
-        "zone": "production",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "wontfix_scan_count": 112,
-        "wontfix_snapshot": {
-          "captured_at": "2026-03-06T08:15:04+00:00",
-          "scan_count": 112,
-          "tier": 2,
-          "confidence": "medium",
-          "detail": {
-            "loc": 5,
-            "importers": 1,
-            "imports_from": [
-              "./formatter.js",
-              "./processor.js"
-            ],
-            "kind": "file"
-          }
-        },
-        "work_item_kind": "mechanical_defect",
-        "issue_kind": "mechanical_defect",
-        "origin": "scan"
-      },
-      {
-        "id": "exports::src/vcs/index.ts::INetworkGitOps",
-        "detector": "exports",
-        "file": "src/vcs/index.ts",
-        "tier": 2,
-        "confidence": "high",
-        "summary": "Dead export: INetworkGitOps",
-        "detail": {
-          "line": 97,
-          "kind": "type"
-        },
-        "status": "open",
-        "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-06T13:26:39+00:00",
-        "last_seen": "2026-03-22T07:29:45+00:00",
-        "resolved_at": null,
-        "reopen_count": 3,
-        "lang": "typescript",
-        "zone": "production",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "work_item_kind": "mechanical_defect",
-        "issue_kind": "mechanical_defect",
-        "origin": "scan"
-      }
-    ],
-    "skipped_other_lang": 0,
-    "resolved_out_of_scope": 0,
-    "ignored": 0,
-    "ignore_patterns": 0,
-    "raw_issues": 3,
-    "suppressed_pct": 0.0
-  },
-  "next_command": "desloppify show review --status open",
-  "subjective_at_target": [
-    {
-      "dimension": "Auth consistency",
-      "score": 95.0
-    }
-  ],
-  "assessment_import": {
-    "mode": "manual_override",
-    "trusted": false,
-    "reason": "manual override attested by operator"
-  },
+  "command": "show",
+  "query": "review",
+  "status_filter": "deferred",
+  "total": 0,
+  "issues": [],
   "narrative": {
-    "phase": "stagnation",
-    "headline": "Score plateaued at 91.4 for 5 scans. Duplication (81.6%) is where the breakthrough is. 2 wontfix items may also be worth revisiting. (3 review work items \u2014 run `desloppify show review --status open`)",
+    "phase": "refinement",
+    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Crossed 90% strict! (3 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -153,8 +40,8 @@
         },
         {
           "name": "Security",
-          "lenient": 100.0,
-          "strict": 95.0,
+          "lenient": 99.5,
+          "strict": 94.5,
           "gap": 5.0,
           "wontfix_count": 0
         },
@@ -167,11 +54,6 @@
         }
       ],
       "stagnant_dimensions": [
-        {
-          "name": "Security",
-          "strict": 95.0,
-          "stuck_scans": 5
-        },
         {
           "name": "File health",
           "strict": 96.0,
@@ -389,8 +271,8 @@
       {
         "type": "manual_fix",
         "detector": "smells",
-        "count": 77,
-        "description": "77 smells issues \u2014 inspect with `desloppify next` and fix manually",
+        "count": 80,
+        "description": "80 smells issues \u2014 inspect with `desloppify next` and fix manually",
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
@@ -407,12 +289,34 @@
         "dimension": "Code quality",
         "priority": 13,
         "lane": "refactor_2"
+      },
+      {
+        "type": "manual_fix",
+        "detector": "stale_exclude",
+        "count": 1,
+        "description": "1 stale_exclude work items \u2014 remove stale exclusion or verify it's still needed",
+        "command": "desloppify show stale_exclude --status open",
+        "impact": 0.0,
+        "dimension": "Code quality",
+        "priority": 14,
+        "lane": "refactor_3"
+      },
+      {
+        "type": "manual_fix",
+        "detector": "security",
+        "count": 2,
+        "description": "2 security work items \u2014 review and fix security issues \u2014 prioritize by severity",
+        "command": "desloppify show security --status open",
+        "impact": 0.0,
+        "dimension": "Security",
+        "priority": 15,
+        "lane": "refactor_4"
       }
     ],
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 1,
-        "total_count": 163,
+        "total_count": 169,
         "coverage": 0.006,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -447,7 +351,7 @@
             10,
             12
           ],
-          "file_count": 84,
+          "file_count": 86,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -470,6 +374,24 @@
           "automation": "manual",
           "run_first": false
         },
+        "refactor_3": {
+          "actions": [
+            14
+          ],
+          "file_count": 1,
+          "total_impact": 0.0,
+          "automation": "manual",
+          "run_first": false
+        },
+        "refactor_4": {
+          "actions": [
+            15
+          ],
+          "file_count": 1,
+          "total_impact": 0.0,
+          "automation": "manual",
+          "run_first": false
+        },
         "test_coverage": {
           "actions": [
             7
@@ -481,7 +403,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "5 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 3 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 3 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -506,13 +428,13 @@
         {
           "name": "dead-useeffect",
           "detector": "smells",
-          "open_count": 77,
+          "open_count": 80,
           "command": "desloppify autofix dead-useeffect --dry-run"
         },
         {
           "name": "empty-if-chain",
           "detector": "smells",
-          "open_count": 77,
+          "open_count": 80,
           "command": "desloppify autofix empty-if-chain --dry-run"
         }
       ],
@@ -534,18 +456,18 @@
       }
     },
     "debt": {
-      "overall_gap": 0.9,
+      "overall_gap": 1.0,
       "wontfix_count": 2,
       "worst_dimension": "Duplication",
       "worst_gap": 14.8,
-      "trend": "shrinking"
+      "trend": "stable"
     },
-    "milestone": null,
+    "milestone": "Crossed 90% strict!",
     "primary_action": {
       "command": "desloppify autofix unused-imports --dry-run",
       "description": "1 unused issues \u2014 run `desloppify autofix unused-imports --dry-run` to preview, then apply"
     },
-    "why_now": "5 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 3 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 3 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -554,7 +476,7 @@
       {
         "type": "wontfix_gap",
         "severity": "medium",
-        "message": "Strict/lenient gap is 0.9 pts with 2 wontfix issues"
+        "message": "Strict/lenient gap is 1.0 pts with 2 wontfix issues"
       }
     ],
     "strict_target": {
@@ -569,7 +491,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 3,
-      "report_scores": 112,
+      "report_scores": 114,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
@@ -586,7 +508,9 @@
     "holistic_max_age_days": 30,
     "generate_scorecard": true,
     "badge_path": "scorecard.png",
-    "exclude": [],
+    "exclude": [
+      ".worktrees"
+    ],
     "ignore": [],
     "ignore_metadata": {},
     "zone_overrides": {
