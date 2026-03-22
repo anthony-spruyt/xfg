@@ -8,7 +8,7 @@ import {
   formatStatusBadge,
   formatDiffLine,
   computeUnifiedDiff,
-  isStructuredDataFile,
+  isBinaryFile,
 } from "../../src/sync/diff-utils.js";
 
 describe("getFileStatus", () => {
@@ -254,42 +254,40 @@ describe("computeUnifiedDiff", () => {
   });
 });
 
-describe("isStructuredDataFile", () => {
-  test("matches .json", () => {
-    assert.equal(isStructuredDataFile("config.json"), true);
+describe("isBinaryFile", () => {
+  test("detects image files as binary", () => {
+    assert.equal(isBinaryFile("logo.png"), true);
+    assert.equal(isBinaryFile("photo.jpg"), true);
+    assert.equal(isBinaryFile("icon.ico"), true);
   });
 
-  test("matches .json5", () => {
-    assert.equal(isStructuredDataFile("config.json5"), true);
+  test("detects archive files as binary", () => {
+    assert.equal(isBinaryFile("archive.zip"), true);
+    assert.equal(isBinaryFile("bundle.tar"), true);
+    assert.equal(isBinaryFile("compressed.gz"), true);
   });
 
-  test("matches .yaml", () => {
-    assert.equal(isStructuredDataFile("config.yaml"), true);
-  });
-
-  test("matches .yml", () => {
-    assert.equal(isStructuredDataFile("ci.yml"), true);
+  test("detects font files as binary", () => {
+    assert.equal(isBinaryFile("font.woff2"), true);
+    assert.equal(isBinaryFile("font.ttf"), true);
   });
 
   test("is case insensitive", () => {
-    assert.equal(isStructuredDataFile("Config.JSON"), true);
-    assert.equal(isStructuredDataFile("Config.YAML"), true);
+    assert.equal(isBinaryFile("image.PNG"), true);
+    assert.equal(isBinaryFile("archive.ZIP"), true);
   });
 
-  test("rejects .sh", () => {
-    assert.equal(isStructuredDataFile("script.sh"), false);
+  test("returns false for text files", () => {
+    assert.equal(isBinaryFile("config.json"), false);
+    assert.equal(isBinaryFile("config.yaml"), false);
+    assert.equal(isBinaryFile("script.sh"), false);
+    assert.equal(isBinaryFile("README.md"), false);
+    assert.equal(isBinaryFile("index.ts"), false);
   });
 
-  test("rejects .md", () => {
-    assert.equal(isStructuredDataFile("README.md"), false);
-  });
-
-  test("rejects .ts", () => {
-    assert.equal(isStructuredDataFile("index.ts"), false);
-  });
-
-  test("matches nested paths", () => {
-    assert.equal(isStructuredDataFile(".github/workflows/ci.yml"), true);
+  test("handles nested paths", () => {
+    assert.equal(isBinaryFile("assets/images/logo.png"), true);
+    assert.equal(isBinaryFile(".github/workflows/ci.yml"), false);
   });
 });
 

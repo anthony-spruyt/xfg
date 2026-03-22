@@ -335,7 +335,7 @@ describe("FileWriter", () => {
       assert.ok(entry.diffLines.length > 0);
     });
 
-    test("does not populate diffLines for non-structured files", async () => {
+    test("populates diffLines for non-structured text files", async () => {
       const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
         wouldChange: true,
         fileContent: null,
@@ -363,6 +363,39 @@ describe("FileWriter", () => {
       );
 
       const entry = result.fileChanges.get("script.sh");
+      assert.ok(entry);
+      assert.ok(entry.diffLines);
+      assert.ok(entry.diffLines.length > 0);
+    });
+
+    test("does not populate diffLines for binary files", async () => {
+      const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
+        wouldChange: true,
+        fileContent: null,
+        fileExists: false,
+        fileExistsOnBranch: false,
+      });
+      const { mock: mockLogger } = createMockLogger();
+
+      const writer = new FileWriter();
+      const files: FileContent[] = [
+        { fileName: "logo.png", content: "binary-data" },
+      ];
+
+      const result = await writer.writeFiles(
+        files,
+        {
+          repoInfo: mockRepoInfo,
+          baseBranch: "main",
+          workDir,
+          dryRun: true,
+          noDelete: false,
+          configId: "test",
+        },
+        { gitOps: mockGitOps, log: mockLogger }
+      );
+
+      const entry = result.fileChanges.get("logo.png");
       assert.ok(entry);
       assert.equal(entry.diffLines, undefined);
     });

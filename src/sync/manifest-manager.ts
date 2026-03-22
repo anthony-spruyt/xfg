@@ -7,7 +7,7 @@ import {
   MANIFEST_FILENAME,
   type XfgManifest,
 } from "./manifest.js";
-import { computeUnifiedDiff, isStructuredDataFile } from "./diff-utils.js";
+import { computeUnifiedDiff, isBinaryFile } from "./diff-utils.js";
 import type {
   IManifestManager,
   OrphanProcessResult,
@@ -74,7 +74,7 @@ export class ManifestManager implements IManifestManager {
         action: "delete",
       };
 
-      if (isStructuredDataFile(fileName)) {
+      if (!isBinaryFile(fileName)) {
         const existingContent = gitOps.getFileContent(fileName);
         if (existingContent !== null) {
           writeResult.diffLines = computeUnifiedDiff(existingContent, null);

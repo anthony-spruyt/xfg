@@ -1,7 +1,7 @@
 export type { DiffStats } from "./diff-utils.js";
 export {
   computeUnifiedDiff,
-  isStructuredDataFile,
+  isBinaryFile,
   formatDiffLine,
 } from "./diff-utils.js";
 export type {
