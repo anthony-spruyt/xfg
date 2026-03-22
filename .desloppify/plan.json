@@ -1,20 +1,20 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-22T06:49:13+00:00",
+  "updated": "2026-03-22T07:06:13+00:00",
   "queue_order": [
-    "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
-    "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
-    "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
-    "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
+    "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
+    "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
     "review::.::holistic::convention_outlier::mixed_assert_import_styles",
     "review::.::holistic::convention_outlier::mixed_test_file_organization",
-    "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
-    "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
     "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
-    "review::.::holistic::logic_clarity::identical_json5_json_branches",
     "review::.::holistic::naming_quality::factory_get_vs_create_prefix",
+    "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
     "review::.::holistic::test_strategy::vcs_mock_executor_duplication",
+    "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
+    "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
+    "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
+    "review::.::holistic::logic_clarity::identical_json5_json_branches",
     "review::.::holistic::type_safety::normalizer_merge_boundary_casts"
   ],
   "deferred": [],
@@ -6358,7 +6358,21 @@
       "candidates": []
     }
   },
-  "promoted_ids": [],
+  "promoted_ids": [
+    "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
+    "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
+    "review::.::holistic::convention_outlier::mixed_assert_import_styles",
+    "review::.::holistic::convention_outlier::mixed_test_file_organization",
+    "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
+    "review::.::holistic::naming_quality::factory_get_vs_create_prefix",
+    "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
+    "review::.::holistic::test_strategy::vcs_mock_executor_duplication",
+    "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
+    "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
+    "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
+    "review::.::holistic::logic_clarity::identical_json5_json_branches",
+    "review::.::holistic::type_safety::normalizer_merge_boundary_casts"
+  ],
   "plan_start_scores": {},
   "execution_log": [
     {
@@ -21672,6 +21686,212 @@
       "note": null,
       "detail": {
         "superseded_count": 2,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T06:59:36+00:00",
+      "action": "done",
+      "issue_ids": [
+        "workflow::post-flight-scan"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Post-flight scan already completed \u2014 forced rescan ran successfully, strict score is 88.0",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:00:38+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:01:01+00:00",
+      "action": "promote",
+      "issue_ids": [
+        "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+        "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+        "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
+        "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
+        "review::.::holistic::convention_outlier::mixed_assert_import_styles",
+        "review::.::holistic::convention_outlier::mixed_test_file_organization",
+        "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
+        "review::.::holistic::naming_quality::factory_get_vs_create_prefix",
+        "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
+        "review::.::holistic::test_strategy::vcs_mock_executor_duplication",
+        "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
+        "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
+        "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
+        "review::.::holistic::logic_clarity::identical_json5_json_branches",
+        "review::.::holistic::type_safety::normalizer_merge_boundary_casts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "bottom",
+        "target": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:05:37+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::identical_json5_json_branches"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Merged identical json5 and json branches in convertContentToString \u2014 both used JSON.stringify",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:05:38+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::async_no_await_pr_creator"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed async keyword from createPR and mergePR \u2014 they return promises directly without await",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:05:38+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::factory_get_vs_create_prefix"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed getPRStrategy to createPRStrategy and getCommitStrategy to createCommitStrategy across all files",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:05:39+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed 7 restating JSDoc comments from config/types.ts that just echoed type names",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:05:39+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed 5 restating JSDoc comments from config/merge.ts that echoed function and type names",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:05:44+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+        "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+        "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
+        "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
+        "review::.::holistic::convention_outlier::mixed_assert_import_styles",
+        "review::.::holistic::convention_outlier::mixed_test_file_organization",
+        "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
+        "review::.::holistic::naming_quality::factory_get_vs_create_prefix",
+        "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
+        "review::.::holistic::test_strategy::vcs_mock_executor_duplication",
+        "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
+        "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
+        "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
+        "review::.::holistic::logic_clarity::identical_json5_json_branches",
+        "review::.::holistic::type_safety::normalizer_merge_boundary_casts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:05:52+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::identical_json5_json_branches"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Merged identical json5 and json branches in convertContentToString \u2014 both used JSON.stringify",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:05:53+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::async_no_await_pr_creator"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed async keyword from createPR and mergePR \u2014 they return promises directly without await",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:05:53+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::factory_get_vs_create_prefix"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed getPRStrategy to createPRStrategy and getCommitStrategy to createCommitStrategy across all files",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:05:53+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed 7 restating JSDoc comments from config/types.ts that just echoed type names",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:05:54+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed 5 restating JSDoc comments from config/merge.ts that echoed function and type names",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:06:13+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
         "pruned_count": 0,
         "resurfaced_count": 0,
         "clusters_completed_count": 0
