@@ -3,17 +3,17 @@
   "created": "2026-03-03T09:08:56+00:00",
   "last_scan": "2026-03-22T06:05:30+00:00",
   "scan_count": 145,
-  "overall_score": 91.0,
-  "objective_score": 95.0,
-  "strict_score": 86.4,
+  "overall_score": 91.1,
+  "objective_score": 95.5,
+  "strict_score": 86.6,
   "verified_strict_score": 95.0,
   "stats": {
     "total": 1472,
     "auto_resolved": 1161,
     "deferred": 0,
-    "false_positive": 19,
-    "fixed": 111,
-    "open": 181,
+    "false_positive": 30,
+    "fixed": 113,
+    "open": 168,
     "triaged_out": 0,
     "wontfix": 0,
     "by_tier": {
@@ -29,9 +29,9 @@
       "2": {
         "auto_resolved": 433,
         "deferred": 0,
-        "false_positive": 16,
-        "fixed": 46,
-        "open": 27,
+        "false_positive": 27,
+        "fixed": 48,
+        "open": 14,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -2882,11 +2882,11 @@
   },
   "dimension_scores": {
     "Code quality": {
-      "score": 92.9,
-      "strict": 25.9,
+      "score": 94.7,
+      "strict": 27.7,
       "verified_strict_score": 92.9,
       "checks": 621,
-      "failing": 64,
+      "failing": 53,
       "tier": 3,
       "detectors": {
         "unused": {
@@ -2903,9 +2903,9 @@
         },
         "exports": {
           "potential": 13,
-          "pass_rate": 0.0,
-          "failing": 22,
-          "weighted_failures": 22.0
+          "pass_rate": 0.15384615384615385,
+          "failing": 11,
+          "weighted_failures": 11.0
         },
         "smells": {
           "potential": 107,
@@ -2964,11 +2964,11 @@
       }
     },
     "Security": {
-      "score": 99.0,
-      "strict": 94.0,
+      "score": 99.5,
+      "strict": 94.5,
       "verified_strict_score": 99.0,
       "checks": 208,
-      "failing": 3,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "cycles": {
@@ -2979,9 +2979,9 @@
         },
         "security": {
           "potential": 104,
-          "pass_rate": 0.9903846153846154,
-          "failing": 2,
-          "weighted_failures": 1.0
+          "pass_rate": 1.0,
+          "failing": 0,
+          "weighted_failures": 0.0
         }
       }
     },
@@ -7824,11 +7824,11 @@
         "content": "  secretScanning: \"_secret_scanning\",",
         "remediation": "Move secret to environment variable or secrets manager"
       },
-      "status": "open",
-      "note": "Reopened (\u00d78) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-03T09:10:57+00:00",
       "last_seen": "2026-03-22T06:05:30+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:12:34+00:00",
       "reopen_count": 8,
       "zone": "production",
       "lang": "typescript",
@@ -7851,7 +7851,13 @@
       },
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Variable secretScanning is a PROPERTY_MAPPING key for GitHub API field names, not a hardcoded credential.",
+        "attested_at": "2026-03-22T06:12:34+00:00",
+        "scan_verified": false
+      }
     },
     "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
       "id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
@@ -7867,11 +7873,11 @@
         "content": "  secretScanningPushProtection: \"_secret_scanning_push_protection\",",
         "remediation": "Move secret to environment variable or secrets manager"
       },
-      "status": "open",
-      "note": "Reopened (\u00d78) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-03T09:10:57+00:00",
       "last_seen": "2026-03-22T06:05:30+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:12:34+00:00",
       "reopen_count": 8,
       "zone": "production",
       "lang": "typescript",
@@ -7894,7 +7900,13 @@
       },
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Variable secretScanningPushProtection maps to API field name _secret_scanning_push_protection, not a credential.",
+        "attested_at": "2026-03-22T06:12:34+00:00",
+        "scan_verified": false
+      }
     },
     "security::src/cli/program.ts::security::json_parse_unguarded::src/cli/program.ts::12": {
       "id": "security::src/cli/program.ts::security::json_parse_unguarded::src/cli/program.ts::12",
@@ -17060,11 +17072,11 @@
         "line": 115,
         "kind": "type"
       },
-      "status": "open",
-      "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-03T09:26:42+00:00",
       "last_seen": "2026-03-19T10:10:47+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:27:38+00:00",
       "reopen_count": 3,
       "lang": "typescript",
       "zone": "production",
@@ -17073,7 +17085,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
+        "attested_at": "2026-03-22T06:27:38+00:00",
+        "scan_verified": false
+      }
     },
     "exports::src/vcs/index.ts::CommitOptions": {
       "id": "exports::src/vcs/index.ts::CommitOptions",
@@ -17138,11 +17156,11 @@
         "line": 271,
         "kind": "type"
       },
-      "status": "open",
-      "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-03T09:26:42+00:00",
       "last_seen": "2026-03-19T10:10:47+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:27:39+00:00",
       "reopen_count": 3,
       "lang": "typescript",
       "zone": "production",
@@ -17151,7 +17169,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
+        "attested_at": "2026-03-22T06:27:39+00:00",
+        "scan_verified": false
+      }
     },
     "exports::src/vcs/index.ts::IGitOps": {
       "id": "exports::src/vcs/index.ts::IGitOps",
@@ -17164,11 +17188,11 @@
         "line": 70,
         "kind": "type"
       },
-      "status": "open",
-      "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-03T09:26:42+00:00",
       "last_seen": "2026-03-19T10:10:47+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:27:37+00:00",
       "reopen_count": 3,
       "lang": "typescript",
       "zone": "production",
@@ -17177,7 +17201,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
+        "attested_at": "2026-03-22T06:27:37+00:00",
+        "scan_verified": false
+      }
     },
     "exports::src/vcs/index.ts::GitOpsOptions": {
       "id": "exports::src/vcs/index.ts::GitOpsOptions",
@@ -17190,11 +17220,11 @@
         "line": 350,
         "kind": "type"
       },
-      "status": "open",
-      "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-03T09:26:42+00:00",
       "last_seen": "2026-03-19T10:10:47+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:27:39+00:00",
       "reopen_count": 3,
       "lang": "typescript",
       "zone": "production",
@@ -17203,7 +17233,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
+        "attested_at": "2026-03-22T06:27:39+00:00",
+        "scan_verified": false
+      }
     },
     "exports::src/vcs/index.ts::IAuthenticatedGitOps": {
       "id": "exports::src/vcs/index.ts::IAuthenticatedGitOps",
@@ -17248,11 +17284,11 @@
         "line": 130,
         "kind": "type"
       },
-      "status": "open",
-      "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-03T09:26:42+00:00",
       "last_seen": "2026-03-19T10:10:47+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:27:40+00:00",
       "reopen_count": 3,
       "lang": "typescript",
       "zone": "production",
@@ -17261,7 +17297,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
+        "attested_at": "2026-03-22T06:27:40+00:00",
+        "scan_verified": false
+      }
     },
     "exports::src/vcs/index.ts::PROptions": {
       "id": "exports::src/vcs/index.ts::PROptions",
@@ -17306,11 +17348,11 @@
         "line": 148,
         "kind": "type"
       },
-      "status": "open",
-      "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-03T09:26:42+00:00",
       "last_seen": "2026-03-18T09:32:07+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:27:40+00:00",
       "reopen_count": 3,
       "lang": "typescript",
       "zone": "production",
@@ -17319,7 +17361,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
+        "attested_at": "2026-03-22T06:27:40+00:00",
+        "scan_verified": false
+      }
     },
     "exports::src/vcs/index.ts::FileAction": {
       "id": "exports::src/vcs/index.ts::FileAction",
@@ -17332,11 +17380,11 @@
         "line": 56,
         "kind": "type"
       },
-      "status": "open",
-      "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-03T09:26:42+00:00",
       "last_seen": "2026-03-19T10:10:47+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:27:41+00:00",
       "reopen_count": 3,
       "lang": "typescript",
       "zone": "production",
@@ -17345,7 +17393,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
+        "attested_at": "2026-03-22T06:27:41+00:00",
+        "scan_verified": false
+      }
     },
     "exports::src/vcs/index.ts::MergePROptions": {
       "id": "exports::src/vcs/index.ts::MergePROptions",
@@ -53911,11 +53965,11 @@
         "line": 81,
         "kind": "type"
       },
-      "status": "open",
-      "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-06T13:26:39+00:00",
       "last_seen": "2026-03-19T10:10:47+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:27:37+00:00",
       "reopen_count": 2,
       "lang": "typescript",
       "zone": "production",
@@ -53924,7 +53978,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
+        "attested_at": "2026-03-22T06:27:37+00:00",
+        "scan_verified": false
+      }
     },
     "exports::src/vcs/index.ts::INetworkGitOps": {
       "id": "exports::src/vcs/index.ts::INetworkGitOps",
@@ -53937,11 +53997,11 @@
         "line": 97,
         "kind": "type"
       },
-      "status": "open",
-      "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-06T13:26:39+00:00",
       "last_seen": "2026-03-22T06:05:30+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:27:38+00:00",
       "reopen_count": 2,
       "lang": "typescript",
       "zone": "production",
@@ -53950,7 +54010,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
+        "attested_at": "2026-03-22T06:27:38+00:00",
+        "scan_verified": false
+      }
     },
     "stale_wontfix::src/cli/sync-command.ts::smells::src/cli/sync-command.ts::async_no_await": {
       "id": "stale_wontfix::src/cli/sync-command.ts::smells::src/cli/sync-command.ts::async_no_await",
@@ -58192,11 +58258,11 @@
         "line": 752,
         "kind": "type"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Removed export keyword - interface only used internally",
       "first_seen": "2026-03-20T03:03:03+00:00",
       "last_seen": "2026-03-22T06:05:30+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:27:27+00:00",
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
@@ -58205,7 +58271,13 @@
       "zone": "production",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Removed export keyword - interface only used internally and I am not gaming the score.",
+        "attested_at": "2026-03-22T06:27:27+00:00",
+        "scan_verified": false
+      }
     },
     "exports::src/shared/gh-api-utils.ts::ResolveGitHubTokenOptions": {
       "id": "exports::src/shared/gh-api-utils.ts::ResolveGitHubTokenOptions",
@@ -58218,11 +58290,11 @@
         "line": 3182,
         "kind": "type"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Removed export keyword - interface only used internally",
       "first_seen": "2026-03-20T03:03:03+00:00",
       "last_seen": "2026-03-20T03:03:03+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T06:27:28+00:00",
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
@@ -58231,7 +58303,13 @@
       "zone": "production",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Removed export keyword - interface only used internally and I am not gaming the score.",
+        "attested_at": "2026-03-22T06:27:28+00:00",
+        "scan_verified": false
+      }
     },
     "exports::src/sync/index.ts::computeUnifiedDiff": {
       "id": "exports::src/sync/index.ts::computeUnifiedDiff",
