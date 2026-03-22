@@ -38,14 +38,27 @@ repos:
         args:
           - "--config"
           - ".gitleaks.toml"
+  - repo: "https://github.com/shellcheck-py/shellcheck-py"
+    rev: "v0.11.0.1"
+    hooks:
+      - id: "shellcheck"
+  - repo: "https://github.com/scop/pre-commit-shfmt"
+    rev: "v3.12.0-2"
+    hooks:
+      - id: "shfmt"
+  - repo: "https://github.com/igorshubovych/markdownlint-cli"
+    rev: "v0.48.0"
+    hooks:
+      - id: "markdownlint"
+  - repo: "https://github.com/rhysd/actionlint"
+    rev: "v1.7.11"
+    hooks:
+      - id: "actionlint"
   - repo: "local"
     hooks:
-      - id: "prettier"
-        name: "prettier"
-        entry: "npx prettier --write --config=.prettierrc.yaml
-          --ignore-path=.prettierignore"
+      - id: "jsonlint"
+        name: "jsonlint"
+        entry: "npx @prantlf/jsonlint --quiet"
         language: "system"
-        types_or:
+        types:
           - "json"
-          - "yaml"
-          - "markdown"
