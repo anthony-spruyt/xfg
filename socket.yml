@@ -1,0 +1,9 @@
+version: 2
+
+issueRules:
+  # xfg is a CLI tool that syncs files and settings across GitHub, Azure DevOps,
+  # and GitLab. Network access, env vars, and URL strings are core functionality.
+  networkAccess: false
+  envVars: false
+  urlStrings: false
+  gptAnomaly: false
