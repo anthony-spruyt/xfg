@@ -124,7 +124,7 @@ export class GhApiClient {
   }
 }
 
-export interface ResolveGitHubTokenOptions {
+interface ResolveGitHubTokenOptions {
   repoInfo: GitHubRepoInfo;
   tokenManager: ITokenManager | null;
   context: string;

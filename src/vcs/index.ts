@@ -9,12 +9,6 @@ export type {
   IPRStrategy,
   GitAuthOptions,
   PRResult,
-  PRStrategyOptions,
-  MergeOptions,
-  MergeResult,
-  CloseExistingPROptions,
-  CommitOptions,
-  CommitResult,
   ICommitStrategy,
 } from "./types.js";
 

@@ -21,7 +21,6 @@ export type {
   Label,
   RepoSettings,
   // Raw Config
-  ContentValue,
   RawFileConfig,
   RawRepoFileOverride,
   RawRepoSettings,
