@@ -66,6 +66,9 @@ export async function withGitHubGuards<
 ): Promise<TResult> {
   const repoName = getRepoDisplayName(repoInfo);
 
+  // Safe cast: all TResult subtypes (RulesetProcessorResult, LabelsProcessorResult,
+  // RepoSettingsProcessorResult) only extend BaseProcessorResult with optional fields.
+  // If adding a new processor result type, ensure all extension fields are optional.
   if (!isGitHubRepo(repoInfo)) {
     return {
       success: true,
