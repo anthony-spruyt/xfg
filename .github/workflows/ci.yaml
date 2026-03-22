@@ -22,7 +22,8 @@ jobs:
   check-changes:
     runs-on: ubuntu-latest
     outputs:
-      code-changed: ${{ steps.filter.outputs.code-changed }}
+      build-needed: ${{ steps.filter.outputs.build-needed }}
+      integration-needed: ${{ steps.filter.outputs.integration-needed }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -44,12 +45,23 @@ jobs:
           fi
 
           if echo "$CHANGED" | grep -qE '^(src/|test/|scripts/|package\.json$|package-lock\.json$)'; then
-            echo "code-changed=true" >> "$GITHUB_OUTPUT"
+            echo "build-needed=true" >> "$GITHUB_OUTPUT"
             echo "Code changes detected"
           else
-            echo "code-changed=false" >> "$GITHUB_OUTPUT"
+            echo "build-needed=false" >> "$GITHUB_OUTPUT"
             echo "No code changes, will skip build and integration tests"
           fi
+
+          # Integration tests only needed for source/test/script changes,
+          # not version-only bumps (package.json + package-lock.json)
+          if echo "$CHANGED" | grep -qE '^(src/|test/|scripts/)'; then
+            echo "integration-needed=true" >> "$GITHUB_OUTPUT"
+            echo "Source changes detected — integration tests needed"
+          else
+            echo "integration-needed=false" >> "$GITHUB_OUTPUT"
+            echo "No source changes — skipping integration tests"
+          fi
+
           echo "Changed files:"
           echo "$CHANGED"
 
@@ -62,7 +74,7 @@ jobs:
     needs:
       - "lint"
       - "check-changes"
-    if: ${{ !failure() && !cancelled() && needs.check-changes.outputs.code-changed == 'true' }}
+    if: ${{ !failure() && !cancelled() && needs.check-changes.outputs.build-needed == 'true' }}
     runs-on: ubuntu-latest
 
     concurrency:
@@ -115,7 +127,7 @@ jobs:
     needs:
       - "build"
       - "check-changes"
-    if: ${{ !failure() && !cancelled() && needs.check-changes.outputs.code-changed == 'true' }}
+    if: ${{ !failure() && !cancelled() && needs.check-changes.outputs.integration-needed == 'true' && github.event_name == 'push' }}
     uses: ./.github/workflows/_integration-tests.yaml
     secrets: "inherit"
 
