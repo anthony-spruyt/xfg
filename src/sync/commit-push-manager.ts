@@ -1,4 +1,4 @@
-import { getCommitStrategy, type FileChange } from "../vcs/index.js";
+import { createCommitStrategy, type FileChange } from "../vcs/index.js";
 import type { ICommitStrategy } from "../vcs/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import { getRepoDisplayName } from "../shared/repo-detector.js";
@@ -20,7 +20,7 @@ type CommitStrategyFactory = (
 export class CommitPushManager implements ICommitPushManager {
   constructor(
     private readonly log: DebugInfoLog,
-    private readonly commitStrategyFactory: CommitStrategyFactory = getCommitStrategy
+    private readonly commitStrategyFactory: CommitStrategyFactory = createCommitStrategy
   ) {}
 
   async commitAndPush(options: CommitPushOptions): Promise<CommitPushResult> {

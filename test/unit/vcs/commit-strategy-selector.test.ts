@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert";
 import {
-  getCommitStrategy,
+  createCommitStrategy,
   createTokenManager,
 } from "../../../src/vcs/commit-strategy-selector.js";
 import { GitCommitStrategy } from "../../../src/vcs/git-commit-strategy.js";
@@ -31,7 +31,7 @@ describe("createTokenManager", () => {
   });
 });
 
-describe("getCommitStrategy", () => {
+describe("createCommitStrategy", () => {
   const githubRepoInfo: GitHubRepoInfo = {
     type: "github",
     gitUrl: "git@github.com:owner/repo.git",
@@ -59,7 +59,7 @@ describe("getCommitStrategy", () => {
   };
 
   test("returns GitCommitStrategy for GitHub without app credentials", () => {
-    const strategy = getCommitStrategy(githubRepoInfo, mockExecutor);
+    const strategy = createCommitStrategy(githubRepoInfo, mockExecutor);
 
     assert.ok(
       strategy instanceof GitCommitStrategy,
@@ -68,7 +68,7 @@ describe("getCommitStrategy", () => {
   });
 
   test("returns GraphQLCommitStrategy for GitHub with app credentials", () => {
-    const strategy = getCommitStrategy(githubRepoInfo, mockExecutor, true);
+    const strategy = createCommitStrategy(githubRepoInfo, mockExecutor, true);
 
     assert.ok(
       strategy instanceof GraphQLCommitStrategy,
@@ -77,7 +77,7 @@ describe("getCommitStrategy", () => {
   });
 
   test("returns GitCommitStrategy for Azure DevOps (ignores app credentials)", () => {
-    const strategy = getCommitStrategy(azureRepoInfo, mockExecutor, true);
+    const strategy = createCommitStrategy(azureRepoInfo, mockExecutor, true);
 
     assert.ok(
       strategy instanceof GitCommitStrategy,
@@ -86,7 +86,7 @@ describe("getCommitStrategy", () => {
   });
 
   test("returns GitCommitStrategy for GitLab (ignores app credentials)", () => {
-    const strategy = getCommitStrategy(gitlabRepoInfo, mockExecutor, true);
+    const strategy = createCommitStrategy(gitlabRepoInfo, mockExecutor, true);
 
     assert.ok(
       strategy instanceof GitCommitStrategy,
@@ -99,7 +99,7 @@ describe("getCommitStrategy", () => {
       exec: async () => "",
     };
 
-    const strategy = getCommitStrategy(githubRepoInfo, mockExecutor);
+    const strategy = createCommitStrategy(githubRepoInfo, mockExecutor);
 
     assert.ok(
       strategy instanceof GitCommitStrategy,

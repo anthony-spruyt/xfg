@@ -137,12 +137,6 @@ export function convertContentToString(
     });
   }
 
-  if (format === "json5") {
-    // JSON5 format - output standard JSON (which is valid JSON5)
-    // Using JSON.stringify for standard JSON output that's compatible everywhere
-    return JSON.stringify(content, null, 2) + "\n";
-  }
-
-  // JSON format - comments not supported, ignore header/schemaUrl
+  // JSON and JSON5 — both use standard JSON.stringify (valid JSON5 superset)
   return JSON.stringify(content, null, 2) + "\n";
 }

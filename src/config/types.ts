@@ -11,28 +11,20 @@ export interface PRMergeOptions {
   labels?: string[];
 }
 
-/** Ruleset target type */
 export type RulesetTarget = "branch" | "tag";
 
-/** Ruleset enforcement level */
 export type RulesetEnforcement = "active" | "disabled" | "evaluate";
 
-/** Bypass actor type */
 export type BypassActorType = "Team" | "User" | "Integration";
 
-/** Bypass mode - always bypass or only for PRs */
 export type BypassMode = "always" | "pull_request";
 
-/** Pattern operator for pattern-based rules */
 type PatternOperator = "starts_with" | "ends_with" | "contains" | "regex";
 
-/** Allowed merge methods */
 export type MergeMethod = "merge" | "squash" | "rebase";
 
-/** Code scanning alerts threshold */
 export type AlertsThreshold = "none" | "errors" | "errors_and_warnings" | "all";
 
-/** Security alerts threshold */
 export type SecurityAlertsThreshold =
   | "none"
   | "critical"

@@ -12,7 +12,7 @@ import { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";
 
-export function getPRStrategy(
+export function createPRStrategy(
   repoInfo: RepoInfo,
   executor: ICommandExecutor,
   log?: IPRStrategyLogger

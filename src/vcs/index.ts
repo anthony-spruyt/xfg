@@ -17,10 +17,10 @@ export type { GitOpsOptions } from "./git-ops.js";
 
 // Commit strategies
 export {
-  getCommitStrategy,
+  createCommitStrategy,
   createTokenManager,
 } from "./commit-strategy-selector.js";
 // PR strategy factory
-export { getPRStrategy } from "./pr-strategy-factory.js";
+export { createPRStrategy } from "./pr-strategy-factory.js";
 // PR creation and merge
 export { createPR, mergePR } from "./pr-creator.js";
