@@ -10,13 +10,15 @@ import type { SyncOptions } from "./sync-command.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-let packageJson: { version: string };
-try {
-  packageJson = JSON.parse(
-    readFileSync(join(__dirname, "../..", "package.json"), "utf-8")
-  ) as { version: string };
-} catch {
-  packageJson = { version: "0.0.0" };
+function getVersion(): string {
+  try {
+    const pkg = JSON.parse(
+      readFileSync(join(__dirname, "../..", "package.json"), "utf-8")
+    ) as { version: string };
+    return pkg.version;
+  } catch {
+    return "0.0.0";
+  }
 }
 
 // =============================================================================
@@ -76,7 +78,7 @@ program
   .description(
     "Manage files, settings, and repositories across GitHub, Azure DevOps, and GitLab"
   )
-  .version(packageJson.version);
+  .version(getVersion());
 
 // Sync command (file synchronization)
 const syncCommand = new Command("sync")
