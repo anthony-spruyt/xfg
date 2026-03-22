@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-22T07:25:23+00:00",
+  "updated": "2026-03-22T07:41:28+00:00",
   "queue_order": [
     "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
     "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
@@ -15,38 +15,7 @@
     "review::.::holistic::logic_clarity::identical_json5_json_branches"
   ],
   "deferred": [],
-  "skipped": {
-    "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation": {
-      "issue_id": "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. TypeScript has no automatic delegation mechanism. The 16 pass-through methods are the correct composition-over-inheritance pattern per SOLID principles \u2014 a Proxy would lose type safety.",
-      "created_at": "2026-03-22T07:25:22+00:00",
-      "review_after": null,
-      "skipped_at_scan": 151
-    },
-    "review::.::holistic::type_safety::normalizer_merge_boundary_casts": {
-      "issue_id": "review::.::holistic::type_safety::normalizer_merge_boundary_casts",
-      "kind": "permanent",
-      "reason": null,
-      "note": "deepMerge returns Record<string, unknown> by design. Adding runtime validation for internal config merging would be over-engineering \u2014 the casts are at a trust boundary between the merge utility and typed domain code.",
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-22T07:25:23+00:00",
-      "review_after": null,
-      "skipped_at_scan": 151
-    },
-    "review::.::holistic::convention_outlier::mixed_test_file_organization": {
-      "issue_id": "review::.::holistic::convention_outlier::mixed_test_file_organization",
-      "kind": "permanent",
-      "reason": null,
-      "note": "Migrating all flat-named tests to subdirectory structure would be a large churn-only refactor with no behavioral benefit. Both patterns work and tests pass.",
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-03-22T07:25:23+00:00",
-      "review_after": null,
-      "skipped_at_scan": 151
-    }
-  },
+  "skipped": {},
   "active_cluster": null,
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
@@ -6384,6 +6353,54 @@
       "superseded_at": "2026-03-22T06:49:13+00:00",
       "remapped_to": null,
       "candidates": []
+    },
+    "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation": {
+      "original_id": "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "AuthenticatedGitOps manually delegates 16 ILocalGitOps methods with zero behavior addition",
+      "status": "superseded",
+      "superseded_at": "2026-03-22T07:27:34+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+        "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+        "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
+        "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
+        "review::.::holistic::convention_outlier::mixed_assert_import_styles"
+      ]
+    },
+    "review::.::holistic::convention_outlier::mixed_test_file_organization": {
+      "original_id": "review::.::holistic::convention_outlier::mixed_test_file_organization",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Test directory uses two organization patterns: flat naming and subdirectory mirroring src/",
+      "status": "superseded",
+      "superseded_at": "2026-03-22T07:27:34+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+        "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+        "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
+        "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
+        "review::.::holistic::convention_outlier::mixed_assert_import_styles"
+      ]
+    },
+    "review::.::holistic::type_safety::normalizer_merge_boundary_casts": {
+      "original_id": "review::.::holistic::type_safety::normalizer_merge_boundary_casts",
+      "original_detector": "review",
+      "original_file": ".",
+      "original_summary": "Config normalizer uses ~15 type assertion casts at deepMerge boundaries without compile-time verification",
+      "status": "superseded",
+      "superseded_at": "2026-03-22T07:27:34+00:00",
+      "remapped_to": null,
+      "candidates": [
+        "review::.::holistic::low_level_elegance::settings_report_parallel_rendering",
+        "review::.::holistic::logic_clarity::async_no_await_pr_creator",
+        "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
+        "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
+        "review::.::holistic::convention_outlier::mixed_assert_import_styles"
+      ]
     }
   },
   "promoted_ids": [
@@ -21977,6 +21994,119 @@
         "kind": "permanent",
         "reason": null
       }
+    },
+    {
+      "timestamp": "2026-03-22T07:27:34+00:00",
+      "action": "reconcile",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
+        "review::.::holistic::convention_outlier::mixed_test_file_organization",
+        "review::.::holistic::type_safety::normalizer_merge_boundary_casts"
+      ],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 3,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:29:45+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:29:45+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:29:45+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 153
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:39:50+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:40:47+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:41:27+00:00",
+      "action": "done",
+      "issue_ids": [
+        "exports::src/settings/index.ts::SettingsAction"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed SettingsAction type export from settings/index.ts barrel file - not used outside the settings module or in tests",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:41:28+00:00",
+      "action": "done",
+      "issue_ids": [
+        "exports::src/settings/index.ts::formatPropertyTree"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed formatPropertyTree export from settings/index.ts barrel file - tests import directly from formatter.js",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:41:28+00:00",
+      "action": "done",
+      "issue_ids": [
+        "exports::src/settings/rulesets/index.ts::formatPropertyTree"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed formatPropertyTree export from rulesets/index.ts barrel file - tests import directly from formatter.js",
+      "detail": {}
     }
   ],
   "epic_triage_meta": {
@@ -22423,6 +22553,7 @@
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 147,
-    "lifecycle_phase": "execute"
+    "lifecycle_phase": "execute",
+    "postflight_scan_completed_at_scan_count": 153
   }
 }

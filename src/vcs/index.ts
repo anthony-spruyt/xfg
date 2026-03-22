@@ -5,7 +5,6 @@ export type {
   FileAction,
   IGitOps,
   ILocalGitOps,
-  INetworkGitOps,
   IPRStrategy,
   GitAuthOptions,
   PRResult,

@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-22T07:27:34+00:00",
+  "updated": "2026-03-22T07:41:29+00:00",
   "queue_order": [
     "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
     "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
@@ -22012,6 +22012,112 @@
         "resurfaced_count": 0,
         "clusters_completed_count": 0
       }
+    },
+    {
+      "timestamp": "2026-03-22T07:29:45+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:29:45+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:29:45+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 153
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:39:50+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:40:47+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:41:27+00:00",
+      "action": "done",
+      "issue_ids": [
+        "exports::src/settings/index.ts::SettingsAction"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed SettingsAction type export from settings/index.ts barrel file - not used outside the settings module or in tests",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:41:28+00:00",
+      "action": "done",
+      "issue_ids": [
+        "exports::src/settings/index.ts::formatPropertyTree"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed formatPropertyTree export from settings/index.ts barrel file - tests import directly from formatter.js",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:41:28+00:00",
+      "action": "done",
+      "issue_ids": [
+        "exports::src/settings/rulesets/index.ts::formatPropertyTree"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed formatPropertyTree export from rulesets/index.ts barrel file - tests import directly from formatter.js",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T07:41:29+00:00",
+      "action": "done",
+      "issue_ids": [
+        "exports::src/vcs/index.ts::INetworkGitOps"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed INetworkGitOps type export from vcs/index.ts barrel file - tests import directly from types.js",
+      "detail": {}
     }
   ],
   "epic_triage_meta": {
@@ -22458,6 +22564,7 @@
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 147,
-    "lifecycle_phase": "execute"
+    "lifecycle_phase": "execute",
+    "postflight_scan_completed_at_scan_count": 153
   }
 }

@@ -20,6 +20,7 @@ import {
 import { createTokenManager } from "../vcs/index.js";
 import { RepositoryProcessor } from "../sync/index.js";
 import {
+  type ISettingsProcessor,
   RulesetProcessor,
   RepoSettingsProcessor,
   LabelsProcessor,
@@ -176,79 +177,104 @@ function logSettingsResult(
   }
 }
 
-async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
+interface SettingsDescriptor {
+  key: "rulesets" | "labels" | "repo";
+  label: string;
+  run: () => Promise<SettingsResult>;
+}
+
+function buildSettingsDescriptors(
+  ctx: ApplyRepoSettingsContext
+): SettingsDescriptor[] {
   const {
     repoConfig,
     repoInfo,
-    repoName,
-    current,
     options,
     token,
+    repoName,
     settingsCollector,
     rulesetProcessorFactory,
     repoSettingsProcessorFactory,
     labelsProcessorFactory,
   } = ctx;
+  const sharedOpts = {
+    dryRun: options.dryRun,
+    noDelete: options.noDelete,
+    token,
+  };
 
-  if (!repoConfig.settings || !isGitHubRepo(repoInfo)) return;
-
-  const settingsDescriptors = [
+  return [
     {
       key: "rulesets" as const,
       label: "Rulesets",
-      run: async () => {
-        const result = await rulesetProcessorFactory().process(
+      run: () =>
+        runAndCollect(
+          rulesetProcessorFactory,
           repoConfig,
           repoInfo,
-          {
-            dryRun: options.dryRun,
-            noDelete: options.noDelete,
-            token,
-          }
-        );
-        if (!result.skipped) {
-          settingsCollector.getOrCreate(repoName).rulesetResult = result;
-        }
-        return result;
-      },
+          sharedOpts,
+          settingsCollector,
+          repoName,
+          "rulesetResult"
+        ),
     },
     {
       key: "labels" as const,
       label: "Labels",
-      run: async () => {
-        const result = await labelsProcessorFactory().process(
+      run: () =>
+        runAndCollect(
+          labelsProcessorFactory,
           repoConfig,
           repoInfo,
-          {
-            dryRun: options.dryRun,
-            noDelete: options.noDelete,
-            token,
-          }
-        );
-        if (!result.skipped) {
-          settingsCollector.getOrCreate(repoName).labelsResult = result;
-        }
-        return result;
-      },
+          sharedOpts,
+          settingsCollector,
+          repoName,
+          "labelsResult"
+        ),
     },
     {
       key: "repo" as const,
       label: "Repo Settings",
-      run: async () => {
-        const result = await repoSettingsProcessorFactory().process(
+      run: () =>
+        runAndCollect(
+          repoSettingsProcessorFactory,
           repoConfig,
           repoInfo,
-          { dryRun: options.dryRun, token }
-        );
-        if (!result.skipped) {
-          settingsCollector.getOrCreate(repoName).settingsResult = result;
-        }
-        return result;
-      },
+          { dryRun: options.dryRun, token },
+          settingsCollector,
+          repoName,
+          "settingsResult"
+        ),
     },
   ];
+}
 
-  for (const desc of settingsDescriptors) {
+async function runAndCollect(
+  factory: () => ISettingsProcessor,
+  repoConfig: RepoConfig,
+  repoInfo: RepoInfo,
+  processOptions: { dryRun?: boolean; noDelete?: boolean; token?: string },
+  collector: ResultsCollector,
+  repoName: string,
+  resultKey: "rulesetResult" | "labelsResult" | "settingsResult"
+): Promise<SettingsResult> {
+  const result = await factory().process(repoConfig, repoInfo, processOptions);
+  if (!result.skipped) {
+    // Safe cast: processor result types extend BaseProcessorResult with optional fields
+    // that are compatible with the specific ProcessorResults fields at runtime
+    const entry = collector.getOrCreate(repoName);
+    // Dynamic property access: result types are structurally compatible at runtime
+    Object.assign(entry, { [resultKey]: result });
+  }
+  return result as SettingsResult;
+}
+
+async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
+  const { repoConfig, repoInfo, repoName, current, settingsCollector } = ctx;
+
+  if (!repoConfig.settings || !isGitHubRepo(repoInfo)) return;
+
+  for (const desc of buildSettingsDescriptors(ctx)) {
     const settingsValue = repoConfig.settings[desc.key];
     if (!settingsValue || Object.keys(settingsValue).length === 0) continue;
 

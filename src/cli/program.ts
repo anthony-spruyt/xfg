@@ -98,11 +98,13 @@ const syncCommand = new Command("sync")
     parseMergeStrategy
   )
   .option("--delete-branch", "Delete source branch after merge")
-  .action((opts) => {
-    runSync(opts as SyncOptions).catch((error) => {
+  .action(async (opts) => {
+    try {
+      await runSync(opts as SyncOptions);
+    } catch (error) {
       console.error("Fatal error:", error);
-      process.exit(1);
-    });
+      return process.exit(1);
+    }
   });
 
 addSharedOptions(syncCommand);
