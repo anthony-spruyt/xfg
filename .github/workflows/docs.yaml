@@ -8,6 +8,7 @@ on:
       - "main"
     paths:
       - "docs/**"
+      - "!docs/superpowers/**"
       - "mkdocs.yml"
   workflow_dispatch:
 
