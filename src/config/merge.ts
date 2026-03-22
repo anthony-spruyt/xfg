@@ -5,6 +5,13 @@
 
 import { isPlainObject } from "../shared/type-guards.js";
 
+/**
+ * Keys reserved for xfg merge directives.
+ * Only these are stripped during merge — standard $-prefixed keys
+ * like $schema, $id, $ref, $generated are preserved.
+ */
+const XFG_DIRECTIVES = new Set(["$arrayMerge", "$values"]);
+
 export type ArrayMergeStrategy = "replace" | "append" | "prepend";
 
 /**
@@ -59,7 +66,7 @@ export function deepMerge(
 
   for (const [key, overlayValue] of Object.entries(overlay)) {
     // Skip directive keys in output
-    if (key.startsWith("$")) continue;
+    if (XFG_DIRECTIVES.has(key)) continue;
 
     const baseValue = base[key];
 
@@ -104,8 +111,9 @@ export function deepMerge(
 }
 
 /**
- * Strip merge directive keys ($arrayMerge, $override, etc.) from an object.
+ * Strip xfg merge directive keys ($arrayMerge, $values) from an object.
  * Works recursively on nested objects and arrays.
+ * Standard $-prefixed keys ($schema, $id, $ref, etc.) are preserved.
  */
 export function stripMergeDirectives(
   obj: Record<string, unknown>
@@ -113,8 +121,8 @@ export function stripMergeDirectives(
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    // Skip all $-prefixed keys (reserved for directives)
-    if (key.startsWith("$")) continue;
+    // Skip xfg directive keys only
+    if (XFG_DIRECTIVES.has(key)) continue;
 
     if (isPlainObject(value)) {
       result[key] = stripMergeDirectives(value);

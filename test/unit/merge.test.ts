@@ -216,17 +216,60 @@ describe("deepMerge", () => {
     const jsonStr = JSON.stringify(result);
     assert.ok(!jsonStr.includes("$values"));
   });
+
+  test("preserves $schema key during merge", () => {
+    const base = { $schema: "https://example.com/schema.json", key: "base" };
+    const overlay = { key: "overlay" };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      $schema: "https://example.com/schema.json",
+      key: "overlay",
+    });
+  });
+
+  test("preserves $schema from overlay during merge", () => {
+    const base = { key: "base" };
+    const overlay = {
+      $schema: "https://example.com/schema.json",
+      key: "overlay",
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      $schema: "https://example.com/schema.json",
+      key: "overlay",
+    });
+  });
+
+  test("preserves multiple $-prefixed non-directive keys during merge", () => {
+    const base = {
+      $schema: "https://example.com/schema.json",
+      $generated: "auto",
+      key: "base",
+    };
+    const overlay = {
+      $id: "my-config",
+      key: "overlay",
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      $schema: "https://example.com/schema.json",
+      $generated: "auto",
+      $id: "my-config",
+      key: "overlay",
+    });
+  });
+
+  test("still strips $arrayMerge and $values directive keys", () => {
+    const base = { items: [1, 2] };
+    const overlay = { items: { $arrayMerge: "append", $values: [3] } };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, { items: [1, 2, 3] });
+  });
 });
 
 describe("stripMergeDirectives", () => {
   test("removes $arrayMerge keys", () => {
     const obj = { $arrayMerge: "append", key: "value" };
-    const result = stripMergeDirectives(obj);
-    assert.deepEqual(result, { key: "value" });
-  });
-
-  test("removes $override keys", () => {
-    const obj = { $override: true, key: "value" };
     const result = stripMergeDirectives(obj);
     assert.deepEqual(result, { key: "value" });
   });
@@ -241,7 +284,7 @@ describe("stripMergeDirectives", () => {
     const obj = {
       $arrayMerge: "append",
       nested: {
-        $override: true,
+        $values: [1],
         value: "keep",
       },
     };
@@ -259,12 +302,51 @@ describe("stripMergeDirectives", () => {
     });
   });
 
-  test("preserves keys starting with $ that are not directives", () => {
-    // Only $arrayMerge and $override are directives
-    const obj = { $customKey: "value", key: "value" };
+  test("preserves $schema key", () => {
+    const obj = { $schema: "https://example.com/schema.json", key: "value" };
     const result = stripMergeDirectives(obj);
-    // We strip ALL $ prefixed keys as they are reserved for directives
-    assert.deepEqual(result, { key: "value" });
+    assert.deepEqual(result, {
+      $schema: "https://example.com/schema.json",
+      key: "value",
+    });
+  });
+
+  test("preserves $generated and $id keys", () => {
+    const obj = { $generated: "auto", $id: "config", key: "value" };
+    const result = stripMergeDirectives(obj);
+    assert.deepEqual(result, {
+      $generated: "auto",
+      $id: "config",
+      key: "value",
+    });
+  });
+
+  test("preserves $-prefixed keys in nested objects", () => {
+    const obj = {
+      $schema: "https://example.com/schema.json",
+      nested: {
+        $ref: "#/definitions/foo",
+        value: "keep",
+      },
+    };
+    const result = stripMergeDirectives(obj);
+    assert.deepEqual(result, {
+      $schema: "https://example.com/schema.json",
+      nested: { $ref: "#/definitions/foo", value: "keep" },
+    });
+  });
+
+  test("still strips $arrayMerge directive from objects", () => {
+    const obj = {
+      $arrayMerge: "append",
+      $schema: "https://example.com/schema.json",
+      key: "value",
+    };
+    const result = stripMergeDirectives(obj);
+    assert.deepEqual(result, {
+      $schema: "https://example.com/schema.json",
+      key: "value",
+    });
   });
 
   test("handles empty objects", () => {
@@ -273,7 +355,7 @@ describe("stripMergeDirectives", () => {
   });
 
   test("handles objects with only directives", () => {
-    const obj = { $arrayMerge: "append", $override: true };
+    const obj = { $arrayMerge: "append", $values: [1, 2] };
     const result = stripMergeDirectives(obj);
     assert.deepEqual(result, {});
   });
