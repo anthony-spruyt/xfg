@@ -85,7 +85,7 @@ This codebase follows SOLID principles strictly. Do NOT violate these:
 - **Enable automerge after PR creation:** `gh pr merge <num> --auto --squash --delete-branch`
 - **Wait for CI before claiming done** - verify checks pass, don't just run local lint
 - **Check CI on main after PR merge** - verify integration tests pass before releasing
-- **Do not commit plans to `docs/`** - that's GitHub Pages; use `plans/` for plans
+- **Do not commit plans or specs to `docs/`** - that's GitHub Pages; use `plans/` for plans and `plans/superpowers/` for superpowers specs/plans (the plugin defaults to `docs/superpowers/` which triggers docs deploy)
 - **Do not commit plans to main branch** - create a new branch
 - Output format determined by file extension: `.json`/`.json5`/`.yaml`/`.yml` → object content; others → string/string[]
 - Escape `${VAR}` as `$${VAR}` to output literal (for devcontainer.json, shell scripts)
