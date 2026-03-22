@@ -74,6 +74,30 @@ interface GitHubLifecycleProviderOptions {
   log?: DebugWarnLog;
 }
 
+function buildRepoCreateFlags(
+  parts: string[],
+  settings: CreateRepoSettings | undefined
+): void {
+  if (settings?.visibility === "public") {
+    parts.push("--public");
+  } else if (settings?.visibility === "internal") {
+    parts.push("--internal");
+  } else {
+    parts.push("--private");
+  }
+
+  if (settings?.description) {
+    parts.push("--description", escapeShellArg(settings.description));
+  }
+
+  if (settings?.hasIssues === false) {
+    parts.push("--disable-issues");
+  }
+  if (settings?.hasWiki === false) {
+    parts.push("--disable-wiki");
+  }
+}
+
 export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   readonly platform: LifecyclePlatform = "github";
   private readonly executor: ICommandExecutor;
@@ -203,27 +227,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       escapeShellArg(`${repoInfo.owner}/${repoInfo.repo}`),
     ];
 
-    // Visibility flag (default to private for safety)
-    if (settings?.visibility === "public") {
-      parts.push("--public");
-    } else if (settings?.visibility === "internal") {
-      parts.push("--internal");
-    } else {
-      parts.push("--private");
-    }
-
-    // Description
-    if (settings?.description) {
-      parts.push("--description", escapeShellArg(settings.description));
-    }
-
-    // Disable features if specified
-    if (settings?.hasIssues === false) {
-      parts.push("--disable-issues");
-    }
-    if (settings?.hasWiki === false) {
-      parts.push("--disable-wiki");
-    }
+    buildRepoCreateFlags(parts, settings);
 
     // Add --add-readme to establish the default branch via an initial commit.
     // This avoids empty repos where HEAD doesn't resolve.
@@ -504,27 +508,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       "--push",
     ];
 
-    // Visibility flag (default to private for safety)
-    if (settings?.visibility === "public") {
-      parts.push("--public");
-    } else if (settings?.visibility === "internal") {
-      parts.push("--internal");
-    } else {
-      parts.push("--private");
-    }
-
-    // Description
-    if (settings?.description) {
-      parts.push("--description", escapeShellArg(settings.description));
-    }
-
-    // Disable features if specified
-    if (settings?.hasIssues === false) {
-      parts.push("--disable-issues");
-    }
-    if (settings?.hasWiki === false) {
-      parts.push("--disable-wiki");
-    }
+    buildRepoCreateFlags(parts, settings);
 
     const command = parts.join(" ");
 
@@ -584,9 +568,9 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       repoInfo,
       options?.token
     );
-    const startTime = Date.now();
+    const deadline = Date.now() + timeoutMs;
 
-    while (Date.now() - startTime < timeoutMs) {
+    while (Date.now() < deadline) {
       try {
         const branch = (
           await this.executor.exec(
@@ -601,7 +585,11 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       } catch (error) {
         this.log?.debug(`Polling default branch: ${toErrorMessage(error)}`);
       }
-      await new Promise((resolve) => setTimeout(resolve, pollMs));
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) break;
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.min(pollMs, remaining))
+      );
     }
 
     // Don't throw — rename succeeded, this is just a best-effort wait
