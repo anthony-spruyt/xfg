@@ -152,10 +152,7 @@ export class GitOps implements ILocalGitOps {
       if (code === "ENOENT" || code === "EACCES") {
         return null;
       }
-      this.log?.debug(
-        `Unexpected error reading ${fileName}: ${toErrorMessage(error)}`
-      );
-      return null;
+      throw error;
     }
   }
 

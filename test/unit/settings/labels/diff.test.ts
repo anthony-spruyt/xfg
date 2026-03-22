@@ -1,5 +1,5 @@
 import { describe, test } from "node:test";
-import assert from "node:assert/strict";
+import { strict as assert } from "node:assert";
 import { diffLabels } from "../../../../src/settings/labels/diff.js";
 import type { Label } from "../../../../src/config/types.js";
 import type { GitHubLabel } from "../../../../src/settings/labels/types.js";
