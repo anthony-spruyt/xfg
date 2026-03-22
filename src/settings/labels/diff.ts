@@ -1,4 +1,4 @@
-import type { Label } from "../../config/types.js";
+import type { Label } from "../../config/index.js";
 import type { GitHubLabel } from "./types.js";
 import { normalizeColor } from "./converter.js";
 import { ValidationError } from "../../shared/errors.js";

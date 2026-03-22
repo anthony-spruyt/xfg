@@ -5,6 +5,7 @@ import {
   normalizeConfig,
   validateForSync,
   type RepoConfig,
+  type Config,
 } from "../config/index.js";
 import { ValidationError, SyncError } from "../shared/errors.js";
 import {
@@ -81,14 +82,16 @@ function createDefaultLabelsProcessorFactory(): LabelsProcessorFactory {
     );
 }
 export type { SharedOptions, SyncOptions } from "./types.js";
-import type { Config } from "../config/types.js";
 import { ResultsCollector } from "./results-collector.js";
-import { buildSettingsReport } from "./settings-report-builder.js";
+import {
+  buildSettingsReport,
+  type ProcessorResults,
+} from "./settings-report-builder.js";
 import { formatSettingsReportCLI } from "../output/settings-report.js";
 import { buildSyncReport } from "./sync-report-builder.js";
 import { formatSyncReportCLI } from "../output/sync-report.js";
+import { buildLifecycleReport } from "./lifecycle-report-builder.js";
 import {
-  buildLifecycleReport,
   formatLifecycleReportCLI,
   hasLifecycleChanges,
   type LifecycleAction,
@@ -104,9 +107,6 @@ import {
   type IRepoLifecycleManager,
 } from "../lifecycle/index.js";
 
-/**
- * Get unique file names from all repos in the config
- */
 function getUniqueFileNames(config: { repos: RepoConfig[] }): string[] {
   const fileNames = new Set<string>();
   for (const repo of config.repos) {
@@ -117,9 +117,6 @@ function getUniqueFileNames(config: { repos: RepoConfig[] }): string[] {
   return Array.from(fileNames);
 }
 
-/**
- * Generate default branch name based on files being synced
- */
 function generateBranchName(fileNames: string[]): string {
   if (fileNames.length === 1) {
     return `chore/sync-${sanitizeBranchName(fileNames[0])}`;
@@ -127,9 +124,6 @@ function generateBranchName(fileNames: string[]): string {
   return "chore/sync-config";
 }
 
-/**
- * Format file names for display
- */
 function formatFileNames(fileNames: string[]): string {
   if (fileNames.length === 1) {
     return fileNames[0];
@@ -203,70 +197,68 @@ function buildSettingsDescriptors(
     token,
   };
 
+  // Each processor returns a subtype of BaseProcessorResult whose planOutput
+  // contains both `lines` (for CLI display) and `entries` (for report building).
+  // ProcessorResults fields capture only the `entries` slice; the runtime object
+  // satisfies both views, so we assign with an explicit per-field cast.
+  const runAndStore = async (
+    factory: () => ISettingsProcessor,
+    opts: { dryRun?: boolean; noDelete?: boolean; token?: string },
+    assign: (entry: ProcessorResults, result: SettingsResult) => void
+  ): Promise<SettingsResult> => {
+    const result = await runSettingsProcessor(
+      factory,
+      repoConfig,
+      repoInfo,
+      opts
+    );
+    if (!result.skipped) {
+      assign(settingsCollector.getOrCreate(repoName), result);
+    }
+    return result;
+  };
+
   return [
     {
       key: "rulesets" as const,
       label: "Rulesets",
       run: () =>
-        runAndCollect(
-          rulesetProcessorFactory,
-          repoConfig,
-          repoInfo,
-          sharedOpts,
-          settingsCollector,
-          repoName,
-          "rulesetResult"
-        ),
+        runAndStore(rulesetProcessorFactory, sharedOpts, (e, r) => {
+          e.rulesetResult = r as ProcessorResults["rulesetResult"];
+        }),
     },
     {
       key: "labels" as const,
       label: "Labels",
       run: () =>
-        runAndCollect(
-          labelsProcessorFactory,
-          repoConfig,
-          repoInfo,
-          sharedOpts,
-          settingsCollector,
-          repoName,
-          "labelsResult"
-        ),
+        runAndStore(labelsProcessorFactory, sharedOpts, (e, r) => {
+          e.labelsResult = r as ProcessorResults["labelsResult"];
+        }),
     },
     {
       key: "repo" as const,
       label: "Repo Settings",
       run: () =>
-        runAndCollect(
+        runAndStore(
           repoSettingsProcessorFactory,
-          repoConfig,
-          repoInfo,
           { dryRun: options.dryRun, token },
-          settingsCollector,
-          repoName,
-          "settingsResult"
+          (e, r) => {
+            e.settingsResult = r as ProcessorResults["settingsResult"];
+          }
         ),
     },
   ];
 }
 
-function runAndCollect(
+function runSettingsProcessor(
   factory: () => ISettingsProcessor,
   repoConfig: RepoConfig,
   repoInfo: RepoInfo,
-  processOptions: { dryRun?: boolean; noDelete?: boolean; token?: string },
-  collector: ResultsCollector,
-  repoName: string,
-  resultKey: "rulesetResult" | "labelsResult" | "settingsResult"
+  processOptions: { dryRun?: boolean; noDelete?: boolean; token?: string }
 ): Promise<SettingsResult> {
   return factory()
     .process(repoConfig, repoInfo, processOptions)
-    .then((result) => {
-      if (!result.skipped) {
-        const entry = collector.getOrCreate(repoName);
-        Object.assign(entry, { [resultKey]: result });
-      }
-      return result as SettingsResult;
-    });
+    .then((result) => result as SettingsResult);
 }
 
 async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {

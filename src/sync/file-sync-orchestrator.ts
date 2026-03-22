@@ -52,7 +52,7 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
       manifest: newManifest,
       existingManifest,
       filesToDelete,
-    } = this.manifestManager.processOrphans(
+    } = this.manifestManager.detectOrphans(
       workDir,
       configId,
       filesWithDeleteOrphaned

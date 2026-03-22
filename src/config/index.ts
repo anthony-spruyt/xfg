@@ -29,6 +29,9 @@ export type {
   // Normalized Config
   RepoConfig,
   Config,
+  // File content
+  FileContent,
+  ContentValue,
 } from "./types.js";
 
 // Re-export values (non-type exports)

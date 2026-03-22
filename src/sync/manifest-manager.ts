@@ -27,7 +27,7 @@ export class ManifestManager implements IManifestManager {
     }
   ) {}
 
-  processOrphans(
+  detectOrphans(
     workDir: string,
     configId: string,
     filesWithDeleteOrphaned: Map<string, boolean | undefined>

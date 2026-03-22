@@ -1,5 +1,5 @@
 import type { RepoInfo } from "../shared/repo-detector.js";
-import type { RepoConfig } from "../config/types.js";
+import type { RepoConfig } from "../config/index.js";
 
 export type LifecyclePlatform = "github" | "azure-devops" | "gitlab";
 

@@ -9,9 +9,6 @@ export function getFileStatus(exists: boolean, changed: boolean): FileStatus {
   return changed ? "MODIFIED" : "UNCHANGED";
 }
 
-/**
- * Format a single diff line with appropriate color.
- */
 export function formatDiffLine(line: string): string {
   if (line.startsWith("+")) return chalk.green(line);
   if (line.startsWith("-")) return chalk.red(line);
@@ -329,16 +326,10 @@ export interface DiffStats {
   deletedCount: number;
 }
 
-/**
- * Create an empty diff stats object.
- */
 export function createDiffStats(): DiffStats {
   return { newCount: 0, modifiedCount: 0, unchangedCount: 0, deletedCount: 0 };
 }
 
-/**
- * Increment the appropriate counter in diff stats.
- */
 export function incrementDiffStats(stats: DiffStats, status: FileStatus): void {
   switch (status) {
     case "NEW":

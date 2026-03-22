@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import type { LabelChange, LabelAction } from "./diff.js";
-import type { Label } from "../../config/types.js";
+import type { Label } from "../../config/index.js";
 import { countActions } from "../base-processor.js";
 
 export interface LabelsPlanEntry {

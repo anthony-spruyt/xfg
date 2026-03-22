@@ -5,7 +5,7 @@ import { safeCleanup } from "../shared/type-guards.js";
 import { LifecycleError } from "../shared/errors.js";
 import { NO_OP_DEBUG_LOG, type DebugInfoWarnLog } from "../shared/logger.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
-import type { RepoConfig } from "../config/types.js";
+import type { RepoConfig } from "../config/index.js";
 import type {
   IRepoLifecycleManager,
   IRepoLifecycleProvider,

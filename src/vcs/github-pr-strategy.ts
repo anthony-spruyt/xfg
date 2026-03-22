@@ -30,9 +30,6 @@ function getRepoFlag(repoInfo: GitHubRepoInfo): string {
   return `${repoInfo.owner}/${repoInfo.repo}`;
 }
 
-/**
- * Build regex to match PR URLs for the given host.
- */
 function buildPRUrlRegex(host: string): RegExp {
   const escapedHost = escapeRegExp(host);
   return new RegExp(`https://${escapedHost}/[\\w-]+/[\\w.-]+/pull/\\d+`);
@@ -215,9 +212,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
   }
 
-  /**
-   * Build merge strategy flag for gh pr merge command.
-   */
   private getMergeStrategyFlag(strategy?: MergeStrategy): string {
     switch (strategy) {
       case "squash":
