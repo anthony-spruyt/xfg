@@ -1,5 +1,5 @@
 import { describe, test, beforeEach, afterEach, mock } from "node:test";
-import assert from "node:assert";
+import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { GitCommitStrategy } from "../../../src/vcs/git-commit-strategy.js";

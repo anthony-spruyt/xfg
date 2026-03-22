@@ -113,15 +113,13 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     }
 
     // Apply changes - only send settings that actually changed
-    const changedSettings = changes.reduce(
-      (acc, change) => {
-        if (change.action !== "unchanged") {
-          acc[change.property] = change.newValue;
-        }
-        return acc;
-      },
-      {} as Record<string, unknown>
-    ) as GitHubRepoSettings;
+    const changedSettings: Partial<GitHubRepoSettings> = {};
+    for (const change of changes) {
+      if (change.action !== "unchanged") {
+        (changedSettings as Record<string, unknown>)[change.property] =
+          change.newValue;
+      }
+    }
 
     await this.applyChanges(githubRepo, changedSettings, strategyOptions);
 

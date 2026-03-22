@@ -1,4 +1,4 @@
-import { describe, it } from "node:test";
+import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
 
 import { AuthenticatedGitOps } from "../../src/vcs/authenticated-git-ops.js";
@@ -66,7 +66,7 @@ function createMockLocalOps(): ILocalGitOps {
 
 describe("AuthenticatedGitOps", () => {
   describe("without auth", () => {
-    it("clone runs plain git clone", async () => {
+    test("clone runs plain git clone", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -94,7 +94,7 @@ describe("AuthenticatedGitOps", () => {
       );
     });
 
-    it("push runs plain git push", async () => {
+    test("push runs plain git push", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -126,7 +126,7 @@ describe("AuthenticatedGitOps", () => {
       );
     });
 
-    it("fetch runs plain git fetch", async () => {
+    test("fetch runs plain git fetch", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -154,7 +154,7 @@ describe("AuthenticatedGitOps", () => {
       );
     });
 
-    it("getDefaultBranch delegates to localOps fallback when remote show fails", async () => {
+    test("getDefaultBranch delegates to localOps fallback when remote show fails", async () => {
       const mockExecutor = {
         exec: async () => {
           throw new Error("remote not available");
@@ -185,7 +185,7 @@ describe("AuthenticatedGitOps", () => {
       repo: "test-repo",
     };
 
-    it("clone uses authenticated URL directly", async () => {
+    test("clone uses authenticated URL directly", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -225,7 +225,7 @@ describe("AuthenticatedGitOps", () => {
       );
     });
 
-    it("push uses plain git command (remote already has auth)", async () => {
+    test("push uses plain git command (remote already has auth)", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -259,7 +259,7 @@ describe("AuthenticatedGitOps", () => {
       );
     });
 
-    it("fetch uses plain git command (remote already has auth)", async () => {
+    test("fetch uses plain git command (remote already has auth)", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -295,7 +295,7 @@ describe("AuthenticatedGitOps", () => {
   });
 
   describe("authenticated URL embedding", () => {
-    it("clone embeds auth token directly in URL", async () => {
+    test("clone embeds auth token directly in URL", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -329,7 +329,7 @@ describe("AuthenticatedGitOps", () => {
       );
     });
 
-    it("handles GitHub Enterprise hosts", async () => {
+    test("handles GitHub Enterprise hosts", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -363,7 +363,7 @@ describe("AuthenticatedGitOps", () => {
   });
 
   describe("specialized network operations", () => {
-    it("lsRemote uses plain git command (remote already has auth)", async () => {
+    test("lsRemote uses plain git command (remote already has auth)", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -396,7 +396,7 @@ describe("AuthenticatedGitOps", () => {
       assert.equal(result, "abc123\trefs/heads/main\n");
     });
 
-    it("pushRefspec uses plain git command (remote already has auth)", async () => {
+    test("pushRefspec uses plain git command (remote already has auth)", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -424,7 +424,7 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(!commands[0].includes("insteadOf"), "Should not have -c flag");
     });
 
-    it("pushRefspec with delete flag uses --delete", async () => {
+    test("pushRefspec with delete flag uses --delete", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -451,7 +451,7 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(commands[0].includes("feature-branch"));
     });
 
-    it("fetchBranch uses plain git command (remote already has auth)", async () => {
+    test("fetchBranch uses plain git command (remote already has auth)", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -484,7 +484,7 @@ describe("AuthenticatedGitOps", () => {
       );
     });
 
-    it("fetchBranch uses + refspec prefix to allow non-fast-forward updates", async () => {
+    test("fetchBranch uses + refspec prefix to allow non-fast-forward updates", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -516,7 +516,7 @@ describe("AuthenticatedGitOps", () => {
       );
     });
 
-    it("lsRemote without auth uses plain git command", async () => {
+    test("lsRemote without auth uses plain git command", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -544,7 +544,7 @@ describe("AuthenticatedGitOps", () => {
       );
     });
 
-    it("lsRemote with skipRetry does not retry on failure", async () => {
+    test("lsRemote with skipRetry does not retry on failure", async () => {
       let callCount = 0;
       const mockExecutor = {
         exec: async () => {
@@ -578,7 +578,7 @@ describe("AuthenticatedGitOps", () => {
       );
     });
 
-    it("pushRefspec without auth uses plain git command", async () => {
+    test("pushRefspec without auth uses plain git command", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -599,7 +599,7 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(!commands[0].includes("insteadOf"));
     });
 
-    it("fetchBranch without auth uses plain git command", async () => {
+    test("fetchBranch without auth uses plain git command", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -620,7 +620,7 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(!commands[0].includes("insteadOf"));
     });
 
-    it("getDefaultBranch with auth uses remote show origin (plain git command)", async () => {
+    test("getDefaultBranch with auth uses remote show origin (plain git command)", async () => {
       const commands: string[] = [];
       const mockExecutor = {
         exec: async (cmd: string) => {
@@ -652,7 +652,7 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(!commands[0].includes("insteadOf"), "Should not have -c flag");
     });
 
-    it("getDefaultBranch falls back to main when remote HEAD is (unknown) for empty repo", async () => {
+    test("getDefaultBranch falls back to main when remote HEAD is (unknown) for empty repo", async () => {
       const mockExecutor = {
         exec: async (cmd: string) => {
           if (cmd.includes("remote show origin")) {
@@ -687,7 +687,7 @@ describe("AuthenticatedGitOps", () => {
       assert.equal(result.method, "mock fallback");
     });
 
-    it("getDefaultBranch delegates to localOps.getDefaultBranchLocal when remote show fails", async () => {
+    test("getDefaultBranch delegates to localOps.getDefaultBranchLocal when remote show fails", async () => {
       const mockExecutor = {
         exec: async () => {
           throw new Error("remote not available");
@@ -713,7 +713,7 @@ describe("AuthenticatedGitOps", () => {
       assert.equal(result.method, "mock fallback");
     });
 
-    it("getDefaultBranch logs debug message when remote show fails", async () => {
+    test("getDefaultBranch logs debug message when remote show fails", async () => {
       const debugMessages: string[] = [];
       const mockLogger = {
         debug(msg: string) {
@@ -750,7 +750,7 @@ describe("AuthenticatedGitOps", () => {
   });
 
   describe("ILocalGitOps delegation", () => {
-    it("createBranch delegates to localOps", async () => {
+    test("createBranch delegates to localOps", async () => {
       let branchCreated = "";
       const localOps = {
         ...createMockLocalOps(),
@@ -769,7 +769,7 @@ describe("AuthenticatedGitOps", () => {
       assert.strictEqual(branchCreated, "feature-branch");
     });
 
-    it("writeFile delegates to localOps", () => {
+    test("writeFile delegates to localOps", () => {
       const calls: string[] = [];
       const localOps = {
         ...createMockLocalOps(),
@@ -789,7 +789,7 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(calls[0].startsWith("writeFile:test.json:"));
     });
 
-    it("setExecutable delegates to localOps", async () => {
+    test("setExecutable delegates to localOps", async () => {
       let called = false;
       const localOps = {
         ...createMockLocalOps(),
@@ -808,7 +808,7 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(called);
     });
 
-    it("getFileContent delegates to localOps", () => {
+    test("getFileContent delegates to localOps", () => {
       const localOps = {
         ...createMockLocalOps(),
         getFileContent(_fileName: string) {
@@ -825,7 +825,7 @@ describe("AuthenticatedGitOps", () => {
       assert.strictEqual(authOps.getFileContent("test.json"), "file-content");
     });
 
-    it("wouldChange delegates to localOps", () => {
+    test("wouldChange delegates to localOps", () => {
       const localOps = {
         ...createMockLocalOps(),
         wouldChange(_fileName: string, _content: string) {
@@ -842,7 +842,7 @@ describe("AuthenticatedGitOps", () => {
       assert.strictEqual(authOps.wouldChange("test.json", "content"), false);
     });
 
-    it("hasChanges delegates to localOps", async () => {
+    test("hasChanges delegates to localOps", async () => {
       const localOps = {
         ...createMockLocalOps(),
         async hasChanges() {
@@ -859,7 +859,7 @@ describe("AuthenticatedGitOps", () => {
       assert.strictEqual(await authOps.hasChanges(), true);
     });
 
-    it("getChangedFiles delegates to localOps", async () => {
+    test("getChangedFiles delegates to localOps", async () => {
       const localOps = {
         ...createMockLocalOps(),
         async getChangedFiles() {
@@ -879,7 +879,7 @@ describe("AuthenticatedGitOps", () => {
       ]);
     });
 
-    it("hasStagedChanges delegates to localOps", async () => {
+    test("hasStagedChanges delegates to localOps", async () => {
       const localOps = {
         ...createMockLocalOps(),
         async hasStagedChanges() {
@@ -896,7 +896,7 @@ describe("AuthenticatedGitOps", () => {
       assert.strictEqual(await authOps.hasStagedChanges(), true);
     });
 
-    it("fileExistsOnBranch delegates to localOps", async () => {
+    test("fileExistsOnBranch delegates to localOps", async () => {
       const localOps = {
         ...createMockLocalOps(),
         async fileExistsOnBranch(_fileName: string, _branch: string) {
@@ -916,7 +916,7 @@ describe("AuthenticatedGitOps", () => {
       );
     });
 
-    it("fileExists delegates to localOps", () => {
+    test("fileExists delegates to localOps", () => {
       const localOps = {
         ...createMockLocalOps(),
         fileExists(_fileName: string) {
@@ -933,7 +933,7 @@ describe("AuthenticatedGitOps", () => {
       assert.strictEqual(authOps.fileExists("test.json"), true);
     });
 
-    it("deleteFile delegates to localOps", () => {
+    test("deleteFile delegates to localOps", () => {
       let deleted = false;
       const localOps = {
         ...createMockLocalOps(),
@@ -952,7 +952,7 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(deleted);
     });
 
-    it("commit delegates to localOps", async () => {
+    test("commit delegates to localOps", async () => {
       const localOps = {
         ...createMockLocalOps(),
         async commit(_message: string) {
@@ -969,7 +969,7 @@ describe("AuthenticatedGitOps", () => {
       assert.strictEqual(await authOps.commit("test commit"), true);
     });
 
-    it("getDefaultBranchLocal delegates to localOps", async () => {
+    test("getDefaultBranchLocal delegates to localOps", async () => {
       const localOps = {
         ...createMockLocalOps(),
         async getDefaultBranchLocal() {

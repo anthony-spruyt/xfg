@@ -1,5 +1,5 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
-import assert from "node:assert";
+import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { AzurePRStrategy } from "../../../src/vcs/azure-pr-strategy.js";

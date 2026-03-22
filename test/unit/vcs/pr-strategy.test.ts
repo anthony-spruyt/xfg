@@ -1,5 +1,5 @@
 import { describe, test } from "node:test";
-import assert from "node:assert";
+import { strict as assert } from "node:assert";
 import { createPRStrategy } from "../../../src/vcs/index.js";
 import { GitHubPRStrategy } from "../../../src/vcs/github-pr-strategy.js";
 import { AzurePRStrategy } from "../../../src/vcs/azure-pr-strategy.js";

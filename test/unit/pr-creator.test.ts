@@ -1,5 +1,5 @@
 import { describe, test } from "node:test";
-import assert from "node:assert";
+import { strict as assert } from "node:assert";
 import { existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
