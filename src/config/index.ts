@@ -39,3 +39,6 @@ export { loadRawConfig, loadConfig, normalizeConfig } from "./loader.js";
 
 // Config formatting
 export { convertContentToString } from "./formatter.js";
+
+// Config validation
+export { validateForSync } from "./validator.js";

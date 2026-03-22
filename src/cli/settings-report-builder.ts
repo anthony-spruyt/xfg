@@ -1,10 +1,10 @@
 import type { SettingsReport, RepoChanges } from "../output/settings-report.js";
-import type {
-  RepoSettingsPlanEntry,
-  RulesetPlanEntry,
-  LabelsPlanEntry,
+import {
+  type RepoSettingsPlanEntry,
+  type RulesetPlanEntry,
+  type LabelsPlanEntry,
+  countActions,
 } from "../settings/index.js";
-import { countActions } from "../settings/base-processor.js";
 
 /**
  * Result from processing a repository's settings and rulesets.

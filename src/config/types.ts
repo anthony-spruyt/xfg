@@ -239,7 +239,6 @@ export interface MaxFileSizeRule {
   parameters?: MaxFileSizeParameters;
 }
 
-/** Union of all rule types */
 export type RulesetRule =
   | PullRequestRule
   | RequiredStatusChecksRule

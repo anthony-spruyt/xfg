@@ -1,8 +1,12 @@
 import { resolve, join } from "node:path";
 import { existsSync } from "node:fs";
-import { loadRawConfig, normalizeConfig, RepoConfig } from "../config/index.js";
+import {
+  loadRawConfig,
+  normalizeConfig,
+  validateForSync,
+  type RepoConfig,
+} from "../config/index.js";
 import { ValidationError, SyncError } from "../shared/errors.js";
-import { validateForSync } from "../config/validator.js";
 import {
   parseGitUrl,
   getRepoDisplayName,
