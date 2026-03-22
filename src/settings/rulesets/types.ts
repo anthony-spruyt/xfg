@@ -39,7 +39,6 @@ export interface RulesetUpdateParams {
   rulesetId: number;
   name: string;
   ruleset: Ruleset;
-  options?: GhApiOptions;
 }
 
 export interface IRulesetStrategy {
@@ -57,7 +56,8 @@ export interface IRulesetStrategy {
   ): Promise<GitHubRuleset>;
   update(
     repoInfo: RepoInfo,
-    params: RulesetUpdateParams
+    params: RulesetUpdateParams,
+    options?: GhApiOptions
   ): Promise<GitHubRuleset>;
   delete(
     repoInfo: RepoInfo,

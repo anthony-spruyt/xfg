@@ -203,7 +203,8 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
 
   async update(
     repoInfo: RepoInfo,
-    params: RulesetUpdateParams
+    params: RulesetUpdateParams,
+    options?: GhApiOptions
   ): Promise<GitHubRuleset> {
     assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
@@ -211,7 +212,7 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     const payload = configToGitHub(params.name, params.ruleset);
     const result = await this.api.call("PUT", endpoint, {
       payload,
-      options: params.options,
+      options,
     });
 
     return parseApiJson<GitHubRuleset>(result, "ruleset response");
