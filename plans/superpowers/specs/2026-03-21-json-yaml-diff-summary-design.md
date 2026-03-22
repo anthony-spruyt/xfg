@@ -5,7 +5,10 @@
 
 ## Problem
 
-When xfg syncs files, the summary output (CLI report and GitHub Step Summary) only shows which files changed and their action (create/update/delete). For JSON and YAML files — the structured config files that are xfg's core concern — there is no way to see *what* changed without opening a PR or inspecting the repo directly. This is especially problematic in direct merge mode where there is no PR diff to review.
+When xfg syncs files, the summary output (CLI report and GitHub Step Summary) only shows which files changed and their action
+(create/update/delete). For JSON and YAML files — the structured config files that are xfg's core concern — there is no way to see
+*what* changed without opening a PR or inspecting the repo directly. This is especially problematic in direct merge mode where there
+is no PR diff to review.
 
 ## Decision Summary
 
@@ -106,7 +109,7 @@ Called in two places:
 **GitHub Step Summary (markdown)** — `renderSyncLines()` in `src/output/unified-summary.ts`:
 After the file path line, append raw `diffLines` directly. They render correctly inside the existing `` ```diff ``` `` block:
 
-```
+```diff
 @@ my-org/my-repo @@
 ! .eslintrc.json
 @@ -1,3 +1,4 @@
@@ -122,7 +125,7 @@ Same applies to `formatSyncReportMarkdown()` in `src/output/sync-report.ts` whic
 **CLI output** — `formatSyncReportCLI()` in `src/output/sync-report.ts`:
 After each file path line, map raw `diffLines` through `formatDiffLine()` for chalk coloring. Each diff line gets a fixed 6-space indent prepended (the raw diff lines already contain their own `+`/`-`/` ` prefixes):
 
-```
+```text
 ~ my-org/my-repo
     ~ .eslintrc.json
       @@ -1,3 +1,4 @@
@@ -138,7 +141,7 @@ After each file path line, map raw `diffLines` through `formatDiffLine()` for ch
 ## Files Changed
 
 | File | Change |
-|------|--------|
+| ---- | ------ |
 | `src/sync/diff-utils.ts` | Extract `computeUnifiedDiff()` from `generateDiff()`; add `isStructuredDataFile()`; clean up unused `_fileName` param; export new functions |
 | `src/sync/index.ts` | Add barrel exports for `computeUnifiedDiff`, `isStructuredDataFile`, `formatDiffLine` |
 | `src/sync/types.ts` | Add `diffLines?` to `FileWriteResult` and `FileChangeDetail` |

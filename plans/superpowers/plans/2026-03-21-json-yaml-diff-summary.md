@@ -12,7 +12,7 @@
 
 ---
 
-### Task 1: Extract `computeUnifiedDiff` and add `isStructuredDataFile`
+## Task 1: Extract `computeUnifiedDiff` and add `isStructuredDataFile`
 
 **Files:**
 - Modify: `src/sync/diff-utils.ts`
@@ -272,7 +272,7 @@ git commit -m "refactor: extract computeUnifiedDiff and add isStructuredDataFile
 
 ---
 
-### Task 2: Add `diffLines` to data types
+## Task 2: Add `diffLines` to data types
 
 **Files:**
 - Modify: `src/sync/types.ts`
@@ -316,7 +316,7 @@ git commit -m "feat: add diffLines to FileWriteResult and FileChangeDetail (#599
 
 ---
 
-### Task 3: Compute `diffLines` in `FileWriter.writeFiles()`
+## Task 3: Compute `diffLines` in `FileWriter.writeFiles()`
 
 **Files:**
 - Modify: `src/sync/file-writer.ts`
@@ -516,7 +516,7 @@ git commit -m "feat: compute diffLines in FileWriter for JSON/YAML files (#599)"
 
 ---
 
-### Task 4: Compute `diffLines` in `ManifestManager`
+## Task 4: Compute `diffLines` in `ManifestManager`
 
 **Files:**
 - Modify: `src/sync/manifest-manager.ts`
@@ -712,7 +712,7 @@ git commit -m "feat: compute diffLines in ManifestManager for JSON/YAML files (#
 
 ---
 
-### Task 5: Pass `diffLines` through `FileSyncStrategy` and `buildSyncReport`
+## Task 5: Pass `diffLines` through `FileSyncStrategy` and `buildSyncReport`
 
 **Files:**
 - Modify: `src/sync/file-sync-strategy.ts`
@@ -933,7 +933,7 @@ git commit -m "feat: carry diffLines through FileSyncStrategy and buildSyncRepor
 
 ---
 
-### Task 6: Render `diffLines` in markdown summary output
+## Task 6: Render `diffLines` in markdown summary output
 
 **Files:**
 - Modify: `src/output/unified-summary.ts`
@@ -1086,7 +1086,7 @@ git commit -m "feat: render diffLines in markdown summary output (#599)"
 
 ---
 
-### Task 7: Render `diffLines` in CLI output
+## Task 7: Render `diffLines` in CLI output
 
 **Files:**
 - Modify: `src/output/sync-report.ts`
@@ -1239,7 +1239,7 @@ git commit -m "feat: render diffLines in CLI output with chalk formatting (#599)
 
 ---
 
-### Task 8: Final verification
+## Task 8: Final verification
 
 **Files:** None (verification only)
 
@@ -1277,7 +1277,7 @@ If lint/typecheck/coverage required changes, commit them.
 
 ---
 
-### Task 9: Documentation update
+## Task 9: Documentation update
 
 **Files:**
 - Modify: docs page covering sync output (find exact page first)
