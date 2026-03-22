@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-22T06:30:02+00:00",
+  "updated": "2026-03-22T06:30:12+00:00",
   "queue_order": [
     "workflow::create-plan"
   ],
@@ -14,6 +14,16 @@
       "note": null,
       "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Line 6 imports ILocalGitOps, not AuthenticatedGitOpsOptions. ILocalGitOps is used at lines 11, 29, 752.",
       "created_at": "2026-03-22T06:30:02+00:00",
+      "review_after": null,
+      "skipped_at_scan": 146
+    },
+    "cycles::src/output/sync-report.ts::src/output/sync-report.ts::src/output/unified-summary.ts": {
+      "issue_id": "cycles::src/output/sync-report.ts::src/output/sync-report.ts::src/output/unified-summary.ts",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. unified-summary.ts imports renderSyncLines from sync-report.ts (one direction only). sync-report.ts does NOT import from unified-summary.ts \u2014 verified with grep.",
+      "created_at": "2026-03-22T06:30:13+00:00",
       "review_after": null,
       "skipped_at_scan": 146
     }
@@ -21555,6 +21565,20 @@
       "action": "skip",
       "issue_ids": [
         "unused::test/unit/authenticated-git-ops.test.ts::AuthenticatedGitOpsOptions:6"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T06:30:13+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "cycles::src/output/sync-report.ts::src/output/sync-report.ts::src/output/unified-summary.ts"
       ],
       "cluster_name": null,
       "actor": "user",
