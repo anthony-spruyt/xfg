@@ -59,12 +59,18 @@ class MockRulesetStrategy {
 
   async update(
     _repo: GitHubRepoInfo,
-    id: number,
-    name: string,
-    ruleset: Ruleset
+    params: {
+      rulesetId: number;
+      name: string;
+      ruleset: Ruleset;
+      options?: unknown;
+    }
   ): Promise<GitHubRuleset> {
-    this.calls.push({ method: "update", args: [id, name, ruleset] });
-    return { ...this.updateResponse, id, name };
+    this.calls.push({
+      method: "update",
+      args: [params.rulesetId, params.name, params.ruleset],
+    });
+    return { ...this.updateResponse, id: params.rulesetId, name: params.name };
   }
 
   async delete(_repo: GitHubRepoInfo, id: number): Promise<void> {

@@ -35,6 +35,13 @@ export interface GitHubRule {
   parameters?: Record<string, unknown>;
 }
 
+export interface RulesetUpdateParams {
+  rulesetId: number;
+  name: string;
+  ruleset: Ruleset;
+  options?: GhApiOptions;
+}
+
 export interface IRulesetStrategy {
   list(repoInfo: RepoInfo, options?: GhApiOptions): Promise<GitHubRuleset[]>;
   get(
@@ -50,10 +57,7 @@ export interface IRulesetStrategy {
   ): Promise<GitHubRuleset>;
   update(
     repoInfo: RepoInfo,
-    rulesetId: number,
-    name: string,
-    ruleset: Ruleset,
-    options?: GhApiOptions
+    params: RulesetUpdateParams
   ): Promise<GitHubRuleset>;
   delete(
     repoInfo: RepoInfo,

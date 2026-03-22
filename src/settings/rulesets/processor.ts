@@ -121,13 +121,12 @@ export class RulesetProcessor implements IRulesetProcessor {
 
         case "update":
           if (change.rulesetId !== undefined && change.desired) {
-            await this.strategy.update(
-              githubRepo,
-              change.rulesetId,
-              change.name,
-              change.desired,
-              strategyOptions
-            );
+            await this.strategy.update(githubRepo, {
+              rulesetId: change.rulesetId,
+              name: change.name,
+              ruleset: change.desired,
+              options: strategyOptions,
+            });
             appliedCount++;
           }
           break;
