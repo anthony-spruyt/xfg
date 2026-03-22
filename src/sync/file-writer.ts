@@ -9,7 +9,7 @@ import {
   createDiffStats,
   incrementDiffStats,
   computeUnifiedDiff,
-  isStructuredDataFile,
+  isBinaryFile,
 } from "./diff-utils.js";
 import type {
   IFileWriter,
@@ -117,8 +117,8 @@ export class FileWriter implements IFileWriter {
           action,
         };
 
-        // Compute raw diff lines for structured data files (all modes)
-        if (isStructuredDataFile(file.fileName)) {
+        // Compute raw diff lines for text files (all modes)
+        if (!isBinaryFile(file.fileName)) {
           writeResult.diffLines = computeUnifiedDiff(
             existingContent,
             fileContent

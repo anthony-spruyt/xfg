@@ -179,7 +179,7 @@ describe("ManifestManager", () => {
       assert.ok(entry.diffLines.some((l) => l.startsWith("-")));
     });
 
-    test("does not attach diffLines for non-JSON orphan deletions", () => {
+    test("attaches diffLines for non-structured text orphan deletions", () => {
       const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
         fileExists: () => true,
         fileContent: "#!/bin/bash\necho hello",
@@ -196,6 +196,29 @@ describe("ManifestManager", () => {
       );
 
       const entry = fileChanges.get("script.sh");
+      assert.ok(entry);
+      assert.ok(entry.diffLines);
+      assert.ok(entry.diffLines.length > 0);
+      assert.ok(entry.diffLines.some((l) => l.startsWith("-")));
+    });
+
+    test("does not attach diffLines for binary orphan deletions", () => {
+      const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
+        fileExists: () => true,
+        fileContent: "binary-data",
+      });
+      const { mock: mockLogger } = createMockLogger();
+
+      const manager = new ManifestManager();
+      const fileChanges = new Map<string, FileWriteResult>();
+
+      manager.deleteOrphans(
+        ["logo.png"],
+        { dryRun: false, noDelete: false },
+        { gitOps: mockGitOps, log: mockLogger, fileChanges }
+      );
+
+      const entry = fileChanges.get("logo.png");
       assert.ok(entry);
       assert.equal(entry.diffLines, undefined);
     });

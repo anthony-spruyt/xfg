@@ -27,11 +27,53 @@ interface DiffHunk {
   lines: string[];
 }
 
+const BINARY_EXTENSIONS = new Set([
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".bmp",
+  ".ico",
+  ".webp",
+  ".svg",
+  ".woff",
+  ".woff2",
+  ".ttf",
+  ".eot",
+  ".otf",
+  ".pdf",
+  ".zip",
+  ".tar",
+  ".gz",
+  ".bz2",
+  ".7z",
+  ".rar",
+  ".exe",
+  ".dll",
+  ".so",
+  ".dylib",
+  ".bin",
+  ".dat",
+  ".db",
+  ".sqlite",
+  ".jar",
+  ".class",
+  ".pyc",
+  ".wasm",
+  ".mp3",
+  ".mp4",
+  ".wav",
+  ".avi",
+  ".mov",
+  ".mkv",
+]);
+
 /**
- * Check if a file is a structured data file (JSON, JSON5, YAML, YML).
+ * Check if a file is likely binary based on its extension.
  */
-export function isStructuredDataFile(fileName: string): boolean {
-  return /\.(json|json5|ya?ml)$/i.test(fileName);
+export function isBinaryFile(fileName: string): boolean {
+  const ext = fileName.slice(fileName.lastIndexOf(".")).toLowerCase();
+  return BINARY_EXTENSIONS.has(ext);
 }
 
 /**
