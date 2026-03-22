@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-22T09:36:03+00:00",
+  "updated": "2026-03-22T09:38:14+00:00",
   "queue_order": [
     "review::.::holistic::ai_generated_debt::residual_restating_jsdoc",
     "review::.::holistic::api_surface_coherence::repo_settings_strategy_naming_divergence",
@@ -6425,12 +6425,7 @@
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {
-    "strict": 22.6,
-    "overall": 24.0,
-    "objective": 96.0,
-    "verified": 95.7
-  },
+  "plan_start_scores": {},
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -22693,6 +22688,156 @@
       "actor": "system",
       "note": null,
       "detail": {}
+    },
+    {
+      "timestamp": "2026-03-22T09:36:15+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::ai_generated_debt::residual_restating_jsdoc",
+          "review::.::holistic::api_surface_coherence::repo_settings_strategy_naming_divergence",
+          "review::.::holistic::contract_coherence::parse_manifest_v1_silent_drop",
+          "review::.::holistic::convention_outlier::it_instead_of_test",
+          "review::.::holistic::convention_outlier::non_strict_assert_imports",
+          "review::.::holistic::cross_module_architecture::config_barrel_bypass_types",
+          "review::.::holistic::cross_module_architecture::config_barrel_missing_file_content_types",
+          "review::.::holistic::design_coherence::runAndCollect_dynamic_assign",
+          "review::.::holistic::error_consistency::would_change_broad_catch",
+          "review::.::holistic::high_level_elegance::lifecycle_report_builder_in_output",
+          "review::.::holistic::mid_level_elegance::runAndCollect_dynamic_key_bypass",
+          "review::.::holistic::naming_quality::processOrphans_misleading_scope",
+          "review::.::holistic::test_strategy::mock_name_collision_repo_processor",
+          "review::.::holistic::type_safety::double_assertion_ruleset_formatter",
+          "review::.::holistic::type_safety::filter_without_type_predicate_file_sync",
+          "review::.::holistic::type_safety::unsafe_reduce_accumulator_repo_settings"
+        ],
+        "added_to_queue": [],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 0,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 27,
+        "stale_pruned_from_queue": [],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T09:37:32+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T09:38:14+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::ai_generated_debt::residual_restating_jsdoc",
+          "review::.::holistic::api_surface_coherence::repo_settings_strategy_naming_divergence",
+          "review::.::holistic::contract_coherence::parse_manifest_v1_silent_drop",
+          "review::.::holistic::convention_outlier::it_instead_of_test",
+          "review::.::holistic::convention_outlier::non_strict_assert_imports",
+          "review::.::holistic::cross_module_architecture::config_barrel_bypass_types",
+          "review::.::holistic::cross_module_architecture::config_barrel_missing_file_content_types",
+          "review::.::holistic::design_coherence::runAndCollect_dynamic_assign",
+          "review::.::holistic::error_consistency::would_change_broad_catch",
+          "review::.::holistic::high_level_elegance::lifecycle_report_builder_in_output",
+          "review::.::holistic::mid_level_elegance::runAndCollect_dynamic_key_bypass",
+          "review::.::holistic::naming_quality::processOrphans_misleading_scope",
+          "review::.::holistic::test_strategy::mock_name_collision_repo_processor",
+          "review::.::holistic::type_safety::double_assertion_ruleset_formatter",
+          "review::.::holistic::type_safety::filter_without_type_predicate_file_sync",
+          "review::.::holistic::type_safety::unsafe_reduce_accumulator_repo_settings"
+        ],
+        "added_to_queue": [],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 0,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 27,
+        "stale_pruned_from_queue": [],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
     }
   ],
   "epic_triage_meta": {
@@ -23138,9 +23283,8 @@
   "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
-    "subjective_review_completed_at_scan_count": 163,
+    "subjective_review_completed_at_scan_count": 169,
     "lifecycle_phase": "execute",
     "postflight_scan_completed_at_scan_count": 164
-  },
-  "scan_count_at_plan_start": 166
+  }
 }
