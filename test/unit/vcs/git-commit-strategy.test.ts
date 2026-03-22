@@ -5,45 +5,13 @@ import { join } from "node:path";
 import { GitCommitStrategy } from "../../../src/vcs/git-commit-strategy.js";
 import { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import { CommitOptions } from "../../../src/vcs/types.js";
-import { ICommandExecutor } from "../../../src/shared/command-executor.js";
 import type { INetworkGitOps } from "../../../src/vcs/types.js";
+import {
+  createMockExecutor,
+  type ExecutorMockResult,
+} from "../../mocks/executor.mock.js";
 
 const testDir = join(process.cwd(), "test-git-commit-strategy-tmp");
-
-// Mock executor for testing - implements ICommandExecutor interface
-function createMockExecutor(): ICommandExecutor & {
-  calls: Array<{ command: string; cwd: string }>;
-  responses: Map<string, string | Error>;
-  reset: () => void;
-} {
-  const calls: Array<{ command: string; cwd: string }> = [];
-  const responses = new Map<string, string | Error>();
-
-  return {
-    calls,
-    responses,
-    async exec(command: string, cwd: string): Promise<string> {
-      calls.push({ command, cwd });
-
-      // Check for matching response
-      for (const [pattern, response] of responses) {
-        if (command.includes(pattern)) {
-          if (response instanceof Error) {
-            throw response;
-          }
-          return response;
-        }
-      }
-
-      // Default: return empty string
-      return "";
-    },
-    reset(): void {
-      calls.length = 0;
-      responses.clear();
-    },
-  };
-}
 
 describe("GitCommitStrategy", () => {
   const githubRepoInfo: GitHubRepoInfo = {
@@ -54,7 +22,7 @@ describe("GitCommitStrategy", () => {
     host: "github.com",
   };
 
-  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  let mockExecutor: ExecutorMockResult;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
@@ -75,7 +43,7 @@ describe("GitCommitStrategy", () => {
       // Set up mock to return a commit SHA after commit
       mockExecutor.responses.set("git rev-parse HEAD", "abc123def456");
 
-      const strategy = new GitCommitStrategy(mockExecutor);
+      const strategy = new GitCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "test-branch",
@@ -127,9 +95,9 @@ describe("GitCommitStrategy", () => {
     test("uses retry for push failures", async () => {
       // First push fails, second succeeds
       let pushAttempts = 0;
-      const originalExec = mockExecutor.exec.bind(mockExecutor);
+      const originalExec = mockExecutor.mock.exec.bind(mockExecutor.mock);
 
-      mockExecutor.exec = async (command: string, cwd: string) => {
+      mockExecutor.mock.exec = async (command: string, cwd: string) => {
         if (command.includes("git push")) {
           pushAttempts++;
           if (pushAttempts === 1) {
@@ -143,7 +111,7 @@ describe("GitCommitStrategy", () => {
         return originalExec(command, cwd);
       };
 
-      const strategy = new GitCommitStrategy(mockExecutor);
+      const strategy = new GitCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "test-branch",
@@ -166,7 +134,7 @@ describe("GitCommitStrategy", () => {
     test("escapes branch name in push command", async () => {
       mockExecutor.responses.set("git rev-parse HEAD", "abc123");
 
-      const strategy = new GitCommitStrategy(mockExecutor);
+      const strategy = new GitCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "feature/branch-with-special'chars",
@@ -198,7 +166,7 @@ describe("GitCommitStrategy", () => {
         new Error("Permission denied (publickey)")
       );
 
-      const strategy = new GitCommitStrategy(mockExecutor);
+      const strategy = new GitCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "test-branch",
@@ -222,7 +190,7 @@ describe("GitCommitStrategy", () => {
 
       mockExecutor.responses.set("git rev-parse HEAD", "abc123def456");
 
-      const strategy = new GitCommitStrategy(mockExecutor);
+      const strategy = new GitCommitStrategy(mockExecutor.mock);
 
       await strategy.commit({
         repoInfo: githubRepoInfo,
@@ -259,7 +227,7 @@ describe("GitCommitStrategy", () => {
     test("falls back to raw git push when gitOps is not provided", async () => {
       mockExecutor.responses.set("git rev-parse HEAD", "abc123def456");
 
-      const strategy = new GitCommitStrategy(mockExecutor);
+      const strategy = new GitCommitStrategy(mockExecutor.mock);
 
       await strategy.commit({
         repoInfo: githubRepoInfo,

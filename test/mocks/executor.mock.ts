@@ -3,9 +3,12 @@ import type {
   ExecOptions,
 } from "../../src/shared/command-executor.js";
 
+/** Response value: a string, an Error to throw, or a factory function returning either. */
+export type MockResponse = string | Error | (() => string | Error);
+
 export interface ExecutorMockConfig {
   defaultResponse?: string;
-  responses?: Map<string, string | Error>;
+  responses?: Map<string, MockResponse>;
   trackCalls?: boolean;
   /** Enable parsing of git commands to track commit messages, push branches, etc. */
   trackGitCommands?: boolean;
@@ -20,6 +23,8 @@ export interface GitCommandTracking {
 export interface ExecutorMockResult {
   mock: ICommandExecutor;
   calls: Array<{ command: string; cwd: string; options?: ExecOptions }>;
+  /** Mutable response map — add/remove responses after creation. */
+  responses: Map<string, MockResponse>;
   /** Git command tracking (only populated if trackGitCommands: true) */
   git: GitCommandTracking;
   reset: () => void;
@@ -78,10 +83,11 @@ export function createMockExecutor(
       // Check for matching response
       for (const [pattern, response] of responses) {
         if (command.includes(pattern)) {
-          if (response instanceof Error) {
-            throw response;
+          const result = typeof response === "function" ? response() : response;
+          if (result instanceof Error) {
+            throw result;
           }
-          return response;
+          return result;
         }
       }
 
@@ -92,6 +98,7 @@ export function createMockExecutor(
   return {
     mock,
     calls,
+    responses,
     git,
     reset: () => {
       calls.length = 0;

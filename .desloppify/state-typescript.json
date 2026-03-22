@@ -11,11 +11,11 @@
     "total": 1485,
     "auto_resolved": 1161,
     "deferred": 0,
-    "false_positive": 27,
+    "false_positive": 28,
     "fixed": 123,
-    "open": 174,
+    "open": 171,
     "triaged_out": 0,
-    "wontfix": 0,
+    "wontfix": 2,
     "by_tier": {
       "1": {
         "auto_resolved": 8,
@@ -29,11 +29,11 @@
       "2": {
         "auto_resolved": 433,
         "deferred": 0,
-        "false_positive": 24,
+        "false_positive": 25,
         "fixed": 58,
-        "open": 16,
+        "open": 13,
         "triaged_out": 0,
-        "wontfix": 0
+        "wontfix": 2
       },
       "3": {
         "auto_resolved": 645,
@@ -102,7 +102,10 @@
     "convention_outlier": {
       "score": 93.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T06:48:12+00:00"
+      "assessed_at": "2026-03-22T06:48:12+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_wontfix",
+      "stale_since": "2026-03-22T07:25:23+00:00"
     },
     "error_consistency": {
       "score": 92.5,
@@ -128,7 +131,10 @@
         "Delegation Density": 85.0,
         "Definition Directness": 94.0,
         "Type Discipline": 95.0
-      }
+      },
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-03-22T07:25:22+00:00"
     },
     "api_surface_coherence": {
       "score": 91.5,
@@ -211,7 +217,10 @@
     "type_safety": {
       "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T06:48:12+00:00"
+      "assessed_at": "2026-03-22T06:48:12+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_wontfix",
+      "stale_since": "2026-03-22T07:25:23+00:00"
     }
   },
   "lang_capabilities": {
@@ -3016,13 +3025,13 @@
       "strict": 90.5,
       "verified_strict_score": 90.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.905,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.95,
           "assessment_score": 90.5,
           "placeholder": false,
@@ -3136,13 +3145,13 @@
       "strict": 93.0,
       "verified_strict_score": 93.0,
       "checks": 10,
-      "failing": 2,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.93,
-          "failing": 2,
+          "failing": 1,
           "weighted_failures": 0.7,
           "assessment_score": 93.0,
           "placeholder": false,
@@ -3430,13 +3439,13 @@
       "strict": 91.5,
       "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.915,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
@@ -59507,11 +59516,11 @@
         "reasoning": "",
         "summary_hash": "23f7f994"
       },
-      "status": "open",
-      "note": null,
+      "status": "wontfix",
+      "note": "Migrating all flat-named tests to subdirectory structure would be a large churn-only refactor with no behavioral benefit. Both patterns work and tests pass.",
       "first_seen": "2026-03-22T06:48:12+00:00",
       "last_seen": "2026-03-22T06:48:12+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T07:25:23+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -59519,7 +59528,40 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect.",
+        "attested_at": "2026-03-22T07:25:23+00:00",
+        "scan_verified": false
+      },
+      "wontfix_scan_count": 151,
+      "wontfix_snapshot": {
+        "captured_at": "2026-03-22T07:25:23+00:00",
+        "scan_count": 151,
+        "tier": 2,
+        "confidence": "medium",
+        "detail": {
+          "holistic": true,
+          "dimension": "convention_outlier",
+          "related_files": [
+            "test/unit/labels-diff.test.ts",
+            "test/unit/settings/labels/diff.test.ts",
+            "test/unit/labels-processor.test.ts",
+            "test/unit/labels-formatter.test.ts",
+            "test/unit/repo-settings-processor.test.ts",
+            "test/unit/ruleset-processor.test.ts"
+          ],
+          "evidence": [
+            "Labels-diff tests exist in two locations: test/unit/labels-diff.test.ts (306 lines) AND test/unit/settings/labels/diff.test.ts (266 lines), covering different test cases with different import styles",
+            "Flat-named tests like labels-processor.test.ts, repo-settings-processor.test.ts sit alongside subdirectory-organized tests in test/unit/vcs/, test/unit/sync/, test/unit/lifecycle/, test/unit/settings/",
+            "Newer tests tend to use subdirectories mirroring src/ while older tests use flat naming with module prefix \u2014 this appears to be an incomplete migration"
+          ],
+          "suggestion": "Consolidate to one organization strategy. The subdirectory approach mirrors src/ and is more scalable. Move flat-named tests into their corresponding subdirectories and merge the duplicate labels-diff test files.",
+          "reasoning": "",
+          "summary_hash": "23f7f994"
+        }
+      }
     },
     "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors": {
       "id": "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
@@ -59615,11 +59657,11 @@
         "reasoning": "",
         "summary_hash": "518f5142"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-22T06:48:12+00:00",
       "last_seen": "2026-03-22T06:48:12+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T07:25:22+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -59627,7 +59669,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. TypeScript has no automatic delegation mechanism. The 16 pass-through methods are the correct composition-over-inheritance pattern per SOLID principles \u2014 a Proxy would lose type safety.",
+        "attested_at": "2026-03-22T07:25:22+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::test_strategy::vcs_mock_executor_duplication": {
       "id": "review::.::holistic::test_strategy::vcs_mock_executor_duplication",
@@ -59841,11 +59889,11 @@
         "reasoning": "",
         "summary_hash": "e84b1acf"
       },
-      "status": "open",
-      "note": null,
+      "status": "wontfix",
+      "note": "deepMerge returns Record<string, unknown> by design. Adding runtime validation for internal config merging would be over-engineering \u2014 the casts are at a trust boundary between the merge utility and typed domain code.",
       "first_seen": "2026-03-22T06:48:12+00:00",
       "last_seen": "2026-03-22T06:48:12+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-22T07:25:23+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -59853,7 +59901,34 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect.",
+        "attested_at": "2026-03-22T07:25:23+00:00",
+        "scan_verified": false
+      },
+      "wontfix_scan_count": 151,
+      "wontfix_snapshot": {
+        "captured_at": "2026-03-22T07:25:23+00:00",
+        "scan_count": 151,
+        "tier": 2,
+        "confidence": "medium",
+        "detail": {
+          "holistic": true,
+          "dimension": "type_safety",
+          "related_files": [
+            "src/config/normalizer.ts"
+          ],
+          "evidence": [
+            "Lines 87, 158-161, 256-257, 284, 334, 348, 356, 359, 429: deepMerge returns Record<string, unknown> which is cast to Ruleset, GitHubRepoSettings, RawFileConfig without compiler verification",
+            "deepMerge operates on Record<string, unknown> by design \u2014 the casts are structurally necessary but form the densest concentration of unverified type assertions in the codebase"
+          ],
+          "suggestion": "Consider adding typed merge wrappers for common domain types (e.g., mergeRulesetObjects that calls deepMerge internally and validates the return shape with a type guard before returning a Ruleset). This would centralize the cast to one location per domain type rather than spreading unverified casts across 15 call sites. However, the current approach is functional and the risk is low since inputs are validated before merging.",
+          "reasoning": "",
+          "summary_hash": "e84b1acf"
+        }
+      }
     }
   },
   "concern_dismissals": {

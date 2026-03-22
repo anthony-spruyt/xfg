@@ -1,24 +1,52 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-22T07:11:00+00:00",
+  "updated": "2026-03-22T07:25:23+00:00",
   "queue_order": [
     "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
     "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
     "review::.::holistic::convention_outlier::mixed_assert_import_styles",
-    "review::.::holistic::convention_outlier::mixed_test_file_organization",
     "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
     "review::.::holistic::naming_quality::factory_get_vs_create_prefix",
-    "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
     "review::.::holistic::test_strategy::vcs_mock_executor_duplication",
     "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
     "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
     "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
-    "review::.::holistic::logic_clarity::identical_json5_json_branches",
-    "review::.::holistic::type_safety::normalizer_merge_boundary_casts"
+    "review::.::holistic::logic_clarity::identical_json5_json_branches"
   ],
   "deferred": [],
-  "skipped": {},
+  "skipped": {
+    "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation": {
+      "issue_id": "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. TypeScript has no automatic delegation mechanism. The 16 pass-through methods are the correct composition-over-inheritance pattern per SOLID principles \u2014 a Proxy would lose type safety.",
+      "created_at": "2026-03-22T07:25:22+00:00",
+      "review_after": null,
+      "skipped_at_scan": 151
+    },
+    "review::.::holistic::type_safety::normalizer_merge_boundary_casts": {
+      "issue_id": "review::.::holistic::type_safety::normalizer_merge_boundary_casts",
+      "kind": "permanent",
+      "reason": null,
+      "note": "deepMerge returns Record<string, unknown> by design. Adding runtime validation for internal config merging would be over-engineering \u2014 the casts are at a trust boundary between the merge utility and typed domain code.",
+      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-22T07:25:23+00:00",
+      "review_after": null,
+      "skipped_at_scan": 151
+    },
+    "review::.::holistic::convention_outlier::mixed_test_file_organization": {
+      "issue_id": "review::.::holistic::convention_outlier::mixed_test_file_organization",
+      "kind": "permanent",
+      "reason": null,
+      "note": "Migrating all flat-named tests to subdirectory structure would be a large churn-only refactor with no behavioral benefit. Both patterns work and tests pass.",
+      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-22T07:25:23+00:00",
+      "review_after": null,
+      "skipped_at_scan": 151
+    }
+  },
   "active_cluster": null,
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
@@ -6362,16 +6390,13 @@
     "review::.::holistic::cross_module_architecture::settings_barrel_surface_gaps",
     "review::.::holistic::cross_module_architecture::config_validator_barrel_gap",
     "review::.::holistic::convention_outlier::mixed_assert_import_styles",
-    "review::.::holistic::convention_outlier::mixed_test_file_organization",
     "review::.::holistic::error_consistency::getFileContent_swallows_unexpected_errors",
     "review::.::holistic::naming_quality::factory_get_vs_create_prefix",
-    "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation",
     "review::.::holistic::test_strategy::vcs_mock_executor_duplication",
     "review::.::holistic::api_surface_coherence::ruleset_update_options_nesting",
     "review::.::holistic::ai_generated_debt::restating_jsdoc_types_ts",
     "review::.::holistic::ai_generated_debt::restating_jsdoc_merge_ts",
-    "review::.::holistic::logic_clarity::identical_json5_json_branches",
-    "review::.::holistic::type_safety::normalizer_merge_boundary_casts"
+    "review::.::holistic::logic_clarity::identical_json5_json_branches"
   ],
   "plan_start_scores": {},
   "execution_log": [
@@ -21909,6 +21934,48 @@
         "pruned_count": 0,
         "resurfaced_count": 0,
         "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:25:22+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::authenticated_gitops_passthrough_delegation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:25:23+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::type_safety::normalizer_merge_boundary_casts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "deepMerge returns Record<string, unknown> by design. Adding runtime validation for internal config merging would be over-engineering \u2014 the casts are at a trust boundary between the merge utility and typed domain code.",
+      "detail": {
+        "kind": "permanent",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-22T07:25:23+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::mixed_test_file_organization"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Migrating all flat-named tests to subdirectory structure would be a large churn-only refactor with no behavioral benefit. Both patterns work and tests pass.",
+      "detail": {
+        "kind": "permanent",
+        "reason": null
       }
     }
   ],
