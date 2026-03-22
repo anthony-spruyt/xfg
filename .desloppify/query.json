@@ -1,8 +1,8 @@
 {
   "command": "status",
-  "overall_score": 91.9,
+  "overall_score": 93.0,
   "objective_score": 96.0,
-  "strict_score": 90.5,
+  "strict_score": 91.6,
   "verified_strict_score": 95.7,
   "dimension_scores": {
     "Code quality": {
@@ -120,15 +120,15 @@
       }
     },
     "Duplication": {
-      "score": 96.4,
+      "score": 96.5,
       "strict": 81.6,
-      "verified_strict_score": 96.4,
-      "checks": 256,
+      "verified_strict_score": 96.5,
+      "checks": 257,
       "failing": 13,
       "tier": 3,
       "detectors": {
         "dupes": {
-          "potential": 247,
+          "potential": 248,
           "pass_rate": 1.0,
           "failing": 0,
           "weighted_failures": 0.0
@@ -236,19 +236,19 @@
       }
     },
     "Auth consistency": {
-      "score": 0.0,
-      "strict": 0.0,
-      "verified_strict_score": 0.0,
+      "score": 95.0,
+      "strict": 95.0,
+      "verified_strict_score": 95.0,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.0,
+          "pass_rate": 0.95,
           "failing": 0,
-          "weighted_failures": 10.0,
-          "assessment_score": 0.0,
+          "weighted_failures": 0.5,
+          "assessment_score": 95.0,
           "placeholder": false,
           "dimension_key": "authorization_consistency",
           "configured_weight": 1.0,
@@ -425,19 +425,19 @@
       }
     },
     "Init coupling": {
-      "score": 0.0,
-      "strict": 0.0,
-      "verified_strict_score": 0.0,
+      "score": 95.0,
+      "strict": 95.0,
+      "verified_strict_score": 95.0,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.0,
+          "pass_rate": 0.95,
           "failing": 0,
-          "weighted_failures": 10.0,
-          "assessment_score": 0.0,
+          "weighted_failures": 0.5,
+          "assessment_score": 95.0,
           "placeholder": false,
           "dimension_key": "initialization_coupling",
           "configured_weight": 1.0,
@@ -643,6 +643,19 @@
       ]
     },
     {
+      "name": "Auth consistency",
+      "score": 95.0,
+      "strict": 95.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "authorization_consistency"
+      ]
+    },
+    {
       "name": "Code quality",
       "score": 96.4,
       "strict": 92.8,
@@ -705,9 +718,9 @@
     },
     {
       "name": "Duplication",
-      "score": 96.4,
+      "score": 96.5,
       "strict": 81.6,
-      "checks": 256,
+      "checks": 257,
       "failing": 13,
       "tier": 3,
       "subjective": false
@@ -738,19 +751,6 @@
       "placeholder": false,
       "cli_keys": [
         "error_consistency"
-      ]
-    },
-    {
-      "name": "Logic clarity",
-      "score": 94.5,
-      "strict": 94.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "logic_clarity"
       ]
     },
     {
@@ -878,6 +878,19 @@
       ]
     },
     {
+      "name": "Auth consistency",
+      "score": 95.0,
+      "strict": 95.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "authorization_consistency"
+      ]
+    },
+    {
       "name": "Contracts",
       "score": 93.5,
       "strict": 93.5,
@@ -958,19 +971,6 @@
       ]
     },
     {
-      "name": "Logic clarity",
-      "score": 94.5,
-      "strict": 94.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "logic_clarity"
-      ]
-    },
-    {
       "name": "Naming quality",
       "score": 92.5,
       "strict": 92.5,
@@ -1037,12 +1037,12 @@
     }
   ],
   "stats": {
-    "total": 1512,
+    "total": 1558,
     "auto_resolved": 1159,
     "deferred": 0,
     "false_positive": 32,
-    "fixed": 143,
-    "open": 176,
+    "fixed": 163,
+    "open": 202,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -1060,7 +1060,7 @@
         "deferred": 0,
         "false_positive": 25,
         "fixed": 71,
-        "open": 21,
+        "open": 47,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -1077,15 +1077,15 @@
         "auto_resolved": 75,
         "deferred": 0,
         "false_positive": 0,
-        "fixed": 0,
+        "fixed": 20,
         "open": 1,
         "triaged_out": 0,
         "wontfix": 0
       }
     }
   },
-  "scan_count": 161,
-  "last_scan": "2026-03-22T09:08:44+00:00",
+  "scan_count": 167,
+  "last_scan": "2026-03-22T09:36:15+00:00",
   "scan_metadata": {
     "source": "scan"
   },
@@ -1104,7 +1104,7 @@
       "deferred": 0,
       "false_positive": 25,
       "fixed": 71,
-      "open": 21,
+      "open": 47,
       "triaged_out": 0,
       "wontfix": 2
     },
@@ -1121,7 +1121,7 @@
       "auto_resolved": 75,
       "deferred": 0,
       "false_positive": 0,
-      "fixed": 0,
+      "fixed": 20,
       "open": 1,
       "triaged_out": 0,
       "wontfix": 0
@@ -1130,12 +1130,12 @@
   "ignores": [],
   "suppression": {
     "last_ignored": 0,
-    "last_raw_issues": 130,
+    "last_raw_issues": 16,
     "last_suppressed_pct": 0.0,
     "last_ignore_patterns": 0,
     "recent_scans": 5,
     "recent_ignored": 0,
-    "recent_raw_issues": 586,
+    "recent_raw_issues": 492,
     "recent_suppressed_pct": 0.0
   },
   "potentials": {
@@ -1161,28 +1161,29 @@
       "security": 104,
       "subjective_review": 20,
       "boilerplate_duplication": 9,
-      "dupes": 247,
-      "stale_wontfix": 0
+      "dupes": 248,
+      "stale_wontfix": 0,
+      "review": 10
     }
   },
   "codebase_metrics": {
     "typescript": {
       "total_files": 208,
-      "total_loc": 67893,
+      "total_loc": 67894,
       "total_directories": 24
     }
   },
   "open_scope": {
-    "in_scope": 176,
+    "in_scope": 202,
     "out_of_scope": 0,
-    "global": 176
+    "global": 202
   },
   "score_breakdown": {
-    "overall_score": 91.9,
+    "overall_score": 93.0,
     "mechanical_fraction": 0.25,
     "subjective_fraction": 0.75,
-    "mechanical_avg": 95.98015873015873,
-    "subjective_avg": 90.49186991869918,
+    "mechanical_avg": 96.0,
+    "subjective_avg": 92.03658536585365,
     "entries": [
       {
         "name": "Code quality",
@@ -1226,15 +1227,15 @@
       {
         "name": "Duplication",
         "pool": "mechanical",
-        "score": 96.4,
-        "checks": 256.0,
+        "score": 96.5,
+        "checks": 257.0,
         "sample_factor": 1.0,
         "configured_weight": 1.0,
         "effective_weight": 1.0,
         "pool_share": 0.1984126984126984,
         "overall_per_point": 0.0496031746031746,
-        "overall_contribution": 4.781746031746032,
-        "overall_drag": 0.17857142857142827
+        "overall_contribution": 4.786706349206349,
+        "overall_drag": 0.1736111111111111
       },
       {
         "name": "Test health",
@@ -1291,15 +1292,15 @@
       {
         "name": "Auth consistency",
         "pool": "subjective",
-        "score": 0.0,
+        "score": 95.0,
         "checks": 0.0,
         "sample_factor": 1.0,
         "configured_weight": 1.0,
         "effective_weight": 1.0,
         "pool_share": 0.008130081300813009,
         "overall_per_point": 0.006097560975609756,
-        "overall_contribution": 0.0,
-        "overall_drag": 0.6097560975609756
+        "overall_contribution": 0.5792682926829269,
+        "overall_drag": 0.03048780487804878
       },
       {
         "name": "Contracts",
@@ -1408,15 +1409,15 @@
       {
         "name": "Init coupling",
         "pool": "subjective",
-        "score": 0.0,
+        "score": 95.0,
         "checks": 0.0,
         "sample_factor": 1.0,
         "configured_weight": 1.0,
         "effective_weight": 1.0,
         "pool_share": 0.008130081300813009,
         "overall_per_point": 0.006097560975609756,
-        "overall_contribution": 0.0,
-        "overall_drag": 0.6097560975609756
+        "overall_contribution": 0.5792682926829269,
+        "overall_drag": 0.03048780487804878
       },
       {
         "name": "Logic clarity",
@@ -1513,39 +1514,37 @@
   },
   "next_command": "desloppify autofix unused-imports --dry-run",
   "narrative": {
-    "phase": "regression",
-    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Score shifted 1.1 pts \u2014 this is normal after structural changes. Rescan after your next fix to see the real trend. (16 review work items \u2014 run `desloppify show review --status open`)",
+    "phase": "refinement",
+    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Crossed 90% strict! (16 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
-        {
-          "name": "Auth consistency",
-          "strict": 0.0,
-          "failing": 0,
-          "impact": 0.0,
-          "subjective": true,
-          "impact_description": "re-review to improve"
-        },
-        {
-          "name": "Init coupling",
-          "strict": 0.0,
-          "failing": 0,
-          "impact": 0.0,
-          "subjective": true,
-          "impact_description": "re-review to improve"
-        },
         {
           "name": "Duplication",
           "strict": 81.6,
           "failing": 13,
           "impact": 0.0
+        },
+        {
+          "name": "Test health",
+          "strict": 86.8,
+          "failing": 10,
+          "impact": 0.0
+        },
+        {
+          "name": "Cross-module arch",
+          "strict": 90.5,
+          "failing": 2,
+          "impact": 0.0,
+          "subjective": true,
+          "impact_description": "re-review to improve"
         }
       ],
       "biggest_gap_dimensions": [
         {
           "name": "Duplication",
-          "lenient": 96.4,
+          "lenient": 96.5,
           "strict": 81.6,
-          "gap": 14.8,
+          "gap": 14.9,
           "wontfix_count": 0
         },
         {
@@ -1565,6 +1564,11 @@
       ],
       "stagnant_dimensions": [
         {
+          "name": "Security",
+          "strict": 94.5,
+          "stuck_scans": 5
+        },
+        {
           "name": "File health",
           "strict": 96.0,
           "stuck_scans": 5
@@ -1577,46 +1581,6 @@
         {
           "name": "Test health",
           "strict": 86.8,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Contracts",
-          "strict": 93.5,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Convention drift",
-          "strict": 92.5,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Design coherence",
-          "strict": 90.5,
-          "stuck_scans": 5
-        },
-        {
-          "name": "High elegance",
-          "strict": 91.5,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Low elegance",
-          "strict": 90.5,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Naming quality",
-          "strict": 92.5,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Structure nav",
-          "strict": 92.5,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Type safety",
-          "strict": 92.5,
           "stuck_scans": 5
         }
       ]
@@ -1761,8 +1725,8 @@
       {
         "type": "manual_fix",
         "detector": "exports",
-        "count": 4,
-        "description": "4 exports work items \u2014 run `knip --fix` to remove dead exports",
+        "count": 30,
+        "description": "30 exports work items \u2014 run `knip --fix` to remove dead exports",
         "command": "desloppify show exports --status open",
         "impact": 0.0,
         "dimension": "Code quality",
@@ -1799,8 +1763,8 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 1,
-        "total_count": 208,
-        "coverage": 0.005,
+        "total_count": 234,
+        "coverage": 0.004,
         "impact_ratio": 0.0,
         "recommendation": "none"
       },
@@ -1852,7 +1816,7 @@
           "actions": [
             13
           ],
-          "file_count": 3,
+          "file_count": 12,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -1942,10 +1906,10 @@
       "overall_gap": 1.0,
       "wontfix_count": 2,
       "worst_dimension": "Duplication",
-      "worst_gap": 14.8,
+      "worst_gap": 14.9,
       "trend": "stable"
     },
-    "milestone": null,
+    "milestone": "Crossed 90% strict!",
     "primary_action": {
       "command": "desloppify autofix unused-imports --dry-run",
       "description": "1 unused issues \u2014 run `desloppify autofix unused-imports --dry-run` to preview, then apply"
@@ -1964,8 +1928,8 @@
     ],
     "strict_target": {
       "target": 95.0,
-      "current": 90.5,
-      "gap": 4.5,
+      "current": 91.6,
+      "gap": 3.4,
       "state": "below",
       "warning": null
     },
@@ -1974,7 +1938,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 3,
-      "report_scores": 115,
+      "report_scores": 119,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,

@@ -1,19 +1,19 @@
 {
   "version": 3,
   "created": "2026-03-03T09:08:56+00:00",
-  "last_scan": "2026-03-22T09:08:44+00:00",
-  "scan_count": 161,
-  "overall_score": 91.9,
+  "last_scan": "2026-03-22T09:36:15+00:00",
+  "scan_count": 167,
+  "overall_score": 93.0,
   "objective_score": 96.0,
-  "strict_score": 90.5,
+  "strict_score": 91.6,
   "verified_strict_score": 95.7,
   "stats": {
-    "total": 1512,
+    "total": 1558,
     "auto_resolved": 1159,
     "deferred": 0,
     "false_positive": 32,
-    "fixed": 143,
-    "open": 176,
+    "fixed": 163,
+    "open": 202,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -31,7 +31,7 @@
         "deferred": 0,
         "false_positive": 25,
         "fixed": 71,
-        "open": 21,
+        "open": 47,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -48,7 +48,7 @@
         "auto_resolved": 75,
         "deferred": 0,
         "false_positive": 0,
-        "fixed": 0,
+        "fixed": 20,
         "open": 1,
         "triaged_out": 0,
         "wontfix": 0
@@ -72,7 +72,7 @@
         }
       },
       "warnings": [],
-      "updated_at": "2026-03-22T09:08:44+00:00"
+      "updated_at": "2026-03-22T09:36:03+00:00"
     }
   },
   "score_confidence": {
@@ -82,44 +82,35 @@
     "dimensions": []
   },
   "subjective_integrity": {
-    "status": "penalized",
-    "target_score": 95.0,
-    "matched_count": 2,
-    "matched_dimensions": [
-      "authorization_consistency",
-      "initialization_coupling"
-    ],
-    "reset_dimensions": [
-      "authorization_consistency",
-      "initialization_coupling"
-    ]
+    "status": "disabled",
+    "target_score": null,
+    "matched_count": 0,
+    "matched_dimensions": [],
+    "reset_dimensions": []
   },
   "subjective_assessments": {
     "cross_module_architecture": {
       "score": 90.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00",
+      "assessed_at": "2026-03-22T09:36:15+00:00",
       "needs_review_refresh": true,
       "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-03-22T09:08:29+00:00"
+      "stale_since": "2026-03-22T09:36:15+00:00"
     },
     "convention_outlier": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "error_consistency": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-03-22T09:08:44+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "abstraction_fitness": {
       "score": 92.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00",
+      "assessed_at": "2026-03-22T09:36:15+00:00",
       "components": [
         "Abstraction Leverage",
         "Indirection Cost",
@@ -140,91 +131,85 @@
     "api_surface_coherence": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "authorization_consistency": {
       "score": 95.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "ai_generated_debt": {
       "score": 93.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "incomplete_migration": {
       "score": 96.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "package_organization": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "high_level_elegance": {
       "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "mid_level_elegance": {
       "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "low_level_elegance": {
       "score": 90.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "design_coherence": {
       "score": 90.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-03-22T09:08:44+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "contract_coherence": {
       "score": 93.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "dependency_health": {
       "score": 96.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00",
+      "assessed_at": "2026-03-22T09:36:15+00:00",
       "needs_review_refresh": true,
       "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-03-22T09:08:29+00:00"
+      "stale_since": "2026-03-22T09:36:15+00:00"
     },
     "initialization_coupling": {
       "score": 95.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "logic_clarity": {
       "score": 94.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-03-22T09:08:44+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "naming_quality": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "test_strategy": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     },
     "type_safety": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:08:29+00:00"
+      "assessed_at": "2026-03-22T09:36:15+00:00"
     }
   },
   "lang_capabilities": {
@@ -245,780 +230,6 @@
     "test": 104
   },
   "scan_history": [
-    {
-      "timestamp": "2026-03-20T03:03:13+00:00",
-      "lang": "typescript",
-      "strict_score": 88.1,
-      "verified_strict_score": 94.9,
-      "objective_score": 94.9,
-      "overall_score": 92.4,
-      "open": 194,
-      "diff_new": 16,
-      "diff_resolved": 6,
-      "ignored": 0,
-      "raw_issues": 158,
-      "suppressed_pct": 0.0,
-      "ignore_patterns": 0,
-      "subjective_integrity": {
-        "status": "pass",
-        "matched_count": 0,
-        "reset_count": 0,
-        "target_score": 95.0
-      },
-      "score_confidence": {
-        "status": "full",
-        "confidence": 1.0,
-        "detector_count": 0,
-        "dimension_count": 0
-      },
-      "dimension_scores": {
-        "Code quality": {
-          "score": 91.6,
-          "strict": 28.4
-        },
-        "Security": {
-          "score": 99.0,
-          "strict": 94.0
-        },
-        "File health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Duplication": {
-          "score": 96.6,
-          "strict": 82.3
-        },
-        "Test health": {
-          "score": 91.3,
-          "strict": 87.5
-        },
-        "Abstraction fit": {
-          "score": 89.5,
-          "strict": 89.5
-        },
-        "AI generated debt": {
-          "score": 93.5,
-          "strict": 93.5
-        },
-        "API coherence": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Auth consistency": {
-          "score": 94.0,
-          "strict": 94.0
-        },
-        "Contracts": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Convention drift": {
-          "score": 93.5,
-          "strict": 93.5
-        },
-        "Cross-module arch": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Dep health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Design coherence": {
-          "score": 89.5,
-          "strict": 89.5
-        },
-        "Error consistency": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "High elegance": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Stale migration": {
-          "score": 93.5,
-          "strict": 93.5
-        },
-        "Init coupling": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Logic clarity": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Low elegance": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "Mid elegance": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Naming quality": {
-          "score": 92.0,
-          "strict": 92.0
-        },
-        "Structure nav": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Test strategy": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Type safety": {
-          "score": 92.5,
-          "strict": 92.5
-        }
-      }
-    },
-    {
-      "timestamp": "2026-03-22T02:16:02+00:00",
-      "lang": "typescript",
-      "strict_score": 87.9,
-      "verified_strict_score": 95.0,
-      "objective_score": 95.0,
-      "overall_score": 92.4,
-      "open": 181,
-      "diff_new": 9,
-      "diff_resolved": 23,
-      "ignored": 0,
-      "raw_issues": 147,
-      "suppressed_pct": 0.0,
-      "ignore_patterns": 0,
-      "subjective_integrity": {
-        "status": "pass",
-        "matched_count": 0,
-        "reset_count": 0,
-        "target_score": 95.0
-      },
-      "score_confidence": {
-        "status": "full",
-        "confidence": 1.0,
-        "detector_count": 0,
-        "dimension_count": 0
-      },
-      "dimension_scores": {
-        "Code quality": {
-          "score": 92.9,
-          "strict": 25.9
-        },
-        "Security": {
-          "score": 99.0,
-          "strict": 94.0
-        },
-        "File health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Duplication": {
-          "score": 96.4,
-          "strict": 81.2
-        },
-        "Test health": {
-          "score": 90.7,
-          "strict": 86.8
-        },
-        "Abstraction fit": {
-          "score": 89.5,
-          "strict": 89.5
-        },
-        "AI generated debt": {
-          "score": 93.5,
-          "strict": 93.5
-        },
-        "API coherence": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Auth consistency": {
-          "score": 94.0,
-          "strict": 94.0
-        },
-        "Contracts": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Convention drift": {
-          "score": 93.5,
-          "strict": 93.5
-        },
-        "Cross-module arch": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Dep health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Design coherence": {
-          "score": 89.5,
-          "strict": 89.5
-        },
-        "Error consistency": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "High elegance": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Stale migration": {
-          "score": 93.5,
-          "strict": 93.5
-        },
-        "Init coupling": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Logic clarity": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Low elegance": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "Mid elegance": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Naming quality": {
-          "score": 92.0,
-          "strict": 92.0
-        },
-        "Structure nav": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Test strategy": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Type safety": {
-          "score": 92.5,
-          "strict": 92.5
-        }
-      }
-    },
-    {
-      "timestamp": "2026-03-22T02:37:46+00:00",
-      "lang": "typescript",
-      "strict_score": 86.4,
-      "verified_strict_score": 95.0,
-      "objective_score": 95.0,
-      "overall_score": 91.0,
-      "open": 198,
-      "diff_new": 17,
-      "diff_resolved": 6,
-      "ignored": 0,
-      "raw_issues": 17,
-      "suppressed_pct": 0.0,
-      "ignore_patterns": 0,
-      "subjective_integrity": {
-        "status": "disabled",
-        "matched_count": 0,
-        "reset_count": 0,
-        "target_score": null
-      },
-      "score_confidence": {
-        "status": "full",
-        "confidence": 1.0,
-        "detector_count": 0,
-        "dimension_count": 0
-      },
-      "dimension_scores": {
-        "Code quality": {
-          "score": 92.9,
-          "strict": 25.9
-        },
-        "Security": {
-          "score": 99.0,
-          "strict": 94.0
-        },
-        "File health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Duplication": {
-          "score": 96.4,
-          "strict": 81.2
-        },
-        "Test health": {
-          "score": 90.7,
-          "strict": 86.8
-        },
-        "Abstraction fit": {
-          "score": 89.5,
-          "strict": 89.5
-        },
-        "AI generated debt": {
-          "score": 89.0,
-          "strict": 89.0
-        },
-        "API coherence": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "Auth consistency": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Contracts": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Convention drift": {
-          "score": 94.0,
-          "strict": 94.0
-        },
-        "Cross-module arch": {
-          "score": 89.0,
-          "strict": 89.0
-        },
-        "Dep health": {
-          "score": 97.0,
-          "strict": 97.0
-        },
-        "Design coherence": {
-          "score": 88.5,
-          "strict": 88.5
-        },
-        "Error consistency": {
-          "score": 92.0,
-          "strict": 92.0
-        },
-        "High elegance": {
-          "score": 90.0,
-          "strict": 90.0
-        },
-        "Stale migration": {
-          "score": 97.0,
-          "strict": 97.0
-        },
-        "Init coupling": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Logic clarity": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Low elegance": {
-          "score": 84.0,
-          "strict": 84.0
-        },
-        "Mid elegance": {
-          "score": 87.0,
-          "strict": 87.0
-        },
-        "Naming quality": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Structure nav": {
-          "score": 91.0,
-          "strict": 91.0
-        },
-        "Test strategy": {
-          "score": 87.5,
-          "strict": 87.5
-        },
-        "Type safety": {
-          "score": 92.0,
-          "strict": 92.0
-        }
-      }
-    },
-    {
-      "timestamp": "2026-03-22T06:05:30+00:00",
-      "lang": "typescript",
-      "strict_score": 86.4,
-      "verified_strict_score": 95.0,
-      "objective_score": 95.0,
-      "overall_score": 91.0,
-      "open": 181,
-      "diff_new": 0,
-      "diff_resolved": 6,
-      "ignored": 0,
-      "raw_issues": 146,
-      "suppressed_pct": 0.0,
-      "ignore_patterns": 0,
-      "subjective_integrity": {
-        "status": "pass",
-        "matched_count": 0,
-        "reset_count": 0,
-        "target_score": 95.0
-      },
-      "score_confidence": {
-        "status": "full",
-        "confidence": 1.0,
-        "detector_count": 0,
-        "dimension_count": 0
-      },
-      "dimension_scores": {
-        "Code quality": {
-          "score": 92.9,
-          "strict": 25.9
-        },
-        "Security": {
-          "score": 99.0,
-          "strict": 94.0
-        },
-        "File health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Duplication": {
-          "score": 96.4,
-          "strict": 81.3
-        },
-        "Test health": {
-          "score": 90.7,
-          "strict": 86.8
-        },
-        "Abstraction fit": {
-          "score": 89.5,
-          "strict": 89.5
-        },
-        "AI generated debt": {
-          "score": 89.0,
-          "strict": 89.0
-        },
-        "API coherence": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "Auth consistency": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Contracts": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Convention drift": {
-          "score": 94.0,
-          "strict": 94.0
-        },
-        "Cross-module arch": {
-          "score": 89.0,
-          "strict": 89.0
-        },
-        "Dep health": {
-          "score": 97.0,
-          "strict": 97.0
-        },
-        "Design coherence": {
-          "score": 88.5,
-          "strict": 88.5
-        },
-        "Error consistency": {
-          "score": 92.0,
-          "strict": 92.0
-        },
-        "High elegance": {
-          "score": 90.0,
-          "strict": 90.0
-        },
-        "Stale migration": {
-          "score": 97.0,
-          "strict": 97.0
-        },
-        "Init coupling": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Logic clarity": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Low elegance": {
-          "score": 84.0,
-          "strict": 84.0
-        },
-        "Mid elegance": {
-          "score": 87.0,
-          "strict": 87.0
-        },
-        "Naming quality": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Structure nav": {
-          "score": 91.0,
-          "strict": 91.0
-        },
-        "Test strategy": {
-          "score": 87.5,
-          "strict": 87.5
-        },
-        "Type safety": {
-          "score": 92.0,
-          "strict": 92.0
-        }
-      }
-    },
-    {
-      "timestamp": "2026-03-22T06:29:26+00:00",
-      "lang": "typescript",
-      "strict_score": 86.5,
-      "verified_strict_score": 95.0,
-      "objective_score": 95.7,
-      "overall_score": 91.1,
-      "open": 160,
-      "diff_new": 0,
-      "diff_resolved": 27,
-      "ignored": 0,
-      "raw_issues": 134,
-      "suppressed_pct": 0.0,
-      "ignore_patterns": 0,
-      "subjective_integrity": {
-        "status": "pass",
-        "matched_count": 0,
-        "reset_count": 0,
-        "target_score": 95.0
-      },
-      "score_confidence": {
-        "status": "full",
-        "confidence": 1.0,
-        "detector_count": 0,
-        "dimension_count": 0
-      },
-      "dimension_scores": {
-        "Code quality": {
-          "score": 96.2,
-          "strict": 27.9
-        },
-        "Security": {
-          "score": 99.0,
-          "strict": 94.0
-        },
-        "File health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Duplication": {
-          "score": 96.4,
-          "strict": 81.3
-        },
-        "Test health": {
-          "score": 90.7,
-          "strict": 86.8
-        },
-        "Abstraction fit": {
-          "score": 89.5,
-          "strict": 89.5
-        },
-        "AI generated debt": {
-          "score": 89.0,
-          "strict": 89.0
-        },
-        "API coherence": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "Auth consistency": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Contracts": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Convention drift": {
-          "score": 94.0,
-          "strict": 94.0
-        },
-        "Cross-module arch": {
-          "score": 89.0,
-          "strict": 89.0
-        },
-        "Dep health": {
-          "score": 97.0,
-          "strict": 97.0
-        },
-        "Design coherence": {
-          "score": 88.5,
-          "strict": 88.5
-        },
-        "Error consistency": {
-          "score": 92.0,
-          "strict": 92.0
-        },
-        "High elegance": {
-          "score": 90.0,
-          "strict": 90.0
-        },
-        "Stale migration": {
-          "score": 97.0,
-          "strict": 97.0
-        },
-        "Init coupling": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Logic clarity": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Low elegance": {
-          "score": 84.0,
-          "strict": 84.0
-        },
-        "Mid elegance": {
-          "score": 87.0,
-          "strict": 87.0
-        },
-        "Naming quality": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Structure nav": {
-          "score": 91.0,
-          "strict": 91.0
-        },
-        "Test strategy": {
-          "score": 87.5,
-          "strict": 87.5
-        },
-        "Type safety": {
-          "score": 92.0,
-          "strict": 92.0
-        }
-      }
-    },
-    {
-      "timestamp": "2026-03-22T06:48:12+00:00",
-      "lang": "typescript",
-      "strict_score": 88.0,
-      "verified_strict_score": 95.0,
-      "objective_score": 95.8,
-      "overall_score": 92.6,
-      "open": 173,
-      "diff_new": 13,
-      "diff_resolved": 8,
-      "ignored": 0,
-      "raw_issues": 15,
-      "suppressed_pct": 0.0,
-      "ignore_patterns": 0,
-      "subjective_integrity": {
-        "status": "disabled",
-        "matched_count": 0,
-        "reset_count": 0,
-        "target_score": null
-      },
-      "score_confidence": {
-        "status": "full",
-        "confidence": 1.0,
-        "detector_count": 0,
-        "dimension_count": 0
-      },
-      "dimension_scores": {
-        "Code quality": {
-          "score": 96.2,
-          "strict": 27.9
-        },
-        "Security": {
-          "score": 99.5,
-          "strict": 94.5
-        },
-        "File health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Duplication": {
-          "score": 96.4,
-          "strict": 81.3
-        },
-        "Test health": {
-          "score": 90.7,
-          "strict": 86.8
-        },
-        "Abstraction fit": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "AI generated debt": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "API coherence": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Auth consistency": {
-          "score": 95.0,
-          "strict": 95.0
-        },
-        "Contracts": {
-          "score": 93.5,
-          "strict": 93.5
-        },
-        "Convention drift": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Cross-module arch": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Dep health": {
-          "score": 97.0,
-          "strict": 97.0
-        },
-        "Design coherence": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Error consistency": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "High elegance": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Stale migration": {
-          "score": 97.0,
-          "strict": 97.0
-        },
-        "Init coupling": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Logic clarity": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Low elegance": {
-          "score": 88.5,
-          "strict": 88.5
-        },
-        "Mid elegance": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Naming quality": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Structure nav": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Test strategy": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "Type safety": {
-          "score": 91.5,
-          "strict": 91.5
-        }
-      }
-    },
     {
       "timestamp": "2026-03-22T06:49:13+00:00",
       "lang": "typescript",
@@ -2824,10 +2035,784 @@
           "strict": 92.5
         }
       }
+    },
+    {
+      "timestamp": "2026-03-22T09:09:45+00:00",
+      "lang": "typescript",
+      "strict_score": 90.5,
+      "verified_strict_score": 95.7,
+      "objective_score": 96.0,
+      "overall_score": 91.9,
+      "open": 176,
+      "diff_new": 0,
+      "diff_resolved": 32,
+      "ignored": 0,
+      "raw_issues": 130,
+      "suppressed_pct": 0.0,
+      "ignore_patterns": 0,
+      "subjective_integrity": {
+        "status": "penalized",
+        "matched_count": 2,
+        "reset_count": 2,
+        "target_score": 95.0
+      },
+      "score_confidence": {
+        "status": "full",
+        "confidence": 1.0,
+        "detector_count": 0,
+        "dimension_count": 0
+      },
+      "dimension_scores": {
+        "Code quality": {
+          "score": 96.4,
+          "strict": 92.8
+        },
+        "Security": {
+          "score": 99.5,
+          "strict": 94.5
+        },
+        "File health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Duplication": {
+          "score": 96.4,
+          "strict": 81.6
+        },
+        "Test health": {
+          "score": 91.6,
+          "strict": 86.8
+        },
+        "Abstraction fit": {
+          "score": 92.0,
+          "strict": 92.0
+        },
+        "AI generated debt": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "API coherence": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Auth consistency": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Contracts": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "Convention drift": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Cross-module arch": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Dep health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Design coherence": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Error consistency": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "High elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Stale migration": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Init coupling": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Logic clarity": {
+          "score": 94.5,
+          "strict": 94.5
+        },
+        "Low elegance": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Mid elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Naming quality": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Structure nav": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Test strategy": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Type safety": {
+          "score": 92.5,
+          "strict": 92.5
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-22T09:28:54+00:00",
+      "lang": "typescript",
+      "strict_score": 91.6,
+      "verified_strict_score": 95.7,
+      "objective_score": 96.0,
+      "overall_score": 93.0,
+      "open": 176,
+      "diff_new": 0,
+      "diff_resolved": 7,
+      "ignored": 0,
+      "raw_issues": 16,
+      "suppressed_pct": 0.0,
+      "ignore_patterns": 0,
+      "subjective_integrity": {
+        "status": "disabled",
+        "matched_count": 0,
+        "reset_count": 0,
+        "target_score": null
+      },
+      "score_confidence": {
+        "status": "full",
+        "confidence": 1.0,
+        "detector_count": 0,
+        "dimension_count": 0
+      },
+      "dimension_scores": {
+        "Code quality": {
+          "score": 96.4,
+          "strict": 92.8
+        },
+        "Security": {
+          "score": 99.5,
+          "strict": 94.5
+        },
+        "File health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Duplication": {
+          "score": 96.4,
+          "strict": 81.6
+        },
+        "Test health": {
+          "score": 91.6,
+          "strict": 86.8
+        },
+        "Abstraction fit": {
+          "score": 92.0,
+          "strict": 92.0
+        },
+        "AI generated debt": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "API coherence": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Auth consistency": {
+          "score": 95.0,
+          "strict": 95.0
+        },
+        "Contracts": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "Convention drift": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Cross-module arch": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Dep health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Design coherence": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Error consistency": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "High elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Stale migration": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Init coupling": {
+          "score": 95.0,
+          "strict": 95.0
+        },
+        "Logic clarity": {
+          "score": 94.5,
+          "strict": 94.5
+        },
+        "Low elegance": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Mid elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Naming quality": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Structure nav": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Test strategy": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Type safety": {
+          "score": 92.5,
+          "strict": 92.5
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-22T09:29:09+00:00",
+      "lang": "typescript",
+      "strict_score": 87.2,
+      "verified_strict_score": 94.1,
+      "objective_score": 95.1,
+      "overall_score": 91.6,
+      "open": 202,
+      "diff_new": 26,
+      "diff_resolved": 32,
+      "ignored": 0,
+      "raw_issues": 156,
+      "suppressed_pct": 0.0,
+      "ignore_patterns": 0,
+      "subjective_integrity": {
+        "status": "penalized",
+        "matched_count": 2,
+        "reset_count": 2,
+        "target_score": 95.0
+      },
+      "score_confidence": {
+        "status": "full",
+        "confidence": 1.0,
+        "detector_count": 0,
+        "dimension_count": 0
+      },
+      "dimension_scores": {
+        "Code quality": {
+          "score": 91.8,
+          "strict": 26.4
+        },
+        "Security": {
+          "score": 99.5,
+          "strict": 94.5
+        },
+        "File health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Duplication": {
+          "score": 96.4,
+          "strict": 81.6
+        },
+        "Test health": {
+          "score": 91.6,
+          "strict": 86.8
+        },
+        "Abstraction fit": {
+          "score": 92.0,
+          "strict": 92.0
+        },
+        "AI generated debt": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "API coherence": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Auth consistency": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Contracts": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "Convention drift": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Cross-module arch": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Dep health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Design coherence": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Error consistency": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "High elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Stale migration": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Init coupling": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Logic clarity": {
+          "score": 94.5,
+          "strict": 94.5
+        },
+        "Low elegance": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Mid elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Naming quality": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Structure nav": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Test strategy": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Type safety": {
+          "score": 92.5,
+          "strict": 92.5
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-22T09:32:09+00:00",
+      "lang": "typescript",
+      "strict_score": 87.2,
+      "verified_strict_score": 94.2,
+      "objective_score": 95.1,
+      "overall_score": 91.6,
+      "open": 202,
+      "diff_new": 0,
+      "diff_resolved": 32,
+      "ignored": 0,
+      "raw_issues": 155,
+      "suppressed_pct": 0.0,
+      "ignore_patterns": 0,
+      "subjective_integrity": {
+        "status": "penalized",
+        "matched_count": 2,
+        "reset_count": 2,
+        "target_score": 95.0
+      },
+      "score_confidence": {
+        "status": "full",
+        "confidence": 1.0,
+        "detector_count": 0,
+        "dimension_count": 0
+      },
+      "dimension_scores": {
+        "Code quality": {
+          "score": 91.8,
+          "strict": 26.4
+        },
+        "Security": {
+          "score": 99.5,
+          "strict": 94.5
+        },
+        "File health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Duplication": {
+          "score": 96.5,
+          "strict": 81.6
+        },
+        "Test health": {
+          "score": 91.6,
+          "strict": 86.8
+        },
+        "Abstraction fit": {
+          "score": 92.0,
+          "strict": 92.0
+        },
+        "AI generated debt": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "API coherence": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Auth consistency": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Contracts": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "Convention drift": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Cross-module arch": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Dep health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Design coherence": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Error consistency": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "High elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Stale migration": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Init coupling": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Logic clarity": {
+          "score": 94.5,
+          "strict": 94.5
+        },
+        "Low elegance": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Mid elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Naming quality": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Structure nav": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Test strategy": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Type safety": {
+          "score": 92.5,
+          "strict": 92.5
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-22T09:36:03+00:00",
+      "lang": "typescript",
+      "strict_score": 22.6,
+      "verified_strict_score": 95.7,
+      "objective_score": 96.0,
+      "overall_score": 24.0,
+      "open": 222,
+      "diff_new": 20,
+      "diff_resolved": 32,
+      "ignored": 0,
+      "raw_issues": 149,
+      "suppressed_pct": 0.0,
+      "ignore_patterns": 0,
+      "subjective_integrity": {
+        "status": "pass",
+        "matched_count": 0,
+        "reset_count": 0,
+        "target_score": 95.0
+      },
+      "score_confidence": {
+        "status": "full",
+        "confidence": 1.0,
+        "detector_count": 0,
+        "dimension_count": 0
+      },
+      "dimension_scores": {
+        "Code quality": {
+          "score": 96.4,
+          "strict": 92.8
+        },
+        "Security": {
+          "score": 99.5,
+          "strict": 94.5
+        },
+        "File health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Duplication": {
+          "score": 96.5,
+          "strict": 81.6
+        },
+        "Test health": {
+          "score": 91.6,
+          "strict": 86.8
+        },
+        "Abstraction fit": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "AI generated debt": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "API coherence": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Auth consistency": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Contracts": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Convention drift": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Cross-module arch": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Dep health": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Design coherence": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Error consistency": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "High elegance": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Stale migration": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Init coupling": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Logic clarity": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Low elegance": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Mid elegance": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Naming quality": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Structure nav": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Test strategy": {
+          "score": 0.0,
+          "strict": 0.0
+        },
+        "Type safety": {
+          "score": 0.0,
+          "strict": 0.0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-03-22T09:36:15+00:00",
+      "lang": "typescript",
+      "strict_score": 91.6,
+      "verified_strict_score": 95.7,
+      "objective_score": 96.0,
+      "overall_score": 93.0,
+      "open": 222,
+      "diff_new": 0,
+      "diff_resolved": 7,
+      "ignored": 0,
+      "raw_issues": 16,
+      "suppressed_pct": 0.0,
+      "ignore_patterns": 0,
+      "subjective_integrity": {
+        "status": "disabled",
+        "matched_count": 0,
+        "reset_count": 0,
+        "target_score": null
+      },
+      "score_confidence": {
+        "status": "full",
+        "confidence": 1.0,
+        "detector_count": 0,
+        "dimension_count": 0
+      },
+      "dimension_scores": {
+        "Code quality": {
+          "score": 96.4,
+          "strict": 92.8
+        },
+        "Security": {
+          "score": 99.5,
+          "strict": 94.5
+        },
+        "File health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Duplication": {
+          "score": 96.5,
+          "strict": 81.6
+        },
+        "Test health": {
+          "score": 91.6,
+          "strict": 86.8
+        },
+        "Abstraction fit": {
+          "score": 92.0,
+          "strict": 92.0
+        },
+        "AI generated debt": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "API coherence": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Auth consistency": {
+          "score": 95.0,
+          "strict": 95.0
+        },
+        "Contracts": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "Convention drift": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Cross-module arch": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Dep health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Design coherence": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Error consistency": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "High elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Stale migration": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Init coupling": {
+          "score": 95.0,
+          "strict": 95.0
+        },
+        "Logic clarity": {
+          "score": 94.5,
+          "strict": 94.5
+        },
+        "Low elegance": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Mid elegance": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Naming quality": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Structure nav": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Test strategy": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Type safety": {
+          "score": 92.5,
+          "strict": 92.5
+        }
+      }
     }
   ],
   "tool_hash": "813e8f078156",
-  "scan_path": ".",
+  "scan_path": null,
   "scan_completeness": {
     "typescript": "full"
   },
@@ -2854,14 +2839,15 @@
       "security": 104,
       "subjective_review": 20,
       "boilerplate_duplication": 9,
-      "dupes": 247,
-      "stale_wontfix": 0
+      "dupes": 248,
+      "stale_wontfix": 0,
+      "review": 10
     }
   },
   "codebase_metrics": {
     "typescript": {
       "total_files": 208,
-      "total_loc": 67893,
+      "total_loc": 67894,
       "total_directories": 24
     }
   },
@@ -2981,15 +2967,15 @@
       }
     },
     "Duplication": {
-      "score": 96.4,
+      "score": 96.5,
       "strict": 81.6,
-      "verified_strict_score": 96.4,
-      "checks": 256,
+      "verified_strict_score": 96.5,
+      "checks": 257,
       "failing": 13,
       "tier": 3,
       "detectors": {
         "dupes": {
-          "potential": 247,
+          "potential": 248,
           "pass_rate": 1.0,
           "failing": 0,
           "weighted_failures": 0.0
@@ -3097,19 +3083,19 @@
       }
     },
     "Auth consistency": {
-      "score": 0.0,
-      "strict": 0.0,
-      "verified_strict_score": 0.0,
+      "score": 95.0,
+      "strict": 95.0,
+      "verified_strict_score": 95.0,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.0,
+          "pass_rate": 0.95,
           "failing": 0,
-          "weighted_failures": 10.0,
-          "assessment_score": 0.0,
+          "weighted_failures": 0.5,
+          "assessment_score": 95.0,
           "placeholder": false,
           "dimension_key": "authorization_consistency",
           "configured_weight": 1.0,
@@ -3286,19 +3272,19 @@
       }
     },
     "Init coupling": {
-      "score": 0.0,
-      "strict": 0.0,
-      "verified_strict_score": 0.0,
+      "score": 95.0,
+      "strict": 95.0,
+      "verified_strict_score": 95.0,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.0,
+          "pass_rate": 0.95,
           "failing": 0,
-          "weighted_failures": 10.0,
-          "assessment_score": 0.0,
+          "weighted_failures": 0.5,
+          "assessment_score": 95.0,
           "placeholder": false,
           "dimension_key": "initialization_coupling",
           "configured_weight": 1.0,
@@ -3458,7 +3444,7 @@
     "auto_fixers_available": 3,
     "zone_classification": 3,
     "dry_run_first": 3,
-    "report_scores": 115,
+    "report_scores": 119,
     "feedback_nudge": 3,
     "review_findings_pending": 3,
     "stagnant_nudge": 3,
@@ -3469,7 +3455,7 @@
   },
   "review_cache": {
     "holistic": {
-      "reviewed_at": "2026-03-22T09:08:29+00:00",
+      "reviewed_at": "2026-03-22T09:36:15+00:00",
       "file_count_at_review": 104,
       "issue_count": 16,
       "reviewed_files_count": 0,
@@ -4041,6 +4027,32 @@
       "attest": "",
       "import_file": "/workspaces/xfg/.desloppify/subagents/runs/20260322_090055/holistic_issues_merged.json",
       "packet_sha256": "4163f3c1bba0246610c8b5912d6b95f6430ff86c14cf925eeefbaac159934488"
+    },
+    {
+      "timestamp": "2026-03-22T09:28:54+00:00",
+      "mode": "trusted_internal",
+      "trusted": true,
+      "reason": "trusted import-run replay from 20260322_091203",
+      "override_used": false,
+      "attested_external": false,
+      "provisional": false,
+      "provisional_count": 0,
+      "attest": "",
+      "import_file": "/workspaces/xfg/.desloppify/subagents/runs/20260322_091203/holistic_issues_merged.json",
+      "packet_sha256": "d28883b400d64d21fec182f45359b243ef7fb1ca24d04bffede6838cc48ac755"
+    },
+    {
+      "timestamp": "2026-03-22T09:36:15+00:00",
+      "mode": "trusted_internal",
+      "trusted": true,
+      "reason": "trusted import-run replay from 20260322_091203",
+      "override_used": false,
+      "attested_external": false,
+      "provisional": false,
+      "provisional_count": 0,
+      "attest": "",
+      "import_file": "/workspaces/xfg/.desloppify/subagents/runs/20260322_091203/holistic_issues_merged.json",
+      "packet_sha256": "d28883b400d64d21fec182f45359b243ef7fb1ca24d04bffede6838cc48ac755"
     }
   ],
   "scan_metadata": {
@@ -4124,7 +4136,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4149,7 +4161,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4174,7 +4186,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4199,7 +4211,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4224,7 +4236,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4249,7 +4261,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4274,7 +4286,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4299,7 +4311,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4324,7 +4336,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4374,7 +4386,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4399,7 +4411,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4424,7 +4436,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4449,7 +4461,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4474,7 +4486,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4499,7 +4511,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4524,7 +4536,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4549,7 +4561,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4574,7 +4586,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4599,7 +4611,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4624,7 +4636,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4649,7 +4661,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4674,7 +4686,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4699,7 +4711,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4724,7 +4736,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4749,7 +4761,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4774,7 +4786,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4803,7 +4815,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4828,7 +4840,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4853,7 +4865,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4878,7 +4890,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4903,7 +4915,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4928,7 +4940,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4953,7 +4965,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -4978,7 +4990,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -5003,7 +5015,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -5028,7 +5040,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -5053,7 +5065,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -5078,7 +5090,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -5103,7 +5115,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -5136,7 +5148,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:55+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -5431,9 +5443,9 @@
       "summary": "5 disconnected function clusters (15 functions) \u2014 likely mixed responsibilities",
       "detail": {
         "cluster_count": 5,
-        "family": "parseGitLabPath, isGitHubRepo, isAzureDevOpsRepo, assertGitLabRepo",
+        "family": "isGitLabStyleUrl, isGitHubRepo, isAzureDevOpsRepo, assertGitLabRepo",
         "families": [
-          "parseGitLabPath",
+          "isGitLabStyleUrl",
           "isGitHubRepo",
           "isAzureDevOpsRepo",
           "assertGitLabRepo",
@@ -5443,7 +5455,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:56+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -5927,7 +5939,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -5966,7 +5978,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6004,7 +6016,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6041,7 +6053,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6071,7 +6083,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6101,7 +6113,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6132,7 +6144,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6168,7 +6180,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6220,20 +6232,19 @@
       "file": "src/cli/sync-command.ts",
       "tier": 3,
       "confidence": "medium",
-      "summary": "2x Async functions without await",
+      "summary": "1x Async functions without await",
       "detail": {
         "smell_id": "async_no_await",
         "severity": "medium",
-        "count": 2,
+        "count": 1,
         "lines": [
-          252,
           600
         ]
       },
       "status": "open",
       "note": "Reopened (\u00d74) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 4,
       "lang": "typescript",
@@ -6280,7 +6291,7 @@
         "text": "I have reviewed this finding - createPR and mergePR are not async functions, they return Promise directly. The detector incorrectly identifies them as async-no-await. I am not gaming the score by suppressing a real defect.",
         "attested_at": "2026-03-22T07:47:26+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -6395,7 +6406,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6425,7 +6436,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6456,7 +6467,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6486,7 +6497,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6516,7 +6527,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6562,7 +6573,7 @@
         "text": "I have reviewed this finding - console.error is followed by process.exit(1) which terminates the process, equivalent to throw/return. I am not gaming the score by suppressing a real defect.",
         "attested_at": "2026-03-22T07:47:12+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -6622,7 +6633,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6652,7 +6663,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6685,7 +6696,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6950,7 +6961,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -6980,7 +6991,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7010,7 +7021,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7040,7 +7051,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7106,7 +7117,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7136,7 +7147,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7166,7 +7177,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7196,7 +7207,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7226,7 +7237,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7258,7 +7269,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7294,7 +7305,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7327,7 +7338,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7365,7 +7376,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7400,7 +7411,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7431,7 +7442,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7462,7 +7473,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7495,7 +7506,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7528,7 +7539,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7594,7 +7605,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7624,7 +7635,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7654,7 +7665,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7684,7 +7695,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7714,7 +7725,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7745,7 +7756,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7775,7 +7786,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -7875,7 +7886,7 @@
       "status": "open",
       "note": "Reopened (\u00d710) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 10,
       "zone": "production",
@@ -7918,7 +7929,7 @@
       "status": "open",
       "note": "Reopened (\u00d710) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-03T09:10:57+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 10,
       "zone": "production",
@@ -16357,7 +16368,7 @@
         "text": "I have actually Removed DiffStats type re-export from src/sync/index.ts barrel file \u2014 not imported via barrel by any consumer and I am not gaming the score.",
         "attested_at": "2026-03-22T06:28:41+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17031,7 +17042,7 @@
         "text": "I have actually Removed MergeResult type re-export from src/vcs/index.ts barrel \u2014 only used internally via types.js and I am not gaming the score.",
         "attested_at": "2026-03-22T06:28:51+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17065,7 +17076,7 @@
         "text": "I have actually Removed PRStrategyOptions type re-export from src/vcs/index.ts barrel \u2014 only used internally via types.js and I am not gaming the score.",
         "attested_at": "2026-03-22T06:28:52+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17099,7 +17110,7 @@
         "text": "I have actually Removed MergeOptions type re-export from src/vcs/index.ts barrel \u2014 only used internally via types.js and I am not gaming the score.",
         "attested_at": "2026-03-22T06:28:52+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17133,7 +17144,7 @@
         "text": "I have actually Removed CloseExistingPROptions type re-export from src/vcs/index.ts barrel \u2014 only used internally via types.js and I am not gaming the score.",
         "attested_at": "2026-03-22T06:28:53+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17167,7 +17178,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
         "attested_at": "2026-03-22T06:27:38+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17201,7 +17212,7 @@
         "text": "I have actually Removed CommitOptions type re-export from src/vcs/index.ts barrel \u2014 only used internally via types.js and I am not gaming the score.",
         "attested_at": "2026-03-22T06:28:53+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17235,7 +17246,7 @@
         "text": "I have actually Removed CommitResult type re-export from src/vcs/index.ts barrel \u2014 only used internally via types.js and I am not gaming the score.",
         "attested_at": "2026-03-22T06:28:54+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17269,7 +17280,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
         "attested_at": "2026-03-22T06:27:39+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17303,7 +17314,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
         "attested_at": "2026-03-22T06:27:37+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17337,7 +17348,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
         "attested_at": "2026-03-22T06:27:39+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17403,7 +17414,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
         "attested_at": "2026-03-22T06:27:40+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17469,7 +17480,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
         "attested_at": "2026-03-22T06:27:40+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -17503,7 +17514,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
         "attested_at": "2026-03-22T06:27:41+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -21157,7 +21168,7 @@
         "text": "I have reviewed this finding - program.ts is a CLI entry point (composition root) that wires Commander.js options. It is tested via integration tests, not unit tests. CLI entry points are composition roots not suitable for unit testing. I am not gaming the score by suppressing a real defect.",
         "attested_at": "2026-03-22T07:47:33+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -21464,7 +21475,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T11:45:14+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -21494,7 +21505,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-03T11:45:14+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -24762,7 +24773,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-04T00:19:16+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -24792,7 +24803,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-04T00:19:17+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -28685,7 +28696,7 @@
       "status": "open",
       "note": "Reopened (\u00d74) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-04T02:24:32+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:29:09+00:00",
       "resolved_at": null,
       "reopen_count": 4,
       "lang": "typescript",
@@ -31320,7 +31331,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-04T07:57:21+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -35937,7 +35948,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-04T12:46:44+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -40860,7 +40871,7 @@
       "status": "open",
       "note": "Reopened (\u00d77) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-05T01:16:56+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 7,
       "lang": "typescript",
@@ -43036,7 +43047,7 @@
       "status": "open",
       "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
       "first_seen": "2026-03-05T02:29:11+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 3,
       "lang": "typescript",
@@ -46471,7 +46482,7 @@
         "text": "I have actually Already marked false-positive \u2014 catch returns MergeResult with success:false, not silent failure and I am not gaming the score.",
         "attested_at": "2026-03-18T09:30:55+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:15+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -47124,7 +47135,7 @@
         "text": "I have actually Already marked false-positive \u2014 async needed for early-return dry-run paths and I am not gaming the score.",
         "attested_at": "2026-03-18T09:30:56+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:15+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -47146,7 +47157,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T07:02:32+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -50322,7 +50333,7 @@
         "text": "I have actually Removed ContentValue type re-export from src/config/index.ts barrel \u2014 only used via direct import from types.js and I am not gaming the score.",
         "attested_at": "2026-03-22T06:28:55+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -51195,7 +51206,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:52:20+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51225,7 +51236,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51255,7 +51266,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51285,7 +51296,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51320,7 +51331,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51351,7 +51362,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51381,7 +51392,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51412,7 +51423,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51503,7 +51514,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51533,7 +51544,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51563,7 +51574,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51593,7 +51604,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51653,7 +51664,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51699,7 +51710,7 @@
         "text": "I have reviewed this finding - the nested closures in applyRepoSettings were refactored to module-level buildSettingsDescriptors and runAndCollect functions. The remaining thin arrow delegates are not deeply nested. I am not gaming the score by suppressing a real defect.",
         "attested_at": "2026-03-22T07:48:16+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -51721,7 +51732,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51751,7 +51762,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51781,7 +51792,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51811,7 +51822,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51841,7 +51852,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51874,7 +51885,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:37+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -51916,7 +51927,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:44+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -52042,7 +52053,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:44+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -52084,7 +52095,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:44+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -52294,7 +52305,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:44+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -52336,7 +52347,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-06T08:53:44+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "lang": "typescript",
@@ -54101,7 +54112,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This export is actively imported from the barrel by consumers in src/sync/.",
         "attested_at": "2026-03-22T06:27:37+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -54166,7 +54177,7 @@
         "text": "I have actually Already marked false-positive \u2014 runSync contains multiple await calls and I am not gaming the score.",
         "attested_at": "2026-03-18T09:30:57+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:15+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -54205,7 +54216,7 @@
         "text": "I have actually Already marked false-positive \u2014 console.error + process.exit(1) is correct CLI entry point pattern and I am not gaming the score.",
         "attested_at": "2026-03-18T09:31:02+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:15+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -54244,7 +54255,7 @@
         "text": "I have actually Already marked false-positive \u2014 CLI composition root excluded from coverage and I am not gaming the score.",
         "attested_at": "2026-03-18T09:31:04+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:15+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -54283,7 +54294,7 @@
         "text": "I have actually Already marked false-positive \u2014 has await tokenManager?.getTokenForRepo() and I am not gaming the score.",
         "attested_at": "2026-03-18T09:31:05+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:15+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -55132,7 +55143,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-18T09:31:58+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -55918,7 +55929,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-19T09:32:45+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -55948,7 +55959,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-19T09:32:45+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -56860,7 +56871,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. unified-summary.ts imports renderSyncLines from sync-report.ts (one direction only). sync-report.ts does NOT import from unified-summary.ts \u2014 verified with grep.",
         "attested_at": "2026-03-22T06:30:12+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:15+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -56939,7 +56950,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Line 6 imports ILocalGitOps, not AuthenticatedGitOpsOptions. ILocalGitOps is used at lines 11, 29, 752.",
         "attested_at": "2026-03-22T06:30:02+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -56973,7 +56984,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-19T12:58:41+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -57015,7 +57026,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-19T12:58:41+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -58406,7 +58417,7 @@
         "text": "I have actually Removed export keyword - interface only used internally and I am not gaming the score.",
         "attested_at": "2026-03-22T06:27:27+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -58440,7 +58451,7 @@
         "text": "I have actually Removed export keyword - interface only used internally and I am not gaming the score.",
         "attested_at": "2026-03-22T06:27:28+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -58474,7 +58485,7 @@
         "text": "I have actually Removed computeUnifiedDiff re-export from src/sync/index.ts barrel \u2014 only used via direct import from diff-utils.js and I am not gaming the score.",
         "attested_at": "2026-03-22T06:28:50+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -58508,7 +58519,7 @@
         "text": "I have actually Removed isBinaryFile re-export from src/sync/index.ts barrel \u2014 only used via direct import from diff-utils.js and I am not gaming the score.",
         "attested_at": "2026-03-22T06:28:51+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T09:08:44+00:00",
+        "scan_verified_at": "2026-03-22T09:36:03+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -58551,7 +58562,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T02:15:53+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -58609,7 +58620,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T02:15:56+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -58642,7 +58653,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T02:15:56+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -58672,7 +58683,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T02:15:56+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -58702,7 +58713,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T02:15:56+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -60473,7 +60484,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:00:15+00:00",
-      "last_seen": "2026-03-22T09:08:44+00:00",
+      "last_seen": "2026-03-22T09:36:03+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
@@ -60521,7 +60532,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60560,7 +60571,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60597,7 +60608,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60641,7 +60652,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60675,7 +60686,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60709,7 +60720,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60744,7 +60755,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60778,7 +60789,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60813,7 +60824,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60849,7 +60860,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60892,7 +60903,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60926,7 +60937,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60960,7 +60971,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -60994,7 +61005,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -61028,7 +61039,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -61062,7 +61073,7 @@
       "status": "open",
       "note": null,
       "first_seen": "2026-03-22T09:08:29+00:00",
-      "last_seen": "2026-03-22T09:08:29+00:00",
+      "last_seen": "2026-03-22T09:36:15+00:00",
       "resolved_at": null,
       "reopen_count": 0,
       "work_item_kind": "review_defect",
@@ -61072,6 +61083,1322 @@
       "suppressed": false,
       "suppressed_at": null,
       "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/cli/program.ts::program": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/program.ts::program",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/cli/program.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: program",
+      "detail": {
+        "line": 3550,
+        "kind": "export"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::computeUnifiedDiff": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::computeUnifiedDiff",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/sync/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: computeUnifiedDiff",
+      "detail": {
+        "line": 61,
+        "kind": "export"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::isBinaryFile": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::isBinaryFile",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/sync/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: isBinaryFile",
+      "detail": {
+        "line": 83,
+        "kind": "export"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/authenticated-git-ops.ts::AuthenticatedGitOpsOptions": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/authenticated-git-ops.ts::AuthenticatedGitOpsOptions",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/authenticated-git-ops.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: AuthenticatedGitOpsOptions",
+      "detail": {
+        "line": 752,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/config/index.ts::ContentValue": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/config/index.ts::ContentValue",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/config/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: ContentValue",
+      "detail": {
+        "line": 424,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SyncOptions": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SyncOptions",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: SyncOptions",
+      "detail": {
+        "line": 93,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SharedOptions": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SharedOptions",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: SharedOptions",
+      "detail": {
+        "line": 106,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RulesetProcessorFactory": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RulesetProcessorFactory",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: RulesetProcessorFactory",
+      "detail": {
+        "line": 187,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RepoSettingsProcessorFactory": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RepoSettingsProcessorFactory",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: RepoSettingsProcessorFactory",
+      "detail": {
+        "line": 219,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::LabelsProcessorFactory": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::LabelsProcessorFactory",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: LabelsProcessorFactory",
+      "detail": {
+        "line": 256,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::IRulesetProcessor": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::IRulesetProcessor",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: IRulesetProcessor",
+      "detail": {
+        "line": 381,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::ILabelsProcessor": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::ILabelsProcessor",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: ILabelsProcessor",
+      "detail": {
+        "line": 400,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/cli/sync-command.ts::SharedOptions": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/sync-command.ts::SharedOptions",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/cli/sync-command.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: SharedOptions",
+      "detail": {
+        "line": 2418,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::INetworkGitOps": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::INetworkGitOps",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: INetworkGitOps",
+      "detail": {
+        "line": 97,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::PRStrategyOptions": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::PRStrategyOptions",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: PRStrategyOptions",
+      "detail": {
+        "line": 160,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeOptions": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeOptions",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: MergeOptions",
+      "detail": {
+        "line": 181,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeResult": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeResult",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: MergeResult",
+      "detail": {
+        "line": 197,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CloseExistingPROptions": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CloseExistingPROptions",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: CloseExistingPROptions",
+      "detail": {
+        "line": 212,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitOptions": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitOptions",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: CommitOptions",
+      "detail": {
+        "line": 238,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitResult": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitResult",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: CommitResult",
+      "detail": {
+        "line": 255,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RulesetProcessorFactory": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RulesetProcessorFactory",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/cli/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: RulesetProcessorFactory",
+      "detail": {
+        "line": 87,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RepoSettingsProcessorFactory": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RepoSettingsProcessorFactory",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/cli/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: RepoSettingsProcessorFactory",
+      "detail": {
+        "line": 119,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::LabelsProcessorFactory": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::LabelsProcessorFactory",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/cli/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: LabelsProcessorFactory",
+      "detail": {
+        "line": 156,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SyncOptions": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SyncOptions",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/cli/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: SyncOptions",
+      "detail": {
+        "line": 216,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SharedOptions": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SharedOptions",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/cli/index.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: SharedOptions",
+      "detail": {
+        "line": 229,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "exports::.worktrees/ci-skip-integration-on-pr/src/cli/types.ts::SharedOptions": {
+      "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/types.ts::SharedOptions",
+      "detector": "exports",
+      "file": ".worktrees/ci-skip-integration-on-pr/src/cli/types.ts",
+      "tier": 2,
+      "confidence": "high",
+      "summary": "Dead export: SharedOptions",
+      "detail": {
+        "line": 1245,
+        "kind": "type"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-22T09:28:59+00:00",
+      "last_seen": "2026-03-22T09:32:09+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "subjective_review::.::abstraction_fitness": {
+      "id": "subjective_review::.::abstraction_fitness",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Abstraction fit \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "abstraction_fitness"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::ai_generated_debt": {
+      "id": "subjective_review::.::ai_generated_debt",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "AI generated debt \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "ai_generated_debt"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::api_surface_coherence": {
+      "id": "subjective_review::.::api_surface_coherence",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "API coherence \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "api_surface_coherence"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::authorization_consistency": {
+      "id": "subjective_review::.::authorization_consistency",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Auth consistency \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "authorization_consistency"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::contract_coherence": {
+      "id": "subjective_review::.::contract_coherence",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Contracts \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "contract_coherence"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::convention_outlier": {
+      "id": "subjective_review::.::convention_outlier",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Convention drift \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "convention_outlier"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::cross_module_architecture": {
+      "id": "subjective_review::.::cross_module_architecture",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Cross-module arch \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "cross_module_architecture"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::dependency_health": {
+      "id": "subjective_review::.::dependency_health",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Dep health \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "dependency_health"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::design_coherence": {
+      "id": "subjective_review::.::design_coherence",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Design coherence \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "design_coherence"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::error_consistency": {
+      "id": "subjective_review::.::error_consistency",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Error consistency \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "error_consistency"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::high_level_elegance": {
+      "id": "subjective_review::.::high_level_elegance",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "High elegance \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "high_level_elegance"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::incomplete_migration": {
+      "id": "subjective_review::.::incomplete_migration",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Stale migration \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "incomplete_migration"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::initialization_coupling": {
+      "id": "subjective_review::.::initialization_coupling",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Init coupling \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "initialization_coupling"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::logic_clarity": {
+      "id": "subjective_review::.::logic_clarity",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Logic clarity \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "logic_clarity"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::low_level_elegance": {
+      "id": "subjective_review::.::low_level_elegance",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Low elegance \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "low_level_elegance"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::mid_level_elegance": {
+      "id": "subjective_review::.::mid_level_elegance",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Mid elegance \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "mid_level_elegance"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::naming_quality": {
+      "id": "subjective_review::.::naming_quality",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Naming quality \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "naming_quality"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::package_organization": {
+      "id": "subjective_review::.::package_organization",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Structure nav \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "package_organization"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::test_strategy": {
+      "id": "subjective_review::.::test_strategy",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Test strategy \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "test_strategy"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
+    },
+    "subjective_review::.::type_safety": {
+      "id": "subjective_review::.::type_safety",
+      "detector": "subjective_review",
+      "file": ".",
+      "tier": 4,
+      "confidence": "low",
+      "summary": "Type safety \u2014 assessment reset by scan, re-review recommended",
+      "detail": {
+        "reason": "stale",
+        "dimension": "type_safety"
+      },
+      "status": "fixed",
+      "note": "completed by review import",
+      "first_seen": "2026-03-22T09:35:59+00:00",
+      "last_seen": "2026-03-22T09:35:59+00:00",
+      "resolved_at": "2026-03-22T09:36:15+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "assessment_request",
+      "issue_kind": "assessment_request",
+      "origin": "synthetic_task",
+      "lang": "typescript",
+      "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "agent_import",
+        "text": "Dimension assessment imported; coverage marker superseded",
+        "attested_at": "2026-03-22T09:36:15+00:00",
+        "scan_verified": false
+      }
     }
   },
   "concern_dismissals": {
@@ -61086,7 +62413,7 @@
       ]
     },
     "282579fe3a5a263d": {
-      "dismissed_at": "2026-03-22T09:08:29+00:00",
+      "dismissed_at": "2026-03-22T09:36:15+00:00",
       "reasoning": "sync-command.ts is the composition root for the sync CLI command. Its 702 lines orchestrate config loading, per-repo iteration (lifecycle + file sync + settings), and report display \u2014 all inherent to its role. It delegates real work to RepositoryProcessor, ISettingsProcessor, RepoLifecycleManager etc. The signals from 3 detectors (props, smells, structural) reflect the file's size and orchestration role, not mixed responsibilities. Helper functions within it are well-focused.",
       "concern_type": "",
       "concern_file": "",

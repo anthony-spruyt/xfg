@@ -249,7 +249,7 @@ function buildSettingsDescriptors(
   ];
 }
 
-async function runAndCollect(
+function runAndCollect(
   factory: () => ISettingsProcessor,
   repoConfig: RepoConfig,
   repoInfo: RepoInfo,
@@ -258,15 +258,15 @@ async function runAndCollect(
   repoName: string,
   resultKey: "rulesetResult" | "labelsResult" | "settingsResult"
 ): Promise<SettingsResult> {
-  const result = await factory().process(repoConfig, repoInfo, processOptions);
-  if (!result.skipped) {
-    // Safe cast: processor result types extend BaseProcessorResult with optional fields
-    // that are compatible with the specific ProcessorResults fields at runtime
-    const entry = collector.getOrCreate(repoName);
-    // Dynamic property access: result types are structurally compatible at runtime
-    Object.assign(entry, { [resultKey]: result });
-  }
-  return result as SettingsResult;
+  return factory()
+    .process(repoConfig, repoInfo, processOptions)
+    .then((result) => {
+      if (!result.skipped) {
+        const entry = collector.getOrCreate(repoName);
+        Object.assign(entry, { [resultKey]: result });
+      }
+      return result as SettingsResult;
+    });
 }
 
 async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
