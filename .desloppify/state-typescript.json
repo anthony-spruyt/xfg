@@ -1,19 +1,19 @@
 {
   "version": 3,
   "created": "2026-03-03T09:08:56+00:00",
-  "last_scan": "2026-03-22T21:15:34+00:00",
-  "scan_count": 175,
-  "overall_score": 93.4,
+  "last_scan": "2026-03-23T02:21:00+00:00",
+  "scan_count": 176,
+  "overall_score": 93.2,
   "objective_score": 97.7,
-  "strict_score": 92.0,
+  "strict_score": 91.8,
   "verified_strict_score": 95.7,
   "stats": {
-    "total": 1490,
+    "total": 1504,
     "auto_resolved": 1091,
     "deferred": 0,
-    "false_positive": 42,
-    "fixed": 178,
-    "open": 177,
+    "false_positive": 45,
+    "fixed": 180,
+    "open": 186,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -21,17 +21,17 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 1,
-        "fixed": 61,
-        "open": 1,
+        "fixed": 62,
+        "open": 4,
         "triaged_out": 0,
         "wontfix": 0
       },
       "2": {
         "auto_resolved": 364,
         "deferred": 0,
-        "false_positive": 25,
-        "fixed": 84,
-        "open": 34,
+        "false_positive": 28,
+        "fixed": 85,
+        "open": 39,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -40,7 +40,7 @@
         "deferred": 0,
         "false_positive": 16,
         "fixed": 13,
-        "open": 141,
+        "open": 142,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -82,41 +82,35 @@
     "dimensions": []
   },
   "subjective_integrity": {
-    "status": "pass",
-    "target_score": 100.0,
+    "status": "disabled",
+    "target_score": null,
     "matched_count": 0,
     "matched_dimensions": [],
     "reset_dimensions": []
   },
   "subjective_assessments": {
     "cross_module_architecture": {
-      "score": 90.5,
+      "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
+      "assessed_at": "2026-03-23T02:21:00+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-22T21:08:35+00:00"
+      "refresh_reason": "mechanical_issues_changed",
+      "stale_since": "2026-03-23T02:21:00+00:00"
     },
     "convention_outlier": {
-      "score": 92.5,
+      "score": 94.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-22T21:09:52+00:00"
+      "assessed_at": "2026-03-23T02:21:00+00:00"
     },
     "error_consistency": {
-      "score": 92.5,
+      "score": 92.3,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-22T21:08:44+00:00"
+      "assessed_at": "2026-03-23T02:21:00+00:00"
     },
     "abstraction_fitness": {
-      "score": 92.0,
+      "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
+      "assessed_at": "2026-03-23T02:21:00+00:00",
       "components": [
         "Abstraction Leverage",
         "Indirection Cost",
@@ -127,125 +121,110 @@
       ],
       "component_scores": {
         "Abstraction Leverage": 93.0,
-        "Indirection Cost": 88.0,
-        "Interface Honesty": 94.0,
-        "Delegation Density": 90.0,
+        "Indirection Cost": 90.0,
+        "Interface Honesty": 95.0,
+        "Delegation Density": 88.0,
         "Definition Directness": 93.0,
         "Type Discipline": 95.0
       }
     },
     "api_surface_coherence": {
-      "score": 92.5,
+      "score": 93.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_false_positive",
-      "stale_since": "2026-03-22T21:11:30+00:00"
+      "assessed_at": "2026-03-23T02:21:00+00:00"
     },
     "authorization_consistency": {
       "score": 95.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00"
+      "assessed_at": "2026-03-23T02:21:00+00:00"
     },
     "ai_generated_debt": {
       "score": 93.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
+      "assessed_at": "2026-03-23T02:21:00+00:00",
       "needs_review_refresh": true,
       "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-22T21:08:25+00:00"
+      "stale_since": "2026-03-23T02:21:22+00:00"
     },
     "incomplete_migration": {
-      "score": 96.0,
+      "score": 97.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00"
+      "assessed_at": "2026-03-23T02:21:00+00:00"
     },
     "package_organization": {
-      "score": 92.5,
+      "score": 92.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00"
+      "assessed_at": "2026-03-23T02:21:00+00:00"
     },
     "high_level_elegance": {
-      "score": 91.5,
+      "score": 92.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-22T21:08:37+00:00"
+      "assessed_at": "2026-03-23T02:21:00+00:00"
     },
     "mid_level_elegance": {
-      "score": 91.5,
-      "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-22T21:08:36+00:00"
-    },
-    "low_level_elegance": {
       "score": 90.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00"
+      "assessed_at": "2026-03-23T02:21:00+00:00"
+    },
+    "low_level_elegance": {
+      "score": 89.5,
+      "source": "holistic",
+      "assessed_at": "2026-03-23T02:21:00+00:00"
     },
     "design_coherence": {
       "score": 90.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-22T21:08:35+00:00"
+      "assessed_at": "2026-03-23T02:21:00+00:00"
     },
     "contract_coherence": {
       "score": 93.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
+      "assessed_at": "2026-03-23T02:21:00+00:00",
       "needs_review_refresh": true,
       "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-22T21:11:14+00:00"
+      "stale_since": "2026-03-23T02:21:25+00:00"
     },
     "dependency_health": {
-      "score": 96.0,
+      "score": 97.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
+      "assessed_at": "2026-03-23T02:21:00+00:00",
       "needs_review_refresh": true,
       "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-03-22T09:53:33+00:00"
+      "stale_since": "2026-03-23T02:21:00+00:00"
     },
     "initialization_coupling": {
-      "score": 95.0,
+      "score": 93.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00"
+      "assessed_at": "2026-03-23T02:21:00+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-03-23T02:21:37+00:00"
     },
     "logic_clarity": {
-      "score": 94.5,
+      "score": 93.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-03-22T14:17:29+00:00"
+      "assessed_at": "2026-03-23T02:21:00+00:00"
     },
     "naming_quality": {
-      "score": 92.5,
+      "score": 92.0,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-22T21:08:37+00:00"
+      "assessed_at": "2026-03-23T02:21:00+00:00"
     },
     "test_strategy": {
-      "score": 92.5,
+      "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
+      "assessed_at": "2026-03-23T02:21:00+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-22T21:08:38+00:00"
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-03-23T02:21:37+00:00"
     },
     "type_safety": {
-      "score": 92.5,
+      "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-03-22T09:53:33+00:00",
+      "assessed_at": "2026-03-23T02:21:00+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-03-22T21:08:56+00:00"
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-03-23T02:21:38+00:00"
     }
   },
   "lang_capabilities": {
@@ -266,135 +245,6 @@
     "test": 104
   },
   "scan_history": [
-    {
-      "timestamp": "2026-03-22T07:53:22+00:00",
-      "lang": "typescript",
-      "strict_score": 91.4,
-      "verified_strict_score": 95.7,
-      "objective_score": 96.1,
-      "overall_score": 92.8,
-      "open": 171,
-      "diff_new": 5,
-      "diff_resolved": 9,
-      "ignored": 0,
-      "raw_issues": 5,
-      "suppressed_pct": 0.0,
-      "ignore_patterns": 0,
-      "subjective_integrity": {
-        "status": "disabled",
-        "matched_count": 0,
-        "reset_count": 0,
-        "target_score": null
-      },
-      "score_confidence": {
-        "status": "full",
-        "confidence": 1.0,
-        "detector_count": 0,
-        "dimension_count": 0
-      },
-      "dimension_scores": {
-        "Code quality": {
-          "score": 96.7,
-          "strict": 93.1
-        },
-        "Security": {
-          "score": 100.0,
-          "strict": 95.0
-        },
-        "File health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Duplication": {
-          "score": 96.4,
-          "strict": 81.6
-        },
-        "Test health": {
-          "score": 91.6,
-          "strict": 86.8
-        },
-        "Abstraction fit": {
-          "score": 91.0,
-          "strict": 91.0
-        },
-        "AI generated debt": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "API coherence": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Auth consistency": {
-          "score": 95.0,
-          "strict": 95.0
-        },
-        "Contracts": {
-          "score": 93.5,
-          "strict": 93.5
-        },
-        "Convention drift": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Cross-module arch": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Dep health": {
-          "score": 97.0,
-          "strict": 97.0
-        },
-        "Design coherence": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "Error consistency": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "High elegance": {
-          "score": 92.0,
-          "strict": 92.0
-        },
-        "Stale migration": {
-          "score": 97.0,
-          "strict": 97.0
-        },
-        "Init coupling": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Logic clarity": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Low elegance": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "Mid elegance": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "Naming quality": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Structure nav": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Test strategy": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "Type safety": {
-          "score": 92.5,
-          "strict": 92.5
-        }
-      }
-    },
     {
       "timestamp": "2026-03-22T07:54:12+00:00",
       "lang": "typescript",
@@ -2845,10 +2695,139 @@
           "strict": 92.5
         }
       }
+    },
+    {
+      "timestamp": "2026-03-23T02:21:00+00:00",
+      "lang": "typescript",
+      "strict_score": 91.8,
+      "verified_strict_score": 95.7,
+      "objective_score": 97.7,
+      "overall_score": 93.2,
+      "open": 191,
+      "diff_new": 14,
+      "diff_resolved": 38,
+      "ignored": 0,
+      "raw_issues": 14,
+      "suppressed_pct": 0.0,
+      "ignore_patterns": 0,
+      "subjective_integrity": {
+        "status": "disabled",
+        "matched_count": 0,
+        "reset_count": 0,
+        "target_score": null
+      },
+      "score_confidence": {
+        "status": "full",
+        "confidence": 1.0,
+        "detector_count": 0,
+        "dimension_count": 0
+      },
+      "dimension_scores": {
+        "Code quality": {
+          "score": 96.5,
+          "strict": 92.9
+        },
+        "Security": {
+          "score": 99.5,
+          "strict": 94.5
+        },
+        "File health": {
+          "score": 96.0,
+          "strict": 96.0
+        },
+        "Duplication": {
+          "score": 96.5,
+          "strict": 81.6
+        },
+        "Test health": {
+          "score": 100.0,
+          "strict": 95.1
+        },
+        "Abstraction fit": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "AI generated debt": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "API coherence": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "Auth consistency": {
+          "score": 95.0,
+          "strict": 95.0
+        },
+        "Contracts": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "Convention drift": {
+          "score": 94.0,
+          "strict": 94.0
+        },
+        "Cross-module arch": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Dep health": {
+          "score": 97.0,
+          "strict": 97.0
+        },
+        "Design coherence": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Error consistency": {
+          "score": 92.3,
+          "strict": 92.3
+        },
+        "High elegance": {
+          "score": 92.0,
+          "strict": 92.0
+        },
+        "Stale migration": {
+          "score": 97.0,
+          "strict": 97.0
+        },
+        "Init coupling": {
+          "score": 93.0,
+          "strict": 93.0
+        },
+        "Logic clarity": {
+          "score": 93.5,
+          "strict": 93.5
+        },
+        "Low elegance": {
+          "score": 89.5,
+          "strict": 89.5
+        },
+        "Mid elegance": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Naming quality": {
+          "score": 92.0,
+          "strict": 92.0
+        },
+        "Structure nav": {
+          "score": 92.0,
+          "strict": 92.0
+        },
+        "Test strategy": {
+          "score": 91.5,
+          "strict": 91.5
+        },
+        "Type safety": {
+          "score": 91.5,
+          "strict": 91.5
+        }
+      }
     }
   ],
   "tool_hash": "813e8f078156",
-  "scan_path": ".",
+  "scan_path": null,
   "scan_completeness": {
     "typescript": "full"
   },
@@ -2876,7 +2855,8 @@
       "subjective_review": 20,
       "boilerplate_duplication": 9,
       "dupes": 248,
-      "stale_wontfix": 0
+      "stale_wontfix": 0,
+      "review": 10
     }
   },
   "codebase_metrics": {
@@ -3040,19 +3020,19 @@
       }
     },
     "Abstraction fit": {
-      "score": 92.0,
-      "strict": 92.0,
-      "verified_strict_score": 92.0,
+      "score": 91.5,
+      "strict": 91.5,
+      "verified_strict_score": 91.5,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.92,
+          "pass_rate": 0.915,
           "failing": 0,
-          "weighted_failures": 0.8,
-          "assessment_score": 92.0,
+          "weighted_failures": 0.85,
+          "assessment_score": 91.5,
           "placeholder": false,
           "dimension_key": "abstraction_fitness",
           "configured_weight": 8.0,
@@ -3066,9 +3046,9 @@
           ],
           "component_scores": {
             "Abstraction Leverage": 93.0,
-            "Indirection Cost": 88.0,
-            "Interface Honesty": 94.0,
-            "Delegation Density": 90.0,
+            "Indirection Cost": 90.0,
+            "Interface Honesty": 95.0,
+            "Delegation Density": 88.0,
             "Definition Directness": 93.0,
             "Type Discipline": 95.0
           }
@@ -3097,19 +3077,19 @@
       }
     },
     "API coherence": {
-      "score": 92.5,
-      "strict": 92.5,
-      "verified_strict_score": 92.5,
+      "score": 93.5,
+      "strict": 93.5,
+      "verified_strict_score": 93.5,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.925,
+          "pass_rate": 0.935,
           "failing": 0,
-          "weighted_failures": 0.75,
-          "assessment_score": 92.5,
+          "weighted_failures": 0.65,
+          "assessment_score": 93.5,
           "placeholder": false,
           "dimension_key": "api_surface_coherence",
           "configured_weight": 1.0,
@@ -3160,19 +3140,19 @@
       }
     },
     "Convention drift": {
-      "score": 92.5,
-      "strict": 92.5,
-      "verified_strict_score": 92.5,
+      "score": 94.0,
+      "strict": 94.0,
+      "verified_strict_score": 94.0,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.925,
-          "failing": 0,
-          "weighted_failures": 0.75,
-          "assessment_score": 92.5,
+          "pass_rate": 0.94,
+          "failing": 1,
+          "weighted_failures": 0.6,
+          "assessment_score": 94.0,
           "placeholder": false,
           "dimension_key": "convention_outlier",
           "configured_weight": 1.0,
@@ -3181,19 +3161,19 @@
       }
     },
     "Cross-module arch": {
-      "score": 90.5,
-      "strict": 90.5,
-      "verified_strict_score": 90.5,
+      "score": 91.5,
+      "strict": 91.5,
+      "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.905,
-          "failing": 0,
-          "weighted_failures": 0.95,
-          "assessment_score": 90.5,
+          "pass_rate": 0.915,
+          "failing": 1,
+          "weighted_failures": 0.85,
+          "assessment_score": 91.5,
           "placeholder": false,
           "dimension_key": "cross_module_architecture",
           "configured_weight": 1.0,
@@ -3202,19 +3182,19 @@
       }
     },
     "Dep health": {
-      "score": 96.0,
-      "strict": 96.0,
-      "verified_strict_score": 96.0,
+      "score": 97.0,
+      "strict": 97.0,
+      "verified_strict_score": 97.0,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.96,
+          "pass_rate": 0.97,
           "failing": 0,
-          "weighted_failures": 0.4,
-          "assessment_score": 96.0,
+          "weighted_failures": 0.3,
+          "assessment_score": 97.0,
           "placeholder": false,
           "dimension_key": "dependency_health",
           "configured_weight": 1.0,
@@ -3244,19 +3224,19 @@
       }
     },
     "Error consistency": {
-      "score": 92.5,
-      "strict": 92.5,
-      "verified_strict_score": 92.5,
+      "score": 92.3,
+      "strict": 92.3,
+      "verified_strict_score": 92.3,
       "checks": 10,
-      "failing": 0,
+      "failing": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.925,
-          "failing": 0,
-          "weighted_failures": 0.75,
-          "assessment_score": 92.5,
+          "pass_rate": 0.923,
+          "failing": 2,
+          "weighted_failures": 0.77,
+          "assessment_score": 92.3,
           "placeholder": false,
           "dimension_key": "error_consistency",
           "configured_weight": 3.0,
@@ -3265,19 +3245,19 @@
       }
     },
     "High elegance": {
-      "score": 91.5,
-      "strict": 91.5,
-      "verified_strict_score": 91.5,
+      "score": 92.0,
+      "strict": 92.0,
+      "verified_strict_score": 92.0,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.915,
+          "pass_rate": 0.92,
           "failing": 0,
-          "weighted_failures": 0.85,
-          "assessment_score": 91.5,
+          "weighted_failures": 0.8,
+          "assessment_score": 92.0,
           "placeholder": false,
           "dimension_key": "high_level_elegance",
           "configured_weight": 22.0,
@@ -3286,19 +3266,19 @@
       }
     },
     "Stale migration": {
-      "score": 96.0,
-      "strict": 96.0,
-      "verified_strict_score": 96.0,
+      "score": 97.0,
+      "strict": 97.0,
+      "verified_strict_score": 97.0,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.96,
+          "pass_rate": 0.97,
           "failing": 0,
-          "weighted_failures": 0.4,
-          "assessment_score": 96.0,
+          "weighted_failures": 0.3,
+          "assessment_score": 97.0,
           "placeholder": false,
           "dimension_key": "incomplete_migration",
           "configured_weight": 1.0,
@@ -3307,19 +3287,19 @@
       }
     },
     "Init coupling": {
-      "score": 95.0,
-      "strict": 95.0,
-      "verified_strict_score": 95.0,
+      "score": 93.0,
+      "strict": 93.0,
+      "verified_strict_score": 93.0,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.95,
+          "pass_rate": 0.93,
           "failing": 0,
-          "weighted_failures": 0.5,
-          "assessment_score": 95.0,
+          "weighted_failures": 0.7,
+          "assessment_score": 93.0,
           "placeholder": false,
           "dimension_key": "initialization_coupling",
           "configured_weight": 1.0,
@@ -3328,19 +3308,19 @@
       }
     },
     "Logic clarity": {
-      "score": 94.5,
-      "strict": 94.5,
-      "verified_strict_score": 94.5,
+      "score": 93.5,
+      "strict": 93.5,
+      "verified_strict_score": 93.5,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.945,
+          "pass_rate": 0.935,
           "failing": 0,
-          "weighted_failures": 0.55,
-          "assessment_score": 94.5,
+          "weighted_failures": 0.65,
+          "assessment_score": 93.5,
           "placeholder": false,
           "dimension_key": "logic_clarity",
           "configured_weight": 6.0,
@@ -3349,19 +3329,19 @@
       }
     },
     "Low elegance": {
-      "score": 90.5,
-      "strict": 90.5,
-      "verified_strict_score": 90.5,
+      "score": 89.5,
+      "strict": 89.5,
+      "verified_strict_score": 89.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.905,
-          "failing": 0,
-          "weighted_failures": 0.95,
-          "assessment_score": 90.5,
+          "pass_rate": 0.895,
+          "failing": 2,
+          "weighted_failures": 1.05,
+          "assessment_score": 89.5,
           "placeholder": false,
           "dimension_key": "low_level_elegance",
           "configured_weight": 12.0,
@@ -3370,6 +3350,69 @@
       }
     },
     "Mid elegance": {
+      "score": 90.5,
+      "strict": 90.5,
+      "verified_strict_score": 90.5,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.905,
+          "failing": 1,
+          "weighted_failures": 0.95,
+          "assessment_score": 90.5,
+          "placeholder": false,
+          "dimension_key": "mid_level_elegance",
+          "configured_weight": 22.0,
+          "components": []
+        }
+      }
+    },
+    "Naming quality": {
+      "score": 92.0,
+      "strict": 92.0,
+      "verified_strict_score": 92.0,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.92,
+          "failing": 1,
+          "weighted_failures": 0.8,
+          "assessment_score": 92.0,
+          "placeholder": false,
+          "dimension_key": "naming_quality",
+          "configured_weight": 2.0,
+          "components": []
+        }
+      }
+    },
+    "Structure nav": {
+      "score": 92.0,
+      "strict": 92.0,
+      "verified_strict_score": 92.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.92,
+          "failing": 0,
+          "weighted_failures": 0.8,
+          "assessment_score": 92.0,
+          "placeholder": false,
+          "dimension_key": "package_organization",
+          "configured_weight": 5.0,
+          "components": []
+        }
+      }
+    },
+    "Test strategy": {
       "score": 91.5,
       "strict": 91.5,
       "verified_strict_score": 91.5,
@@ -3384,69 +3427,6 @@
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
-          "dimension_key": "mid_level_elegance",
-          "configured_weight": 22.0,
-          "components": []
-        }
-      }
-    },
-    "Naming quality": {
-      "score": 92.5,
-      "strict": 92.5,
-      "verified_strict_score": 92.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.925,
-          "failing": 0,
-          "weighted_failures": 0.75,
-          "assessment_score": 92.5,
-          "placeholder": false,
-          "dimension_key": "naming_quality",
-          "configured_weight": 2.0,
-          "components": []
-        }
-      }
-    },
-    "Structure nav": {
-      "score": 92.5,
-      "strict": 92.5,
-      "verified_strict_score": 92.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.925,
-          "failing": 0,
-          "weighted_failures": 0.75,
-          "assessment_score": 92.5,
-          "placeholder": false,
-          "dimension_key": "package_organization",
-          "configured_weight": 5.0,
-          "components": []
-        }
-      }
-    },
-    "Test strategy": {
-      "score": 92.5,
-      "strict": 92.5,
-      "verified_strict_score": 92.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.925,
-          "failing": 0,
-          "weighted_failures": 0.75,
-          "assessment_score": 92.5,
-          "placeholder": false,
           "dimension_key": "test_strategy",
           "configured_weight": 1.0,
           "components": []
@@ -3454,19 +3434,19 @@
       }
     },
     "Type safety": {
-      "score": 92.5,
-      "strict": 92.5,
-      "verified_strict_score": 92.5,
+      "score": 91.5,
+      "strict": 91.5,
+      "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.925,
-          "failing": 0,
-          "weighted_failures": 0.75,
-          "assessment_score": 92.5,
+          "pass_rate": 0.915,
+          "failing": 1,
+          "weighted_failures": 0.85,
+          "assessment_score": 91.5,
           "placeholder": false,
           "dimension_key": "type_safety",
           "configured_weight": 12.0,
@@ -3491,9 +3471,9 @@
   },
   "review_cache": {
     "holistic": {
-      "reviewed_at": "2026-03-22T09:53:33+00:00",
-      "file_count_at_review": 104,
-      "issue_count": 16,
+      "reviewed_at": "2026-03-23T02:21:00+00:00",
+      "file_count_at_review": 105,
+      "issue_count": 14,
       "reviewed_files_count": 0,
       "full_sweep_included": false
     },
@@ -4115,6 +4095,19 @@
       "attest": "",
       "import_file": "/workspaces/xfg/.desloppify/subagents/runs/20260322_091203/holistic_issues_merged.json",
       "packet_sha256": "d28883b400d64d21fec182f45359b243ef7fb1ca24d04bffede6838cc48ac755"
+    },
+    {
+      "timestamp": "2026-03-23T02:21:00+00:00",
+      "mode": "trusted_internal",
+      "trusted": true,
+      "reason": "trusted import-run replay from 20260323_011124",
+      "override_used": false,
+      "attested_external": false,
+      "provisional": false,
+      "provisional_count": 0,
+      "attest": "",
+      "import_file": "/workspaces/xfg/.desloppify/subagents/runs/20260323_011124/holistic_issues_merged.json",
+      "packet_sha256": "240ff377bfb4595ed95515f7b2b7e15c2d6b4bad5e9542c909e7c35bf5908f85"
     }
   ],
   "scan_metadata": {
@@ -5642,7 +5635,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:14+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -5713,7 +5706,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:13+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -5749,7 +5742,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:14+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -21255,7 +21248,7 @@
         "text": "I have reviewed this finding - program.ts is a CLI entry point (composition root) that wires Commander.js options. It is tested via integration tests, not unit tests. CLI entry points are composition roots not suitable for unit testing. I am not gaming the score by suppressing a real defect.",
         "attested_at": "2026-03-22T07:47:33+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -24591,7 +24584,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -24610,7 +24603,7 @@
         "loc_weight": 13.96424004376894
       },
       "status": "false_positive",
-      "note": "Reopened (\u00d71) \u2014 reappeared in scan (was false_positive)",
+      "note": "Still absent from scan after manual resolution",
       "first_seen": "2026-03-04T00:19:16+00:00",
       "last_seen": "2026-03-22T21:15:34+00:00",
       "resolved_at": null,
@@ -24622,7 +24615,12 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "scan_verified": true,
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
+        "scan_verification_text": "Absent from detector output in latest scan"
+      }
     },
     "smells::src/shared/file-status.ts::switch_no_default": {
       "id": "smells::src/shared/file-status.ts::switch_no_default",
@@ -25229,7 +25227,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:13+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -33668,7 +33666,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -45757,7 +45755,7 @@
         "text": "I have actually Already marked false-positive \u2014 catch returns MergeResult with success:false, not silent failure and I am not gaming the score.",
         "attested_at": "2026-03-18T09:30:55+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -46410,7 +46408,7 @@
         "text": "I have actually Already marked false-positive \u2014 async needed for early-return dry-run paths and I am not gaming the score.",
         "attested_at": "2026-03-18T09:30:56+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -50479,7 +50477,7 @@
         "loc_weight": 9.539392014169456
       },
       "status": "false_positive",
-      "note": "Reopened (\u00d71) \u2014 reappeared in scan (was false_positive)",
+      "note": "Still absent from scan after manual resolution",
       "first_seen": "2026-03-06T08:52:20+00:00",
       "last_seen": "2026-03-22T21:15:34+00:00",
       "resolved_at": null,
@@ -50491,7 +50489,12 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "scan_verified": true,
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
+        "scan_verification_text": "Absent from detector output in latest scan"
+      }
     },
     "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity": {
       "id": "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity",
@@ -53444,7 +53447,7 @@
         "text": "I have actually Already marked false-positive \u2014 runSync contains multiple await calls and I am not gaming the score.",
         "attested_at": "2026-03-18T09:30:57+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -53483,7 +53486,7 @@
         "text": "I have actually Already marked false-positive \u2014 console.error + process.exit(1) is correct CLI entry point pattern and I am not gaming the score.",
         "attested_at": "2026-03-18T09:31:02+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -53522,7 +53525,7 @@
         "text": "I have actually Already marked false-positive \u2014 CLI composition root excluded from coverage and I am not gaming the score.",
         "attested_at": "2026-03-18T09:31:04+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -53561,7 +53564,7 @@
         "text": "I have actually Already marked false-positive \u2014 has await tokenManager?.getTokenForRepo() and I am not gaming the score.",
         "attested_at": "2026-03-18T09:31:05+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -54350,7 +54353,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 18-line JSON parse wrapper covered transitively through all callers",
         "attested_at": "2026-03-22T21:14:29+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -55314,7 +55317,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. unified-summary.ts imports renderSyncLines from sync-report.ts (one direction only). sync-report.ts does NOT import from unified-summary.ts \u2014 verified with grep.",
         "attested_at": "2026-03-22T06:30:12+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -56685,7 +56688,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -59973,7 +59976,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60007,7 +60010,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60041,7 +60044,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60075,7 +60078,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60109,7 +60112,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60143,7 +60146,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60177,7 +60180,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60211,7 +60214,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60245,7 +60248,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60279,7 +60282,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60313,7 +60316,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60347,7 +60350,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60381,7 +60384,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60415,7 +60418,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60449,7 +60452,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60483,7 +60486,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60517,7 +60520,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60551,7 +60554,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60585,7 +60588,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60619,7 +60622,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-03-22T21:15:34+00:00",
+        "scan_verified_at": "2026-03-23T02:21:00+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -62086,6 +62089,531 @@
       "suppressed": true,
       "suppressed_at": "2026-03-22T21:15:13+00:00",
       "suppression_pattern": ".output"
+    },
+    "review::.::holistic::cross_module_architecture::residual_barrel_bypass_vcs_types": {
+      "id": "review::.::holistic::cross_module_architecture::residual_barrel_bypass_vcs_types",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "sync/file-sync-strategy.ts bypasses vcs/index.ts barrel for FileAction import",
+      "detail": {
+        "holistic": true,
+        "dimension": "cross_module_architecture",
+        "related_files": [
+          "src/sync/file-sync-strategy.ts"
+        ],
+        "evidence": [
+          "Line 3: import type { FileAction } from \"../vcs/types.js\" \u2014 FileAction is re-exported from src/vcs/index.ts, so this should use ../vcs/index.js to respect the barrel boundary. This is the same class of issue fixed in commit d9904db but was missed."
+        ],
+        "suggestion": "Change line 3 from 'import type { FileAction } from \"../vcs/types.js\"' to 'import type { FileAction } from \"../vcs/index.js\"'.",
+        "reasoning": "",
+        "summary_hash": "4657a86b"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::convention_outlier::barrel_bypass_file_sync_strategy": {
+      "id": "review::.::holistic::convention_outlier::barrel_bypass_file_sync_strategy",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "file-sync-strategy.ts bypasses vcs barrel for FileAction import",
+      "detail": {
+        "holistic": true,
+        "dimension": "convention_outlier",
+        "related_files": [
+          "src/sync/file-sync-strategy.ts"
+        ],
+        "evidence": [
+          "Line 3 imports FileAction from '../vcs/types.js' while FileAction is exported from '../vcs/index.js'. All other cross-module imports in the sync/ directory use barrel imports (../vcs/index.js, ../config/index.js)."
+        ],
+        "suggestion": "Change import on line 3 from '../vcs/types.js' to '../vcs/index.js' to match the barrel import convention used by all sibling files.",
+        "reasoning": "",
+        "summary_hash": "794e3279"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::error_consistency::check_auto_merge_swallows_permanent_errors": {
+      "id": "review::.::holistic::error_consistency::check_auto_merge_swallows_permanent_errors",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "checkAutoMergeEnabled() swallows permanent auth errors unlike sibling checkExistingPR()",
+      "detail": {
+        "holistic": true,
+        "dimension": "error_consistency",
+        "related_files": [
+          "src/vcs/github-pr-strategy.ts"
+        ],
+        "evidence": [
+          "checkAutoMergeEnabled() (line 200-212) catches all errors and returns false, while checkExistingPR() (line 57-68) in the same class re-throws permanent errors via isPermanentError(). Auth failures during auto-merge check are silently swallowed, hiding credential problems."
+        ],
+        "suggestion": "Add the same isPermanentError() guard used in checkExistingPR(): before the warn+return-false fallback, check if(isPermanentError(error)) throw error. This makes the two sibling methods consistent and surfaces auth problems.",
+        "reasoning": "",
+        "summary_hash": "e15f892b"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::error_consistency::file_exists_on_branch_broad_catch": {
+      "id": "review::.::holistic::error_consistency::file_exists_on_branch_broad_catch",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "fileExistsOnBranch() catches all git errors as 'not found' unlike sibling methods that discriminate",
+      "detail": {
+        "holistic": true,
+        "dimension": "error_consistency",
+        "related_files": [
+          "src/vcs/git-ops.ts"
+        ],
+        "evidence": [
+          "fileExistsOnBranch() (line 225-239) catches any error from git show and returns false. In contrast, wouldChange() (line 177-186) and getFileContent() (line 150-156) discriminate ENOENT/EACCES and re-throw unexpected errors. While git CLI errors lack errno codes making exact discrimination harder, the inconsistency within the same class creates different failure semantics for peer methods."
+        ],
+        "suggestion": "Check the error message for expected patterns (e.g., 'does not exist', 'not a tree object', 'exists on disk, but not in') and re-throw others. This aligns with the isRepoNotFoundError pattern used in github-lifecycle-provider.ts for similar git-CLI error discrimination.",
+        "reasoning": "",
+        "summary_hash": "ba3528c0"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::naming_quality::generic_current_progress_counter": {
+      "id": "review::.::holistic::naming_quality::generic_current_progress_counter",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "'current' parameter name hides its purpose as a 1-based repo progress counter",
+      "detail": {
+        "holistic": true,
+        "dimension": "naming_quality",
+        "related_files": [
+          "src/cli/sync-command.ts",
+          "src/cli/types.ts",
+          "src/shared/logger.ts"
+        ],
+        "evidence": [
+          "In sync-command.ts line 381: 'const current = index + 1' \u2014 a developer seeing 'current' passed to logSettingsResult, getLogger().progress(), getLogger().error() etc. cannot tell this is a 1-based progress counter without reading the Logger implementation",
+          "In cli/types.ts line 78: ApplyRepoSettingsContext has 'current: number' with no doc comment \u2014 reads as 'current what?'",
+          "In shared/logger.ts lines 39-42 and 73-114: progress/success/skip/error methods all accept 'current: number' as first param \u2014 the Logger is the origin of this naming choice that propagates outward"
+        ],
+        "suggestion": "Rename 'current' to 'repoNumber' in Logger.progress/success/skip/error signatures, ApplyRepoSettingsContext, and all call sites in sync-command.ts. This is a mechanical rename across 3 files (~15 call sites).",
+        "reasoning": "",
+        "summary_hash": "f552bc56"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::low_level_elegance::ruleset_formatter_leaf_node_branch_density": {
+      "id": "review::.::holistic::low_level_elegance::ruleset_formatter_leaf_node_branch_density",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "renderLeafNode has 6 interleaved action/complexity branches across 47 lines, impeding scanability",
+      "detail": {
+        "holistic": true,
+        "dimension": "low_level_elegance",
+        "related_files": [
+          "src/settings/rulesets/formatter.ts"
+        ],
+        "evidence": [
+          "Lines 200-247: renderLeafNode checks action (add/remove/change) crossed with hasComplexNew/hasComplexOld producing 6 code paths with similar-looking but subtly different line-push logic"
+        ],
+        "suggestion": "Extract each action case into its own 10-line helper (renderAddLeaf, renderRemoveLeaf, renderChangeLeaf) that encapsulates the complex-vs-scalar branching internally. This makes the parent switch a 3-way dispatch with no nested conditions.",
+        "reasoning": "",
+        "summary_hash": "1b4d66cb"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::low_level_elegance::format_ruleset_plan_verbose_grouping": {
+      "id": "review::.::holistic::low_level_elegance::format_ruleset_plan_verbose_grouping",
+      "detector": "review",
+      "file": ".",
+      "tier": 3,
+      "confidence": "low",
+      "summary": "formatRulesetPlan filters changes into 4 groups then repeats structural setup for each group",
+      "detail": {
+        "holistic": true,
+        "dimension": "low_level_elegance",
+        "related_files": [
+          "src/settings/rulesets/formatter.ts"
+        ],
+        "evidence": [
+          "Lines 308-311: Four separate .filter() calls on the same array to split by action. Lines 313-316: Four counting assignments that are trivially derivable from the filtered arrays' lengths. The create/update/delete sections then follow an identical loop structure (push header, iterate changes, push entries)."
+        ],
+        "suggestion": "Use a single pass to group changes by action into a Map<RulesetAction, RulesetChange[]>, then iterate the map entries. This removes the 4 redundant filter passes and the 4 separate count assignments. The per-action rendering logic stays as-is since each action has different display needs.",
+        "reasoning": "",
+        "summary_hash": "f150872d"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::mid_level_elegance::settings_result_parallel_type": {
+      "id": "review::.::holistic::mid_level_elegance::settings_result_parallel_type",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "SettingsResult in cli/types.ts is a parallel projection of BaseProcessorResult bridged via 'as' cast",
+      "detail": {
+        "holistic": true,
+        "dimension": "mid_level_elegance",
+        "related_files": [
+          "src/cli/types.ts",
+          "src/cli/sync-command.ts",
+          "src/settings/base-processor.ts"
+        ],
+        "evidence": [
+          "cli/types.ts:62-68 defines SettingsResult with {success, message, skipped?, planOutput?: {lines?: string[]}, warnings?: string[]} which overlaps with but is structurally separate from BaseProcessorResult in settings/base-processor.ts",
+          "sync-command.ts:261 bridges the boundary with '.then((result) => result as SettingsResult)' - an implicit contract rather than a structural mapper or shared type"
+        ],
+        "suggestion": "Make SettingsResult extend or Pick from BaseProcessorResult to create a single source of truth. For example: 'export type SettingsResult = BaseProcessorResult & { planOutput?: { lines?: string[] }; warnings?: string[] }'. This makes the relationship explicit and lets the compiler catch drift. The 'as' cast in runSettingsProcessor then becomes unnecessary since the return type already satisfies the constraint.",
+        "reasoning": "",
+        "summary_hash": "3a9ab4cf"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests": {
+      "id": "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "repository-processor.test.ts mutates process.env for GitHub App credential tests instead of injecting env",
+      "detail": {
+        "holistic": true,
+        "dimension": "test_strategy",
+        "related_files": [
+          "test/unit/repository-processor.test.ts"
+        ],
+        "evidence": [
+          "Lines 1754-1755, 1877-1878, 1955-1956, 2027-2028, 2099-2100 set process.env.XFG_GITHUB_APP_ID and process.env.XFG_GITHUB_APP_PRIVATE_KEY directly in ~5 test blocks; while cleanup uses try/finally, this creates shared mutable state that would break under parallel test execution"
+        ],
+        "suggestion": "Refactor RepositoryProcessor (or its commit strategy selection) to accept an env parameter for credential lookup, matching the DI pattern used elsewhere (e.g. config normalizer accepts env: Record<string, string | undefined>). Tests would then pass a local env object instead of mutating process.env.",
+        "reasoning": "",
+        "summary_hash": "4db131bc"
+      },
+      "status": "false_positive",
+      "note": "",
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": "2026-03-23T02:21:37+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Env vars read inside runSync with no injectable path, tests properly save/restore with try/finally.",
+        "attested_at": "2026-03-23T02:21:37+00:00",
+        "scan_verified": false
+      }
+    },
+    "review::.::holistic::ai_generated_debt::restating_jsdoc_git_ops_getchangedfiles": {
+      "id": "review::.::holistic::ai_generated_debt::restating_jsdoc_git_ops_getchangedfiles",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "getChangedFiles JSDoc contains restating implementation detail 'Uses the same this.exec() pattern'",
+      "detail": {
+        "holistic": true,
+        "dimension": "ai_generated_debt",
+        "related_files": [
+          "src/vcs/git-ops.ts"
+        ],
+        "evidence": [
+          "Line 197: 'Uses the same this.exec() pattern as other methods in this class' is an implementation detail that adds no insight to the caller \u2014 it describes how the method works internally, which the reader can see from the 3-line body"
+        ],
+        "suggestion": "Remove the third line of the JSDoc ('Uses the same this.exec() pattern as other methods in this class'). The first two lines ('Get list of files that have changes according to git status. Returns relative file paths for files that are modified, added, or untracked.') are sufficient and describe the contract.",
+        "reasoning": "",
+        "summary_hash": "72a0ce26"
+      },
+      "status": "fixed",
+      "note": "Removed restating JSDoc line about exec() pattern from getChangedFiles method",
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": "2026-03-23T02:21:22+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made this fix and I am not gaming the score by resolving without fixing.",
+        "attested_at": "2026-03-23T02:21:22+00:00",
+        "scan_verified": false
+      }
+    },
+    "review::.::holistic::initialization_coupling::module_level_lazy_singletons": {
+      "id": "review::.::holistic::initialization_coupling::module_level_lazy_singletons",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "sync-command.ts uses module-level mutable let variables for lazy singleton initialization instead of passing through function parameters",
+      "detail": {
+        "holistic": true,
+        "dimension": "initialization_coupling",
+        "related_files": [
+          "src/cli/sync-command.ts"
+        ],
+        "evidence": [
+          "Lines 48-49: let _defaultExecutor: ShellCommandExecutor | undefined; let _logger: Logger | undefined; \u2014 mutable module-scope state",
+          "Lines 51-58: getDefaultExecutor() and getLogger() use ??= lazy initialization, creating implicit coupling between runSync and 10+ helper functions that call these getters",
+          "Lines 597-598: runSync resets both to undefined at entry, which is correct but relies on discipline rather than structural enforcement"
+        ],
+        "suggestion": "Thread the executor and logger through the RepoIterationContext object (which already exists and is passed to helpers) rather than using module-level getters. The ctx object is already the primary state container \u2014 adding executor and logger to it would eliminate the mutable module-scope variables entirely.",
+        "reasoning": "",
+        "summary_hash": "c32890a4"
+      },
+      "status": "false_positive",
+      "note": "",
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": "2026-03-23T02:21:37+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. sync-command.ts is CLI composition root with 38 call sites, reset per runSync().",
+        "attested_at": "2026-03-23T02:21:37+00:00",
+        "scan_verified": false
+      }
+    },
+    "review::.::holistic::contract_coherence::imprecise_throws_annotations": {
+      "id": "review::.::holistic::contract_coherence::imprecise_throws_annotations",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "@throws docstrings use generic 'Error' instead of the specific error subclass actually thrown",
+      "detail": {
+        "holistic": true,
+        "dimension": "contract_coherence",
+        "related_files": [
+          "src/config/validator.ts",
+          "src/lifecycle/types.ts"
+        ],
+        "evidence": [
+          "validateRawConfig at line 643 documents '@throws Error if validation fails' but only throws ValidationError",
+          "IRepoLifecycleFactory.getProvider at line 93 documents '@throws Error if platform not supported' but implementations throw LifecycleError",
+          "IRepoLifecycleProvider.exists at line 41 documents '@throws Error on network/auth failures' without specifying the concrete error type"
+        ],
+        "suggestion": "Update @throws annotations to specify the concrete error types: '@throws ValidationError if validation fails', '@throws LifecycleError if platform not supported'. This helps callers write precise catch blocks without reading the implementation.",
+        "reasoning": "",
+        "summary_hash": "410be336"
+      },
+      "status": "fixed",
+      "note": "Updated @throws in validator.ts and lifecycle/types.ts to use ValidationError and LifecycleError",
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": "2026-03-23T02:21:25+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually made this fix and I am not gaming the score by resolving without fixing.",
+        "attested_at": "2026-03-23T02:21:25+00:00",
+        "scan_verified": false
+      }
+    },
+    "review::.::holistic::type_safety::unchecked_api_json_cast": {
+      "id": "review::.::holistic::type_safety::unchecked_api_json_cast",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "parseApiJson<T> performs unchecked JSON.parse-as-T on external API responses at 10+ call sites",
+      "detail": {
+        "holistic": true,
+        "dimension": "type_safety",
+        "related_files": [
+          "src/shared/json-utils.ts",
+          "src/settings/rulesets/github-ruleset-strategy.ts",
+          "src/settings/repo-settings/github-repo-settings-strategy.ts",
+          "src/settings/labels/github-labels-strategy.ts",
+          "src/vcs/graphql-commit-strategy.ts"
+        ],
+        "evidence": [
+          "parseApiJson<T> at src/shared/json-utils.ts:11 does `JSON.parse(response) as T` with no shape validation",
+          "Called with specific types like GitHubRuleset[], CurrentRepoSettings, GitHubLabel[] \u2014 if API changes a field name or type, the cast silently produces a mistyped object",
+          "10+ call sites across settings strategies and VCS code all rely on this unchecked cast"
+        ],
+        "suggestion": "For the most critical response types (GitHubRuleset[], CurrentRepoSettings), add lightweight runtime shape checks after parsing \u2014 even just verifying that expected discriminant fields exist (e.g., `if (!Array.isArray(parsed)) throw ...`). This does not require a validation library; targeted checks on the 2-3 highest-risk response types would meaningfully improve safety.",
+        "reasoning": "",
+        "summary_hash": "78471f3d"
+      },
+      "status": "false_positive",
+      "note": "",
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": "2026-03-23T02:21:38+00:00",
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Standard TypeScript JSON.parse pattern, runtime shape validation would require validation library at 10+ call sites.",
+        "attested_at": "2026-03-23T02:21:38+00:00",
+        "scan_verified": false
+      }
+    },
+    "review::.::holistic::type_safety::settings_report_builder_as_casts": {
+      "id": "review::.::holistic::type_safety::settings_report_builder_as_casts",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "settings-report-builder.ts uses as-casts to narrow action type after filtering out 'unchanged'",
+      "detail": {
+        "holistic": true,
+        "dimension": "type_safety",
+        "related_files": [
+          "src/cli/settings-report-builder.ts"
+        ],
+        "evidence": [
+          "Lines 76 and 93: `action: entry.action as 'create' | 'update' | 'delete'` after a `continue` on `entry.action === 'unchanged'`",
+          "TypeScript cannot narrow through control flow after continue, so the cast is safe but invisible to the compiler"
+        ],
+        "suggestion": "Extract a type predicate like `function isActiveSettingsAction(action: SettingsAction): action is 'create' | 'update' | 'delete' { return action !== 'unchanged'; }` and use it in the filter condition. This follows the same pattern already applied in file-sync-strategy.ts (isActiveAction).",
+        "reasoning": "",
+        "summary_hash": "9fe9d6da"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-03-23T02:21:00+00:00",
+      "last_seen": "2026-03-23T02:21:00+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
     }
   },
   "concern_dismissals": {
@@ -62100,8 +62628,8 @@
       ]
     },
     "282579fe3a5a263d": {
-      "dismissed_at": "2026-03-22T09:53:33+00:00",
-      "reasoning": "sync-command.ts is the composition root for the sync CLI command. Its 702 lines orchestrate config loading, per-repo iteration (lifecycle + file sync + settings), and report display \u2014 all inherent to its role. It delegates real work to RepositoryProcessor, ISettingsProcessor, RepoLifecycleManager etc. The signals from 3 detectors (props, smells, structural) reflect the file's size and orchestration role, not mixed responsibilities. Helper functions within it are well-focused.",
+      "dismissed_at": "2026-03-23T02:21:00+00:00",
+      "reasoning": "sync-command.ts is the CLI composition root for the sync command. Its 694 lines orchestrate config loading, repo iteration, lifecycle, file sync, and settings \u2014 all phases of a single command. It is well-decomposed into focused helper functions (processSingleRepo, runLifecyclePhase, runFileSyncPhase, applyRepoSettings, displayReports). This is inherent complexity of a composition root, not mixed responsibilities.",
       "concern_type": "",
       "concern_file": "",
       "source_issue_ids": [
@@ -62109,6 +62637,7 @@
         "smells::src/cli/sync-command.ts::as_any_cast",
         "smells::src/cli/sync-command.ts::async_no_await",
         "smells::src/cli/sync-command.ts::high_cyclomatic_complexity",
+        "smells::src/cli/sync-command.ts::nested_closure",
         "smells::src/cli/sync-command.ts::stub_function",
         "structural::src/cli/sync-command.ts"
       ]

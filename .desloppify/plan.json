@@ -1,13 +1,53 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-22T21:15:34+00:00",
+  "updated": "2026-03-23T02:21:38+00:00",
   "queue_order": [
     "workflow::communicate-score",
-    "workflow::create-plan"
+    "workflow::create-plan",
+    "review::.::holistic::convention_outlier::barrel_bypass_file_sync_strategy",
+    "review::.::holistic::cross_module_architecture::residual_barrel_bypass_vcs_types",
+    "review::.::holistic::error_consistency::check_auto_merge_swallows_permanent_errors",
+    "review::.::holistic::error_consistency::file_exists_on_branch_broad_catch",
+    "review::.::holistic::low_level_elegance::format_ruleset_plan_verbose_grouping",
+    "review::.::holistic::low_level_elegance::ruleset_formatter_leaf_node_branch_density",
+    "review::.::holistic::mid_level_elegance::settings_result_parallel_type",
+    "review::.::holistic::naming_quality::generic_current_progress_counter",
+    "review::.::holistic::type_safety::settings_report_builder_as_casts"
   ],
   "deferred": [],
-  "skipped": {},
+  "skipped": {
+    "review::.::holistic::initialization_coupling::module_level_lazy_singletons": {
+      "issue_id": "review::.::holistic::initialization_coupling::module_level_lazy_singletons",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. sync-command.ts is CLI composition root with 38 call sites, reset per runSync().",
+      "created_at": "2026-03-23T02:21:37+00:00",
+      "review_after": null,
+      "skipped_at_scan": 176
+    },
+    "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests": {
+      "issue_id": "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Env vars read inside runSync with no injectable path, tests properly save/restore with try/finally.",
+      "created_at": "2026-03-23T02:21:37+00:00",
+      "review_after": null,
+      "skipped_at_scan": 176
+    },
+    "review::.::holistic::type_safety::unchecked_api_json_cast": {
+      "issue_id": "review::.::holistic::type_safety::unchecked_api_json_cast",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Standard TypeScript JSON.parse pattern, runtime shape validation would require validation library at 10+ call sites.",
+      "created_at": "2026-03-23T02:21:38+00:00",
+      "review_after": null,
+      "skipped_at_scan": 176
+    }
+  },
   "active_cluster": null,
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
@@ -24032,6 +24072,278 @@
       "detail": {
         "phase": "workflow_postflight"
       }
+    },
+    {
+      "timestamp": "2026-03-23T02:21:00+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::ai_generated_debt::restating_jsdoc_git_ops_getchangedfiles",
+          "review::.::holistic::contract_coherence::imprecise_throws_annotations",
+          "review::.::holistic::convention_outlier::barrel_bypass_file_sync_strategy",
+          "review::.::holistic::cross_module_architecture::residual_barrel_bypass_vcs_types",
+          "review::.::holistic::error_consistency::check_auto_merge_swallows_permanent_errors",
+          "review::.::holistic::error_consistency::file_exists_on_branch_broad_catch",
+          "review::.::holistic::initialization_coupling::module_level_lazy_singletons",
+          "review::.::holistic::low_level_elegance::format_ruleset_plan_verbose_grouping",
+          "review::.::holistic::low_level_elegance::ruleset_formatter_leaf_node_branch_density",
+          "review::.::holistic::mid_level_elegance::settings_result_parallel_type",
+          "review::.::holistic::naming_quality::generic_current_progress_counter",
+          "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests",
+          "review::.::holistic::type_safety::settings_report_builder_as_casts",
+          "review::.::holistic::type_safety::unchecked_api_json_cast"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::ai_generated_debt::restating_jsdoc_git_ops_getchangedfiles",
+          "review::.::holistic::contract_coherence::imprecise_throws_annotations",
+          "review::.::holistic::convention_outlier::barrel_bypass_file_sync_strategy",
+          "review::.::holistic::cross_module_architecture::residual_barrel_bypass_vcs_types",
+          "review::.::holistic::error_consistency::check_auto_merge_swallows_permanent_errors",
+          "review::.::holistic::error_consistency::file_exists_on_branch_broad_catch",
+          "review::.::holistic::initialization_coupling::module_level_lazy_singletons",
+          "review::.::holistic::low_level_elegance::format_ruleset_plan_verbose_grouping",
+          "review::.::holistic::low_level_elegance::ruleset_formatter_leaf_node_branch_density",
+          "review::.::holistic::mid_level_elegance::settings_result_parallel_type",
+          "review::.::holistic::naming_quality::generic_current_progress_counter",
+          "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests",
+          "review::.::holistic::type_safety::settings_report_builder_as_casts",
+          "review::.::holistic::type_safety::unchecked_api_json_cast"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 14,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 38,
+        "stale_pruned_from_queue": [],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
+    },
+    {
+      "timestamp": "2026-03-23T02:21:22+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::restating_jsdoc_git_ops_getchangedfiles"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed restating JSDoc line about exec() pattern from getChangedFiles method",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-23T02:21:23+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::restating_jsdoc_git_ops_getchangedfiles"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed restating JSDoc line about exec() pattern from getChangedFiles method",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made this fix and I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-03-23T02:21:23+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::barrel_bypass_file_sync_strategy"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Changed file-sync-strategy.ts import from ../vcs/types.js to ../vcs/index.js barrel",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-23T02:21:23+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::residual_barrel_bypass_vcs_types"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Changed file-sync-strategy.ts import from ../vcs/types.js to ../vcs/index.js barrel",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-23T02:21:24+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::check_auto_merge_swallows_permanent_errors"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added isPermanentError guard in checkAutoMergeEnabled catch block matching sibling checkExistingPR",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-23T02:21:24+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::file_exists_on_branch_broad_catch"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added error message discrimination in fileExistsOnBranch matching sibling getFileContent/wouldChange",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-23T02:21:25+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::contract_coherence::imprecise_throws_annotations"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Updated @throws in validator.ts and lifecycle/types.ts to use ValidationError and LifecycleError",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-23T02:21:25+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::contract_coherence::imprecise_throws_annotations"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Updated @throws in validator.ts and lifecycle/types.ts to use ValidationError and LifecycleError",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually made this fix and I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-03-23T02:21:25+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::generic_current_progress_counter"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed current to repoNumber across logger interface, impl, CLI types, sync-command, and mock",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-23T02:21:26+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::mid_level_elegance::settings_result_parallel_type"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "SettingsResult now extends Pick<BaseProcessorResult, ...> establishing explicit type relationship",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-23T02:21:26+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::settings_report_builder_as_casts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added isActiveAction type predicate in base-processor.ts, replaced as-casts in settings-report-builder",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-23T02:21:26+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::low_level_elegance::format_ruleset_plan_verbose_grouping"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Replaced 4 separate filter calls with single-pass grouping into a Record keyed by action type",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-23T02:21:27+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::low_level_elegance::ruleset_formatter_leaf_node_branch_density"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Extracted renderLeafNode into hasComplexValue, renderComplexLeaf, renderSimpleLeaf helpers",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-23T02:21:37+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::initialization_coupling::module_level_lazy_singletons"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-23T02:21:37+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-23T02:21:38+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::type_safety::unchecked_api_json_cast"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
     }
   ],
   "epic_triage_meta": {
@@ -24489,12 +24801,13 @@
     "review::.::holistic::type_safety::unsafe_reduce_accumulator_repo_settings",
     "review::.::holistic::convention_outlier::it_instead_of_test",
     "review::.::holistic::convention_outlier::non_strict_assert_imports",
-    "review::.::holistic::contract_coherence::parse_manifest_v1_silent_drop"
+    "review::.::holistic::contract_coherence::parse_manifest_v1_silent_drop",
+    "review::.::holistic::ai_generated_debt::restating_jsdoc_git_ops_getchangedfiles",
+    "review::.::holistic::contract_coherence::imprecise_throws_annotations"
   ],
   "commit_tracking_branch": null,
   "refresh_state": {
-    "subjective_review_completed_at_scan_count": 171,
+    "subjective_review_completed_at_scan_count": 176,
     "lifecycle_phase": "workflow_postflight"
-  },
-  "previous_plan_start_scores": {}
+  }
 }

@@ -93,6 +93,10 @@ This codebase follows SOLID principles strictly. Do NOT violate these:
 - `.sh` files auto-marked executable unless `executable: false`
 - PR branch default: `chore/sync-config` (reuses existing branch/PR if found)
 
+## Desloppify Scanning
+
+**NEVER use `--force-rescan`.** It resets plan state, reopens all chronic false positives, and tanks the strict score. Work through the queue instead — if the queue has subjective re-review items, resolve them or skip them, then scan normally.
+
 ## Desloppify False Positives
 
 **NEVER use `--permanent` (wontfix) for false positives.** Use `--false-positive` instead. Wontfix tanks strict score. This has been violated multiple times — DO NOT repeat.
