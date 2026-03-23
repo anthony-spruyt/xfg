@@ -183,7 +183,11 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     currentSettings: CurrentRepoSettings
   ): string[] {
     const errors: string[] = [];
-    const isPublic = currentSettings.visibility === "public";
+    // Use desired visibility if specified (repo may be transitioning to public),
+    // otherwise fall back to current visibility
+    const effectiveVisibility =
+      desiredSettings.visibility ?? currentSettings.visibility;
+    const isPublic = effectiveVisibility === "public";
 
     // privateVulnerabilityReporting is only available on public repos
     if (desiredSettings.privateVulnerabilityReporting === true && !isPublic) {
