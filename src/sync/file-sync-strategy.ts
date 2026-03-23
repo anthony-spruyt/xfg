@@ -1,6 +1,6 @@
 import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
-import type { FileAction } from "../vcs/types.js";
+import type { FileAction } from "../vcs/index.js";
 import { formatCommitMessage } from "./commit-message.js";
 import type {
   FileChangeDetail,

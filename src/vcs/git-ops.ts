@@ -194,7 +194,6 @@ export class GitOps implements ILocalGitOps {
   /**
    * Get list of files that have changes according to git status.
    * Returns relative file paths for files that are modified, added, or untracked.
-   * Uses the same this.exec() pattern as other methods in this class.
    */
   async getChangedFiles(): Promise<string[]> {
     const status = await this.exec("git status --porcelain", this._workDir);
@@ -230,11 +229,18 @@ export class GitOps implements ILocalGitOps {
       );
       return true;
     } catch (error) {
-      // Expected when file doesn't exist on branch
-      this.log?.debug(
-        `fileExistsOnBranch(${fileName}, ${branch}): ${toErrorMessage(error)}`
-      );
-      return false;
+      const message = toErrorMessage(error);
+      if (
+        message.includes("does not exist") ||
+        message.includes("did not match") ||
+        message.includes("not found")
+      ) {
+        this.log?.debug(
+          `fileExistsOnBranch(${fileName}, ${branch}): ${message}`
+        );
+        return false;
+      }
+      throw error;
     }
   }
 

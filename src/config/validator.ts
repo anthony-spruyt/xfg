@@ -640,7 +640,7 @@ function hasGroupFiles(config: RawConfig): boolean {
 
 /**
  * Validates raw config structure before normalization.
- * @throws Error if validation fails
+ * @throws ValidationError if validation fails
  */
 export function validateRawConfig(config: RawConfig): void {
   validateConfigId(config);

@@ -147,7 +147,7 @@ function determineMergeOutcome(
 function logSettingsResult(
   result: SettingsResult,
   label: string,
-  current: number,
+  repoNumber: number,
   repoName: string,
   settingsCollector: ResultsCollector
 ): void {
@@ -163,10 +163,10 @@ function logSettingsResult(
       }
     }
   } else if (!result.skipped && result.success) {
-    getLogger().success(current, repoName, `${label}: ${result.message}`);
+    getLogger().success(repoNumber, repoName, `${label}: ${result.message}`);
   }
   if (!result.success && !result.skipped) {
-    getLogger().error(current, repoName, `${label}: ${result.message}`);
+    getLogger().error(repoNumber, repoName, `${label}: ${result.message}`);
     settingsCollector.appendError(repoName, result.message);
   }
 }
@@ -262,7 +262,7 @@ function runSettingsProcessor(
 }
 
 async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
-  const { repoConfig, repoInfo, repoName, current, settingsCollector } = ctx;
+  const { repoConfig, repoInfo, repoName, repoNumber, settingsCollector } = ctx;
 
   if (!repoConfig.settings || !isGitHubRepo(repoInfo)) return;
 
@@ -275,13 +275,13 @@ async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
       logSettingsResult(
         result,
         desc.label,
-        current,
+        repoNumber,
         repoName,
         settingsCollector
       );
     } catch (error) {
       getLogger().error(
-        current,
+        repoNumber,
         repoName,
         `${desc.label}: ${toErrorMessage(error)}`
       );
@@ -378,7 +378,7 @@ async function processSingleRepo(
   ctx: RepoIterationContext
 ): Promise<void> {
   const { config, options } = ctx;
-  const current = index + 1;
+  const repoNumber = index + 1;
 
   // Apply CLI-level PR option overrides
   if (options.merge || options.mergeStrategy || options.deleteBranch) {
@@ -404,7 +404,7 @@ async function processSingleRepo(
       githubHosts: config.githubHosts,
     });
   } catch (error) {
-    getLogger().error(current, repoConfig.git, toErrorMessage(error));
+    getLogger().error(repoNumber, repoConfig.git, toErrorMessage(error));
     ctx.reportResults.push({
       repoName: repoConfig.git,
       success: false,
@@ -451,7 +451,7 @@ async function processSingleRepo(
     repoConfig,
     repoInfo,
     repoName,
-    current,
+    repoNumber,
     options,
     token: repoToken,
     settingsCollector: ctx.settingsCollector,
@@ -469,7 +469,7 @@ async function runLifecyclePhase(
   repo: RepoPhaseParams,
   ctx: RepoIterationContext
 ): Promise<boolean> {
-  const current = repo.index + 1;
+  const repoNumber = repo.index + 1;
 
   try {
     const { outputLines, lifecycleResult } = await runLifecycleCheck(
@@ -517,7 +517,7 @@ async function runLifecyclePhase(
     return false;
   } catch (error) {
     getLogger().error(
-      current,
+      repoNumber,
       repo.repoName,
       `Lifecycle error: ${toErrorMessage(error)}`
     );
@@ -538,9 +538,9 @@ async function runFileSyncPhase(
   repo: RepoPhaseParams,
   ctx: RepoIterationContext
 ): Promise<void> {
-  const current = repo.index + 1;
+  const repoNumber = repo.index + 1;
   try {
-    getLogger().progress(current, repo.repoName, "Processing...");
+    getLogger().progress(repoNumber, repo.repoName, "Processing...");
 
     const result = await ctx.processor.process(repo.repoConfig, repo.repoInfo, {
       branchName: ctx.branchName,
@@ -572,14 +572,14 @@ async function runFileSyncPhase(
     });
 
     if (result.skipped) {
-      getLogger().skip(current, repo.repoName, result.message);
+      getLogger().skip(repoNumber, repo.repoName, result.message);
     } else if (result.success) {
-      getLogger().success(current, repo.repoName, result.message);
+      getLogger().success(repoNumber, repo.repoName, result.message);
     } else {
-      getLogger().error(current, repo.repoName, result.message);
+      getLogger().error(repoNumber, repo.repoName, result.message);
     }
   } catch (error) {
-    getLogger().error(current, repo.repoName, toErrorMessage(error));
+    getLogger().error(repoNumber, repo.repoName, toErrorMessage(error));
     ctx.reportResults.push({
       repoName: repo.repoName,
       success: false,

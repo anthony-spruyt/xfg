@@ -75,7 +75,7 @@ export interface ApplyRepoSettingsContext {
   repoConfig: RepoConfig;
   repoInfo: RepoInfo;
   repoName: string;
-  current: number;
+  repoNumber: number;
   options: SyncOptions;
   token: string | undefined;
   settingsCollector: ResultsCollector;

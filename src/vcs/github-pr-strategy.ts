@@ -204,7 +204,10 @@ export class GitHubPRStrategy extends BasePRStrategy {
       );
       return result.trim() === "true";
     } catch (error) {
-      // If we can't check, assume auto-merge is not enabled
+      if (isPermanentError(error)) {
+        throw error;
+      }
+      // If we can't check due to transient errors, assume auto-merge is not enabled
       this.log?.warn(
         `Could not check auto-merge status: ${toErrorMessage(error)}`
       );

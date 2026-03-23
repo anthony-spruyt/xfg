@@ -38,7 +38,7 @@ export interface IRepoLifecycleProvider {
 
   /**
    * Check if a repository exists on this platform.
-   * @throws Error on network/auth failures (NOT for "repo not found")
+   * @throws LifecycleError on network/auth failures (NOT for "repo not found")
    */
   exists(repoInfo: RepoInfo, token?: string): Promise<boolean>;
 
@@ -90,13 +90,13 @@ export interface IMigrationSource {
 export interface IRepoLifecycleFactory {
   /**
    * Get lifecycle provider for a platform.
-   * @throws Error if platform not supported as target
+   * @throws LifecycleError if platform not supported as target
    */
   getProvider(platform: LifecyclePlatform): IRepoLifecycleProvider;
 
   /**
    * Get migration source for a platform.
-   * @throws Error if platform not supported as source
+   * @throws LifecycleError if platform not supported as source
    */
   getMigrationSource(platform: LifecyclePlatform): IMigrationSource;
 }
