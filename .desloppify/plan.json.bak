@@ -1,8 +1,10 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-23T02:14:15+00:00",
+  "updated": "2026-03-23T02:21:37+00:00",
   "queue_order": [
+    "workflow::communicate-score",
+    "workflow::create-plan",
     "review::.::holistic::convention_outlier::barrel_bypass_file_sync_strategy",
     "review::.::holistic::cross_module_architecture::residual_barrel_bypass_vcs_types",
     "review::.::holistic::error_consistency::check_auto_merge_swallows_permanent_errors",
@@ -11,109 +13,30 @@
     "review::.::holistic::low_level_elegance::ruleset_formatter_leaf_node_branch_density",
     "review::.::holistic::mid_level_elegance::settings_result_parallel_type",
     "review::.::holistic::naming_quality::generic_current_progress_counter",
-    "review::.::holistic::type_safety::settings_report_builder_as_casts"
+    "review::.::holistic::type_safety::settings_report_builder_as_casts",
+    "review::.::holistic::type_safety::unchecked_api_json_cast"
   ],
   "deferred": [],
   "skipped": {
-    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40": {
-      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
+    "review::.::holistic::initialization_coupling::module_level_lazy_singletons": {
+      "issue_id": "review::.::holistic::initialization_coupling::module_level_lazy_singletons",
       "kind": "false_positive",
       "reason": null,
       "note": null,
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. These are GitHub API field names (secret_scanning), not actual secrets.",
-      "created_at": "2026-03-23T02:12:32+00:00",
+      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. sync-command.ts is CLI composition root with 38 call sites, reset per runSync().",
+      "created_at": "2026-03-23T02:21:37+00:00",
       "review_after": null,
-      "skipped_at_scan": 178
+      "skipped_at_scan": 176
     },
-    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
-      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
+    "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests": {
+      "issue_id": "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests",
       "kind": "false_positive",
       "reason": null,
       "note": null,
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. These are GitHub API field names (secret_scanning_push_protection), not actual secrets.",
-      "created_at": "2026-03-23T02:12:32+00:00",
+      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Env vars read inside runSync with no injectable path, tests properly save/restore with try/finally.",
+      "created_at": "2026-03-23T02:21:37+00:00",
       "review_after": null,
-      "skipped_at_scan": 178
-    },
-    "smells::src/cli/sync-command.ts::async_no_await": {
-      "issue_id": "smells::src/cli/sync-command.ts::async_no_await",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. runAndStore is async because it awaits runSettingsProcessor inside. runSync has awaits throughout.",
-      "created_at": "2026-03-23T02:12:33+00:00",
-      "review_after": null,
-      "skipped_at_scan": 178
-    },
-    "smells::src/shared/gh-api-utils.ts::async_no_await": {
-      "issue_id": "smells::src/shared/gh-api-utils.ts::async_no_await",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. resolveGitHubToken awaits tokenManager.getTokenForRepo \u2014 the scanner is wrong.",
-      "created_at": "2026-03-23T02:12:33+00:00",
-      "review_after": null,
-      "skipped_at_scan": 178
-    },
-    "test_coverage::src/cli/types.ts::transitive_only": {
-      "issue_id": "test_coverage::src/cli/types.ts::transitive_only",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. types.ts is a pure type definition file \u2014 no runtime behavior to test directly.",
-      "created_at": "2026-03-23T02:12:34+00:00",
-      "review_after": null,
-      "skipped_at_scan": 178
-    },
-    "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts": {
-      "issue_id": "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. 43 assertions across 44 tests is appropriate for pure template functions.",
-      "created_at": "2026-03-23T02:12:34+00:00",
-      "review_after": null,
-      "skipped_at_scan": 178
-    },
-    "smells::src/vcs/pr-strategy.ts::catch_return_default": {
-      "issue_id": "smells::src/vcs/pr-strategy.ts::catch_return_default",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. This is retry-with-graceful-degradation \u2014 the catch logs and returns a failure result, not silent.",
-      "created_at": "2026-03-23T02:12:35+00:00",
-      "review_after": null,
-      "skipped_at_scan": 178
-    },
-    "exports::src/vcs/index.ts::INetworkGitOps": {
-      "issue_id": "exports::src/vcs/index.ts::INetworkGitOps",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. INetworkGitOps is used in authenticated-git-ops.ts, types.ts, and 4 test files \u2014 imported via types.ts not the barrel.",
-      "created_at": "2026-03-23T02:13:05+00:00",
-      "review_after": null,
-      "skipped_at_scan": 178
-    },
-    "unused::src/cli/sync-command.ts::options:275": {
-      "issue_id": "unused::src/cli/sync-command.ts::options:275",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. The autofix detected 0 unused imports. Line 275 is logSettingsResult call, not an import.",
-      "created_at": "2026-03-23T02:14:14+00:00",
-      "review_after": null,
-      "skipped_at_scan": 178
-    },
-    "smells::src/cli/sync-command.ts::as_any_cast": {
-      "issue_id": "smells::src/cli/sync-command.ts::as_any_cast",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. grep finds zero 'as any' in sync-command.ts \u2014 scanner false positive.",
-      "created_at": "2026-03-23T02:14:15+00:00",
-      "review_after": null,
-      "skipped_at_scan": 178
+      "skipped_at_scan": 176
     }
   },
   "active_cluster": null,
@@ -6775,54 +6698,6 @@
       "superseded_at": "2026-03-22T21:15:34+00:00",
       "remapped_to": null,
       "candidates": []
-    },
-    "review::.::holistic::initialization_coupling::module_level_lazy_singletons": {
-      "original_id": "review::.::holistic::initialization_coupling::module_level_lazy_singletons",
-      "original_detector": "review",
-      "original_file": ".",
-      "original_summary": "sync-command.ts uses module-level mutable let variables for lazy singleton initialization instead of passing through function parameters",
-      "status": "superseded",
-      "superseded_at": "2026-03-23T01:46:20+00:00",
-      "remapped_to": null,
-      "candidates": [
-        "review::.::holistic::cross_module_architecture::residual_barrel_bypass_vcs_types",
-        "review::.::holistic::convention_outlier::barrel_bypass_file_sync_strategy",
-        "review::.::holistic::error_consistency::check_auto_merge_swallows_permanent_errors",
-        "review::.::holistic::error_consistency::file_exists_on_branch_broad_catch",
-        "review::.::holistic::naming_quality::generic_current_progress_counter"
-      ]
-    },
-    "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests": {
-      "original_id": "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests",
-      "original_detector": "review",
-      "original_file": ".",
-      "original_summary": "repository-processor.test.ts mutates process.env for GitHub App credential tests instead of injecting env",
-      "status": "superseded",
-      "superseded_at": "2026-03-23T01:46:20+00:00",
-      "remapped_to": null,
-      "candidates": [
-        "review::.::holistic::cross_module_architecture::residual_barrel_bypass_vcs_types",
-        "review::.::holistic::convention_outlier::barrel_bypass_file_sync_strategy",
-        "review::.::holistic::error_consistency::check_auto_merge_swallows_permanent_errors",
-        "review::.::holistic::error_consistency::file_exists_on_branch_broad_catch",
-        "review::.::holistic::naming_quality::generic_current_progress_counter"
-      ]
-    },
-    "review::.::holistic::type_safety::unchecked_api_json_cast": {
-      "original_id": "review::.::holistic::type_safety::unchecked_api_json_cast",
-      "original_detector": "review",
-      "original_file": ".",
-      "original_summary": "parseApiJson<T> performs unchecked JSON.parse-as-T on external API responses at 10+ call sites",
-      "status": "superseded",
-      "superseded_at": "2026-03-23T01:46:20+00:00",
-      "remapped_to": null,
-      "candidates": [
-        "review::.::holistic::cross_module_architecture::residual_barrel_bypass_vcs_types",
-        "review::.::holistic::convention_outlier::barrel_bypass_file_sync_strategy",
-        "review::.::holistic::error_consistency::check_auto_merge_swallows_permanent_errors",
-        "review::.::holistic::error_consistency::file_exists_on_branch_broad_catch",
-        "review::.::holistic::naming_quality::generic_current_progress_counter"
-      ]
     }
   },
   "promoted_ids": [],
@@ -24190,35 +24065,7 @@
       }
     },
     {
-      "timestamp": "2026-03-23T01:11:14+00:00",
-      "action": "commit_record",
-      "issue_ids": [
-        "review::.::holistic::ai_generated_debt::residual_restating_jsdoc",
-        "review::.::holistic::cross_module_architecture::config_barrel_bypass_types",
-        "review::.::holistic::cross_module_architecture::config_barrel_missing_file_content_types",
-        "review::.::holistic::design_coherence::runAndCollect_dynamic_assign",
-        "review::.::holistic::mid_level_elegance::runAndCollect_dynamic_key_bypass",
-        "review::.::holistic::high_level_elegance::lifecycle_report_builder_in_output",
-        "review::.::holistic::naming_quality::processOrphans_misleading_scope",
-        "review::.::holistic::test_strategy::mock_name_collision_repo_processor",
-        "review::.::holistic::error_consistency::would_change_broad_catch",
-        "review::.::holistic::type_safety::double_assertion_ruleset_formatter",
-        "review::.::holistic::type_safety::filter_without_type_predicate_file_sync",
-        "review::.::holistic::type_safety::unsafe_reduce_accumulator_repo_settings",
-        "review::.::holistic::convention_outlier::it_instead_of_test",
-        "review::.::holistic::convention_outlier::non_strict_assert_imports",
-        "review::.::holistic::contract_coherence::parse_manifest_v1_silent_drop"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": "Round 5 fixes already committed",
-      "detail": {
-        "sha": "1c67d422f195",
-        "branch": "desloppify/round5-code-health"
-      }
-    },
-    {
-      "timestamp": "2026-03-23T01:32:25+00:00",
+      "timestamp": "2026-03-23T02:21:00+00:00",
       "action": "review_import_sync",
       "issue_ids": [],
       "cluster_name": null,
@@ -24299,41 +24146,7 @@
       }
     },
     {
-      "timestamp": "2026-03-23T01:32:38+00:00",
-      "action": "reconcile",
-      "issue_ids": [],
-      "cluster_name": null,
-      "actor": "system",
-      "note": null,
-      "detail": {
-        "superseded_count": 0,
-        "pruned_count": 0,
-        "resurfaced_count": 0,
-        "clusters_completed_count": 0
-      }
-    },
-    {
-      "timestamp": "2026-03-23T01:32:38+00:00",
-      "action": "seed_start_scores",
-      "issue_ids": [],
-      "cluster_name": null,
-      "actor": "system",
-      "note": null,
-      "detail": {}
-    },
-    {
-      "timestamp": "2026-03-23T01:32:38+00:00",
-      "action": "complete_postflight_scan",
-      "issue_ids": [],
-      "cluster_name": null,
-      "actor": "system",
-      "note": null,
-      "detail": {
-        "scan_count": 177
-      }
-    },
-    {
-      "timestamp": "2026-03-23T01:39:21+00:00",
+      "timestamp": "2026-03-23T02:21:22+00:00",
       "action": "done",
       "issue_ids": [
         "review::.::holistic::ai_generated_debt::restating_jsdoc_git_ops_getchangedfiles"
@@ -24344,7 +24157,7 @@
       "detail": {}
     },
     {
-      "timestamp": "2026-03-23T01:39:21+00:00",
+      "timestamp": "2026-03-23T02:21:23+00:00",
       "action": "resolve",
       "issue_ids": [
         "review::.::holistic::ai_generated_debt::restating_jsdoc_git_ops_getchangedfiles"
@@ -24358,7 +24171,7 @@
       }
     },
     {
-      "timestamp": "2026-03-23T01:39:21+00:00",
+      "timestamp": "2026-03-23T02:21:23+00:00",
       "action": "done",
       "issue_ids": [
         "review::.::holistic::convention_outlier::barrel_bypass_file_sync_strategy"
@@ -24369,7 +24182,7 @@
       "detail": {}
     },
     {
-      "timestamp": "2026-03-23T01:39:22+00:00",
+      "timestamp": "2026-03-23T02:21:23+00:00",
       "action": "done",
       "issue_ids": [
         "review::.::holistic::cross_module_architecture::residual_barrel_bypass_vcs_types"
@@ -24380,7 +24193,7 @@
       "detail": {}
     },
     {
-      "timestamp": "2026-03-23T01:39:22+00:00",
+      "timestamp": "2026-03-23T02:21:24+00:00",
       "action": "done",
       "issue_ids": [
         "review::.::holistic::error_consistency::check_auto_merge_swallows_permanent_errors"
@@ -24391,18 +24204,18 @@
       "detail": {}
     },
     {
-      "timestamp": "2026-03-23T01:39:23+00:00",
+      "timestamp": "2026-03-23T02:21:24+00:00",
       "action": "done",
       "issue_ids": [
         "review::.::holistic::error_consistency::file_exists_on_branch_broad_catch"
       ],
       "cluster_name": null,
       "actor": "user",
-      "note": "Added error message discrimination in fileExistsOnBranch matching sibling getFileContent/wouldChange pattern",
+      "note": "Added error message discrimination in fileExistsOnBranch matching sibling getFileContent/wouldChange",
       "detail": {}
     },
     {
-      "timestamp": "2026-03-23T01:39:23+00:00",
+      "timestamp": "2026-03-23T02:21:25+00:00",
       "action": "done",
       "issue_ids": [
         "review::.::holistic::contract_coherence::imprecise_throws_annotations"
@@ -24413,7 +24226,7 @@
       "detail": {}
     },
     {
-      "timestamp": "2026-03-23T01:39:23+00:00",
+      "timestamp": "2026-03-23T02:21:25+00:00",
       "action": "resolve",
       "issue_ids": [
         "review::.::holistic::contract_coherence::imprecise_throws_annotations"
@@ -24427,33 +24240,18 @@
       }
     },
     {
-      "timestamp": "2026-03-23T01:39:24+00:00",
+      "timestamp": "2026-03-23T02:21:25+00:00",
       "action": "done",
       "issue_ids": [
         "review::.::holistic::naming_quality::generic_current_progress_counter"
       ],
       "cluster_name": null,
       "actor": "user",
-      "note": "Renamed current to repoNumber across logger interface, implementation, CLI types, sync-command, and mock",
+      "note": "Renamed current to repoNumber across logger interface, impl, CLI types, sync-command, and mock",
       "detail": {}
     },
     {
-      "timestamp": "2026-03-23T01:39:40+00:00",
-      "action": "commit_record",
-      "issue_ids": [
-        "review::.::holistic::ai_generated_debt::restating_jsdoc_git_ops_getchangedfiles",
-        "review::.::holistic::contract_coherence::imprecise_throws_annotations"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": "7 review findings fixed: barrel bypass, error handling, naming, @throws, JSDoc",
-      "detail": {
-        "sha": "1192b9350359",
-        "branch": "desloppify/round5-code-health"
-      }
-    },
-    {
-      "timestamp": "2026-03-23T01:43:57+00:00",
+      "timestamp": "2026-03-23T02:21:26+00:00",
       "action": "done",
       "issue_ids": [
         "review::.::holistic::mid_level_elegance::settings_result_parallel_type"
@@ -24464,7 +24262,7 @@
       "detail": {}
     },
     {
-      "timestamp": "2026-03-23T01:43:58+00:00",
+      "timestamp": "2026-03-23T02:21:26+00:00",
       "action": "done",
       "issue_ids": [
         "review::.::holistic::type_safety::settings_report_builder_as_casts"
@@ -24475,7 +24273,7 @@
       "detail": {}
     },
     {
-      "timestamp": "2026-03-23T01:43:58+00:00",
+      "timestamp": "2026-03-23T02:21:26+00:00",
       "action": "done",
       "issue_ids": [
         "review::.::holistic::low_level_elegance::format_ruleset_plan_verbose_grouping"
@@ -24486,7 +24284,7 @@
       "detail": {}
     },
     {
-      "timestamp": "2026-03-23T01:43:59+00:00",
+      "timestamp": "2026-03-23T02:21:27+00:00",
       "action": "done",
       "issue_ids": [
         "review::.::holistic::low_level_elegance::ruleset_formatter_leaf_node_branch_density"
@@ -24497,7 +24295,7 @@
       "detail": {}
     },
     {
-      "timestamp": "2026-03-23T01:45:03+00:00",
+      "timestamp": "2026-03-23T02:21:37+00:00",
       "action": "skip",
       "issue_ids": [
         "review::.::holistic::initialization_coupling::module_level_lazy_singletons"
@@ -24511,182 +24309,10 @@
       }
     },
     {
-      "timestamp": "2026-03-23T01:45:24+00:00",
+      "timestamp": "2026-03-23T02:21:37+00:00",
       "action": "skip",
       "issue_ids": [
         "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": null,
-      "detail": {
-        "kind": "false_positive",
-        "reason": null
-      }
-    },
-    {
-      "timestamp": "2026-03-23T01:45:39+00:00",
-      "action": "skip",
-      "issue_ids": [
-        "review::.::holistic::type_safety::unchecked_api_json_cast"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": null,
-      "detail": {
-        "kind": "false_positive",
-        "reason": null
-      }
-    },
-    {
-      "timestamp": "2026-03-23T01:46:20+00:00",
-      "action": "reconcile",
-      "issue_ids": [
-        "review::.::holistic::initialization_coupling::module_level_lazy_singletons",
-        "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests",
-        "review::.::holistic::type_safety::unchecked_api_json_cast"
-      ],
-      "cluster_name": null,
-      "actor": "system",
-      "note": null,
-      "detail": {
-        "superseded_count": 3,
-        "pruned_count": 0,
-        "resurfaced_count": 0,
-        "clusters_completed_count": 0
-      }
-    },
-    {
-      "timestamp": "2026-03-23T02:12:32+00:00",
-      "action": "skip",
-      "issue_ids": [
-        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": null,
-      "detail": {
-        "kind": "false_positive",
-        "reason": null
-      }
-    },
-    {
-      "timestamp": "2026-03-23T02:12:32+00:00",
-      "action": "skip",
-      "issue_ids": [
-        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": null,
-      "detail": {
-        "kind": "false_positive",
-        "reason": null
-      }
-    },
-    {
-      "timestamp": "2026-03-23T02:12:33+00:00",
-      "action": "skip",
-      "issue_ids": [
-        "smells::src/cli/sync-command.ts::async_no_await"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": null,
-      "detail": {
-        "kind": "false_positive",
-        "reason": null
-      }
-    },
-    {
-      "timestamp": "2026-03-23T02:12:33+00:00",
-      "action": "skip",
-      "issue_ids": [
-        "smells::src/shared/gh-api-utils.ts::async_no_await"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": null,
-      "detail": {
-        "kind": "false_positive",
-        "reason": null
-      }
-    },
-    {
-      "timestamp": "2026-03-23T02:12:34+00:00",
-      "action": "skip",
-      "issue_ids": [
-        "test_coverage::src/cli/types.ts::transitive_only"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": null,
-      "detail": {
-        "kind": "false_positive",
-        "reason": null
-      }
-    },
-    {
-      "timestamp": "2026-03-23T02:12:34+00:00",
-      "action": "skip",
-      "issue_ids": [
-        "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": null,
-      "detail": {
-        "kind": "false_positive",
-        "reason": null
-      }
-    },
-    {
-      "timestamp": "2026-03-23T02:12:35+00:00",
-      "action": "skip",
-      "issue_ids": [
-        "smells::src/vcs/pr-strategy.ts::catch_return_default"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": null,
-      "detail": {
-        "kind": "false_positive",
-        "reason": null
-      }
-    },
-    {
-      "timestamp": "2026-03-23T02:13:05+00:00",
-      "action": "skip",
-      "issue_ids": [
-        "exports::src/vcs/index.ts::INetworkGitOps"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": null,
-      "detail": {
-        "kind": "false_positive",
-        "reason": null
-      }
-    },
-    {
-      "timestamp": "2026-03-23T02:14:14+00:00",
-      "action": "skip",
-      "issue_ids": [
-        "unused::src/cli/sync-command.ts::options:275"
-      ],
-      "cluster_name": null,
-      "actor": "user",
-      "note": null,
-      "detail": {
-        "kind": "false_positive",
-        "reason": null
-      }
-    },
-    {
-      "timestamp": "2026-03-23T02:14:15+00:00",
-      "action": "skip",
-      "issue_ids": [
-        "smells::src/cli/sync-command.ts::as_any_cast"
       ],
       "cluster_name": null,
       "actor": "user",
@@ -25135,47 +24761,30 @@
       "recorded_at": "2026-03-22T06:29:04+00:00",
       "note": "All 13 dead barrel exports resolved as fixed, 9 barrel exports skipped as false positive",
       "cluster_name": null
-    },
-    {
-      "sha": "1c67d422f195",
-      "branch": "desloppify/round5-code-health",
-      "issue_ids": [
-        "review::.::holistic::ai_generated_debt::residual_restating_jsdoc",
-        "review::.::holistic::cross_module_architecture::config_barrel_bypass_types",
-        "review::.::holistic::cross_module_architecture::config_barrel_missing_file_content_types",
-        "review::.::holistic::design_coherence::runAndCollect_dynamic_assign",
-        "review::.::holistic::mid_level_elegance::runAndCollect_dynamic_key_bypass",
-        "review::.::holistic::high_level_elegance::lifecycle_report_builder_in_output",
-        "review::.::holistic::naming_quality::processOrphans_misleading_scope",
-        "review::.::holistic::test_strategy::mock_name_collision_repo_processor",
-        "review::.::holistic::error_consistency::would_change_broad_catch",
-        "review::.::holistic::type_safety::double_assertion_ruleset_formatter",
-        "review::.::holistic::type_safety::filter_without_type_predicate_file_sync",
-        "review::.::holistic::type_safety::unsafe_reduce_accumulator_repo_settings",
-        "review::.::holistic::convention_outlier::it_instead_of_test",
-        "review::.::holistic::convention_outlier::non_strict_assert_imports",
-        "review::.::holistic::contract_coherence::parse_manifest_v1_silent_drop"
-      ],
-      "recorded_at": "2026-03-23T01:11:14+00:00",
-      "note": "Round 5 fixes already committed",
-      "cluster_name": null
-    },
-    {
-      "sha": "1192b9350359",
-      "branch": "desloppify/round5-code-health",
-      "issue_ids": [
-        "review::.::holistic::ai_generated_debt::restating_jsdoc_git_ops_getchangedfiles",
-        "review::.::holistic::contract_coherence::imprecise_throws_annotations"
-      ],
-      "recorded_at": "2026-03-23T01:39:40+00:00",
-      "note": "7 review findings fixed: barrel bypass, error handling, naming, @throws, JSDoc",
-      "cluster_name": null
     }
   ],
-  "uncommitted_issues": [],
+  "uncommitted_issues": [
+    "review::.::holistic::ai_generated_debt::residual_restating_jsdoc",
+    "review::.::holistic::cross_module_architecture::config_barrel_bypass_types",
+    "review::.::holistic::cross_module_architecture::config_barrel_missing_file_content_types",
+    "review::.::holistic::design_coherence::runAndCollect_dynamic_assign",
+    "review::.::holistic::mid_level_elegance::runAndCollect_dynamic_key_bypass",
+    "review::.::holistic::high_level_elegance::lifecycle_report_builder_in_output",
+    "review::.::holistic::naming_quality::processOrphans_misleading_scope",
+    "review::.::holistic::test_strategy::mock_name_collision_repo_processor",
+    "review::.::holistic::error_consistency::would_change_broad_catch",
+    "review::.::holistic::type_safety::double_assertion_ruleset_formatter",
+    "review::.::holistic::type_safety::filter_without_type_predicate_file_sync",
+    "review::.::holistic::type_safety::unsafe_reduce_accumulator_repo_settings",
+    "review::.::holistic::convention_outlier::it_instead_of_test",
+    "review::.::holistic::convention_outlier::non_strict_assert_imports",
+    "review::.::holistic::contract_coherence::parse_manifest_v1_silent_drop",
+    "review::.::holistic::ai_generated_debt::restating_jsdoc_git_ops_getchangedfiles",
+    "review::.::holistic::contract_coherence::imprecise_throws_annotations"
+  ],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 176,
-    "lifecycle_phase": "execute"
+    "lifecycle_phase": "workflow_postflight"
   }
 }
