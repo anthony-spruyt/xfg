@@ -1,4 +1,4 @@
-import type { Label } from "../../config/types.js";
+import type { Label } from "../../config/index.js";
 
 interface GitHubLabelPayload {
   name: string;

@@ -197,53 +197,70 @@ function getActionStyle(action: DiffAction): {
 /**
  * Render a leaf tree node (no children) with its value.
  */
-function renderLeafNode(
+function hasComplexValue(value: unknown): boolean {
+  return (
+    isPlainObject(value) ||
+    (Array.isArray(value) && value.some((v) => isPlainObject(v)))
+  );
+}
+
+function renderComplexLeaf(
   child: TreeNode,
   style: { symbol: string; color: (s: string) => string },
   indentStr: string,
   indent: number
 ): string[] {
   const lines: string[] = [];
-  const hasComplexNew =
-    isPlainObject(child.newValue) ||
-    (Array.isArray(child.newValue) &&
-      child.newValue.some((v) => isPlainObject(v)));
-  const hasComplexOld =
-    isPlainObject(child.oldValue) ||
-    (Array.isArray(child.oldValue) &&
-      (child.oldValue as unknown[]).some((v) => isPlainObject(v)));
-
-  if (child.action === "add" && hasComplexNew) {
+  if (child.action === "add") {
     lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));
     lines.push(...renderNestedValue(child.newValue, child.action, indent + 1));
-  } else if (child.action === "remove" && hasComplexOld) {
+  } else if (child.action === "remove") {
     lines.push(
       style.color(`${indentStr}${style.symbol} ${child.name} (removed):`)
     );
     lines.push(...renderNestedValue(child.oldValue, child.action, indent + 1));
-  } else if (child.action === "change" && (hasComplexNew || hasComplexOld)) {
+  } else {
     lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));
-    if (hasComplexOld) {
+    if (hasComplexValue(child.oldValue)) {
       lines.push(...renderNestedValue(child.oldValue, "remove", indent + 1));
     }
-    if (hasComplexNew) {
+    if (hasComplexValue(child.newValue)) {
       lines.push(...renderNestedValue(child.newValue, "add", indent + 1));
     }
-  } else {
-    let valuePart = "";
-    if (child.action === "change") {
-      valuePart = `: ${formatValue(child.oldValue)} → ${formatValue(child.newValue)}`;
-    } else if (child.action === "add") {
-      valuePart = `: ${formatValue(child.newValue)}`;
-    } else if (child.action === "remove") {
-      valuePart = ` (was: ${formatValue(child.oldValue)})`;
-    }
-    lines.push(
-      style.color(`${indentStr}${style.symbol} ${child.name}${valuePart}`)
-    );
   }
-
   return lines;
+}
+
+function renderSimpleLeaf(
+  child: TreeNode,
+  style: { symbol: string; color: (s: string) => string },
+  indentStr: string
+): string {
+  let valuePart = "";
+  if (child.action === "change") {
+    valuePart = `: ${formatValue(child.oldValue)} → ${formatValue(child.newValue)}`;
+  } else if (child.action === "add") {
+    valuePart = `: ${formatValue(child.newValue)}`;
+  } else if (child.action === "remove") {
+    valuePart = ` (was: ${formatValue(child.oldValue)})`;
+  }
+  return style.color(`${indentStr}${style.symbol} ${child.name}${valuePart}`);
+}
+
+function renderLeafNode(
+  child: TreeNode,
+  style: { symbol: string; color: (s: string) => string },
+  indentStr: string,
+  indent: number
+): string[] {
+  const isComplex =
+    (child.action !== "remove" && hasComplexValue(child.newValue)) ||
+    (child.action !== "add" && hasComplexValue(child.oldValue));
+
+  if (isComplex) {
+    return renderComplexLeaf(child, style, indentStr, indent);
+  }
+  return [renderSimpleLeaf(child, style, indentStr)];
 }
 
 /**
@@ -288,11 +305,9 @@ export function formatPropertyTree(diffs: PropertyDiff[]): string[] {
  * Delegates to renderNestedObject which handles recursive rendering.
  */
 function formatFullConfig(ruleset: Ruleset, indent: number = 2): string[] {
-  return renderNestedObject(
-    ruleset as unknown as Record<string, unknown>,
-    "add",
-    indent
-  );
+  // Object.entries works on any object; the cast avoids a double assertion
+  const entries = Object.entries(ruleset) as [string, unknown][];
+  return renderNestedObject(Object.fromEntries(entries), "add", indent);
 }
 
 /**
@@ -300,88 +315,91 @@ function formatFullConfig(ruleset: Ruleset, indent: number = 2): string[] {
  */
 export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
   const lines: string[] = [];
-  let creates = 0;
-  let updates = 0;
-  let deletes = 0;
-  let unchanged = 0;
   const entries: RulesetPlanEntry[] = [];
 
-  // Group by action type
-  const createChanges = changes.filter((c) => c.action === "create");
-  const updateChanges = changes.filter((c) => c.action === "update");
-  const deleteChanges = changes.filter((c) => c.action === "delete");
-  const unchangedItems = changes.filter((c) => c.action === "unchanged");
+  // Group by action in a single pass
+  const grouped: Record<RulesetAction, RulesetChange[]> = {
+    create: [],
+    update: [],
+    delete: [],
+    unchanged: [],
+  };
+  for (const c of changes) {
+    grouped[c.action].push(c);
+  }
 
-  creates = createChanges.length;
-  updates = updateChanges.length;
-  deletes = deleteChanges.length;
-  unchanged = unchangedItems.length;
+  for (const change of grouped.create) {
+    if (grouped.create.indexOf(change) === 0) {
+      lines.push(chalk.bold("  Create:"));
+    }
+    lines.push(chalk.green(`    + ruleset "${change.name}"`));
+    if (change.desired) {
+      lines.push(...formatFullConfig(change.desired, 2));
+    }
+    const propertyCount = change.desired
+      ? Object.keys(change.desired).length
+      : 0;
+    entries.push({
+      name: change.name,
+      action: "create",
+      propertyCount,
+      config: change.desired,
+    });
+    lines.push("");
+  }
 
-  if (createChanges.length > 0) {
-    lines.push(chalk.bold("  Create:"));
-    for (const change of createChanges) {
-      lines.push(chalk.green(`    + ruleset "${change.name}"`));
-      if (change.desired) {
-        lines.push(...formatFullConfig(change.desired, 2));
+  for (const change of grouped.update) {
+    if (grouped.update.indexOf(change) === 0) {
+      lines.push(chalk.bold("  Update:"));
+    }
+    lines.push(chalk.yellow(`    ~ ruleset "${change.name}"`));
+    if (change.current && change.desired) {
+      const currentNorm = normalizeRuleset(change.current);
+      const desiredNorm = normalizeRuleset(change.desired);
+      const projectedCurrent = projectToDesiredShape(
+        currentNorm,
+        desiredNorm
+      ) as Record<string, unknown>;
+      const diffs = computePropertyDiffs(projectedCurrent, desiredNorm);
+      const treeLines = formatPropertyTree(diffs);
+      for (const line of treeLines) {
+        lines.push(`        ${line}`);
       }
-      const propertyCount = change.desired
-        ? Object.keys(change.desired).length
-        : 0;
+
+      const added = diffs.filter((d) => d.action === "add").length;
+      const changed = diffs.filter((d) => d.action === "change").length;
+      const removed = diffs.filter((d) => d.action === "remove").length;
       entries.push({
         name: change.name,
-        action: "create",
-        propertyCount,
-        config: change.desired,
+        action: "update",
+        propertyChanges: { added, changed, removed },
+        propertyDiffs: diffs,
       });
-      lines.push(""); // Blank line between rulesets
+    } else {
+      entries.push({ name: change.name, action: "update" });
     }
+    lines.push("");
   }
 
-  if (updateChanges.length > 0) {
-    lines.push(chalk.bold("  Update:"));
-    for (const change of updateChanges) {
-      lines.push(chalk.yellow(`    ~ ruleset "${change.name}"`));
-      if (change.current && change.desired) {
-        const currentNorm = normalizeRuleset(change.current);
-        const desiredNorm = normalizeRuleset(change.desired);
-        const projectedCurrent = projectToDesiredShape(
-          currentNorm,
-          desiredNorm
-        ) as Record<string, unknown>;
-        const diffs = computePropertyDiffs(projectedCurrent, desiredNorm);
-        const treeLines = formatPropertyTree(diffs);
-        for (const line of treeLines) {
-          lines.push(`        ${line}`);
-        }
-
-        const added = diffs.filter((d) => d.action === "add").length;
-        const changed = diffs.filter((d) => d.action === "change").length;
-        const removed = diffs.filter((d) => d.action === "remove").length;
-        entries.push({
-          name: change.name,
-          action: "update",
-          propertyChanges: { added, changed, removed },
-          propertyDiffs: diffs,
-        });
-      } else {
-        entries.push({ name: change.name, action: "update" });
-      }
-      lines.push(""); // Blank line between rulesets
-    }
-  }
-
-  if (deleteChanges.length > 0) {
+  if (grouped.delete.length > 0) {
     lines.push(chalk.bold("  Delete:"));
-    for (const change of deleteChanges) {
+    for (const change of grouped.delete) {
       lines.push(chalk.red(`    - ruleset "${change.name}"`));
       entries.push({ name: change.name, action: "delete" });
     }
-    lines.push(""); // Blank line after deletes
+    lines.push("");
   }
 
-  for (const change of unchangedItems) {
+  for (const change of grouped.unchanged) {
     entries.push({ name: change.name, action: "unchanged" });
   }
 
-  return { lines, creates, updates, deletes, unchanged, entries };
+  return {
+    lines,
+    creates: grouped.create.length,
+    updates: grouped.update.length,
+    deletes: grouped.delete.length,
+    unchanged: grouped.unchanged.length,
+    entries,
+  };
 }

@@ -152,10 +152,7 @@ export class GitOps implements ILocalGitOps {
       if (code === "ENOENT" || code === "EACCES") {
         return null;
       }
-      this.log?.debug(
-        `Unexpected error reading ${fileName}: ${toErrorMessage(error)}`
-      );
-      return null;
+      throw error;
     }
   }
 
@@ -178,10 +175,14 @@ export class GitOps implements ILocalGitOps {
       const existingContent = readFileSync(filePath, "utf-8");
       return existingContent !== newContent;
     } catch (error) {
-      this.log?.debug(
-        `Failed to read ${fileName} for comparison: ${toErrorMessage(error)}`
-      );
-      return true;
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === "ENOENT" || code === "EACCES") {
+        this.log?.debug(
+          `Failed to read ${fileName} for comparison: ${toErrorMessage(error)}`
+        );
+        return true;
+      }
+      throw error;
     }
   }
 
@@ -193,7 +194,6 @@ export class GitOps implements ILocalGitOps {
   /**
    * Get list of files that have changes according to git status.
    * Returns relative file paths for files that are modified, added, or untracked.
-   * Uses the same this.exec() pattern as other methods in this class.
    */
   async getChangedFiles(): Promise<string[]> {
     const status = await this.exec("git status --porcelain", this._workDir);
@@ -229,11 +229,18 @@ export class GitOps implements ILocalGitOps {
       );
       return true;
     } catch (error) {
-      // Expected when file doesn't exist on branch
-      this.log?.debug(
-        `fileExistsOnBranch(${fileName}, ${branch}): ${toErrorMessage(error)}`
-      );
-      return false;
+      const message = toErrorMessage(error);
+      if (
+        message.includes("does not exist") ||
+        message.includes("did not match") ||
+        message.includes("not found")
+      ) {
+        this.log?.debug(
+          `fileExistsOnBranch(${fileName}, ${branch}): ${message}`
+        );
+        return false;
+      }
+      throw error;
     }
   }
 

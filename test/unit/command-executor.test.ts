@@ -3,7 +3,7 @@
  * This file tests the existing ICommandExecutor abstraction used for DI in git operations.
  */
 import { describe, test } from "node:test";
-import assert from "node:assert";
+import { strict as assert } from "node:assert";
 import { tmpdir } from "node:os";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

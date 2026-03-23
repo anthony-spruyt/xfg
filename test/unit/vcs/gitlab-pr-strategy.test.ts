@@ -1,5 +1,5 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
-import assert from "node:assert";
+import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { GitLabPRStrategy } from "../../../src/vcs/gitlab-pr-strategy.js";
@@ -9,44 +9,12 @@ import {
   AzureDevOpsRepoInfo,
 } from "../../../src/shared/repo-detector.js";
 import type { PRStrategyOptions } from "../../../src/vcs/types.js";
-import { ICommandExecutor } from "../../../src/shared/command-executor.js";
+import {
+  createMockExecutor,
+  type ExecutorMockResult,
+} from "../../mocks/executor.mock.js";
 
 const testDir = join(process.cwd(), "test-gitlab-strategy-tmp");
-
-// Mock executor for testing - implements ICommandExecutor interface
-function createMockExecutor(): ICommandExecutor & {
-  calls: Array<{ command: string; cwd: string }>;
-  responses: Map<string, string | Error>;
-  reset: () => void;
-} {
-  const calls: Array<{ command: string; cwd: string }> = [];
-  const responses = new Map<string, string | Error>();
-
-  return {
-    calls,
-    responses,
-    async exec(command: string, cwd: string): Promise<string> {
-      calls.push({ command, cwd });
-
-      // Check for matching response
-      for (const [pattern, response] of responses) {
-        if (command.includes(pattern)) {
-          if (response instanceof Error) {
-            throw response;
-          }
-          return response;
-        }
-      }
-
-      // Default: return empty string
-      return "";
-    },
-    reset(): void {
-      calls.length = 0;
-      responses.clear();
-    },
-  };
-}
 
 describe("GitLabPRStrategy with mock executor", () => {
   const gitlabRepoInfo: GitLabRepoInfo = {
@@ -58,7 +26,7 @@ describe("GitLabPRStrategy with mock executor", () => {
     host: "gitlab.com",
   };
 
-  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  let mockExecutor: ExecutorMockResult;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
@@ -81,7 +49,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         '[{"iid": 123, "title": "Test MR"}]'
       );
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -106,7 +74,7 @@ describe("GitLabPRStrategy with mock executor", () => {
     test("returns null when no MR exists", async () => {
       mockExecutor.responses.set("glab mr list", "[]");
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -125,7 +93,7 @@ describe("GitLabPRStrategy with mock executor", () => {
     test("returns null when response is empty", async () => {
       mockExecutor.responses.set("glab mr list", "");
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -145,7 +113,7 @@ describe("GitLabPRStrategy with mock executor", () => {
       const authError = new Error("401 Unauthorized - Bad credentials");
       mockExecutor.responses.set("glab mr list", authError);
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -166,7 +134,7 @@ describe("GitLabPRStrategy with mock executor", () => {
       const networkError = new Error("Connection timed out");
       mockExecutor.responses.set("glab mr list", networkError);
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -187,7 +155,7 @@ describe("GitLabPRStrategy with mock executor", () => {
       });
       mockExecutor.responses.set("glab mr list", errorWithStderr);
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -210,7 +178,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         "Creating merge request...\nhttps://gitlab.com/myorg/myrepo/-/merge_requests/456"
       );
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -239,7 +207,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         "Merge request !789 created"
       );
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -265,7 +233,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         "https://gitlab.com/myorg/myrepo/-/merge_requests/123"
       );
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -285,7 +253,7 @@ describe("GitLabPRStrategy with mock executor", () => {
     test("cleans up description file after error", async () => {
       mockExecutor.responses.set("glab mr create", new Error("Command failed"));
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -308,7 +276,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         "Error: failed to create merge request"
       );
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -333,7 +301,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         '[{"iid": 999, "title": "Existing MR"}]'
       );
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -363,7 +331,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         "https://gitlab.com/myorg/myrepo/-/merge_requests/888"
       );
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -392,7 +360,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         new Error("Failed to create")
       );
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: gitlabRepoInfo,
         title: "Test MR",
@@ -421,7 +389,7 @@ describe("GitLabPRStrategy with nested groups", () => {
     host: "gitlab.com",
   };
 
-  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  let mockExecutor: ExecutorMockResult;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
@@ -443,7 +411,7 @@ describe("GitLabPRStrategy with nested groups", () => {
       '[{"iid": 42, "title": "Test MR"}]'
     );
 
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: nestedRepoInfo,
       title: "Test MR",
@@ -465,7 +433,7 @@ describe("GitLabPRStrategy with nested groups", () => {
   test("uses correct repo flag for nested groups", async () => {
     mockExecutor.responses.set("glab mr list", "[]");
 
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: nestedRepoInfo,
       title: "Test MR",
@@ -494,7 +462,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
     host: "gitlab.com",
   };
 
-  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  let mockExecutor: ExecutorMockResult;
   const testDirClose = join(process.cwd(), "test-gitlab-strategy-close-tmp");
 
   beforeEach(() => {
@@ -514,7 +482,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
   test("returns false when no MR exists", async () => {
     mockExecutor.responses.set("glab mr list", "[]");
 
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const result = await strategy.closeExistingPR({
       repoInfo: gitlabRepoInfo,
       branchName: "test-branch",
@@ -534,7 +502,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
     mockExecutor.responses.set("glab mr close", "");
     mockExecutor.responses.set("git push origin --delete", "");
 
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const result = await strategy.closeExistingPR({
       repoInfo: gitlabRepoInfo,
       branchName: "test-branch",
@@ -558,7 +526,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
     );
     mockExecutor.responses.set("glab mr close", new Error("Close failed"));
 
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const result = await strategy.closeExistingPR({
       repoInfo: gitlabRepoInfo,
       branchName: "test-branch",
@@ -578,7 +546,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
     mockExecutor.responses.set("glab mr close", "");
     mockExecutor.responses.set("git push origin --delete", "");
 
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     await strategy.closeExistingPR({
       repoInfo: gitlabRepoInfo,
       branchName: "test-branch",
@@ -605,7 +573,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
       new Error("Branch deletion failed")
     );
 
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const result = await strategy.closeExistingPR({
       repoInfo: gitlabRepoInfo,
       branchName: "test-branch",
@@ -629,7 +597,7 @@ describe("GitLabPRStrategy merge", () => {
     host: "gitlab.com",
   };
 
-  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  let mockExecutor: ExecutorMockResult;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
@@ -647,7 +615,7 @@ describe("GitLabPRStrategy merge", () => {
 
   describe("merge with manual mode", () => {
     test("returns success without making any calls", async () => {
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
         repoInfo: gitlabRepoInfo,
@@ -667,7 +635,7 @@ describe("GitLabPRStrategy merge", () => {
     test("enables auto-merge when pipeline succeeds", async () => {
       mockExecutor.responses.set("glab mr merge", "");
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
         repoInfo: gitlabRepoInfo,
@@ -691,7 +659,7 @@ describe("GitLabPRStrategy merge", () => {
     test("uses squash strategy when configured", async () => {
       mockExecutor.responses.set("glab mr merge", "");
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
         repoInfo: gitlabRepoInfo,
@@ -710,7 +678,7 @@ describe("GitLabPRStrategy merge", () => {
     test("uses rebase strategy when configured", async () => {
       mockExecutor.responses.set("glab mr merge", "");
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
         repoInfo: gitlabRepoInfo,
@@ -729,7 +697,7 @@ describe("GitLabPRStrategy merge", () => {
     test("uses remove-source-branch flag when configured", async () => {
       mockExecutor.responses.set("glab mr merge", "");
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
         repoInfo: gitlabRepoInfo,
@@ -748,7 +716,7 @@ describe("GitLabPRStrategy merge", () => {
     test("returns failure when glab mr merge fails", async () => {
       mockExecutor.responses.set("glab mr merge", new Error("Merge failed"));
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
         repoInfo: gitlabRepoInfo,
@@ -767,7 +735,7 @@ describe("GitLabPRStrategy merge", () => {
     test("merges immediately without waiting for pipeline", async () => {
       mockExecutor.responses.set("glab mr merge", "");
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
         repoInfo: gitlabRepoInfo,
@@ -791,7 +759,7 @@ describe("GitLabPRStrategy merge", () => {
     test("uses merge strategy with force mode", async () => {
       mockExecutor.responses.set("glab mr merge", "");
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
         repoInfo: gitlabRepoInfo,
@@ -811,7 +779,7 @@ describe("GitLabPRStrategy merge", () => {
         new Error("Merge not allowed")
       );
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/123",
         repoInfo: gitlabRepoInfo,
@@ -830,7 +798,7 @@ describe("GitLabPRStrategy merge", () => {
     test("parses MR URL for nested groups", async () => {
       mockExecutor.responses.set("glab mr merge", "");
 
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl:
           "https://gitlab.com/org/group/subgroup/repo/-/merge_requests/456",
@@ -847,7 +815,7 @@ describe("GitLabPRStrategy merge", () => {
     });
 
     test("returns failure for invalid MR URL", async () => {
-      const strategy = new GitLabPRStrategy(mockExecutor);
+      const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl: "https://gitlab.com/invalid-url",
         repoInfo: gitlabRepoInfo,
@@ -872,7 +840,7 @@ describe("GitLabPRStrategy URL extraction edge cases", () => {
     host: "gitlab.com",
   };
 
-  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  let mockExecutor: ExecutorMockResult;
   const testDirEdge = join(process.cwd(), "test-gitlab-strategy-edge-tmp");
 
   beforeEach(() => {
@@ -895,7 +863,7 @@ describe("GitLabPRStrategy URL extraction edge cases", () => {
       "MR created: https://gitlab.com/owner/repo/-/merge_requests/123."
     );
 
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: gitlabRepoInfo,
       title: "Test MR",
@@ -921,7 +889,7 @@ describe("GitLabPRStrategy URL extraction edge cases", () => {
       "See related: https://gitlab.com/owner/repo/-/issues/456"
     );
 
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: gitlabRepoInfo,
       title: "Test MR",
@@ -944,7 +912,7 @@ describe("GitLabPRStrategy URL extraction edge cases", () => {
       "Based on commit https://gitlab.com/owner/repo/-/commit/abc123"
     );
 
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: gitlabRepoInfo,
       title: "Test MR",
@@ -967,7 +935,7 @@ describe("GitLabPRStrategy URL extraction edge cases", () => {
       "https://gitlab.com/owner/repo/-/merge_requests/789\n"
     );
 
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: gitlabRepoInfo,
       title: "Test MR",
@@ -997,7 +965,7 @@ describe("GitLabPRStrategy type guards", () => {
     project: "project",
   };
 
-  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  let mockExecutor: ExecutorMockResult;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
@@ -1014,7 +982,7 @@ describe("GitLabPRStrategy type guards", () => {
   });
 
   test("checkExistingPR throws for non-GitLab repo", async () => {
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: azureRepoInfo,
       title: "Test MR",
@@ -1032,7 +1000,7 @@ describe("GitLabPRStrategy type guards", () => {
   });
 
   test("create throws for non-GitLab repo", async () => {
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: azureRepoInfo,
       title: "Test MR",
@@ -1050,7 +1018,7 @@ describe("GitLabPRStrategy type guards", () => {
   });
 
   test("closeExistingPR throws for non-GitLab repo", async () => {
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
 
     await assert.rejects(
       () =>
@@ -1076,7 +1044,7 @@ describe("GitLabPRStrategy self-hosted", () => {
     host: "gitlab.example.com",
   };
 
-  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  let mockExecutor: ExecutorMockResult;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
@@ -1098,7 +1066,7 @@ describe("GitLabPRStrategy self-hosted", () => {
       '[{"iid": 77, "title": "Test MR"}]'
     );
 
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: selfHostedRepoInfo,
       title: "Test MR",
@@ -1130,7 +1098,7 @@ describe("GitLabPRStrategy merge unknown mode", () => {
 
   test("returns failure for unknown merge mode", async () => {
     const mockExecutor = createMockExecutor();
-    const strategy = new GitLabPRStrategy(mockExecutor);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const result = await strategy.merge({
       prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/1",
       repoInfo: gitlabRepoInfo,
@@ -1155,7 +1123,7 @@ describe("GitLabPRStrategy logger coverage", () => {
     host: "gitlab.com",
   };
 
-  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  let mockExecutor: ExecutorMockResult;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
@@ -1186,7 +1154,7 @@ describe("GitLabPRStrategy logger coverage", () => {
     });
     mockExecutor.responses.set("glab mr list", errorWithStderr);
 
-    const strategy = new GitLabPRStrategy(mockExecutor, mockLogger);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock, mockLogger);
     const result = await strategy.checkExistingPR({
       repoInfo: gitlabRepoInfo,
       branchName: "test-branch",
@@ -1215,7 +1183,7 @@ describe("GitLabPRStrategy logger coverage", () => {
     );
     mockExecutor.responses.set("glab mr close", new Error("Close failed"));
 
-    const strategy = new GitLabPRStrategy(mockExecutor, mockLogger);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock, mockLogger);
     const result = await strategy.closeExistingPR({
       repoInfo: gitlabRepoInfo,
       branchName: "test-branch",
@@ -1250,7 +1218,7 @@ describe("GitLabPRStrategy logger coverage", () => {
       new Error("Branch deletion failed")
     );
 
-    const strategy = new GitLabPRStrategy(mockExecutor, mockLogger);
+    const strategy = new GitLabPRStrategy(mockExecutor.mock, mockLogger);
     const result = await strategy.closeExistingPR({
       repoInfo: gitlabRepoInfo,
       branchName: "test-branch",
@@ -1283,8 +1251,8 @@ describe("GitLabPRStrategy closeExistingPR with unparseable URL", () => {
     }
 
     const warnings: string[] = [];
-    const mockExecutor = createMockExecutor();
-    const strategy = new TestableGitLabPRStrategy(mockExecutor, {
+    const localMockExecutor = createMockExecutor();
+    const strategy = new TestableGitLabPRStrategy(localMockExecutor.mock, {
       debug() {},
       warn(msg: string) {
         warnings.push(msg);

@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { RepoInfo } from "../shared/repo-detector.js";
-import { getPRStrategy } from "./pr-strategy-factory.js";
+import { createPRStrategy } from "./pr-strategy-factory.js";
 import { PRWorkflowExecutor } from "./pr-strategy.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
@@ -148,7 +148,7 @@ export function formatPRTitle(files: FileAction[]): string {
   return `chore: sync ${changedFiles.length} config files`;
 }
 
-export async function createPR(options: PROptions): Promise<PRResult> {
+export function createPR(options: PROptions): Promise<PRResult> {
   const {
     repoInfo,
     branchName,
@@ -168,15 +168,15 @@ export async function createPR(options: PROptions): Promise<PRResult> {
   const body = formatPRBody(files, repoInfo, prTemplate);
 
   if (dryRun) {
-    return {
+    return Promise.resolve({
       success: true,
       message: `[DRY RUN] Would create PR: "${title}"`,
-    };
+    });
   }
 
   // Get the appropriate strategy and execute via workflow executor
   const resolvedStrategy =
-    options.strategy ?? getPRStrategy(repoInfo, executor, log);
+    options.strategy ?? createPRStrategy(repoInfo, executor, log);
   const workflow = new PRWorkflowExecutor(resolvedStrategy);
   return workflow.execute({
     repoInfo,
@@ -208,7 +208,7 @@ interface MergePROptions {
   strategy?: IPRStrategy;
 }
 
-export async function mergePR(options: MergePROptions): Promise<MergeResult> {
+export function mergePR(options: MergePROptions): Promise<MergeResult> {
   const {
     repoInfo,
     prUrl,
@@ -228,16 +228,16 @@ export async function mergePR(options: MergePROptions): Promise<MergeResult> {
         : mergeConfig.mode === "auto"
           ? "enable auto-merge"
           : "leave open for manual review";
-    return {
+    return Promise.resolve({
       success: true,
       message: `[DRY RUN] Would ${modeText}`,
       merged: false,
-    };
+    });
   }
 
   // Get the appropriate strategy and execute merge
   const resolvedStrategy =
-    options.strategy ?? getPRStrategy(repoInfo, executor, log);
+    options.strategy ?? createPRStrategy(repoInfo, executor, log);
   return resolvedStrategy.merge({
     prUrl,
     repoInfo,

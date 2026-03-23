@@ -408,20 +408,17 @@ describe("GitOps", () => {
       assert.equal(resultDiff, true);
     });
 
-    test("returns true and logs when readFileSync throws during comparison", () => {
-      // Create a directory where a file would be expected - readFileSync on a directory throws
+    test("re-throws unexpected errors from readFileSync", () => {
+      // Create a directory where a file would be expected - readFileSync on a directory throws EISDIR
       mkdirSync(join(workDir, "is-a-dir"), { recursive: true });
-      const debugMessages: string[] = [];
       const gitOps = new GitOps({
         workDir,
         executor: stubExecutor,
-        log: { debug: (msg: string) => debugMessages.push(msg) },
       });
 
-      const result = gitOps.wouldChange("is-a-dir", "some content");
-      assert.equal(result, true);
-      assert.ok(debugMessages.length > 0, "Should have logged a debug message");
-      assert.ok(debugMessages[0].includes("Failed to read"));
+      assert.throws(() => gitOps.wouldChange("is-a-dir", "some content"), {
+        code: "EISDIR",
+      });
     });
   });
 

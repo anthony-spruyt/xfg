@@ -1,9 +1,4 @@
-export type { DiffStats } from "./diff-utils.js";
-export {
-  computeUnifiedDiff,
-  isBinaryFile,
-  formatDiffLine,
-} from "./diff-utils.js";
+export { formatDiffLine } from "./diff-utils.js";
 export type {
   FileChangeDetail,
   GitOpsFactory,

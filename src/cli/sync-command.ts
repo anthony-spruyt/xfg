@@ -1,8 +1,13 @@
 import { resolve, join } from "node:path";
 import { existsSync } from "node:fs";
-import { loadRawConfig, normalizeConfig, RepoConfig } from "../config/index.js";
+import {
+  loadRawConfig,
+  normalizeConfig,
+  validateForSync,
+  type RepoConfig,
+  type Config,
+} from "../config/index.js";
 import { ValidationError, SyncError } from "../shared/errors.js";
-import { validateForSync } from "../config/validator.js";
 import {
   parseGitUrl,
   getRepoDisplayName,
@@ -16,6 +21,7 @@ import {
 import { createTokenManager } from "../vcs/index.js";
 import { RepositoryProcessor } from "../sync/index.js";
 import {
+  type ISettingsProcessor,
   RulesetProcessor,
   RepoSettingsProcessor,
   LabelsProcessor,
@@ -76,14 +82,16 @@ function createDefaultLabelsProcessorFactory(): LabelsProcessorFactory {
     );
 }
 export type { SharedOptions, SyncOptions } from "./types.js";
-import type { Config } from "../config/types.js";
 import { ResultsCollector } from "./results-collector.js";
-import { buildSettingsReport } from "./settings-report-builder.js";
+import {
+  buildSettingsReport,
+  type ProcessorResults,
+} from "./settings-report-builder.js";
 import { formatSettingsReportCLI } from "../output/settings-report.js";
 import { buildSyncReport } from "./sync-report-builder.js";
 import { formatSyncReportCLI } from "../output/sync-report.js";
+import { buildLifecycleReport } from "./lifecycle-report-builder.js";
 import {
-  buildLifecycleReport,
   formatLifecycleReportCLI,
   hasLifecycleChanges,
   type LifecycleAction,
@@ -99,9 +107,6 @@ import {
   type IRepoLifecycleManager,
 } from "../lifecycle/index.js";
 
-/**
- * Get unique file names from all repos in the config
- */
 function getUniqueFileNames(config: { repos: RepoConfig[] }): string[] {
   const fileNames = new Set<string>();
   for (const repo of config.repos) {
@@ -112,9 +117,6 @@ function getUniqueFileNames(config: { repos: RepoConfig[] }): string[] {
   return Array.from(fileNames);
 }
 
-/**
- * Generate default branch name based on files being synced
- */
 function generateBranchName(fileNames: string[]): string {
   if (fileNames.length === 1) {
     return `chore/sync-${sanitizeBranchName(fileNames[0])}`;
@@ -122,9 +124,6 @@ function generateBranchName(fileNames: string[]): string {
   return "chore/sync-config";
 }
 
-/**
- * Format file names for display
- */
 function formatFileNames(fileNames: string[]): string {
   if (fileNames.length === 1) {
     return fileNames[0];
@@ -148,7 +147,7 @@ function determineMergeOutcome(
 function logSettingsResult(
   result: SettingsResult,
   label: string,
-  current: number,
+  repoNumber: number,
   repoName: string,
   settingsCollector: ResultsCollector
 ): void {
@@ -164,87 +163,110 @@ function logSettingsResult(
       }
     }
   } else if (!result.skipped && result.success) {
-    getLogger().success(current, repoName, `${label}: ${result.message}`);
+    getLogger().success(repoNumber, repoName, `${label}: ${result.message}`);
   }
   if (!result.success && !result.skipped) {
-    getLogger().error(current, repoName, `${label}: ${result.message}`);
+    getLogger().error(repoNumber, repoName, `${label}: ${result.message}`);
     settingsCollector.appendError(repoName, result.message);
   }
 }
 
-async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
+interface SettingsDescriptor {
+  key: "rulesets" | "labels" | "repo";
+  label: string;
+  run: () => Promise<SettingsResult>;
+}
+
+function buildSettingsDescriptors(
+  ctx: ApplyRepoSettingsContext
+): SettingsDescriptor[] {
   const {
     repoConfig,
     repoInfo,
-    repoName,
-    current,
     options,
     token,
+    repoName,
     settingsCollector,
     rulesetProcessorFactory,
     repoSettingsProcessorFactory,
     labelsProcessorFactory,
   } = ctx;
+  const sharedOpts = {
+    dryRun: options.dryRun,
+    noDelete: options.noDelete,
+    token,
+  };
 
-  if (!repoConfig.settings || !isGitHubRepo(repoInfo)) return;
+  // Each processor returns a subtype of BaseProcessorResult whose planOutput
+  // contains both `lines` (for CLI display) and `entries` (for report building).
+  // ProcessorResults fields capture only the `entries` slice; the runtime object
+  // satisfies both views, so we assign with an explicit per-field cast.
+  const runAndStore = async (
+    factory: () => ISettingsProcessor,
+    opts: { dryRun?: boolean; noDelete?: boolean; token?: string },
+    assign: (entry: ProcessorResults, result: SettingsResult) => void
+  ): Promise<SettingsResult> => {
+    const result = await runSettingsProcessor(
+      factory,
+      repoConfig,
+      repoInfo,
+      opts
+    );
+    if (!result.skipped) {
+      assign(settingsCollector.getOrCreate(repoName), result);
+    }
+    return result;
+  };
 
-  const settingsDescriptors = [
+  return [
     {
       key: "rulesets" as const,
       label: "Rulesets",
-      run: async () => {
-        const result = await rulesetProcessorFactory().process(
-          repoConfig,
-          repoInfo,
-          {
-            dryRun: options.dryRun,
-            noDelete: options.noDelete,
-            token,
-          }
-        );
-        if (!result.skipped) {
-          settingsCollector.getOrCreate(repoName).rulesetResult = result;
-        }
-        return result;
-      },
+      run: () =>
+        runAndStore(rulesetProcessorFactory, sharedOpts, (e, r) => {
+          e.rulesetResult = r as ProcessorResults["rulesetResult"];
+        }),
     },
     {
       key: "labels" as const,
       label: "Labels",
-      run: async () => {
-        const result = await labelsProcessorFactory().process(
-          repoConfig,
-          repoInfo,
-          {
-            dryRun: options.dryRun,
-            noDelete: options.noDelete,
-            token,
-          }
-        );
-        if (!result.skipped) {
-          settingsCollector.getOrCreate(repoName).labelsResult = result;
-        }
-        return result;
-      },
+      run: () =>
+        runAndStore(labelsProcessorFactory, sharedOpts, (e, r) => {
+          e.labelsResult = r as ProcessorResults["labelsResult"];
+        }),
     },
     {
       key: "repo" as const,
       label: "Repo Settings",
-      run: async () => {
-        const result = await repoSettingsProcessorFactory().process(
-          repoConfig,
-          repoInfo,
-          { dryRun: options.dryRun, token }
-        );
-        if (!result.skipped) {
-          settingsCollector.getOrCreate(repoName).settingsResult = result;
-        }
-        return result;
-      },
+      run: () =>
+        runAndStore(
+          repoSettingsProcessorFactory,
+          { dryRun: options.dryRun, token },
+          (e, r) => {
+            e.settingsResult = r as ProcessorResults["settingsResult"];
+          }
+        ),
     },
   ];
+}
 
-  for (const desc of settingsDescriptors) {
+function runSettingsProcessor(
+  factory: () => ISettingsProcessor,
+  repoConfig: RepoConfig,
+  repoInfo: RepoInfo,
+  processOptions: { dryRun?: boolean; noDelete?: boolean; token?: string }
+): Promise<SettingsResult> {
+  return factory()
+    .process(repoConfig, repoInfo, processOptions)
+    .then((result) => result as SettingsResult);
+}
+
+async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
+  const { repoConfig, repoInfo, repoName, repoNumber, settingsCollector } = ctx;
+
+  if (!repoConfig.settings || !isGitHubRepo(repoInfo)) return;
+
+  for (const desc of buildSettingsDescriptors(ctx)) {
     const settingsValue = repoConfig.settings[desc.key];
     if (!settingsValue || Object.keys(settingsValue).length === 0) continue;
 
@@ -253,13 +275,13 @@ async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
       logSettingsResult(
         result,
         desc.label,
-        current,
+        repoNumber,
         repoName,
         settingsCollector
       );
     } catch (error) {
       getLogger().error(
-        current,
+        repoNumber,
         repoName,
         `${desc.label}: ${toErrorMessage(error)}`
       );
@@ -356,7 +378,7 @@ async function processSingleRepo(
   ctx: RepoIterationContext
 ): Promise<void> {
   const { config, options } = ctx;
-  const current = index + 1;
+  const repoNumber = index + 1;
 
   // Apply CLI-level PR option overrides
   if (options.merge || options.mergeStrategy || options.deleteBranch) {
@@ -382,7 +404,7 @@ async function processSingleRepo(
       githubHosts: config.githubHosts,
     });
   } catch (error) {
-    getLogger().error(current, repoConfig.git, toErrorMessage(error));
+    getLogger().error(repoNumber, repoConfig.git, toErrorMessage(error));
     ctx.reportResults.push({
       repoName: repoConfig.git,
       success: false,
@@ -429,7 +451,7 @@ async function processSingleRepo(
     repoConfig,
     repoInfo,
     repoName,
-    current,
+    repoNumber,
     options,
     token: repoToken,
     settingsCollector: ctx.settingsCollector,
@@ -447,7 +469,7 @@ async function runLifecyclePhase(
   repo: RepoPhaseParams,
   ctx: RepoIterationContext
 ): Promise<boolean> {
-  const current = repo.index + 1;
+  const repoNumber = repo.index + 1;
 
   try {
     const { outputLines, lifecycleResult } = await runLifecycleCheck(
@@ -495,7 +517,7 @@ async function runLifecyclePhase(
     return false;
   } catch (error) {
     getLogger().error(
-      current,
+      repoNumber,
       repo.repoName,
       `Lifecycle error: ${toErrorMessage(error)}`
     );
@@ -516,9 +538,9 @@ async function runFileSyncPhase(
   repo: RepoPhaseParams,
   ctx: RepoIterationContext
 ): Promise<void> {
-  const current = repo.index + 1;
+  const repoNumber = repo.index + 1;
   try {
-    getLogger().progress(current, repo.repoName, "Processing...");
+    getLogger().progress(repoNumber, repo.repoName, "Processing...");
 
     const result = await ctx.processor.process(repo.repoConfig, repo.repoInfo, {
       branchName: ctx.branchName,
@@ -550,14 +572,14 @@ async function runFileSyncPhase(
     });
 
     if (result.skipped) {
-      getLogger().skip(current, repo.repoName, result.message);
+      getLogger().skip(repoNumber, repo.repoName, result.message);
     } else if (result.success) {
-      getLogger().success(current, repo.repoName, result.message);
+      getLogger().success(repoNumber, repo.repoName, result.message);
     } else {
-      getLogger().error(current, repo.repoName, result.message);
+      getLogger().error(repoNumber, repo.repoName, result.message);
     }
   } catch (error) {
-    getLogger().error(current, repo.repoName, toErrorMessage(error));
+    getLogger().error(repoNumber, repo.repoName, toErrorMessage(error));
     ctx.reportResults.push({
       repoName: repo.repoName,
       success: false,

@@ -1,5 +1,5 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
-import assert from "node:assert";
+import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -13,11 +13,11 @@ import {
   AzureDevOpsRepoInfo,
 } from "../../../src/shared/repo-detector.js";
 import { CommitOptions } from "../../../src/vcs/types.js";
-import {
-  ICommandExecutor,
-  ExecOptions,
-} from "../../../src/shared/command-executor.js";
 import type { INetworkGitOps } from "../../../src/vcs/types.js";
+import {
+  createMockExecutor,
+  type ExecutorMockResult,
+} from "../../mocks/executor.mock.js";
 
 // Create a mock INetworkGitOps for testing
 function createMockGitOps(): INetworkGitOps & {
@@ -35,47 +35,6 @@ function createMockGitOps(): INetworkGitOps & {
 }
 
 const testDir = join(process.cwd(), "test-graphql-commit-strategy-tmp");
-
-// Mock executor for testing - implements ICommandExecutor interface
-function createMockExecutor(): ICommandExecutor & {
-  calls: Array<{ command: string; cwd: string; options?: ExecOptions }>;
-  responses: Map<string, string | Error | (() => string | Error)>;
-  reset: () => void;
-} {
-  const calls: Array<{ command: string; cwd: string; options?: ExecOptions }> =
-    [];
-  const responses = new Map<string, string | Error | (() => string | Error)>();
-
-  return {
-    calls,
-    responses,
-    async exec(
-      command: string,
-      cwd: string,
-      options?: ExecOptions
-    ): Promise<string> {
-      calls.push({ command, cwd, options });
-
-      // Check for matching response
-      for (const [pattern, response] of responses) {
-        if (command.includes(pattern)) {
-          const result = typeof response === "function" ? response() : response;
-          if (result instanceof Error) {
-            throw result;
-          }
-          return result;
-        }
-      }
-
-      // Default: return empty string
-      return "";
-    },
-    reset(): void {
-      calls.length = 0;
-      responses.clear();
-    },
-  };
-}
 
 describe("SAFE_BRANCH_NAME_PATTERN", () => {
   test("accepts valid branch names", () => {
@@ -169,7 +128,7 @@ describe("GraphQLCommitStrategy", () => {
     project: "project",
   };
 
-  let mockExecutor: ReturnType<typeof createMockExecutor>;
+  let mockExecutor: ExecutorMockResult;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
@@ -212,7 +171,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "test-branch",
@@ -266,7 +225,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -310,7 +269,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -352,7 +311,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -391,7 +350,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -426,7 +385,7 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("throws error when payload exceeds size limit (50MB)", async () => {
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
 
       // Create content that exceeds 50MB when base64 encoded
       // Base64 adds ~33%, so we need ~37.5MB of raw content to get 50MB encoded
@@ -463,7 +422,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: gheRepoInfo,
         branchName: "main",
@@ -523,7 +482,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -554,7 +513,7 @@ describe("GraphQLCommitStrategy", () => {
         );
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -571,7 +530,7 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("throws error for non-GitHub repos", async () => {
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: azureRepoInfo,
         branchName: "main",
@@ -588,7 +547,7 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("throws error for invalid branch names (shell injection prevention)", async () => {
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const invalidBranchNames = [
         "branch name", // space
         "branch;rm", // semicolon
@@ -631,7 +590,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -666,7 +625,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -699,7 +658,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "test-branch",
@@ -744,7 +703,7 @@ describe("GraphQLCommitStrategy", () => {
       });
 
       const mockGitOps = createMockGitOps();
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       await strategy.commit({
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -796,7 +755,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -828,7 +787,7 @@ describe("GraphQLCommitStrategy", () => {
         throw new Error("gh: Authentication failed (HTTP 401)"); // createCommitOnBranch
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -871,7 +830,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -907,7 +866,7 @@ describe("GraphQLCommitStrategy", () => {
         throw new Error(errorMessage); // createCommitOnBranch
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -973,7 +932,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -1014,7 +973,7 @@ describe("GraphQLCommitStrategy", () => {
         return commitResponse;
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const options: CommitOptions = {
         repoInfo: githubRepoInfo,
         branchName: "test-branch",
@@ -1074,7 +1033,7 @@ describe("GraphQLCommitStrategy", () => {
         return commitResponse;
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const result = await strategy.commit({
         repoInfo: githubRepoInfo,
         branchName: "feature-branch",
@@ -1141,7 +1100,7 @@ describe("GraphQLCommitStrategy", () => {
         return commitResponse;
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const result = await strategy.commit({
         repoInfo: githubRepoInfo,
         branchName: "feature-branch",
@@ -1193,7 +1152,7 @@ describe("GraphQLCommitStrategy", () => {
         return commitResponse;
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const result = await strategy.commit({
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -1245,7 +1204,7 @@ describe("GraphQLCommitStrategy", () => {
         return commitResponse;
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       await strategy.commit({
         repoInfo: gheRepoInfo,
         branchName: "feature",
@@ -1274,7 +1233,7 @@ describe("GraphQLCommitStrategy", () => {
         );
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       await assert.rejects(
         () =>
           strategy.commit({
@@ -1312,7 +1271,7 @@ describe("GraphQLCommitStrategy", () => {
         );
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       await assert.rejects(
         () =>
           strategy.commit({
@@ -1339,7 +1298,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       await assert.rejects(
         () =>
           strategy.commit({
@@ -1363,7 +1322,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       await assert.rejects(
         () =>
           strategy.commit({
@@ -1398,7 +1357,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       await assert.rejects(
         () =>
           strategy.commit({
@@ -1440,7 +1399,7 @@ describe("GraphQLCommitStrategy", () => {
         return commitResponse;
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       const result = await strategy.commit({
         repoInfo: githubRepoInfo,
         branchName: "main",
@@ -1467,7 +1426,7 @@ describe("GraphQLCommitStrategy", () => {
         throw new Error("Internal server error");
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       await assert.rejects(
         () =>
           strategy.commit({
@@ -1512,7 +1471,7 @@ describe("GraphQLCommitStrategy", () => {
         return commitResponse;
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       await strategy.commit({
         repoInfo: gheRepoInfo,
         branchName: "feature",
@@ -1560,7 +1519,7 @@ describe("GraphQLCommitStrategy", () => {
         );
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       try {
         await strategy.commit({
           repoInfo: githubRepoInfo,
@@ -1613,7 +1572,7 @@ describe("GraphQLCommitStrategy", () => {
         });
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       await assert.rejects(
         () =>
           strategy.commit({
@@ -1652,7 +1611,7 @@ describe("GraphQLCommitStrategy", () => {
         return commitResponse;
       });
 
-      const strategy = new GraphQLCommitStrategy(mockExecutor);
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
       await strategy.commit({
         repoInfo: githubRepoInfo,
         branchName: "feature",

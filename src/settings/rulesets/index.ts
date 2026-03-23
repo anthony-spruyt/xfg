@@ -7,7 +7,7 @@ export {
 } from "./diff-algorithm.js";
 
 // Formatter
-export { formatPropertyTree, type RulesetPlanEntry } from "./formatter.js";
+export { type RulesetPlanEntry } from "./formatter.js";
 
 // Processor
 export { RulesetProcessor, type IRulesetProcessor } from "./processor.js";

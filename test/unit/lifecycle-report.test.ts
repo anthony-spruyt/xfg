@@ -4,8 +4,8 @@ import { strict as assert } from "node:assert";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { buildLifecycleReport } from "../../src/cli/lifecycle-report-builder.js";
 import {
-  buildLifecycleReport,
   formatLifecycleReportCLI,
   formatLifecycleReportMarkdown,
   writeLifecycleReportSummary,

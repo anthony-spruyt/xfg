@@ -1,13 +1,14 @@
 // Base processor
 export {
+  type BaseProcessorResult,
   type ISettingsProcessor,
-  type SettingsAction,
+  countActions,
+  isActiveAction,
 } from "./base-processor.js";
 
 // Rulesets
 export {
   type PropertyDiff,
-  formatPropertyTree,
   type RulesetPlanEntry,
   RulesetProcessor,
   type IRulesetProcessor,

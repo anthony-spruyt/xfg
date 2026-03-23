@@ -1,5 +1,5 @@
 import { describe, test } from "node:test";
-import assert from "node:assert/strict";
+import { strict as assert } from "node:assert";
 import {
   isPlainObject,
   toErrorMessage,

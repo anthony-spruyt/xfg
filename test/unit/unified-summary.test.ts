@@ -7,8 +7,8 @@ import { tmpdir } from "node:os";
 import {
   formatUnifiedSummaryMarkdown,
   writeUnifiedSummary,
-  renderSyncLines,
 } from "../../src/output/unified-summary.js";
+import { renderSyncLines } from "../../src/output/sync-report.js";
 import type { LifecycleReport } from "../../src/output/lifecycle-report.js";
 import type { SyncReport } from "../../src/output/sync-report.js";
 import type { SettingsReport } from "../../src/output/settings-report.js";

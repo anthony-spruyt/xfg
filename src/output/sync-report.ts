@@ -1,7 +1,6 @@
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatCountEntry } from "./settings-report.js";
-import { renderSyncLines } from "./unified-summary.js";
 import { formatDiffLine } from "../sync/index.js";
 import type { SyncReport, RepoFileChanges, ReportFileChange } from "./types.js";
 
@@ -101,6 +100,29 @@ export function formatSyncReportMarkdown(
   lines.push(`**${formatSyncSummary(report.totals)}**`);
 
   return lines.join("\n");
+}
+
+export function renderSyncLines(
+  syncRepo: RepoFileChanges,
+  diffLines: string[]
+): void {
+  for (const file of syncRepo.files) {
+    if (file.action === "create") {
+      diffLines.push(`+ ${file.path}`);
+    } else if (file.action === "update") {
+      diffLines.push(`! ${file.path}`);
+    } else if (file.action === "delete") {
+      diffLines.push(`- ${file.path}`);
+    }
+
+    if (file.diffLines) {
+      diffLines.push(...file.diffLines);
+    }
+  }
+
+  if (syncRepo.error) {
+    diffLines.push(`- Error: ${syncRepo.error}`);
+  }
 }
 
 export function writeSyncReportSummary(

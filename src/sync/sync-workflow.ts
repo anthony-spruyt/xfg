@@ -1,4 +1,4 @@
-import type { RepoConfig } from "../config/types.js";
+import type { RepoConfig } from "../config/index.js";
 import { RepoInfo, getRepoDisplayName } from "../shared/repo-detector.js";
 import { safeCleanup } from "../shared/type-guards.js";
 import type { DebugInfoLog } from "../shared/logger.js";

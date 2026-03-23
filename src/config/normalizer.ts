@@ -162,12 +162,6 @@ function mergeRuleset(
 }
 
 /**
- * Merges root and per-repo label configs.
- * Per-repo labels override root labels by name.
- * inherit: false skips all root labels.
- * label: false opts out of a specific root label.
- */
-/**
  * Label map from config: each key is a label name mapped to a Label config
  * or `false` to opt out. The special `inherit` key controls whether parent
  * labels are inherited (defaults to true).

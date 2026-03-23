@@ -1,5 +1,5 @@
 import { describe, test } from "node:test";
-import assert from "node:assert";
+import { strict as assert } from "node:assert";
 import { escapeShellArg } from "../../src/shared/shell-utils.js";
 
 describe("escapeShellArg", () => {

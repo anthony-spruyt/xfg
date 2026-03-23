@@ -19,23 +19,18 @@ import type { AuthenticatedGitOpsMockConfig } from "../mocks/index.js";
 import {
   createMockLogger,
   createMockAuthenticatedGitOps,
-  createMockExecutor as createExecutorMock,
+  createMockExecutor as createExecutorMockFull,
 } from "../mocks/index.js";
 
 const testDir = join(tmpdir(), "repo-processor-test-" + Date.now());
 
-// Simple mock executor that returns empty results for all commands
 function createMockExecutor(): ICommandExecutor {
-  return {
-    async exec(): Promise<string> {
-      return "";
-    },
-  };
+  return createExecutorMockFull({}).mock;
 }
 
 // Mock executor that tracks commit messages for tests verifying commit behavior
 function createTrackingMockExecutor() {
-  const result = createExecutorMock({
+  const result = createExecutorMockFull({
     trackGitCommands: true,
     responses: new Map([["git rev-parse HEAD", "abc123def456"]]),
   });

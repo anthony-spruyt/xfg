@@ -1,14 +1,10 @@
-import type {
-  SettingsReport,
-  RepoChanges,
-  SettingChange,
-  RulesetChange,
-  LabelChange,
-} from "../output/settings-report.js";
-import type {
-  RepoSettingsPlanEntry,
-  RulesetPlanEntry,
-  LabelsPlanEntry,
+import type { SettingsReport, RepoChanges } from "../output/settings-report.js";
+import {
+  type RepoSettingsPlanEntry,
+  type RulesetPlanEntry,
+  type LabelsPlanEntry,
+  countActions,
+  isActiveAction,
 } from "../settings/index.js";
 
 /**
@@ -60,63 +56,51 @@ export function buildSettingsReport(
         if (entry.oldValue === undefined && entry.newValue === undefined) {
           continue;
         }
-        const settingChange: SettingChange = {
+        repoChanges.settings.push({
           name: entry.property,
           action: entry.action,
           oldValue: entry.oldValue,
           newValue: entry.newValue,
-        };
-        repoChanges.settings.push(settingChange);
-
-        if (entry.action === "create") {
-          totals.settings.create++;
-        } else {
-          totals.settings.update++;
-        }
+        });
       }
+      const counts = countActions(repoChanges.settings);
+      totals.settings.create += counts.create;
+      totals.settings.update += counts.update;
     }
 
     // Convert ruleset processor output
     if (result.rulesetResult?.planOutput?.entries) {
       for (const entry of result.rulesetResult.planOutput.entries) {
-        if (entry.action === "unchanged") continue;
-
-        const rulesetChange: RulesetChange = {
+        if (!isActiveAction(entry)) continue;
+        repoChanges.rulesets.push({
           name: entry.name,
-          action: entry.action as "create" | "update" | "delete",
+          action: entry.action,
           propertyDiffs: entry.propertyDiffs,
           config: entry.config,
-        };
-        repoChanges.rulesets.push(rulesetChange);
-
-        if (entry.action === "create") {
-          totals.rulesets.create++;
-        } else if (entry.action === "update") {
-          totals.rulesets.update++;
-        } else if (entry.action === "delete") {
-          totals.rulesets.delete++;
-        }
+        });
       }
+      const counts = countActions(repoChanges.rulesets);
+      totals.rulesets.create += counts.create;
+      totals.rulesets.update += counts.update;
+      totals.rulesets.delete += counts.delete;
     }
 
     // Convert labels processor output
     if (result.labelsResult?.planOutput?.entries) {
       for (const entry of result.labelsResult.planOutput.entries) {
-        if (entry.action === "unchanged") continue;
-
-        const labelChange: LabelChange = {
+        if (!isActiveAction(entry)) continue;
+        repoChanges.labels.push({
           name: entry.name,
-          action: entry.action as "create" | "update" | "delete",
+          action: entry.action,
           newName: entry.newName,
           propertyChanges: entry.propertyChanges,
           config: entry.config,
-        };
-        repoChanges.labels.push(labelChange);
-
-        if (entry.action === "create") totals.labels.create++;
-        else if (entry.action === "update") totals.labels.update++;
-        else if (entry.action === "delete") totals.labels.delete++;
+        });
       }
+      const counts = countActions(repoChanges.labels);
+      totals.labels.create += counts.create;
+      totals.labels.update += counts.update;
+      totals.labels.delete += counts.delete;
     }
 
     if (result.error) {

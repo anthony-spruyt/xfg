@@ -1,4 +1,4 @@
-import type { FileContent, RepoConfig } from "../config/types.js";
+import type { FileContent, RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type {
   ILocalGitOps,
@@ -72,7 +72,7 @@ export interface OrphanDeleteDeps {
 }
 
 export interface IManifestManager {
-  processOrphans(
+  detectOrphans(
     workDir: string,
     configId: string,
     filesWithDeleteOrphaned: Map<string, boolean | undefined>

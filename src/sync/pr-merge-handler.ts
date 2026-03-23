@@ -2,7 +2,7 @@ import type { ILogger } from "../shared/logger.js";
 import {
   createPR,
   mergePR,
-  getPRStrategy,
+  createPRStrategy,
   type PRResult,
   type PRMergeConfig,
 } from "../vcs/index.js";
@@ -28,7 +28,7 @@ export class PRMergeHandler implements IPRMergeHandler {
     this.log.info("Creating pull request...");
     const strategy = options.dryRun
       ? undefined
-      : getPRStrategy(repoInfo, options.executor, this.log);
+      : createPRStrategy(repoInfo, options.executor, this.log);
     const prResult: PRResult = await createPR({
       repoInfo,
       branchName: options.branchName,

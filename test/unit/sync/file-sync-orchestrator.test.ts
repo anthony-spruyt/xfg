@@ -65,20 +65,20 @@ describe("FileSyncOrchestrator", () => {
 
   function createMockManifestManager(): IManifestManager & {
     calls: {
-      processOrphans: number;
+      detectOrphans: number;
       deleteOrphans: number;
       saveUpdatedManifest: number;
     };
   } {
     const calls = {
-      processOrphans: 0,
+      detectOrphans: 0,
       deleteOrphans: 0,
       saveUpdatedManifest: 0,
     };
     return {
       calls,
-      processOrphans: () => {
-        calls.processOrphans++;
+      detectOrphans: () => {
+        calls.detectOrphans++;
         return {
           manifest: { version: 4, configs: {} },
           existingManifest: null,
@@ -131,7 +131,7 @@ describe("FileSyncOrchestrator", () => {
         }
       );
 
-      assert.equal(mockManifestManager.calls.processOrphans, 1);
+      assert.equal(mockManifestManager.calls.detectOrphans, 1);
       assert.equal(mockManifestManager.calls.deleteOrphans, 1);
       assert.equal(mockManifestManager.calls.saveUpdatedManifest, 1);
       assert.equal(result.hasChanges, true);

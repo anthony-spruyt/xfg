@@ -176,7 +176,18 @@ export function parseManifestContent(
 ): XfgManifest | null {
   try {
     const parsed = JSON.parse(content) as unknown;
-    return migrateToV4(parsed);
+    const migrated = migrateToV4(parsed);
+    if (migrated) return migrated;
+
+    if (isV1Manifest(parsed)) {
+      log?.debug(
+        "V1 manifest detected — treating as empty (no config-ID namespace)"
+      );
+      return null;
+    }
+
+    log?.warn("Unrecognized manifest format in content, ignoring");
+    return null;
   } catch (error) {
     log?.warn(`Failed to parse manifest content: ${toErrorMessage(error)}`);
     return null;

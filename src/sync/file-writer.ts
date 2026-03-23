@@ -1,7 +1,10 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import type { FileContent, ContentValue } from "../config/types.js";
-import { convertContentToString } from "../config/formatter.js";
+import {
+  convertContentToString,
+  type FileContent,
+  type ContentValue,
+} from "../config/index.js";
 import { interpolateXfgContent } from "../shared/xfg-template.js";
 import {
   getFileStatus,
@@ -140,6 +143,8 @@ export class FileWriter implements IFileWriter {
       }
     }
 
+    // Separate pass for executable permissions: git add must happen after file
+    // content is written, and setExecutable needs the file to already be tracked.
     for (const file of files) {
       const tracked = fileChanges.get(file.fileName);
       if (tracked?.action === "skip") {

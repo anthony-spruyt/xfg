@@ -1,0 +1,72 @@
+{
+  "assessments": {
+    "cross_module_architecture": 92.0,
+    "convention_outlier": 93.0
+  },
+  "findings": [
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "config_barrel_bypass_for_available_types",
+      "summary": "Several modules bypass config/index.ts barrel for types that are re-exported from it",
+      "related_files": [
+        "src/cli/sync-command.ts",
+        "src/lifecycle/types.ts",
+        "src/lifecycle/repo-lifecycle-manager.ts",
+        "src/lifecycle/lifecycle-helpers.ts",
+        "src/sync/sync-workflow.ts",
+        "src/sync/file-sync-strategy.ts"
+      ],
+      "evidence": [
+        "cli/sync-command.ts:84 imports 'Config' from '../config/types.js' but Config is exported from config/index.ts:31",
+        "lifecycle/types.ts:2 imports 'RepoConfig' from '../config/types.js' but RepoConfig is exported from config/index.ts:30",
+        "lifecycle/repo-lifecycle-manager.ts:8 imports 'RepoConfig' from '../config/types.js' instead of config/index.js",
+        "lifecycle/lifecycle-helpers.ts:4 imports 'RepoConfig, GitHubRepoSettings' from '../config/types.js' -- both available in barrel",
+        "sync/sync-workflow.ts:1 and sync/file-sync-strategy.ts:1 import RepoConfig from '../config/types.js' instead of barrel"
+      ],
+      "suggestion": "Update these imports to use '../config/index.js' instead of '../config/types.js'. This consolidates cross-module access through the barrel and makes boundary adherence consistent. For sync/types.ts and sync/file-writer.ts, the FileContent/ContentValue imports are legitimately necessary (not in barrel), so those stay.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "cross_module_architecture",
+      "identifier": "config_barrel_missing_filecontent_contentvalue",
+      "summary": "FileContent and ContentValue types consumed cross-module but not exported from config/index.ts barrel",
+      "related_files": [
+        "src/config/index.ts",
+        "src/config/types.ts",
+        "src/sync/file-writer.ts",
+        "src/sync/types.ts"
+      ],
+      "evidence": [
+        "sync/file-writer.ts:3 imports 'FileContent, ContentValue' directly from '../config/types.js'",
+        "sync/types.ts:1 imports 'FileContent, RepoConfig' directly from '../config/types.js'",
+        "Neither FileContent nor ContentValue appear in config/index.ts re-exports"
+      ],
+      "suggestion": "Add 'FileContent' and 'ContentValue' to the type re-exports in src/config/index.ts, then update sync/file-writer.ts and sync/types.ts to import from '../config/index.js'. This brings these cross-module types under the barrel's governance.",
+      "confidence": "medium"
+    },
+    {
+      "dimension": "convention_outlier",
+      "identifier": "test_assert_import_drift",
+      "summary": "11 test files use non-strict assert import instead of the dominant strict pattern",
+      "related_files": [
+        "test/unit/repo-detector.test.ts",
+        "test/unit/pr-creator.test.ts",
+        "test/unit/command-executor.test.ts",
+        "test/unit/shell-utils.test.ts",
+        "test/unit/vcs/azure-pr-strategy.test.ts",
+        "test/unit/vcs/github-pr-strategy.test.ts",
+        "test/unit/vcs/gitlab-pr-strategy.test.ts",
+        "test/unit/vcs/git-commit-strategy.test.ts",
+        "test/unit/vcs/graphql-commit-strategy.test.ts",
+        "test/unit/vcs/commit-strategy-selector.test.ts",
+        "test/unit/vcs/pr-strategy.test.ts"
+      ],
+      "evidence": [
+        "84 test files use 'import { strict as assert } from \"node:assert\"' while these 11 files use 'import assert from \"node:assert\"'",
+        "The non-strict imports are concentrated in vcs/ test files (7 of 11) plus 4 scattered utility tests, suggesting they were written in a batch without following the established convention"
+      ],
+      "suggestion": "Change all 11 files to use 'import { strict as assert } from \"node:assert\"' to match the dominant convention. This is a mechanical find-and-replace change.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { getPRStrategy } from "../vcs/index.js";
+import { createPRStrategy } from "../vcs/index.js";
 import type { IPRStrategy } from "../vcs/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
@@ -19,7 +19,7 @@ type PRStrategyFactory = (
 export class BranchManager implements IBranchManager {
   constructor(
     private readonly log: SyncLog,
-    private readonly prStrategyFactory: PRStrategyFactory = getPRStrategy
+    private readonly prStrategyFactory: PRStrategyFactory = createPRStrategy
   ) {}
 
   async setupBranch(options: BranchSetupOptions): Promise<void> {

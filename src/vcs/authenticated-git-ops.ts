@@ -13,7 +13,7 @@ import { SyncError } from "../shared/errors.js";
  * the remote origin. Subsequent operations (fetch, push, getDefaultBranch)
  * reuse that authenticated remote URL — no extra auth setup per operation.
  */
-export interface AuthenticatedGitOpsOptions {
+interface AuthenticatedGitOpsOptions {
   localOps: ILocalGitOps;
   executor: ICommandExecutor;
   workDir: string;

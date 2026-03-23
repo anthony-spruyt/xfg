@@ -30,9 +30,6 @@ function getRepoFlag(repoInfo: GitHubRepoInfo): string {
   return `${repoInfo.owner}/${repoInfo.repo}`;
 }
 
-/**
- * Build regex to match PR URLs for the given host.
- */
 function buildPRUrlRegex(host: string): RegExp {
   const escapedHost = escapeRegExp(host);
   return new RegExp(`https://${escapedHost}/[\\w-]+/[\\w.-]+/pull/\\d+`);
@@ -207,7 +204,10 @@ export class GitHubPRStrategy extends BasePRStrategy {
       );
       return result.trim() === "true";
     } catch (error) {
-      // If we can't check, assume auto-merge is not enabled
+      if (isPermanentError(error)) {
+        throw error;
+      }
+      // If we can't check due to transient errors, assume auto-merge is not enabled
       this.log?.warn(
         `Could not check auto-merge status: ${toErrorMessage(error)}`
       );
@@ -215,9 +215,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
   }
 
-  /**
-   * Build merge strategy flag for gh pr merge command.
-   */
   private getMergeStrategyFlag(strategy?: MergeStrategy): string {
     switch (strategy) {
       case "squash":

@@ -25,7 +25,7 @@ describe("ManifestManager", () => {
     rmSync(testDir, { recursive: true, force: true });
   });
 
-  describe("processOrphans", () => {
+  describe("detectOrphans", () => {
     test("identifies orphaned files from previous manifest", () => {
       // Setup: Create a manifest with a file that's no longer in config
       const manifest = {
@@ -46,7 +46,7 @@ describe("ManifestManager", () => {
         ["current-file.json", true],
       ]);
 
-      const result = manager.processOrphans(
+      const result = manager.detectOrphans(
         workDir,
         "test-config",
         currentFiles
@@ -74,7 +74,7 @@ describe("ManifestManager", () => {
         ["file.json", true],
       ]);
 
-      const result = manager.processOrphans(
+      const result = manager.detectOrphans(
         workDir,
         "test-config",
         currentFiles
@@ -89,7 +89,7 @@ describe("ManifestManager", () => {
         ["file.json", true],
       ]);
 
-      const result = manager.processOrphans(
+      const result = manager.detectOrphans(
         workDir,
         "test-config",
         currentFiles

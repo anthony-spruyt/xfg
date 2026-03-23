@@ -36,10 +36,10 @@ export interface ILogger {
     deletedCount?: number
   ): void;
   setTotal(total: number): void;
-  progress(current: number, repoName: string, message: string): void;
-  success(current: number, repoName: string, message: string): void;
-  skip(current: number, repoName: string, reason: string): void;
-  error(current: number, repoName: string, error: string): void;
+  progress(repoNumber: number, repoName: string, message: string): void;
+  success(repoNumber: number, repoName: string, message: string): void;
+  skip(repoNumber: number, repoName: string, reason: string): void;
+  error(repoNumber: number, repoName: string, error: string): void;
 }
 
 interface LoggerStats {
@@ -70,9 +70,9 @@ export class Logger implements ILogger {
     this.stats.total = total;
   }
 
-  progress(current: number, repoName: string, message: string): void {
+  progress(repoNumber: number, repoName: string, message: string): void {
     console.log(
-      chalk.blue(`[${current}/${this.stats.total}]`) +
+      chalk.blue(`[${repoNumber}/${this.stats.total}]`) +
         ` ${repoName}: ${message}`
     );
   }
@@ -91,26 +91,27 @@ export class Logger implements ILogger {
     }
   }
 
-  success(current: number, repoName: string, message: string): void {
+  success(repoNumber: number, repoName: string, message: string): void {
     this.stats.succeeded++;
     console.log(
-      chalk.green(`[${current}/${this.stats.total}] ✓`) +
+      chalk.green(`[${repoNumber}/${this.stats.total}] ✓`) +
         ` ${repoName}: ${message}`
     );
   }
 
-  skip(current: number, repoName: string, reason: string): void {
+  skip(repoNumber: number, repoName: string, reason: string): void {
     this.stats.skipped++;
     console.log(
-      chalk.yellow(`[${current}/${this.stats.total}] ⊘`) +
+      chalk.yellow(`[${repoNumber}/${this.stats.total}] ⊘`) +
         ` ${repoName}: Skipped - ${reason}`
     );
   }
 
-  error(current: number, repoName: string, error: string): void {
+  error(repoNumber: number, repoName: string, error: string): void {
     this.stats.failed++;
     console.log(
-      chalk.red(`[${current}/${this.stats.total}] ✗`) + ` ${repoName}: ${error}`
+      chalk.red(`[${repoNumber}/${this.stats.total}] ✗`) +
+        ` ${repoName}: ${error}`
     );
   }
 

@@ -21,7 +21,6 @@ export type {
   Label,
   RepoSettings,
   // Raw Config
-  ContentValue,
   RawFileConfig,
   RawRepoFileOverride,
   RawRepoSettings,
@@ -30,6 +29,9 @@ export type {
   // Normalized Config
   RepoConfig,
   Config,
+  // File content
+  FileContent,
+  ContentValue,
 } from "./types.js";
 
 // Re-export values (non-type exports)
@@ -40,3 +42,6 @@ export { loadRawConfig, loadConfig, normalizeConfig } from "./loader.js";
 
 // Config formatting
 export { convertContentToString } from "./formatter.js";
+
+// Config validation
+export { validateForSync } from "./validator.js";

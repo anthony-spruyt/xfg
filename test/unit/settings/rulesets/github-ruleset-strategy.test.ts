@@ -248,12 +248,11 @@ describe("GitHubRulesetStrategy", () => {
         enforcement: "disabled",
       };
 
-      const result = await strategy.update(
-        mockGitHubRepo,
-        123,
-        "updated-rules",
-        ruleset
-      );
+      const result = await strategy.update(mockGitHubRepo, {
+        rulesetId: 123,
+        name: "updated-rules",
+        ruleset,
+      });
 
       assert.equal(result.id, 123);
       assert.equal(result.enforcement, "disabled");
@@ -267,7 +266,12 @@ describe("GitHubRulesetStrategy", () => {
 
     test("throws error for non-GitHub repos", async () => {
       await assert.rejects(
-        () => strategy.update(mockAzureRepo, 123, "test", { target: "branch" }),
+        () =>
+          strategy.update(mockAzureRepo, {
+            rulesetId: 123,
+            name: "test",
+            ruleset: { target: "branch" },
+          }),
         /GitHub Ruleset strategy requires GitHub repositories/
       );
     });

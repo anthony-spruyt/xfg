@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { formatPropertyTree, type PropertyDiff } from "../settings/index.js";
+import type { PropertyDiff } from "../settings/index.js";
 import type { Ruleset, Label } from "../config/index.js";
 import { writeGitHubStepSummary } from "./github-summary.js";
 
@@ -107,12 +107,6 @@ function renderRulesetConfig(
   return lines;
 }
 
-function formatRulesetConfig(config: Ruleset, indent: number): string[] {
-  return renderRulesetConfig(config, indent, (depth, text) =>
-    chalk.green(`${"    ".repeat(depth)}${text}`)
-  );
-}
-
 /**
  * Formats a summary entry like "3 files (1 to create, 2 to update)".
  * Returns null if total is 0.
@@ -162,6 +156,15 @@ function formatSettingsSummary(totals: SettingsReport["totals"]): string {
   return `Plan: ${parts.join(", ")}`;
 }
 
+function colorizeDiffLine(line: string): string {
+  const prefix = line.charAt(0);
+  const indented = `    ${line}`;
+  if (prefix === "+") return chalk.green(indented);
+  if (prefix === "!") return chalk.yellow(indented);
+  if (prefix === "-") return chalk.red(indented);
+  return indented;
+}
+
 export function formatSettingsReportCLI(report: SettingsReport): string[] {
   const lines: string[] = [];
 
@@ -175,96 +178,12 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
       continue;
     }
 
-    // Repo header
     lines.push(chalk.yellow(`~ ${repo.repoName}`));
 
-    // Settings
-    for (const setting of repo.settings) {
-      // Skip settings where both values are undefined
-      if (setting.oldValue === undefined && setting.newValue === undefined) {
-        continue;
-      }
-      if (setting.action === "create") {
-        lines.push(
-          chalk.green(
-            `    + ${setting.name}: ${formatValuePlain(setting.newValue)}`
-          )
-        );
-      } else {
-        lines.push(
-          chalk.yellow(
-            `    ~ ${setting.name}: ${formatValuePlain(setting.oldValue)} → ${formatValuePlain(setting.newValue)}`
-          )
-        );
-      }
-    }
-
-    // Rulesets
-    for (const ruleset of repo.rulesets) {
-      if (ruleset.action === "create") {
-        lines.push(chalk.green(`    + ruleset "${ruleset.name}"`));
-        if (ruleset.config) {
-          lines.push(...formatRulesetConfig(ruleset.config, 2));
-        }
-      } else if (ruleset.action === "update") {
-        lines.push(chalk.yellow(`    ~ ruleset "${ruleset.name}"`));
-        if (ruleset.propertyDiffs && ruleset.propertyDiffs.length > 0) {
-          const treeLines = formatPropertyTree(ruleset.propertyDiffs);
-          for (const line of treeLines) {
-            lines.push(`        ${line}`);
-          }
-        }
-      } else if (ruleset.action === "delete") {
-        lines.push(chalk.red(`    - ruleset "${ruleset.name}"`));
-      }
-    }
-
-    // Labels
-    for (const label of repo.labels) {
-      if (label.action === "create") {
-        lines.push(chalk.green(`    + label "${label.name}"`));
-        if (label.config) {
-          lines.push(chalk.green(`        color: "${label.config.color}"`));
-          if (label.config.description !== undefined) {
-            lines.push(
-              chalk.green(`        description: "${label.config.description}"`)
-            );
-          }
-        }
-      } else if (label.action === "update") {
-        if (label.newName) {
-          lines.push(
-            chalk.yellow(
-              `    ~ label "${label.name}" \u2192 "${label.newName}"`
-            )
-          );
-        } else {
-          lines.push(chalk.yellow(`    ~ label "${label.name}"`));
-        }
-        if (label.propertyChanges) {
-          for (const prop of label.propertyChanges) {
-            if (prop.property === "new_name") continue;
-            if (prop.oldValue !== undefined) {
-              lines.push(
-                chalk.yellow(
-                  `        ${prop.property}: "${prop.oldValue}" \u2192 "${prop.newValue}"`
-                )
-              );
-            } else {
-              lines.push(
-                chalk.yellow(`        ${prop.property}: "${prop.newValue}"`)
-              );
-            }
-          }
-        }
-      } else if (label.action === "delete") {
-        lines.push(chalk.red(`    - label "${label.name}"`));
-      }
-    }
-
-    // Error
-    if (repo.error) {
-      lines.push(chalk.red(`    Error: ${repo.error}`));
+    const diffLines: string[] = [];
+    renderRepoSettingsDiffLines(repo, diffLines);
+    for (const diffLine of diffLines) {
+      lines.push(colorizeDiffLine(diffLine));
     }
 
     lines.push(""); // Blank line between repos

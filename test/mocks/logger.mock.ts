@@ -60,16 +60,16 @@ export function createMockLogger(): LoggerMockResult {
     setTotal(_total: number): void {
       // No-op
     },
-    progress(_current: number, _repoName: string, _message: string): void {
+    progress(_repoNumber: number, _repoName: string, _message: string): void {
       // No-op
     },
-    success(_current: number, _repoName: string, _message: string): void {
+    success(_repoNumber: number, _repoName: string, _message: string): void {
       // No-op
     },
-    skip(_current: number, _repoName: string, _reason: string): void {
+    skip(_repoNumber: number, _repoName: string, _reason: string): void {
       // No-op
     },
-    error(_current: number, _repoName: string, _error: string): void {
+    error(_repoNumber: number, _repoName: string, _error: string): void {
       // No-op
     },
   };

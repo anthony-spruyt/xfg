@@ -26,7 +26,7 @@ export function createTokenManager(
  * Returns GraphQLCommitStrategy for GitHub repos with App credentials (verified commits),
  * or GitCommitStrategy for all other cases.
  */
-export function getCommitStrategy(
+export function createCommitStrategy(
   repoInfo: RepoInfo,
   executor: ICommandExecutor,
   hasAppCredentials?: boolean

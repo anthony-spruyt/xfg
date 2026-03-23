@@ -14,15 +14,8 @@ const XFG_DIRECTIVES = new Set(["$arrayMerge", "$values"]);
 
 export type ArrayMergeStrategy = "replace" | "append" | "prepend";
 
-/**
- * Handler function type for array merge strategies.
- */
 type ArrayMergeHandler = (base: unknown[], overlay: unknown[]) => unknown[];
 
-/**
- * Strategy map for array merge operations.
- * Extensible: add new strategies by adding to this map.
- */
 const arrayMergeStrategies: Map<ArrayMergeStrategy, ArrayMergeHandler> =
   new Map([
     ["replace", (_base, overlay) => overlay],
@@ -34,9 +27,6 @@ export interface MergeContext {
   defaultArrayStrategy: ArrayMergeStrategy;
 }
 
-/**
- * Merge two arrays based on the specified strategy.
- */
 function mergeArrays(
   base: unknown[],
   overlay: unknown[],
@@ -138,9 +128,6 @@ export function stripMergeDirectives(
   return result;
 }
 
-/**
- * Create a default merge context.
- */
 export function createMergeContext(
   defaultStrategy: ArrayMergeStrategy = "replace"
 ): MergeContext {
@@ -153,9 +140,6 @@ export function createMergeContext(
 // Text Content Utilities
 // =============================================================================
 
-/**
- * Check if content is text type (string or string[]).
- */
 export function isTextContent(content: unknown): content is string | string[] {
   return (
     typeof content === "string" ||
