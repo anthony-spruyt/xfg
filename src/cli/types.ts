@@ -6,6 +6,7 @@ import type {
   IRulesetProcessor,
   IRepoSettingsProcessor,
   ILabelsProcessor,
+  BaseProcessorResult,
 } from "../settings/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { ResultsCollector } from "./results-collector.js";
@@ -59,10 +60,10 @@ export interface SyncResultEntry {
   error?: string;
 }
 
-export interface SettingsResult {
-  success: boolean;
-  message: string;
-  skipped?: boolean;
+export interface SettingsResult extends Pick<
+  BaseProcessorResult,
+  "success" | "message" | "skipped"
+> {
   planOutput?: { lines?: string[] };
   warnings?: string[];
 }

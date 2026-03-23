@@ -108,6 +108,16 @@ export async function withGitHubGuards<
 /** Common action literals shared by all settings processors. */
 export type SettingsAction = "create" | "update" | "delete" | "unchanged";
 
+/** Actions that represent an actual change (excludes "unchanged"). */
+export type ActiveAction = Exclude<SettingsAction, "unchanged">;
+
+/** Type predicate that narrows entries with an active (non-"unchanged") action. */
+export function isActiveAction<T extends { action: SettingsAction }>(
+  entry: T
+): entry is T & { action: ActiveAction } {
+  return entry.action !== "unchanged";
+}
+
 export interface ChangeCounts {
   create: number;
   update: number;

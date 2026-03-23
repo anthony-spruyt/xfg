@@ -4,6 +4,7 @@ import {
   type RulesetPlanEntry,
   type LabelsPlanEntry,
   countActions,
+  isActiveAction,
 } from "../settings/index.js";
 
 /**
@@ -70,10 +71,10 @@ export function buildSettingsReport(
     // Convert ruleset processor output
     if (result.rulesetResult?.planOutput?.entries) {
       for (const entry of result.rulesetResult.planOutput.entries) {
-        if (entry.action === "unchanged") continue;
+        if (!isActiveAction(entry)) continue;
         repoChanges.rulesets.push({
           name: entry.name,
-          action: entry.action as "create" | "update" | "delete",
+          action: entry.action,
           propertyDiffs: entry.propertyDiffs,
           config: entry.config,
         });
@@ -87,10 +88,10 @@ export function buildSettingsReport(
     // Convert labels processor output
     if (result.labelsResult?.planOutput?.entries) {
       for (const entry of result.labelsResult.planOutput.entries) {
-        if (entry.action === "unchanged") continue;
+        if (!isActiveAction(entry)) continue;
         repoChanges.labels.push({
           name: entry.name,
-          action: entry.action as "create" | "update" | "delete",
+          action: entry.action,
           newName: entry.newName,
           propertyChanges: entry.propertyChanges,
           config: entry.config,
