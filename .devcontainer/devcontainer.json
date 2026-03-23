@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
   "name": "Ubuntu",
   "image": "mcr.microsoft.com/devcontainers/base:jammy",
   "runArgs": [
