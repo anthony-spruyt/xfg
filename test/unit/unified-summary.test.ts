@@ -149,6 +149,52 @@ describe("formatUnifiedSummaryMarkdown", () => {
     );
   });
 
+  test("inserts blank line between lifecycle and sync content", () => {
+    const lifecycle: LifecycleReport = {
+      actions: [
+        {
+          repoName: "org/new-repo",
+          action: "created",
+          settings: { visibility: "private" },
+        },
+      ],
+      totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
+    };
+    const sync: SyncReport = {
+      repos: [
+        {
+          repoName: "org/new-repo",
+          files: [{ path: ".github/ci.yml", action: "create" }],
+        },
+      ],
+      totals: { files: { create: 1, update: 0, delete: 0 } },
+    };
+
+    const markdown = formatUnifiedSummaryMarkdown({
+      lifecycle,
+      sync,
+      dryRun: false,
+    });
+
+    // Extract lines inside the diff block
+    const diffMatch = markdown.match(/```diff\n([\s\S]*?)```/);
+    assert.ok(diffMatch, "should have a diff block");
+    const diffContent = diffMatch![1];
+    const lines = diffContent.split("\n");
+
+    // Find the lifecycle line and the sync line
+    const visibilityIdx = lines.findIndex((l) => l.includes("visibility"));
+    const fileIdx = lines.findIndex((l) => l.includes(".github/ci.yml"));
+    assert.ok(visibilityIdx >= 0, "should have lifecycle visibility line");
+    assert.ok(fileIdx >= 0, "should have sync file line");
+    // There should be a blank line between them
+    assert.equal(
+      lines[visibilityIdx + 1],
+      "",
+      "should have blank line between lifecycle and sync"
+    );
+  });
+
   test("renders fork with file changes", () => {
     const lifecycle: LifecycleReport = {
       actions: [
@@ -623,6 +669,59 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(
       markdown.includes("1 setting (1 created)"),
       "should include setting count"
+    );
+  });
+
+  test("inserts blank line between sync and settings content", () => {
+    const sync: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [{ path: ".github/ci.yml", action: "create" }],
+        },
+      ],
+      totals: { files: { create: 1, update: 0, delete: 0 } },
+    };
+    const settings: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [
+            { name: "visibility", action: "create", newValue: "private" },
+          ],
+          rulesets: [],
+          labels: [],
+        },
+      ],
+      totals: {
+        settings: { create: 1, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatUnifiedSummaryMarkdown({
+      sync,
+      settings,
+      dryRun: false,
+    });
+
+    // Extract lines inside the diff block
+    const diffMatch = markdown.match(/```diff\n([\s\S]*?)```/);
+    assert.ok(diffMatch, "should have a diff block");
+    const diffContent = diffMatch![1];
+    const lines = diffContent.split("\n");
+
+    // Find the sync file line and the settings line
+    const fileIdx = lines.findIndex((l) => l.includes(".github/ci.yml"));
+    const settingIdx = lines.findIndex((l) => l.includes("visibility"));
+    assert.ok(fileIdx >= 0, "should have sync file line");
+    assert.ok(settingIdx >= 0, "should have settings line");
+    // There should be a blank line between them
+    assert.equal(
+      lines[fileIdx + 1],
+      "",
+      "should have blank line between sync and settings"
     );
   });
 

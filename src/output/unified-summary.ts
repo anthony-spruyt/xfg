@@ -243,6 +243,10 @@ export function formatUnifiedSummaryMarkdown(
     const diffLines: string[] = [];
 
     if (lcAction) renderLifecycleLines(lcAction, diffLines);
+
+    // Blank line between lifecycle and sync sections
+    if (hasLcChange && hasSyncChanges) diffLines.push("");
+
     if (syncRepo) renderSyncLines(syncRepo, diffLines);
 
     // Blank line between files and settings sections
