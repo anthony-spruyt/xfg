@@ -200,6 +200,7 @@ function formatValuePlain(val: unknown): string {
   if (val === undefined) return "undefined";
   if (typeof val === "string") return `"${val}"`;
   if (typeof val === "boolean") return val ? "true" : "false";
+  if (typeof val === "object") return JSON.stringify(val);
   return String(val);
 }
 
@@ -252,7 +253,11 @@ export function renderRepoSettingsDiffLines(
               `!   ${path}: ${formatValuePlain(diff.oldValue)} → ${formatValuePlain(diff.newValue)}`
             );
           } else if (diff.action === "remove") {
-            diffLines.push(`-   ${path}`);
+            diffLines.push(
+              diff.oldValue !== undefined
+                ? `-   ${path}: ${formatValuePlain(diff.oldValue)}`
+                : `-   ${path}`
+            );
           }
         }
       }
