@@ -80,7 +80,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
 
     assert.ok(markdown.includes("## xfg Apply"));
     assert.ok(markdown.includes("```diff"));
-    assert.ok(markdown.includes("@@ org/new-repo @@"));
+    assert.ok(markdown.includes("### org/new-repo"));
     assert.ok(markdown.includes("+ CREATE"));
     assert.ok(markdown.includes("+   visibility: private"));
     assert.ok(markdown.includes("**Applied: 1 repo (1 created)**"));
@@ -105,7 +105,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes("### org/repo"));
     assert.ok(markdown.includes("+ .github/ci.yml"));
     assert.ok(markdown.includes("! README.md"));
     assert.ok(markdown.includes("**Applied: 2 files (1 created, 1 updated)**"));
@@ -139,7 +139,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     });
 
     // Should be one section for the repo
-    const headerMatches = markdown.match(/@@ org\/new-repo @@/g);
+    const headerMatches = markdown.match(/### org\/new-repo/g);
     assert.equal(headerMatches?.length, 1, "should have one header per repo");
     assert.ok(markdown.includes("+ CREATE"));
     assert.ok(markdown.includes("+   visibility: private"));
@@ -176,7 +176,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    assert.ok(markdown.includes("@@ org/my-fork @@"));
+    assert.ok(markdown.includes("### org/my-fork"));
     assert.ok(markdown.includes("+ FORK octocat/Spoon-Knife -> org/my-fork"));
     assert.ok(markdown.includes("+ .github/ci.yml"));
   });
@@ -262,7 +262,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes("### org/repo"));
     assert.ok(markdown.includes("+ .github/ci.yml"));
     assert.ok(!markdown.includes("CREATE"), "should not show lifecycle action");
   });
@@ -388,7 +388,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     });
 
     assert.ok(markdown.includes("## xfg Apply"));
-    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes("### org/repo"));
     assert.ok(markdown.includes('+ visibility: "private"'));
     assert.ok(markdown.includes("**Applied: 1 setting (1 created)**"));
   });
@@ -421,7 +421,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes("### org/repo"));
     assert.ok(markdown.includes('! description: "old desc" → "new desc"'));
     assert.ok(markdown.includes("**Applied: 1 setting (1 updated)**"));
   });
@@ -603,7 +603,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     });
 
     // Single repo header
-    const headerMatches = markdown.match(/@@ org\/repo @@/g);
+    const headerMatches = markdown.match(/### org\/repo/g);
     assert.equal(headerMatches?.length, 1);
 
     // All sections present
@@ -720,7 +720,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes("### org/repo"));
     assert.ok(markdown.includes('+ label "bug"'));
     assert.ok(markdown.includes('+   color: "d73a4a"'));
     assert.ok(markdown.includes('+   description: "Something is broken"'));
@@ -972,7 +972,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
 
     // Should not return empty string since there are label changes
     assert.ok(markdown.length > 0, "should detect labels as changes");
-    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes("### org/repo"));
   });
 
   test("returns empty when settings has no changes", () => {

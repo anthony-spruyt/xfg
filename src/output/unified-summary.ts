@@ -219,9 +219,7 @@ export function formatUnifiedSummaryMarkdown(
   for (const r of input.sync?.repos ?? []) addRepo(r.repoName);
   for (const r of input.settings?.repos ?? []) addRepo(r.repoName);
 
-  // Diff block
-  const diffLines: string[] = [];
-
+  // Per-repo sections: heading + diff block
   for (const repoName of allRepos) {
     const lcAction = lifecycleByRepo.get(repoName);
     const syncRepo = syncByRepo.get(repoName);
@@ -239,18 +237,25 @@ export function formatUnifiedSummaryMarkdown(
 
     if (!hasLcChange && !hasSyncChanges && !hasSettingsChanges) continue;
 
-    diffLines.push(`@@ ${repoName} @@`);
+    lines.push(`### ${repoName}`);
+    lines.push("");
+
+    const diffLines: string[] = [];
 
     if (lcAction) renderLifecycleLines(lcAction, diffLines);
     if (syncRepo) renderSyncLines(syncRepo, diffLines);
-    if (settingsRepo) renderRepoSettingsDiffLines(settingsRepo, diffLines);
-  }
 
-  if (diffLines.length > 0) {
-    lines.push("```diff");
-    lines.push(...diffLines);
-    lines.push("```");
-    lines.push("");
+    // Blank line between files and settings sections
+    if (hasSyncChanges && hasSettingsChanges) diffLines.push("");
+
+    if (settingsRepo) renderRepoSettingsDiffLines(settingsRepo, diffLines);
+
+    if (diffLines.length > 0) {
+      lines.push("```diff");
+      lines.push(...diffLines);
+      lines.push("```");
+      lines.push("");
+    }
   }
 
   // Combined summary
