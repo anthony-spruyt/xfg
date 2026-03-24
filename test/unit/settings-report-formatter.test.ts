@@ -7,11 +7,13 @@ import {
   formatSettingsReportCLI,
   formatSettingsReportMarkdown,
   writeSettingsReportSummary,
+  renderRepoSettingsDiffLines,
   type SettingsReport,
   type RepoChanges,
   type SettingChange,
   type RulesetChange,
 } from "../../src/output/settings-report.js";
+import type { PropertyDiff } from "../../src/settings/rulesets/diff-algorithm.js";
 
 describe("settings-report types", () => {
   test("SettingsReport structure is correct", () => {
@@ -1288,5 +1290,130 @@ describe("writeSettingsReportSummary", () => {
     writeSettingsReportSummary(report, false, undefined);
 
     assert.ok(!existsSync(tempFile));
+  });
+});
+
+describe("renderRepoSettingsDiffLines bypass_actors [object Object] regression", () => {
+  test("renders bypass_actor objects fully instead of [object Object]", () => {
+    const propertyDiffs: PropertyDiff[] = [
+      {
+        path: ["bypass_actors", "[1]"],
+        action: "add",
+        newValue: {
+          actor_id: 2719952,
+          actor_type: "Integration",
+          bypass_mode: "always",
+        },
+      },
+    ];
+
+    const repo: RepoChanges = {
+      repoName: "org/repo",
+      settings: [],
+      rulesets: [
+        {
+          name: "pr-rules",
+          action: "update",
+          propertyDiffs,
+        },
+      ],
+      labels: [],
+    };
+
+    const diffLines: string[] = [];
+    renderRepoSettingsDiffLines(repo, diffLines);
+
+    const output = diffLines.join("\n");
+    // Must never contain [object Object]
+    assert.ok(
+      !output.includes("[object Object]"),
+      `Diff output contains [object Object]: ${output}`
+    );
+    // Should contain the actual property values
+    assert.ok(output.includes("2719952"), `Missing actor_id in: ${output}`);
+    assert.ok(
+      output.includes("Integration"),
+      `Missing actor_type in: ${output}`
+    );
+    assert.ok(output.includes("always"), `Missing bypass_mode in: ${output}`);
+  });
+
+  test("renders removed bypass_actor objects fully", () => {
+    const propertyDiffs: PropertyDiff[] = [
+      {
+        path: ["bypass_actors", "[0]"],
+        action: "remove",
+        oldValue: {
+          actor_id: 2740,
+          actor_type: "Team",
+          bypass_mode: "always",
+        },
+      },
+    ];
+
+    const repo: RepoChanges = {
+      repoName: "org/repo",
+      settings: [],
+      rulesets: [
+        {
+          name: "pr-rules",
+          action: "update",
+          propertyDiffs,
+        },
+      ],
+      labels: [],
+    };
+
+    const diffLines: string[] = [];
+    renderRepoSettingsDiffLines(repo, diffLines);
+
+    const output = diffLines.join("\n");
+    assert.ok(
+      !output.includes("[object Object]"),
+      `Diff output contains [object Object]: ${output}`
+    );
+    assert.ok(output.includes("2740"), `Missing actor_id in: ${output}`);
+    assert.ok(output.includes("Team"), `Missing actor_type in: ${output}`);
+  });
+
+  test("renders changed bypass_actor objects fully on both sides", () => {
+    const propertyDiffs: PropertyDiff[] = [
+      {
+        path: ["bypass_actors", "[0]"],
+        action: "change",
+        oldValue: {
+          actor_id: 2740,
+          actor_type: "Team",
+          bypass_mode: "pull_request",
+        },
+        newValue: {
+          actor_id: 2740,
+          actor_type: "Team",
+          bypass_mode: "always",
+        },
+      },
+    ];
+
+    const repo: RepoChanges = {
+      repoName: "org/repo",
+      settings: [],
+      rulesets: [
+        {
+          name: "pr-rules",
+          action: "update",
+          propertyDiffs,
+        },
+      ],
+      labels: [],
+    };
+
+    const diffLines: string[] = [];
+    renderRepoSettingsDiffLines(repo, diffLines);
+
+    const output = diffLines.join("\n");
+    assert.ok(
+      !output.includes("[object Object]"),
+      `Diff output contains [object Object]: ${output}`
+    );
   });
 });
