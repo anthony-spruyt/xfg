@@ -76,24 +76,24 @@ export function formatSyncReportMarkdown(
     lines.push("");
   }
 
-  // Diff block
-  const diffLines: string[] = [];
-
+  // Per-repo sections: heading + diff block
   for (const repo of report.repos) {
     if (repo.files.length === 0 && !repo.error) {
       continue;
     }
 
-    diffLines.push(`@@ ${repo.repoName} @@`);
-
-    renderSyncLines(repo, diffLines);
-  }
-
-  if (diffLines.length > 0) {
-    lines.push("```diff");
-    lines.push(...diffLines);
-    lines.push("```");
+    lines.push(`### ${repo.repoName}`);
     lines.push("");
+
+    const diffLines: string[] = [];
+    renderSyncLines(repo, diffLines);
+
+    if (diffLines.length > 0) {
+      lines.push("```diff");
+      lines.push(...diffLines);
+      lines.push("```");
+      lines.push("");
+    }
   }
 
   // Summary
@@ -106,7 +106,12 @@ export function renderSyncLines(
   syncRepo: RepoFileChanges,
   diffLines: string[]
 ): void {
-  for (const file of syncRepo.files) {
+  for (let i = 0; i < syncRepo.files.length; i++) {
+    const file = syncRepo.files[i];
+
+    // Blank line between files for readability
+    if (i > 0) diffLines.push("");
+
     if (file.action === "create") {
       diffLines.push(`+ ${file.path}`);
     } else if (file.action === "update") {

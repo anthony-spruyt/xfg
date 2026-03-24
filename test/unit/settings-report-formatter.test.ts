@@ -385,6 +385,123 @@ describe("formatSettingsReportCLI", () => {
     assert.ok(output.includes("branch-protection"), "should include ruleset");
   });
 
+  test("inserts blank line separator between settings and rulesets in CLI output", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [
+            {
+              name: "deleteBranchOnMerge",
+              action: "update",
+              oldValue: false,
+              newValue: true,
+            },
+          ],
+          rulesets: [
+            {
+              name: "my-ruleset",
+              action: "create",
+              config: { target: "branch", enforcement: "active" },
+            },
+          ],
+          labels: [],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 1 },
+        rulesets: { create: 1, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+      },
+    };
+
+    const diffLines: string[] = [];
+    renderRepoSettingsDiffLines(report.repos[0], diffLines);
+
+    // Find the setting line and the ruleset line
+    const settingIdx = diffLines.findIndex((l) =>
+      l.includes("deleteBranchOnMerge")
+    );
+    const rulesetIdx = diffLines.findIndex((l) => l.includes("my-ruleset"));
+    assert.ok(settingIdx >= 0, "should have setting line");
+    assert.ok(rulesetIdx >= 0, "should have ruleset line");
+    // Blank line between settings and rulesets
+    assert.equal(
+      diffLines[settingIdx + 1],
+      "",
+      "should have blank line between settings and rulesets"
+    );
+  });
+
+  test("inserts blank line separator between rulesets and labels in CLI output", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [{ name: "my-ruleset", action: "delete" }],
+          labels: [
+            { name: "bug", action: "create", config: { color: "d73a4a" } },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 1 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const diffLines: string[] = [];
+    renderRepoSettingsDiffLines(report.repos[0], diffLines);
+
+    const rulesetIdx = diffLines.findIndex((l) => l.includes("my-ruleset"));
+    const labelIdx = diffLines.findIndex((l) => l.includes("bug"));
+    assert.ok(rulesetIdx >= 0, "should have ruleset line");
+    assert.ok(labelIdx >= 0, "should have label line");
+    // Blank line between rulesets and labels
+    assert.equal(
+      diffLines[rulesetIdx + 1],
+      "",
+      "should have blank line between rulesets and labels"
+    );
+  });
+
+  test("inserts blank line between multiple rulesets in CLI output", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [
+            { name: "ruleset-a", action: "delete" },
+            { name: "ruleset-b", action: "delete" },
+          ],
+          labels: [],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 2 },
+        labels: { create: 0, update: 0, delete: 0 },
+      },
+    };
+
+    const diffLines: string[] = [];
+    renderRepoSettingsDiffLines(report.repos[0], diffLines);
+
+    const rulesetAIdx = diffLines.findIndex((l) => l.includes("ruleset-a"));
+    const rulesetBIdx = diffLines.findIndex((l) => l.includes("ruleset-b"));
+    assert.ok(rulesetAIdx >= 0, "should have ruleset-a line");
+    assert.ok(rulesetBIdx >= 0, "should have ruleset-b line");
+    // Blank line between rulesets
+    assert.equal(
+      diffLines[rulesetAIdx + 1],
+      "",
+      "should have blank line between rulesets"
+    );
+  });
+
   test("skips settings where both oldValue and newValue are undefined", () => {
     const report: SettingsReport = {
       repos: [

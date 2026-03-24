@@ -80,7 +80,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
 
     assert.ok(markdown.includes("## xfg Apply"));
     assert.ok(markdown.includes("```diff"));
-    assert.ok(markdown.includes("@@ org/new-repo @@"));
+    assert.ok(markdown.includes("### org/new-repo"));
     assert.ok(markdown.includes("+ CREATE"));
     assert.ok(markdown.includes("+   visibility: private"));
     assert.ok(markdown.includes("**Applied: 1 repo (1 created)**"));
@@ -105,7 +105,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes("### org/repo"));
     assert.ok(markdown.includes("+ .github/ci.yml"));
     assert.ok(markdown.includes("! README.md"));
     assert.ok(markdown.includes("**Applied: 2 files (1 created, 1 updated)**"));
@@ -139,13 +139,59 @@ describe("formatUnifiedSummaryMarkdown", () => {
     });
 
     // Should be one section for the repo
-    const headerMatches = markdown.match(/@@ org\/new-repo @@/g);
+    const headerMatches = markdown.match(/### org\/new-repo/g);
     assert.equal(headerMatches?.length, 1, "should have one header per repo");
     assert.ok(markdown.includes("+ CREATE"));
     assert.ok(markdown.includes("+   visibility: private"));
     assert.ok(markdown.includes("+ .github/ci.yml"));
     assert.ok(
       markdown.includes("**Applied: 1 repo (1 created), 1 file (1 created)**")
+    );
+  });
+
+  test("inserts blank line between lifecycle and sync content", () => {
+    const lifecycle: LifecycleReport = {
+      actions: [
+        {
+          repoName: "org/new-repo",
+          action: "created",
+          settings: { visibility: "private" },
+        },
+      ],
+      totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
+    };
+    const sync: SyncReport = {
+      repos: [
+        {
+          repoName: "org/new-repo",
+          files: [{ path: ".github/ci.yml", action: "create" }],
+        },
+      ],
+      totals: { files: { create: 1, update: 0, delete: 0 } },
+    };
+
+    const markdown = formatUnifiedSummaryMarkdown({
+      lifecycle,
+      sync,
+      dryRun: false,
+    });
+
+    // Extract lines inside the diff block
+    const diffMatch = markdown.match(/```diff\n([\s\S]*?)```/);
+    assert.ok(diffMatch, "should have a diff block");
+    const diffContent = diffMatch![1];
+    const lines = diffContent.split("\n");
+
+    // Find the lifecycle line and the sync line
+    const visibilityIdx = lines.findIndex((l) => l.includes("visibility"));
+    const fileIdx = lines.findIndex((l) => l.includes(".github/ci.yml"));
+    assert.ok(visibilityIdx >= 0, "should have lifecycle visibility line");
+    assert.ok(fileIdx >= 0, "should have sync file line");
+    // There should be a blank line between them
+    assert.equal(
+      lines[visibilityIdx + 1],
+      "",
+      "should have blank line between lifecycle and sync"
     );
   });
 
@@ -176,7 +222,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    assert.ok(markdown.includes("@@ org/my-fork @@"));
+    assert.ok(markdown.includes("### org/my-fork"));
     assert.ok(markdown.includes("+ FORK octocat/Spoon-Knife -> org/my-fork"));
     assert.ok(markdown.includes("+ .github/ci.yml"));
   });
@@ -262,7 +308,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes("### org/repo"));
     assert.ok(markdown.includes("+ .github/ci.yml"));
     assert.ok(!markdown.includes("CREATE"), "should not show lifecycle action");
   });
@@ -388,7 +434,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     });
 
     assert.ok(markdown.includes("## xfg Apply"));
-    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes("### org/repo"));
     assert.ok(markdown.includes('+ visibility: "private"'));
     assert.ok(markdown.includes("**Applied: 1 setting (1 created)**"));
   });
@@ -421,7 +467,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes("### org/repo"));
     assert.ok(markdown.includes('! description: "old desc" → "new desc"'));
     assert.ok(markdown.includes("**Applied: 1 setting (1 updated)**"));
   });
@@ -603,7 +649,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
     });
 
     // Single repo header
-    const headerMatches = markdown.match(/@@ org\/repo @@/g);
+    const headerMatches = markdown.match(/### org\/repo/g);
     assert.equal(headerMatches?.length, 1);
 
     // All sections present
@@ -623,6 +669,59 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(
       markdown.includes("1 setting (1 created)"),
       "should include setting count"
+    );
+  });
+
+  test("inserts blank line between sync and settings content", () => {
+    const sync: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [{ path: ".github/ci.yml", action: "create" }],
+        },
+      ],
+      totals: { files: { create: 1, update: 0, delete: 0 } },
+    };
+    const settings: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [
+            { name: "visibility", action: "create", newValue: "private" },
+          ],
+          rulesets: [],
+          labels: [],
+        },
+      ],
+      totals: {
+        settings: { create: 1, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatUnifiedSummaryMarkdown({
+      sync,
+      settings,
+      dryRun: false,
+    });
+
+    // Extract lines inside the diff block
+    const diffMatch = markdown.match(/```diff\n([\s\S]*?)```/);
+    assert.ok(diffMatch, "should have a diff block");
+    const diffContent = diffMatch![1];
+    const lines = diffContent.split("\n");
+
+    // Find the sync file line and the settings line
+    const fileIdx = lines.findIndex((l) => l.includes(".github/ci.yml"));
+    const settingIdx = lines.findIndex((l) => l.includes("visibility"));
+    assert.ok(fileIdx >= 0, "should have sync file line");
+    assert.ok(settingIdx >= 0, "should have settings line");
+    // There should be a blank line between them
+    assert.equal(
+      lines[fileIdx + 1],
+      "",
+      "should have blank line between sync and settings"
     );
   });
 
@@ -720,7 +819,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes("### org/repo"));
     assert.ok(markdown.includes('+ label "bug"'));
     assert.ok(markdown.includes('+   color: "d73a4a"'));
     assert.ok(markdown.includes('+   description: "Something is broken"'));
@@ -972,7 +1071,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
 
     // Should not return empty string since there are label changes
     assert.ok(markdown.length > 0, "should detect labels as changes");
-    assert.ok(markdown.includes("@@ org/repo @@"));
+    assert.ok(markdown.includes("### org/repo"));
   });
 
   test("returns empty when settings has no changes", () => {

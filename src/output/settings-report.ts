@@ -220,6 +220,8 @@ export function renderRepoSettingsDiffLines(
   repo: RepoChanges,
   diffLines: string[]
 ): void {
+  const startLength = diffLines.length;
+
   for (const setting of repo.settings) {
     if (setting.oldValue === undefined && setting.newValue === undefined) {
       continue;
@@ -235,7 +237,17 @@ export function renderRepoSettingsDiffLines(
     }
   }
 
-  for (const ruleset of repo.rulesets) {
+  // Blank line before rulesets if there was content above
+  if (repo.rulesets.length > 0 && diffLines.length > startLength) {
+    diffLines.push("");
+  }
+
+  for (let i = 0; i < repo.rulesets.length; i++) {
+    const ruleset = repo.rulesets[i];
+
+    // Blank line between rulesets
+    if (i > 0) diffLines.push("");
+
     if (ruleset.action === "create") {
       diffLines.push(`+ ruleset "${ruleset.name}"`);
       if (ruleset.config) {
@@ -264,6 +276,11 @@ export function renderRepoSettingsDiffLines(
     } else if (ruleset.action === "delete") {
       diffLines.push(`- ruleset "${ruleset.name}"`);
     }
+  }
+
+  // Blank line before labels if there was content above
+  if (repo.labels.length > 0 && diffLines.length > startLength) {
+    diffLines.push("");
   }
 
   for (const label of repo.labels) {
@@ -321,9 +338,7 @@ export function formatSettingsReportMarkdown(
     lines.push("");
   }
 
-  // Diff block
-  const diffLines: string[] = [];
-
+  // Per-repo sections: heading + diff block
   for (const repo of report.repos) {
     if (
       repo.settings.length === 0 &&
@@ -334,15 +349,18 @@ export function formatSettingsReportMarkdown(
       continue;
     }
 
-    diffLines.push(`@@ ${repo.repoName} @@`);
-    renderRepoSettingsDiffLines(repo, diffLines);
-  }
-
-  if (diffLines.length > 0) {
-    lines.push("```diff");
-    lines.push(...diffLines);
-    lines.push("```");
+    lines.push(`### ${repo.repoName}`);
     lines.push("");
+
+    const diffLines: string[] = [];
+    renderRepoSettingsDiffLines(repo, diffLines);
+
+    if (diffLines.length > 0) {
+      lines.push("```diff");
+      lines.push(...diffLines);
+      lines.push("```");
+      lines.push("");
+    }
   }
 
   // Summary
