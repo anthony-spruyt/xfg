@@ -327,6 +327,134 @@ describe("withRetry", () => {
     }
   });
 
+  test("delays using retryAfter from error for rate limit errors", async () => {
+    const delaysCalled: number[] = [];
+    const noOpDelay = async (ms: number) => {
+      delaysCalled.push(ms);
+    };
+
+    let attempts = 0;
+    const logs: string[] = [];
+    const mockLog = { info: (msg: string) => logs.push(msg) };
+
+    const result = await withRetry(
+      async () => {
+        attempts++;
+        if (attempts < 2) {
+          const error = new Error("API rate limit exceeded") as Error & {
+            retryAfter: number;
+          };
+          error.retryAfter = 30;
+          throw error;
+        }
+        return "success";
+      },
+      { retries: 3, log: mockLog, _delay: noOpDelay }
+    );
+
+    assert.equal(result, "success");
+    assert.equal(attempts, 2);
+    assert.deepEqual(delaysCalled, [30_000]);
+    assert.ok(
+      logs.some((l) => l.includes("Rate limited") && l.includes("30s")),
+      "Should log rate limit delay"
+    );
+  });
+
+  test("delays 60s fallback for rate limit errors without retryAfter", async () => {
+    const delaysCalled: number[] = [];
+    const noOpDelay = async (ms: number) => {
+      delaysCalled.push(ms);
+    };
+
+    let attempts = 0;
+    const logs: string[] = [];
+    const mockLog = { info: (msg: string) => logs.push(msg) };
+
+    const result = await withRetry(
+      async () => {
+        attempts++;
+        if (attempts < 2) {
+          throw new Error("API rate limit exceeded");
+        }
+        return "success";
+      },
+      { retries: 3, log: mockLog, _delay: noOpDelay }
+    );
+
+    assert.equal(result, "success");
+    assert.equal(attempts, 2);
+    assert.deepEqual(delaysCalled, [60_000]);
+    assert.ok(
+      logs.some((l) => l.includes("Rate limited") && l.includes("60s")),
+      "Should log 60s fallback delay"
+    );
+  });
+
+  test("full flow: 403 rate limit is retried with delay and succeeds", async () => {
+    const delaysCalled: number[] = [];
+    const noOpDelay = async (ms: number) => {
+      delaysCalled.push(ms);
+    };
+
+    let attempts = 0;
+    const logs: string[] = [];
+    const mockLog = { info: (msg: string) => logs.push(msg) };
+
+    const result = await withRetry(
+      async () => {
+        attempts++;
+        if (attempts < 2) {
+          const error = new Error(
+            "HTTP 403: You have exceeded a secondary rate limit"
+          ) as Error & { retryAfter: number };
+          error.retryAfter = 45;
+          throw error;
+        }
+        return "success";
+      },
+      { retries: 3, log: mockLog, _delay: noOpDelay }
+    );
+
+    assert.equal(result, "success");
+    assert.equal(attempts, 2);
+    assert.deepEqual(delaysCalled, [45_000]);
+    assert.ok(
+      logs.some((l) => l.includes("Rate limited") && l.includes("45s")),
+      "Should log rate limit delay with retryAfter value"
+    );
+  });
+
+  test("does not add rate limit delay for non-rate-limit transient errors", async () => {
+    const delaysCalled: number[] = [];
+    const noOpDelay = async (ms: number) => {
+      delaysCalled.push(ms);
+    };
+
+    let attempts = 0;
+    const logs: string[] = [];
+    const mockLog = { info: (msg: string) => logs.push(msg) };
+
+    const result = await withRetry(
+      async () => {
+        attempts++;
+        if (attempts < 2) {
+          throw new Error("Connection timed out");
+        }
+        return "success";
+      },
+      { retries: 3, log: mockLog, _delay: noOpDelay }
+    );
+
+    assert.equal(result, "success");
+    assert.equal(attempts, 2);
+    assert.deepEqual(delaysCalled, []);
+    assert.ok(
+      !logs.some((l) => l.includes("Rate limited")),
+      "Should NOT log rate limit delay for timeout"
+    );
+  });
+
   test("retries 403 rate limit error (transient wins over permanent)", async () => {
     let attempts = 0;
     const result = await withRetry(
