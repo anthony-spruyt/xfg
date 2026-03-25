@@ -45,21 +45,21 @@ let testRepo: string;
 let tmpDir: string;
 
 describe("GitHub App Integration Test", { skip: SKIP_TESTS }, () => {
-  before(() => {
+  before(async () => {
     tmpDir = join(tmpdir(), `xfg-app-test-${Date.now()}`);
     mkdirSync(tmpDir, { recursive: true });
     repoName = generateRepoName("app");
     testRepo = `${OWNER}/${repoName}`;
-    createRepo(OWNER, repoName);
+    await createRepo(OWNER, repoName);
   });
 
-  after(() => {
-    deleteRepo(OWNER, repoName);
+  after(async () => {
+    await deleteRepo(OWNER, repoName);
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  beforeEach(() => {
-    resetTestRepo(testRepo);
+  beforeEach(async () => {
+    await resetTestRepo(testRepo);
   });
 
   test("sync creates PR via GraphQL API with GitHub App credentials", async () => {
@@ -75,22 +75,25 @@ repos:
 `
     );
 
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
+    const output = await exec(
+      `node dist/cli.js sync --config ${configPath}`,
+      xfgEnv
+    );
     console.log(output);
 
-    const pr = waitForPrVisible(testRepo, SYNC_BRANCH, "number");
+    const pr = await waitForPrVisible(testRepo, SYNC_BRANCH, "number");
     const prNumber = String(pr.number);
     assert.ok(prNumber, `Expected PR on ${SYNC_BRANCH}`);
 
-    const commitSha = exec(
+    const commitSha = await exec(
       `gh api repos/${testRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
     );
-    const author = exec(
+    const author = await exec(
       `gh api repos/${testRepo}/commits/${commitSha} --jq '.commit.author.name'`
     );
     assert.notStrictEqual(author, "github-actions[bot]");
 
-    waitForCommitVerified(testRepo, commitSha);
+    await waitForCommitVerified(testRepo, commitSha);
   });
 
   test("direct mode pushes verified commit to main", async () => {
@@ -109,24 +112,29 @@ repos:
 `
     );
 
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
+    const output = await exec(
+      `node dist/cli.js sync --config ${configPath}`,
+      xfgEnv
+    );
     console.log(output);
 
-    const fileSha = exec(
+    const fileSha = await exec(
       `gh api repos/${testRepo}/contents/${DIRECT_FILE} --jq '.sha'`
     );
     assert.ok(fileSha, `Expected ${DIRECT_FILE} on main`);
 
-    const mainSha = exec(`gh api repos/${testRepo}/commits/main --jq '.sha'`);
-    const author = exec(
+    const mainSha = await exec(
+      `gh api repos/${testRepo}/commits/main --jq '.sha'`
+    );
+    const author = await exec(
       `gh api repos/${testRepo}/commits/${mainSha} --jq '.commit.author.name'`
     );
     assert.notStrictEqual(author, "github-actions[bot]");
 
-    waitForCommitVerified(testRepo, mainSha);
+    await waitForCommitVerified(testRepo, mainSha);
   });
 
-  test("settings command with bypass_actors is idempotent", () => {
+  test("settings command with bypass_actors is idempotent", async () => {
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-github-app-settings
@@ -163,9 +171,9 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
+    await exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
 
-    const dryRunOutput = exec(
+    const dryRunOutput = await exec(
       `node dist/cli.js sync --config ${configPath} --dry-run`,
       xfgEnv
     );
@@ -193,7 +201,7 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${config1}`, xfgEnv);
+    await exec(`node dist/cli.js sync --config ${config1}`, xfgEnv);
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
     const config2 = writeConfig(
@@ -212,7 +220,7 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${config2}`, xfgEnv);
+    await exec(`node dist/cli.js sync --config ${config2}`, xfgEnv);
   });
 });
 
@@ -221,25 +229,25 @@ describe("GitHub App Repo Settings Test", { skip: SKIP_TESTS }, () => {
   let settingsTestRepo: string;
   let settingsTmpDir: string;
 
-  before(() => {
+  before(async () => {
     settingsTmpDir = join(tmpdir(), `xfg-app-settings-test-${Date.now()}`);
     mkdirSync(settingsTmpDir, { recursive: true });
     settingsRepoName = generateRepoName("app-settings");
     settingsTestRepo = `${OWNER}/${settingsRepoName}`;
-    createRepo(OWNER, settingsRepoName);
+    await createRepo(OWNER, settingsRepoName);
   });
 
-  after(() => {
-    deleteRepo(OWNER, settingsRepoName);
+  after(async () => {
+    await deleteRepo(OWNER, settingsRepoName);
     rmSync(settingsTmpDir, { recursive: true, force: true });
   });
 
-  test("repo settings with GitHub App token is idempotent", () => {
+  test("repo settings with GitHub App token is idempotent", async () => {
     // Reset repo settings to defaults
     const fields = Object.entries(GITHUB_DEFAULTS)
       .map(([k, v]) => `-F ${k}=${v}`)
       .join(" ");
-    exec(`gh api --method PATCH repos/${settingsTestRepo} ${fields}`);
+    await exec(`gh api --method PATCH repos/${settingsTestRepo} ${fields}`);
 
     const configPath = writeConfig(
       settingsTmpDir,
@@ -257,9 +265,9 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
+    await exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
 
-    const secondOutput = exec(
+    const secondOutput = await exec(
       `node dist/cli.js sync --config ${configPath}`,
       xfgEnv
     );
@@ -283,21 +291,21 @@ describe("GitHub App Signed Refs Test", { skip: SKIP_TESTS }, () => {
   let signedTestRepo: string;
   let signedTmpDir: string;
 
-  before(() => {
+  before(async () => {
     signedTmpDir = join(tmpdir(), `xfg-app-signed-test-${Date.now()}`);
     mkdirSync(signedTmpDir, { recursive: true });
     signedRepoName = generateRepoName("app-signed");
     signedTestRepo = `${OWNER}/${signedRepoName}`;
-    createRepo(OWNER, signedRepoName);
+    await createRepo(OWNER, signedRepoName);
   });
 
-  after(() => {
-    deleteRepo(OWNER, signedRepoName);
+  after(async () => {
+    await deleteRepo(OWNER, signedRepoName);
     rmSync(signedTmpDir, { recursive: true, force: true });
   });
 
-  beforeEach(() => {
-    resetTestRepo(signedTestRepo);
+  beforeEach(async () => {
+    await resetTestRepo(signedTestRepo);
 
     // Apply required_signatures ruleset via PAT
     const rulesetConfig = writeConfig(
@@ -319,7 +327,7 @@ repos:
   - git: https://github.com/${signedTestRepo}.git
 `
     );
-    exec(`node dist/cli.js sync --config ${rulesetConfig}`, patOnlyEnv);
+    await exec(`node dist/cli.js sync --config ${rulesetConfig}`, patOnlyEnv);
   });
 
   test("sync creates PR on repo with required_signatures on all branches", async () => {
@@ -335,15 +343,18 @@ repos:
 `
     );
 
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
+    const output = await exec(
+      `node dist/cli.js sync --config ${configPath}`,
+      xfgEnv
+    );
     console.log(output);
 
-    const pr = waitForPrVisible(signedTestRepo, SYNC_BRANCH, "number");
+    const pr = await waitForPrVisible(signedTestRepo, SYNC_BRANCH, "number");
     assert.ok(pr.number);
 
-    const commitSha = exec(
+    const commitSha = await exec(
       `gh api repos/${signedTestRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
     );
-    waitForCommitVerified(signedTestRepo, commitSha);
+    await waitForCommitVerified(signedTestRepo, commitSha);
   });
 });

@@ -23,26 +23,26 @@ let repoName: string;
 let testRepo: string;
 let tmpDir: string;
 
-function waitForFileVisible(filePath: string): string {
+async function waitForFileVisible(filePath: string): Promise<string> {
   return waitForFileVisibleBase(testRepo, filePath);
 }
 
 describe("GitHub Integration Test", () => {
-  before(() => {
+  before(async () => {
     tmpDir = join(tmpdir(), `xfg-sync-test-${Date.now()}`);
     mkdirSync(tmpDir, { recursive: true });
     repoName = generateRepoName("sync");
     testRepo = `${OWNER}/${repoName}`;
-    createRepo(OWNER, repoName);
+    await createRepo(OWNER, repoName);
   });
 
-  after(() => {
-    deleteRepo(OWNER, repoName);
+  after(async () => {
+    await deleteRepo(OWNER, repoName);
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  beforeEach(() => {
-    resetTestRepo(testRepo, { deleteLabels: true });
+  beforeEach(async () => {
+    await resetTestRepo(testRepo, { deleteLabels: true });
   });
 
   test("sync creates a PR in the test repository", async () => {
@@ -76,16 +76,16 @@ repos:
 `
     );
 
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
 
-    const pr = waitForPrVisible(testRepo, BRANCH_NAME);
+    const pr = await waitForPrVisible(testRepo, BRANCH_NAME);
     assert.ok(pr.number);
     assert.ok((pr.title as string).includes("sync"));
 
-    const fileContent = exec(
+    const fileContent = await exec(
       `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(fileContent);
@@ -125,19 +125,23 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
 
-    const prBefore = waitForPrVisible(testRepo, BRANCH_NAME, "number");
+    const prBefore = await waitForPrVisible(testRepo, BRANCH_NAME, "number");
     const prNumberBefore = prBefore.number as number;
     assert.ok(prNumberBefore);
 
-    exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
 
-    const prAfter = waitForPrVisible(testRepo, BRANCH_NAME, "number");
+    const prAfter = await waitForPrVisible(testRepo, BRANCH_NAME, "number");
     assert.ok(prAfter.number);
 
     try {
-      const oldPRState = exec(
+      const oldPRState = await exec(
         `gh pr view ${prNumberBefore} --repo ${testRepo} --json state --jq '.state'`
       );
       assert.equal(oldPRState, "CLOSED");
@@ -151,7 +155,7 @@ repos:
     const existingContent = JSON.stringify({ existing: true }, null, 2);
     const existingBase64 = Buffer.from(existingContent).toString("base64");
 
-    exec(
+    await exec(
       `gh api --method PUT repos/${testRepo}/contents/${createOnlyFile} -f message="setup" -f content="${existingBase64}"`
     );
 
@@ -169,7 +173,7 @@ repos:
 `
     );
 
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     assert.ok(output.includes("createOnly") || output.includes("skip"));
@@ -183,7 +187,7 @@ repos:
       JSON.stringify({ unchanged: true }, null, 2) + "\n";
     const unchangedBase64 = Buffer.from(unchangedContent).toString("base64");
 
-    exec(
+    await exec(
       `gh api --method PUT repos/${testRepo}/contents/${unchangedFile} -f message="setup" -f content="${unchangedBase64}"`
     );
 
@@ -203,9 +207,11 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
 
-    const pr = waitForPrVisible(testRepo, testBranch, "number,title");
+    const pr = await waitForPrVisible(testRepo, testBranch, "number,title");
     assert.ok((pr.title as string).includes("changed-test.json"));
     assert.ok(!(pr.title as string).includes("unchanged-test.json"));
   });
@@ -249,11 +255,13 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
 
-    const pr = waitForPrVisible(testRepo, testBranch, "number,title");
+    const pr = await waitForPrVisible(testRepo, testBranch, "number,title");
 
-    const fileContent = exec(
+    const fileContent = await exec(
       `gh api repos/${testRepo}/contents/${templateFile}?ref=${testBranch} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(fileContent);
@@ -267,7 +275,7 @@ repos:
     assert.equal(json.escaped, "${xfg:repo.name}");
     assert.equal(json.static, "not-interpolated");
 
-    const prBody = exec(
+    const prBody = await exec(
       `gh pr view ${pr.number} --repo ${testRepo} --json body --jq '.body'`
     );
     assert.ok(prBody.includes(testRepo));
@@ -296,12 +304,12 @@ repos:
 `
     );
 
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     assert.ok(output.includes("Pushed directly") || output.includes("direct"));
 
-    const fileContent = waitForFileVisible(directFile);
+    const fileContent = await waitForFileVisible(directFile);
     const json = JSON.parse(fileContent);
     assert.equal(json.directMode, true);
   });
@@ -328,15 +336,17 @@ prOptions:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${configPath1}`, { cwd: projectRoot });
+    await exec(`node dist/cli.js sync --config ${configPath1}`, {
+      cwd: projectRoot,
+    });
 
-    const fileContent = exec(
+    const fileContent = await exec(
       `gh api repos/${testRepo}/contents/${orphanFile} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(fileContent);
     assert.equal(json.orphanTest, true);
 
-    const manifestContent = exec(
+    const manifestContent = await exec(
       `gh api repos/${testRepo}/contents/${manifestFile} --jq '.content' | base64 -d`
     );
     const manifest = JSON.parse(manifestContent);
@@ -358,10 +368,12 @@ prOptions:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${configPath2}`, { cwd: projectRoot });
+    await exec(`node dist/cli.js sync --config ${configPath2}`, {
+      cwd: projectRoot,
+    });
 
     try {
-      exec(`gh api repos/${testRepo}/contents/${orphanFile} --jq '.sha'`);
+      await exec(`gh api repos/${testRepo}/contents/${orphanFile} --jq '.sha'`);
       assert.fail("orphan-test.json should have been deleted");
     } catch {
       /* correctly deleted */
@@ -372,7 +384,7 @@ prOptions:
     const divergentFile = "divergent-test.json";
     const testBranch = "chore/sync-divergent-test";
 
-    exec(
+    await exec(
       `gh api --method PUT repos/${testRepo}/contents/${divergentFile} -f message="setup" -f content="${Buffer.from(JSON.stringify({ version: 1 }, null, 2) + "\n").toString("base64")}"`
     );
 
@@ -389,24 +401,26 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
-
-    const pr1 = waitForPrVisible(testRepo, testBranch, "number");
-    assert.ok(pr1.number);
-
-    // Advance main
-    const mainSha = exec(
-      `gh api repos/${testRepo}/contents/${divergentFile} --jq '.sha'`
-    );
-    exec(
-      `gh api --method PUT repos/${testRepo}/contents/${divergentFile} -f message="advance" -f content="${Buffer.from(JSON.stringify({ version: 2, advancedOnMain: true }, null, 2) + "\n").toString("base64")}" -f sha="${mainSha}"`
-    );
-
-    const output2 = exec(`node dist/cli.js sync --config ${configPath}`, {
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
 
-    const pr2 = waitForPrVisible(testRepo, testBranch, "number");
+    const pr1 = await waitForPrVisible(testRepo, testBranch, "number");
+    assert.ok(pr1.number);
+
+    // Advance main
+    const mainSha = await exec(
+      `gh api repos/${testRepo}/contents/${divergentFile} --jq '.sha'`
+    );
+    await exec(
+      `gh api --method PUT repos/${testRepo}/contents/${divergentFile} -f message="advance" -f content="${Buffer.from(JSON.stringify({ version: 2, advancedOnMain: true }, null, 2) + "\n").toString("base64")}" -f sha="${mainSha}"`
+    );
+
+    const output2 = await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+
+    const pr2 = await waitForPrVisible(testRepo, testBranch, "number");
     assert.ok(pr2.number);
     // Verify sync produced output (check mark or repo reference)
     const url = new URL(`https://github.com/${testRepo}`);
@@ -420,20 +434,20 @@ repos:
     const orphanBranchFile = "orphan-branch-test.json";
     const testBranch = "chore/sync-orphan-branch-test";
 
-    const mainSha = exec(
+    const mainSha = await exec(
       `gh api repos/${testRepo}/git/refs/heads/main --jq '.object.sha'`
     );
-    exec(
+    await exec(
       `gh api --method POST repos/${testRepo}/git/refs -f ref="refs/heads/${testBranch}" -f sha="${mainSha}"`
     );
 
     const branchContent =
       JSON.stringify({ orphanBranchVersion: 1 }, null, 2) + "\n";
-    exec(
+    await exec(
       `gh api --method PUT repos/${testRepo}/contents/${orphanBranchFile} -f message="setup" -f content="${Buffer.from(branchContent).toString("base64")}" -f branch="${testBranch}"`
     );
 
-    const prCheck = exec(
+    const prCheck = await exec(
       `gh pr list --repo ${testRepo} --head ${testBranch} --json number --jq 'length'`
     );
     assert.equal(prCheck, "0");
@@ -450,12 +464,14 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
 
-    const prInfo = waitForPrVisible(testRepo, testBranch, "number");
+    const prInfo = await waitForPrVisible(testRepo, testBranch, "number");
     assert.ok(prInfo.number);
 
-    const fileContent = exec(
+    const fileContent = await exec(
       `gh api repos/${testRepo}/contents/${orphanBranchFile}?ref=${testBranch} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(fileContent);
@@ -481,14 +497,14 @@ repos:
 `
     );
 
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
 
-    const prInfo = waitForPrVisible(testRepo, testBranch, "number");
+    const prInfo = await waitForPrVisible(testRepo, testBranch, "number");
     assert.ok(prInfo.number);
 
-    const fileContent = exec(
+    const fileContent = await exec(
       `gh api repos/${testRepo}/contents/${testFile}?ref=${testBranch} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(fileContent);
@@ -514,14 +530,14 @@ repos:
 `
     );
 
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
 
-    const prInfo = waitForPrVisible(testRepo, testBranch, "number");
+    const prInfo = await waitForPrVisible(testRepo, testBranch, "number");
     assert.ok(prInfo.number);
 
-    const fileContent = exec(
+    const fileContent = await exec(
       `gh api repos/${testRepo}/contents/${testFile}?ref=${testBranch} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(fileContent);
@@ -549,7 +565,7 @@ repos:
 `
       );
 
-      const output = exec(
+      const output = await exec(
         `node dist/cli.js sync --config ${configPath} --dry-run`,
         { cwd: projectRoot }
       );
@@ -562,10 +578,10 @@ repos:
   test("sync creates a PR with configured prOptions.labels", async () => {
     const prLabelsBranch = "chore/sync-pr-labels-test";
 
-    exec(
+    await exec(
       `gh api --method POST repos/${testRepo}/labels -f name="bug" -f color="ededed"`
     );
-    exec(
+    await exec(
       `gh api --method POST repos/${testRepo}/labels -f name="enhancement" -f color="ededed"`
     );
 
@@ -586,9 +602,15 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
 
-    const pr = waitForPrVisible(testRepo, prLabelsBranch, "number,labels");
+    const pr = await waitForPrVisible(
+      testRepo,
+      prLabelsBranch,
+      "number,labels"
+    );
     const labelNames: string[] = (pr.labels as Array<{ name: string }>).map(
       (l) => l.name
     );
@@ -599,7 +621,7 @@ repos:
   test("per-repo prOptions.labels overrides global labels", async () => {
     const prLabelsOverrideBranch = "chore/sync-pr-labels-override-test";
 
-    exec(
+    await exec(
       `gh api --method POST repos/${testRepo}/labels -f name="documentation" -f color="ededed"`
     );
 
@@ -622,9 +644,11 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
 
-    const pr = waitForPrVisible(
+    const pr = await waitForPrVisible(
       testRepo,
       prLabelsOverrideBranch,
       "number,labels"
