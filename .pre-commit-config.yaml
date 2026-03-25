@@ -26,6 +26,7 @@ repos:
         args:
           - "--whitespaces-count"
           - "2"
+        exclude: "(go\\.mod|go\\.sum)$"
   - repo: "https://github.com/sirosen/texthooks"
     rev: "0.7.1"
     hooks:
