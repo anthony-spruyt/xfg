@@ -2809,24 +2809,6 @@ describe("validateRawConfig", () => {
     });
 
     test("config with only conditionalGroups content is valid", () => {
-      const config: RawConfig = {
-        id: "cond-only",
-        conditionalGroups: [
-          {
-            when: { allOf: [] as string[] },
-            settings: {
-              labels: {
-                "my-label": { color: "aabbcc" },
-              },
-            },
-          } as unknown as RawConditionalGroupConfig,
-        ],
-        repos: [{ git: "git@github.com:org/repo.git" }],
-      };
-      // This will fail because allOf is empty — use a valid when clause
-      // Actually the task says NO createValidConfig, raw RawConfig with only conditionalGroups having labels
-      // But we need groups defined so the when clause references work.
-      // Let's use a config where groups exist and conditionalGroups reference them.
       const validConfig: RawConfig = {
         id: "cond-only",
         groups: { a: {} },
