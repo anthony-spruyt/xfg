@@ -20,6 +20,8 @@ import type {
   RawRootSettings,
   RawRepoSettings,
   RawRepoFileOverride,
+  RawConditionalGroupWhen,
+  RawConditionalGroupConfig,
   Ruleset,
   Label,
   GitHubRepoSettings,
@@ -478,6 +480,105 @@ function mergeGroupSettings(
 }
 
 /**
+ * Evaluates a conditional group's `when` clause against a repo's effective groups.
+ * Both `allOf` (every listed group present) and `anyOf` (at least one present)
+ * must be satisfied. Absent conditions are treated as satisfied.
+ */
+function evaluateWhenClause(
+  when: RawConditionalGroupWhen,
+  effectiveGroups: ReadonlySet<string>
+): boolean {
+  const allOfSatisfied =
+    !when.allOf || when.allOf.every((g) => effectiveGroups.has(g));
+  const anyOfSatisfied =
+    !when.anyOf || when.anyOf.some((g) => effectiveGroups.has(g));
+  return allOfSatisfied && anyOfSatisfied;
+}
+
+/**
+ * Merges matching conditional groups into the accumulated files/prOptions/settings.
+ * Each matching conditional group is applied in array order, using the same
+ * merge semantics as regular group layers (inherit:false, file:false, override:true).
+ */
+function mergeConditionalGroups(
+  accumulatedFiles: Record<string, RawFileConfig>,
+  accumulatedPROptions: PRMergeOptions | undefined,
+  accumulatedSettings: RawRootSettings | undefined,
+  effectiveGroups: ReadonlySet<string>,
+  conditionalGroups: RawConditionalGroupConfig[]
+): {
+  files: Record<string, RawFileConfig>;
+  prOptions: PRMergeOptions | undefined;
+  settings: RawRootSettings | undefined;
+} {
+  let files = structuredClone(accumulatedFiles);
+  let prOptions = accumulatedPROptions;
+  let settings = accumulatedSettings;
+
+  for (const cg of conditionalGroups) {
+    if (!evaluateWhenClause(cg.when, effectiveGroups)) continue;
+
+    // Merge files using same logic as mergeGroupFiles inner loop
+    if (cg.files) {
+      const inheritFiles = shouldInherit(cg.files);
+
+      if (!inheritFiles) {
+        files = {};
+      }
+
+      for (const [fileName, fileConfig] of Object.entries(cg.files)) {
+        if (fileName === "inherit") continue;
+
+        if (fileConfig === false) {
+          delete files[fileName];
+          continue;
+        }
+
+        if (fileConfig === undefined) continue;
+
+        const existing = files[fileName];
+        if (existing) {
+          const overlay = fileConfig as RawRepoFileOverride;
+          let mergedContent: ContentValue | undefined;
+
+          if (overlay.override || !existing.content || !overlay.content) {
+            mergedContent = overlay.content ?? existing.content;
+          } else {
+            mergedContent = mergeContentPair(
+              existing.content,
+              overlay.content,
+              existing.mergeStrategy ?? "replace"
+            );
+          }
+
+          const { override: _override, ...restFileConfig } =
+            fileConfig as Record<string, unknown>;
+          files[fileName] = {
+            ...existing,
+            ...restFileConfig,
+            content: mergedContent,
+          } as RawFileConfig;
+        } else {
+          files[fileName] = structuredClone(fileConfig) as RawFileConfig;
+        }
+      }
+    }
+
+    // Merge prOptions
+    if (cg.prOptions) {
+      prOptions = mergePROptions(prOptions, cg.prOptions);
+    }
+
+    // Merge settings
+    if (cg.settings) {
+      settings = mergeRawSettings(settings, cg.settings);
+    }
+  }
+
+  return { files, prOptions, settings };
+}
+
+/**
  * Resolves a single file entry by merging root config with repo overrides.
  * Returns null if the file should be skipped.
  */
@@ -536,18 +637,33 @@ export function normalizeConfig(
   for (const rawRepo of raw.repos) {
     const gitUrls = Array.isArray(rawRepo.git) ? rawRepo.git : [rawRepo.git];
 
-    // Resolve groups: build effective root files/prOptions/settings by merging group layers
-    const effectiveRootFiles = rawRepo.groups?.length
+    // Phase 1: Resolve groups - build effective root files/prOptions/settings by merging group layers
+    let effectiveRootFiles = rawRepo.groups?.length
       ? mergeGroupFiles(raw.files ?? {}, rawRepo.groups, raw.groups ?? {})
       : (raw.files ?? {});
 
-    const effectivePROptions = rawRepo.groups?.length
+    let effectivePROptions = rawRepo.groups?.length
       ? mergeGroupPROptions(raw.prOptions, rawRepo.groups, raw.groups ?? {})
       : raw.prOptions;
 
-    const effectiveSettings = rawRepo.groups?.length
+    let effectiveSettings = rawRepo.groups?.length
       ? mergeGroupSettings(raw.settings, rawRepo.groups, raw.groups ?? {})
       : raw.settings;
+
+    // Phase 2 + 3: Evaluate and merge conditional groups
+    if (raw.conditionalGroups?.length) {
+      const effectiveGroups = new Set(rawRepo.groups ?? []);
+      const merged = mergeConditionalGroups(
+        effectiveRootFiles,
+        effectivePROptions,
+        effectiveSettings,
+        effectiveGroups,
+        raw.conditionalGroups
+      );
+      effectiveRootFiles = merged.files;
+      effectivePROptions = merged.prOptions;
+      effectiveSettings = merged.settings;
+    }
 
     const fileNames = Object.keys(effectiveRootFiles);
 

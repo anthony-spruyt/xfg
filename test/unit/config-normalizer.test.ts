@@ -4145,3 +4145,589 @@ describe("group configuration", () => {
     assert.equal(content.fromGroupB, true);
   });
 });
+
+describe("conditional group configuration", () => {
+  test("conditional group with allOf matches when all groups present", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { base: true } },
+      },
+      groups: {
+        terraform: {
+          files: { "tf.json": { content: { tf: true } } },
+        },
+        renovate: {
+          files: { "renovate.json": { content: { renovate: true } } },
+        },
+      },
+      conditionalGroups: [
+        {
+          when: { allOf: ["terraform", "renovate"] },
+          settings: {
+            labels: {
+              "infra-managed": { color: "00ff00" },
+            },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["terraform", "renovate"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.ok(result.repos[0].settings?.labels?.["infra-managed"]);
+    assert.equal(
+      result.repos[0].settings?.labels?.["infra-managed"]?.color,
+      "00ff00"
+    );
+  });
+
+  test("conditional group with allOf does not match when group missing", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { base: true } },
+      },
+      groups: {
+        terraform: {
+          files: { "tf.json": { content: { tf: true } } },
+        },
+        renovate: {
+          files: { "renovate.json": { content: { renovate: true } } },
+        },
+      },
+      conditionalGroups: [
+        {
+          when: { allOf: ["terraform", "renovate"] },
+          settings: {
+            labels: {
+              "infra-managed": { color: "00ff00" },
+            },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["terraform"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.equal(
+      result.repos[0].settings?.labels?.["infra-managed"],
+      undefined
+    );
+  });
+
+  test("conditional group with anyOf matches when one group present", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        "github-ci": {},
+        "github-trivy": {},
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["github-ci", "github-trivy"] },
+          files: {
+            "ci-shared.json": { content: { ci: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["github-ci"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const ciFile = result.repos[0].files.find(
+      (f) => f.fileName === "ci-shared.json"
+    );
+    assert.ok(ciFile);
+    assert.deepStrictEqual(ciFile?.content, { ci: true });
+  });
+
+  test("conditional group with anyOf does not match when no groups present", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        "github-ci": {},
+        "github-trivy": {},
+        unrelated: {},
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["github-ci", "github-trivy"] },
+          files: {
+            "ci-shared.json": { content: { ci: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["unrelated"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const ciFile = result.repos[0].files.find(
+      (f) => f.fileName === "ci-shared.json"
+    );
+    assert.equal(ciFile, undefined);
+  });
+
+  test("combined allOf + anyOf requires both conditions", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        renovate: {},
+        go: {},
+        terraform: {},
+      },
+      conditionalGroups: [
+        {
+          when: { allOf: ["renovate"], anyOf: ["go", "terraform"] },
+          files: {
+            "combo.json": { content: { combo: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/both.git",
+          groups: ["renovate", "terraform"],
+        },
+        {
+          git: "git@github.com:org/renovate-only.git",
+          groups: ["renovate"],
+        },
+        {
+          git: "git@github.com:org/go-only.git",
+          groups: ["go"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    // repo with both renovate + terraform -> matches
+    const bothRepo = result.repos.find((r) => r.git.includes("both"));
+    assert.ok(bothRepo?.files.find((f) => f.fileName === "combo.json"));
+
+    // repo with renovate only -> no match (anyOf not satisfied)
+    const renovateOnly = result.repos.find((r) =>
+      r.git.includes("renovate-only")
+    );
+    assert.equal(
+      renovateOnly?.files.find((f) => f.fileName === "combo.json"),
+      undefined
+    );
+
+    // repo with go only -> no match (allOf not satisfied)
+    const goOnly = result.repos.find((r) => r.git.includes("go-only"));
+    assert.equal(
+      goOnly?.files.find((f) => f.fileName === "combo.json"),
+      undefined
+    );
+  });
+
+  test("multiple conditional groups merge in array order", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        terraform: {},
+        renovate: {},
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["terraform"] },
+          files: {
+            "shared.json": { content: { source: "first", first: true } },
+          },
+        },
+        {
+          when: { anyOf: ["renovate"] },
+          files: {
+            "shared.json": { content: { source: "second", second: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["terraform", "renovate"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const shared = result.repos[0].files.find(
+      (f) => f.fileName === "shared.json"
+    );
+    const content = shared?.content as Record<string, unknown>;
+    // Second conditional group wins for shared key
+    assert.equal(content.source, "second");
+    // Both contribute unique keys
+    assert.equal(content.first, true);
+    assert.equal(content.second, true);
+  });
+
+  test("conditional groups merge after explicit groups", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { fromRoot: true } },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "config.json": { content: { fromGroup: true } },
+          },
+        },
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["mygroup"] },
+          files: {
+            "config.json": { content: { fromConditional: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const config = result.repos[0].files.find(
+      (f) => f.fileName === "config.json"
+    );
+    const content = config?.content as Record<string, unknown>;
+    // All three layers contribute
+    assert.equal(content.fromRoot, true);
+    assert.equal(content.fromGroup, true);
+    assert.equal(content.fromConditional, true);
+  });
+
+  test("repo overrides win over conditional group values", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { base: true, key: "root" } },
+      },
+      groups: {
+        mygroup: {},
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["mygroup"] },
+          files: {
+            "config.json": { content: { key: "conditional", extra: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+          files: {
+            "config.json": { content: { key: "repo" } },
+          },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const config = result.repos[0].files.find(
+      (f) => f.fileName === "config.json"
+    );
+    const content = config?.content as Record<string, unknown>;
+    // Repo override wins for key
+    assert.equal(content.key, "repo");
+    // Conditional group contributes extra
+    assert.equal(content.extra, true);
+    // Root contributes base
+    assert.equal(content.base, true);
+  });
+
+  test("no conditional groups defined preserves existing behavior", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.equal(result.repos.length, 1);
+    assert.equal(result.repos[0].files.length, 1);
+    assert.deepStrictEqual(result.repos[0].files[0].content, { key: "value" });
+  });
+
+  test("conditional group prOptions merge correctly", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      prOptions: { merge: "auto" },
+      groups: {
+        mygroup: {},
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["mygroup"] },
+          prOptions: { labels: ["conditional-label"] },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.equal(result.repos[0].prOptions?.merge, "auto");
+    assert.deepStrictEqual(result.repos[0].prOptions?.labels, [
+      "conditional-label",
+    ]);
+  });
+
+  test("conditional group with inherit:false on files discards accumulated", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "root.json": { content: { fromRoot: true } },
+      },
+      groups: {
+        mygroup: {
+          files: {
+            "group.json": { content: { fromGroup: true } },
+          },
+        },
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["mygroup"] },
+          files: {
+            inherit: false,
+            "conditional.json": { content: { fromConditional: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    // Root and group files should be discarded
+    assert.ok(!fileNames.includes("root.json"));
+    assert.ok(!fileNames.includes("group.json"));
+    // Only conditional file remains
+    assert.ok(fileNames.includes("conditional.json"));
+  });
+
+  test("conditional group file:false removes file from accumulated set", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "keep.json": { content: { keep: true } },
+        "remove.json": { content: { remove: true } },
+      },
+      groups: {
+        mygroup: {},
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["mygroup"] },
+          files: {
+            "remove.json": false,
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("keep.json"));
+    assert.ok(!fileNames.includes("remove.json"));
+  });
+
+  test("conditional group override:true replaces content instead of merging", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { fromRoot: true, shared: "root" } },
+      },
+      groups: {
+        mygroup: {},
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["mygroup"] },
+          files: {
+            "config.json": {
+              content: { fromConditional: true },
+              override: true,
+            },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const config = result.repos[0].files[0];
+    assert.deepStrictEqual(config.content, { fromConditional: true });
+  });
+
+  test("repo with empty groups does not match any conditional", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { base: true } },
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["terraform"] },
+          files: {
+            "extra.json": { content: { extra: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("config.json"));
+    assert.ok(!fileNames.includes("extra.json"));
+  });
+
+  test("conditional group rulesets merge correctly", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        rulesets: {
+          "root-rule": { target: "branch", enforcement: "active" },
+        },
+      },
+      groups: {
+        mygroup: {},
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["mygroup"] },
+          settings: {
+            rulesets: {
+              "conditional-rule": { target: "branch", enforcement: "evaluate" },
+            },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.ok(result.repos[0].settings?.rulesets?.["root-rule"]);
+    assert.ok(result.repos[0].settings?.rulesets?.["conditional-rule"]);
+    assert.equal(
+      result.repos[0].settings?.rulesets?.["conditional-rule"]?.enforcement,
+      "evaluate"
+    );
+  });
+
+  test("conditional group repo settings merge correctly", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        repo: {
+          hasIssues: true,
+          hasWiki: true,
+        },
+      },
+      groups: {
+        mygroup: {},
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["mygroup"] },
+          settings: {
+            repo: {
+              hasWiki: false,
+              hasDiscussions: true,
+            },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const repo = result.repos[0].settings?.repo as Record<string, unknown>;
+    assert.equal(repo?.hasIssues, true);
+    assert.equal(repo?.hasWiki, false);
+    assert.equal(repo?.hasDiscussions, true);
+  });
+});
