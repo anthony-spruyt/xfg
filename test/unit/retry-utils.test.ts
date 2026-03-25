@@ -3,6 +3,7 @@ import { strict as assert } from "node:assert";
 import {
   isPermanentError,
   isTransientError,
+  isRateLimitError,
   withRetry,
 } from "../../src/shared/retry-utils.js";
 
@@ -144,6 +145,56 @@ describe("isTransientError", () => {
   test("returns false for unknown error", () => {
     const error = new Error("Some random error");
     assert.equal(isTransientError(error), false);
+  });
+});
+
+describe("isRateLimitError", () => {
+  test("returns true for API rate limit exceeded", () => {
+    const error = new Error("API rate limit exceeded");
+    assert.equal(isRateLimitError(error), true);
+  });
+
+  test("returns true for secondary rate limit with 403", () => {
+    const error = new Error(
+      "HTTP 403: You have exceeded a secondary rate limit"
+    );
+    assert.equal(isRateLimitError(error), true);
+  });
+
+  test("returns true for too many requests", () => {
+    const error = new Error("HTTP 429 Too Many Requests");
+    assert.equal(isRateLimitError(error), true);
+  });
+
+  test("returns false for plain 429 without descriptive text", () => {
+    const error = new Error("HTTP 429");
+    assert.equal(isRateLimitError(error), false);
+  });
+
+  test("returns true for abuse detection", () => {
+    const error = new Error("You have triggered an abuse detection mechanism");
+    assert.equal(isRateLimitError(error), true);
+  });
+
+  test("returns false for connection timeout", () => {
+    const error = new Error("Connection timed out");
+    assert.equal(isRateLimitError(error), false);
+  });
+
+  test("returns false for 503 service unavailable", () => {
+    const error = new Error("HTTP 503 Service Unavailable");
+    assert.equal(isRateLimitError(error), false);
+  });
+
+  test("returns false for permission denied", () => {
+    const error = new Error("Permission denied");
+    assert.equal(isRateLimitError(error), false);
+  });
+
+  test("checks stderr for rate limit messages", () => {
+    const error = new Error("Command failed") as Error & { stderr: string };
+    error.stderr = "API rate limit exceeded";
+    assert.equal(isRateLimitError(error), true);
   });
 });
 

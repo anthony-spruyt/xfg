@@ -69,6 +69,36 @@ const DEFAULT_TRANSIENT_ERROR_PATTERNS: RegExp[] = [
   /unable\s*to\s*access/i,
 ];
 
+/**
+ * Patterns that specifically indicate rate limiting (a subset of transient errors).
+ * Used to apply longer backoff delays -- connection resets and 5xx errors
+ * should NOT get 60-second waits.
+ */
+const RATE_LIMIT_PATTERNS: RegExp[] = [
+  /rate\s*limit/i,
+  /too\s*many\s*requests/i,
+  /abuse\s*detection/i,
+];
+
+/**
+ * Checks if an error specifically indicates a rate limit (not just any transient error).
+ * Rate limit errors need longer backoff (60s+) compared to network errors (1-4s).
+ */
+export function isRateLimitError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  const stderr =
+    (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
+  const combined = `${message} ${stderr}`;
+
+  for (const pattern of RATE_LIMIT_PATTERNS) {
+    if (pattern.test(combined)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 interface RetryOptions {
   /** Maximum number of retries (default: 3) */
   retries?: number;
