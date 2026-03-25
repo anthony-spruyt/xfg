@@ -418,6 +418,28 @@ export interface RawGroupConfig {
   settings?: RawRepoSettings;
 }
 
+/** Condition for conditional group activation */
+export interface RawConditionalGroupWhen {
+  /** All listed groups must be present in the repo's effective group set */
+  allOf?: string[];
+  /** At least one listed group must be present */
+  anyOf?: string[];
+}
+
+/** Conditional group: activates based on which groups a repo has */
+export interface RawConditionalGroupConfig {
+  /** Condition that determines when this group activates */
+  when: RawConditionalGroupWhen;
+  /** File definitions or overrides (same capabilities as regular groups) */
+  files?: Record<string, RawFileConfig | RawRepoFileOverride | false> & {
+    inherit?: boolean;
+  };
+  /** PR merge options */
+  prOptions?: PRMergeOptions;
+  /** Repository settings (rulesets, labels, repo settings) */
+  settings?: RawRepoSettings;
+}
+
 // Root-level settings (before normalization) - inherit not valid here
 export interface RawRootSettings {
   rulesets?: Record<string, Ruleset | false>;
@@ -454,6 +476,7 @@ export interface RawConfig {
   id: string;
   files?: Record<string, RawFileConfig>;
   groups?: Record<string, RawGroupConfig>;
+  conditionalGroups?: RawConditionalGroupConfig[];
   repos: RawRepoConfig[];
   prOptions?: PRMergeOptions;
   prTemplate?: string;

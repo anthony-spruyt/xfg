@@ -26,6 +26,8 @@ export type {
   RawRepoSettings,
   RawRepoConfig,
   RawConfig,
+  RawConditionalGroupWhen,
+  RawConditionalGroupConfig,
   // Normalized Config
   RepoConfig,
   Config,
