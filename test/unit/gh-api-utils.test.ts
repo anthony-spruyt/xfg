@@ -6,6 +6,8 @@ import {
   isHttp404Error,
   resolveGitHubToken,
   GhApiClient,
+  parseResponseBody,
+  attachRetryAfter,
 } from "../../src/shared/gh-api-utils.js";
 import { parseApiJson } from "../../src/shared/json-utils.js";
 import type { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
@@ -199,6 +201,121 @@ describe("resolveGitHubToken", () => {
       log,
     });
     assert.match(debugMessages[0], /no fallback token available/);
+  });
+});
+
+describe("parseResponseBody", () => {
+  test("strips headers and returns body with LF separator", () => {
+    const raw = [
+      "HTTP/2.0 200 OK",
+      "Content-Type: application/json",
+      "X-Ratelimit-Remaining: 4999",
+      "",
+      '{"id": 1, "name": "test"}',
+    ].join("\n");
+    assert.equal(parseResponseBody(raw), '{"id": 1, "name": "test"}');
+  });
+
+  test("strips headers and returns body with CRLF separator", () => {
+    const raw = [
+      "HTTP/2.0 200 OK",
+      "Content-Type: application/json",
+      "",
+      '{"id": 1}',
+    ].join("\r\n");
+    assert.equal(parseResponseBody(raw), '{"id": 1}');
+  });
+
+  test("returns full string when no blank line separator found", () => {
+    const raw = '{"id": 1}';
+    assert.equal(parseResponseBody(raw), '{"id": 1}');
+  });
+
+  test("handles multiline body after headers", () => {
+    const raw = [
+      "HTTP/2.0 200 OK",
+      "Content-Type: application/json",
+      "",
+      "[",
+      '  {"id": 1},',
+      '  {"id": 2}',
+      "]",
+    ].join("\n");
+    assert.equal(parseResponseBody(raw), '[\n  {"id": 1},\n  {"id": 2}\n]');
+  });
+
+  test("handles empty body after headers", () => {
+    const raw = ["HTTP/2.0 204 No Content", "", ""].join("\n");
+    assert.equal(parseResponseBody(raw), "");
+  });
+});
+
+describe("attachRetryAfter", () => {
+  test("parses retry-after header from string stdout", () => {
+    const error = new Error("HTTP 403") as Error & {
+      stdout: string;
+      retryAfter?: number;
+    };
+    error.stdout = [
+      "HTTP/2.0 403 Forbidden",
+      "Retry-After: 60",
+      "Content-Type: application/json",
+      "",
+      '{"message": "rate limit"}',
+    ].join("\n");
+    attachRetryAfter(error);
+    assert.equal(error.retryAfter, 60);
+  });
+
+  test("parses retry-after header from Buffer stdout", () => {
+    const error = new Error("HTTP 429") as Error & {
+      stdout: Buffer;
+      retryAfter?: number;
+    };
+    error.stdout = Buffer.from(
+      ["HTTP/2.0 429 Too Many Requests", "retry-after: 120", "", "{}"].join(
+        "\n"
+      )
+    );
+    attachRetryAfter(error);
+    assert.equal(error.retryAfter, 120);
+  });
+
+  test("is case-insensitive for header name", () => {
+    const error = new Error("HTTP 403") as Error & {
+      stdout: string;
+      retryAfter?: number;
+    };
+    error.stdout = "HTTP/2.0 403\nRETRY-AFTER: 45\n\n{}";
+    attachRetryAfter(error);
+    assert.equal(error.retryAfter, 45);
+  });
+
+  test("is a no-op when stdout is absent", () => {
+    const error = new Error("HTTP 403") as Error & { retryAfter?: number };
+    attachRetryAfter(error);
+    assert.equal(error.retryAfter, undefined);
+  });
+
+  test("is a no-op when no retry-after header in stdout", () => {
+    const error = new Error("HTTP 403") as Error & {
+      stdout: string;
+      retryAfter?: number;
+    };
+    error.stdout = "HTTP/2.0 403\nContent-Type: application/json\n\n{}";
+    attachRetryAfter(error);
+    assert.equal(error.retryAfter, undefined);
+  });
+
+  test("ignores non-numeric retry-after values", () => {
+    const error = new Error("HTTP 403") as Error & {
+      stdout: string;
+      retryAfter?: number;
+    };
+    error.stdout =
+      "HTTP/2.0 403\nRetry-After: Thu, 01 Jan 2099 00:00:00 GMT\n\n{}";
+    attachRetryAfter(error);
+    assert.equal(error.retryAfter, undefined);
   });
 });
 

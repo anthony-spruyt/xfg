@@ -50,6 +50,42 @@ export function buildTokenEnv(
 }
 
 /**
+ * Strips HTTP response headers from `gh api --include` output.
+ * Splits on the first blank line (LF or CRLF) and returns everything after it.
+ * If no blank line is found, returns the full string (no headers present).
+ */
+export function parseResponseBody(raw: string): string {
+  // Try CRLF first, then LF
+  const crlfIndex = raw.indexOf("\r\n\r\n");
+  if (crlfIndex !== -1) {
+    return raw.slice(crlfIndex + 4);
+  }
+  const lfIndex = raw.indexOf("\n\n");
+  if (lfIndex !== -1) {
+    return raw.slice(lfIndex + 2);
+  }
+  return raw;
+}
+
+/**
+ * Parses Retry-After header from an exec error's stdout and attaches it
+ * as error.retryAfter (number of seconds). Only extracts the numeric value
+ * to avoid leaking tokens from other headers.
+ *
+ * No-op if stdout is absent or does not contain a numeric Retry-After header.
+ */
+export function attachRetryAfter(error: unknown): void {
+  const stdout = (error as { stdout?: string | Buffer }).stdout;
+  if (!stdout) return;
+
+  const stdoutStr = typeof stdout === "string" ? stdout : stdout.toString();
+  const match = stdoutStr.match(/^retry-after:\s*(\d+)\s*$/im);
+  if (match) {
+    (error as { retryAfter?: number }).retryAfter = parseInt(match[1], 10);
+  }
+}
+
+/**
  * Executes a GitHub API call using the gh CLI.
  * Shared by labels, rulesets, and repo-settings strategies.
  *
