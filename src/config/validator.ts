@@ -802,7 +802,9 @@ export function validateRawConfig(config: RawConfig): void {
     );
   const hasCondGrpPR =
     Array.isArray(config.conditionalGroups) &&
-    config.conditionalGroups.some((cg) => cg.prOptions !== undefined);
+    config.conditionalGroups.some(
+      (cg) => cg.prOptions && isPlainObject(cg.prOptions)
+    );
 
   if (
     !hasFiles &&
@@ -881,7 +883,9 @@ export function validateForSync(config: RawConfig): void {
     );
   const hasCondGrpPR =
     Array.isArray(config.conditionalGroups) &&
-    config.conditionalGroups.some((cg) => cg.prOptions !== undefined);
+    config.conditionalGroups.some(
+      (cg) => cg.prOptions && isPlainObject(cg.prOptions)
+    );
 
   if (
     !hasRootFiles &&
