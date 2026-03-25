@@ -27,46 +27,48 @@ let repoName: string;
 let testRepo: string;
 let tmpDir: string;
 
-function resetRepoSettings(): void {
+async function resetRepoSettings(): Promise<void> {
   console.log("  Resetting repo settings to defaults...");
   const fields = Object.entries(GITHUB_DEFAULTS)
     .map(([k, v]) => `-F ${k}=${v}`)
     .join(" ");
-  exec(`gh api --method PATCH repos/${testRepo} ${fields}`);
+  await exec(`gh api --method PATCH repos/${testRepo} ${fields}`);
 }
 
-function resetSecuritySettings(): void {
+async function resetSecuritySettings(): Promise<void> {
   console.log("  Resetting security settings...");
   try {
-    exec(`gh api -X PUT repos/${testRepo}/vulnerability-alerts`);
+    await exec(`gh api -X PUT repos/${testRepo}/vulnerability-alerts`);
   } catch {
     /* already enabled */
   }
   try {
-    exec(`gh api -X DELETE repos/${testRepo}/automated-security-fixes`);
+    await exec(`gh api -X DELETE repos/${testRepo}/automated-security-fixes`);
   } catch {
     /* already disabled */
   }
   try {
-    exec(`gh api -X DELETE repos/${testRepo}/vulnerability-alerts`);
+    await exec(`gh api -X DELETE repos/${testRepo}/vulnerability-alerts`);
   } catch {
     /* already disabled */
   }
   try {
-    exec(`gh api -X DELETE repos/${testRepo}/private-vulnerability-reporting`);
+    await exec(
+      `gh api -X DELETE repos/${testRepo}/private-vulnerability-reporting`
+    );
   } catch {
     /* already disabled */
   }
 }
 
-function getSecuritySettings(): {
+async function getSecuritySettings(): Promise<{
   vulnerabilityAlerts: boolean;
   automatedSecurityFixes: boolean;
   privateVulnerabilityReporting: boolean;
-} {
+}> {
   let vulnerabilityAlerts = false;
   try {
-    exec(`gh api repos/${testRepo}/vulnerability-alerts`);
+    await exec(`gh api repos/${testRepo}/vulnerability-alerts`);
     vulnerabilityAlerts = true;
   } catch {
     vulnerabilityAlerts = false;
@@ -74,13 +76,13 @@ function getSecuritySettings(): {
 
   let automatedSecurityFixes = false;
   try {
-    const r = exec(`gh api repos/${testRepo}/automated-security-fixes`);
+    const r = await exec(`gh api repos/${testRepo}/automated-security-fixes`);
     automatedSecurityFixes = JSON.parse(r).enabled === true;
   } catch {
     automatedSecurityFixes = false;
   }
 
-  const pvrResult = exec(
+  const pvrResult = await exec(
     `gh api repos/${testRepo}/private-vulnerability-reporting`
   );
   const privateVulnerabilityReporting = JSON.parse(pvrResult).enabled === true;
@@ -92,8 +94,8 @@ function getSecuritySettings(): {
   };
 }
 
-function getRepoSettings(): Record<string, unknown> {
-  return JSON.parse(exec(`gh api repos/${testRepo}`));
+async function getRepoSettings(): Promise<Record<string, unknown>> {
+  return JSON.parse(await exec(`gh api repos/${testRepo}`));
 }
 
 function createConfigFile(): string {
@@ -120,46 +122,46 @@ repos:
 }
 
 describe("GitHub Repo Settings Integration Test", () => {
-  before(() => {
+  before(async () => {
     tmpDir = join(tmpdir(), `xfg-repo-settings-test-${Date.now()}`);
     mkdirSync(tmpDir, { recursive: true });
     repoName = generateRepoName("repo-settings");
     testRepo = `${OWNER}/${repoName}`;
-    createRepo(OWNER, repoName);
+    await createRepo(OWNER, repoName);
   });
 
-  after(() => {
-    deleteRepo(OWNER, repoName);
+  after(async () => {
+    await deleteRepo(OWNER, repoName);
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  beforeEach(() => {
-    resetRepoSettings();
-    resetSecuritySettings();
+  beforeEach(async () => {
+    await resetRepoSettings();
+    await resetSecuritySettings();
   });
 
-  test("settings dry-run shows planned repo settings changes", () => {
+  test("settings dry-run shows planned repo settings changes", async () => {
     const configPath = createConfigFile();
-    const settingsBefore = getRepoSettings();
+    const settingsBefore = await getRepoSettings();
 
-    const output = exec(
+    const output = await exec(
       `node dist/cli.js sync --config ${configPath} --dry-run`,
       { cwd: projectRoot }
     );
     assert.ok(output.includes("DRY RUN") || output.includes("dry-run"));
 
-    const settingsAfter = getRepoSettings();
+    const settingsAfter = await getRepoSettings();
     assert.equal(settingsAfter.has_wiki, settingsBefore.has_wiki);
   });
 
-  test("settings applies repo settings changes", () => {
+  test("settings applies repo settings changes", async () => {
     const configPath = createConfigFile();
 
-    exec(`node dist/cli.js sync --config ${configPath}`, {
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
 
-    const s = getRepoSettings();
+    const s = await getRepoSettings();
     assert.equal(s.has_wiki, false);
     assert.equal(s.has_projects, false);
     assert.equal(s.allow_squash_merge, true);
@@ -167,19 +169,19 @@ describe("GitHub Repo Settings Integration Test", () => {
     assert.equal(s.allow_rebase_merge, false);
     assert.equal(s.delete_branch_on_merge, true);
 
-    const sec = getSecuritySettings();
+    const sec = await getSecuritySettings();
     assert.equal(sec.vulnerabilityAlerts, true);
     assert.equal(sec.automatedSecurityFixes, false);
     assert.equal(sec.privateVulnerabilityReporting, true);
   });
 
-  test("settings reports no changes when already in desired state", () => {
+  test("settings reports no changes when already in desired state", async () => {
     const configPath = createConfigFile();
-    exec(`node dist/cli.js sync --config ${configPath}`, {
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
 
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     assert.ok(
@@ -188,7 +190,7 @@ describe("GitHub Repo Settings Integration Test", () => {
     );
   });
 
-  test("settings applies description to repository", () => {
+  test("settings applies description to repository", async () => {
     const randomDescription = `xfg integration test - ${randomUUID()}`;
     const descConfigPath = join(tmpDir, `repo-desc-${Date.now()}.yaml`);
     writeFileSync(
@@ -202,11 +204,11 @@ repos:
 `
     );
 
-    exec(`node dist/cli.js sync --config ${descConfigPath}`, {
+    await exec(`node dist/cli.js sync --config ${descConfigPath}`, {
       cwd: projectRoot,
     });
 
-    const settingsAfter = getRepoSettings();
+    const settingsAfter = await getRepoSettings();
     assert.equal(settingsAfter.description, randomDescription);
   });
 });
