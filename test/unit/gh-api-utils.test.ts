@@ -320,29 +320,50 @@ describe("attachRetryAfter", () => {
 });
 
 describe("GhApiClient", () => {
-  test("delegates GET call to executor", async () => {
+  test("includes --include flag for non-paginated GET and strips headers", async () => {
     const calls: { command: string; cwd: string }[] = [];
     const executor = {
       exec: async (command: string, cwd: string) => {
         calls.push({ command, cwd });
-        return '{"ok": true}';
+        return 'HTTP/2.0 200 OK\nContent-Type: application/json\n\n{"ok": true}';
       },
     };
     const client = new GhApiClient(executor as never, 0, "/tmp");
     const result = await client.call("GET", "/repos/owner/repo");
     assert.equal(calls.length, 1);
-    assert.match(calls[0].command, /gh api/);
+    assert.match(calls[0].command, /--include/);
     assert.match(calls[0].command, /repos\/owner\/repo/);
     assert.equal(calls[0].cwd, "/tmp");
     assert.equal(result, '{"ok": true}');
   });
 
-  test("adds -X flag for non-GET methods", async () => {
+  test("skips --include flag for paginated requests", async () => {
     const calls: string[] = [];
     const executor = {
       exec: async (command: string) => {
         calls.push(command);
-        return "{}";
+        return '[{"id": 1}, {"id": 2}]';
+      },
+    };
+    const client = new GhApiClient(executor as never, 0, "/tmp");
+    const result = await client.call("GET", "/repos/owner/repo/labels", {
+      paginate: true,
+    });
+    assert.equal(calls.length, 1);
+    assert.ok(
+      !calls[0].includes("--include"),
+      "Should NOT have --include with --paginate"
+    );
+    assert.match(calls[0], /--paginate/);
+    assert.equal(result, '[{"id": 1}, {"id": 2}]');
+  });
+
+  test("adds -X flag for non-GET methods and strips headers", async () => {
+    const calls: string[] = [];
+    const executor = {
+      exec: async (command: string) => {
+        calls.push(command);
+        return "HTTP/2.0 201 Created\n\n{}";
       },
     };
     const client = new GhApiClient(executor as never, 0, "/tmp");
@@ -352,6 +373,7 @@ describe("GhApiClient", () => {
     assert.equal(calls.length, 1);
     assert.match(calls[0], /-X POST/);
     assert.match(calls[0], /--input -/);
+    assert.match(calls[0], /--include/);
   });
 
   test("passes token via env", async () => {
@@ -363,7 +385,7 @@ describe("GhApiClient", () => {
         opts?: { env?: Record<string, string> }
       ) => {
         passedEnv = opts?.env;
-        return "{}";
+        return "HTTP/2.0 200 OK\n\n{}";
       },
     };
     const client = new GhApiClient(executor as never, 0, "/tmp");
@@ -371,5 +393,35 @@ describe("GhApiClient", () => {
       options: { token: "secret-token" },
     });
     assert.deepEqual(passedEnv, { GH_TOKEN: "secret-token" });
+  });
+
+  test("attaches retryAfter on failure and retries successfully", async () => {
+    const delaysCalled: number[] = [];
+    const noOpDelay = async (ms: number) => {
+      delaysCalled.push(ms);
+    };
+
+    let attempts = 0;
+    const executor = {
+      exec: async () => {
+        attempts++;
+        if (attempts < 2) {
+          const error = new Error("HTTP 403: rate limit exceeded") as Error & {
+            stdout: string;
+          };
+          error.stdout =
+            'HTTP/2.0 403 Forbidden\nRetry-After: 30\n\n{"message": "rate limit"}';
+          throw error;
+        }
+        return "HTTP/2.0 200 OK\n\n{}";
+      },
+    };
+    const client = new GhApiClient(executor as never, 1, "/tmp");
+    const result = await client.call("GET", "/test", {
+      _retryDelay: noOpDelay,
+    });
+    assert.equal(result, "{}");
+    assert.equal(attempts, 2);
+    assert.deepEqual(delaysCalled, [30_000]);
   });
 });

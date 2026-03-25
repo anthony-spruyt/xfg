@@ -21,6 +21,8 @@ interface GhApiCallParams {
   payload?: unknown;
   options?: GhApiOptions;
   paginate?: boolean;
+  /** Override for delay function (test injection) */
+  _retryDelay?: (ms: number) => Promise<void>;
 }
 
 interface GhApiCallOptions {
@@ -30,6 +32,7 @@ interface GhApiCallOptions {
   apiOpts?: GhApiOptions;
   payload?: unknown;
   paginate?: boolean;
+  _retryDelay?: (ms: number) => Promise<void>;
 }
 
 /**
@@ -106,6 +109,8 @@ async function ghApiCall(
 
   if (paginate) {
     args.push("--paginate");
+  } else {
+    args.push("--include");
   }
 
   if (apiOpts?.host && apiOpts.host !== "github.com") {
@@ -117,20 +122,33 @@ async function ghApiCall(
   const baseCommand = args.join(" ");
   const env = buildTokenEnv(apiOpts?.token);
 
+  const execAndParse = async (command: string): Promise<string> => {
+    try {
+      const raw = await executor.exec(command, cwd, { env });
+      return paginate ? raw : parseResponseBody(raw);
+    } catch (error) {
+      if (!paginate) {
+        attachRetryAfter(error);
+      }
+      throw error;
+    }
+  };
+
+  const retryOpts = {
+    retries,
+    ...(opts._retryDelay ? { _delay: opts._retryDelay } : {}),
+  };
+
   if (
     payload &&
     (method === "POST" || method === "PUT" || method === "PATCH")
   ) {
     const payloadJson = JSON.stringify(payload);
     const command = `echo ${escapeShellArg(payloadJson)} | ${baseCommand} --input -`;
-    return await withRetry(() => executor.exec(command, cwd, { env }), {
-      retries,
-    });
+    return await withRetry(() => execAndParse(command), retryOpts);
   }
 
-  return await withRetry(() => executor.exec(baseCommand, cwd, { env }), {
-    retries,
-  });
+  return await withRetry(() => execAndParse(baseCommand), retryOpts);
 }
 
 /**
@@ -156,6 +174,7 @@ export class GhApiClient {
       apiOpts: params?.options,
       payload: params?.payload,
       paginate: params?.paginate,
+      _retryDelay: params?._retryDelay,
     });
   }
 }
