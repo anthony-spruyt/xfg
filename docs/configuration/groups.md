@@ -231,3 +231,85 @@ repos:
     groups: [labeled]
     # PR options: merge: auto, labels: [from-group]
 ```
+
+## Conditional Groups
+
+Conditional groups activate automatically based on which groups a repo has.
+They are defined in a top-level `conditionalGroups` array, separate from
+regular groups.
+
+### `allOf` — Intersection
+
+Include config only when **all** listed groups are present:
+
+```yaml
+conditionalGroups:
+  - when:
+      allOf: [terraform, renovate]
+    settings:
+      labels:
+        "renovate/terraform":
+          color: "#ededed"
+          description: ""
+```
+
+The `renovate/terraform` label is only added to repos that have both
+`terraform` and `renovate` in their `groups` array.
+
+### `anyOf` — Union
+
+Include config when **any** listed group is present:
+
+```yaml
+conditionalGroups:
+  - when:
+      anyOf: [github-ci, github-trivy]
+    files:
+      .github/actionlint.yaml:
+        content: "@templates/.github/actionlint.yaml"
+```
+
+### Combined Conditions
+
+Both `allOf` and `anyOf` can be used together — both must be satisfied:
+
+```yaml
+conditionalGroups:
+  - when:
+      allOf: [renovate]
+      anyOf: [go, terraform, typescript]
+    settings:
+      labels:
+        "renovate/language":
+          color: "#ededed"
+```
+
+This matches repos that have `renovate` **and** at least one of `go`,
+`terraform`, or `typescript`.
+
+### Merge Order
+
+Conditional groups merge **after** explicit groups and **before** repo overrides:
+
+1. **Root files/settings** — base layer
+2. **Explicit group layers** — applied left-to-right
+3. **Conditional group layers** — applied in array order
+4. **Repo overrides** — final layer
+
+Later conditional groups override earlier ones when they conflict.
+
+### Full Parity with Regular Groups
+
+Conditional groups support the same capabilities as regular groups:
+
+- `files` with `inherit: false`, `override: true`, `file: false`
+- `prOptions` for PR merge settings
+- `settings` for rulesets, labels, and repo settings
+- `inherit: false` on settings sub-sections
+
+### Restrictions
+
+- Group names in `allOf`/`anyOf` must reference groups defined in
+  the `groups` map
+- Conditional groups cannot be listed in a repo's `groups` array
+- Conditional groups cannot reference other conditional groups
