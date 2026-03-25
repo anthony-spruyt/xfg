@@ -69,6 +69,43 @@ const DEFAULT_TRANSIENT_ERROR_PATTERNS: RegExp[] = [
   /unable\s*to\s*access/i,
 ];
 
+/**
+ * Patterns that specifically indicate rate limiting (a subset of transient errors).
+ * Used to apply longer backoff delays -- connection resets and 5xx errors
+ * should NOT get 60-second waits.
+ */
+const RATE_LIMIT_PATTERNS: RegExp[] = [
+  /rate\s*limit/i,
+  /too\s*many\s*requests/i,
+  /abuse\s*detection/i,
+];
+
+/**
+ * Checks if an error specifically indicates a rate limit (not just any transient error).
+ * Rate limit errors need longer backoff (60s+) compared to network errors (1-4s).
+ */
+export function isRateLimitError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  const stderr =
+    (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
+  const combined = `${message} ${stderr}`;
+
+  for (const pattern of RATE_LIMIT_PATTERNS) {
+    if (pattern.test(combined)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/** Default delay (seconds) for rate limit errors when no Retry-After header is available. */
+const RATE_LIMIT_FALLBACK_DELAY_SECONDS = 60;
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 interface RetryOptions {
   /** Maximum number of retries (default: 3) */
   retries?: number;
@@ -80,6 +117,8 @@ interface RetryOptions {
   transientErrorPatterns?: RegExp[];
   /** Logger for retry messages (defaults to no logging) */
   log?: { info(msg: string): void };
+  /** Override for delay function (test injection) */
+  _delay?: (ms: number) => Promise<void>;
 }
 
 /**
@@ -153,6 +192,7 @@ export async function withRetry<T>(
       } catch (error) {
         if (
           error instanceof Error &&
+          !isTransientError(error, options?.transientErrorPatterns) &&
           isPermanentError(error, permanentPatterns)
         ) {
           // Wrap in AbortError to stop retrying immediately
@@ -163,8 +203,19 @@ export async function withRetry<T>(
     },
     {
       retries,
-      onFailedAttempt: (context) => {
-        // Only log if this isn't the last attempt
+      onFailedAttempt: async (context) => {
+        // Apply rate-limit-specific delay before the next retry
+        if (context.retriesLeft > 0 && isRateLimitError(context.error)) {
+          const retryAfterSeconds =
+            (context.error as { retryAfter?: number }).retryAfter ??
+            RATE_LIMIT_FALLBACK_DELAY_SECONDS;
+          options?.log?.info(
+            `Rate limited. Waiting ${retryAfterSeconds}s before retry...`
+          );
+          await (options?._delay ?? delay)(retryAfterSeconds * 1000);
+        }
+
+        // Log the failure (existing behavior)
         if (context.retriesLeft > 0) {
           const msg =
             sanitizeCredentials(context.error.message) || "Unknown error";

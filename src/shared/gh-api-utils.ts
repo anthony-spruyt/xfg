@@ -21,6 +21,8 @@ interface GhApiCallParams {
   payload?: unknown;
   options?: GhApiOptions;
   paginate?: boolean;
+  /** Override for delay function (test injection) */
+  _retryDelay?: (ms: number) => Promise<void>;
 }
 
 interface GhApiCallOptions {
@@ -30,6 +32,7 @@ interface GhApiCallOptions {
   apiOpts?: GhApiOptions;
   payload?: unknown;
   paginate?: boolean;
+  _retryDelay?: (ms: number) => Promise<void>;
 }
 
 /**
@@ -47,6 +50,42 @@ export function buildTokenEnv(
   token?: string
 ): Record<string, string> | undefined {
   return token ? { GH_TOKEN: token } : undefined;
+}
+
+/**
+ * Strips HTTP response headers from `gh api --include` output.
+ * Splits on the first blank line (LF or CRLF) and returns everything after it.
+ * If no blank line is found, returns the full string (no headers present).
+ */
+export function parseResponseBody(raw: string): string {
+  // Try CRLF first, then LF
+  const crlfIndex = raw.indexOf("\r\n\r\n");
+  if (crlfIndex !== -1) {
+    return raw.slice(crlfIndex + 4);
+  }
+  const lfIndex = raw.indexOf("\n\n");
+  if (lfIndex !== -1) {
+    return raw.slice(lfIndex + 2);
+  }
+  return raw;
+}
+
+/**
+ * Parses Retry-After header from an exec error's stdout and attaches it
+ * as error.retryAfter (number of seconds). Only extracts the numeric value
+ * to avoid leaking tokens from other headers.
+ *
+ * No-op if stdout is absent or does not contain a numeric Retry-After header.
+ */
+export function attachRetryAfter(error: unknown): void {
+  const stdout = (error as { stdout?: string | Buffer }).stdout;
+  if (!stdout) return;
+
+  const stdoutStr = typeof stdout === "string" ? stdout : stdout.toString();
+  const match = stdoutStr.match(/^retry-after:\s*(\d+)\s*$/im);
+  if (match) {
+    (error as { retryAfter?: number }).retryAfter = parseInt(match[1], 10);
+  }
 }
 
 /**
@@ -70,6 +109,8 @@ async function ghApiCall(
 
   if (paginate) {
     args.push("--paginate");
+  } else {
+    args.push("--include");
   }
 
   if (apiOpts?.host && apiOpts.host !== "github.com") {
@@ -81,20 +122,33 @@ async function ghApiCall(
   const baseCommand = args.join(" ");
   const env = buildTokenEnv(apiOpts?.token);
 
+  const execAndParse = async (command: string): Promise<string> => {
+    try {
+      const raw = await executor.exec(command, cwd, { env });
+      return paginate ? raw : parseResponseBody(raw);
+    } catch (error) {
+      if (!paginate) {
+        attachRetryAfter(error);
+      }
+      throw error;
+    }
+  };
+
+  const retryOpts = {
+    retries,
+    ...(opts._retryDelay ? { _delay: opts._retryDelay } : {}),
+  };
+
   if (
     payload &&
     (method === "POST" || method === "PUT" || method === "PATCH")
   ) {
     const payloadJson = JSON.stringify(payload);
     const command = `echo ${escapeShellArg(payloadJson)} | ${baseCommand} --input -`;
-    return await withRetry(() => executor.exec(command, cwd, { env }), {
-      retries,
-    });
+    return await withRetry(() => execAndParse(command), retryOpts);
   }
 
-  return await withRetry(() => executor.exec(baseCommand, cwd, { env }), {
-    retries,
-  });
+  return await withRetry(() => execAndParse(baseCommand), retryOpts);
 }
 
 /**
@@ -120,6 +174,7 @@ export class GhApiClient {
       apiOpts: params?.options,
       payload: params?.payload,
       paginate: params?.paginate,
+      _retryDelay: params?._retryDelay,
     });
   }
 }
