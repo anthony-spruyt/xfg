@@ -47,9 +47,9 @@ describe(
       mkdirSync(tmpDir, { recursive: true });
     });
 
-    afterEach(() => {
+    afterEach(async () => {
       for (const repoName of reposToDelete) {
-        deleteRepo(OWNER, repoName);
+        await deleteRepo(OWNER, repoName);
       }
       reposToDelete.length = 0;
     });
@@ -75,7 +75,7 @@ repos:
       );
 
       console.log(`\nCreating repo ${OWNER}/${repoName} via xfg sync (App)...`);
-      const output = exec(
+      const output = await exec(
         `node dist/cli.js sync --config ${configPath} --merge direct`,
         xfgEnv
       );
@@ -83,12 +83,12 @@ repos:
 
       // Verify repo was created (using GH_TOKEN for verification)
       assert.ok(
-        repoExists(OWNER, repoName),
+        await repoExists(OWNER, repoName),
         `Repo ${repoName} should exist after sync`
       );
 
       // Verify file was pushed
-      const fileContent = exec(
+      const fileContent = await exec(
         `gh api repos/${OWNER}/${repoName}/contents/lifecycle-test.json --jq '.content' | base64 -d`
       );
       assert.ok(
@@ -121,7 +121,7 @@ repos:
       console.log(
         `\nForking ${FORK_SOURCE} as ${OWNER}/${repoName} via xfg sync (App)...`
       );
-      const output = exec(
+      const output = await exec(
         `node dist/cli.js sync --config ${configPath} --merge direct`,
         xfgEnv
       );
@@ -129,13 +129,13 @@ repos:
 
       // Verify repo was created
       assert.ok(
-        repoExists(OWNER, repoName),
+        await repoExists(OWNER, repoName),
         `Repo ${repoName} should exist after sync`
       );
 
       // Verify it's a fork of the source
       assert.ok(
-        isForkedFrom(OWNER, repoName, FORK_SOURCE),
+        await isForkedFrom(OWNER, repoName, FORK_SOURCE),
         `Repo ${repoName} should be a fork of ${FORK_SOURCE}`
       );
 
@@ -161,7 +161,7 @@ repos:
       console.log(
         `\nDry-run create for ${OWNER}/${repoName} via xfg sync (App)...`
       );
-      const output = exec(
+      const output = await exec(
         `node dist/cli.js sync --config ${configPath} --dry-run`,
         xfgEnv
       );
@@ -175,7 +175,7 @@ repos:
 
       // Verify repo was NOT actually created
       assert.ok(
-        !repoExists(OWNER, repoName),
+        !(await repoExists(OWNER, repoName)),
         `Repo ${repoName} should NOT exist after dry-run`
       );
 
@@ -207,7 +207,7 @@ repos:
         );
         // Note: exec() here uses controlled test constants (repoName from randomBytes,
         // configPath from tmpDir), not user input. This is the standard integration test pattern.
-        const output = exec(
+        const output = await exec(
           `node dist/cli.js sync --config ${configPath} --merge direct`,
           xfgEnv
         );
@@ -215,13 +215,13 @@ repos:
 
         // Verify repo was created (using GH_TOKEN for verification)
         assert.ok(
-          repoExists(OWNER, repoName),
+          await repoExists(OWNER, repoName),
           `Repo ${repoName} should exist after migrate`
         );
 
         // Verify it's NOT a fork (migrated repos are standalone)
         assert.ok(
-          !isForkedFrom(OWNER, repoName, "aspruyt/fxg-test"),
+          !(await isForkedFrom(OWNER, repoName, "aspruyt/fxg-test")),
           `Repo ${repoName} should not be a fork`
         );
 
@@ -251,7 +251,7 @@ repos:
       console.log(
         `\nCreating repo ${OWNER}/${repoName} with settings via xfg sync (App)...`
       );
-      const output = exec(
+      const output = await exec(
         `node dist/cli.js sync --config ${configPath} --merge direct`,
         xfgEnv
       );
@@ -259,12 +259,12 @@ repos:
 
       // Verify repo was created (using GH_TOKEN for verification)
       assert.ok(
-        repoExists(OWNER, repoName),
+        await repoExists(OWNER, repoName),
         `Repo ${repoName} should exist after sync`
       );
 
       // Verify description was applied (using GH_TOKEN for verification)
-      const description = exec(
+      const description = await exec(
         `gh api repos/${OWNER}/${repoName} --jq '.description'`
       );
       assert.equal(
@@ -300,18 +300,18 @@ repos:
       console.log(
         `\nCreating repo ${OWNER}/${repoName} with defaultBranch: develop via xfg sync (App)...`
       );
-      const output = exec(
+      const output = await exec(
         `node dist/cli.js sync --config ${configPath} --merge direct`,
         xfgEnv
       );
       console.log(output);
 
       assert.ok(
-        repoExists(OWNER, repoName),
+        await repoExists(OWNER, repoName),
         `Repo ${repoName} should exist after sync`
       );
 
-      const defaultBranch = exec(
+      const defaultBranch = await exec(
         `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
       );
       assert.equal(
@@ -351,18 +351,18 @@ repos:
         console.log(
           `\nMigrating from ADO to ${OWNER}/${repoName} with defaultBranch: main (App)...`
         );
-        const output = exec(
+        const output = await exec(
           `node dist/cli.js sync --config ${configPath} --merge direct`,
           xfgEnv
         );
         console.log(output);
 
         assert.ok(
-          repoExists(OWNER, repoName),
+          await repoExists(OWNER, repoName),
           `Repo ${repoName} should exist after migrate`
         );
 
-        const defaultBranch = exec(
+        const defaultBranch = await exec(
           `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
         );
         assert.equal(
@@ -392,7 +392,7 @@ repos:
       );
 
       console.log(`\nFirst sync: creating ${OWNER}/${repoName} (App)...`);
-      const firstOutput = exec(
+      const firstOutput = await exec(
         `node dist/cli.js sync --config ${configPath} --merge direct`,
         xfgEnv
       );
@@ -420,7 +420,7 @@ repos:
       console.log(
         `\nSecond sync: ${OWNER}/${repoName} should already exist (App)...`
       );
-      const secondOutput = exec(
+      const secondOutput = await exec(
         `node dist/cli.js sync --config ${configPath2} --merge direct`,
         xfgEnv
       );
@@ -455,7 +455,7 @@ repos:
       console.log(
         `\nDry-run fork for ${OWNER}/${repoName} via xfg sync (App)...`
       );
-      const output = exec(
+      const output = await exec(
         `node dist/cli.js sync --config ${configPath} --dry-run`,
         xfgEnv
       );
@@ -466,7 +466,7 @@ repos:
 
       // Verify repo was NOT actually created
       assert.ok(
-        !repoExists(OWNER, repoName),
+        !(await repoExists(OWNER, repoName)),
         `Repo ${repoName} should NOT exist after dry-run`
       );
 
@@ -496,7 +496,7 @@ repos:
         console.log(
           `\nDry-run migrate for ${OWNER}/${repoName} via xfg sync (App)...`
         );
-        const output = exec(
+        const output = await exec(
           `node dist/cli.js sync --config ${configPath} --dry-run`,
           xfgEnv
         );
@@ -510,7 +510,7 @@ repos:
 
         // Verify repo was NOT actually created
         assert.ok(
-          !repoExists(OWNER, repoName),
+          !(await repoExists(OWNER, repoName)),
           `Repo ${repoName} should NOT exist after dry-run`
         );
 

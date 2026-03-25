@@ -14,7 +14,11 @@ const TARGET_FILE = "my.config.json";
 const BRANCH_NAME = "chore/sync-my-config";
 
 // Helper to call ADO REST API with PAT auth (az rest doesn't work with ADO APIs)
-function adoApi(method: string, uri: string, body?: string): string {
+async function adoApi(
+  method: string,
+  uri: string,
+  body?: string
+): Promise<string> {
   const pat = process.env.AZURE_DEVOPS_EXT_PAT;
   if (!pat) throw new Error("AZURE_DEVOPS_EXT_PAT not set");
 
@@ -23,26 +27,26 @@ function adoApi(method: string, uri: string, body?: string): string {
     cmd += ` -H "Content-Type: application/json" -d '${body}'`;
   }
   cmd += ` "${uri}"`;
-  return exec(cmd);
+  return await exec(cmd);
 }
 
 // Helper to get file content from ADO repo via REST API
 // Note: with includeContent=true, ADO returns the raw content directly
-function getFileContent(
+async function getFileContent(
   path: string,
   branch?: string
-): { content: string; objectId: string } | null {
+): Promise<{ content: string; objectId: string } | null> {
   try {
     const versionParam = branch
       ? `&versionDescriptor.version=${encodeURIComponent(branch)}&versionDescriptor.versionType=branch`
       : "";
     // Get content (returns raw file content)
     const contentUri = `${ORG_URL}/${TEST_PROJECT}/_apis/git/repositories/${TEST_REPO}/items?path=${encodeURIComponent(path)}${versionParam}&includeContent=true&api-version=7.0`;
-    const content = adoApi("GET", contentUri);
+    const content = await adoApi("GET", contentUri);
 
     // Get metadata for objectId (without content)
     const metaUri = `${ORG_URL}/${TEST_PROJECT}/_apis/git/repositories/${TEST_REPO}/items?path=${encodeURIComponent(path)}${versionParam}&api-version=7.0`;
-    const metaResult = adoApi("GET", metaUri);
+    const metaResult = await adoApi("GET", metaUri);
     const meta = JSON.parse(metaResult);
 
     return { content, objectId: meta.objectId };
@@ -52,9 +56,9 @@ function getFileContent(
 }
 
 // Helper to get the latest commit objectId for a branch
-function getLatestCommit(branch: string): string {
+async function getLatestCommit(branch: string): Promise<string> {
   const uri = `${ORG_URL}/${TEST_PROJECT}/_apis/git/repositories/${TEST_REPO}/refs?filter=heads/${encodeURIComponent(branch)}&api-version=7.0`;
-  const result = adoApi("GET", uri);
+  const result = await adoApi("GET", uri);
   const json = JSON.parse(result);
   if (json.value && json.value.length > 0) {
     return json.value[0].objectId;
@@ -63,24 +67,24 @@ function getLatestCommit(branch: string): string {
 }
 
 // Helper to get default branch name
-function getDefaultBranch(): string {
+async function getDefaultBranch(): Promise<string> {
   const uri = `${ORG_URL}/${TEST_PROJECT}/_apis/git/repositories/${TEST_REPO}?api-version=7.0`;
-  const result = adoApi("GET", uri);
+  const result = await adoApi("GET", uri);
   const json = JSON.parse(result);
   // defaultBranch is like "refs/heads/main"
   return json.defaultBranch?.replace("refs/heads/", "") || "main";
 }
 
 // Helper to push a file change (create/update/delete)
-function pushFileChange(
+async function pushFileChange(
   path: string,
   content: string | null,
   message: string,
   branch: string,
   oldObjectId?: string
-): void {
-  const defaultBranch = getDefaultBranch();
-  const latestCommit = getLatestCommit(
+): Promise<void> {
+  const defaultBranch = await getDefaultBranch();
+  const latestCommit = await getLatestCommit(
     branch === defaultBranch ? defaultBranch : branch
   );
 
@@ -113,7 +117,7 @@ function pushFileChange(
   };
 
   const uri = `${ORG_URL}/${TEST_PROJECT}/_apis/git/repositories/${TEST_REPO}/pushes?api-version=7.0`;
-  adoApi("POST", uri, JSON.stringify(pushBody));
+  await adoApi("POST", uri, JSON.stringify(pushBody));
 }
 
 const RESET_SCRIPT = join(
@@ -121,15 +125,15 @@ const RESET_SCRIPT = join(
   ".github/scripts/reset-test-repo-ado.sh"
 );
 
-function resetTestRepo(): void {
+async function resetTestRepo(): Promise<void> {
   console.log("\n=== Resetting ADO test repo to clean state ===\n");
-  exec(`bash ${RESET_SCRIPT} ${ORG_URL} ${TEST_PROJECT} ${TEST_REPO}`);
+  await exec(`bash ${RESET_SCRIPT} ${ORG_URL} ${TEST_PROJECT} ${TEST_REPO}`);
   console.log("\n=== Reset complete ===\n");
 }
 
 describe("Azure DevOps Integration Test", () => {
-  beforeEach(() => {
-    resetTestRepo();
+  beforeEach(async () => {
+    await resetTestRepo();
   });
 
   test("sync creates a PR in the test repository", async () => {
@@ -137,14 +141,14 @@ describe("Azure DevOps Integration Test", () => {
 
     // Run the sync tool
     console.log("Running xfg...");
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
 
     // Verify PR was created
     console.log("\nVerifying PR was created...");
-    const prList = exec(
+    const prList = await exec(
       `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`
     );
 
@@ -161,7 +165,7 @@ describe("Azure DevOps Integration Test", () => {
 
     // Verify the file exists in the PR branch
     console.log("\nVerifying file exists in PR branch...");
-    const fileInfo = getFileContent(TARGET_FILE, BRANCH_NAME);
+    const fileInfo = await getFileContent(TARGET_FILE, BRANCH_NAME);
 
     assert.ok(fileInfo, "File should exist in PR branch");
 
@@ -205,11 +209,13 @@ describe("Azure DevOps Integration Test", () => {
     // Arrange — create initial PR by running xfg
     const configPath = join(fixturesDir, "integration-test-config-ado.yaml");
     console.log("Creating initial PR...");
-    exec(`node dist/cli.js sync --config ${configPath}`, { cwd: projectRoot });
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
 
     // Get the current PR ID before re-sync
     console.log("Getting current PR ID...");
-    const prListBefore = exec(
+    const prListBefore = await exec(
       `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0].pullRequestId" -o tsv`
     );
     const prIdBefore = prListBefore ? parseInt(prListBefore, 10) : null;
@@ -218,14 +224,14 @@ describe("Azure DevOps Integration Test", () => {
 
     // Run the sync tool again
     console.log("\nRunning xfg again (re-sync)...");
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
 
     // Verify a PR exists (should be a new one after closing the old)
     console.log("\nVerifying PR state after re-sync...");
-    const prListAfter = exec(
+    const prListAfter = await exec(
       `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`
     );
 
@@ -239,7 +245,7 @@ describe("Azure DevOps Integration Test", () => {
     // The old PR should be abandoned
     console.log("\nVerifying old PR was abandoned...");
     try {
-      const oldPRStatus = exec(
+      const oldPRStatus = await exec(
         `az repos pr show --id ${prIdBefore} --org ${ORG_URL} --query "status" -o tsv`
       );
       console.log(`  Old PR #${prIdBefore} status: ${oldPRStatus}`);
@@ -266,9 +272,9 @@ describe("Azure DevOps Integration Test", () => {
     // Create the file on main branch (simulating it already exists)
     console.log(`Creating ${createOnlyFile} on main branch...`);
     const existingContent = JSON.stringify({ existing: true }, null, 2);
-    const defaultBranch = getDefaultBranch();
+    const defaultBranch = await getDefaultBranch();
 
-    pushFileChange(
+    await pushFileChange(
       createOnlyFile,
       existingContent,
       `test: create ${createOnlyFile} for createOnly test`,
@@ -282,7 +288,7 @@ describe("Azure DevOps Integration Test", () => {
       fixturesDir,
       "integration-test-createonly-ado.yaml"
     );
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -296,12 +302,15 @@ describe("Azure DevOps Integration Test", () => {
     // Check if a PR was created - with createOnly the file should be skipped
     console.log("\nVerifying createOnly behavior...");
     try {
-      const prList = exec(
+      const prList = await exec(
         `az repos pr list --repository ${TEST_REPO} --source-branch ${createOnlyBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0].pullRequestId" -o tsv`
       );
       if (prList) {
         console.log(`  PR was created: #${prList}`);
-        const prFileInfo = getFileContent(createOnlyFile, createOnlyBranch);
+        const prFileInfo = await getFileContent(
+          createOnlyFile,
+          createOnlyBranch
+        );
         if (prFileInfo) {
           const json = JSON.parse(prFileInfo.content);
           console.log("  File content in PR branch:", JSON.stringify(json));
@@ -336,9 +345,9 @@ describe("Azure DevOps Integration Test", () => {
     );
     const unchangedContent =
       JSON.stringify({ unchanged: true }, null, 2) + "\n";
-    const defaultBranch = getDefaultBranch();
+    const defaultBranch = await getDefaultBranch();
 
-    pushFileChange(
+    await pushFileChange(
       unchangedFile,
       unchangedContent,
       `test: setup ${unchangedFile} for issue #90 test`,
@@ -349,14 +358,14 @@ describe("Azure DevOps Integration Test", () => {
     // Run sync with the test config
     console.log("\nRunning xfg with unchanged files config...");
     const configPath = join(fixturesDir, "integration-test-unchanged-ado.yaml");
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
 
     // Get the PR and check its title
     console.log("\nVerifying PR title...");
-    const prInfo = exec(
+    const prInfo = await exec(
       `az repos pr list --repository ${TEST_REPO} --source-branch ${testBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`
     );
 
@@ -385,7 +394,7 @@ describe("Azure DevOps Integration Test", () => {
     // Run sync with direct mode config
     console.log("\nRunning xfg with direct mode config...");
     const configPath = join(fixturesDir, "integration-test-direct-ado.yaml");
-    const output = exec(`node dist/cli.js sync --config ${configPath}`, {
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
@@ -399,7 +408,7 @@ describe("Azure DevOps Integration Test", () => {
     // Verify NO PR was created
     console.log("\nVerifying no PR was created...");
     try {
-      const prList = exec(
+      const prList = await exec(
         `az repos pr list --repository ${TEST_REPO} --source-branch chore/sync-direct-test --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0].pullRequestId" -o tsv`
       );
       assert.ok(!prList, "No PR should be created in direct mode");
@@ -409,7 +418,7 @@ describe("Azure DevOps Integration Test", () => {
 
     // Verify the file exists directly on main branch
     console.log("\nVerifying file exists on main branch...");
-    const fileInfo = getFileContent(directFile);
+    const fileInfo = await getFileContent(directFile);
 
     assert.ok(fileInfo, "File should exist on main branch");
     const json = JSON.parse(fileInfo.content);
