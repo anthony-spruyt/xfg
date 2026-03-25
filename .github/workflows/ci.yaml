@@ -127,7 +127,7 @@ jobs:
     needs:
       - "build"
       - "check-changes"
-    if: ${{ !failure() && !cancelled() && needs.check-changes.outputs.integration-needed == 'true' && github.event_name == 'push' }}
+    if: ${{ !failure() && !cancelled() && needs.check-changes.outputs.integration-needed == 'true' }}
     uses: ./.github/workflows/_integration-tests.yaml
     secrets: "inherit"
 
