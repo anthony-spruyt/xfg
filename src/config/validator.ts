@@ -428,6 +428,106 @@ function validateGroups(config: RawConfig): void {
   }
 }
 
+function validateConditionalGroups(config: RawConfig): void {
+  if (config.conditionalGroups === undefined) return;
+
+  if (!Array.isArray(config.conditionalGroups)) {
+    throw new ValidationError("conditionalGroups must be an array");
+  }
+
+  const rootCtx = buildRootSettingsContext(config);
+  const groupNames = config.groups ? Object.keys(config.groups) : [];
+
+  for (let i = 0; i < config.conditionalGroups.length; i++) {
+    const entry = config.conditionalGroups[i];
+    const ctx = `conditionalGroups[${i}]`;
+
+    // Validate 'when' clause
+    if (!entry.when || !isPlainObject(entry.when)) {
+      throw new ValidationError(
+        `${ctx}: 'when' is required and must be an object`
+      );
+    }
+
+    const { allOf, anyOf } = entry.when;
+    if (!allOf && !anyOf) {
+      throw new ValidationError(
+        `${ctx}: 'when' must have at least one of 'allOf' or 'anyOf'`
+      );
+    }
+
+    if (allOf !== undefined) {
+      if (!Array.isArray(allOf) || allOf.length === 0) {
+        throw new ValidationError(
+          `${ctx}: 'allOf' must be a non-empty array of strings`
+        );
+      }
+      const seen = new Set<string>();
+      for (const name of allOf) {
+        if (typeof name !== "string") {
+          throw new ValidationError(`${ctx}: 'allOf' entries must be strings`);
+        }
+        if (!groupNames.includes(name)) {
+          throw new ValidationError(
+            `${ctx}: group '${name}' in allOf is not defined in root 'groups'`
+          );
+        }
+        if (seen.has(name)) {
+          throw new ValidationError(
+            `${ctx}: duplicate group '${name}' in allOf`
+          );
+        }
+        seen.add(name);
+      }
+    }
+
+    if (anyOf !== undefined) {
+      if (!Array.isArray(anyOf) || anyOf.length === 0) {
+        throw new ValidationError(
+          `${ctx}: 'anyOf' must be a non-empty array of strings`
+        );
+      }
+      const seen = new Set<string>();
+      for (const name of anyOf) {
+        if (typeof name !== "string") {
+          throw new ValidationError(`${ctx}: 'anyOf' entries must be strings`);
+        }
+        if (!groupNames.includes(name)) {
+          throw new ValidationError(
+            `${ctx}: group '${name}' in anyOf is not defined in root 'groups'`
+          );
+        }
+        if (seen.has(name)) {
+          throw new ValidationError(
+            `${ctx}: duplicate group '${name}' in anyOf`
+          );
+        }
+        seen.add(name);
+      }
+    }
+
+    // Validate files
+    if (entry.files) {
+      for (const [fileName, fileConfig] of Object.entries(entry.files)) {
+        if (fileName === "inherit") continue;
+        if (fileConfig === false) continue;
+        if (fileConfig === undefined) continue;
+
+        validateFileConfigFields(
+          fileConfig as Record<string, unknown>,
+          fileName,
+          `${ctx}:`
+        );
+      }
+    }
+
+    // Validate settings
+    if (entry.settings !== undefined) {
+      validateSettings(entry.settings, ctx, rootCtx);
+    }
+  }
+}
+
 function validateRepoGitField(
   repo: RawConfig["repos"][number],
   index: number
@@ -546,6 +646,15 @@ function validateRepoFiles(
       }
     }
   }
+  if (config.conditionalGroups) {
+    for (const cg of config.conditionalGroups) {
+      if (cg.files) {
+        for (const fn of Object.keys(cg.files)) {
+          if (fn !== "inherit") knownFiles.add(fn);
+        }
+      }
+    }
+  }
 
   for (const fileName of Object.keys(repo.files)) {
     if (fileName === "inherit") {
@@ -607,6 +716,29 @@ function validateRepoSettingsEntry(
           if (name !== "inherit") rootCtx.labelNames.push(name);
         }
       }
+      if (
+        group?.settings?.repo !== undefined &&
+        group.settings.repo !== false
+      ) {
+        rootCtx.hasRepoSettings = true;
+      }
+    }
+  }
+  if (config.conditionalGroups) {
+    for (const cg of config.conditionalGroups) {
+      if (cg.settings?.rulesets) {
+        for (const name of Object.keys(cg.settings.rulesets)) {
+          if (name !== "inherit") rootCtx.rulesetNames.push(name);
+        }
+      }
+      if (cg.settings?.labels) {
+        for (const name of Object.keys(cg.settings.labels)) {
+          if (name !== "inherit") rootCtx.labelNames.push(name);
+        }
+      }
+      if (cg.settings?.repo !== undefined && cg.settings.repo !== false) {
+        rootCtx.hasRepoSettings = true;
+      }
     }
   }
 
@@ -654,8 +786,33 @@ export function validateRawConfig(config: RawConfig): void {
     Object.values(config.groups).some(
       (g) => g.settings && isPlainObject(g.settings)
     );
+  const hasCondGrpFiles =
+    Array.isArray(config.conditionalGroups) &&
+    config.conditionalGroups.some(
+      (cg) =>
+        cg.files &&
+        Object.keys(cg.files).filter(
+          (k) => k !== "inherit" && cg.files![k] !== false
+        ).length > 0
+    );
+  const hasCondGrpSettings =
+    Array.isArray(config.conditionalGroups) &&
+    config.conditionalGroups.some(
+      (cg) => cg.settings && isPlainObject(cg.settings)
+    );
+  const hasCondGrpPR =
+    Array.isArray(config.conditionalGroups) &&
+    config.conditionalGroups.some((cg) => cg.prOptions !== undefined);
 
-  if (!hasFiles && !hasSettings && !hasGrpFiles && !hasGrpSettings) {
+  if (
+    !hasFiles &&
+    !hasSettings &&
+    !hasGrpFiles &&
+    !hasGrpSettings &&
+    !hasCondGrpFiles &&
+    !hasCondGrpSettings &&
+    !hasCondGrpPR
+  ) {
     throw new ValidationError(
       "Config requires at least one of: 'files' or 'settings'. " +
         "Use 'files' to sync configuration files, or 'settings' to manage repository settings."
@@ -681,6 +838,7 @@ export function validateRawConfig(config: RawConfig): void {
   validateGithubHosts(config);
   validatePrOptions(config);
   validateGroups(config);
+  validateConditionalGroups(config);
 
   for (let i = 0; i < config.repos.length; i++) {
     validateRepoEntry(config, config.repos[i], i);
@@ -707,13 +865,33 @@ export function validateForSync(config: RawConfig): void {
     Object.values(config.groups).some(
       (g) => g.settings && hasActionableSettings(g.settings)
     );
+  const hasCondGrpFiles =
+    Array.isArray(config.conditionalGroups) &&
+    config.conditionalGroups.some(
+      (cg) =>
+        cg.files &&
+        Object.keys(cg.files).filter(
+          (k) => k !== "inherit" && cg.files![k] !== false
+        ).length > 0
+    );
+  const hasCondGrpSettings =
+    Array.isArray(config.conditionalGroups) &&
+    config.conditionalGroups.some(
+      (cg) => cg.settings && hasActionableSettings(cg.settings)
+    );
+  const hasCondGrpPR =
+    Array.isArray(config.conditionalGroups) &&
+    config.conditionalGroups.some((cg) => cg.prOptions !== undefined);
 
   if (
     !hasRootFiles &&
     !hasGrpFiles &&
     !hasSettings &&
     !hasRepoSettings &&
-    !hasGroupSettings
+    !hasGroupSettings &&
+    !hasCondGrpFiles &&
+    !hasCondGrpSettings &&
+    !hasCondGrpPR
   ) {
     throw new ValidationError(
       "Config requires at least one of: 'files' or 'settings'. " +
