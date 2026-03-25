@@ -488,6 +488,9 @@ function evaluateWhenClause(
   when: RawConditionalGroupWhen,
   effectiveGroups: ReadonlySet<string>
 ): boolean {
+  // Defensive: if neither condition is specified, don't match
+  if (!when.allOf && !when.anyOf) return false;
+
   const allOfSatisfied =
     !when.allOf || when.allOf.every((g) => effectiveGroups.has(g));
   const anyOfSatisfied =
@@ -512,7 +515,9 @@ function mergeConditionalGroups(
   settings: RawRootSettings | undefined;
 } {
   let files = structuredClone(accumulatedFiles);
-  let prOptions = accumulatedPROptions;
+  let prOptions = accumulatedPROptions
+    ? structuredClone(accumulatedPROptions)
+    : undefined;
   let settings = accumulatedSettings;
 
   for (const cg of conditionalGroups) {
