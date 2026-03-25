@@ -702,7 +702,9 @@ repos:
     const pr = await waitForPrVisible(testRepo, BRANCH_NAME);
     assert.ok(pr.number);
 
-    const raw = await waitForFileVisible(TARGET_FILE);
+    const raw = await exec(
+      `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
+    );
     const json = JSON.parse(raw);
     assert.equal(json.base, true, "root content");
     assert.equal(json.groupA, true, "explicit group-a content");
