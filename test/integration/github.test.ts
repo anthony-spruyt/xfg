@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   exec,
+  execWithRetry,
   projectRoot,
   generateRepoName,
   createRepo,
@@ -702,7 +703,7 @@ repos:
     const pr = await waitForPrVisible(testRepo, BRANCH_NAME);
     assert.ok(pr.number);
 
-    const raw = await exec(
+    const raw = await execWithRetry(
       `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(raw);
