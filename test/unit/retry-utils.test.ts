@@ -326,4 +326,20 @@ describe("withRetry", () => {
       assert.ok(log.includes("***"), "Token should be replaced with ***");
     }
   });
+
+  test("retries 403 rate limit error (transient wins over permanent)", async () => {
+    let attempts = 0;
+    const result = await withRetry(
+      async () => {
+        attempts++;
+        if (attempts < 2) {
+          throw new Error("HTTP 403: You have exceeded a secondary rate limit");
+        }
+        return "success";
+      },
+      { retries: 3 }
+    );
+    assert.equal(result, "success");
+    assert.equal(attempts, 2);
+  });
 });

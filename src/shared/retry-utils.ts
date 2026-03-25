@@ -183,6 +183,7 @@ export async function withRetry<T>(
       } catch (error) {
         if (
           error instanceof Error &&
+          !isTransientError(error, options?.transientErrorPatterns) &&
           isPermanentError(error, permanentPatterns)
         ) {
           // Wrap in AbortError to stop retrying immediately
