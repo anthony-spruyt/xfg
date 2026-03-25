@@ -24,6 +24,7 @@
     "ghcr.io/devcontainers/features/python": {
       "version": "latest"
     },
+    "ghcr.io/devcontainers-extra/features/renovate-cli": {},
     "ghcr.io/devcontainers/features/azure-cli": {}
   },
   "initializeCommand": "bash ${localWorkspaceFolder}/.devcontainer/initialize.sh",
@@ -36,7 +37,8 @@
         "blueglassblock.better-json5",
         "esbenp.prettier-vscode",
         "mhutchie.git-graph",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "github.vscode-github-actions"
       ]
     }
   }
