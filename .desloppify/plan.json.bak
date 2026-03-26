@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-23T02:21:37+00:00",
+  "updated": "2026-03-23T02:21:38+00:00",
   "queue_order": [
     "workflow::communicate-score",
     "workflow::create-plan",
@@ -13,8 +13,7 @@
     "review::.::holistic::low_level_elegance::ruleset_formatter_leaf_node_branch_density",
     "review::.::holistic::mid_level_elegance::settings_result_parallel_type",
     "review::.::holistic::naming_quality::generic_current_progress_counter",
-    "review::.::holistic::type_safety::settings_report_builder_as_casts",
-    "review::.::holistic::type_safety::unchecked_api_json_cast"
+    "review::.::holistic::type_safety::settings_report_builder_as_casts"
   ],
   "deferred": [],
   "skipped": {
@@ -35,6 +34,16 @@
       "note": null,
       "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Env vars read inside runSync with no injectable path, tests properly save/restore with try/finally.",
       "created_at": "2026-03-23T02:21:37+00:00",
+      "review_after": null,
+      "skipped_at_scan": 176
+    },
+    "review::.::holistic::type_safety::unchecked_api_json_cast": {
+      "issue_id": "review::.::holistic::type_safety::unchecked_api_json_cast",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Standard TypeScript JSON.parse pattern, runtime shape validation would require validation library at 10+ call sites.",
+      "created_at": "2026-03-23T02:21:38+00:00",
       "review_after": null,
       "skipped_at_scan": 176
     }
@@ -24313,6 +24322,20 @@
       "action": "skip",
       "issue_ids": [
         "review::.::holistic::test_strategy::process_env_mutation_in_commit_strategy_tests"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-23T02:21:38+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::type_safety::unchecked_api_json_cast"
       ],
       "cluster_name": null,
       "actor": "user",
