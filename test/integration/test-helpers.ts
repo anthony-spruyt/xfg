@@ -54,6 +54,7 @@ export async function exec(
  * Transient HTTP error patterns from the GitHub API that warrant a retry.
  */
 const TRANSIENT_ERROR_PATTERNS = [
+  // Existing GitHub-specific patterns
   /502/i,
   /503/i,
   /504/i,
@@ -67,6 +68,22 @@ const TRANSIENT_ERROR_PATTERNS = [
   /retry-after/i,
   /429/,
   /403.*rate/i,
+  // Network / timeout errors (covers az, glab, curl)
+  /timed?\s*out/i,
+  /ETIMEDOUT/,
+  /ECONNRESET/,
+  /ECONNREFUSED/,
+  /ENOTFOUND/,
+  /connection\s*(reset|refused|closed)/i,
+  /network\s*(error|unreachable)/i,
+  // Platform-agnostic server errors
+  /temporarily\s*unavailable/i,
+  /internal\s*server\s*error/i,
+  /temporary\s*(failure|error)/i,
+  /please try again later/i,
+  // DNS
+  /could\s*not\s*resolve\s*host/i,
+  /unable\s*to\s*access/i,
 ];
 
 /**
