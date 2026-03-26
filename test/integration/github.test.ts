@@ -86,7 +86,7 @@ repos:
     assert.ok(pr.number);
     assert.ok((pr.title as string).includes("sync"));
 
-    const fileContent = await exec(
+    const fileContent = await execWithRetry(
       `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(fileContent);
@@ -156,7 +156,7 @@ repos:
     const existingContent = JSON.stringify({ existing: true }, null, 2);
     const existingBase64 = Buffer.from(existingContent).toString("base64");
 
-    await exec(
+    await execWithRetry(
       `gh api --method PUT repos/${testRepo}/contents/${createOnlyFile} -f message="setup" -f content="${existingBase64}"`
     );
 
@@ -188,7 +188,7 @@ repos:
       JSON.stringify({ unchanged: true }, null, 2) + "\n";
     const unchangedBase64 = Buffer.from(unchangedContent).toString("base64");
 
-    await exec(
+    await execWithRetry(
       `gh api --method PUT repos/${testRepo}/contents/${unchangedFile} -f message="setup" -f content="${unchangedBase64}"`
     );
 
@@ -262,7 +262,7 @@ repos:
 
     const pr = await waitForPrVisible(testRepo, testBranch, "number,title");
 
-    const fileContent = await exec(
+    const fileContent = await execWithRetry(
       `gh api repos/${testRepo}/contents/${templateFile}?ref=${testBranch} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(fileContent);
@@ -276,7 +276,7 @@ repos:
     assert.equal(json.escaped, "${xfg:repo.name}");
     assert.equal(json.static, "not-interpolated");
 
-    const prBody = await exec(
+    const prBody = await execWithRetry(
       `gh pr view ${pr.number} --repo ${testRepo} --json body --jq '.body'`
     );
     assert.ok(prBody.includes(testRepo));
@@ -341,13 +341,13 @@ prOptions:
       cwd: projectRoot,
     });
 
-    const fileContent = await exec(
+    const fileContent = await execWithRetry(
       `gh api repos/${testRepo}/contents/${orphanFile} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(fileContent);
     assert.equal(json.orphanTest, true);
 
-    const manifestContent = await exec(
+    const manifestContent = await execWithRetry(
       `gh api repos/${testRepo}/contents/${manifestFile} --jq '.content' | base64 -d`
     );
     const manifest = JSON.parse(manifestContent);
@@ -385,7 +385,7 @@ prOptions:
     const divergentFile = "divergent-test.json";
     const testBranch = "chore/sync-divergent-test";
 
-    await exec(
+    await execWithRetry(
       `gh api --method PUT repos/${testRepo}/contents/${divergentFile} -f message="setup" -f content="${Buffer.from(JSON.stringify({ version: 1 }, null, 2) + "\n").toString("base64")}"`
     );
 
@@ -410,10 +410,10 @@ repos:
     assert.ok(pr1.number);
 
     // Advance main
-    const mainSha = await exec(
+    const mainSha = await execWithRetry(
       `gh api repos/${testRepo}/contents/${divergentFile} --jq '.sha'`
     );
-    await exec(
+    await execWithRetry(
       `gh api --method PUT repos/${testRepo}/contents/${divergentFile} -f message="advance" -f content="${Buffer.from(JSON.stringify({ version: 2, advancedOnMain: true }, null, 2) + "\n").toString("base64")}" -f sha="${mainSha}"`
     );
 
@@ -435,20 +435,20 @@ repos:
     const orphanBranchFile = "orphan-branch-test.json";
     const testBranch = "chore/sync-orphan-branch-test";
 
-    const mainSha = await exec(
+    const mainSha = await execWithRetry(
       `gh api repos/${testRepo}/git/refs/heads/main --jq '.object.sha'`
     );
-    await exec(
+    await execWithRetry(
       `gh api --method POST repos/${testRepo}/git/refs -f ref="refs/heads/${testBranch}" -f sha="${mainSha}"`
     );
 
     const branchContent =
       JSON.stringify({ orphanBranchVersion: 1 }, null, 2) + "\n";
-    await exec(
+    await execWithRetry(
       `gh api --method PUT repos/${testRepo}/contents/${orphanBranchFile} -f message="setup" -f content="${Buffer.from(branchContent).toString("base64")}" -f branch="${testBranch}"`
     );
 
-    const prCheck = await exec(
+    const prCheck = await execWithRetry(
       `gh pr list --repo ${testRepo} --head ${testBranch} --json number --jq 'length'`
     );
     assert.equal(prCheck, "0");
@@ -472,7 +472,7 @@ repos:
     const prInfo = await waitForPrVisible(testRepo, testBranch, "number");
     assert.ok(prInfo.number);
 
-    const fileContent = await exec(
+    const fileContent = await execWithRetry(
       `gh api repos/${testRepo}/contents/${orphanBranchFile}?ref=${testBranch} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(fileContent);
@@ -505,7 +505,7 @@ repos:
     const prInfo = await waitForPrVisible(testRepo, testBranch, "number");
     assert.ok(prInfo.number);
 
-    const fileContent = await exec(
+    const fileContent = await execWithRetry(
       `gh api repos/${testRepo}/contents/${testFile}?ref=${testBranch} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(fileContent);
@@ -538,7 +538,7 @@ repos:
     const prInfo = await waitForPrVisible(testRepo, testBranch, "number");
     assert.ok(prInfo.number);
 
-    const fileContent = await exec(
+    const fileContent = await execWithRetry(
       `gh api repos/${testRepo}/contents/${testFile}?ref=${testBranch} --jq '.content' | base64 -d`
     );
     const json = JSON.parse(fileContent);
@@ -579,10 +579,10 @@ repos:
   test("sync creates a PR with configured prOptions.labels", async () => {
     const prLabelsBranch = "chore/sync-pr-labels-test";
 
-    await exec(
+    await execWithRetry(
       `gh api --method POST repos/${testRepo}/labels -f name="bug" -f color="ededed"`
     );
-    await exec(
+    await execWithRetry(
       `gh api --method POST repos/${testRepo}/labels -f name="enhancement" -f color="ededed"`
     );
 
@@ -622,7 +622,7 @@ repos:
   test("per-repo prOptions.labels overrides global labels", async () => {
     const prLabelsOverrideBranch = "chore/sync-pr-labels-override-test";
 
-    await exec(
+    await execWithRetry(
       `gh api --method POST repos/${testRepo}/labels -f name="documentation" -f color="ededed"`
     );
 
