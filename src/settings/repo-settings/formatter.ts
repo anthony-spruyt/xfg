@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { formatScalarValue } from "../../shared/string-utils.js";
 import type { RepoSettingsChange } from "./diff.js";
 
 export interface RepoSettingsPlanEntry {
@@ -20,11 +21,7 @@ export interface RepoSettingsPlanResult {
  * Format a value for display.
  */
 function formatValue(val: unknown): string {
-  if (val === null) return "null";
-  if (val === undefined) return "undefined";
-  if (typeof val === "string") return `"${val}"`;
-  if (typeof val === "boolean") return val ? "true" : "false";
-  return String(val);
+  return formatScalarValue(val) ?? String(val);
 }
 
 /**

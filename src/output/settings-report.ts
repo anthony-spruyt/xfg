@@ -2,6 +2,7 @@ import chalk from "chalk";
 import type { PropertyDiff } from "../settings/index.js";
 import type { Ruleset, Label } from "../config/index.js";
 import { writeGitHubStepSummary } from "./github-summary.js";
+import { formatScalarValue } from "../shared/string-utils.js";
 
 export interface SettingsReport {
   repos: RepoChanges[];
@@ -196,10 +197,8 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
 }
 
 function formatValuePlain(val: unknown): string {
-  if (val === null) return "null";
-  if (val === undefined) return "undefined";
-  if (typeof val === "string") return `"${val}"`;
-  if (typeof val === "boolean") return val ? "true" : "false";
+  const scalar = formatScalarValue(val);
+  if (scalar !== undefined) return scalar;
   if (typeof val === "object") return JSON.stringify(val);
   return String(val);
 }
