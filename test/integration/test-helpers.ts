@@ -362,7 +362,10 @@ export async function listRulesets(
   envOptions?: { env: Record<string, string | undefined> }
 ): Promise<Array<{ id: number; name: string }>> {
   try {
-    const json = await exec(`gh api repos/${repo}/rulesets`, envOptions);
+    const json = await execWithRetry(
+      `gh api repos/${repo}/rulesets`,
+      envOptions
+    );
     return JSON.parse(json) as Array<{ id: number; name: string }>;
   } catch {
     return [];
@@ -378,7 +381,7 @@ export async function listLabels(
   envOptions?: { env: Record<string, string | undefined> }
 ): Promise<Array<{ name: string; color: string }>> {
   try {
-    const json = await exec(
+    const json = await execWithRetry(
       `gh api repos/${repo}/labels --paginate`,
       envOptions
     );
@@ -500,7 +503,7 @@ export async function repoExists(
   envOptions?: { env: Record<string, string | undefined> }
 ): Promise<boolean> {
   try {
-    await exec(
+    await execWithRetry(
       `gh api repos/${owner}/${repoName} --jq '.full_name'`,
       envOptions
     );
@@ -520,7 +523,7 @@ export async function isForkedFrom(
   envOptions?: { env: Record<string, string | undefined> }
 ): Promise<boolean> {
   try {
-    const parentName = await exec(
+    const parentName = await execWithRetry(
       `gh api repos/${owner}/${repoName} --jq '.parent.full_name'`,
       envOptions
     );
