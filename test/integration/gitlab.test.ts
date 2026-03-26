@@ -1,7 +1,7 @@
 import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
-import { exec, projectRoot } from "./test-helpers.js";
+import { exec, execWithRetry, projectRoot } from "./test-helpers.js";
 
 const fixturesDir = join(projectRoot, "test", "fixtures");
 
@@ -28,7 +28,7 @@ async function glabApi(
     }
   }
   cmd += ` ${endpoint}`;
-  return await exec(cmd);
+  return await execWithRetry(cmd);
 }
 
 // Helper to get file content from GitLab repo
