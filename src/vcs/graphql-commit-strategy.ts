@@ -110,7 +110,8 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
    * Uses the createCommitOnBranch mutation for verified commits.
    *
    * @returns Commit result with SHA and verified: true
-   * @throws Error if repo is not GitHub, payload exceeds 50MB, or API fails
+   * @throws ValidationError if repo is not GitHub or payload exceeds 50MB
+   * @throws GraphQLApiError if the API call fails
    */
   async commit(options: CommitOptions): Promise<CommitResult> {
     const {

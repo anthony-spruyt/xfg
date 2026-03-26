@@ -162,7 +162,7 @@ export class GhApiClient {
     private readonly cwd: string
   ) {}
 
-  async call(
+  call(
     method: HttpMethod,
     endpoint: string,
     params?: GhApiCallParams
