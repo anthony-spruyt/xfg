@@ -46,7 +46,7 @@
         "status": "open",
         "note": "Reopened (\u00d75) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-26T22:47:10+00:00",
+        "last_seen": "2026-03-26T22:59:51+00:00",
         "resolved_at": null,
         "reopen_count": 5,
         "lang": "typescript",
@@ -75,7 +75,7 @@
         "status": "open",
         "note": "Reopened (\u00d711) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-26T22:47:10+00:00",
+        "last_seen": "2026-03-26T22:59:51+00:00",
         "resolved_at": null,
         "reopen_count": 11,
         "zone": "production",
@@ -118,7 +118,7 @@
         "status": "open",
         "note": "Reopened (\u00d711) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-26T22:47:10+00:00",
+        "last_seen": "2026-03-26T22:59:51+00:00",
         "resolved_at": null,
         "reopen_count": 11,
         "zone": "production",
@@ -161,7 +161,7 @@
         "status": "open",
         "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-04T00:19:16+00:00",
-        "last_seen": "2026-03-26T22:47:10+00:00",
+        "last_seen": "2026-03-26T22:59:51+00:00",
         "resolved_at": null,
         "reopen_count": 3,
         "lang": "typescript",
@@ -193,7 +193,7 @@
         "status": "open",
         "note": "Reopened (\u00d77) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-05T01:16:56+00:00",
-        "last_seen": "2026-03-26T22:47:10+00:00",
+        "last_seen": "2026-03-26T22:59:51+00:00",
         "resolved_at": null,
         "reopen_count": 7,
         "lang": "typescript",
@@ -239,7 +239,7 @@
         "status": "open",
         "note": "Reopened (\u00d74) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-05T02:29:11+00:00",
-        "last_seen": "2026-03-26T22:47:10+00:00",
+        "last_seen": "2026-03-26T22:59:51+00:00",
         "resolved_at": null,
         "reopen_count": 4,
         "lang": "typescript",
@@ -267,7 +267,7 @@
         "status": "open",
         "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-06T08:52:20+00:00",
-        "last_seen": "2026-03-26T22:47:10+00:00",
+        "last_seen": "2026-03-26T22:59:51+00:00",
         "resolved_at": null,
         "reopen_count": 3,
         "lang": "typescript",
@@ -307,11 +307,11 @@
           ]
         },
         "status": "false_positive",
-        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-06T08:53:44+00:00",
-        "last_seen": "2026-03-26T22:47:10+00:00",
+        "last_seen": "2026-03-26T22:59:51+00:00",
         "resolved_at": null,
-        "reopen_count": 2,
+        "reopen_count": 3,
         "lang": "typescript",
         "zone": "production",
         "suppressed": false,
@@ -349,11 +349,11 @@
           ]
         },
         "status": "false_positive",
-        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-06T08:53:44+00:00",
-        "last_seen": "2026-03-26T22:47:10+00:00",
+        "last_seen": "2026-03-26T22:59:51+00:00",
         "resolved_at": null,
-        "reopen_count": 2,
+        "reopen_count": 3,
         "lang": "typescript",
         "zone": "production",
         "suppressed": false,
@@ -391,11 +391,11 @@
           ]
         },
         "status": "false_positive",
-        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-06T08:53:44+00:00",
-        "last_seen": "2026-03-26T22:47:10+00:00",
+        "last_seen": "2026-03-26T22:59:51+00:00",
         "resolved_at": null,
-        "reopen_count": 2,
+        "reopen_count": 3,
         "lang": "typescript",
         "zone": "production",
         "suppressed": false,
@@ -432,7 +432,7 @@
         "status": "open",
         "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-18T10:25:46+00:00",
-        "last_seen": "2026-03-26T22:37:16+00:00",
+        "last_seen": "2026-03-26T22:59:43+00:00",
         "resolved_at": null,
         "reopen_count": 3,
         "work_item_kind": "review_defect",
@@ -471,11 +471,11 @@
           ]
         },
         "status": "false_positive",
-        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-19T12:58:41+00:00",
-        "last_seen": "2026-03-26T22:47:10+00:00",
+        "last_seen": "2026-03-26T22:59:51+00:00",
         "resolved_at": null,
-        "reopen_count": 2,
+        "reopen_count": 3,
         "work_item_kind": "mechanical_defect",
         "issue_kind": "mechanical_defect",
         "origin": "scan",
@@ -513,11 +513,11 @@
           ]
         },
         "status": "false_positive",
-        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-26T13:00:19+00:00",
-        "last_seen": "2026-03-26T22:47:10+00:00",
+        "last_seen": "2026-03-26T22:59:51+00:00",
         "resolved_at": null,
-        "reopen_count": 2,
+        "reopen_count": 3,
         "work_item_kind": "mechanical_defect",
         "issue_kind": "mechanical_defect",
         "origin": "scan",
@@ -536,12 +536,12 @@
     "suppressed_pct": 0.0
   },
   "stats": {
-    "total": 1524,
+    "total": 1526,
     "auto_resolved": 1091,
     "deferred": 0,
     "false_positive": 59,
-    "fixed": 197,
-    "open": 175,
+    "fixed": 196,
+    "open": 178,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -558,8 +558,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 30,
-        "fixed": 94,
-        "open": 34,
+        "fixed": 93,
+        "open": 37,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -584,9 +584,9 @@
     }
   },
   "open_scope": {
-    "in_scope": 175,
+    "in_scope": 178,
     "out_of_scope": 0,
-    "global": 175
+    "global": 178
   },
   "warnings": [
     "\u27f3 13 chronic reopeners \u2014 run `desloppify show --chronic` to see them."
@@ -865,19 +865,19 @@
       }
     },
     "Convention drift": {
-      "score": 94.0,
-      "strict": 94.0,
-      "verified_strict_score": 94.0,
+      "score": 93.0,
+      "strict": 93.0,
+      "verified_strict_score": 93.0,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.94,
-          "failing": 0,
-          "weighted_failures": 0.6,
-          "assessment_score": 94.0,
+          "pass_rate": 0.93,
+          "failing": 1,
+          "weighted_failures": 0.7,
+          "assessment_score": 93.0,
           "placeholder": false,
           "dimension_key": "convention_outlier",
           "configured_weight": 1.0,
@@ -886,19 +886,19 @@
       }
     },
     "Cross-module arch": {
-      "score": 93.0,
-      "strict": 93.0,
-      "verified_strict_score": 93.0,
+      "score": 91.5,
+      "strict": 91.5,
+      "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.93,
-          "failing": 0,
-          "weighted_failures": 0.7,
-          "assessment_score": 93.0,
+          "pass_rate": 0.915,
+          "failing": 1,
+          "weighted_failures": 0.85,
+          "assessment_score": 91.5,
           "placeholder": false,
           "dimension_key": "cross_module_architecture",
           "configured_weight": 1.0,
@@ -928,19 +928,19 @@
       }
     },
     "Design coherence": {
-      "score": 90.5,
-      "strict": 90.5,
-      "verified_strict_score": 90.5,
+      "score": 91.5,
+      "strict": 91.5,
+      "verified_strict_score": 91.5,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.905,
+          "pass_rate": 0.915,
           "failing": 0,
-          "weighted_failures": 0.95,
-          "assessment_score": 90.5,
+          "weighted_failures": 0.85,
+          "assessment_score": 91.5,
           "placeholder": false,
           "dimension_key": "design_coherence",
           "configured_weight": 10.0,
@@ -949,19 +949,19 @@
       }
     },
     "Error consistency": {
-      "score": 94.5,
-      "strict": 94.5,
-      "verified_strict_score": 94.5,
+      "score": 93.5,
+      "strict": 93.5,
+      "verified_strict_score": 93.5,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.945,
+          "pass_rate": 0.935,
           "failing": 0,
-          "weighted_failures": 0.55,
-          "assessment_score": 94.5,
+          "weighted_failures": 0.65,
+          "assessment_score": 93.5,
           "placeholder": false,
           "dimension_key": "error_consistency",
           "configured_weight": 3.0,
@@ -1037,13 +1037,13 @@
       "strict": 93.5,
       "verified_strict_score": 93.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.935,
-          "failing": 0,
+          "failing": 1,
           "weighted_failures": 0.65,
           "assessment_score": 93.5,
           "placeholder": false,
@@ -1185,7 +1185,7 @@
     "mechanical_fraction": 0.25,
     "subjective_fraction": 0.75,
     "mechanical_avg": 97.86138613861388,
-    "subjective_avg": 91.89024390243902,
+    "subjective_avg": 91.92682926829268,
     "entries": [
       {
         "name": "Code quality",
@@ -1320,19 +1320,6 @@
       {
         "name": "Convention drift",
         "pool": "subjective",
-        "score": 94.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.008130081300813009,
-        "overall_per_point": 0.006097560975609756,
-        "overall_contribution": 0.5731707317073171,
-        "overall_drag": 0.03658536585365854
-      },
-      {
-        "name": "Cross-module arch",
-        "pool": "subjective",
         "score": 93.0,
         "checks": 0.0,
         "sample_factor": 1.0,
@@ -1342,6 +1329,19 @@
         "overall_per_point": 0.006097560975609756,
         "overall_contribution": 0.5670731707317074,
         "overall_drag": 0.042682926829268296
+      },
+      {
+        "name": "Cross-module arch",
+        "pool": "subjective",
+        "score": 91.5,
+        "checks": 0.0,
+        "sample_factor": 1.0,
+        "configured_weight": 1.0,
+        "effective_weight": 1.0,
+        "pool_share": 0.008130081300813009,
+        "overall_per_point": 0.006097560975609756,
+        "overall_contribution": 0.5579268292682927,
+        "overall_drag": 0.05182926829268293
       },
       {
         "name": "Dep health",
@@ -1359,28 +1359,28 @@
       {
         "name": "Design coherence",
         "pool": "subjective",
-        "score": 90.5,
+        "score": 91.5,
         "checks": 0.0,
         "sample_factor": 1.0,
         "configured_weight": 10.0,
         "effective_weight": 10.0,
         "pool_share": 0.08130081300813008,
         "overall_per_point": 0.06097560975609756,
-        "overall_contribution": 5.5182926829268295,
-        "overall_drag": 0.5792682926829268
+        "overall_contribution": 5.579268292682927,
+        "overall_drag": 0.5182926829268293
       },
       {
         "name": "Error consistency",
         "pool": "subjective",
-        "score": 94.5,
+        "score": 93.5,
         "checks": 0.0,
         "sample_factor": 1.0,
         "configured_weight": 3.0,
         "effective_weight": 3.0,
         "pool_share": 0.024390243902439025,
         "overall_per_point": 0.01829268292682927,
-        "overall_contribution": 1.7286585365853662,
-        "overall_drag": 0.10060975609756098
+        "overall_contribution": 1.7103658536585369,
+        "overall_drag": 0.11890243902439027
       },
       {
         "name": "High elegance",
@@ -1571,7 +1571,7 @@
         }
       },
       "warnings": [],
-      "updated_at": "2026-03-26T22:47:10+00:00"
+      "updated_at": "2026-03-26T22:59:51+00:00"
     }
   },
   "zone_distribution": {
@@ -1580,7 +1580,7 @@
   },
   "narrative": {
     "phase": "stagnation",
-    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Score plateaued at 92.0 for 5 scans. Duplication (84.5%) is where the breakthrough is. 2 wontfix items may also be worth revisiting. (3 review work items \u2014 run `desloppify show review --status open`)",
+    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Score plateaued at 92.0 for 5 scans. Duplication (84.5%) is where the breakthrough is. 2 wontfix items may also be worth revisiting. (6 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -1598,9 +1598,9 @@
           "impact_description": "re-review to improve"
         },
         {
-          "name": "Design coherence",
+          "name": "Mid elegance",
           "strict": 90.5,
-          "failing": 0,
+          "failing": 1,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -1671,13 +1671,8 @@
           "stuck_scans": 5
         },
         {
-          "name": "Convention drift",
-          "strict": 94.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Cross-module arch",
-          "strict": 93.0,
+          "name": "Contracts",
+          "strict": 93.5,
           "stuck_scans": 5
         },
         {
@@ -1703,6 +1698,16 @@
         {
           "name": "Logic clarity",
           "strict": 93.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Low elegance",
+          "strict": 89.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Mid elegance",
+          "strict": 90.5,
           "stuck_scans": 5
         },
         {
@@ -1834,8 +1839,8 @@
       {
         "type": "refactor",
         "detector": "review",
-        "count": 3,
-        "description": "3 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
+        "count": 6,
+        "description": "6 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
         "command": "desloppify show review --status open",
         "impact": 0.0,
         "dimension": "Unknown",
@@ -1894,8 +1899,8 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 1,
-        "total_count": 181,
-        "coverage": 0.006,
+        "total_count": 190,
+        "coverage": 0.005,
         "impact_ratio": 0.0,
         "recommendation": "none"
       },
@@ -1988,7 +1993,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "8 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 3 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "8 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 6 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -2052,7 +2057,7 @@
       "command": "desloppify autofix unused-imports --dry-run",
       "description": "1 unused issues \u2014 run `desloppify autofix unused-imports --dry-run` to preview, then apply"
     },
-    "why_now": "8 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 3 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "8 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 6 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -2085,7 +2090,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 3,
-      "report_scores": 131,
+      "report_scores": 132,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
@@ -2138,7 +2143,7 @@
   "plan": {
     "active": true,
     "focus": null,
-    "total_ordered": 6,
+    "total_ordered": 5,
     "total_skipped": 21,
     "plan_overrides_narrative": true
   }
