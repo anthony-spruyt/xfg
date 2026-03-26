@@ -37,20 +37,21 @@ Or configure in `.vscode/settings.json`:
 
 ### Root Object
 
-| Field            | Type        | Required | Description                                       |
-| ---------------- | ----------- | -------- | ------------------------------------------------- |
-| `id`             | `string`    | Yes      | Unique config identifier (alphanumeric, `-`, `_`) |
-| `files`          | `object`    | *        | Map of filenames to file configs                  |
-| `groups`         | `object`    | *        | Named config groups referenced by repos           |
-| `repos`          | `array`     | Yes      | List of repository configurations                 |
-| `settings`       | `object`    | *        | Repository settings (rulesets, labels, etc.)      |
-| `prOptions`      | `PROptions` | No       | Global PR merge options                           |
-| `prTemplate`     | `string`    | No       | Custom PR body template                           |
-| `githubHosts`    | `array`     | No       | GitHub Enterprise Server hostnames                |
-| `deleteOrphaned` | `boolean`   | No       | Global default for orphan file deletion           |
+| Field                | Type        | Required | Description                                         |
+| -------------------- | ----------- | -------- | --------------------------------------------------- |
+| `id`                 | `string`    | Yes      | Unique config identifier (alphanumeric, `-`, `_`)   |
+| `files`              | `object`    | *        | Map of filenames to file configs                    |
+| `groups`             | `object`    | *        | Named config groups referenced by repos             |
+| `conditionalGroups`  | `array`     | *        | Groups that activate based on repo group membership |
+| `repos`              | `array`     | Yes      | List of repository configurations                   |
+| `settings`           | `object`    | *        | Repository settings (rulesets, labels, etc.)        |
+| `prOptions`          | `PROptions` | No       | Global PR merge options                             |
+| `prTemplate`         | `string`    | No       | Custom PR body template                             |
+| `githubHosts`        | `array`     | No       | GitHub Enterprise Server hostnames                  |
+| `deleteOrphaned`     | `boolean`   | No       | Global default for orphan file deletion             |
 
 !!! note "files/settings/groups requirement"
-    At least one of `files`, `settings`, or `groups` must be present. The `sync` command requires files defined in root `files` or in at least one group. The `settings` command requires `settings` at root, repo, or group level.
+    At least one of `files`, `settings`, `groups`, or `conditionalGroups` must be present. The `sync` command requires files defined in root `files`, in a group, or in a conditional group. The `settings` command requires `settings` at root, repo, group, or conditional group level.
 
 ### File Config
 
@@ -75,6 +76,24 @@ Or configure in `.vscode/settings.json`:
 | `settings`  | `object`    | No       | Settings for repos using this group (supports `inherit`)     |
 
 Group files support `inherit: false` (discard accumulated files), `file: false` (remove a file), and full file config or override objects.
+
+### Conditional Group Config
+
+| Field       | Type        | Required | Description                                              |
+| ----------- | ----------- | -------- | -------------------------------------------------------- |
+| `when`      | `object`    | Yes      | Condition that determines when this group activates      |
+| `files`     | `object`    | No       | Files defined or overridden (same capabilities as groups)|
+| `prOptions` | `PROptions` | No       | PR options for matching repos                            |
+| `settings`  | `object`    | No       | Settings for matching repos (supports `inherit`)         |
+
+The `when` clause:
+
+| Field   | Type       | Required | Description                                  |
+| ------- | ---------- | -------- | -------------------------------------------- |
+| `allOf` | `string[]` | *        | All listed groups must be present on the repo|
+| `anyOf` | `string[]` | *        | At least one listed group must be present    |
+
+At least one of `allOf` or `anyOf` is required. When both are specified, both conditions must be satisfied. See [Groups — Conditional Groups](../configuration/groups.md#conditional-groups).
 
 ### Repo Config
 
@@ -127,4 +146,4 @@ The schema validates:
 
 ### Config Requirements
 
-The `xfg sync` command accepts configs with files, settings, or both. At least one of `files`, `settings`, or `groups` must be present.
+The `xfg sync` command accepts configs with files, settings, or both. At least one of `files`, `settings`, `groups`, or `conditionalGroups` must be present.

@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   exec,
+  execWithRetry,
   projectRoot,
   generateRepoName,
   createRepo,
@@ -659,5 +660,57 @@ repos:
     assert.ok(labelNames.includes("documentation"));
     assert.ok(!labelNames.includes("bug"));
     assert.ok(!labelNames.includes("enhancement"));
+  });
+
+  test("conditional group applies only when condition is met", async () => {
+    const condGroupConfig = [
+      `id: integration-test-github`,
+      `files:`,
+      `  ${TARGET_FILE}:`,
+      `    content:`,
+      `      base: true`,
+      `groups:`,
+      `  group-a:`,
+      `    files:`,
+      `      ${TARGET_FILE}:`,
+      `        content:`,
+      `          groupA: true`,
+      `  group-b:`,
+      `    files:`,
+      `      ${TARGET_FILE}:`,
+      `        content:`,
+      `          groupB: true`,
+      `conditionalGroups:`,
+      `  - when:`,
+      `      allOf: [group-a, group-b]`,
+      `    files:`,
+      `      ${TARGET_FILE}:`,
+      `        content:`,
+      `          fromConditional: true`,
+      `repos:`,
+      `  - git: https://github.com/${testRepo}.git`,
+      `    groups: [group-a, group-b]`,
+      `    files:`,
+      `      ${TARGET_FILE}:`,
+      `        content:`,
+      `          repoOverride: true`,
+    ].join("\n");
+    const configPath = writeConfig(tmpDir, condGroupConfig);
+
+    const syncCmd = `node dist/cli.js sync --config ${configPath}`;
+    await exec(syncCmd, { cwd: projectRoot });
+
+    const pr = await waitForPrVisible(testRepo, BRANCH_NAME);
+    assert.ok(pr.number);
+
+    const raw = await execWithRetry(
+      `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
+    );
+    const json = JSON.parse(raw);
+    assert.equal(json.base, true, "root content");
+    assert.equal(json.groupA, true, "explicit group-a content");
+    assert.equal(json.groupB, true, "explicit group-b content");
+    assert.equal(json.fromConditional, true, "conditional group content");
+    assert.equal(json.repoOverride, true, "repo override content");
   });
 });

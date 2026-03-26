@@ -8,6 +8,7 @@ import {
 import { ValidationError } from "../../src/shared/errors.js";
 import type {
   RawConfig,
+  RawConditionalGroupConfig,
   RawFileConfig,
   RawRepoConfig,
   RawRepoSettings,
@@ -2607,6 +2608,431 @@ describe("validateRawConfig", () => {
       assert.doesNotThrow(() => validateRawConfig(config));
     });
   });
+
+  describe("conditional group validation", () => {
+    test("valid conditional group passes", () => {
+      const config = createValidConfig({
+        groups: {
+          terraform: { files: { "main.tf": { content: "# tf" } } },
+          renovate: { files: { "renovate.json": { content: {} } } },
+        },
+        conditionalGroups: [
+          {
+            when: { allOf: ["terraform", "renovate"] },
+            settings: {
+              labels: {
+                "infra-deps": { color: "00ff00" },
+              },
+            },
+          },
+        ],
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["terraform", "renovate"],
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when conditionalGroups is not an array", () => {
+      const config = createValidConfig({
+        conditionalGroups:
+          "not-array" as unknown as RawConditionalGroupConfig[],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /conditionalGroups must be an array/
+      );
+    });
+
+    test("throws when when clause is missing", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            settings: { labels: { x: { color: "aabbcc" } } },
+          } as unknown as RawConditionalGroupConfig,
+        ],
+      });
+      assert.throws(() => validateRawConfig(config), /when.*required/i);
+    });
+
+    test("throws when when clause has neither allOf nor anyOf", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: {},
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /at least one of.*allOf.*anyOf/i
+      );
+    });
+
+    test("throws when allOf is empty array", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { allOf: [] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(() => validateRawConfig(config), /allOf.*non-empty/i);
+    });
+
+    test("throws when anyOf is empty array", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { anyOf: [] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(() => validateRawConfig(config), /anyOf.*non-empty/i);
+    });
+
+    test("throws for non-existent group in allOf", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { allOf: ["nonexistent"] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /nonexistent.*not defined/i
+      );
+    });
+
+    test("throws for non-existent group in anyOf", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { anyOf: ["nonexistent"] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /nonexistent.*not defined/i
+      );
+    });
+
+    test("throws for duplicate group in allOf", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a", "a"] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(() => validateRawConfig(config), /duplicate.*allOf/i);
+    });
+
+    test("throws for duplicate group in anyOf", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { anyOf: ["a", "a"] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(() => validateRawConfig(config), /duplicate.*anyOf/i);
+    });
+
+    test("allows same group in both allOf and anyOf", () => {
+      const config = createValidConfig({
+        groups: {
+          a: { files: { "a.txt": { content: "a" } } },
+          b: { files: { "b.txt": { content: "b" } } },
+        },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"], anyOf: ["a", "b"] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("validates conditional group file configs", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"] },
+            files: {
+              "test.txt": { content: 123 } as unknown as RawFileConfig,
+            },
+          },
+        ],
+      });
+      assert.throws(() => validateRawConfig(config), /content must be/);
+    });
+
+    test("validates conditional group settings", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"] },
+            settings: {
+              rulesets: "not-an-object",
+            } as unknown as RawRepoSettings,
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /rulesets must be an object/
+      );
+    });
+
+    test("config with only conditionalGroups content is valid", () => {
+      const validConfig: RawConfig = {
+        id: "cond-only",
+        groups: { a: {} },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"] },
+            settings: {
+              labels: {
+                "my-label": { color: "aabbcc" },
+              },
+            },
+          },
+        ],
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(validConfig));
+    });
+
+    test("conditional group with only prOptions is valid", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"] },
+            prOptions: { labels: ["auto-merge"] },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("repo can override file from conditional group (knownFiles expanded)", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"] },
+            files: {
+              "cond-only.json": { content: { key: "value" } },
+            },
+          },
+        ],
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["a"],
+            files: {
+              "cond-only.json": { content: { override: true } },
+            },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("repo can opt out of ruleset from conditional group (rootCtx expanded)", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"] },
+            settings: {
+              rulesets: {
+                "cond-ruleset": { target: "branch" },
+              },
+            },
+          },
+        ],
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["a"],
+            settings: {
+              rulesets: {
+                "cond-ruleset": false,
+              },
+            },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("repo can opt out of label from conditional group (rootCtx expanded)", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"] },
+            settings: {
+              labels: {
+                "cond-label": { color: "aabbcc" },
+              },
+            },
+          },
+        ],
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["a"],
+            settings: {
+              labels: {
+                "cond-label": false,
+              },
+            },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("repo can opt out of repo settings from conditional group (no root repo settings)", () => {
+      const config: RawConfig = {
+        id: "test-config",
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"] },
+            settings: {
+              repo: { hasIssues: true },
+            },
+          },
+        ],
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["a"],
+            settings: {
+              repo: false,
+            },
+          },
+        ],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when allOf contains a non-string entry", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { allOf: [42] as unknown as string[] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /allOf.*entries must be strings/i
+      );
+    });
+
+    test("throws when anyOf contains a non-string entry", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { anyOf: [42] as unknown as string[] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /anyOf.*entries must be strings/i
+      );
+    });
+
+    test("config with only conditionalGroups files passes validateRawConfig", () => {
+      const config: RawConfig = {
+        id: "cond-files-only",
+        groups: { a: {} },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"] },
+            files: {
+              "cond.txt": { content: "hello" },
+            },
+          },
+        ],
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("config with only conditionalGroups prOptions passes validateRawConfig", () => {
+      const config: RawConfig = {
+        id: "cond-pr-only",
+        groups: { a: {} },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"] },
+            prOptions: { labels: ["auto-merge"] },
+          },
+        ],
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("repo can opt out of repo settings from regular group (rootCtx expanded)", () => {
+      const config: RawConfig = {
+        id: "test-config",
+        groups: {
+          a: {
+            files: { "a.txt": { content: "a" } },
+            settings: {
+              repo: { hasIssues: true },
+            },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["a"],
+            settings: {
+              repo: false,
+            },
+          },
+        ],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+  });
 });
 
 describe("validateForSync", () => {
@@ -2735,6 +3161,57 @@ describe("validateForSync", () => {
       () => validateForSync(config),
       /Config requires at least one of: 'files' or 'settings'/
     );
+  });
+
+  test("config with only conditionalGroups content passes sync validation", () => {
+    const config: RawConfig = {
+      id: "cond-sync",
+      groups: { a: {} },
+      conditionalGroups: [
+        {
+          when: { allOf: ["a"] },
+          settings: {
+            labels: {
+              "my-label": { color: "aabbcc" },
+            },
+          },
+        },
+      ],
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.doesNotThrow(() => validateForSync(config));
+  });
+
+  test("config with only conditionalGroups files passes validateForSync", () => {
+    const config: RawConfig = {
+      id: "cond-files-sync",
+      groups: { a: {} },
+      conditionalGroups: [
+        {
+          when: { allOf: ["a"] },
+          files: {
+            "cond.txt": { content: "hello" },
+          },
+        },
+      ],
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.doesNotThrow(() => validateForSync(config));
+  });
+
+  test("config with only conditionalGroups prOptions passes validateForSync", () => {
+    const config: RawConfig = {
+      id: "cond-pr-sync",
+      groups: { a: {} },
+      conditionalGroups: [
+        {
+          when: { allOf: ["a"] },
+          prOptions: { labels: ["auto-merge"] },
+        },
+      ],
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.doesNotThrow(() => validateForSync(config));
   });
 });
 

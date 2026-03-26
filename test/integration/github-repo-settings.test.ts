@@ -10,6 +10,7 @@ import {
   generateRepoName,
   createRepo,
   deleteRepo,
+  withTestRetry,
 } from "./test-helpers.js";
 
 const OWNER = "spruyt-labs";
@@ -169,10 +170,20 @@ describe("GitHub Repo Settings Integration Test", () => {
     assert.equal(s.allow_rebase_merge, false);
     assert.equal(s.delete_branch_on_merge, true);
 
-    const sec = await getSecuritySettings();
-    assert.equal(sec.vulnerabilityAlerts, true);
-    assert.equal(sec.automatedSecurityFixes, false);
-    assert.equal(sec.privateVulnerabilityReporting, true);
+    // Security settings have eventual consistency — poll until they reflect the mutation
+    await withTestRetry(
+      async () => {
+        const sec = await getSecuritySettings();
+        assert.equal(sec.vulnerabilityAlerts, true);
+        assert.equal(sec.automatedSecurityFixes, false);
+        assert.equal(sec.privateVulnerabilityReporting, true);
+      },
+      {
+        description: "security settings applied",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
+    );
   });
 
   test("settings reports no changes when already in desired state", async () => {
