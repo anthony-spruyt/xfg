@@ -1,7 +1,7 @@
 import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
-import { exec, projectRoot } from "./test-helpers.js";
+import { exec, execWithRetry, projectRoot } from "./test-helpers.js";
 
 const fixturesDir = join(projectRoot, "test", "fixtures");
 
@@ -27,7 +27,7 @@ async function adoApi(
     cmd += ` -H "Content-Type: application/json" -d '${body}'`;
   }
   cmd += ` "${uri}"`;
-  return await exec(cmd);
+  return await execWithRetry(cmd);
 }
 
 // Helper to get file content from ADO repo via REST API
@@ -148,7 +148,7 @@ describe("Azure DevOps Integration Test", () => {
 
     // Verify PR was created
     console.log("\nVerifying PR was created...");
-    const prList = await exec(
+    const prList = await execWithRetry(
       `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`
     );
 
@@ -215,7 +215,7 @@ describe("Azure DevOps Integration Test", () => {
 
     // Get the current PR ID before re-sync
     console.log("Getting current PR ID...");
-    const prListBefore = await exec(
+    const prListBefore = await execWithRetry(
       `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0].pullRequestId" -o tsv`
     );
     const prIdBefore = prListBefore ? parseInt(prListBefore, 10) : null;
@@ -231,7 +231,7 @@ describe("Azure DevOps Integration Test", () => {
 
     // Verify a PR exists (should be a new one after closing the old)
     console.log("\nVerifying PR state after re-sync...");
-    const prListAfter = await exec(
+    const prListAfter = await execWithRetry(
       `az repos pr list --repository ${TEST_REPO} --source-branch ${BRANCH_NAME} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`
     );
 
@@ -365,7 +365,7 @@ describe("Azure DevOps Integration Test", () => {
 
     // Get the PR and check its title
     console.log("\nVerifying PR title...");
-    const prInfo = await exec(
+    const prInfo = await execWithRetry(
       `az repos pr list --repository ${TEST_REPO} --source-branch ${testBranch} --org ${ORG_URL} --project ${TEST_PROJECT} --query "[0]" -o json`
     );
 
