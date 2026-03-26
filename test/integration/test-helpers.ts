@@ -54,7 +54,7 @@ export async function exec(
  * Transient HTTP error patterns from the GitHub API that warrant a retry.
  */
 const TRANSIENT_ERROR_PATTERNS = [
-  // Existing GitHub-specific patterns
+  // HTTP status codes and server errors
   /502/i,
   /503/i,
   /504/i,
