@@ -1,12 +1,12 @@
 {
   "command": "scan",
-  "overall_score": 93.2,
-  "objective_score": 97.1,
-  "strict_score": 91.8,
+  "overall_score": 93.4,
+  "objective_score": 97.9,
+  "strict_score": 92.0,
   "verified_strict_score": 95.6,
-  "prev_overall_score": 93.2,
-  "prev_objective_score": 97.1,
-  "prev_strict_score": 91.8,
+  "prev_overall_score": 93.4,
+  "prev_objective_score": 97.9,
+  "prev_strict_score": 92.0,
   "prev_verified_strict_score": 95.6,
   "profile": "full",
   "noise_budget": 10,
@@ -14,14 +14,13 @@
   "hidden_by_detector": {
     "smells": 78,
     "exports": 63,
-    "structural": 31,
-    "boilerplate_duplication": 4
+    "structural": 31
   },
-  "hidden_total": 176,
+  "hidden_total": 172,
   "diff": {
     "new": 0,
-    "auto_resolved": 61,
-    "reopened": 0,
+    "auto_resolved": 70,
+    "reopened": 5,
     "total_current": 139,
     "suspect_detectors": [
       "review",
@@ -47,7 +46,7 @@
         "status": "open",
         "note": "Reopened (\u00d75) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-26T22:37:21+00:00",
+        "last_seen": "2026-03-26T22:40:10+00:00",
         "resolved_at": null,
         "reopen_count": 5,
         "lang": "typescript",
@@ -76,7 +75,7 @@
         "status": "open",
         "note": "Reopened (\u00d711) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-26T22:37:21+00:00",
+        "last_seen": "2026-03-26T22:40:10+00:00",
         "resolved_at": null,
         "reopen_count": 11,
         "zone": "production",
@@ -119,7 +118,7 @@
         "status": "open",
         "note": "Reopened (\u00d711) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-26T22:37:21+00:00",
+        "last_seen": "2026-03-26T22:40:10+00:00",
         "resolved_at": null,
         "reopen_count": 11,
         "zone": "production",
@@ -162,7 +161,7 @@
         "status": "open",
         "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-04T00:19:16+00:00",
-        "last_seen": "2026-03-26T22:37:21+00:00",
+        "last_seen": "2026-03-26T22:40:10+00:00",
         "resolved_at": null,
         "reopen_count": 3,
         "lang": "typescript",
@@ -194,7 +193,7 @@
         "status": "open",
         "note": "Reopened (\u00d77) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-05T01:16:56+00:00",
-        "last_seen": "2026-03-26T22:37:21+00:00",
+        "last_seen": "2026-03-26T22:40:10+00:00",
         "resolved_at": null,
         "reopen_count": 7,
         "lang": "typescript",
@@ -240,7 +239,7 @@
         "status": "open",
         "note": "Reopened (\u00d74) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-05T02:29:11+00:00",
-        "last_seen": "2026-03-26T22:37:21+00:00",
+        "last_seen": "2026-03-26T22:40:10+00:00",
         "resolved_at": null,
         "reopen_count": 4,
         "lang": "typescript",
@@ -268,7 +267,7 @@
         "status": "open",
         "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-06T08:52:20+00:00",
-        "last_seen": "2026-03-26T22:37:21+00:00",
+        "last_seen": "2026-03-26T22:40:10+00:00",
         "resolved_at": null,
         "reopen_count": 3,
         "lang": "typescript",
@@ -330,9 +329,9 @@
     "total": 1524,
     "auto_resolved": 1091,
     "deferred": 0,
-    "false_positive": 44,
-    "fixed": 196,
-    "open": 191,
+    "false_positive": 58,
+    "fixed": 197,
+    "open": 176,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -349,17 +348,17 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 30,
-        "fixed": 93,
-        "open": 35,
+        "fixed": 94,
+        "open": 34,
         "triaged_out": 0,
         "wontfix": 2
       },
       "3": {
         "auto_resolved": 644,
         "deferred": 0,
-        "false_positive": 13,
+        "false_positive": 27,
         "fixed": 14,
-        "open": 154,
+        "open": 140,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -375,9 +374,9 @@
     }
   },
   "open_scope": {
-    "in_scope": 191,
+    "in_scope": 176,
     "out_of_scope": 0,
-    "global": 191
+    "global": 176
   },
   "warnings": [
     "\u27f3 8 chronic reopeners \u2014 run `desloppify show --chronic` to see them."
@@ -498,11 +497,11 @@
       }
     },
     "Duplication": {
-      "score": 96.3,
-      "strict": 82.1,
+      "score": 100.0,
+      "strict": 85.8,
       "verified_strict_score": 96.3,
       "checks": 268,
-      "failing": 14,
+      "failing": 0,
       "tier": 3,
       "detectors": {
         "dupes": {
@@ -513,9 +512,9 @@
         },
         "boilerplate_duplication": {
           "potential": 6,
-          "pass_rate": 0.0,
-          "failing": 14,
-          "weighted_failures": 9.799999999999999
+          "pass_rate": 1.0,
+          "failing": 0,
+          "weighted_failures": 0.0
         }
       }
     },
@@ -828,13 +827,13 @@
       "strict": 93.5,
       "verified_strict_score": 93.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.935,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.65,
           "assessment_score": 93.5,
           "placeholder": false,
@@ -972,10 +971,10 @@
     }
   },
   "score_breakdown": {
-    "overall_score": 93.2,
+    "overall_score": 93.4,
     "mechanical_fraction": 0.25,
     "subjective_fraction": 0.75,
-    "mechanical_avg": 97.12871287128714,
+    "mechanical_avg": 97.86138613861388,
     "subjective_avg": 91.89024390243902,
     "entries": [
       {
@@ -1020,15 +1019,15 @@
       {
         "name": "Duplication",
         "pool": "mechanical",
-        "score": 96.3,
+        "score": 100.0,
         "checks": 268.0,
         "sample_factor": 1.0,
         "configured_weight": 1.0,
         "effective_weight": 1.0,
         "pool_share": 0.19801980198019803,
         "overall_per_point": 0.04950495049504951,
-        "overall_contribution": 4.767326732673268,
-        "overall_drag": 0.18316831683168333
+        "overall_contribution": 4.9504950495049505,
+        "overall_drag": 0.0
       },
       {
         "name": "Test health",
@@ -1362,7 +1361,7 @@
         }
       },
       "warnings": [],
-      "updated_at": "2026-03-26T22:37:21+00:00"
+      "updated_at": "2026-03-26T22:40:10+00:00"
     }
   },
   "zone_distribution": {
@@ -1370,14 +1369,14 @@
     "test": 104
   },
   "narrative": {
-    "phase": "refinement",
-    "headline": "\u26a0 2 security issues \u2014 review before other cleanup.  (4 review work items \u2014 run `desloppify show review --status open`)",
+    "phase": "stagnation",
+    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Score plateaued at 92.0 for 5 scans. Duplication (84.5%) is where the breakthrough is. 2 wontfix items may also be worth revisiting. (3 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
           "name": "Duplication",
-          "strict": 82.1,
-          "failing": 14,
+          "strict": 84.5,
+          "failing": 5,
           "impact": 0.0
         },
         {
@@ -1400,8 +1399,8 @@
       "biggest_gap_dimensions": [
         {
           "name": "Duplication",
-          "lenient": 96.3,
-          "strict": 82.1,
+          "lenient": 98.7,
+          "strict": 84.5,
           "gap": 14.2,
           "wontfix_count": 0
         },
@@ -1434,11 +1433,6 @@
         {
           "name": "File health",
           "strict": 96.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Duplication",
-          "strict": 82.1,
           "stuck_scans": 5
         },
         {
@@ -1625,29 +1619,18 @@
         "impact": 0.0,
         "dimension": "Code quality",
         "priority": 9,
-        "lane": "refactor_0"
-      },
-      {
-        "type": "refactor",
-        "detector": "boilerplate_duplication",
-        "count": 14,
-        "description": "14 boilerplate_duplication work items \u2014 extract shared boilerplate into reusable helpers or base classes",
-        "command": "desloppify show boilerplate_duplication --status open",
-        "impact": 0.0,
-        "dimension": "Duplication",
-        "priority": 10,
-        "lane": "refactor_0"
+        "lane": "refactor_1"
       },
       {
         "type": "refactor",
         "detector": "review",
-        "count": 4,
-        "description": "4 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
+        "count": 3,
+        "description": "3 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
         "command": "desloppify show review --status open",
         "impact": 0.0,
         "dimension": "Unknown",
-        "priority": 11,
-        "lane": "refactor_1"
+        "priority": 10,
+        "lane": "refactor_2"
       },
       {
         "type": "manual_fix",
@@ -1657,7 +1640,7 @@
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 12,
+        "priority": 11,
         "lane": "refactor_0"
       },
       {
@@ -1668,8 +1651,8 @@
         "command": "desloppify show exports --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 13,
-        "lane": "refactor_2"
+        "priority": 12,
+        "lane": "refactor_3"
       },
       {
         "type": "manual_fix",
@@ -1679,8 +1662,8 @@
         "command": "desloppify show stale_exclude --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 14,
-        "lane": "refactor_3"
+        "priority": 13,
+        "lane": "refactor_4"
       },
       {
         "type": "manual_fix",
@@ -1690,18 +1673,18 @@
         "command": "desloppify next",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 15,
+        "priority": 14,
         "clusters": [
           "auto/security"
         ],
         "cluster_count": 1,
-        "lane": "refactor_4"
+        "lane": "refactor_5"
       }
     ],
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 1,
-        "total_count": 199,
+        "total_count": 182,
         "coverage": 0.005,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -1732,18 +1715,16 @@
             5,
             6,
             8,
-            9,
-            10,
-            12
+            11
           ],
-          "file_count": 90,
+          "file_count": 86,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "refactor_1": {
           "actions": [
-            11
+            9
           ],
           "file_count": 1,
           "total_impact": 0.0,
@@ -1752,25 +1733,34 @@
         },
         "refactor_2": {
           "actions": [
-            13
-          ],
-          "file_count": 11,
-          "total_impact": 0.0,
-          "automation": "manual",
-          "run_first": false
-        },
-        "refactor_3": {
-          "actions": [
-            14
+            10
           ],
           "file_count": 1,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
+        "refactor_3": {
+          "actions": [
+            12
+          ],
+          "file_count": 11,
+          "total_impact": 0.0,
+          "automation": "manual",
+          "run_first": false
+        },
         "refactor_4": {
           "actions": [
-            15
+            13
+          ],
+          "file_count": 1,
+          "total_impact": 0.0,
+          "automation": "manual",
+          "run_first": false
+        },
+        "refactor_5": {
+          "actions": [
+            14
           ],
           "file_count": 1,
           "total_impact": 0.0,
@@ -1788,7 +1778,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 4 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "8 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 3 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -1841,7 +1831,7 @@
       }
     },
     "debt": {
-      "overall_gap": 1.0,
+      "overall_gap": 0.9,
       "wontfix_count": 2,
       "worst_dimension": "Duplication",
       "worst_gap": 14.2,
@@ -1852,7 +1842,7 @@
       "command": "desloppify autofix unused-imports --dry-run",
       "description": "1 unused issues \u2014 run `desloppify autofix unused-imports --dry-run` to preview, then apply"
     },
-    "why_now": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 4 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "8 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 3 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -1861,13 +1851,13 @@
       {
         "type": "wontfix_gap",
         "severity": "medium",
-        "message": "Strict/lenient gap is 1.0 pts with 2 wontfix issues"
+        "message": "Strict/lenient gap is 0.9 pts with 2 wontfix issues"
       }
     ],
     "strict_target": {
       "target": 85.0,
-      "current": 91.8,
-      "gap": -6.8,
+      "current": 92.0,
+      "gap": -7.0,
       "state": "above",
       "warning": null
     },
@@ -1885,7 +1875,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 3,
-      "report_scores": 129,
+      "report_scores": 130,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
@@ -1938,8 +1928,8 @@
   "plan": {
     "active": true,
     "focus": null,
-    "total_ordered": 3,
-    "total_skipped": 6,
+    "total_ordered": 5,
+    "total_skipped": 20,
     "plan_overrides_narrative": true
   }
 }

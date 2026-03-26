@@ -1,9 +1,11 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-26T22:37:21+00:00",
+  "updated": "2026-03-26T22:40:10+00:00",
   "queue_order": [
-    "review::.::holistic::logic_clarity::unnecessary_async_ghapiclient_call",
+    "subjective::design_coherence",
+    "subjective::error_consistency",
+    "subjective::logic_clarity",
     "review::.::holistic::low_level_elegance::indexOf_first_iteration_detection",
     "review::.::holistic::mid_level_elegance::settings_processor_factory_cast"
   ],
@@ -68,6 +70,146 @@
       "created_at": "2026-03-26T22:23:39+00:00",
       "review_after": null,
       "skipped_at_scan": 178
+    },
+    "boilerplate_duplication::src/output/settings-report.ts::f864c821dcb23209": {
+      "issue_id": "boilerplate_duplication::src/output/settings-report.ts::f864c821dcb23209",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the boilerplate similarity is between different report formatters rendering different domain data with intentionally parallel structure, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:37+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/output/settings-report.ts::551649bf5b0873ed": {
+      "issue_id": "boilerplate_duplication::src/output/settings-report.ts::551649bf5b0873ed",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the boilerplate similarity is between different report formatters rendering different domain data with intentionally parallel structure, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:37+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/output/settings-report.ts::f65536bfde59e29e": {
+      "issue_id": "boilerplate_duplication::src/output/settings-report.ts::f65536bfde59e29e",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the boilerplate similarity is between different report formatters rendering different domain data with intentionally parallel structure, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:35+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/output/lifecycle-report.ts::97715be496f47690": {
+      "issue_id": "boilerplate_duplication::src/output/lifecycle-report.ts::97715be496f47690",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the boilerplate similarity is between different report formatters rendering different domain data with intentionally parallel structure, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:36+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/output/sync-report.ts::3161a12160a43e0f": {
+      "issue_id": "boilerplate_duplication::src/output/sync-report.ts::3161a12160a43e0f",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the boilerplate similarity is between different report formatters rendering different domain data with intentionally parallel structure, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:36+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/output/settings-report.ts::6c0bbd8dceecd5d3": {
+      "issue_id": "boilerplate_duplication::src/output/settings-report.ts::6c0bbd8dceecd5d3",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the boilerplate similarity is between different report formatters rendering different domain data with intentionally parallel structure, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:37+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/output/settings-report.ts::669c75479d5082cb": {
+      "issue_id": "boilerplate_duplication::src/output/settings-report.ts::669c75479d5082cb",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the boilerplate similarity is between different report formatters rendering different domain data with intentionally parallel structure, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:37+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/output/github-summary.ts::96f83bd03c532671": {
+      "issue_id": "boilerplate_duplication::src/output/github-summary.ts::96f83bd03c532671",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the boilerplate similarity is between different report formatters rendering different domain data with intentionally parallel structure, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:38+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::2b336b6adad3c63a": {
+      "issue_id": "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::2b336b6adad3c63a",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the similarity between azure-pr-strategy and gitlab-pr-strategy is because both implement IPRStrategy for different platforms with intentionally parallel but platform-specific logic, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:46+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::3f4c831e39142dfb": {
+      "issue_id": "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::3f4c831e39142dfb",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the similarity between azure-pr-strategy and gitlab-pr-strategy is because both implement IPRStrategy for different platforms with intentionally parallel but platform-specific logic, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:47+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::884092945baec5ca": {
+      "issue_id": "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::884092945baec5ca",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the similarity between azure-pr-strategy and gitlab-pr-strategy is because both implement IPRStrategy for different platforms with intentionally parallel but platform-specific logic, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:47+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/shared/repo-detector.ts::467d6fd28ff1b3bb": {
+      "issue_id": "boilerplate_duplication::src/shared/repo-detector.ts::467d6fd28ff1b3bb",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the similarity between repo-detector.ts and xfg-template.ts is coincidental regex-based pattern matching in unrelated utilities with different purposes, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:59+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/settings/base-processor.ts::a0b594d3b7d32c32": {
+      "issue_id": "boilerplate_duplication::src/settings/base-processor.ts::a0b594d3b7d32c32",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the similarity between base-processor.ts and rulesets/diff.ts is coincidental structural pattern in different contexts with different semantics, and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:39:59+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
+    },
+    "boilerplate_duplication::src/settings/labels/formatter.ts::cabff18d9e0560e2": {
+      "issue_id": "boilerplate_duplication::src/settings/labels/formatter.ts::cabff18d9e0560e2",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this and the similarity between labels/formatter.ts and rulesets/formatter.ts is deliberate parallel formatting structure for different domain types (labels vs rulesets), and I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-03-26T22:40:00+00:00",
+      "review_after": null,
+      "skipped_at_scan": 182
     }
   },
   "active_cluster": null,
@@ -6731,10 +6873,13 @@
       "candidates": []
     }
   },
-  "promoted_ids": [
-    "review::.::holistic::logic_clarity::unnecessary_async_ghapiclient_call"
-  ],
-  "plan_start_scores": {},
+  "promoted_ids": [],
+  "plan_start_scores": {
+    "strict": 92.0,
+    "overall": 93.3,
+    "objective": 97.6,
+    "verified": 95.6
+  },
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -25175,6 +25320,272 @@
       "detail": {
         "scan_count": 182
       }
+    },
+    {
+      "timestamp": "2026-03-26T22:38:03+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::unnecessary_async_ghapiclient_call"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed async keyword from GhApiClient.call() in commit 1a43aca since it just returns ghApiCall() without awaiting",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-26T22:38:04+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::unnecessary_async_ghapiclient_call"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed async keyword from GhApiClient.call() in commit 1a43aca since it just returns ghApiCall() without awaiting",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually removed the async keyword from the call method and I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:37+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/output/settings-report.ts::f864c821dcb23209"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:37+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:37+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/output/settings-report.ts::551649bf5b0873ed"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:35+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/output/settings-report.ts::f65536bfde59e29e"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:36+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/output/lifecycle-report.ts::97715be496f47690"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:36+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/output/sync-report.ts::3161a12160a43e0f"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:37+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/output/settings-report.ts::6c0bbd8dceecd5d3"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:37+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/output/settings-report.ts::669c75479d5082cb"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:38+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/output/github-summary.ts::96f83bd03c532671"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:46+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::2b336b6adad3c63a"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:47+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::3f4c831e39142dfb"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:47+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::884092945baec5ca"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:59+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/shared/repo-detector.ts::467d6fd28ff1b3bb"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:39:59+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/settings/base-processor.ts::a0b594d3b7d32c32"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:40:00+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "boilerplate_duplication::src/settings/labels/formatter.ts::cabff18d9e0560e2"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:40:10+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:40:10+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-26T22:40:10+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 183
+      }
     }
   ],
   "epic_triage_meta": {
@@ -25647,13 +26058,15 @@
       "cluster_name": null
     }
   ],
-  "uncommitted_issues": [],
+  "uncommitted_issues": [
+    "review::.::holistic::logic_clarity::unnecessary_async_ghapiclient_call"
+  ],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 181,
     "lifecycle_phase": "plan",
     "_subjective_migration_pruned": true,
-    "postflight_scan_completed_at_scan_count": 182
+    "postflight_scan_completed_at_scan_count": 183
   },
-  "scan_count_at_plan_start": 180
+  "scan_count_at_plan_start": 183
 }
