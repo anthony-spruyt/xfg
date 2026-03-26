@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import {
   exec,
+  execWithRetry,
   projectRoot,
   generateRepoName,
   createRepo,
@@ -33,28 +34,32 @@ async function resetRepoSettings(): Promise<void> {
   const fields = Object.entries(GITHUB_DEFAULTS)
     .map(([k, v]) => `-F ${k}=${v}`)
     .join(" ");
-  await exec(`gh api --method PATCH repos/${testRepo} ${fields}`);
+  await execWithRetry(`gh api --method PATCH repos/${testRepo} ${fields}`);
 }
 
 async function resetSecuritySettings(): Promise<void> {
   console.log("  Resetting security settings...");
   try {
-    await exec(`gh api -X PUT repos/${testRepo}/vulnerability-alerts`);
+    await execWithRetry(`gh api -X PUT repos/${testRepo}/vulnerability-alerts`);
   } catch {
     /* already enabled */
   }
   try {
-    await exec(`gh api -X DELETE repos/${testRepo}/automated-security-fixes`);
+    await execWithRetry(
+      `gh api -X DELETE repos/${testRepo}/automated-security-fixes`
+    );
   } catch {
     /* already disabled */
   }
   try {
-    await exec(`gh api -X DELETE repos/${testRepo}/vulnerability-alerts`);
+    await execWithRetry(
+      `gh api -X DELETE repos/${testRepo}/vulnerability-alerts`
+    );
   } catch {
     /* already disabled */
   }
   try {
-    await exec(
+    await execWithRetry(
       `gh api -X DELETE repos/${testRepo}/private-vulnerability-reporting`
     );
   } catch {
@@ -69,7 +74,7 @@ async function getSecuritySettings(): Promise<{
 }> {
   let vulnerabilityAlerts = false;
   try {
-    await exec(`gh api repos/${testRepo}/vulnerability-alerts`);
+    await execWithRetry(`gh api repos/${testRepo}/vulnerability-alerts`);
     vulnerabilityAlerts = true;
   } catch {
     vulnerabilityAlerts = false;
@@ -77,13 +82,15 @@ async function getSecuritySettings(): Promise<{
 
   let automatedSecurityFixes = false;
   try {
-    const r = await exec(`gh api repos/${testRepo}/automated-security-fixes`);
+    const r = await execWithRetry(
+      `gh api repos/${testRepo}/automated-security-fixes`
+    );
     automatedSecurityFixes = JSON.parse(r).enabled === true;
   } catch {
     automatedSecurityFixes = false;
   }
 
-  const pvrResult = await exec(
+  const pvrResult = await execWithRetry(
     `gh api repos/${testRepo}/private-vulnerability-reporting`
   );
   const privateVulnerabilityReporting = JSON.parse(pvrResult).enabled === true;
@@ -96,7 +103,7 @@ async function getSecuritySettings(): Promise<{
 }
 
 async function getRepoSettings(): Promise<Record<string, unknown>> {
-  return JSON.parse(await exec(`gh api repos/${testRepo}`));
+  return JSON.parse(await execWithRetry(`gh api repos/${testRepo}`));
 }
 
 function createConfigFile(): string {

@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   exec,
+  execWithRetry,
   projectRoot,
   generateRepoName,
   createRepo,
@@ -27,7 +28,9 @@ let tmpDir: string;
 
 async function getLabels(): Promise<Label[]> {
   try {
-    const output = await exec(`gh api repos/${testRepo}/labels --paginate`);
+    const output = await execWithRetry(
+      `gh api repos/${testRepo}/labels --paginate`
+    );
     return JSON.parse(output) as Label[];
   } catch {
     return [];
@@ -97,7 +100,7 @@ describe("GitHub Labels Integration Test", () => {
       if (labels.length === 0) break;
       for (const label of labels) {
         try {
-          await exec(
+          await execWithRetry(
             `gh api --method DELETE repos/${testRepo}/labels/${encodeURIComponent(label.name)}`
           );
         } catch (e) {

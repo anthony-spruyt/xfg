@@ -54,6 +54,7 @@ export async function exec(
  * Transient HTTP error patterns from the GitHub API that warrant a retry.
  */
 const TRANSIENT_ERROR_PATTERNS = [
+  // HTTP status codes and server errors
   /502/i,
   /503/i,
   /504/i,
@@ -67,6 +68,22 @@ const TRANSIENT_ERROR_PATTERNS = [
   /retry-after/i,
   /429/,
   /403.*rate/i,
+  // Network / timeout errors (covers az, glab, curl)
+  /timed?\s*out/i,
+  /ETIMEDOUT/,
+  /ECONNRESET/,
+  /ECONNREFUSED/,
+  /ENOTFOUND/,
+  /connection\s*(reset|refused|closed)/i,
+  /network\s*(error|unreachable)/i,
+  // Platform-agnostic server errors
+  /temporarily\s*unavailable/i,
+  /internal\s*server\s*error/i,
+  /temporary\s*(failure|error)/i,
+  /please try again later/i,
+  // DNS
+  /could\s*not\s*resolve\s*host/i,
+  /unable\s*to\s*access/i,
 ];
 
 /**
@@ -345,7 +362,10 @@ export async function listRulesets(
   envOptions?: { env: Record<string, string | undefined> }
 ): Promise<Array<{ id: number; name: string }>> {
   try {
-    const json = await exec(`gh api repos/${repo}/rulesets`, envOptions);
+    const json = await execWithRetry(
+      `gh api repos/${repo}/rulesets`,
+      envOptions
+    );
     return JSON.parse(json) as Array<{ id: number; name: string }>;
   } catch {
     return [];
@@ -361,7 +381,7 @@ export async function listLabels(
   envOptions?: { env: Record<string, string | undefined> }
 ): Promise<Array<{ name: string; color: string }>> {
   try {
-    const json = await exec(
+    const json = await execWithRetry(
       `gh api repos/${repo}/labels --paginate`,
       envOptions
     );
@@ -483,7 +503,7 @@ export async function repoExists(
   envOptions?: { env: Record<string, string | undefined> }
 ): Promise<boolean> {
   try {
-    await exec(
+    await execWithRetry(
       `gh api repos/${owner}/${repoName} --jq '.full_name'`,
       envOptions
     );
@@ -503,7 +523,7 @@ export async function isForkedFrom(
   envOptions?: { env: Record<string, string | undefined> }
 ): Promise<boolean> {
   try {
-    const parentName = await exec(
+    const parentName = await execWithRetry(
       `gh api repos/${owner}/${repoName} --jq '.parent.full_name'`,
       envOptions
     );

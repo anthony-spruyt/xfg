@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   exec,
+  execWithRetry,
   projectRoot,
   generateRepoName,
   createRepo,
@@ -22,13 +23,15 @@ let tmpDir: string;
 
 async function deleteRulesetIfExists(): Promise<void> {
   try {
-    const rulesets = await exec(
+    const rulesets = await execWithRetry(
       `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}") | .id'`
     );
     if (rulesets) {
       for (const id of rulesets.split("\n").filter(Boolean)) {
         console.log(`  Deleting ruleset ID: ${id}`);
-        await exec(`gh api --method DELETE repos/${testRepo}/rulesets/${id}`);
+        await execWithRetry(
+          `gh api --method DELETE repos/${testRepo}/rulesets/${id}`
+        );
       }
     }
   } catch {
@@ -91,7 +94,7 @@ describe("GitHub Settings Integration Test", () => {
     const configPath = makeConfig();
 
     console.log("Verifying no ruleset exists...");
-    const rulesetsBefore = await exec(
+    const rulesetsBefore = await execWithRetry(
       `gh api repos/${testRepo}/rulesets --jq '[.[] | select(.name == "${RULESET_NAME}")] | length'`
     );
     assert.equal(rulesetsBefore, "0", "Expected no ruleset before");
@@ -103,7 +106,7 @@ describe("GitHub Settings Integration Test", () => {
     console.log(output);
 
     console.log("\nVerifying ruleset was created...");
-    const rulesetsAfter = await exec(
+    const rulesetsAfter = await execWithRetry(
       `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
     );
     assert.ok(rulesetsAfter, "Expected a ruleset to be created");
@@ -124,7 +127,7 @@ describe("GitHub Settings Integration Test", () => {
       cwd: projectRoot,
     });
 
-    const rulesetCreated = await exec(
+    const rulesetCreated = await execWithRetry(
       `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
     );
     const rulesetBefore = JSON.parse(rulesetCreated);
@@ -136,7 +139,7 @@ describe("GitHub Settings Integration Test", () => {
     });
 
     const rulesetAfter = JSON.parse(
-      await exec(
+      await execWithRetry(
         `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
       )
     );
@@ -150,7 +153,7 @@ describe("GitHub Settings Integration Test", () => {
   test("settings dry-run shows changes without applying", async () => {
     const configPath = makeConfig();
 
-    const rulesetsBefore = await exec(
+    const rulesetsBefore = await execWithRetry(
       `gh api repos/${testRepo}/rulesets --jq '[.[] | select(.name == "${RULESET_NAME}")] | length'`
     );
     assert.equal(rulesetsBefore, "0");
@@ -164,7 +167,7 @@ describe("GitHub Settings Integration Test", () => {
       "Output should indicate dry-run"
     );
 
-    const rulesetsAfter = await exec(
+    const rulesetsAfter = await execWithRetry(
       `gh api repos/${testRepo}/rulesets --jq '[.[] | select(.name == "${RULESET_NAME}")] | length'`
     );
     assert.equal(rulesetsAfter, "0", "Dry-run should not create ruleset");

@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   exec,
+  execWithRetry,
   projectRoot,
   generateRepoName,
   createRepo,
@@ -85,10 +86,10 @@ repos:
     const prNumber = String(pr.number);
     assert.ok(prNumber, `Expected PR on ${SYNC_BRANCH}`);
 
-    const commitSha = await exec(
+    const commitSha = await execWithRetry(
       `gh api repos/${testRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
     );
-    const author = await exec(
+    const author = await execWithRetry(
       `gh api repos/${testRepo}/commits/${commitSha} --jq '.commit.author.name'`
     );
     assert.notStrictEqual(author, "github-actions[bot]");
@@ -118,15 +119,15 @@ repos:
     );
     console.log(output);
 
-    const fileSha = await exec(
+    const fileSha = await execWithRetry(
       `gh api repos/${testRepo}/contents/${DIRECT_FILE} --jq '.sha'`
     );
     assert.ok(fileSha, `Expected ${DIRECT_FILE} on main`);
 
-    const mainSha = await exec(
+    const mainSha = await execWithRetry(
       `gh api repos/${testRepo}/commits/main --jq '.sha'`
     );
-    const author = await exec(
+    const author = await execWithRetry(
       `gh api repos/${testRepo}/commits/${mainSha} --jq '.commit.author.name'`
     );
     assert.notStrictEqual(author, "github-actions[bot]");
@@ -247,7 +248,9 @@ describe("GitHub App Repo Settings Test", { skip: SKIP_TESTS }, () => {
     const fields = Object.entries(GITHUB_DEFAULTS)
       .map(([k, v]) => `-F ${k}=${v}`)
       .join(" ");
-    await exec(`gh api --method PATCH repos/${settingsTestRepo} ${fields}`);
+    await execWithRetry(
+      `gh api --method PATCH repos/${settingsTestRepo} ${fields}`
+    );
 
     const configPath = writeConfig(
       settingsTmpDir,
@@ -352,7 +355,7 @@ repos:
     const pr = await waitForPrVisible(signedTestRepo, SYNC_BRANCH, "number");
     assert.ok(pr.number);
 
-    const commitSha = await exec(
+    const commitSha = await execWithRetry(
       `gh api repos/${signedTestRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
     );
     await waitForCommitVerified(signedTestRepo, commitSha);

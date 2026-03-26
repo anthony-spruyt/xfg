@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
   exec,
+  execWithRetry,
   projectRoot,
   generateRepoName,
   deleteRepo,
@@ -67,7 +68,7 @@ repos:
     );
 
     // Verify file was pushed
-    const fileContent = await exec(
+    const fileContent = await execWithRetry(
       `gh api repos/${OWNER}/${repoName}/contents/lifecycle-test.json --jq '.content' | base64 -d`
     );
     assert.ok(
@@ -241,7 +242,7 @@ repos:
     );
 
     // Verify description was applied
-    const description = await exec(
+    const description = await execWithRetry(
       `gh api repos/${OWNER}/${repoName} --jq '.description'`
     );
     assert.equal(
@@ -288,7 +289,7 @@ repos:
       `Repo ${repoName} should exist after sync`
     );
 
-    const defaultBranch = await exec(
+    const defaultBranch = await execWithRetry(
       `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
     );
     assert.equal(
@@ -339,7 +340,7 @@ repos:
         `Repo ${repoName} should exist after migrate`
       );
 
-      const defaultBranch = await exec(
+      const defaultBranch = await execWithRetry(
         `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
       );
       assert.equal(
