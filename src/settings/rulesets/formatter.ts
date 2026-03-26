@@ -328,10 +328,10 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     grouped[c.action].push(c);
   }
 
+  if (grouped.create.length > 0) {
+    lines.push(chalk.bold("  Create:"));
+  }
   for (const change of grouped.create) {
-    if (grouped.create.indexOf(change) === 0) {
-      lines.push(chalk.bold("  Create:"));
-    }
     lines.push(chalk.green(`    + ruleset "${change.name}"`));
     if (change.desired) {
       lines.push(...formatFullConfig(change.desired, 2));
@@ -348,10 +348,10 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     lines.push("");
   }
 
+  if (grouped.update.length > 0) {
+    lines.push(chalk.bold("  Update:"));
+  }
   for (const change of grouped.update) {
-    if (grouped.update.indexOf(change) === 0) {
-      lines.push(chalk.bold("  Update:"));
-    }
     lines.push(chalk.yellow(`    ~ ruleset "${change.name}"`));
     if (change.current && change.desired) {
       const currentNorm = normalizeRuleset(change.current);
