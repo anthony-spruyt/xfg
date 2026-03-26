@@ -1,35 +1,394 @@
 {
-  "command": "next",
-  "items": [
-    {
-      "id": "subjective::high_level_elegance",
-      "confidence": "medium",
-      "detector": "subjective_assessment",
-      "file": ".",
-      "summary": "Subjective review needed: High elegance (92.0%) [below target]",
-      "detail": {
-        "dimension_name": "High elegance",
-        "dimension": "high_level_elegance",
-        "failing": 0,
-        "strict_score": 92.0,
-        "open_review_issues": 0,
-        "cli_keys": [
-          "high_level_elegance"
-        ]
+  "command": "review",
+  "action": "import",
+  "mode": "holistic",
+  "diff": {
+    "new": 8,
+    "auto_resolved": 36,
+    "reopened": 1,
+    "total_current": 9,
+    "suspect_detectors": [
+      "boilerplate_duplication",
+      "exports",
+      "facade",
+      "flat_dirs",
+      "props",
+      "responsibility_cohesion",
+      "review",
+      "security",
+      "signature",
+      "single_use",
+      "smells",
+      "stale_exclude",
+      "structural",
+      "test_coverage",
+      "unused"
+    ],
+    "chronic_reopeners": [
+      {
+        "id": "smells::src/cli/sync-command.ts::async_no_await",
+        "detector": "smells",
+        "file": "src/cli/sync-command.ts",
+        "tier": 3,
+        "confidence": "medium",
+        "summary": "2x Async functions without await",
+        "detail": {
+          "smell_id": "async_no_await",
+          "severity": "medium",
+          "count": 2,
+          "lines": [
+            204,
+            592
+          ]
+        },
+        "status": "open",
+        "note": "Reopened (\u00d74) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-03T09:10:57+00:00",
+        "last_seen": "2026-03-26T13:00:19+00:00",
+        "resolved_at": null,
+        "reopen_count": 4,
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan"
       },
-      "status": "open",
-      "kind": "subjective_dimension",
-      "primary_command": "desloppify review --prepare --dimensions high_level_elegance",
-      "queue_position": 1
-    }
-  ],
-  "queue": {
-    "total": 1,
-    "mode": "execution"
+      {
+        "id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
+        "detector": "security",
+        "file": "src/settings/repo-settings/diff.ts",
+        "tier": 2,
+        "confidence": "high",
+        "summary": "Hardcoded secret in variable 'secretScanning'",
+        "detail": {
+          "kind": "hardcoded_secret_name",
+          "severity": "high",
+          "line": 40,
+          "content": "  secretScanning: \"_secret_scanning\",",
+          "remediation": "Move secret to environment variable or secrets manager"
+        },
+        "status": "open",
+        "note": "Reopened (\u00d710) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-03T09:10:57+00:00",
+        "last_seen": "2026-03-26T13:00:19+00:00",
+        "resolved_at": null,
+        "reopen_count": 10,
+        "zone": "production",
+        "lang": "typescript",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "wontfix_scan_count": 105,
+        "wontfix_snapshot": {
+          "captured_at": "2026-03-06T07:04:07+00:00",
+          "scan_count": 105,
+          "tier": 2,
+          "confidence": "high",
+          "detail": {
+            "kind": "hardcoded_secret_name",
+            "severity": "high",
+            "line": 40,
+            "content": "  secretScanning: \"_secret_scanning\",",
+            "remediation": "Move secret to environment variable or secrets manager"
+          }
+        },
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan"
+      },
+      {
+        "id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
+        "detector": "security",
+        "file": "src/settings/repo-settings/diff.ts",
+        "tier": 2,
+        "confidence": "high",
+        "summary": "Hardcoded secret in variable 'secretScanningPushProtection'",
+        "detail": {
+          "kind": "hardcoded_secret_name",
+          "severity": "high",
+          "line": 41,
+          "content": "  secretScanningPushProtection: \"_secret_scanning_push_protection\",",
+          "remediation": "Move secret to environment variable or secrets manager"
+        },
+        "status": "open",
+        "note": "Reopened (\u00d710) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-03T09:10:57+00:00",
+        "last_seen": "2026-03-26T13:00:19+00:00",
+        "resolved_at": null,
+        "reopen_count": 10,
+        "zone": "production",
+        "lang": "typescript",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "wontfix_scan_count": 105,
+        "wontfix_snapshot": {
+          "captured_at": "2026-03-06T07:04:07+00:00",
+          "scan_count": 105,
+          "tier": 2,
+          "confidence": "high",
+          "detail": {
+            "kind": "hardcoded_secret_name",
+            "severity": "high",
+            "line": 41,
+            "content": "  secretScanningPushProtection: \"_secret_scanning_push_protection\",",
+            "remediation": "Move secret to environment variable or secrets manager"
+          }
+        },
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan"
+      },
+      {
+        "id": "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts",
+        "detector": "test_coverage",
+        "file": "src/shared/xfg-template.ts",
+        "tier": 3,
+        "confidence": "medium",
+        "summary": "Shallow tests: xfg-template.test.ts has 43 assertions across 44 test functions",
+        "detail": {
+          "kind": "shallow_tests",
+          "test_file": "test/unit/xfg-template.test.ts",
+          "assertions": 43,
+          "test_functions": 44,
+          "loc_weight": 13.96424004376894
+        },
+        "status": "open",
+        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-04T00:19:16+00:00",
+        "last_seen": "2026-03-26T13:00:19+00:00",
+        "resolved_at": null,
+        "reopen_count": 2,
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan"
+      },
+      {
+        "id": "smells::src/vcs/pr-strategy.ts::catch_return_default",
+        "detector": "smells",
+        "file": "src/vcs/pr-strategy.ts",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "1x Catch block returns default object (silent failure)",
+        "detail": {
+          "smell_id": "catch_return_default",
+          "severity": "high",
+          "count": 1,
+          "lines": [
+            49
+          ]
+        },
+        "status": "open",
+        "note": "Reopened (\u00d74) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-04T02:24:32+00:00",
+        "last_seen": "2026-03-22T09:29:09+00:00",
+        "resolved_at": null,
+        "reopen_count": 4,
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan"
+      },
+      {
+        "id": "facade::src/settings/labels/index.ts",
+        "detector": "facade",
+        "file": "src/settings/labels/index.ts",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "Re-export facade (8 LOC): imports from ./formatter.js, ./processor.js, ./github-labels-strategy.js (1 importers)",
+        "detail": {
+          "loc": 8,
+          "importers": 1,
+          "imports_from": [
+            "./formatter.js",
+            "./processor.js",
+            "./github-labels-strategy.js"
+          ],
+          "kind": "file"
+        },
+        "status": "open",
+        "note": "Reopened (\u00d77) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-05T01:16:56+00:00",
+        "last_seen": "2026-03-26T13:00:19+00:00",
+        "resolved_at": null,
+        "reopen_count": 7,
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "wontfix_scan_count": 112,
+        "wontfix_snapshot": {
+          "captured_at": "2026-03-06T08:15:04+00:00",
+          "scan_count": 112,
+          "tier": 2,
+          "confidence": "medium",
+          "detail": {
+            "loc": 5,
+            "importers": 1,
+            "imports_from": [
+              "./formatter.js",
+              "./processor.js"
+            ],
+            "kind": "file"
+          }
+        },
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan"
+      },
+      {
+        "id": "smells::src/shared/gh-api-utils.ts::async_no_await",
+        "detector": "smells",
+        "file": "src/shared/gh-api-utils.ts",
+        "tier": 3,
+        "confidence": "medium",
+        "summary": "1x Async functions without await",
+        "detail": {
+          "smell_id": "async_no_await",
+          "severity": "medium",
+          "count": 1,
+          "lines": [
+            195
+          ]
+        },
+        "status": "open",
+        "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-05T02:29:11+00:00",
+        "last_seen": "2026-03-26T13:00:19+00:00",
+        "resolved_at": null,
+        "reopen_count": 3,
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan"
+      },
+      {
+        "id": "test_coverage::src/cli/types.ts::transitive_only",
+        "detector": "test_coverage",
+        "file": "src/cli/types.ts",
+        "tier": 3,
+        "confidence": "medium",
+        "summary": "No direct tests (92 LOC, 2 importers) \u2014 covered only via imports from tested modules",
+        "detail": {
+          "kind": "transitive_only",
+          "loc": 92,
+          "importer_count": 2,
+          "loc_weight": 9.591663046625438
+        },
+        "status": "open",
+        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-06T08:52:20+00:00",
+        "last_seen": "2026-03-26T13:00:19+00:00",
+        "resolved_at": null,
+        "reopen_count": 2,
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan"
+      },
+      {
+        "id": "exports::src/vcs/index.ts::INetworkGitOps",
+        "detector": "exports",
+        "file": "src/vcs/index.ts",
+        "tier": 2,
+        "confidence": "high",
+        "summary": "Dead export: INetworkGitOps",
+        "detail": {
+          "line": 97,
+          "kind": "type"
+        },
+        "status": "open",
+        "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-06T13:26:39+00:00",
+        "last_seen": "2026-03-22T07:29:45+00:00",
+        "resolved_at": null,
+        "reopen_count": 3,
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan"
+      },
+      {
+        "id": "review::.::holistic::abstraction_fitness::processor_options_passthrough",
+        "detector": "review",
+        "file": ".",
+        "tier": 3,
+        "confidence": "low",
+        "summary": "ProcessorOptions passes unchanged through FileSyncStrategy to FileSyncOrchestrator",
+        "detail": {
+          "holistic": true,
+          "dimension": "abstraction_fitness",
+          "related_files": [
+            "src/sync/file-sync-strategy.ts",
+            "src/sync/file-sync-orchestrator.ts",
+            "src/sync/types.ts"
+          ],
+          "evidence": [
+            "FileSyncStrategy.execute receives ProcessorOptions (9 fields) and forwards it entirely to fileSyncOrchestrator.sync without accessing any field directly",
+            "FileSyncOrchestrator.sync only uses workDir, configId, dryRun, noDelete, and hasAppCredentials from the 9-field bag",
+            "SyncWorkflow.execute also receives and partially destructures the same ProcessorOptions before passing it to workStrategy.execute"
+          ],
+          "suggestion": "Consider narrowing the IWorkStrategy.execute and IFileSyncOrchestrator.sync signatures to accept only the fields they need (e.g. a FileSyncOptions pick type) instead of the full ProcessorOptions. However, weigh this against added type ceremony - the current approach is tolerable given the options bag is stable and well-typed.",
+          "reasoning": "",
+          "summary_hash": "279c1076"
+        },
+        "status": "open",
+        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-18T10:25:46+00:00",
+        "last_seen": "2026-03-26T22:05:32+00:00",
+        "resolved_at": null,
+        "reopen_count": 2,
+        "work_item_kind": "review_defect",
+        "issue_kind": "review_defect",
+        "origin": "review_import",
+        "lang": "typescript",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null
+      }
+    ],
+    "skipped_other_lang": 0,
+    "resolved_out_of_scope": 0,
+    "ignored": 0,
+    "ignore_patterns": 0,
+    "raw_issues": 9,
+    "suppressed_pct": 0.0
+  },
+  "next_command": "desloppify show review --status open",
+  "subjective_at_target": [],
+  "assessment_import": {
+    "mode": "trusted_internal",
+    "trusted": true,
+    "reason": "trusted import-run replay from 20260326_130053"
   },
   "narrative": {
-    "phase": "stagnation",
-    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Score plateaued at 91.7 for 5 scans. Duplication (82.0%) is where the breakthrough is. 2 wontfix items may also be worth revisiting. (9 review work items \u2014 run `desloppify show review --status open`)",
+    "phase": "regression",
+    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Score shifted 0.6 pts \u2014 this is normal after structural changes. Rescan after your next fix to see the real trend. (9 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -40,16 +399,16 @@
         },
         {
           "name": "Low elegance",
-          "strict": 89.5,
-          "failing": 2,
+          "strict": 86.5,
+          "failing": 1,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
         },
         {
           "name": "Design coherence",
-          "strict": 90.5,
-          "failing": 0,
+          "strict": 88.5,
+          "failing": 2,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -80,6 +439,11 @@
       ],
       "stagnant_dimensions": [
         {
+          "name": "Code quality",
+          "strict": 92.8,
+          "stuck_scans": 5
+        },
+        {
           "name": "Security",
           "strict": 94.5,
           "stuck_scans": 5
@@ -105,38 +469,13 @@
           "stuck_scans": 5
         },
         {
-          "name": "Auth consistency",
-          "strict": 95.0,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Contracts",
-          "strict": 93.5,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Design coherence",
-          "strict": 90.5,
-          "stuck_scans": 5
-        },
-        {
-          "name": "Error consistency",
-          "strict": 92.3,
-          "stuck_scans": 5
-        },
-        {
-          "name": "High elegance",
-          "strict": 92.0,
-          "stuck_scans": 5
-        },
-        {
           "name": "Naming quality",
           "strict": 92.0,
           "stuck_scans": 5
         },
         {
           "name": "Structure nav",
-          "strict": 92.0,
+          "strict": 92.5,
           "stuck_scans": 5
         }
       ]
@@ -212,15 +551,11 @@
         "type": "refactor",
         "detector": "test_coverage",
         "count": 2,
-        "description": "2 test_coverage issues in 1 cluster(s) \u2014 run `desloppify next`",
-        "command": "desloppify next",
+        "description": "2 test_coverage work items \u2014 review test coverage gaps \u2014 focus on critical modules with many importers first; defer test writing until code quality issues are resolved",
+        "command": "desloppify show test_coverage --status open",
         "impact": 0.0,
         "dimension": "Test health",
         "priority": 7,
-        "clusters": [
-          "auto/test_coverage"
-        ],
-        "cluster_count": 1,
         "lane": "test_coverage"
       },
       {
@@ -304,15 +639,11 @@
         "type": "manual_fix",
         "detector": "security",
         "count": 2,
-        "description": "2 security issues in 1 cluster(s) \u2014 run `desloppify next`",
-        "command": "desloppify next",
+        "description": "2 security work items \u2014 review and fix security issues \u2014 prioritize by severity",
+        "command": "desloppify show security --status open",
         "impact": 0.0,
         "dimension": "Security",
         "priority": 15,
-        "clusters": [
-          "auto/security"
-        ],
-        "cluster_count": 1,
         "lane": "refactor_4"
       }
     ],
@@ -463,7 +794,7 @@
       "wontfix_count": 2,
       "worst_dimension": "Duplication",
       "worst_gap": 14.3,
-      "trend": "shrinking"
+      "trend": "stable"
     },
     "milestone": null,
     "primary_action": {
@@ -484,8 +815,8 @@
     ],
     "strict_target": {
       "target": 85.0,
-      "current": 91.7,
-      "gap": -6.7,
+      "current": 91.1,
+      "gap": -6.1,
       "state": "above",
       "warning": null
     },
@@ -513,656 +844,6 @@
       "fp_calibration_test_coverage_production": 3
     }
   },
-  "agent_notes": [
-    "Do NOT use `desloppify plan skip` unless the user explicitly asks you to skip an item.",
-    "If you cannot fix an item, report it and move to the next one.",
-    "For cluster items: if the autofix_hint finds 0 results, drill into individual issues with the primary_command."
-  ],
-  "plan": {
-    "active": true,
-    "focus": null,
-    "clusters": [
-      {
-        "name": "auto/test_coverage",
-        "description": "Fix 11 test coverage issues",
-        "item_count": 0
-      },
-      {
-        "name": "token-resolution",
-        "description": "Extract resolveGitHubToken from gh-api-utils.ts into dedicated auth module, centralize token resolution to happen once per repo",
-        "item_count": 3
-      },
-      {
-        "name": "accepted-debt",
-        "description": "Intentional design decisions to skip: unused token param in Azure/GitLab (documented interface sharing), merge mode convention (internally consistent), isPermanentError string matching (pragmatic)",
-        "item_count": 3
-      },
-      {
-        "name": "stale-findings",
-        "description": "Findings likely already fixed in prior commits (FileChange consolidation, Logger DI fix). Verify with rescan then resolve.",
-        "item_count": 3
-      },
-      {
-        "name": "barrel-hygiene",
-        "description": "Complete barrel exports in shared/ and vcs/, fix all cross-module import bypasses",
-        "item_count": 6
-      },
-      {
-        "name": "type-dedup",
-        "description": "Eliminate duplicate types, functions, and logic across codebase",
-        "item_count": 7
-      },
-      {
-        "name": "stale-docs",
-        "description": "Fix stale docstrings and JSDoc that contradict implementation",
-        "item_count": 4
-      },
-      {
-        "name": "param-sprawl",
-        "description": "Reduce positional parameter counts by grouping into context objects",
-        "item_count": 3
-      },
-      {
-        "name": "error-gaps",
-        "description": "Fix inconsistent error handling: swallowed errors, string matching, missing try/catch",
-        "item_count": 3
-      },
-      {
-        "name": "type-narrowing",
-        "description": "Strengthen type safety: link validation arrays to types, narrow string fields, remove double casts",
-        "item_count": 3
-      },
-      {
-        "name": "code-cleanup",
-        "description": "Fix logic issues: redundant checks, unreachable code, misplaced utilities",
-        "item_count": 3
-      },
-      {
-        "name": "auto/stale-review",
-        "description": "Re-review 12 stale subjective dimensions",
-        "item_count": 0
-      },
-      {
-        "name": "api-consolidation",
-        "description": "Move misplaced utilities, add type overloads, narrow action parameter types \u2014 improves type_safety, api_surface_coherence",
-        "item_count": 3
-      },
-      {
-        "name": "design-coherence-cleanup",
-        "description": "Complete round 3 consolidation: use countActions utility, use formatCountEntry, single-pass countActions \u2014 improves design_coherence, logic_clarity",
-        "item_count": 3
-      },
-      {
-        "name": "module-boundary-fixes",
-        "description": "Fix vcs barrel exports, remove dead shared barrel, share PR strategy instance \u2014 improves cross_module_architecture, mid_level_elegance",
-        "item_count": 3
-      },
-      {
-        "name": "quick-wins",
-        "description": "Trivial fixes: simplify boolean return, remove formulaic comments, extract leaf renderer, defer sync-command singletons \u2014 improves logic_clarity, ai_generated_debt, low_level_elegance, initialization_coupling",
-        "item_count": 4
-      },
-      {
-        "name": "test-coverage",
-        "description": "Write unit tests for gh-api-utils.ts pure functions and resolveGitHubToken branching \u2014 improves test_strategy",
-        "item_count": 2
-      },
-      {
-        "name": "quick-cleanups",
-        "description": "Single-edit cleanups: remove comments, fix param name, use existing helpers",
-        "item_count": 5
-      },
-      {
-        "name": "import-cleanup",
-        "description": "Fix import paths to use canonical locations and barrel exports",
-        "item_count": 2
-      },
-      {
-        "name": "consolidate-utilities",
-        "description": "Reuse existing shared utilities instead of reimplementing",
-        "item_count": 4
-      },
-      {
-        "name": "type-safety-fixes",
-        "description": "Add function overloads and remove unsafe casts",
-        "item_count": 2
-      },
-      {
-        "name": "error-handling",
-        "description": "Consistent error wrapping across PR strategies",
-        "item_count": 1
-      },
-      {
-        "name": "naming-alignment",
-        "description": "Align naming conventions across codebase",
-        "item_count": 2
-      },
-      {
-        "name": "mid-level-refactor",
-        "description": "Reduce redundant IO and implicit mutation contracts",
-        "item_count": 2
-      },
-      {
-        "name": "api-refactor",
-        "description": "Align constructor signatures with options bag pattern",
-        "item_count": 1
-      },
-      {
-        "name": "output-structural-debt",
-        "description": "Fix import cycle between sync-report.ts and unified-summary.ts, delete dead output barrel",
-        "item_count": 3
-      },
-      {
-        "name": "output-dead-code",
-        "description": "Remove dead old summary API (formatSummary/writeSummary/SummaryData) superseded by unified-summary",
-        "item_count": 1
-      },
-      {
-        "name": "quick-consistency-fixes",
-        "description": "Standalone 1-2 file fixes: restating comments, options bag, error wrapping, type alias usage",
-        "item_count": 5
-      },
-      {
-        "name": "cli-cleanup",
-        "description": "Fix module-level singletons and add unit tests for CLI entry point",
-        "item_count": 2
-      },
-      {
-        "name": "dead-summary-cleanup",
-        "description": "Remove dead old summary API code: delete summary-utils.ts, remove formatSummary/writeSummary/SummaryData and all private helpers from github-summary.ts, update tests",
-        "item_count": 2
-      },
-      {
-        "name": "type-safety-docs",
-        "description": "Add documenting comment to withGitHubGuards in base-processor.ts explaining the TResult cast invariant",
-        "item_count": 2
-      },
-      {
-        "name": "output-renderSyncLines-fix",
-        "description": "Move renderSyncLines from unified-summary.ts to sync-report.ts, fixing dependency inversion",
-        "item_count": 2
-      },
-      {
-        "name": "lifecycle-cleanup",
-        "description": "Extract shared flag-building helper and standardize polling loop idiom in github-lifecycle-provider.ts",
-        "item_count": 2
-      },
-      {
-        "name": "comment-cleanup",
-        "description": "Fix mispositioned/restating comments: orphan docblock, type-labeling comments, missing loop explanation",
-        "item_count": 3
-      },
-      {
-        "name": "design-fixes",
-        "description": "Use countActions utility in settings-report-builder.ts and refactor ruleset update params",
-        "item_count": 2
-      },
-      {
-        "name": "init-fix",
-        "description": "Defer package.json readFileSync from module scope to lazy callback in program.ts",
-        "item_count": 1
-      },
-      {
-        "name": "auto/security",
-        "description": "Fix 2 security issues",
-        "item_count": 0
-      },
-      {
-        "name": "auto/under-target-review",
-        "description": "Consider re-reviewing 6 dimensions under target score",
-        "item_count": 0
-      }
-    ],
-    "total_ordered": 11,
-    "total_skipped": 3,
-    "plan_overrides_narrative": true
-  },
-  "overall_score": 93.0,
-  "objective_score": 97.2,
-  "strict_score": 91.7,
-  "scorecard_dimensions": [
-    {
-      "name": "File health",
-      "score": 96.0,
-      "strict": 96.0,
-      "checks": 105,
-      "failing": 6,
-      "tier": 3,
-      "subjective": false
-    },
-    {
-      "name": "AI generated debt",
-      "score": 93.5,
-      "strict": 93.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "ai_generated_debt"
-      ]
-    },
-    {
-      "name": "API coherence",
-      "score": 93.5,
-      "strict": 93.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "api_surface_coherence"
-      ]
-    },
-    {
-      "name": "Abstraction fit",
-      "score": 91.5,
-      "strict": 91.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "abstraction_fitness"
-      ]
-    },
-    {
-      "name": "Auth consistency",
-      "score": 95.0,
-      "strict": 95.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "authorization_consistency"
-      ]
-    },
-    {
-      "name": "Code quality",
-      "score": 96.4,
-      "strict": 92.8,
-      "checks": 613,
-      "failing": 43,
-      "tier": 3,
-      "subjective": false
-    },
-    {
-      "name": "Convention drift",
-      "score": 94.0,
-      "strict": 94.0,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "convention_outlier"
-      ]
-    },
-    {
-      "name": "Cross-module arch",
-      "score": 91.5,
-      "strict": 91.5,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "cross_module_architecture"
-      ]
-    },
-    {
-      "name": "Design coherence",
-      "score": 90.5,
-      "strict": 90.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "design_coherence"
-      ]
-    },
-    {
-      "name": "Duplication",
-      "score": 96.3,
-      "strict": 82.0,
-      "checks": 266,
-      "failing": 14,
-      "tier": 3,
-      "subjective": false
-    },
-    {
-      "name": "Elegance",
-      "score": 90.7,
-      "strict": 90.7,
-      "checks": 30,
-      "failing": 3,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "high_level_elegance",
-        "low_level_elegance",
-        "mid_level_elegance"
-      ]
-    },
-    {
-      "name": "Error consistency",
-      "score": 92.3,
-      "strict": 92.3,
-      "checks": 10,
-      "failing": 2,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "error_consistency"
-      ]
-    },
-    {
-      "name": "Init coupling",
-      "score": 93.0,
-      "strict": 93.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "initialization_coupling"
-      ]
-    },
-    {
-      "name": "Naming quality",
-      "score": 92.0,
-      "strict": 92.0,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "naming_quality"
-      ]
-    },
-    {
-      "name": "Security",
-      "score": 99.5,
-      "strict": 94.5,
-      "checks": 210,
-      "failing": 2,
-      "tier": 4,
-      "subjective": false
-    },
-    {
-      "name": "Stale migration",
-      "score": 97.0,
-      "strict": 97.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "incomplete_migration"
-      ]
-    },
-    {
-      "name": "Structure nav",
-      "score": 92.0,
-      "strict": 92.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "package_organization"
-      ]
-    },
-    {
-      "name": "Test health",
-      "score": 97.8,
-      "strict": 93.0,
-      "checks": 1052,
-      "failing": 2,
-      "tier": 4,
-      "subjective": false
-    },
-    {
-      "name": "Test strategy",
-      "score": 91.5,
-      "strict": 91.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "test_strategy"
-      ]
-    },
-    {
-      "name": "Type safety",
-      "score": 91.5,
-      "strict": 91.5,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "type_safety"
-      ]
-    }
-  ],
-  "subjective_measures": [
-    {
-      "name": "AI generated debt",
-      "score": 93.5,
-      "strict": 93.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "ai_generated_debt"
-      ]
-    },
-    {
-      "name": "API coherence",
-      "score": 93.5,
-      "strict": 93.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "api_surface_coherence"
-      ]
-    },
-    {
-      "name": "Abstraction fit",
-      "score": 91.5,
-      "strict": 91.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "abstraction_fitness"
-      ]
-    },
-    {
-      "name": "Auth consistency",
-      "score": 95.0,
-      "strict": 95.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "authorization_consistency"
-      ]
-    },
-    {
-      "name": "Convention drift",
-      "score": 94.0,
-      "strict": 94.0,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "convention_outlier"
-      ]
-    },
-    {
-      "name": "Cross-module arch",
-      "score": 91.5,
-      "strict": 91.5,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "cross_module_architecture"
-      ]
-    },
-    {
-      "name": "Design coherence",
-      "score": 90.5,
-      "strict": 90.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "design_coherence"
-      ]
-    },
-    {
-      "name": "Elegance",
-      "score": 90.7,
-      "strict": 90.7,
-      "checks": 30,
-      "failing": 3,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "high_level_elegance",
-        "low_level_elegance",
-        "mid_level_elegance"
-      ]
-    },
-    {
-      "name": "Error consistency",
-      "score": 92.3,
-      "strict": 92.3,
-      "checks": 10,
-      "failing": 2,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "error_consistency"
-      ]
-    },
-    {
-      "name": "Init coupling",
-      "score": 93.0,
-      "strict": 93.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "initialization_coupling"
-      ]
-    },
-    {
-      "name": "Naming quality",
-      "score": 92.0,
-      "strict": 92.0,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "naming_quality"
-      ]
-    },
-    {
-      "name": "Stale migration",
-      "score": 97.0,
-      "strict": 97.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "incomplete_migration"
-      ]
-    },
-    {
-      "name": "Structure nav",
-      "score": 92.0,
-      "strict": 92.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "package_organization"
-      ]
-    },
-    {
-      "name": "Test strategy",
-      "score": 91.5,
-      "strict": 91.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "test_strategy"
-      ]
-    },
-    {
-      "name": "Type safety",
-      "score": 91.5,
-      "strict": 91.5,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "subjective": true,
-      "placeholder": false,
-      "cli_keys": [
-        "type_safety"
-      ]
-    }
-  ],
   "config": {
     "target_strict_score": 100,
     "review_max_age_days": 30,

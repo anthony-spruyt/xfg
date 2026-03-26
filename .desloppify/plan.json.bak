@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-23T02:21:38+00:00",
+  "updated": "2026-03-26T13:00:19+00:00",
   "queue_order": [
     "workflow::communicate-score",
     "workflow::create-plan",
@@ -6710,7 +6710,12 @@
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {},
+  "plan_start_scores": {
+    "strict": 91.7,
+    "overall": 93.0,
+    "objective": 97.2,
+    "verified": 95.7
+  },
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -24344,6 +24349,40 @@
         "kind": "false_positive",
         "reason": null
       }
+    },
+    {
+      "timestamp": "2026-03-26T13:00:19+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-26T13:00:19+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-26T13:00:19+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 177
+      }
     }
   ],
   "epic_triage_meta": {
@@ -24808,6 +24847,8 @@
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 176,
-    "lifecycle_phase": "workflow_postflight"
-  }
+    "lifecycle_phase": "plan",
+    "postflight_scan_completed_at_scan_count": 177
+  },
+  "scan_count_at_plan_start": 177
 }
