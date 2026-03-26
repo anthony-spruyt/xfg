@@ -980,6 +980,75 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#conditional-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conditional Groups
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conditional Groups">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allof-intersection" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf — Intersection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anyof-union" class="md-nav__link">
+    <span class="md-ellipsis">
+      anyOf — Union
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#combined-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Combined Conditions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      Merge Order
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-parity-with-regular-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Full Parity with Regular Groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restrictions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Restrictions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2326,6 +2395,75 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#conditional-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conditional Groups
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conditional Groups">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#allof-intersection" class="md-nav__link">
+    <span class="md-ellipsis">
+      allOf — Intersection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anyof-union" class="md-nav__link">
+    <span class="md-ellipsis">
+      anyOf — Union
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#combined-conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Combined Conditions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      Merge Order
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-parity-with-regular-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Full Parity with Regular Groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restrictions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Restrictions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2554,6 +2692,69 @@
 </span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">    </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">labeled</span><span class="p p-Indicator">]</span>
 </span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">    </span><span class="c1"># PR options: merge: auto, labels: [from-group]</span>
 </span></code></pre></div>
+<h2 id="conditional-groups">Conditional Groups<a class="headerlink" href="#conditional-groups" title="Permanent link">&para;</a></h2>
+<p>Conditional groups activate automatically based on which groups a repo has.
+They are defined in a top-level <code>conditionalGroups</code> array, separate from
+regular groups.</p>
+<h3 id="allof-intersection"><code>allOf</code> — Intersection<a class="headerlink" href="#allof-intersection" title="Permanent link">&para;</a></h3>
+<p>Include config only when <strong>all</strong> listed groups are present:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">conditionalGroups</span><span class="p">:</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">when</span><span class="p">:</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">      </span><span class="nt">allOf</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">terraform</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">renovate</span><span class="p p-Indicator">]</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">      </span><span class="nt">labels</span><span class="p">:</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">        </span><span class="s">&quot;renovate/terraform&quot;</span><span class="p p-Indicator">:</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">          </span><span class="nt">color</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#ededed&quot;</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">          </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+</span></code></pre></div>
+<p>The <code>renovate/terraform</code> label is only added to repos that have both
+<code>terraform</code> and <code>renovate</code> in their <code>groups</code> array.</p>
+<h3 id="anyof-union"><code>anyOf</code> — Union<a class="headerlink" href="#anyof-union" title="Permanent link">&para;</a></h3>
+<p>Include config when <strong>any</strong> listed group is present:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">conditionalGroups</span><span class="p">:</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">when</span><span class="p">:</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">      </span><span class="nt">anyOf</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">github-ci</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">github-trivy</span><span class="p p-Indicator">]</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="nt">files</span><span class="p">:</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">      </span><span class="nt">.github/actionlint.yaml</span><span class="p">:</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">        </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;@templates/.github/actionlint.yaml&quot;</span>
+</span></code></pre></div>
+<h3 id="combined-conditions">Combined Conditions<a class="headerlink" href="#combined-conditions" title="Permanent link">&para;</a></h3>
+<p>Both <code>allOf</code> and <code>anyOf</code> can be used together — both must be satisfied:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">conditionalGroups</span><span class="p">:</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">when</span><span class="p">:</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">      </span><span class="nt">allOf</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">renovate</span><span class="p p-Indicator">]</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">      </span><span class="nt">anyOf</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">go</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">terraform</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">typescript</span><span class="p p-Indicator">]</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">      </span><span class="nt">labels</span><span class="p">:</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">        </span><span class="s">&quot;renovate/language&quot;</span><span class="p p-Indicator">:</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">          </span><span class="nt">color</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#ededed&quot;</span>
+</span></code></pre></div>
+<p>This matches repos that have <code>renovate</code> <strong>and</strong> at least one of <code>go</code>,
+<code>terraform</code>, or <code>typescript</code>.</p>
+<h3 id="merge-order">Merge Order<a class="headerlink" href="#merge-order" title="Permanent link">&para;</a></h3>
+<p>Conditional groups merge <strong>after</strong> explicit groups and <strong>before</strong> repo overrides:</p>
+<ol>
+<li><strong>Root files/settings</strong> — base layer</li>
+<li><strong>Explicit group layers</strong> — applied left-to-right</li>
+<li><strong>Conditional group layers</strong> — applied in array order</li>
+<li><strong>Repo overrides</strong> — final layer</li>
+</ol>
+<p>Later conditional groups override earlier ones when they conflict.</p>
+<h3 id="full-parity-with-regular-groups">Full Parity with Regular Groups<a class="headerlink" href="#full-parity-with-regular-groups" title="Permanent link">&para;</a></h3>
+<p>Conditional groups support the same capabilities as regular groups:</p>
+<ul>
+<li><code>files</code> with <code>inherit: false</code>, <code>override: true</code>, <code>file: false</code></li>
+<li><code>prOptions</code> for PR merge settings</li>
+<li><code>settings</code> for rulesets, labels, and repo settings</li>
+<li><code>inherit: false</code> on settings sub-sections</li>
+</ul>
+<h3 id="restrictions">Restrictions<a class="headerlink" href="#restrictions" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Group names in <code>allOf</code>/<code>anyOf</code> must reference groups defined in
+  the <code>groups</code> map</li>
+<li>Conditional groups cannot be listed in a repo's <code>groups</code> array</li>
+<li>Conditional groups cannot reference other conditional groups</li>
+</ul>
 
 
 

@@ -1889,6 +1889,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#conditional-group-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conditional Group Config
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#repo-config" class="md-nav__link">
     <span class="md-ellipsis">
       Repo Config
@@ -2265,6 +2274,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#conditional-group-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conditional Group Config
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#repo-config" class="md-nav__link">
     <span class="md-ellipsis">
       Repo Config
@@ -2393,6 +2411,12 @@
 <td>Named config groups referenced by repos</td>
 </tr>
 <tr>
+<td><code>conditionalGroups</code></td>
+<td><code>array</code></td>
+<td>*</td>
+<td>Groups that activate based on repo group membership</td>
+</tr>
+<tr>
 <td><code>repos</code></td>
 <td><code>array</code></td>
 <td>Yes</td>
@@ -2432,7 +2456,7 @@
 </table>
 <div class="admonition note">
 <p class="admonition-title">files/settings/groups requirement</p>
-<p>At least one of <code>files</code>, <code>settings</code>, or <code>groups</code> must be present. The <code>sync</code> command requires files defined in root <code>files</code> or in at least one group. The <code>settings</code> command requires <code>settings</code> at root, repo, or group level.</p>
+<p>At least one of <code>files</code>, <code>settings</code>, <code>groups</code>, or <code>conditionalGroups</code> must be present. The <code>sync</code> command requires files defined in root <code>files</code>, in a group, or in a conditional group. The <code>settings</code> command requires <code>settings</code> at root, repo, group, or conditional group level.</p>
 </div>
 <h3 id="file-config">File Config<a class="headerlink" href="#file-config" title="Permanent link">&para;</a></h3>
 <table>
@@ -2533,6 +2557,69 @@
 </tbody>
 </table>
 <p>Group files support <code>inherit: false</code> (discard accumulated files), <code>file: false</code> (remove a file), and full file config or override objects.</p>
+<h3 id="conditional-group-config">Conditional Group Config<a class="headerlink" href="#conditional-group-config" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>when</code></td>
+<td><code>object</code></td>
+<td>Yes</td>
+<td>Condition that determines when this group activates</td>
+</tr>
+<tr>
+<td><code>files</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Files defined or overridden (same capabilities as groups)</td>
+</tr>
+<tr>
+<td><code>prOptions</code></td>
+<td><code>PROptions</code></td>
+<td>No</td>
+<td>PR options for matching repos</td>
+</tr>
+<tr>
+<td><code>settings</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>Settings for matching repos (supports <code>inherit</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>when</code> clause:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>allOf</code></td>
+<td><code>string[]</code></td>
+<td>*</td>
+<td>All listed groups must be present on the repo</td>
+</tr>
+<tr>
+<td><code>anyOf</code></td>
+<td><code>string[]</code></td>
+<td>*</td>
+<td>At least one listed group must be present</td>
+</tr>
+</tbody>
+</table>
+<p>At least one of <code>allOf</code> or <code>anyOf</code> is required. When both are specified, both conditions must be satisfied. See <a href="../../configuration/groups/#conditional-groups">Groups — Conditional Groups</a>.</p>
 <h3 id="repo-config">Repo Config<a class="headerlink" href="#repo-config" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -2712,7 +2799,7 @@
 <li>File path security (no path traversal in file references)</li>
 </ul>
 <h3 id="config-requirements">Config Requirements<a class="headerlink" href="#config-requirements" title="Permanent link">&para;</a></h3>
-<p>The <code>xfg sync</code> command accepts configs with files, settings, or both. At least one of <code>files</code>, <code>settings</code>, or <code>groups</code> must be present.</p>
+<p>The <code>xfg sync</code> command accepts configs with files, settings, or both. At least one of <code>files</code>, <code>settings</code>, <code>groups</code>, or <code>conditionalGroups</code> must be present.</p>
 
 
 
