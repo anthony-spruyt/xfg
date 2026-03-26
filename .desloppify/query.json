@@ -12,16 +12,16 @@
   "noise_budget": 10,
   "noise_global_budget": 0,
   "hidden_by_detector": {
-    "smells": 78,
+    "smells": 77,
     "exports": 63,
     "structural": 31
   },
-  "hidden_total": 172,
+  "hidden_total": 171,
   "diff": {
     "new": 0,
-    "auto_resolved": 70,
+    "auto_resolved": 71,
     "reopened": 5,
-    "total_current": 139,
+    "total_current": 138,
     "suspect_detectors": [
       "review",
       "signature"
@@ -46,7 +46,7 @@
         "status": "open",
         "note": "Reopened (\u00d75) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-26T22:40:10+00:00",
+        "last_seen": "2026-03-26T22:47:10+00:00",
         "resolved_at": null,
         "reopen_count": 5,
         "lang": "typescript",
@@ -75,7 +75,7 @@
         "status": "open",
         "note": "Reopened (\u00d711) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-26T22:40:10+00:00",
+        "last_seen": "2026-03-26T22:47:10+00:00",
         "resolved_at": null,
         "reopen_count": 11,
         "zone": "production",
@@ -118,7 +118,7 @@
         "status": "open",
         "note": "Reopened (\u00d711) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-26T22:40:10+00:00",
+        "last_seen": "2026-03-26T22:47:10+00:00",
         "resolved_at": null,
         "reopen_count": 11,
         "zone": "production",
@@ -161,7 +161,7 @@
         "status": "open",
         "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-04T00:19:16+00:00",
-        "last_seen": "2026-03-26T22:40:10+00:00",
+        "last_seen": "2026-03-26T22:47:10+00:00",
         "resolved_at": null,
         "reopen_count": 3,
         "lang": "typescript",
@@ -193,7 +193,7 @@
         "status": "open",
         "note": "Reopened (\u00d77) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-05T01:16:56+00:00",
-        "last_seen": "2026-03-26T22:40:10+00:00",
+        "last_seen": "2026-03-26T22:47:10+00:00",
         "resolved_at": null,
         "reopen_count": 7,
         "lang": "typescript",
@@ -239,7 +239,7 @@
         "status": "open",
         "note": "Reopened (\u00d74) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-05T02:29:11+00:00",
-        "last_seen": "2026-03-26T22:40:10+00:00",
+        "last_seen": "2026-03-26T22:47:10+00:00",
         "resolved_at": null,
         "reopen_count": 4,
         "lang": "typescript",
@@ -267,9 +267,135 @@
         "status": "open",
         "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-06T08:52:20+00:00",
-        "last_seen": "2026-03-26T22:40:10+00:00",
+        "last_seen": "2026-03-26T22:47:10+00:00",
         "resolved_at": null,
         "reopen_count": 3,
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan"
+      },
+      {
+        "id": "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::2b336b6adad3c63a",
+        "detector": "boilerplate_duplication",
+        "file": "src/vcs/azure-pr-strategy.ts",
+        "tier": 3,
+        "confidence": "medium",
+        "summary": "Boilerplate block repeated across 2 files (window 19 lines): src/vcs/azure-pr-strategy.ts:142, src/vcs/gitlab-pr-strategy.ts:181",
+        "detail": {
+          "distinct_files": 2,
+          "window_size": 19,
+          "locations": [
+            {
+              "file": "src/vcs/azure-pr-strategy.ts",
+              "line": 142
+            },
+            {
+              "file": "src/vcs/gitlab-pr-strategy.ts",
+              "line": 181
+            }
+          ],
+          "sample": [
+            "const message = toErrorMessage(error);",
+            "      this.log?.warn(`Failed to delete branch ${branchName}: ${message}`);",
+            "    }",
+            ""
+          ]
+        },
+        "status": "false_positive",
+        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-06T08:53:44+00:00",
+        "last_seen": "2026-03-26T22:47:10+00:00",
+        "resolved_at": null,
+        "reopen_count": 2,
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan"
+      },
+      {
+        "id": "boilerplate_duplication::src/shared/repo-detector.ts::467d6fd28ff1b3bb",
+        "detector": "boilerplate_duplication",
+        "file": "src/shared/repo-detector.ts",
+        "tier": 3,
+        "confidence": "medium",
+        "summary": "Boilerplate block repeated across 2 files (window 8 lines): src/shared/repo-detector.ts:327, src/shared/xfg-template.ts:75",
+        "detail": {
+          "distinct_files": 2,
+          "window_size": 8,
+          "locations": [
+            {
+              "file": "src/shared/repo-detector.ts",
+              "line": 327
+            },
+            {
+              "file": "src/shared/xfg-template.ts",
+              "line": 75
+            }
+          ],
+          "sample": [
+            "if (repoInfo.type === \"azure-devops\") {",
+            "    return `${repoInfo.organization}/${repoInfo.project}/${repoInfo.repo}`;",
+            "  }",
+            "  if (repoInfo.type === \"gitlab\") {"
+          ]
+        },
+        "status": "false_positive",
+        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-06T08:53:44+00:00",
+        "last_seen": "2026-03-26T22:47:10+00:00",
+        "resolved_at": null,
+        "reopen_count": 2,
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null,
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan"
+      },
+      {
+        "id": "boilerplate_duplication::src/output/settings-report.ts::f864c821dcb23209",
+        "detector": "boilerplate_duplication",
+        "file": "src/output/settings-report.ts",
+        "tier": 3,
+        "confidence": "medium",
+        "summary": "Boilerplate block repeated across 2 files (window 21 lines): src/output/settings-report.ts:323, src/output/sync-report.ts:62",
+        "detail": {
+          "distinct_files": 2,
+          "window_size": 21,
+          "locations": [
+            {
+              "file": "src/output/settings-report.ts",
+              "line": 323
+            },
+            {
+              "file": "src/output/sync-report.ts",
+              "line": 62
+            }
+          ],
+          "sample": [
+            ",",
+            "  dryRun: boolean",
+            "): string {",
+            "  const lines: string[] = [];"
+          ]
+        },
+        "status": "false_positive",
+        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-06T08:53:44+00:00",
+        "last_seen": "2026-03-26T22:47:10+00:00",
+        "resolved_at": null,
+        "reopen_count": 2,
         "lang": "typescript",
         "zone": "production",
         "suppressed": false,
@@ -316,22 +442,106 @@
         "suppressed": false,
         "suppressed_at": null,
         "suppression_pattern": null
+      },
+      {
+        "id": "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::884092945baec5ca",
+        "detector": "boilerplate_duplication",
+        "file": "src/vcs/azure-pr-strategy.ts",
+        "tier": 3,
+        "confidence": "medium",
+        "summary": "Boilerplate block repeated across 2 files (window 12 lines): src/vcs/azure-pr-strategy.ts:162, src/vcs/gitlab-pr-strategy.ts:201",
+        "detail": {
+          "distinct_files": 2,
+          "window_size": 12,
+          "locations": [
+            {
+              "file": "src/vcs/azure-pr-strategy.ts",
+              "line": 162
+            },
+            {
+              "file": "src/vcs/gitlab-pr-strategy.ts",
+              "line": 201
+            }
+          ],
+          "sample": [
+            ");",
+            "",
+            "    const descFile = join(workDir, this.bodyFilePath);",
+            "    try {"
+          ]
+        },
+        "status": "false_positive",
+        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-19T12:58:41+00:00",
+        "last_seen": "2026-03-26T22:47:10+00:00",
+        "resolved_at": null,
+        "reopen_count": 2,
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan",
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null
+      },
+      {
+        "id": "boilerplate_duplication::src/output/settings-report.ts::f65536bfde59e29e",
+        "detector": "boilerplate_duplication",
+        "file": "src/output/settings-report.ts",
+        "tier": 3,
+        "confidence": "medium",
+        "summary": "Boilerplate block repeated across 2 files (window 12 lines): src/output/settings-report.ts:355, src/output/sync-report.ts:89",
+        "detail": {
+          "distinct_files": 2,
+          "window_size": 12,
+          "locations": [
+            {
+              "file": "src/output/settings-report.ts",
+              "line": 355
+            },
+            {
+              "file": "src/output/sync-report.ts",
+              "line": 89
+            }
+          ],
+          "sample": [
+            "(repo, diffLines);",
+            "",
+            "    if (diffLines.length > 0) {",
+            "      lines.push(\"```diff\");"
+          ]
+        },
+        "status": "false_positive",
+        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "first_seen": "2026-03-26T13:00:19+00:00",
+        "last_seen": "2026-03-26T22:47:10+00:00",
+        "resolved_at": null,
+        "reopen_count": 2,
+        "work_item_kind": "mechanical_defect",
+        "issue_kind": "mechanical_defect",
+        "origin": "scan",
+        "lang": "typescript",
+        "zone": "production",
+        "suppressed": false,
+        "suppressed_at": null,
+        "suppression_pattern": null
       }
     ],
     "skipped_other_lang": 0,
     "resolved_out_of_scope": 0,
     "ignored": 0,
     "ignore_patterns": 1,
-    "raw_issues": 139,
+    "raw_issues": 138,
     "suppressed_pct": 0.0
   },
   "stats": {
     "total": 1524,
     "auto_resolved": 1091,
     "deferred": 0,
-    "false_positive": 58,
+    "false_positive": 59,
     "fixed": 197,
-    "open": 176,
+    "open": 175,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -356,9 +566,9 @@
       "3": {
         "auto_resolved": 644,
         "deferred": 0,
-        "false_positive": 27,
+        "false_positive": 28,
         "fixed": 14,
-        "open": 140,
+        "open": 139,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -374,12 +584,12 @@
     }
   },
   "open_scope": {
-    "in_scope": 176,
+    "in_scope": 175,
     "out_of_scope": 0,
-    "global": 176
+    "global": 175
   },
   "warnings": [
-    "\u27f3 8 chronic reopeners \u2014 run `desloppify show --chronic` to see them."
+    "\u27f3 13 chronic reopeners \u2014 run `desloppify show --chronic` to see them."
   ],
   "dimension_scores": {
     "Code quality": {
@@ -387,7 +597,7 @@
       "strict": 92.9,
       "verified_strict_score": 96.2,
       "checks": 613,
-      "failing": 42,
+      "failing": 41,
       "tier": 3,
       "detectors": {
         "unused": {
@@ -405,7 +615,7 @@
         "smells": {
           "potential": 108,
           "pass_rate": 0.8370370370370371,
-          "failing": 36,
+          "failing": 35,
           "weighted_failures": 17.599999999999998
         },
         "orphaned": {
@@ -1361,12 +1571,12 @@
         }
       },
       "warnings": [],
-      "updated_at": "2026-03-26T22:40:10+00:00"
+      "updated_at": "2026-03-26T22:47:10+00:00"
     }
   },
   "zone_distribution": {
     "production": 105,
-    "test": 104
+    "test": 105
   },
   "narrative": {
     "phase": "stagnation",
@@ -1635,8 +1845,8 @@
       {
         "type": "manual_fix",
         "detector": "smells",
-        "count": 88,
-        "description": "88 smells issues \u2014 inspect with `desloppify next` and fix manually",
+        "count": 87,
+        "description": "87 smells issues \u2014 inspect with `desloppify next` and fix manually",
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
@@ -1684,8 +1894,8 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 1,
-        "total_count": 182,
-        "coverage": 0.005,
+        "total_count": 181,
+        "coverage": 0.006,
         "impact_ratio": 0.0,
         "recommendation": "none"
       },
@@ -1803,13 +2013,13 @@
         {
           "name": "dead-useeffect",
           "detector": "smells",
-          "open_count": 88,
+          "open_count": 87,
           "command": "desloppify autofix dead-useeffect --dry-run"
         },
         {
           "name": "empty-if-chain",
           "detector": "smells",
-          "open_count": 88,
+          "open_count": 87,
           "command": "desloppify autofix empty-if-chain --dry-run"
         }
       ],
@@ -1875,7 +2085,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 3,
-      "report_scores": 130,
+      "report_scores": 131,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
@@ -1928,8 +2138,8 @@
   "plan": {
     "active": true,
     "focus": null,
-    "total_ordered": 5,
-    "total_skipped": 20,
+    "total_ordered": 6,
+    "total_skipped": 21,
     "plan_overrides_narrative": true
   }
 }
