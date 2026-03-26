@@ -23,6 +23,11 @@
       "required": [
         "groups"
       ]
+    },
+    {
+      "required": [
+        "conditionalGroups"
+      ]
     }
   ],
   "properties": {
@@ -46,6 +51,13 @@
       "description": "Named configuration groups that repos can reference via 'groups: [...]'. Groups create a merge chain: root → group1 → group2 → repo overrides. Each group can define files, prOptions, and settings.",
       "additionalProperties": {
         "$ref": "#/definitions/groupConfig"
+      }
+    },
+    "conditionalGroups": {
+      "type": "array",
+      "description": "Conditional groups that activate based on which groups a repo has. Each entry has a 'when' clause (allOf/anyOf) and the same files/prOptions/settings as regular groups. Merges after explicit groups, before repo overrides.",
+      "items": {
+        "$ref": "#/definitions/conditionalGroupConfig"
       }
     },
     "repos": {
@@ -405,6 +417,82 @@
         "settings": {
           "$ref": "#/definitions/repoSettings",
           "description": "Settings for repos using this group. Supports inherit: false on rulesets/labels sub-sections. Merged between root and repo settings."
+        }
+      }
+    },
+    "conditionalGroupConfig": {
+      "type": "object",
+      "description": "Conditional group that activates based on which groups a repo has. Has a 'when' clause and the same files/prOptions/settings as regular groups.",
+      "required": [
+        "when"
+      ],
+      "properties": {
+        "when": {
+          "type": "object",
+          "description": "Condition that determines when this group activates. At least one of allOf or anyOf is required.",
+          "properties": {
+            "allOf": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "description": "All listed groups must be present in the repo's groups array"
+            },
+            "anyOf": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "description": "At least one listed group must be present in the repo's groups array"
+            }
+          },
+          "anyOf": [
+            {
+              "required": [
+                "allOf"
+              ]
+            },
+            {
+              "required": [
+                "anyOf"
+              ]
+            }
+          ]
+        },
+        "files": {
+          "type": "object",
+          "description": "Files defined or overridden by this conditional group. Same capabilities as regular group files.",
+          "properties": {
+            "inherit": {
+              "type": "boolean",
+              "description": "Set to false to discard all files accumulated from root, groups, and earlier conditional groups. Default: true"
+            }
+          },
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to remove this file"
+              },
+              {
+                "$ref": "#/definitions/fileConfig"
+              },
+              {
+                "$ref": "#/definitions/repoFileOverride"
+              }
+            ]
+          }
+        },
+        "prOptions": {
+          "$ref": "#/definitions/prOptions",
+          "description": "PR merge options for repos matching this condition."
+        },
+        "settings": {
+          "$ref": "#/definitions/repoSettings",
+          "description": "Settings for repos matching this condition. Supports inherit: false on rulesets/labels sub-sections."
         }
       }
     },
