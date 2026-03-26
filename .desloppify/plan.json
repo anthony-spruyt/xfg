@@ -1,8 +1,12 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-26T22:24:08+00:00",
+  "updated": "2026-03-26T22:26:44+00:00",
   "queue_order": [
+    "subjective::contract_coherence",
+    "subjective::design_coherence",
+    "subjective::error_consistency",
+    "subjective::logic_clarity",
     "review::.::holistic::mid_level_elegance::settings_result_as_cast_bridge",
     "review::.::holistic::mid_level_elegance::with_github_guards_as_tresult_cast",
     "review::.::holistic::design_coherence::triplicated_format_value",
@@ -6738,7 +6742,12 @@
     "review::.::holistic::design_coherence::triplicated_format_value",
     "review::.::holistic::logic_clarity::unnecessary_async_ghapiclient_call"
   ],
-  "plan_start_scores": {},
+  "plan_start_scores": {
+    "strict": 91.1,
+    "overall": 92.4,
+    "objective": 97.1,
+    "verified": 95.6
+  },
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -24905,6 +24914,177 @@
       "detail": {
         "scan_count": 179
       }
+    },
+    {
+      "timestamp": "2026-03-26T22:24:56+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/shared/gh-api-utils.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:24:56+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:25:07+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:25:13+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:25:30+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "exports::src/vcs/index.ts::INetworkGitOps"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:25:40+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/vcs/pr-strategy.ts::catch_return_default"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:26:13+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:26:20+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "test_coverage::src/cli/types.ts::transitive_only"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:26:26+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:26:29+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::processor_options_passthrough"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:26:44+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-26T22:26:44+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-26T22:26:44+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 180
+      }
     }
   ],
   "epic_triage_meta": {
@@ -25382,7 +25562,8 @@
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 178,
     "lifecycle_phase": "plan",
-    "postflight_scan_completed_at_scan_count": 179
+    "_subjective_migration_pruned": true,
+    "postflight_scan_completed_at_scan_count": 180
   },
-  "scan_count_at_plan_start": 177
+  "scan_count_at_plan_start": 180
 }

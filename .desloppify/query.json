@@ -4,24 +4,24 @@
   "objective_score": 97.1,
   "strict_score": 91.1,
   "verified_strict_score": 95.6,
-  "prev_overall_score": 92.4,
-  "prev_objective_score": 97.2,
-  "prev_strict_score": 91.1,
-  "prev_verified_strict_score": 95.7,
+  "prev_overall_score": 92.6,
+  "prev_objective_score": 97.7,
+  "prev_strict_score": 91.2,
+  "prev_verified_strict_score": 95.6,
   "profile": "full",
   "noise_budget": 10,
   "noise_global_budget": 0,
   "hidden_by_detector": {
-    "smells": 79,
-    "exports": 64,
+    "smells": 78,
+    "exports": 63,
     "structural": 31,
     "boilerplate_duplication": 4
   },
-  "hidden_total": 178,
+  "hidden_total": 176,
   "diff": {
-    "new": 1,
-    "auto_resolved": 59,
-    "reopened": 0,
+    "new": 0,
+    "auto_resolved": 61,
+    "reopened": 6,
     "total_current": 139,
     "suspect_detectors": [
       "review",
@@ -45,11 +45,11 @@
           ]
         },
         "status": "open",
-        "note": "Reopened (\u00d74) \u2014 reappeared in scan (was false_positive)",
+        "note": "Reopened (\u00d75) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-26T22:24:08+00:00",
+        "last_seen": "2026-03-26T22:26:43+00:00",
         "resolved_at": null,
-        "reopen_count": 4,
+        "reopen_count": 5,
         "lang": "typescript",
         "zone": "production",
         "suppressed": false,
@@ -74,11 +74,11 @@
           "remediation": "Move secret to environment variable or secrets manager"
         },
         "status": "open",
-        "note": "Reopened (\u00d710) \u2014 reappeared in scan (was false_positive)",
+        "note": "Reopened (\u00d711) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-26T22:24:08+00:00",
+        "last_seen": "2026-03-26T22:26:43+00:00",
         "resolved_at": null,
-        "reopen_count": 10,
+        "reopen_count": 11,
         "zone": "production",
         "lang": "typescript",
         "suppressed": false,
@@ -117,11 +117,11 @@
           "remediation": "Move secret to environment variable or secrets manager"
         },
         "status": "open",
-        "note": "Reopened (\u00d710) \u2014 reappeared in scan (was false_positive)",
+        "note": "Reopened (\u00d711) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-26T22:24:08+00:00",
+        "last_seen": "2026-03-26T22:26:43+00:00",
         "resolved_at": null,
-        "reopen_count": 10,
+        "reopen_count": 11,
         "zone": "production",
         "lang": "typescript",
         "suppressed": false,
@@ -160,41 +160,11 @@
           "loc_weight": 13.96424004376894
         },
         "status": "open",
-        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
+        "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-04T00:19:16+00:00",
-        "last_seen": "2026-03-26T22:24:08+00:00",
+        "last_seen": "2026-03-26T22:26:43+00:00",
         "resolved_at": null,
-        "reopen_count": 2,
-        "lang": "typescript",
-        "zone": "production",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "work_item_kind": "mechanical_defect",
-        "issue_kind": "mechanical_defect",
-        "origin": "scan"
-      },
-      {
-        "id": "smells::src/vcs/pr-strategy.ts::catch_return_default",
-        "detector": "smells",
-        "file": "src/vcs/pr-strategy.ts",
-        "tier": 2,
-        "confidence": "medium",
-        "summary": "1x Catch block returns default object (silent failure)",
-        "detail": {
-          "smell_id": "catch_return_default",
-          "severity": "high",
-          "count": 1,
-          "lines": [
-            49
-          ]
-        },
-        "status": "open",
-        "note": "Reopened (\u00d74) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-04T02:24:32+00:00",
-        "last_seen": "2026-03-22T09:29:09+00:00",
-        "resolved_at": null,
-        "reopen_count": 4,
+        "reopen_count": 3,
         "lang": "typescript",
         "zone": "production",
         "suppressed": false,
@@ -224,7 +194,7 @@
         "status": "open",
         "note": "Reopened (\u00d77) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-05T01:16:56+00:00",
-        "last_seen": "2026-03-26T22:24:08+00:00",
+        "last_seen": "2026-03-26T22:26:43+00:00",
         "resolved_at": null,
         "reopen_count": 7,
         "lang": "typescript",
@@ -268,11 +238,11 @@
           ]
         },
         "status": "open",
-        "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
+        "note": "Reopened (\u00d74) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-05T02:29:11+00:00",
-        "last_seen": "2026-03-26T22:24:08+00:00",
+        "last_seen": "2026-03-26T22:26:43+00:00",
         "resolved_at": null,
-        "reopen_count": 3,
+        "reopen_count": 4,
         "lang": "typescript",
         "zone": "production",
         "suppressed": false,
@@ -296,35 +266,9 @@
           "loc_weight": 9.433981132056603
         },
         "status": "open",
-        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-06T08:52:20+00:00",
-        "last_seen": "2026-03-26T22:24:08+00:00",
-        "resolved_at": null,
-        "reopen_count": 2,
-        "lang": "typescript",
-        "zone": "production",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "work_item_kind": "mechanical_defect",
-        "issue_kind": "mechanical_defect",
-        "origin": "scan"
-      },
-      {
-        "id": "exports::src/vcs/index.ts::INetworkGitOps",
-        "detector": "exports",
-        "file": "src/vcs/index.ts",
-        "tier": 2,
-        "confidence": "high",
-        "summary": "Dead export: INetworkGitOps",
-        "detail": {
-          "line": 97,
-          "kind": "type"
-        },
-        "status": "open",
         "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-06T13:26:39+00:00",
-        "last_seen": "2026-03-22T07:29:45+00:00",
+        "first_seen": "2026-03-06T08:52:20+00:00",
+        "last_seen": "2026-03-26T22:26:43+00:00",
         "resolved_at": null,
         "reopen_count": 3,
         "lang": "typescript",
@@ -335,44 +279,6 @@
         "work_item_kind": "mechanical_defect",
         "issue_kind": "mechanical_defect",
         "origin": "scan"
-      },
-      {
-        "id": "review::.::holistic::abstraction_fitness::processor_options_passthrough",
-        "detector": "review",
-        "file": ".",
-        "tier": 3,
-        "confidence": "low",
-        "summary": "ProcessorOptions passes unchanged through FileSyncStrategy to FileSyncOrchestrator",
-        "detail": {
-          "holistic": true,
-          "dimension": "abstraction_fitness",
-          "related_files": [
-            "src/sync/file-sync-strategy.ts",
-            "src/sync/file-sync-orchestrator.ts",
-            "src/sync/types.ts"
-          ],
-          "evidence": [
-            "FileSyncStrategy.execute receives ProcessorOptions (9 fields) and forwards it entirely to fileSyncOrchestrator.sync without accessing any field directly",
-            "FileSyncOrchestrator.sync only uses workDir, configId, dryRun, noDelete, and hasAppCredentials from the 9-field bag",
-            "SyncWorkflow.execute also receives and partially destructures the same ProcessorOptions before passing it to workStrategy.execute"
-          ],
-          "suggestion": "Consider narrowing the IWorkStrategy.execute and IFileSyncOrchestrator.sync signatures to accept only the fields they need (e.g. a FileSyncOptions pick type) instead of the full ProcessorOptions. However, weigh this against added type ceremony - the current approach is tolerable given the options bag is stable and well-typed.",
-          "reasoning": "",
-          "summary_hash": "279c1076"
-        },
-        "status": "open",
-        "note": "Reopened (\u00d72) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-18T10:25:46+00:00",
-        "last_seen": "2026-03-26T22:05:32+00:00",
-        "resolved_at": null,
-        "reopen_count": 2,
-        "work_item_kind": "review_defect",
-        "issue_kind": "review_defect",
-        "origin": "review_import",
-        "lang": "typescript",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null
       }
     ],
     "skipped_other_lang": 0,
@@ -386,9 +292,9 @@
     "total": 1522,
     "auto_resolved": 1091,
     "deferred": 0,
-    "false_positive": 42,
+    "false_positive": 45,
     "fixed": 193,
-    "open": 194,
+    "open": 191,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -404,18 +310,18 @@
       "2": {
         "auto_resolved": 364,
         "deferred": 0,
-        "false_positive": 28,
+        "false_positive": 30,
         "fixed": 92,
-        "open": 36,
+        "open": 34,
         "triaged_out": 0,
         "wontfix": 2
       },
       "3": {
         "auto_resolved": 644,
         "deferred": 0,
-        "false_positive": 13,
+        "false_positive": 14,
         "fixed": 14,
-        "open": 154,
+        "open": 153,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -431,20 +337,21 @@
     }
   },
   "open_scope": {
-    "in_scope": 194,
+    "in_scope": 191,
     "out_of_scope": 0,
-    "global": 194
+    "global": 191
   },
   "warnings": [
-    "\u27f3 10 chronic reopeners \u2014 run `desloppify show --chronic` to see them."
+    "6 issues reopened \u2014 was a previous fix reverted?",
+    "\u27f3 7 chronic reopeners \u2014 run `desloppify show --chronic` to see them."
   ],
   "dimension_scores": {
     "Code quality": {
-      "score": 96.4,
-      "strict": 92.8,
+      "score": 96.5,
+      "strict": 92.9,
       "verified_strict_score": 96.2,
       "checks": 613,
-      "failing": 43,
+      "failing": 42,
       "tier": 3,
       "detectors": {
         "unused": {
@@ -461,9 +368,9 @@
         },
         "smells": {
           "potential": 108,
-          "pass_rate": 0.8305555555555556,
-          "failing": 37,
-          "weighted_failures": 18.3
+          "pass_rate": 0.8370370370370371,
+          "failing": 36,
+          "weighted_failures": 17.599999999999998
         },
         "orphaned": {
           "potential": 105,
@@ -596,13 +503,13 @@
       "strict": 91.5,
       "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.915,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
@@ -1031,21 +938,21 @@
     "overall_score": 92.4,
     "mechanical_fraction": 0.25,
     "subjective_fraction": 0.75,
-    "mechanical_avg": 97.10891089108912,
+    "mechanical_avg": 97.12871287128714,
     "subjective_avg": 90.85772357723577,
     "entries": [
       {
         "name": "Code quality",
         "pool": "mechanical",
-        "score": 96.4,
+        "score": 96.5,
         "checks": 613.0,
         "sample_factor": 1.0,
         "configured_weight": 1.0,
         "effective_weight": 1.0,
         "pool_share": 0.19801980198019803,
         "overall_per_point": 0.04950495049504951,
-        "overall_contribution": 4.772277227722773,
-        "overall_drag": 0.17821782178217793
+        "overall_contribution": 4.7772277227722775,
+        "overall_drag": 0.17326732673267328
       },
       {
         "name": "Security",
@@ -1418,7 +1325,7 @@
         }
       },
       "warnings": [],
-      "updated_at": "2026-03-26T22:24:08+00:00"
+      "updated_at": "2026-03-26T22:26:43+00:00"
     }
   },
   "zone_distribution": {
@@ -1426,8 +1333,8 @@
     "test": 104
   },
   "narrative": {
-    "phase": "refinement",
-    "headline": "\u26a0 2 security issues \u2014 review before other cleanup.  (5 review work items \u2014 run `desloppify show review --status open`)",
+    "phase": "stagnation",
+    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Score plateaued at 91.1 for 5 scans. Duplication (82.1%) is where the breakthrough is. 2 wontfix items may also be worth revisiting. (4 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -1479,7 +1386,7 @@
       "stagnant_dimensions": [
         {
           "name": "Code quality",
-          "strict": 92.8,
+          "strict": 92.9,
           "stuck_scans": 5
         },
         {
@@ -1508,6 +1415,26 @@
           "stuck_scans": 5
         },
         {
+          "name": "Convention drift",
+          "strict": 94.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "High elegance",
+          "strict": 92.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Init coupling",
+          "strict": 93.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Logic clarity",
+          "strict": 93.5,
+          "stuck_scans": 5
+        },
+        {
           "name": "Naming quality",
           "strict": 92.0,
           "stuck_scans": 5
@@ -1515,6 +1442,11 @@
         {
           "name": "Structure nav",
           "strict": 92.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Test strategy",
+          "strict": 91.5,
           "stuck_scans": 5
         }
       ]
@@ -1637,8 +1569,8 @@
       {
         "type": "refactor",
         "detector": "review",
-        "count": 5,
-        "description": "5 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
+        "count": 4,
+        "description": "4 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
         "command": "desloppify show review --status open",
         "impact": 0.0,
         "dimension": "Unknown",
@@ -1648,8 +1580,8 @@
       {
         "type": "manual_fix",
         "detector": "smells",
-        "count": 89,
-        "description": "89 smells issues \u2014 inspect with `desloppify next` and fix manually",
+        "count": 88,
+        "description": "88 smells issues \u2014 inspect with `desloppify next` and fix manually",
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
@@ -1659,8 +1591,8 @@
       {
         "type": "manual_fix",
         "detector": "exports",
-        "count": 30,
-        "description": "30 exports work items \u2014 run `knip --fix` to remove dead exports",
+        "count": 29,
+        "description": "29 exports work items \u2014 run `knip --fix` to remove dead exports",
         "command": "desloppify show exports --status open",
         "impact": 0.0,
         "dimension": "Code quality",
@@ -1697,7 +1629,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 1,
-        "total_count": 204,
+        "total_count": 199,
         "coverage": 0.005,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -1732,7 +1664,7 @@
             10,
             12
           ],
-          "file_count": 91,
+          "file_count": 90,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -1750,7 +1682,7 @@
           "actions": [
             13
           ],
-          "file_count": 12,
+          "file_count": 11,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -1784,7 +1716,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 5 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 4 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -1809,13 +1741,13 @@
         {
           "name": "dead-useeffect",
           "detector": "smells",
-          "open_count": 89,
+          "open_count": 88,
           "command": "desloppify autofix dead-useeffect --dry-run"
         },
         {
           "name": "empty-if-chain",
           "detector": "smells",
-          "open_count": 89,
+          "open_count": 88,
           "command": "desloppify autofix empty-if-chain --dry-run"
         }
       ],
@@ -1848,7 +1780,7 @@
       "command": "desloppify autofix unused-imports --dry-run",
       "description": "1 unused issues \u2014 run `desloppify autofix unused-imports --dry-run` to preview, then apply"
     },
-    "why_now": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 5 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 4 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -1869,13 +1801,6 @@
     },
     "reminders": [
       {
-        "type": "fp_calibration_test_coverage_production",
-        "message": "50% of test_coverage issues in production zone are false positives. Consider reviewing detection rules for production files.",
-        "command": null,
-        "priority": 2,
-        "severity": "medium"
-      },
-      {
         "type": "report_scores",
         "message": "ALWAYS share ALL scores with the user: overall, objective, and strict, plus every dimension score (lenient + strict), including subjective dimensions. The goal is to maximize strict scores.",
         "command": null,
@@ -1888,7 +1813,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 3,
-      "report_scores": 127,
+      "report_scores": 128,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
@@ -1941,7 +1866,7 @@
   "plan": {
     "active": true,
     "focus": null,
-    "total_ordered": 4,
+    "total_ordered": 8,
     "total_skipped": 6,
     "plan_overrides_narrative": true
   }
