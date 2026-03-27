@@ -17,7 +17,8 @@ import type {
 } from "./types.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { ICommandExecutor } from "../shared/command-executor.js";
-import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
+import { toErrorMessage } from "../shared/type-guards.js";
+import { safeCleanup } from "../shared/cleanup-utils.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";

@@ -14,10 +14,7 @@ import {
   isGitHubRepo,
 } from "../shared/repo-detector.js";
 import type { GitHubRepoInfo } from "../shared/repo-detector.js";
-import {
-  sanitizeBranchName,
-  validateBranchName,
-} from "../shared/branch-utils.js";
+import { sanitizeBranchName, validateBranchName } from "./branch-utils.js";
 import { createTokenManager } from "../vcs/index.js";
 import { RepositoryProcessor } from "../sync/index.js";
 import {
