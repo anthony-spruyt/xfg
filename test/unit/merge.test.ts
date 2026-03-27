@@ -378,6 +378,8 @@ describe("stripMergeDirectives", () => {
   });
 
   test("handles objects with only directives", () => {
+    // Top-level directive keys ($arrayMerge, $values) are stripped individually,
+    // leaving {}. Nested directive objects are resolved to their $values array instead.
     const obj = { $arrayMerge: "append", $values: [1, 2] };
     const result = stripMergeDirectives(obj);
     assert.deepEqual(result, {});

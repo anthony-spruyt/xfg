@@ -2578,6 +2578,28 @@ describe("validateRawConfig", () => {
       );
     });
 
+    test("rejects $arrayMerge directive with extra properties in bypassActors", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              bypassActors: {
+                $arrayMerge: "append",
+                $values: [{ actorId: 1, actorType: "User" }],
+                extra: "key",
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /bypassActors must be an array or \$arrayMerge directive/
+      );
+    });
+
     test("rejects $arrayMerge directive with invalid $values items in bypassActors", () => {
       const config = createValidConfig({
         settings: {
