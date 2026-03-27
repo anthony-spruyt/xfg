@@ -1,9 +1,8 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-27T21:54:43+00:00",
+  "updated": "2026-03-27T21:54:44+00:00",
   "queue_order": [
-    "review::.::holistic::test_strategy::test_tmpdir_process_cwd",
     "workflow::create-plan",
     "subjective::abstraction_fitness",
     "subjective::ai_generated_debt",
@@ -7433,9 +7432,7 @@
       "candidates": []
     }
   },
-  "promoted_ids": [
-    "review::.::holistic::test_strategy::test_tmpdir_process_cwd"
-  ],
+  "promoted_ids": [],
   "plan_start_scores": {
     "strict": 88.9,
     "overall": 89.6,
@@ -27612,6 +27609,20 @@
       "actor": "user",
       "note": "Added test-*-tmp/ and tmp-*-test/ patterns to .gitignore as a safety net for test temp directories that use process.cwd(). Prevents crash artifacts from being committed.",
       "detail": {}
+    },
+    {
+      "timestamp": "2026-03-27T21:54:44+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::test_tmpdir_process_cwd"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added test-*-tmp/ and tmp-*-test/ patterns to .gitignore as a safety net for test temp directories that use process.cwd(). Prevents crash artifacts from being committed.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Added test-*-tmp/ and tmp-*-test/ patterns to .gitignore as a safety net for test temp directories that use process.cwd(). Prevents crash artifacts from being committed. and I am not gaming the score."
+      }
     }
   ],
   "epic_triage_meta": {
@@ -28099,7 +28110,8 @@
     "review::.::holistic::low_level_elegance::validator_duplicate_cond_group_probes",
     "review::.::holistic::error_consistency::pr_workflow_executor_broad_catch",
     "review::.::holistic::high_level_elegance::repo_detector_responsibility_blur",
-    "review::.::holistic::mid_level_elegance::lifecycle_create_settings_recomputed"
+    "review::.::holistic::mid_level_elegance::lifecycle_create_settings_recomputed",
+    "review::.::holistic::test_strategy::test_tmpdir_process_cwd"
   ],
   "commit_tracking_branch": null,
   "refresh_state": {
