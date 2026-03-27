@@ -52,6 +52,18 @@ interface SettingsGuards<
 }
 
 /**
+ * Build a base result that satisfies TResult for guard early-returns.
+ * All TResult subtypes only extend BaseProcessorResult with optional fields,
+ * so a base-only object is structurally valid. If adding a new processor
+ * result type, ensure all extension fields are optional.
+ */
+function baseResult<TResult extends BaseProcessorResult>(
+  result: BaseProcessorResult
+): TResult {
+  return result as TResult;
+}
+
+/**
  * Common boilerplate for GitHub settings processors: GitHub-only gating,
  * empty settings check, token resolution, and error wrapping.
  */
@@ -66,25 +78,22 @@ export async function withGitHubGuards<
 ): Promise<TResult> {
   const repoName = getRepoDisplayName(repoInfo);
 
-  // Safe cast: all TResult subtypes (RulesetProcessorResult, LabelsProcessorResult,
-  // RepoSettingsProcessorResult) only extend BaseProcessorResult with optional fields.
-  // If adding a new processor result type, ensure all extension fields are optional.
   if (!isGitHubRepo(repoInfo)) {
-    return {
+    return baseResult<TResult>({
       success: true,
       repoName,
       message: `Skipped: ${repoName} is not a GitHub repository`,
       skipped: true,
-    } as TResult;
+    });
   }
 
   if (!guards.hasDesiredSettings(repoConfig)) {
-    return {
+    return baseResult<TResult>({
       success: true,
       repoName,
       message: guards.emptySettingsMessage,
       skipped: true,
-    } as TResult;
+    });
   }
 
   try {
@@ -97,11 +106,11 @@ export async function withGitHubGuards<
     );
   } catch (error) {
     const message = toErrorMessage(error);
-    return {
+    return baseResult<TResult>({
       success: false,
       repoName,
       message: `Failed: ${message}`,
-    } as TResult;
+    });
   }
 }
 

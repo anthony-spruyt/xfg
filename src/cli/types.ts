@@ -60,10 +60,7 @@ export interface SyncResultEntry {
   error?: string;
 }
 
-export interface SettingsResult extends Pick<
-  BaseProcessorResult,
-  "success" | "message" | "skipped"
-> {
+export interface SettingsResult extends BaseProcessorResult {
   planOutput?: { lines?: string[] };
   warnings?: string[];
 }

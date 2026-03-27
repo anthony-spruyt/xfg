@@ -34,7 +34,7 @@ export interface LabelChange {
  * @param deleteOrphaned - If true, delete current labels not in desired config
  * @param noDelete - If true, skip delete operations
  * @returns Array of changes to apply
- * @throws Error if rename collisions are detected
+ * @throws ValidationError if rename collisions are detected
  */
 export function diffLabels(
   current: GitHubLabel[],

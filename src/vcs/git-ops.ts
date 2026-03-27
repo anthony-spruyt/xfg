@@ -43,7 +43,7 @@ export class GitOps implements ILocalGitOps {
   /**
    * Validates that a file path doesn't escape the workspace directory.
    * @returns The resolved absolute file path
-   * @throws Error if path traversal is detected
+   * @throws ValidationError if path traversal is detected
    */
   private validatePath(fileName: string): string {
     const filePath = join(this._workDir, fileName);
@@ -277,7 +277,7 @@ export class GitOps implements ILocalGitOps {
   /**
    * Stage all changes and commit with the given message.
    * Uses --no-verify to skip pre-commit hooks (config sync should always succeed).
-   * @returns true if a commit was made, false if there were no staged changes
+   * @returns true if a commit was made (or would be made in dry-run mode), false if there were no staged changes
    */
   async commit(message: string): Promise<boolean> {
     if (this.dryRun) {

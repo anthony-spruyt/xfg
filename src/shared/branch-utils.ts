@@ -11,7 +11,7 @@ export function sanitizeBranchName(fileName: string): string {
 
 /**
  * Validates a user-provided branch name against git's naming rules.
- * @throws Error if the branch name is invalid
+ * @throws ValidationError if the branch name is invalid
  */
 export function validateBranchName(branchName: string): void {
   if (!branchName || branchName.trim() === "") {
