@@ -246,3 +246,11 @@ Update `docs/configuration/groups.md` with:
 - Merge order (parents before child, L->R for multi-parent).
 - Interaction with conditional groups (expanded effective group set).
 - Note that `inherit: false` on child files/settings discards parent contributions.
+
+### Config Schema Updates
+
+Update `config-schema.json`:
+- Add `extends` property to `definitions.groupConfig.properties` with `oneOf: [string, string[]]`.
+
+Update `docs/reference/config-schema.md`:
+- Add `extends` row to the Group Config table.

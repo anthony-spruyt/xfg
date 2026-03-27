@@ -1128,10 +1128,12 @@ git commit -m "feat(config): expand knownFiles and rootCtx for transitive parent
 
 ---
 
-### Task 5: Update documentation
+### Task 5: Update documentation and config schema
 
 **Files:**
 - Modify: `docs/configuration/groups.md`
+- Modify: `docs/reference/config-schema.md:70-78`
+- Modify: `config-schema.json` (root `definitions.groupConfig`)
 
 - [ ] **Step 1: Update "Group Fields" table to include extends**
 
@@ -1252,11 +1254,52 @@ The effective group set used for conditional group evaluation includes transitiv
 - A group cannot extend itself
 ````
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: Update config-schema.json**
+
+In `config-schema.json`, add the `extends` property to the `definitions.groupConfig.properties` object:
+
+```json
+{
+  "extends": {
+    "description": "Parent group name(s) to inherit files, settings, and PR options from. Accepts a single group name or an array of group names. Parents are merged before the child group.",
+    "oneOf": [
+      {
+        "type": "string",
+        "minLength": 1,
+        "description": "Single parent group name"
+      },
+      {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "minItems": 1,
+        "description": "Array of parent group names, merged left-to-right"
+      }
+    ]
+  }
+}
+```
+
+- [ ] **Step 4: Update docs/reference/config-schema.md**
+
+In `docs/reference/config-schema.md`, add the `extends` row to the Group Config table (around line 72-76):
+
+```markdown
+| Field       | Type                 | Required | Description                                                  |
+| ----------- | -------------------- | -------- | ------------------------------------------------------------ |
+| `extends`   | `string \| string[]` | No       | Parent group name(s) to inherit from                         |
+| `files`     | `object`             | No       | Files defined or overridden by this group                    |
+| `prOptions` | `PROptions`          | No       | PR options for repos using this group                        |
+| `settings`  | `object`             | No       | Settings for repos using this group (supports `inherit`)     |
+```
+
+- [ ] **Step 5: Commit**
 
 ```bash
-git add docs/configuration/groups.md
-git commit -m "docs: add group inheritance documentation (#649)"
+git add docs/configuration/groups.md docs/reference/config-schema.md config-schema.json
+git commit -m "docs: add group inheritance documentation and update config schema (#649)"
 ```
 
 ---
