@@ -6,6 +6,7 @@ on:
   pull_request:
     branches:
       - "main"
+    types: [opened, synchronize, reopened, labeled]
   push:
     branches:
       - "main"
@@ -35,6 +36,7 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
           COMMIT_SHA: ${{ github.sha }}
           EVENT_NAME: ${{ github.event_name }}
+          HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'run-integration') }}
         run: |
           set -euo pipefail
 
@@ -52,14 +54,27 @@ jobs:
             echo "No code changes, will skip build and integration tests"
           fi
 
-          # Integration tests only needed for source/test/script changes,
-          # not version-only bumps (package.json + package-lock.json)
-          if echo "$CHANGED" | grep -qE '^(src/|test/|scripts/)'; then
-            echo "integration-needed=true" >> "$GITHUB_OUTPUT"
-            echo "Source changes detected — integration tests needed"
+          # Integration tests: always on push to main (source changes),
+          # on PRs only with 'run-integration' label or integration test changes
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            if [ "$HAS_LABEL" = "true" ]; then
+              echo "integration-needed=true" >> "$GITHUB_OUTPUT"
+              echo "PR has 'run-integration' label — integration tests enabled"
+            elif echo "$CHANGED" | grep -qE '^test/integration/'; then
+              echo "integration-needed=true" >> "$GITHUB_OUTPUT"
+              echo "Integration test files changed — integration tests enabled"
+            else
+              echo "integration-needed=false" >> "$GITHUB_OUTPUT"
+              echo "PR without integration label — skipping integration tests"
+            fi
           else
-            echo "integration-needed=false" >> "$GITHUB_OUTPUT"
-            echo "No source changes — skipping integration tests"
+            if echo "$CHANGED" | grep -qE '^(src/|test/|scripts/)'; then
+              echo "integration-needed=true" >> "$GITHUB_OUTPUT"
+              echo "Source changes detected — integration tests needed"
+            else
+              echo "integration-needed=false" >> "$GITHUB_OUTPUT"
+              echo "No source changes — skipping integration tests"
+            fi
           fi
 
           echo "Changed files:"
