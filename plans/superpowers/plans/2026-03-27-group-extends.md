@@ -1066,11 +1066,11 @@ function validateNoCircularExtends(
 
 - [ ] **Step 6: Add imports to validator**
 
-In `src/config/validator.ts`, add `RawGroupConfig` to the type import on line 1, and add the extends-resolver import:
+In `src/config/validator.ts`, add `RawGroupConfig` to the type import on line 1, and add the extends-resolver import (only `resolveExtendsChain` for now — `expandRepoGroups` is added in Task 4):
 
 ```typescript
 import type { RawConfig, RawRepoSettings, RawRootSettings, RawGroupConfig } from "./types.js";
-import { resolveExtendsChain, expandRepoGroups } from "./extends-resolver.js";
+import { resolveExtendsChain } from "./extends-resolver.js";
 ```
 
 - [ ] **Step 7: Run tests to verify they pass**
@@ -1167,9 +1167,15 @@ test("repo can opt out of settings from transitive parent group", () => {
 Run: `npm test -- --test-name-pattern="repo can override file from transitive|repo can opt out of settings from transitive" 2>&1 | tail -10`
 Expected: Fails with "references undefined file 'parent-file.json'" or similar
 
-- [ ] **Step 3: Update `validateRepoFiles` to expand groups**
+- [ ] **Step 3: Add `expandRepoGroups` import to validator**
 
-The validator now uses the shared `expandRepoGroups` from `extends-resolver.ts` (imported in Task 3 Step 6).
+In `src/config/validator.ts`, update the extends-resolver import to also include `expandRepoGroups`:
+
+```typescript
+import { resolveExtendsChain, expandRepoGroups } from "./extends-resolver.js";
+```
+
+- [ ] **Step 4: Update `validateRepoFiles` to expand groups**
 
 
 
@@ -1204,7 +1210,7 @@ With:
   }
 ```
 
-- [ ] **Step 4: Update `validateRepoSettingsEntry` to expand groups**
+- [ ] **Step 5: Update `validateRepoSettingsEntry` to expand groups**
 
 In `src/config/validator.ts`, modify `validateRepoSettingsEntry`. Replace the existing group-settings collection block (lines 706-726):
 
@@ -1259,17 +1265,17 @@ With:
   }
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [ ] **Step 6: Run tests to verify they pass**
 
 Run: `npm test -- --test-name-pattern="group extends" 2>&1 | tail -20`
 Expected: All extends tests pass (both normalizer and validator)
 
-- [ ] **Step 6: Run full test suite**
+- [ ] **Step 7: Run full test suite**
 
 Run: `npm test 2>&1 | tail -10`
 Expected: All tests pass
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add src/config/validator.ts test/unit/config-validator.test.ts

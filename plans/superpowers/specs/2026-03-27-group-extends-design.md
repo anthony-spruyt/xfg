@@ -105,29 +105,33 @@ Both `resolveExtendsChain` and `expandRepoGroups` live in a shared `src/config/e
 The `resolveExtendsChain` function expands a single group name into its full ordered chain:
 
 ```text
-function resolveExtendsChain(groupName, groupDefs, visited = Set(), depth = 0):
-  if depth > MAX_EXTENDS_DEPTH:
-    error: exceeds maximum depth
-  if groupName in visited:
-    error: circular extends detected
-  visited.add(groupName)
+function resolveExtendsChain(groupName, groupDefs):
+  // Internal walk() handles visited set and depth tracking
+  function walk(name, visited, depth):
+    if depth > MAX_EXTENDS_DEPTH:
+      error: exceeds maximum depth
+    if name in visited:
+      error: circular extends detected
+    visited.add(name)
 
-  group = groupDefs[groupName]
-  if !group:
-    error: group does not exist
-  if !group.extends:
-    return [groupName]
+    group = groupDefs[name]
+    if !group:
+      error: group does not exist
+    if !group.extends:
+      return [name]
 
-  parents = normalize(group.extends)  // string -> [string]
-  result = []
-  for parent in parents:
-    chain = resolveExtendsChain(parent, groupDefs, copy(visited))
-    for name in chain:
-      if name not in result:
-        result.push(name)
+    parents = normalize(group.extends)  // string -> [string]
+    result = []
+    for parent in parents:
+      chain = walk(parent, copy(visited), depth + 1)
+      for n in chain:
+        if n not in result:
+          result.push(n)
 
-  result.push(groupName)
-  return result
+    result.push(name)
+    return result
+
+  return walk(groupName, Set(), 0)
 ```
 
 The `expandRepoGroups` function expands a repo's full group list:
@@ -136,7 +140,7 @@ The `expandRepoGroups` function expands a repo's full group list:
 function expandRepoGroups(repoGroups, groupDefs):
   result = []
   for groupName in repoGroups:
-    chain = resolveExtendsChain(groupName, groupDefs, Set())
+    chain = resolveExtendsChain(groupName, groupDefs)
     for name in chain:
       if name not in result:
         result.push(name)
