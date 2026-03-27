@@ -67,7 +67,7 @@ jobs:
 
   lint:
     if: github.event_name == 'pull_request'
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@605fcdfab864797e519666120966a1e2b999eb0b" # main
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@main"
     secrets: "inherit"
 
   build:
@@ -139,4 +139,4 @@ jobs:
       - "build"
       - "integration-tests"
     if: "always()"
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@605fcdfab864797e519666120966a1e2b999eb0b" # main
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@main"
