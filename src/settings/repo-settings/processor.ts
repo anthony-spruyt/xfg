@@ -2,7 +2,10 @@ import type { RepoConfig, GitHubRepoSettings } from "../../config/index.js";
 import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
 import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
 import { diffRepoSettings, hasChanges } from "./diff.js";
-import { formatRepoSettingsPlan, RepoSettingsPlanResult } from "./formatter.js";
+import {
+  formatRepoSettingsPlan,
+  type RepoSettingsPlanResult,
+} from "./formatter.js";
 import {
   withGitHubGuards,
   type BaseProcessorOptions,

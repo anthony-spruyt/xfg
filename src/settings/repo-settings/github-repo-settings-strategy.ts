@@ -1,4 +1,4 @@
-import { ICommandExecutor } from "../../shared/command-executor.js";
+import type { ICommandExecutor } from "../../shared/command-executor.js";
 import {
   assertGitHubRepo,
   type GitHubRepoInfo,

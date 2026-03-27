@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { rm } from "node:fs/promises";
 import { parseGitUrl, type RepoInfo } from "../shared/repo-detector.js";
-import { safeCleanup } from "../shared/type-guards.js";
+import { safeCleanup } from "../shared/cleanup-utils.js";
 import { LifecycleError } from "../shared/errors.js";
 import { NO_OP_DEBUG_LOG, type DebugInfoWarnLog } from "../shared/logger.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";

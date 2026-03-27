@@ -1,5 +1,5 @@
 import { escapeShellArg } from "../shared/shell-utils.js";
-import { ICommandExecutor } from "../shared/command-executor.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import {
   withRetry,
   isPermanentError,

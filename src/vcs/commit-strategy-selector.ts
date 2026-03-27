@@ -1,9 +1,9 @@
-import { RepoInfo, isGitHubRepo } from "../shared/repo-detector.js";
+import { type RepoInfo, isGitHubRepo } from "../shared/repo-detector.js";
 import type { ICommitStrategy } from "./types.js";
 import { GitCommitStrategy } from "./git-commit-strategy.js";
 import { GraphQLCommitStrategy } from "./graphql-commit-strategy.js";
 import { GitHubAppTokenManager } from "./github-app-token-manager.js";
-import { ICommandExecutor } from "../shared/command-executor.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 
 interface GitHubAppCredentials {
   appId: string;

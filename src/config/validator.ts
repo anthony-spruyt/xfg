@@ -884,6 +884,38 @@ function hasGroupFiles(config: RawConfig): boolean {
   );
 }
 
+function hasConditionalGroupFiles(config: RawConfig): boolean {
+  return (
+    Array.isArray(config.conditionalGroups) &&
+    config.conditionalGroups.some(
+      (cg) =>
+        cg.files &&
+        Object.keys(cg.files).filter(
+          (k) => k !== "inherit" && cg.files![k] !== false
+        ).length > 0
+    )
+  );
+}
+
+function hasConditionalGroupSettings(
+  config: RawConfig,
+  predicate: (settings: NonNullable<unknown>) => boolean
+): boolean {
+  return (
+    Array.isArray(config.conditionalGroups) &&
+    config.conditionalGroups.some((cg) => cg.settings && predicate(cg.settings))
+  );
+}
+
+function hasConditionalGroupPR(config: RawConfig): boolean {
+  return (
+    Array.isArray(config.conditionalGroups) &&
+    config.conditionalGroups.some(
+      (cg) => cg.prOptions && isPlainObject(cg.prOptions)
+    )
+  );
+}
+
 /**
  * Validates raw config structure before normalization.
  * @throws ValidationError if validation fails
@@ -900,25 +932,9 @@ export function validateRawConfig(config: RawConfig): void {
     Object.values(config.groups).some(
       (g) => g.settings && isPlainObject(g.settings)
     );
-  const hasCondGrpFiles =
-    Array.isArray(config.conditionalGroups) &&
-    config.conditionalGroups.some(
-      (cg) =>
-        cg.files &&
-        Object.keys(cg.files).filter(
-          (k) => k !== "inherit" && cg.files![k] !== false
-        ).length > 0
-    );
-  const hasCondGrpSettings =
-    Array.isArray(config.conditionalGroups) &&
-    config.conditionalGroups.some(
-      (cg) => cg.settings && isPlainObject(cg.settings)
-    );
-  const hasCondGrpPR =
-    Array.isArray(config.conditionalGroups) &&
-    config.conditionalGroups.some(
-      (cg) => cg.prOptions && isPlainObject(cg.prOptions)
-    );
+  const hasCondGrpFiles = hasConditionalGroupFiles(config);
+  const hasCondGrpSettings = hasConditionalGroupSettings(config, isPlainObject);
+  const hasCondGrpPR = hasConditionalGroupPR(config);
 
   if (
     !hasFiles &&
@@ -981,25 +997,12 @@ export function validateForSync(config: RawConfig): void {
     Object.values(config.groups).some(
       (g) => g.settings && hasActionableSettings(g.settings)
     );
-  const hasCondGrpFiles =
-    Array.isArray(config.conditionalGroups) &&
-    config.conditionalGroups.some(
-      (cg) =>
-        cg.files &&
-        Object.keys(cg.files).filter(
-          (k) => k !== "inherit" && cg.files![k] !== false
-        ).length > 0
-    );
-  const hasCondGrpSettings =
-    Array.isArray(config.conditionalGroups) &&
-    config.conditionalGroups.some(
-      (cg) => cg.settings && hasActionableSettings(cg.settings)
-    );
-  const hasCondGrpPR =
-    Array.isArray(config.conditionalGroups) &&
-    config.conditionalGroups.some(
-      (cg) => cg.prOptions && isPlainObject(cg.prOptions)
-    );
+  const hasCondGrpFiles = hasConditionalGroupFiles(config);
+  const hasCondGrpSettings = hasConditionalGroupSettings(
+    config,
+    hasActionableSettings
+  );
+  const hasCondGrpPR = hasConditionalGroupPR(config);
 
   if (
     !hasRootFiles &&

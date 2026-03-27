@@ -9,7 +9,7 @@ import {
 } from "node:fs";
 import { join, resolve, relative, isAbsolute, dirname } from "node:path";
 import { escapeShellArg } from "../shared/shell-utils.js";
-import { ICommandExecutor } from "../shared/command-executor.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { DebugLog } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { ValidationError, SyncError } from "../shared/errors.js";
@@ -36,7 +36,7 @@ export class GitOps implements ILocalGitOps {
     this.log = options.log;
   }
 
-  private async exec(command: string, cwd?: string): Promise<string> {
+  private exec(command: string, cwd?: string): Promise<string> {
     return this._executor.exec(command, cwd ?? this._workDir);
   }
 

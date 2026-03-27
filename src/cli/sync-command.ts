@@ -12,12 +12,10 @@ import {
   parseGitUrl,
   getRepoDisplayName,
   isGitHubRepo,
+  type RepoInfo,
+  type GitHubRepoInfo,
 } from "../shared/repo-detector.js";
-import type { GitHubRepoInfo } from "../shared/repo-detector.js";
-import {
-  sanitizeBranchName,
-  validateBranchName,
-} from "../shared/branch-utils.js";
+import { sanitizeBranchName, validateBranchName } from "./branch-utils.js";
 import { createTokenManager } from "../vcs/index.js";
 import { RepositoryProcessor } from "../sync/index.js";
 import {
@@ -32,7 +30,6 @@ import {
 import { ShellCommandExecutor } from "../shared/command-executor.js";
 import { Logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
-import { RepoInfo } from "../shared/repo-detector.js";
 import {
   type SyncDependencies,
   type SyncResultEntry,
@@ -103,7 +100,6 @@ import { resolveGitHubToken } from "../shared/gh-api-utils.js";
 import {
   RepoLifecycleManager,
   runLifecycleCheck,
-  toCreateRepoSettings,
   type IRepoLifecycleManager,
 } from "../lifecycle/index.js";
 
@@ -177,6 +173,31 @@ interface SettingsDescriptor {
   run: () => Promise<SettingsResult>;
 }
 
+// Each processor returns a subtype of BaseProcessorResult whose planOutput
+// contains both `lines` (for CLI display) and `entries` (for report building).
+// ProcessorResults fields capture only the `entries` slice; the runtime object
+// satisfies both views, so we assign with an explicit per-field cast.
+async function runAndStoreResult(
+  factory: () => ISettingsProcessor,
+  repoConfig: RepoConfig,
+  repoInfo: RepoInfo,
+  opts: { dryRun?: boolean; noDelete?: boolean; token?: string },
+  repoName: string,
+  settingsCollector: ResultsCollector,
+  assign: (entry: ProcessorResults, result: SettingsResult) => void
+): Promise<SettingsResult> {
+  const result = await runSettingsProcessor(
+    factory,
+    repoConfig,
+    repoInfo,
+    opts
+  );
+  if (!result.skipped) {
+    assign(settingsCollector.getOrCreate(repoName), result);
+  }
+  return result;
+}
+
 function buildSettingsDescriptors(
   ctx: ApplyRepoSettingsContext
 ): SettingsDescriptor[] {
@@ -197,51 +218,50 @@ function buildSettingsDescriptors(
     token,
   };
 
-  // Each processor returns a subtype of BaseProcessorResult whose planOutput
-  // contains both `lines` (for CLI display) and `entries` (for report building).
-  // ProcessorResults fields capture only the `entries` slice; the runtime object
-  // satisfies both views, so we assign with an explicit per-field cast.
-  const runAndStore = async (
-    factory: () => ISettingsProcessor,
-    opts: { dryRun?: boolean; noDelete?: boolean; token?: string },
-    assign: (entry: ProcessorResults, result: SettingsResult) => void
-  ): Promise<SettingsResult> => {
-    const result = await runSettingsProcessor(
-      factory,
-      repoConfig,
-      repoInfo,
-      opts
-    );
-    if (!result.skipped) {
-      assign(settingsCollector.getOrCreate(repoName), result);
-    }
-    return result;
-  };
-
   return [
     {
       key: "rulesets" as const,
       label: "Rulesets",
       run: () =>
-        runAndStore(rulesetProcessorFactory, sharedOpts, (e, r) => {
-          e.rulesetResult = r as ProcessorResults["rulesetResult"];
-        }),
+        runAndStoreResult(
+          rulesetProcessorFactory,
+          repoConfig,
+          repoInfo,
+          sharedOpts,
+          repoName,
+          settingsCollector,
+          (e, r) => {
+            e.rulesetResult = r as ProcessorResults["rulesetResult"];
+          }
+        ),
     },
     {
       key: "labels" as const,
       label: "Labels",
       run: () =>
-        runAndStore(labelsProcessorFactory, sharedOpts, (e, r) => {
-          e.labelsResult = r as ProcessorResults["labelsResult"];
-        }),
+        runAndStoreResult(
+          labelsProcessorFactory,
+          repoConfig,
+          repoInfo,
+          sharedOpts,
+          repoName,
+          settingsCollector,
+          (e, r) => {
+            e.labelsResult = r as ProcessorResults["labelsResult"];
+          }
+        ),
     },
     {
       key: "repo" as const,
       label: "Repo Settings",
       run: () =>
-        runAndStore(
+        runAndStoreResult(
           repoSettingsProcessorFactory,
+          repoConfig,
+          repoInfo,
           { dryRun: options.dryRun, token },
+          repoName,
+          settingsCollector,
           (e, r) => {
             e.settingsResult = r as ProcessorResults["settingsResult"];
           }
@@ -472,10 +492,8 @@ async function runLifecyclePhase(
   const repoNumber = repo.index + 1;
 
   try {
-    const { outputLines, lifecycleResult } = await runLifecycleCheck(
-      repo.repoConfig,
-      repo.repoInfo,
-      {
+    const { outputLines, lifecycleResult, createSettings } =
+      await runLifecycleCheck(repo.repoConfig, repo.repoInfo, {
         dryRun: ctx.options.dryRun ?? false,
         resolvedWorkDir: repo.workDir,
         githubHosts: ctx.config.githubHosts,
@@ -483,14 +501,11 @@ async function runLifecyclePhase(
         repoIndex: repo.index,
         lifecycleManager: ctx.lifecycleManager,
         repoSettings: ctx.config.settings?.repo,
-      }
-    );
+      });
 
     for (const line of outputLines) {
       getLogger().info(line);
     }
-
-    const createSettings = toCreateRepoSettings(ctx.config.settings?.repo);
     ctx.lifecycleReportInputs.push({
       repoName: repo.repoName,
       action: lifecycleResult.action,
