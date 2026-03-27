@@ -44,6 +44,7 @@ Groups support the same override capabilities as repos:
 
 | Field        | Description                                           |
 | ------------ | ----------------------------------------------------- |
+| `extends`    | Parent group name(s) to inherit from                  |
 | `files`      | File definitions or overrides (same syntax as repos)  |
 | `prOptions`  | PR merge options (merged into chain)                  |
 | `settings`   | Repository settings like rulesets, labels             |
@@ -53,7 +54,7 @@ Groups support the same override capabilities as repos:
 When a repo references groups, the merge chain is:
 
 1. **Root files** — base layer
-2. **Group layers** — applied left-to-right in array order
+2. **Group layers** — applied left-to-right in array order (when groups use `extends`, parent groups are automatically included before the child)
 3. **Repo overrides** — final layer
 
 Each layer deep-merges onto the previous. Later values win for conflicting keys.
@@ -83,6 +84,105 @@ repos:
     groups: [base-tooling, strict-tooling]
     # Result: { lint: false, format: true, strict: true }
 ```
+
+## Group Inheritance
+
+Groups can inherit from parent groups using the `extends` field. When a repo references a child group, it automatically gets the parent group's files, settings, and PR options — no need to list parent groups explicitly.
+
+### Single Parent
+
+```yaml
+groups:
+  github:
+    files:
+      .github/actionlint.yaml:
+        content: "@templates/.github/actionlint.yaml"
+
+  github-ci:
+    extends: github
+    files:
+      .github/workflows/ci.yaml:
+        content: "@templates/.github/workflows/ci.yaml"
+
+  github-trivy:
+    extends: github
+    files:
+      .github/workflows/trivy-scan.yaml:
+        content: "@templates/.github/workflows/trivy-scan.yaml"
+
+repos:
+  - git: git@github.com:org/myrepo.git
+    groups: [github-ci]
+    # Gets actionlint.yaml (from github) + ci.yaml (from github-ci)
+```
+
+### Multiple Parents
+
+`extends` accepts an array for multi-parent inheritance. Parents are merged left-to-right:
+
+```yaml
+groups:
+  base-labels:
+    settings:
+      labels:
+        managed: { color: "ededed" }
+
+  github:
+    files:
+      .github/actionlint.yaml:
+        content: "@templates/.github/actionlint.yaml"
+
+  github-ci:
+    extends: [github, base-labels]
+    files:
+      .github/workflows/ci.yaml:
+        content: "@templates/.github/workflows/ci.yaml"
+```
+
+### Transitive Inheritance
+
+Inheritance is transitive — if `c extends b` and `b extends a`, a repo with `groups: [c]` gets files from all three:
+
+```yaml
+groups:
+  base:
+    files:
+      base.json:
+        content:
+          base: true
+  mid:
+    extends: base
+    files:
+      mid.json:
+        content:
+          mid: true
+  leaf:
+    extends: mid
+    files:
+      leaf.json:
+        content:
+          leaf: true
+
+repos:
+  - git: git@github.com:org/repo.git
+    groups: [leaf]
+    # Gets base.json, mid.json, and leaf.json
+```
+
+### Inheritance Merge Order
+
+Parent groups are inserted before the child in the [merge chain](groups.md#merge-chain). Child groups can use `inherit: false` to discard all accumulated files (root and parent groups), or `file: false` to remove specific parent files.
+
+### Interaction with Conditional Groups
+
+The effective group set used for conditional group evaluation includes transitive parents. This means a conditional group with `when: { anyOf: [github] }` will match a repo with `groups: [github-ci]` if `github-ci extends github`.
+
+### Inheritance Restrictions
+
+- Circular extends chains are not allowed
+- All referenced parent groups must exist in the `groups` map
+- A group cannot extend itself
+- `extends` is a reserved name and cannot be used as a group name
 
 ## File Exclusion in Groups
 
