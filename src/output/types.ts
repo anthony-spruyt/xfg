@@ -1,3 +1,4 @@
+import type { MergeMode } from "../config/index.js";
 import type { FileChangeDetail } from "../sync/index.js";
 
 export type ReportFileChange = FileChangeDetail;
@@ -13,6 +14,6 @@ export interface RepoFileChanges {
   repoName: string;
   files: ReportFileChange[];
   prUrl?: string;
-  mergeOutcome?: "manual" | "auto" | "force" | "direct";
+  mergeOutcome?: MergeMode;
   error?: string;
 }

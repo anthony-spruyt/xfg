@@ -2,6 +2,7 @@ import { describe, test, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import {
   GraphQLCommitStrategy,
   MAX_PAYLOAD_SIZE,
@@ -34,7 +35,7 @@ function createMockGitOps(): INetworkGitOps & {
   };
 }
 
-const testDir = join(process.cwd(), "test-graphql-commit-strategy-tmp");
+const testDir = join(tmpdir(), "test-graphql-commit-strategy-tmp");
 
 describe("SAFE_BRANCH_NAME_PATTERN", () => {
   test("accepts valid branch names", () => {

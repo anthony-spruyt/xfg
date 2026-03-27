@@ -1,3 +1,4 @@
+import type { MergeMode } from "../config/index.js";
 import type {
   SyncReport,
   RepoFileChanges,
@@ -9,7 +10,7 @@ interface SyncResultInput {
   success: boolean;
   fileChanges: ReportFileChange[];
   prUrl?: string;
-  mergeOutcome?: "manual" | "auto" | "force" | "direct";
+  mergeOutcome?: MergeMode;
   error?: string;
 }
 

@@ -2,6 +2,7 @@ import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, writeFileSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import {
   MANIFEST_FILENAME,
   XfgManifest,
@@ -14,7 +15,7 @@ import {
 } from "../../src/sync/manifest.js";
 
 describe("manifest", () => {
-  const testDir = join(process.cwd(), "tmp-manifest-test");
+  const testDir = join(tmpdir(), "tmp-manifest-test");
 
   beforeEach(() => {
     mkdirSync(testDir, { recursive: true });

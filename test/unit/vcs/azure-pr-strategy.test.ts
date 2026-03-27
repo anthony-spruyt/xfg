@@ -2,6 +2,7 @@ import { describe, test, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { AzurePRStrategy } from "../../../src/vcs/azure-pr-strategy.js";
 import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
 import {
@@ -14,7 +15,7 @@ import {
   type ExecutorMockResult,
 } from "../../mocks/executor.mock.js";
 
-const testDir = join(process.cwd(), "test-azure-strategy-tmp");
+const testDir = join(tmpdir(), "test-azure-strategy-tmp");
 
 describe("AzurePRStrategy with mock executor", () => {
   const azureRepoInfo: AzureDevOpsRepoInfo = {
@@ -689,7 +690,7 @@ describe("AzurePRStrategy closeExistingPR", () => {
   };
 
   let mockExecutor: ExecutorMockResult;
-  const testDirClose = join(process.cwd(), "test-azure-strategy-close-tmp");
+  const testDirClose = join(tmpdir(), "test-azure-strategy-close-tmp");
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
@@ -822,7 +823,7 @@ describe("AzurePRStrategy URL extraction edge cases", () => {
   };
 
   let mockExecutor: ExecutorMockResult;
-  const testDirEdge = join(process.cwd(), "test-azure-strategy-edge-tmp");
+  const testDirEdge = join(tmpdir(), "test-azure-strategy-edge-tmp");
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();

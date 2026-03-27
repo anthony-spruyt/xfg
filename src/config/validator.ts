@@ -540,6 +540,38 @@ function validateGroups(config: RawConfig): void {
   validateNoCircularExtends(config.groups);
 }
 
+function validateGroupRefArray(
+  arr: unknown,
+  fieldName: string,
+  ctx: string,
+  groupNames: string[]
+): void {
+  if (!Array.isArray(arr) || arr.length === 0) {
+    throw new ValidationError(
+      `${ctx}: '${fieldName}' must be a non-empty array of strings`
+    );
+  }
+  const seen = new Set<string>();
+  for (const name of arr) {
+    if (typeof name !== "string") {
+      throw new ValidationError(
+        `${ctx}: '${fieldName}' entries must be strings`
+      );
+    }
+    if (!groupNames.includes(name)) {
+      throw new ValidationError(
+        `${ctx}: group '${name}' in ${fieldName} is not defined in root 'groups'`
+      );
+    }
+    if (seen.has(name)) {
+      throw new ValidationError(
+        `${ctx}: duplicate group '${name}' in ${fieldName}`
+      );
+    }
+    seen.add(name);
+  }
+}
+
 function validateConditionalGroups(config: RawConfig): void {
   if (config.conditionalGroups === undefined) return;
 
@@ -569,53 +601,11 @@ function validateConditionalGroups(config: RawConfig): void {
     }
 
     if (allOf !== undefined) {
-      if (!Array.isArray(allOf) || allOf.length === 0) {
-        throw new ValidationError(
-          `${ctx}: 'allOf' must be a non-empty array of strings`
-        );
-      }
-      const seen = new Set<string>();
-      for (const name of allOf) {
-        if (typeof name !== "string") {
-          throw new ValidationError(`${ctx}: 'allOf' entries must be strings`);
-        }
-        if (!groupNames.includes(name)) {
-          throw new ValidationError(
-            `${ctx}: group '${name}' in allOf is not defined in root 'groups'`
-          );
-        }
-        if (seen.has(name)) {
-          throw new ValidationError(
-            `${ctx}: duplicate group '${name}' in allOf`
-          );
-        }
-        seen.add(name);
-      }
+      validateGroupRefArray(allOf, "allOf", ctx, groupNames);
     }
 
     if (anyOf !== undefined) {
-      if (!Array.isArray(anyOf) || anyOf.length === 0) {
-        throw new ValidationError(
-          `${ctx}: 'anyOf' must be a non-empty array of strings`
-        );
-      }
-      const seen = new Set<string>();
-      for (const name of anyOf) {
-        if (typeof name !== "string") {
-          throw new ValidationError(`${ctx}: 'anyOf' entries must be strings`);
-        }
-        if (!groupNames.includes(name)) {
-          throw new ValidationError(
-            `${ctx}: group '${name}' in anyOf is not defined in root 'groups'`
-          );
-        }
-        if (seen.has(name)) {
-          throw new ValidationError(
-            `${ctx}: duplicate group '${name}' in anyOf`
-          );
-        }
-        seen.add(name);
-      }
+      validateGroupRefArray(anyOf, "anyOf", ctx, groupNames);
     }
 
     // Validate files

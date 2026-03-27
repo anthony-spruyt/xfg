@@ -9,8 +9,9 @@ import {
   readFileSync,
 } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 
-const testDir = join(process.cwd(), "test-cli-tmp");
+const testDir = join(tmpdir(), "test-cli-tmp");
 const testConfigPath = join(testDir, "test-config.yaml");
 
 // Helper to run CLI and capture output
@@ -891,7 +892,7 @@ class MockRepositoryProcessor implements IRepositoryProcessor {
   }
 }
 
-const syncUnitTestDir = join(process.cwd(), "test-sync-unit-tmp");
+const syncUnitTestDir = join(tmpdir(), "test-sync-unit-tmp");
 const syncUnitTestConfigPath = join(syncUnitTestDir, "sync-config.yaml");
 
 describe("runSync with mock processor", () => {
