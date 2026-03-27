@@ -3961,6 +3961,173 @@ describe("group configuration", () => {
     assert.equal(result.repos[0].settings?.deleteOrphaned, true);
   });
 
+  test("$arrayMerge directive in group settings merges with root", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "config.json": { content: {} } },
+      groups: {
+        "extra-bypass": {
+          settings: {
+            rulesets: {
+              "pr-rules": {
+                bypassActors: {
+                  $arrayMerge: "append",
+                  $values: [
+                    { actorId: 5555, actorType: "Team", bypassMode: "always" },
+                  ],
+                } as never,
+              },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["extra-bypass"],
+        },
+      ],
+      settings: {
+        rulesets: {
+          "pr-rules": {
+            target: "branch",
+            bypassActors: [
+              { actorId: 2740, actorType: "Integration", bypassMode: "always" },
+            ],
+          },
+        },
+      },
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const actors =
+      result.repos[0].settings?.rulesets?.["pr-rules"]?.bypassActors;
+    assert.equal(actors?.length, 2);
+    assert.equal(actors?.[0]?.actorId, 2740);
+    assert.equal(actors?.[1]?.actorId, 5555);
+  });
+
+  test("$arrayMerge directive in conditional group settings merges with root", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "config.json": { content: {} } },
+      groups: {
+        "github-ci": {},
+      },
+      conditionalGroups: [
+        {
+          when: { allOf: ["github-ci"] },
+          settings: {
+            rulesets: {
+              "pr-rules": {
+                rules: {
+                  $arrayMerge: "append",
+                  $values: [
+                    {
+                      type: "required_status_checks",
+                      parameters: {
+                        requiredStatusChecks: [
+                          { context: "summary / Check Results" },
+                        ],
+                      },
+                    },
+                  ],
+                } as never,
+              },
+            },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["github-ci"],
+        },
+      ],
+      settings: {
+        rulesets: {
+          "pr-rules": {
+            target: "branch",
+            rules: [
+              {
+                type: "pull_request",
+                parameters: { requiredApprovingReviewCount: 1 },
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const rules = result.repos[0].settings?.rulesets?.["pr-rules"]?.rules;
+    assert.equal(rules?.length, 2);
+    assert.equal(rules?.[0]?.type, "pull_request");
+    assert.equal(rules?.[1]?.type, "required_status_checks");
+  });
+
+  test("stacked $arrayMerge directives across two groups with no root base array", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "config.json": { content: {} } },
+      groups: {
+        "group-a": {
+          settings: {
+            rulesets: {
+              "pr-rules": {
+                bypassActors: {
+                  $arrayMerge: "append",
+                  $values: [
+                    {
+                      actorId: 1111,
+                      actorType: "Integration",
+                      bypassMode: "always",
+                    },
+                  ],
+                } as never,
+              },
+            },
+          },
+        },
+        "group-b": {
+          settings: {
+            rulesets: {
+              "pr-rules": {
+                bypassActors: {
+                  $arrayMerge: "append",
+                  $values: [
+                    { actorId: 2222, actorType: "Team", bypassMode: "always" },
+                  ],
+                } as never,
+              },
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["group-a", "group-b"],
+        },
+      ],
+      settings: {
+        rulesets: {
+          "pr-rules": {
+            target: "branch",
+          },
+        },
+      },
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const actors =
+      result.repos[0].settings?.rulesets?.["pr-rules"]?.bypassActors;
+    // group-a's directive resolves to [1111], group-b appends [2222]
+    assert.equal(actors?.length, 2);
+    assert.equal(actors?.[0]?.actorId, 1111);
+    assert.equal(actors?.[1]?.actorId, 2222);
+  });
+
   test("multiple groups chain settings left-to-right", () => {
     const raw: RawConfig = {
       id: "test-config",
