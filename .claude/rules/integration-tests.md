@@ -55,5 +55,8 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 
 ## CI Workflow
 
-- GitHub integration tests only run on `push` to `main` (not on PR branches)
-- All jobs run in parallel after `build` - never chain GitHub jobs with `needs`
+- Integration tests always run on `push` to `main` (when source changes detected)
+- On PRs, integration tests only run when:
+  - The `run-integration` label is added to the PR, OR
+  - Integration test files (`test/integration/`) are changed
+- GitHub integration jobs are chained via `needs` in batches to avoid API rate limits
