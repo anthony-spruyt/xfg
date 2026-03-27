@@ -158,15 +158,20 @@ describe("GitHub Settings Integration Test", () => {
       cwd: projectRoot,
     });
 
-    const rulesetCreated = await execWithRetry(
+    // List endpoint to get ID, then fetch by ID to get rules
+    const rulesetListStr = await execWithRetry(
       `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
     );
-    const rulesetBefore = JSON.parse(rulesetCreated);
-    await waitForRulesetVisible(rulesetBefore.id);
+    const rulesetListItem = JSON.parse(rulesetListStr);
+    await waitForRulesetVisible(rulesetListItem.id);
 
-    const rulesBefore = rulesetBefore.rules;
-    assert.equal(rulesBefore.length, 1, "Should start with 1 rule");
-    assert.equal(rulesBefore[0].type, "pull_request");
+    const rulesetBeforeStr = await execWithRetry(
+      `gh api repos/${testRepo}/rulesets/${rulesetListItem.id}`
+    );
+    const rulesetBefore = JSON.parse(rulesetBeforeStr);
+
+    assert.equal(rulesetBefore.rules.length, 1, "Should start with 1 rule");
+    assert.equal(rulesetBefore.rules[0].type, "pull_request");
 
     // Now sync with $arrayMerge: append to add required_signatures
     const appendConfig = writeConfig(
@@ -210,7 +215,7 @@ repos:
 
     console.log("\nVerifying ruleset has both rules...");
     const rulesetAfterStr = await execWithRetry(
-      `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+      `gh api repos/${testRepo}/rulesets/${rulesetBefore.id}`
     );
     const rulesetAfter = JSON.parse(rulesetAfterStr);
 
