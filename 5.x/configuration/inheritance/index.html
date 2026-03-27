@@ -2280,7 +2280,11 @@
 
 
 <h1 id="content-inheritance">Content Inheritance<a class="headerlink" href="#content-inheritance" title="Permanent link">&para;</a></h1>
-<p>xfg uses a multi-level inheritance system that lets you define base configurations once and customize them per-repository. The basic chain is <strong>root → repo overrides</strong>. With <a href="../groups/">groups</a>, the chain becomes <strong>root → group1 → group2 → repo overrides</strong>.</p>
+<p>xfg uses a multi-level inheritance system that lets you define base configurations once and customize them per-repository.
+The basic chain is <strong>root → repo overrides</strong>. With <a href="../groups/">groups</a>, the chain becomes <strong>root → group1 → group2 → repo overrides</strong>.
+With <a href="../groups/#conditional-groups">conditional groups</a>, matching conditional groups merge after explicit groups:
+<strong>root → groups → conditional groups → repo overrides</strong>.
+When groups use <a href="../groups/#group-inheritance"><code>extends</code></a>, parent groups are automatically included in the chain before the child group.</p>
 <h2 id="inheritance-levels">Inheritance Levels<a class="headerlink" href="#inheritance-levels" title="Permanent link">&para;</a></h2>
 <h3 id="level-1-global-file-content">Level 1: Global File Content<a class="headerlink" href="#level-1-global-file-content" title="Permanent link">&para;</a></h3>
 <p>Define base content at the file level that applies to all repos:</p>

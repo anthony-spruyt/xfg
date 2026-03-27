@@ -2537,6 +2537,12 @@
 </thead>
 <tbody>
 <tr>
+<td><code>extends</code></td>
+<td><code>string \| string[]</code></td>
+<td>No</td>
+<td>Parent group name(s) to inherit from</td>
+</tr>
+<tr>
 <td><code>files</code></td>
 <td><code>object</code></td>
 <td>No</td>
@@ -2556,7 +2562,7 @@
 </tr>
 </tbody>
 </table>
-<p>Group files support <code>inherit: false</code> (discard accumulated files), <code>file: false</code> (remove a file), and full file config or override objects.</p>
+<p>Groups support <code>extends</code> (inherit from parent groups), <code>inherit: false</code> (discard accumulated files), <code>file: false</code> (remove a file), and full file config or override objects.</p>
 <h3 id="conditional-group-config">Conditional Group Config<a class="headerlink" href="#conditional-group-config" title="Permanent link">&para;</a></h3>
 <table>
 <thead>

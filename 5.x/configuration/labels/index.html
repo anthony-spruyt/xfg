@@ -2339,6 +2339,7 @@
 <p><code>deleteOrphaned</code> only deletes labels that xfg previously managed (tracked in the manifest). It will not delete labels that were created manually or by other tools.</p>
 </div>
 <h2 id="inheritance">Inheritance<a class="headerlink" href="#inheritance" title="Permanent link">&para;</a></h2>
+<p>Labels from <a href="../groups/#conditional-groups">conditional groups</a> merge after explicit group labels and before repo overrides. Per-repo <code>inherit: false</code> discards all inherited labels including those from conditional groups.</p>
 <p>Labels support the same inheritance pattern as rulesets. Root-level labels are inherited by all repos:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">settings</span><span class="p">:</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">labels</span><span class="p">:</span>

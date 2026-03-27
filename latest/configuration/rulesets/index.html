@@ -2770,6 +2770,7 @@
 </span><span id="__span-12-20"><a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="w">    </span><span class="nt">maxFileSize</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10485760</span><span class="w"> </span><span class="c1"># 10MB in bytes</span>
 </span></code></pre></div>
 <h2 id="inheritance-and-opt-out">Inheritance and Opt-Out<a class="headerlink" href="#inheritance-and-opt-out" title="Permanent link">&para;</a></h2>
+<p>Rulesets from <a href="../groups/#conditional-groups">conditional groups</a> merge after explicit group rulesets and before repo overrides. Per-repo <code>inherit: false</code> discards all inherited rulesets including those from conditional groups.</p>
 <p>Like files, rulesets support inheritance with options to opt out.</p>
 <h3 id="default-inheritance">Default Inheritance<a class="headerlink" href="#default-inheritance" title="Permanent link">&para;</a></h3>
 <p>Define defaults at the root level and override per-repo:</p>

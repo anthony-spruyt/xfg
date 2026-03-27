@@ -2741,8 +2741,10 @@
     end
 
     subgraph Normalization
-        EXPAND["Expand git arrays"] --&gt; GROUPS["Merge group layers per-repo&lt;br/&gt;(files, prOptions, settings)&lt;br/&gt;root → group1 → group2 → …"]
-        GROUPS --&gt; MERGE["Merge per-repo overrides&lt;br/&gt;(deep merge / text merge / override)"]
+        EXPAND["Expand git arrays"] --&gt; EXTENDS["Resolve group extends&lt;br/&gt;(expand parent chains)"]
+        EXTENDS --&gt; GROUPS["Merge group layers per-repo&lt;br/&gt;(files, prOptions, settings)&lt;br/&gt;root → group1 → group2 → …"]
+        GROUPS --&gt; COND["Evaluate conditional groups&lt;br/&gt;(merge matching conditionalGroups&lt;br/&gt;in array order)"]
+        COND --&gt; MERGE["Merge per-repo overrides&lt;br/&gt;(deep merge / text merge / override)"]
         MERGE --&gt; ENV["Interpolate env vars&lt;br/&gt;&lt;code&gt;${VAR}&lt;/code&gt;, &lt;code&gt;${VAR:-default}&lt;/code&gt;"]
         ENV --&gt; OPTS["Resolve per-repo fields&lt;br/&gt;(createOnly, executable,&lt;br/&gt;template, vars, etc.)"]
     end
@@ -2821,8 +2823,10 @@
     end
 
     subgraph Normalization
-        EXPAND["Expand git arrays"] --&gt; GROUPS_S["Merge group layers per-repo&lt;br/&gt;(files, prOptions, settings)&lt;br/&gt;root → group1 → group2 → …"]
-        GROUPS_S --&gt; MERGE_S["Merge per-repo overrides&lt;br/&gt;(deep merge / text merge / override)"]
+        EXPAND["Expand git arrays"] --&gt; EXTENDS_S["Resolve group extends&lt;br/&gt;(expand parent chains)"]
+        EXTENDS_S --&gt; GROUPS_S["Merge group layers per-repo&lt;br/&gt;(files, prOptions, settings)&lt;br/&gt;root → group1 → group2 → …"]
+        GROUPS_S --&gt; COND_S["Evaluate conditional groups&lt;br/&gt;(merge matching conditionalGroups&lt;br/&gt;in array order)"]
+        COND_S --&gt; MERGE_S["Merge per-repo overrides&lt;br/&gt;(deep merge / text merge / override)"]
         MERGE_S --&gt; ENV_S["Interpolate env vars&lt;br/&gt;&lt;code&gt;${VAR}&lt;/code&gt;, &lt;code&gt;${VAR:-default}&lt;/code&gt;"]
         ENV_S --&gt; OPTS_S["Resolve per-repo fields&lt;br/&gt;(createOnly, executable,&lt;br/&gt;template, vars, etc.)"]
     end
