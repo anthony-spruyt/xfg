@@ -230,30 +230,22 @@ export function updateManifest(
   const newManaged = new Set<string>();
   const filesToDelete: string[] = [];
 
-  // Process current config files
   for (const [fileName, deleteOrphaned] of filesWithDeleteOrphaned) {
     if (deleteOrphaned === true) {
-      // File has deleteOrphaned: true, add to managed set
       newManaged.add(fileName);
     }
-    // If deleteOrphaned is false or undefined, don't add to managed set
-    // (explicitly setting false removes from tracking)
   }
 
-  // Find orphaned files: in old manifest for this config but not in current config
+  // Find orphaned files: in old manifest but not in current config
   for (const fileName of existingManaged) {
     if (!filesWithDeleteOrphaned.has(fileName)) {
-      // File was managed before but is no longer in config - delete it
       filesToDelete.push(fileName);
     }
   }
 
-  // Build updated manifest, preserving other configs
   const updatedConfigs: Record<string, XfgManifestConfigEntry> = {
     ...(manifest?.configs ?? {}),
   };
-
-  // Update this config's managed files
   const sortedManaged = Array.from(newManaged).sort((a, b) =>
     a.localeCompare(b)
   );

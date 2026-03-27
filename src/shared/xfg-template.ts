@@ -58,7 +58,7 @@ const ESCAPED_XFG_VAR_REGEX = /\$\$\{xfg:([a-zA-Z0-9._]+)\}/g;
  * Get the value of a built-in xfg variable.
  * Returns undefined if the variable is not recognized.
  */
-function getBuiltinVar(
+function getBuiltinVariable(
   varName: string,
   ctx: XfgTemplateContext
 ): string | undefined {
@@ -115,7 +115,7 @@ function buildXfgConfig(
     }
 
     // Then check built-in vars
-    const builtinValue = getBuiltinVar(varName, ctx);
+    const builtinValue = getBuiltinVariable(varName, ctx);
     if (builtinValue !== undefined) {
       return builtinValue;
     }

@@ -1,1333 +1,554 @@
 {
-  "command": "scan",
-  "overall_score": 89.6,
-  "objective_score": 91.9,
-  "strict_score": 89.0,
-  "verified_strict_score": 90.5,
-  "prev_overall_score": 89.6,
-  "prev_objective_score": 91.9,
-  "prev_strict_score": 89.0,
-  "prev_verified_strict_score": 90.5,
-  "profile": "full",
-  "noise_budget": 10,
-  "noise_global_budget": 0,
-  "hidden_by_detector": {
-    "smells": 24,
-    "test_coverage": 17,
-    "review": 9
-  },
-  "hidden_total": 50,
-  "diff": {
-    "new": 0,
-    "auto_resolved": 58,
-    "reopened": 0,
-    "total_current": 72,
-    "suspect_detectors": [
-      "review",
-      "signature"
-    ],
-    "chronic_reopeners": [
-      {
-        "id": "smells::src/cli/sync-command.ts::async_no_await",
-        "detector": "smells",
-        "file": "src/cli/sync-command.ts",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "2x Async functions without await",
-        "detail": {
-          "smell_id": "async_no_await",
-          "severity": "medium",
-          "count": 2,
-          "lines": [
-            184,
-            616
-          ]
-        },
-        "status": "open",
-        "note": "Reopened (\u00d76) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-27T12:13:50+00:00",
-        "resolved_at": null,
-        "reopen_count": 6,
-        "lang": "typescript",
-        "zone": "production",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "work_item_kind": "mechanical_defect",
-        "issue_kind": "mechanical_defect",
-        "origin": "scan"
+  "command": "backlog",
+  "items": [
+    {
+      "id": "review::.::holistic::abstraction_fitness::processor_options_overfill",
+      "confidence": "low",
+      "detector": "review",
+      "file": ".",
+      "summary": "ProcessorOptions passes unused fields through FileSyncStrategy to FileSyncOrchestrator",
+      "detail": {
+        "holistic": true,
+        "dimension": "abstraction_fitness",
+        "related_files": [
+          "src/sync/file-sync-strategy.ts",
+          "src/sync/file-sync-orchestrator.ts",
+          "src/sync/types.ts"
+        ],
+        "evidence": [
+          "FileSyncStrategy.execute() signature takes ProcessorOptions but uses zero fields \u2014 it forwards the entire object to fileSyncOrchestrator.sync()",
+          "FileSyncOrchestrator.sync() takes ProcessorOptions but only reads: workDir, configId, dryRun, noDelete, hasAppCredentials \u2014 5 of 10 fields",
+          "Unused at orchestrator: branchName, retries, executor, prTemplate, token",
+          "IWorkStrategy.execute and IFileSyncOrchestrator.sync both declare ProcessorOptions in their interface, so any substituted implementation receives fields it cannot meaningfully use",
+          "RunContext already exists as a narrower subset (workDir, dryRun, retries, token, executor) showing awareness of this pattern; the sync-specific subset (workDir, configId, dryRun, noDelete, hasAppCredentials) lacks an equivalent named type"
+        ],
+        "suggestion": "Add a FileSyncOptions = Pick<ProcessorOptions, 'workDir' | 'configId' | 'dryRun' | 'noDelete' | 'hasAppCredentials'> in types.ts, and update IWorkStrategy.execute and IFileSyncOrchestrator.sync to accept it. SyncWorkflow.execute() constructs this narrower object before calling workStrategy.execute().",
+        "reasoning": "",
+        "summary_hash": "672dd47e"
       },
-      {
-        "id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
-        "detector": "security",
-        "file": "src/settings/repo-settings/diff.ts",
-        "tier": 2,
-        "confidence": "high",
-        "summary": "Hardcoded secret in variable 'secretScanning'",
-        "detail": {
-          "kind": "hardcoded_secret_name",
-          "severity": "high",
-          "line": 40,
-          "content": "  secretScanning: \"_secret_scanning\",",
-          "remediation": "Move secret to environment variable or secrets manager"
-        },
-        "status": "open",
-        "note": "Reopened (\u00d712) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-27T12:13:50+00:00",
-        "resolved_at": null,
-        "reopen_count": 12,
-        "zone": "production",
-        "lang": "typescript",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "wontfix_scan_count": 105,
-        "wontfix_snapshot": {
-          "captured_at": "2026-03-06T07:04:07+00:00",
-          "scan_count": 105,
-          "tier": 2,
-          "confidence": "high",
-          "detail": {
-            "kind": "hardcoded_secret_name",
-            "severity": "high",
-            "line": 40,
-            "content": "  secretScanning: \"_secret_scanning\",",
-            "remediation": "Move secret to environment variable or secrets manager"
-          }
-        },
-        "work_item_kind": "mechanical_defect",
-        "issue_kind": "mechanical_defect",
-        "origin": "scan"
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::abstraction_fitness::processor_options_overfill\" --note \"<what you did>\" --confirm",
+      "queue_position": 1
+    },
+    {
+      "id": "review::.::holistic::ai_generated_debt::manifest_restating_comments",
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "Cluster of restating comments in updateManifest that echo the adjacent code",
+      "detail": {
+        "holistic": true,
+        "dimension": "ai_generated_debt",
+        "related_files": [
+          "src/sync/manifest.ts"
+        ],
+        "evidence": [
+          "Line 236: '// File has deleteOrphaned: true, add to managed set' above 'newManaged.add(fileName)' \u2014 the condition already contains deleteOrphaned === true",
+          "Line 246: '// File was managed before but is no longer in config - delete it' above 'filesToDelete.push(fileName)' \u2014 restates what push() does and what '!has()' means",
+          "Lines 239-240: '// If deleteOrphaned is false or undefined, don't add to managed set / (explicitly setting false removes from tracking)' \u2014 the else branch is implicit; the parenthetical adds slight insight but could be a single tighter comment",
+          "Lines 251, 256: '// Build updated manifest, preserving other configs' and '// Update this config's managed files' \u2014 section labels that echo variable names (updatedConfigs, sortedManaged)"
+        ],
+        "suggestion": "Remove or compress the restating comments. The outer block comment '// Process current config files' and '// Find orphaned files: in old manifest for this config but not in current config' are section labels that provide navigational value and can stay. The per-line comments inside the loops (lines 236, 239-240, 246) and the header comments on trivial assignments (lines 251, 256) should be removed \u2014 the code is self-explanatory at that level.",
+        "reasoning": "",
+        "summary_hash": "d6ecfc8f"
       },
-      {
-        "id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
-        "detector": "security",
-        "file": "src/settings/repo-settings/diff.ts",
-        "tier": 2,
-        "confidence": "high",
-        "summary": "Hardcoded secret in variable 'secretScanningPushProtection'",
-        "detail": {
-          "kind": "hardcoded_secret_name",
-          "severity": "high",
-          "line": 41,
-          "content": "  secretScanningPushProtection: \"_secret_scanning_push_protection\",",
-          "remediation": "Move secret to environment variable or secrets manager"
-        },
-        "status": "open",
-        "note": "Reopened (\u00d712) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-27T12:13:50+00:00",
-        "resolved_at": null,
-        "reopen_count": 12,
-        "zone": "production",
-        "lang": "typescript",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "wontfix_scan_count": 105,
-        "wontfix_snapshot": {
-          "captured_at": "2026-03-06T07:04:07+00:00",
-          "scan_count": 105,
-          "tier": 2,
-          "confidence": "high",
-          "detail": {
-            "kind": "hardcoded_secret_name",
-            "severity": "high",
-            "line": 41,
-            "content": "  secretScanningPushProtection: \"_secret_scanning_push_protection\",",
-            "remediation": "Move secret to environment variable or secrets manager"
-          }
-        },
-        "work_item_kind": "mechanical_defect",
-        "issue_kind": "mechanical_defect",
-        "origin": "scan"
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::ai_generated_debt::manifest_restating_comments\" --note \"<what you did>\" --confirm",
+      "queue_position": 2
+    },
+    {
+      "id": "review::.::holistic::api_surface_coherence::type_guards_async_outlier",
+      "confidence": "medium",
+      "detector": "review",
+      "file": ".",
+      "summary": "safeCleanup (async) lives in type-guards.ts alongside sync-only type guard utilities",
+      "detail": {
+        "holistic": true,
+        "dimension": "api_surface_coherence",
+        "related_files": [
+          "src/shared/type-guards.ts"
+        ],
+        "evidence": [
+          "type-guards.ts exports: isPlainObject (sync), toErrorMessage (sync), safeCleanup (async: accepts () => Promise<void>).",
+          "Module name 'type-guards' signals a narrow scope of sync predicate/coercion utilities; safeCleanup is an async lifecycle helper with no relation to type checking.",
+          "Callers importing safeCleanup must import from a module that implies type predicates, which misrepresents the dependency."
+        ],
+        "suggestion": "Move safeCleanup to a more appropriate home such as src/shared/cleanup-utils.ts or src/shared/lifecycle-utils.ts, and update all importers. This removes the async/purpose anomaly from the type-guards module.",
+        "reasoning": "",
+        "summary_hash": "188b2e4f"
       },
-      {
-        "id": "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts",
-        "detector": "test_coverage",
-        "file": "src/shared/xfg-template.ts",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "Shallow tests: xfg-template.test.ts has 43 assertions across 44 test functions",
-        "detail": {
-          "kind": "shallow_tests",
-          "test_file": "test/unit/xfg-template.test.ts",
-          "assertions": 43,
-          "test_functions": 44,
-          "loc_weight": 13.96424004376894
-        },
-        "status": "open",
-        "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-04T00:19:16+00:00",
-        "last_seen": "2026-03-27T12:13:50+00:00",
-        "resolved_at": null,
-        "reopen_count": 3,
-        "lang": "typescript",
-        "zone": "production",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "work_item_kind": "mechanical_defect",
-        "issue_kind": "mechanical_defect",
-        "origin": "scan"
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::api_surface_coherence::type_guards_async_outlier\" --note \"<what you did>\" --confirm",
+      "queue_position": 3
+    },
+    {
+      "id": "review::.::holistic::contract_coherence::withretry_throws_aborderror_inaccurate",
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "withRetry() @throws AbortError is inaccurate: pRetry unwraps AbortError before propagating, so callers never observe AbortError",
+      "detail": {
+        "holistic": true,
+        "dimension": "contract_coherence",
+        "related_files": [
+          "src/shared/retry-utils.ts"
+        ],
+        "evidence": [
+          "Docstring at line 179: '@throws AbortError for permanent failures, or the last error after all retries exhausted'",
+          "Implementation at line 199: 'throw new AbortError(error)' wraps the original error inside AbortError to stop pRetry",
+          "pRetry's documented behavior: when it receives an AbortError, it extracts the wrapped originalError and throws THAT to the caller \u2014 not the AbortError itself",
+          "Callers of withRetry() catching AbortError to detect permanent failures will never match: they receive the original error (e.g. ValidationError, SyncError) directly"
+        ],
+        "suggestion": "Update the @throws annotation to accurately describe what callers receive: '@throws {ValidationError | SyncError | Error} The original error for permanent failures (pRetry unwraps AbortError before propagating), or the last transient error after all retries exhausted'. Alternatively add an inline note: 'Note: pRetry unwraps AbortError \u2014 callers receive the originalError, not an AbortError instance.'",
+        "reasoning": "",
+        "summary_hash": "25a404cf"
       },
-      {
-        "id": "facade::src/settings/labels/index.ts",
-        "detector": "facade",
-        "file": "src/settings/labels/index.ts",
-        "tier": 2,
-        "confidence": "medium",
-        "summary": "Re-export facade (8 LOC): imports from ./formatter.js, ./processor.js, ./github-labels-strategy.js (1 importers)",
-        "detail": {
-          "loc": 8,
-          "importers": 1,
-          "imports_from": [
-            "./formatter.js",
-            "./processor.js",
-            "./github-labels-strategy.js"
-          ],
-          "kind": "file"
-        },
-        "status": "open",
-        "note": "Reopened (\u00d77) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-05T01:16:56+00:00",
-        "last_seen": "2026-03-27T12:13:50+00:00",
-        "resolved_at": null,
-        "reopen_count": 7,
-        "lang": "typescript",
-        "zone": "production",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "wontfix_scan_count": 112,
-        "wontfix_snapshot": {
-          "captured_at": "2026-03-06T08:15:04+00:00",
-          "scan_count": 112,
-          "tier": 2,
-          "confidence": "medium",
-          "detail": {
-            "loc": 5,
-            "importers": 1,
-            "imports_from": [
-              "./formatter.js",
-              "./processor.js"
-            ],
-            "kind": "file"
-          }
-        },
-        "work_item_kind": "mechanical_defect",
-        "issue_kind": "mechanical_defect",
-        "origin": "scan"
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::contract_coherence::withretry_throws_aborderror_inaccurate\" --note \"<what you did>\" --confirm",
+      "queue_position": 4
+    },
+    {
+      "id": "review::.::holistic::convention_outlier::import_type_inconsistency",
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "Interface-only symbols mixed between value imports and import type across ~15 files",
+      "detail": {
+        "holistic": true,
+        "dimension": "convention_outlier",
+        "related_files": [
+          "src/sync/repository-session.ts",
+          "src/vcs/pr-creator.ts",
+          "src/cli/sync-command.ts",
+          "src/vcs/pr-strategy.ts",
+          "src/vcs/git-ops.ts",
+          "src/vcs/commit-strategy-selector.ts",
+          "src/vcs/graphql-commit-strategy.ts",
+          "src/lifecycle/github-lifecycle-provider.ts",
+          "src/lifecycle/repo-lifecycle-factory.ts",
+          "src/lifecycle/ado-migration-source.ts",
+          "src/settings/rulesets/github-ruleset-strategy.ts",
+          "src/settings/labels/github-labels-strategy.ts",
+          "src/settings/repo-settings/github-repo-settings-strategy.ts"
+        ],
+        "evidence": [
+          "ICommandExecutor (an interface) is value-imported in 15 files but import-typed in 6 others: authenticated-git-ops.ts, branch-manager.ts, commit-push-manager.ts, repo-lifecycle-manager.ts, types.ts, gh-api-utils.ts all use 'import type { ICommandExecutor }'.",
+          "In sync-command.ts, GitHubRepoInfo is correctly 'import type' (line 16) while RepoInfo from the same module is a value import (line 35) \u2014 inconsistent within the same file for symbols from the same source.",
+          "ILogger is value-imported in repository-session.ts but 'import type' in auth-options-builder.ts, repository-processor.ts, file-sync-orchestrator.ts, and pr-merge-handler.ts.",
+          "RepoInfo imported as plain value in pr-creator.ts and repository-session.ts (interface, never instantiated)."
+        ],
+        "suggestion": "Add 'type' modifier to these interface-only imports: use 'import type { ICommandExecutor }' in all 15 value-import files, split mixed imports where needed (e.g. 'import { assertGitHubRepo } from' + 'import type { RepoInfo } from' for the same module). This is a mechanical multi-file edit with no behavioral change.",
+        "reasoning": "",
+        "summary_hash": "9f1ea185"
       },
-      {
-        "id": "smells::src/shared/gh-api-utils.ts::async_no_await",
-        "detector": "smells",
-        "file": "src/shared/gh-api-utils.ts",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "1x Async functions without await",
-        "detail": {
-          "smell_id": "async_no_await",
-          "severity": "medium",
-          "count": 1,
-          "lines": [
-            195
-          ]
-        },
-        "status": "open",
-        "note": "Reopened (\u00d75) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-05T02:29:11+00:00",
-        "last_seen": "2026-03-27T12:13:50+00:00",
-        "resolved_at": null,
-        "reopen_count": 5,
-        "lang": "typescript",
-        "zone": "production",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "work_item_kind": "mechanical_defect",
-        "issue_kind": "mechanical_defect",
-        "origin": "scan"
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::convention_outlier::import_type_inconsistency\" --note \"<what you did>\" --confirm",
+      "queue_position": 5
+    },
+    {
+      "id": "review::.::holistic::convention_outlier::settings_test_split_organization",
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "Settings submodule tests split across flat root and subdirectories with duplicate coverage",
+      "detail": {
+        "holistic": true,
+        "dimension": "convention_outlier",
+        "related_files": [
+          "test/unit/labels-diff.test.ts",
+          "test/unit/settings/labels/diff.test.ts",
+          "test/unit/labels-formatter.test.ts",
+          "test/unit/labels-processor.test.ts",
+          "test/unit/labels-converter.test.ts",
+          "test/unit/labels-github-strategy.test.ts",
+          "test/unit/ruleset-diff.test.ts",
+          "test/unit/ruleset-formatter.test.ts",
+          "test/unit/ruleset-plan-formatter.test.ts",
+          "test/unit/ruleset-processor.test.ts",
+          "test/unit/settings/rulesets/diff-algorithm.test.ts",
+          "test/unit/settings/rulesets/github-ruleset-strategy.test.ts",
+          "test/unit/repo-settings-diff.test.ts",
+          "test/unit/repo-settings-formatter.test.ts",
+          "test/unit/settings/repo-settings/github-repo-settings-strategy.test.ts",
+          "test/unit/lifecycle-report.test.ts"
+        ],
+        "evidence": [
+          "test/unit/labels-diff.test.ts (306 lines) and test/unit/settings/labels/diff.test.ts (266 lines) both test the same diffLabels function from src/settings/labels/diff.ts \u2014 confirmed duplicate coverage from an incomplete migration.",
+          "All other lifecycle tests live in test/unit/lifecycle/ but lifecycle-report.test.ts remains in the flat root \u2014 inconsistent placement for a sibling file.",
+          "Rulesets have 4 tests at the flat root (ruleset-diff, ruleset-formatter, ruleset-plan-formatter, ruleset-processor) and 2 in test/unit/settings/rulesets/ \u2014 split location with no documented reason.",
+          "New tests added in the subdirectory structure (github-ruleset-strategy.test.ts, repo-settings-strategy.test.ts) while old tests remain at root \u2014 the migration started but stalled, leaving two competing conventions simultaneously active."
+        ],
+        "suggestion": "Complete the migration: move all settings-related tests from the flat root into their respective test/unit/settings/{labels,repo-settings,rulesets}/ subdirectories, deduplicate the overlapping labels-diff coverage, and move lifecycle-report.test.ts into test/unit/lifecycle/. Report the inconsistency; do not add new abstraction layers.",
+        "reasoning": "",
+        "summary_hash": "8c02cca6"
       },
-      {
-        "id": "test_coverage::src/cli/types.ts::transitive_only",
-        "detector": "test_coverage",
-        "file": "src/cli/types.ts",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "No direct tests (89 LOC, 2 importers) \u2014 covered only via imports from tested modules",
-        "detail": {
-          "kind": "transitive_only",
-          "loc": 89,
-          "importer_count": 2,
-          "loc_weight": 9.433981132056603
-        },
-        "status": "open",
-        "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-06T08:52:20+00:00",
-        "last_seen": "2026-03-27T12:13:50+00:00",
-        "resolved_at": null,
-        "reopen_count": 3,
-        "lang": "typescript",
-        "zone": "production",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "work_item_kind": "mechanical_defect",
-        "issue_kind": "mechanical_defect",
-        "origin": "scan"
-      }
-    ],
-    "skipped_other_lang": 0,
-    "resolved_out_of_scope": 31,
-    "ignored": 0,
-    "ignore_patterns": 1,
-    "raw_issues": 72,
-    "suppressed_pct": 0.0
-  },
-  "stats": {
-    "total": 1441,
-    "auto_resolved": 1080,
-    "deferred": 0,
-    "false_positive": 61,
-    "fixed": 202,
-    "open": 96,
-    "triaged_out": 0,
-    "wontfix": 2,
-    "by_tier": {
-      "1": {
-        "auto_resolved": 8,
-        "deferred": 0,
-        "false_positive": 2,
-        "fixed": 69,
-        "open": 12,
-        "triaged_out": 0,
-        "wontfix": 0
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::convention_outlier::settings_test_split_organization\" --note \"<what you did>\" --confirm",
+      "queue_position": 6
+    },
+    {
+      "id": "review::.::holistic::dependency_health::p_retry_engine_mismatch",
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "p-retry@7.1.1 requires node>=20 but project declares node>=18 support",
+      "detail": {
+        "holistic": true,
+        "dimension": "dependency_health",
+        "related_files": [
+          "package.json"
+        ],
+        "evidence": [
+          "package.json declares engines: { node: '>=18' }",
+          "p-retry@7.1.1 package.json declares engines: { node: '>=20' }",
+          "p-retry is a production dependency used via src/shared/retry-utils.ts"
+        ],
+        "suggestion": "Either: (a) update the project's engines field to node>=20 to match p-retry's actual requirement, or (b) downgrade to p-retry@6.x which supports node>=12 if Node 18 support is genuinely required.",
+        "reasoning": "",
+        "summary_hash": "fdd204ad"
       },
-      "2": {
-        "auto_resolved": 363,
-        "deferred": 0,
-        "false_positive": 32,
-        "fixed": 98,
-        "open": 12,
-        "triaged_out": 0,
-        "wontfix": 2
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::dependency_health::p_retry_engine_mismatch\" --note \"<what you did>\" --confirm",
+      "queue_position": 7
+    },
+    {
+      "id": "review::.::holistic::error_consistency::pr_workflow_executor_broad_catch",
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "PRWorkflowExecutor.execute() converts all errors \u2014 including permanent auth failures \u2014 into a uniform success=false result",
+      "detail": {
+        "holistic": true,
+        "dimension": "error_consistency",
+        "related_files": [
+          "src/vcs/pr-strategy.ts"
+        ],
+        "evidence": [
+          "Lines 61-79 of src/vcs/pr-strategy.ts: catch(error) returns {success: false, message: `Failed to create PR: ${message}`} for all error types",
+          "Permanent errors (auth failures, token expiry) are indistinguishable from transient ones at the caller \u2014 both appear as PRResult with success=false",
+          "BasePRStrategy.executeMergeCommand uses withRetry which already discriminates permanent vs transient; PRWorkflowExecutor does not apply the same discipline to PR creation"
+        ],
+        "suggestion": "Either re-throw permanent errors (using isPermanentError from retry-utils) so callers can handle them as fatal, or log at warn/error level when a permanent error is swallowed so operators can detect auth failures in CI logs.",
+        "reasoning": "",
+        "summary_hash": "324110e0"
       },
-      "3": {
-        "auto_resolved": 634,
-        "deferred": 0,
-        "false_positive": 27,
-        "fixed": 15,
-        "open": 72,
-        "triaged_out": 0,
-        "wontfix": 0
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::error_consistency::pr_workflow_executor_broad_catch\" --note \"<what you did>\" --confirm",
+      "queue_position": 8
+    },
+    {
+      "id": "review::.::holistic::error_consistency::resolve_github_token_silent_no_fallback",
+      "confidence": "medium",
+      "detector": "review",
+      "file": ".",
+      "summary": "resolveGitHubToken logs app-token resolution failure at debug level even when no fallback token exists, making the failure effectively silent",
+      "detail": {
+        "holistic": true,
+        "dimension": "error_consistency",
+        "related_files": [
+          "src/shared/gh-api-utils.ts"
+        ],
+        "evidence": [
+          "Lines 207-214 of src/shared/gh-api-utils.ts: catch block uses log?.debug(...) regardless of whether envToken is present",
+          "When both app token resolution fails and envToken is absent, the returned {token: undefined, skipped: false} looks like 'no token manager configured' rather than 'auth resolution failed'",
+          "sibling pattern in checkAutoMergeEnabled (previously fixed) logs at warn for transient failures \u2014 this is less severe but the same category"
+        ],
+        "suggestion": "Upgrade the log call to log?.warn(...) when envToken is also absent, so operators see a warning when authentication resolution fails with no fallback. The debug log for the fallback case is fine as-is.",
+        "reasoning": "",
+        "summary_hash": "d5cc242f"
       },
-      "4": {
-        "auto_resolved": 75,
-        "deferred": 0,
-        "false_positive": 0,
-        "fixed": 20,
-        "open": 0,
-        "triaged_out": 0,
-        "wontfix": 0
-      }
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::error_consistency::resolve_github_token_silent_no_fallback\" --note \"<what you did>\" --confirm",
+      "queue_position": 9
+    },
+    {
+      "id": "review::.::holistic::high_level_elegance::lifecycle_action_render_duplication",
+      "confidence": "medium",
+      "detector": "review",
+      "file": ".",
+      "summary": "Lifecycle action rendering logic is duplicated between output/lifecycle-report.ts and output/unified-summary.ts",
+      "detail": {
+        "holistic": true,
+        "dimension": "high_level_elegance",
+        "related_files": [
+          "src/output/lifecycle-report.ts",
+          "src/output/unified-summary.ts"
+        ],
+        "evidence": [
+          "output/lifecycle-report.ts: renderActionDiffLines() iterates LifecycleAction[], dispatches on action type ('created', 'forked', 'migrated'), and emits diff lines including settings sub-lines.",
+          "output/unified-summary.ts: renderLifecycleLines() does the same dispatch with near-identical logic for 'created', 'forked', 'migrated' and settings sub-lines.",
+          "The two functions diverge only in minor formatting (lifecycle-report.ts prefixes with '+', unified-summary.ts prefixes with '+' too but omits the repo name from the created case). The structural pattern is otherwise identical, indicating a missed shared extraction."
+        ],
+        "suggestion": "Consolidate the action-to-diff-line rendering into a single exported function in output/lifecycle-report.ts (or a dedicated helper), parameterized for the minor formatting difference. unified-summary.ts should call it rather than maintain a parallel copy. This follows the pattern already used for formatCountEntry and renderSyncLines which are already shared across output modules.",
+        "reasoning": "",
+        "summary_hash": "edee18ce"
+      },
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::high_level_elegance::lifecycle_action_render_duplication\" --note \"<what you did>\" --confirm",
+      "queue_position": 10
+    },
+    {
+      "id": "review::.::holistic::high_level_elegance::repo_detector_responsibility_blur",
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "shared/repo-detector.ts mixes URL parsing, platform detection, display-name formatting, and type guards into one 38-importer hub",
+      "detail": {
+        "holistic": true,
+        "dimension": "high_level_elegance",
+        "related_files": [
+          "src/shared/repo-detector.ts"
+        ],
+        "evidence": [
+          "src/shared/repo-detector.ts is the most-imported file in the codebase (38 importers) and contains: parseGitUrl (URL parsing + platform detection), getRepoDisplayName (display formatting), isGitHubRepo / isAzureDevOpsRepo / isGitLabRepo (type guards), RepoInfo subtypes, and context interfaces. These are distinct capabilities bundled under a single file name that implies only URL parsing.",
+          "The mechanical scan flags 'responsibility_cohesion: 5 disconnected function clusters (15 functions) \u2014 likely mixed responsibilities' for this file, confirming the concern.",
+          "Callers needing only type guards must import from the same file as callers needing URL parsing, preventing the interface-segregation benefit that the rest of the codebase achieves through dedicated files."
+        ],
+        "suggestion": "Extract type guard functions (isGitHubRepo, isAzureDevOpsRepo, isGitLabRepo) and display helpers (getRepoDisplayName) into a sibling shared/repo-info-utils.ts (or similar name), leaving repo-detector.ts focused purely on URL parsing and the RepoInfo type definitions. This reduces the hub's blast radius and makes each file's responsibility self-evident from its name.",
+        "reasoning": "",
+        "summary_hash": "d04cdf84"
+      },
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::high_level_elegance::repo_detector_responsibility_blur\" --note \"<what you did>\" --confirm",
+      "queue_position": 11
+    },
+    {
+      "id": "review::.::holistic::logic_clarity::redundant_async_vcs_helpers",
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "Three vcs-layer methods declared async but never await, false async signal to readers",
+      "detail": {
+        "holistic": true,
+        "dimension": "logic_clarity",
+        "related_files": [
+          "src/vcs/git-ops.ts",
+          "src/vcs/authenticated-git-ops.ts"
+        ],
+        "evidence": [
+          "git-ops.ts:39: private async exec(command: string, cwd?: string): Promise<string> { return this._executor.exec(command, cwd ?? this._workDir); } with no await, async is redundant.",
+          "authenticated-git-ops.ts:42: private async execWithRetry(command: string): Promise<string> { return withRetry(...); } with no await, async is redundant.",
+          "authenticated-git-ops.ts:168: async lsRemote(branchName: string, options?: {...}): Promise<string>, both code paths (skipRetry and default) return Promises directly without await."
+        ],
+        "suggestion": "Remove the async keyword from all three methods: private exec(), private execWithRetry(), and lsRemote(). Each already returns a Promise<string> from the delegated call, so the async wrapper adds no value and misleads readers into thinking these methods contain awaited operations.",
+        "reasoning": "",
+        "summary_hash": "3b5c062a"
+      },
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::logic_clarity::redundant_async_vcs_helpers\" --note \"<what you did>\" --confirm",
+      "queue_position": 12
+    },
+    {
+      "id": "review::.::holistic::low_level_elegance::validator_duplicate_cond_group_probes",
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "validateRawConfig and validateForSync duplicate identical conditional-group probe lambdas instead of sharing a helper",
+      "detail": {
+        "holistic": true,
+        "dimension": "low_level_elegance",
+        "related_files": [
+          "src/config/validator.ts"
+        ],
+        "evidence": [
+          "validateRawConfig (lines 903-921) computes hasCondGrpFiles, hasCondGrpSettings, hasCondGrpPR with inline lambdas",
+          "validateForSync (lines 984-1002) computes the same three booleans with identical inline expressions \u2014 hasCondGrpFiles filter (k !== 'inherit' && cg.files![k] !== false) is verbatim duplicated",
+          "hasGroupFiles is already extracted as a shared helper (line 874), demonstrating the pattern exists; the conditional-group equivalents were not extracted"
+        ],
+        "suggestion": "Extract hasConditionalGroupFiles(config), hasConditionalGroupSettings(config), hasConditionalGroupPR(config) helpers (or a single hasConditionalGroupContent(config) returning a flags object) mirroring the existing hasGroupFiles helper, and delegate from both validateRawConfig and validateForSync.",
+        "reasoning": "",
+        "summary_hash": "0f8a9df9"
+      },
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::low_level_elegance::validator_duplicate_cond_group_probes\" --note \"<what you did>\" --confirm",
+      "queue_position": 13
+    },
+    {
+      "id": "review::.::holistic::mid_level_elegance::lifecycle_create_settings_recomputed",
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "toCreateRepoSettings called twice with the same input in runLifecyclePhase because the result is not surfaced by the helper",
+      "detail": {
+        "holistic": true,
+        "dimension": "mid_level_elegance",
+        "related_files": [
+          "src/cli/sync-command.ts",
+          "src/lifecycle/lifecycle-helpers.ts"
+        ],
+        "evidence": [
+          "sync-command.ts:508-510: runLifecycleCheck receives repoSettings: ctx.config.settings?.repo and computes createSettings internally (lifecycle-helpers.ts:67)",
+          "sync-command.ts:517: the same ctx.config.settings?.repo is passed to toCreateRepoSettings again immediately after runLifecycleCheck returns, because LifecycleCheckResult does not include the createSettings that was already computed inside",
+          "The second call exists only to populate the lifecycle report input (lines 518-529) \u2014 information available from the first call is not propagated across the boundary"
+        ],
+        "suggestion": "Add createSettings to LifecycleCheckResult (the return type of runLifecycleCheck) so the computed value is surfaced at the boundary, eliminating the recomputation and the dual-call pattern in the caller.",
+        "reasoning": "",
+        "summary_hash": "2c343f9c"
+      },
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::mid_level_elegance::lifecycle_create_settings_recomputed\" --note \"<what you did>\" --confirm",
+      "queue_position": 14
+    },
+    {
+      "id": "review::.::holistic::mid_level_elegance::run_settings_processor_unchecked_cast",
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "runSettingsProcessor widens BaseProcessorResult to SettingsResult via unchecked cast",
+      "detail": {
+        "holistic": true,
+        "dimension": "mid_level_elegance",
+        "related_files": [
+          "src/cli/sync-command.ts",
+          "src/cli/types.ts"
+        ],
+        "evidence": [
+          "sync-command.ts:283-285: factory().process(...).then((result) => result as SettingsResult) \u2014 TypeScript accepts this only because BaseProcessorResult is a supertype, but SettingsResult adds planOutput and warnings which may or may not be present",
+          "sync-command.ts:238,254,270: a second cast layer in buildSettingsDescriptors assigns r as ProcessorResults['rulesetResult'] / labelsResult / settingsResult \u2014 these are structurally narrower types computed from the same widened SettingsResult",
+          "cli/types.ts:63-66: SettingsResult.planOutput is typed as { lines?: string[] }, a subset of the richer plan types in the settings modules, creating a shadow type that is never validated"
+        ],
+        "suggestion": "Return the concrete processor result type from runSettingsProcessor and let logSettingsResult accept a union or a minimal interface that captures only the fields it actually reads (planOutput?.lines, warnings, skipped, success, message). Alternatively, add a runtime check or type predicate before accessing planOutput.lines to remove the need for the cast.",
+        "reasoning": "",
+        "summary_hash": "6e8cbe85"
+      },
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::mid_level_elegance::run_settings_processor_unchecked_cast\" --note \"<what you did>\" --confirm",
+      "queue_position": 15
+    },
+    {
+      "id": "review::.::holistic::naming_quality::get_builtin_var_abbreviation",
+      "confidence": "medium",
+      "detector": "review",
+      "file": ".",
+      "summary": "getBuiltinVar() abbreviates 'Variable' to 'Var', inconsistent with codebase norm of spelling out domain nouns",
+      "detail": {
+        "holistic": true,
+        "dimension": "naming_quality",
+        "related_files": [
+          "src/shared/xfg-template.ts"
+        ],
+        "evidence": [
+          "Rest of codebase spells domain nouns in full: repoInfo, authOptions, envToken, tokenManager, repoName \u2014 no other abbreviations of this form exist",
+          "getBuiltinVar is a package-internal function; renaming to getBuiltinVariable has zero external impact"
+        ],
+        "suggestion": "Rename to 'getBuiltinVariable' to align with the codebase norm of spelling out domain nouns fully.",
+        "reasoning": "",
+        "summary_hash": "654a6004"
+      },
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::naming_quality::get_builtin_var_abbreviation\" --note \"<what you did>\" --confirm",
+      "queue_position": 16
+    },
+    {
+      "id": "review::.::holistic::naming_quality::handle_commit_error_generic_verb",
+      "confidence": "medium",
+      "detector": "review",
+      "file": ".",
+      "summary": "CommitPushManager.handleCommitError() uses generic 'handle' verb that obscures its classify-and-rethrow logic",
+      "detail": {
+        "holistic": true,
+        "dimension": "naming_quality",
+        "related_files": [
+          "src/sync/commit-push-manager.ts"
+        ],
+        "evidence": [
+          "Method is named handleCommitError but its body inspects the error type, decides whether to suppress or rethrow, and logs accordingly \u2014 the name reveals none of this decision logic",
+          "Rename candidates: classifyCommitError, handleUnexpectedCommitError, or rethrowIfUnexpectedCommitError would communicate the behavior without requiring a reader to open the implementation"
+        ],
+        "suggestion": "Rename to 'rethrowIfUnexpectedCommitError' or 'classifyAndRethrowCommitError' to make the decision logic visible from the call site.",
+        "reasoning": "",
+        "summary_hash": "d4a40c89"
+      },
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::naming_quality::handle_commit_error_generic_verb\" --note \"<what you did>\" --confirm",
+      "queue_position": 17
+    },
+    {
+      "id": "review::.::holistic::package_organization::branch_utils_shared_straggler",
+      "confidence": "medium",
+      "detector": "review",
+      "file": ".",
+      "summary": "src/shared/branch-utils.ts has fan_in=1 and belongs closer to its sole consumer",
+      "detail": {
+        "holistic": true,
+        "dimension": "package_organization",
+        "related_files": [
+          "src/shared/branch-utils.ts",
+          "src/cli/sync-command.ts"
+        ],
+        "evidence": [
+          "branch-utils.ts exports sanitizeBranchName() and validateBranchName(), imported only by src/cli/sync-command.ts.",
+          "grep search confirms zero other importers across all production source files.",
+          "shared/ is semantically a cross-cutting utilities layer (avg fan_in=11.8); a file with fan_in=1 used only at the CLI layer does not match that profile.",
+          "The file has no inbound dependency pressure from vcs/ or sync/ modules that would justify keeping it in shared/."
+        ],
+        "suggestion": "Move src/shared/branch-utils.ts to src/cli/branch-utils.ts (or inline its two small functions into sync-command.ts if they are not expected to grow). Migration steps: (1) copy file to src/cli/branch-utils.ts, (2) update the import in src/cli/sync-command.ts from '../shared/branch-utils.js' to './branch-utils.js', (3) delete src/shared/branch-utils.ts, (4) run `npm run build && npm test` to verify. If branch validation is expected to be reused by sync/ in the future, leave it in shared/ and document the intent.",
+        "reasoning": "",
+        "summary_hash": "15c7331b"
+      },
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::package_organization::branch_utils_shared_straggler\" --note \"<what you did>\" --confirm",
+      "queue_position": 18
+    },
+    {
+      "id": "review::.::holistic::test_strategy::test_tmpdir_process_cwd",
+      "confidence": "high",
+      "detector": "review",
+      "file": ".",
+      "summary": "Test temp directories created in process.cwd() instead of tmpdir(), leaving artifacts in source tree on crash",
+      "detail": {
+        "holistic": true,
+        "dimension": "test_strategy",
+        "related_files": [
+          "test/unit/manifest.test.ts",
+          "test/unit/index.test.ts",
+          "test/unit/sync-command.test.ts",
+          "test/unit/vcs/azure-pr-strategy.test.ts",
+          "test/unit/vcs/graphql-commit-strategy.test.ts",
+          "test/unit/vcs/github-pr-strategy.test.ts",
+          "test/unit/vcs/gitlab-pr-strategy.test.ts",
+          "test/unit/vcs/git-commit-strategy.test.ts"
+        ],
+        "evidence": [
+          "manifest.test.ts:17: const testDir = join(process.cwd(), 'tmp-manifest-test')",
+          "index.test.ts:13: const testDir = join(process.cwd(), 'test-cli-tmp')",
+          "sync-command.test.ts:35: const testDir = join(process.cwd(), 'test-sync-cmd-tmp')",
+          "graphql-commit-strategy.test.ts:37: const testDir = join(process.cwd(), 'test-graphql-commit-strategy-tmp')",
+          "15 total occurrences across 8 test files",
+          ".gitignore only excludes 'tmp/' \u2014 named dirs like 'test-cli-tmp', 'test-sync-cmd-tmp' etc. are not covered",
+          "Sibling tests in sync/ (branch-manager, file-writer, etc.) correctly use tmpdir() \u2014 inconsistent practice within the same codebase"
+        ],
+        "suggestion": "Replace process.cwd() with tmpdir() from node:os (already imported in the sibling tests that use it correctly). E.g., change 'join(process.cwd(), \"test-cli-tmp\")' to 'join(tmpdir(), \"test-cli-tmp-\" + Date.now())'. Alternatively, add the named patterns to .gitignore as a safety net.",
+        "reasoning": "",
+        "summary_hash": "d287d6e0"
+      },
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify plan resolve \"review::.::holistic::test_strategy::test_tmpdir_process_cwd\" --note \"<what you did>\" --confirm",
+      "queue_position": 19
     }
-  },
-  "open_scope": {
-    "in_scope": 96,
-    "out_of_scope": 116,
-    "global": 212
-  },
-  "warnings": [
-    "\u27f3 7 chronic reopeners \u2014 run `desloppify show --chronic` to see them."
   ],
-  "dimension_scores": {
-    "Code quality": {
-      "score": 96.6,
-      "strict": 93.1,
-      "verified_strict_score": 96.1,
-      "checks": 632,
-      "failing": 41,
-      "tier": 3,
-      "detectors": {
-        "unused": {
-          "potential": 106,
-          "pass_rate": 1.0,
-          "failing": 0,
-          "weighted_failures": 0.0
-        },
-        "logs": {
-          "potential": 106,
-          "pass_rate": 1.0,
-          "failing": 0,
-          "weighted_failures": 0.0
-        },
-        "smells": {
-          "potential": 107,
-          "pass_rate": 0.8383177570093459,
-          "failing": 34,
-          "weighted_failures": 17.3
-        },
-        "orphaned": {
-          "potential": 106,
-          "pass_rate": 1.0,
-          "failing": 0,
-          "weighted_failures": 0.0
-        },
-        "flat_dirs": {
-          "potential": 13,
-          "pass_rate": 1.0,
-          "failing": 0,
-          "weighted_failures": 0.0
-        },
-        "naming": {
-          "potential": 13,
-          "pass_rate": 1.0,
-          "failing": 0,
-          "weighted_failures": 0.0
-        },
-        "single_use": {
-          "potential": 42,
-          "pass_rate": 0.95,
-          "failing": 3,
-          "weighted_failures": 2.0999999999999996
-        },
-        "coupling": {
-          "potential": 22,
-          "pass_rate": 1.0,
-          "failing": 0,
-          "weighted_failures": 0.0
-        },
-        "facade": {
-          "potential": 106,
-          "pass_rate": 0.9933962264150943,
-          "failing": 1,
-          "weighted_failures": 0.7
-        },
-        "props": {
-          "potential": 9,
-          "pass_rate": 0.9333333333333333,
-          "failing": 2,
-          "weighted_failures": 0.6
-        },
-        "patterns": {
-          "potential": 1,
-          "pass_rate": 1.0,
-          "failing": 0,
-          "weighted_failures": 0.0
-        },
-        "responsibility_cohesion": {
-          "potential": 1,
-          "pass_rate": 0.30000000000000004,
-          "failing": 1,
-          "weighted_failures": 0.7
-        }
-      }
-    },
-    "Security": {
-      "score": 99.5,
-      "strict": 94.6,
-      "verified_strict_score": 99.1,
-      "checks": 212,
-      "failing": 2,
-      "tier": 4,
-      "detectors": {
-        "cycles": {
-          "potential": 106,
-          "pass_rate": 1.0,
-          "failing": 0,
-          "weighted_failures": 0.0
-        },
-        "security": {
-          "potential": 106,
-          "pass_rate": 0.9905660377358491,
-          "failing": 2,
-          "weighted_failures": 1.0
-        }
-      }
-    },
-    "File health": {
-      "score": 96.0,
-      "strict": 96.0,
-      "verified_strict_score": 96.0,
-      "checks": 106,
-      "failing": 6,
-      "tier": 3,
-      "detectors": {
-        "structural": {
-          "potential": 106,
-          "pass_rate": 0.960377358490566,
-          "failing": 6,
-          "weighted_failures": 4.2
-        }
-      }
-    },
-    "Duplication": {
-      "score": 100.0,
-      "strict": 99.9,
-      "verified_strict_score": 100.0,
-      "checks": 269,
-      "failing": 0,
-      "tier": 3,
-      "detectors": {
-        "dupes": {
-          "potential": 269,
-          "pass_rate": 1.0,
-          "failing": 0,
-          "weighted_failures": 0.0
-        }
-      }
-    },
-    "Test health": {
-      "score": 67.4,
-      "strict": 62.7,
-      "verified_strict_score": 61.0,
-      "checks": 1070,
-      "failing": 27,
-      "tier": 4,
-      "detectors": {
-        "test_coverage": {
-          "potential": 1070,
-          "pass_rate": 0.6744199923166576,
-          "failing": 27,
-          "weighted_failures": 348.3706082211763
-        }
-      }
-    },
-    "Abstraction fit": {
-      "score": 88.5,
-      "strict": 88.5,
-      "verified_strict_score": 88.5,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.885,
-          "failing": 1,
-          "weighted_failures": 1.15,
-          "assessment_score": 88.5,
-          "placeholder": false,
-          "dimension_key": "abstraction_fitness",
-          "configured_weight": 8.0,
-          "components": [
-            "Abstraction Leverage",
-            "Indirection Cost",
-            "Interface Honesty",
-            "Delegation Density",
-            "Definition Directness",
-            "Type Discipline"
-          ],
-          "component_scores": {
-            "Abstraction Leverage": 92.0,
-            "Indirection Cost": 82.0,
-            "Interface Honesty": 85.0,
-            "Delegation Density": 95.0,
-            "Definition Directness": 90.0,
-            "Type Discipline": 93.0
-          }
-        }
-      }
-    },
-    "AI generated debt": {
-      "score": 91.5,
-      "strict": 91.5,
-      "verified_strict_score": 91.5,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.915,
-          "failing": 1,
-          "weighted_failures": 0.85,
-          "assessment_score": 91.5,
-          "placeholder": false,
-          "dimension_key": "ai_generated_debt",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      }
-    },
-    "API coherence": {
-      "score": 91.5,
-      "strict": 91.5,
-      "verified_strict_score": 91.5,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.915,
-          "failing": 1,
-          "weighted_failures": 0.85,
-          "assessment_score": 91.5,
-          "placeholder": false,
-          "dimension_key": "api_surface_coherence",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      }
-    },
-    "Auth consistency": {
-      "score": 93.0,
-      "strict": 93.0,
-      "verified_strict_score": 93.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.93,
-          "failing": 0,
-          "weighted_failures": 0.7,
-          "assessment_score": 93.0,
-          "placeholder": false,
-          "dimension_key": "authorization_consistency",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      }
-    },
-    "Contracts": {
-      "score": 91.5,
-      "strict": 91.5,
-      "verified_strict_score": 91.5,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.915,
-          "failing": 1,
-          "weighted_failures": 0.85,
-          "assessment_score": 91.5,
-          "placeholder": false,
-          "dimension_key": "contract_coherence",
-          "configured_weight": 12.0,
-          "components": []
-        }
-      }
-    },
-    "Convention drift": {
-      "score": 88.0,
-      "strict": 88.0,
-      "verified_strict_score": 88.0,
-      "checks": 10,
-      "failing": 2,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.88,
-          "failing": 2,
-          "weighted_failures": 1.2,
-          "assessment_score": 88.0,
-          "placeholder": false,
-          "dimension_key": "convention_outlier",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      }
-    },
-    "Cross-module arch": {
-      "score": 91.5,
-      "strict": 91.5,
-      "verified_strict_score": 91.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.915,
-          "failing": 0,
-          "weighted_failures": 0.85,
-          "assessment_score": 91.5,
-          "placeholder": false,
-          "dimension_key": "cross_module_architecture",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      }
-    },
-    "Dep health": {
-      "score": 88.0,
-      "strict": 88.0,
-      "verified_strict_score": 88.0,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.88,
-          "failing": 1,
-          "weighted_failures": 1.2,
-          "assessment_score": 88.0,
-          "placeholder": false,
-          "dimension_key": "dependency_health",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      }
-    },
-    "Design coherence": {
-      "score": 89.0,
-      "strict": 89.0,
-      "verified_strict_score": 89.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.89,
-          "failing": 0,
-          "weighted_failures": 1.1,
-          "assessment_score": 89.0,
-          "placeholder": false,
-          "dimension_key": "design_coherence",
-          "configured_weight": 10.0,
-          "components": []
-        }
-      }
-    },
-    "Error consistency": {
-      "score": 88.5,
-      "strict": 88.5,
-      "verified_strict_score": 88.5,
-      "checks": 10,
-      "failing": 2,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.885,
-          "failing": 2,
-          "weighted_failures": 1.15,
-          "assessment_score": 88.5,
-          "placeholder": false,
-          "dimension_key": "error_consistency",
-          "configured_weight": 3.0,
-          "components": []
-        }
-      }
-    },
-    "High elegance": {
-      "score": 89.5,
-      "strict": 89.5,
-      "verified_strict_score": 89.5,
-      "checks": 10,
-      "failing": 2,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.895,
-          "failing": 2,
-          "weighted_failures": 1.05,
-          "assessment_score": 89.5,
-          "placeholder": false,
-          "dimension_key": "high_level_elegance",
-          "configured_weight": 22.0,
-          "components": []
-        }
-      }
-    },
-    "Stale migration": {
-      "score": 97.0,
-      "strict": 97.0,
-      "verified_strict_score": 97.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.97,
-          "failing": 0,
-          "weighted_failures": 0.3,
-          "assessment_score": 97.0,
-          "placeholder": false,
-          "dimension_key": "incomplete_migration",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      }
-    },
-    "Init coupling": {
-      "score": 93.0,
-      "strict": 93.0,
-      "verified_strict_score": 93.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.93,
-          "failing": 0,
-          "weighted_failures": 0.7,
-          "assessment_score": 93.0,
-          "placeholder": false,
-          "dimension_key": "initialization_coupling",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      }
-    },
-    "Logic clarity": {
-      "score": 90.5,
-      "strict": 90.5,
-      "verified_strict_score": 90.5,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.905,
-          "failing": 1,
-          "weighted_failures": 0.95,
-          "assessment_score": 90.5,
-          "placeholder": false,
-          "dimension_key": "logic_clarity",
-          "configured_weight": 6.0,
-          "components": []
-        }
-      }
-    },
-    "Low elegance": {
-      "score": 84.0,
-      "strict": 84.0,
-      "verified_strict_score": 84.0,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.84,
-          "failing": 1,
-          "weighted_failures": 1.6,
-          "assessment_score": 84.0,
-          "placeholder": false,
-          "dimension_key": "low_level_elegance",
-          "configured_weight": 12.0,
-          "components": []
-        }
-      }
-    },
-    "Mid elegance": {
-      "score": 87.5,
-      "strict": 87.5,
-      "verified_strict_score": 87.5,
-      "checks": 10,
-      "failing": 2,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.875,
-          "failing": 2,
-          "weighted_failures": 1.25,
-          "assessment_score": 87.5,
-          "placeholder": false,
-          "dimension_key": "mid_level_elegance",
-          "configured_weight": 22.0,
-          "components": []
-        }
-      }
-    },
-    "Naming quality": {
-      "score": 88.5,
-      "strict": 88.5,
-      "verified_strict_score": 88.5,
-      "checks": 10,
-      "failing": 2,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.885,
-          "failing": 2,
-          "weighted_failures": 1.15,
-          "assessment_score": 88.5,
-          "placeholder": false,
-          "dimension_key": "naming_quality",
-          "configured_weight": 2.0,
-          "components": []
-        }
-      }
-    },
-    "Structure nav": {
-      "score": 92.0,
-      "strict": 92.0,
-      "verified_strict_score": 92.0,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.92,
-          "failing": 1,
-          "weighted_failures": 0.8,
-          "assessment_score": 92.0,
-          "placeholder": false,
-          "dimension_key": "package_organization",
-          "configured_weight": 5.0,
-          "components": []
-        }
-      }
-    },
-    "Test strategy": {
-      "score": 83.5,
-      "strict": 83.5,
-      "verified_strict_score": 83.5,
-      "checks": 10,
-      "failing": 1,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.835,
-          "failing": 1,
-          "weighted_failures": 1.65,
-          "assessment_score": 83.5,
-          "placeholder": false,
-          "dimension_key": "test_strategy",
-          "configured_weight": 1.0,
-          "components": []
-        }
-      }
-    },
-    "Type safety": {
-      "score": 89.0,
-      "strict": 89.0,
-      "verified_strict_score": 89.0,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.89,
-          "failing": 0,
-          "weighted_failures": 1.1,
-          "assessment_score": 89.0,
-          "placeholder": false,
-          "dimension_key": "type_safety",
-          "configured_weight": 12.0,
-          "components": []
-        }
-      }
-    }
-  },
-  "score_breakdown": {
-    "overall_score": 89.6,
-    "mechanical_fraction": 0.25,
-    "subjective_fraction": 0.75,
-    "mechanical_avg": 91.9486166007905,
-    "subjective_avg": 88.84959349593495,
-    "entries": [
-      {
-        "name": "Code quality",
-        "pool": "mechanical",
-        "score": 96.6,
-        "checks": 632.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.19762845849802368,
-        "overall_per_point": 0.04940711462450592,
-        "overall_contribution": 4.772727272727272,
-        "overall_drag": 0.1679841897233204
-      },
-      {
-        "name": "Security",
-        "pool": "mechanical",
-        "score": 99.5,
-        "checks": 212.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.19762845849802368,
-        "overall_per_point": 0.04940711462450592,
-        "overall_contribution": 4.916007905138339,
-        "overall_drag": 0.02470355731225296
-      },
-      {
-        "name": "File health",
-        "pool": "mechanical",
-        "score": 96.0,
-        "checks": 106.0,
-        "sample_factor": 0.53,
-        "configured_weight": 2.0,
-        "effective_weight": 1.06,
-        "pool_share": 0.20948616600790512,
-        "overall_per_point": 0.05237154150197628,
-        "overall_contribution": 5.027667984189723,
-        "overall_drag": 0.20948616600790512
-      },
-      {
-        "name": "Duplication",
-        "pool": "mechanical",
-        "score": 100.0,
-        "checks": 269.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.19762845849802368,
-        "overall_per_point": 0.04940711462450592,
-        "overall_contribution": 4.940711462450592,
-        "overall_drag": 0.0
-      },
-      {
-        "name": "Test health",
-        "pool": "mechanical",
-        "score": 67.4,
-        "checks": 1070.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.19762845849802368,
-        "overall_per_point": 0.04940711462450592,
-        "overall_contribution": 3.3300395256916993,
-        "overall_drag": 1.6106719367588926
-      },
-      {
-        "name": "Abstraction fit",
-        "pool": "subjective",
-        "score": 88.5,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 8.0,
-        "effective_weight": 8.0,
-        "pool_share": 0.06504065040650407,
-        "overall_per_point": 0.04878048780487805,
-        "overall_contribution": 4.317073170731708,
-        "overall_drag": 0.5609756097560976
-      },
-      {
-        "name": "AI generated debt",
-        "pool": "subjective",
-        "score": 91.5,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.008130081300813009,
-        "overall_per_point": 0.006097560975609756,
-        "overall_contribution": 0.5579268292682927,
-        "overall_drag": 0.05182926829268293
-      },
-      {
-        "name": "API coherence",
-        "pool": "subjective",
-        "score": 91.5,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.008130081300813009,
-        "overall_per_point": 0.006097560975609756,
-        "overall_contribution": 0.5579268292682927,
-        "overall_drag": 0.05182926829268293
-      },
-      {
-        "name": "Auth consistency",
-        "pool": "subjective",
-        "score": 93.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.008130081300813009,
-        "overall_per_point": 0.006097560975609756,
-        "overall_contribution": 0.5670731707317074,
-        "overall_drag": 0.042682926829268296
-      },
-      {
-        "name": "Contracts",
-        "pool": "subjective",
-        "score": 91.5,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 12.0,
-        "effective_weight": 12.0,
-        "pool_share": 0.0975609756097561,
-        "overall_per_point": 0.07317073170731708,
-        "overall_contribution": 6.695121951219513,
-        "overall_drag": 0.6219512195121952
-      },
-      {
-        "name": "Convention drift",
-        "pool": "subjective",
-        "score": 88.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.008130081300813009,
-        "overall_per_point": 0.006097560975609756,
-        "overall_contribution": 0.5365853658536586,
-        "overall_drag": 0.07317073170731708
-      },
-      {
-        "name": "Cross-module arch",
-        "pool": "subjective",
-        "score": 91.5,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.008130081300813009,
-        "overall_per_point": 0.006097560975609756,
-        "overall_contribution": 0.5579268292682927,
-        "overall_drag": 0.05182926829268293
-      },
-      {
-        "name": "Dep health",
-        "pool": "subjective",
-        "score": 88.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.008130081300813009,
-        "overall_per_point": 0.006097560975609756,
-        "overall_contribution": 0.5365853658536586,
-        "overall_drag": 0.07317073170731708
-      },
-      {
-        "name": "Design coherence",
-        "pool": "subjective",
-        "score": 89.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 10.0,
-        "effective_weight": 10.0,
-        "pool_share": 0.08130081300813008,
-        "overall_per_point": 0.06097560975609756,
-        "overall_contribution": 5.426829268292683,
-        "overall_drag": 0.6707317073170731
-      },
-      {
-        "name": "Error consistency",
-        "pool": "subjective",
-        "score": 88.5,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 3.0,
-        "effective_weight": 3.0,
-        "pool_share": 0.024390243902439025,
-        "overall_per_point": 0.01829268292682927,
-        "overall_contribution": 1.6189024390243905,
-        "overall_drag": 0.2103658536585366
-      },
-      {
-        "name": "High elegance",
-        "pool": "subjective",
-        "score": 89.5,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 22.0,
-        "effective_weight": 22.0,
-        "pool_share": 0.17886178861788618,
-        "overall_per_point": 0.13414634146341464,
-        "overall_contribution": 12.006097560975611,
-        "overall_drag": 1.4085365853658538
-      },
-      {
-        "name": "Stale migration",
-        "pool": "subjective",
-        "score": 97.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.008130081300813009,
-        "overall_per_point": 0.006097560975609756,
-        "overall_contribution": 0.5914634146341463,
-        "overall_drag": 0.01829268292682927
-      },
-      {
-        "name": "Init coupling",
-        "pool": "subjective",
-        "score": 93.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.008130081300813009,
-        "overall_per_point": 0.006097560975609756,
-        "overall_contribution": 0.5670731707317074,
-        "overall_drag": 0.042682926829268296
-      },
-      {
-        "name": "Logic clarity",
-        "pool": "subjective",
-        "score": 90.5,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 6.0,
-        "effective_weight": 6.0,
-        "pool_share": 0.04878048780487805,
-        "overall_per_point": 0.03658536585365854,
-        "overall_contribution": 3.310975609756098,
-        "overall_drag": 0.34756097560975613
-      },
-      {
-        "name": "Low elegance",
-        "pool": "subjective",
-        "score": 84.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 12.0,
-        "effective_weight": 12.0,
-        "pool_share": 0.0975609756097561,
-        "overall_per_point": 0.07317073170731708,
-        "overall_contribution": 6.146341463414635,
-        "overall_drag": 1.1707317073170733
-      },
-      {
-        "name": "Mid elegance",
-        "pool": "subjective",
-        "score": 87.5,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 22.0,
-        "effective_weight": 22.0,
-        "pool_share": 0.17886178861788618,
-        "overall_per_point": 0.13414634146341464,
-        "overall_contribution": 11.737804878048781,
-        "overall_drag": 1.676829268292683
-      },
-      {
-        "name": "Naming quality",
-        "pool": "subjective",
-        "score": 88.5,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 2.0,
-        "effective_weight": 2.0,
-        "pool_share": 0.016260162601626018,
-        "overall_per_point": 0.012195121951219513,
-        "overall_contribution": 1.079268292682927,
-        "overall_drag": 0.1402439024390244
-      },
-      {
-        "name": "Structure nav",
-        "pool": "subjective",
-        "score": 92.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 5.0,
-        "effective_weight": 5.0,
-        "pool_share": 0.04065040650406504,
-        "overall_per_point": 0.03048780487804878,
-        "overall_contribution": 2.8048780487804876,
-        "overall_drag": 0.24390243902439024
-      },
-      {
-        "name": "Test strategy",
-        "pool": "subjective",
-        "score": 83.5,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 1.0,
-        "effective_weight": 1.0,
-        "pool_share": 0.008130081300813009,
-        "overall_per_point": 0.006097560975609756,
-        "overall_contribution": 0.5091463414634146,
-        "overall_drag": 0.10060975609756098
-      },
-      {
-        "name": "Type safety",
-        "pool": "subjective",
-        "score": 89.0,
-        "checks": 0.0,
-        "sample_factor": 1.0,
-        "configured_weight": 12.0,
-        "effective_weight": 12.0,
-        "pool_share": 0.0975609756097561,
-        "overall_per_point": 0.07317073170731708,
-        "overall_contribution": 6.51219512195122,
-        "overall_drag": 0.8048780487804879
-      }
-    ]
-  },
-  "subjective_integrity": {
-    "status": "disabled",
-    "target_score": 100.0,
-    "matched_count": 0,
-    "matched_dimensions": [],
-    "reset_dimensions": []
-  },
-  "score_confidence": {
-    "status": "full",
-    "confidence": 1.0,
-    "detectors": [],
-    "dimensions": []
-  },
-  "potentials": {
-    "typescript": {
-      "logs": 106,
-      "unused": 106,
-      "exports": 0,
-      "deprecated": 0,
-      "structural": 106,
-      "flat_dirs": 13,
-      "props": 9,
-      "single_use": 42,
-      "coupling": 22,
-      "cycles": 106,
-      "orphaned": 106,
-      "patterns": 1,
-      "naming": 13,
-      "facade": 106,
-      "responsibility_cohesion": 1,
-      "test_coverage": 1070,
-      "smells": 107,
-      "react": 0,
-      "security": 106,
-      "subjective_review": 20,
-      "boilerplate_duplication": 0,
-      "dupes": 269,
-      "stale_wontfix": 0
-    }
-  },
-  "scan_coverage": {
-    "typescript": {
-      "status": "full",
-      "confidence": 1.0,
-      "detectors": {
-        "security": {
-          "detector": "security",
-          "status": "full",
-          "confidence": 1.0,
-          "summary": "Security coverage complete for enabled detectors.",
-          "impact": "",
-          "remediation": "",
-          "tool": "",
-          "reason": ""
-        }
-      },
-      "warnings": [],
-      "updated_at": "2026-03-27T12:13:50+00:00"
-    }
-  },
-  "zone_distribution": {
-    "production": 106
+  "queue": {
+    "total": 19,
+    "mode": "backlog"
   },
   "narrative": {
     "phase": "refinement",
@@ -1467,15 +688,11 @@
         "type": "refactor",
         "detector": "test_coverage",
         "count": 27,
-        "description": "27 test_coverage issues in 1 cluster(s) \u2014 run `desloppify next`",
-        "command": "desloppify next",
+        "description": "27 test_coverage work items \u2014 review test coverage gaps \u2014 focus on critical modules with many importers first; defer test writing until code quality issues are resolved",
+        "command": "desloppify show test_coverage --status open",
         "impact": 0.0,
         "dimension": "Test health",
         "priority": 5,
-        "clusters": [
-          "auto/test_coverage"
-        ],
-        "cluster_count": 1,
         "lane": "test_coverage"
       },
       {
@@ -1526,15 +743,11 @@
         "type": "manual_fix",
         "detector": "security",
         "count": 2,
-        "description": "2 security issues in 1 cluster(s) \u2014 run `desloppify next`",
-        "command": "desloppify next",
+        "description": "2 security work items \u2014 review and fix security issues \u2014 prioritize by severity",
+        "command": "desloppify show security --status open",
         "impact": 0.0,
         "dimension": "Security",
         "priority": 10,
-        "clusters": [
-          "auto/security"
-        ],
-        "cluster_count": 1,
         "lane": "refactor_3"
       }
     ],
@@ -1672,16 +885,7 @@
       "state": "above",
       "warning": null
     },
-    "reminders": [
-      {
-        "type": "report_scores",
-        "message": "ALWAYS share ALL scores with the user: overall, objective, and strict, plus every dimension score (lenient + strict), including subjective dimensions. The goal is to maximize strict scores.",
-        "command": null,
-        "no_decay": true,
-        "priority": 3,
-        "severity": "low"
-      }
-    ],
+    "reminders": [],
     "reminder_history": {
       "auto_fixers_available": 3,
       "zone_classification": 3,
@@ -1697,6 +901,457 @@
       "fp_calibration_test_coverage_production": 3
     }
   },
+  "agent_notes": [
+    "This is backlog discovery, not the active execution queue.",
+    "Use `desloppify next` for the current execution item.",
+    "Do NOT treat backlog rank as permission to bypass the living plan."
+  ],
+  "overall_score": 89.6,
+  "objective_score": 91.9,
+  "strict_score": 89.0,
+  "scorecard_dimensions": [
+    {
+      "name": "File health",
+      "score": 96.0,
+      "strict": 96.0,
+      "checks": 106,
+      "failing": 6,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "AI generated debt",
+      "score": 91.5,
+      "strict": 91.5,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "ai_generated_debt"
+      ]
+    },
+    {
+      "name": "API coherence",
+      "score": 91.5,
+      "strict": 91.5,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "api_surface_coherence"
+      ]
+    },
+    {
+      "name": "Abstraction fit",
+      "score": 88.5,
+      "strict": 88.5,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "abstraction_fitness"
+      ]
+    },
+    {
+      "name": "Auth consistency",
+      "score": 93.0,
+      "strict": 93.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "authorization_consistency"
+      ]
+    },
+    {
+      "name": "Code quality",
+      "score": 96.6,
+      "strict": 93.1,
+      "checks": 632,
+      "failing": 41,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "Convention drift",
+      "score": 88.0,
+      "strict": 88.0,
+      "checks": 10,
+      "failing": 2,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "convention_outlier"
+      ]
+    },
+    {
+      "name": "Cross-module arch",
+      "score": 91.5,
+      "strict": 91.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "cross_module_architecture"
+      ]
+    },
+    {
+      "name": "Dep health",
+      "score": 88.0,
+      "strict": 88.0,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "dependency_health"
+      ]
+    },
+    {
+      "name": "Design coherence",
+      "score": 89.0,
+      "strict": 89.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "design_coherence"
+      ]
+    },
+    {
+      "name": "Duplication",
+      "score": 100.0,
+      "strict": 99.9,
+      "checks": 269,
+      "failing": 0,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "Elegance",
+      "score": 87.0,
+      "strict": 87.0,
+      "checks": 30,
+      "failing": 5,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "high_level_elegance",
+        "low_level_elegance",
+        "mid_level_elegance"
+      ]
+    },
+    {
+      "name": "Error consistency",
+      "score": 88.5,
+      "strict": 88.5,
+      "checks": 10,
+      "failing": 2,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "error_consistency"
+      ]
+    },
+    {
+      "name": "Naming quality",
+      "score": 88.5,
+      "strict": 88.5,
+      "checks": 10,
+      "failing": 2,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "naming_quality"
+      ]
+    },
+    {
+      "name": "Security",
+      "score": 99.5,
+      "strict": 94.6,
+      "checks": 212,
+      "failing": 2,
+      "tier": 4,
+      "subjective": false
+    },
+    {
+      "name": "Stale migration",
+      "score": 97.0,
+      "strict": 97.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "incomplete_migration"
+      ]
+    },
+    {
+      "name": "Structure nav",
+      "score": 92.0,
+      "strict": 92.0,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "package_organization"
+      ]
+    },
+    {
+      "name": "Test health",
+      "score": 67.4,
+      "strict": 62.7,
+      "checks": 1070,
+      "failing": 27,
+      "tier": 4,
+      "subjective": false
+    },
+    {
+      "name": "Test strategy",
+      "score": 83.5,
+      "strict": 83.5,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "test_strategy"
+      ]
+    },
+    {
+      "name": "Type safety",
+      "score": 89.0,
+      "strict": 89.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "type_safety"
+      ]
+    }
+  ],
+  "subjective_measures": [
+    {
+      "name": "AI generated debt",
+      "score": 91.5,
+      "strict": 91.5,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "ai_generated_debt"
+      ]
+    },
+    {
+      "name": "API coherence",
+      "score": 91.5,
+      "strict": 91.5,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "api_surface_coherence"
+      ]
+    },
+    {
+      "name": "Abstraction fit",
+      "score": 88.5,
+      "strict": 88.5,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "abstraction_fitness"
+      ]
+    },
+    {
+      "name": "Auth consistency",
+      "score": 93.0,
+      "strict": 93.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "authorization_consistency"
+      ]
+    },
+    {
+      "name": "Convention drift",
+      "score": 88.0,
+      "strict": 88.0,
+      "checks": 10,
+      "failing": 2,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "convention_outlier"
+      ]
+    },
+    {
+      "name": "Cross-module arch",
+      "score": 91.5,
+      "strict": 91.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "cross_module_architecture"
+      ]
+    },
+    {
+      "name": "Dep health",
+      "score": 88.0,
+      "strict": 88.0,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "dependency_health"
+      ]
+    },
+    {
+      "name": "Design coherence",
+      "score": 89.0,
+      "strict": 89.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "design_coherence"
+      ]
+    },
+    {
+      "name": "Elegance",
+      "score": 87.0,
+      "strict": 87.0,
+      "checks": 30,
+      "failing": 5,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "high_level_elegance",
+        "low_level_elegance",
+        "mid_level_elegance"
+      ]
+    },
+    {
+      "name": "Error consistency",
+      "score": 88.5,
+      "strict": 88.5,
+      "checks": 10,
+      "failing": 2,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "error_consistency"
+      ]
+    },
+    {
+      "name": "Naming quality",
+      "score": 88.5,
+      "strict": 88.5,
+      "checks": 10,
+      "failing": 2,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "naming_quality"
+      ]
+    },
+    {
+      "name": "Stale migration",
+      "score": 97.0,
+      "strict": 97.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "incomplete_migration"
+      ]
+    },
+    {
+      "name": "Structure nav",
+      "score": 92.0,
+      "strict": 92.0,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "package_organization"
+      ]
+    },
+    {
+      "name": "Test strategy",
+      "score": 83.5,
+      "strict": 83.5,
+      "checks": 10,
+      "failing": 1,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "test_strategy"
+      ]
+    },
+    {
+      "name": "Type safety",
+      "score": 89.0,
+      "strict": 89.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "type_safety"
+      ]
+    }
+  ],
   "config": {
     "target_strict_score": 100,
     "review_max_age_days": 30,
@@ -1735,12 +1390,5 @@
       "execute": "openrouter:x-ai/grok-4.20-beta",
       "review": "openrouter:google/gemini-3.1-pro-preview"
     }
-  },
-  "plan": {
-    "active": true,
-    "focus": null,
-    "total_ordered": 19,
-    "total_skipped": 24,
-    "plan_overrides_narrative": true
   }
 }

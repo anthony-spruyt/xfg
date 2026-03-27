@@ -39,7 +39,7 @@ export class AuthenticatedGitOps implements IGitOps {
     this.log = options.log;
   }
 
-  private async execWithRetry(command: string): Promise<string> {
+  private execWithRetry(command: string): Promise<string> {
     return withRetry(() => this.executor.exec(command, this.workDir), {
       retries: this.retries,
     });
@@ -165,7 +165,7 @@ export class AuthenticatedGitOps implements IGitOps {
    * @param options.skipRetry - If true, don't retry on failure. Use when checking
    *   branch existence where failure is expected for new branches.
    */
-  async lsRemote(
+  lsRemote(
     branchName: string,
     options?: { skipRetry?: boolean }
   ): Promise<string> {

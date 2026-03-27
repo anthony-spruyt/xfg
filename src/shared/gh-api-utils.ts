@@ -4,7 +4,7 @@ import type { ICommandExecutor } from "./command-executor.js";
 import type { GitHubRepoInfo } from "./repo-detector.js";
 import { toErrorMessage } from "./type-guards.js";
 
-import type { DebugLog } from "./logger.js";
+import type { DebugWarnLog } from "./logger.js";
 
 interface ITokenManager {
   getTokenForRepo(repoInfo: GitHubRepoInfo): Promise<string | null>;
@@ -183,7 +183,7 @@ interface ResolveGitHubTokenOptions {
   repoInfo: GitHubRepoInfo;
   tokenManager: ITokenManager | null;
   context: string;
-  log?: DebugLog;
+  log?: DebugWarnLog;
   envToken?: string;
 }
 
@@ -205,12 +205,12 @@ export async function resolveGitHubToken(
     // string = app token; undefined = no manager configured
     return { token: appToken ?? envToken, skipped: false };
   } catch (error) {
-    const fallbackDesc = envToken
-      ? "falling back to GH_TOKEN"
-      : "no fallback token available";
-    log?.debug(
-      `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}; ${fallbackDesc}`
-    );
+    const errorMsg = `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}`;
+    if (envToken) {
+      log?.debug(`${errorMsg}; falling back to GH_TOKEN`);
+    } else {
+      log?.warn(`${errorMsg}; no fallback token available`);
+    }
     return { token: envToken, skipped: false };
   }
 }

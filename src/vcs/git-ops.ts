@@ -36,7 +36,7 @@ export class GitOps implements ILocalGitOps {
     this.log = options.log;
   }
 
-  private async exec(command: string, cwd?: string): Promise<string> {
+  private exec(command: string, cwd?: string): Promise<string> {
     return this._executor.exec(command, cwd ?? this._workDir);
   }
 
