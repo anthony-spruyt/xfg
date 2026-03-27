@@ -6,7 +6,7 @@
   "verified_strict_score": 90.5,
   "prev_overall_score": 89.6,
   "prev_objective_score": 91.9,
-  "prev_strict_score": 89.0,
+  "prev_strict_score": 88.9,
   "prev_verified_strict_score": 90.5,
   "profile": "full",
   "noise_budget": 10,
@@ -14,12 +14,12 @@
   "hidden_by_detector": {
     "smells": 24,
     "test_coverage": 18,
-    "review": 9
+    "review": 6
   },
-  "hidden_total": 51,
+  "hidden_total": 48,
   "diff": {
-    "new": 2,
-    "auto_resolved": 60,
+    "new": 0,
+    "auto_resolved": 58,
     "reopened": 0,
     "total_current": 72,
     "suspect_detectors": [
@@ -46,7 +46,7 @@
         "status": "open",
         "note": "Reopened (\u00d76) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-27T12:36:31+00:00",
+        "last_seen": "2026-03-27T12:47:48+00:00",
         "resolved_at": null,
         "reopen_count": 6,
         "lang": "typescript",
@@ -75,7 +75,7 @@
         "status": "open",
         "note": "Reopened (\u00d712) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-27T12:36:31+00:00",
+        "last_seen": "2026-03-27T12:47:48+00:00",
         "resolved_at": null,
         "reopen_count": 12,
         "zone": "production",
@@ -118,7 +118,7 @@
         "status": "open",
         "note": "Reopened (\u00d712) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-03T09:10:57+00:00",
-        "last_seen": "2026-03-27T12:36:31+00:00",
+        "last_seen": "2026-03-27T12:47:48+00:00",
         "resolved_at": null,
         "reopen_count": 12,
         "zone": "production",
@@ -161,7 +161,7 @@
         "status": "open",
         "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-04T00:19:16+00:00",
-        "last_seen": "2026-03-27T12:36:31+00:00",
+        "last_seen": "2026-03-27T12:47:48+00:00",
         "resolved_at": null,
         "reopen_count": 3,
         "lang": "typescript",
@@ -193,7 +193,7 @@
         "status": "open",
         "note": "Reopened (\u00d77) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-05T01:16:56+00:00",
-        "last_seen": "2026-03-27T12:36:31+00:00",
+        "last_seen": "2026-03-27T12:47:48+00:00",
         "resolved_at": null,
         "reopen_count": 7,
         "lang": "typescript",
@@ -239,7 +239,7 @@
         "status": "open",
         "note": "Reopened (\u00d75) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-05T02:29:11+00:00",
-        "last_seen": "2026-03-27T12:36:31+00:00",
+        "last_seen": "2026-03-27T12:47:48+00:00",
         "resolved_at": null,
         "reopen_count": 5,
         "lang": "typescript",
@@ -267,7 +267,7 @@
         "status": "open",
         "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
         "first_seen": "2026-03-06T08:52:20+00:00",
-        "last_seen": "2026-03-27T12:36:31+00:00",
+        "last_seen": "2026-03-27T12:47:48+00:00",
         "resolved_at": null,
         "reopen_count": 3,
         "lang": "typescript",
@@ -291,36 +291,36 @@
     "total": 1443,
     "auto_resolved": 1082,
     "deferred": 0,
-    "false_positive": 61,
+    "false_positive": 64,
     "fixed": 202,
-    "open": 96,
+    "open": 93,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
       "1": {
         "auto_resolved": 8,
         "deferred": 0,
-        "false_positive": 2,
+        "false_positive": 3,
         "fixed": 69,
-        "open": 12,
+        "open": 11,
         "triaged_out": 0,
         "wontfix": 0
       },
       "2": {
         "auto_resolved": 363,
         "deferred": 0,
-        "false_positive": 32,
+        "false_positive": 33,
         "fixed": 98,
-        "open": 12,
+        "open": 11,
         "triaged_out": 0,
         "wontfix": 2
       },
       "3": {
         "auto_resolved": 636,
         "deferred": 0,
-        "false_positive": 27,
+        "false_positive": 28,
         "fixed": 15,
-        "open": 72,
+        "open": 71,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -336,9 +336,9 @@
     }
   },
   "open_scope": {
-    "in_scope": 96,
+    "in_scope": 93,
     "out_of_scope": 116,
-    "global": 212
+    "global": 209
   },
   "warnings": [
     "\u27f3 7 chronic reopeners \u2014 run `desloppify show --chronic` to see them."
@@ -490,9 +490,9 @@
       "detectors": {
         "test_coverage": {
           "potential": 1070,
-          "pass_rate": 0.6701971530667353,
+          "pass_rate": 0.6701046154190445,
           "failing": 28,
-          "weighted_failures": 352.88904621859325
+          "weighted_failures": 352.9880615016224
         }
       }
     },
@@ -501,13 +501,13 @@
       "strict": 88.5,
       "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.885,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.15,
           "assessment_score": 88.5,
           "placeholder": false,
@@ -663,13 +663,13 @@
       "strict": 88.0,
       "verified_strict_score": 88.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.88,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.2,
           "assessment_score": 88.0,
           "placeholder": false,
@@ -726,13 +726,13 @@
       "strict": 89.5,
       "verified_strict_score": 89.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.895,
-          "failing": 2,
+          "failing": 1,
           "weighted_failures": 1.05,
           "assessment_score": 89.5,
           "placeholder": false,
@@ -1323,7 +1323,7 @@
         }
       },
       "warnings": [],
-      "updated_at": "2026-03-27T12:36:31+00:00"
+      "updated_at": "2026-03-27T12:47:48+00:00"
     }
   },
   "zone_distribution": {
@@ -1331,7 +1331,7 @@
   },
   "narrative": {
     "phase": "stagnation",
-    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Score plateaued at 88.9 for 5 scans. Test health (61.7%) is where the breakthrough is. 2 wontfix items may also be worth revisiting. (19 review work items \u2014 run `desloppify show review --status open`)",
+    "headline": "\u26a0 2 security issues \u2014 review before other cleanup. Score plateaued at 88.9 for 5 scans. Test health (61.7%) is where the breakthrough is. 2 wontfix items may also be worth revisiting. (16 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -1508,8 +1508,8 @@
       {
         "type": "refactor",
         "detector": "review",
-        "count": 19,
-        "description": "19 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
+        "count": 16,
+        "description": "16 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
         "command": "desloppify show review --status open",
         "impact": 0.0,
         "dimension": "Unknown",
@@ -1546,7 +1546,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 134,
+        "total_count": 125,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -1612,7 +1612,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "6 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 19 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "6 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 16 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -1658,7 +1658,7 @@
       "command": "desloppify show single_use --status open",
       "description": "2 single_use issues \u2014 inline or relocate with `desloppify move`"
     },
-    "why_now": "6 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 19 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "6 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 16 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -1691,7 +1691,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 3,
-      "report_scores": 136,
+      "report_scores": 137,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
@@ -1744,8 +1744,8 @@
   "plan": {
     "active": true,
     "focus": null,
-    "total_ordered": 19,
-    "total_skipped": 24,
+    "total_ordered": 16,
+    "total_skipped": 27,
     "plan_overrides_narrative": true
   }
 }

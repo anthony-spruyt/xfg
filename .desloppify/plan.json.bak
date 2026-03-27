@@ -1,9 +1,8 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-27T12:37:32+00:00",
+  "updated": "2026-03-27T12:37:41+00:00",
   "queue_order": [
-    "review::.::holistic::abstraction_fitness::processor_options_overfill",
     "review::.::holistic::ai_generated_debt::manifest_restating_comments",
     "review::.::holistic::api_surface_coherence::type_guards_async_outlier",
     "review::.::holistic::contract_coherence::withretry_throws_aborderror_inaccurate",
@@ -280,6 +279,16 @@
       "note": null,
       "attestation": "I have reviewed this \u2014 renderActionDiffLines and renderLifecycleLines have intentional formatting differences (repo name prefix, line prefix characters, indentation) for their different output contexts (CLI vs GitHub summary). Consolidating would require parameterization that hurts readability. Not gaming the score.",
       "created_at": "2026-03-27T12:37:32+00:00",
+      "review_after": null,
+      "skipped_at_scan": 191
+    },
+    "review::.::holistic::abstraction_fitness::processor_options_overfill": {
+      "issue_id": "review::.::holistic::abstraction_fitness::processor_options_overfill",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 ProcessorOptions carries fields through the strategy layer because the same options bag is consumed at different depths. Narrowing to Pick<> would introduce a fragile coupling where adding a new option requires updating the Pick in multiple places. The current design trades interface honesty for ease of change. Not gaming the score.",
+      "created_at": "2026-03-27T12:37:41+00:00",
       "review_after": null,
       "skipped_at_scan": 191
     }
@@ -26200,6 +26209,20 @@
       "action": "skip",
       "issue_ids": [
         "review::.::holistic::high_level_elegance::lifecycle_action_render_duplication"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-27T12:37:41+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::processor_options_overfill"
       ],
       "cluster_name": null,
       "actor": "user",
