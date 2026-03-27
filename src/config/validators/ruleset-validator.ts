@@ -1,4 +1,5 @@
 import { ValidationError } from "../../shared/errors.js";
+import { isPlainObject } from "../../shared/type-guards.js";
 import type {
   RulesetTarget,
   RulesetEnforcement,
@@ -77,6 +78,33 @@ const VALID_RULE_TYPES = validValues<RulesetRule["type"]>([
   "max_file_path_length",
   "max_file_size",
 ]);
+
+// Intentionally duplicated from merge.ts — validator should not depend on merge internals
+const VALID_MERGE_STRATEGIES = ["replace", "append", "prepend"];
+
+/**
+ * Checks if a value is an $arrayMerge directive: { $arrayMerge: strategy, $values: [...] }
+ */
+export function isArrayMergeDirective(value: unknown): boolean {
+  return (
+    isPlainObject(value) &&
+    "$arrayMerge" in value &&
+    "$values" in value &&
+    VALID_MERGE_STRATEGIES.includes(value.$arrayMerge as string) &&
+    Array.isArray(value.$values)
+  );
+}
+
+/**
+ * Extracts the $values array from a directive, or returns the value as-is if it's already an array.
+ * Returns null if value is neither an array nor a valid directive.
+ */
+function extractArrayOrDirectiveValues(value: unknown): unknown[] | null {
+  if (Array.isArray(value)) return value;
+  if (isArrayMergeDirective(value))
+    return (value as Record<string, unknown>).$values as unknown[];
+  return null;
+}
 
 /**
  * Validates a single ruleset rule.
@@ -239,13 +267,14 @@ export function validateRuleset(
 
   // Validate bypassActors
   if (rs.bypassActors !== undefined) {
-    if (!Array.isArray(rs.bypassActors)) {
+    const actors = extractArrayOrDirectiveValues(rs.bypassActors);
+    if (actors === null) {
       throw new ValidationError(
-        `${context}: ruleset '${name}' bypassActors must be an array`
+        `${context}: ruleset '${name}' bypassActors must be an array or $arrayMerge directive`
       );
     }
-    for (let i = 0; i < rs.bypassActors.length; i++) {
-      const actor = rs.bypassActors[i] as Record<string, unknown>;
+    for (let i = 0; i < actors.length; i++) {
+      const actor = actors[i] as Record<string, unknown>;
       if (typeof actor !== "object" || actor === null) {
         throw new ValidationError(
           `${context}: ruleset '${name}' bypassActors[${i}] must be an object`

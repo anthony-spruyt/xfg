@@ -2378,6 +2378,30 @@ describe("validateRawConfig", () => {
         /conditions\.refName\.exclude must be an array of strings/
       );
     });
+
+    test("accepts $arrayMerge directive on bypassActors", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              bypassActors: {
+                $arrayMerge: "append",
+                $values: [
+                  {
+                    actorId: 123,
+                    actorType: "Integration",
+                    bypassMode: "always",
+                  },
+                ],
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
   });
 
   describe("files/settings decoupling", () => {
