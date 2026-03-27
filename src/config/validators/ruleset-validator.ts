@@ -324,36 +324,35 @@ export function validateRuleset(
           `${context}: ruleset '${name}' conditions.refName must be an object`
         );
       }
-      if (
-        refName.include !== undefined &&
-        (!Array.isArray(refName.include) ||
-          !refName.include.every((s) => typeof s === "string"))
-      ) {
-        throw new ValidationError(
-          `${context}: ruleset '${name}' conditions.refName.include must be an array of strings`
-        );
+      if (refName.include !== undefined) {
+        const include = extractArrayOrDirectiveValues(refName.include);
+        if (include === null || !include.every((s) => typeof s === "string")) {
+          throw new ValidationError(
+            `${context}: ruleset '${name}' conditions.refName.include must be an array of strings or $arrayMerge directive with string $values`
+          );
+        }
       }
-      if (
-        refName.exclude !== undefined &&
-        (!Array.isArray(refName.exclude) ||
-          !refName.exclude.every((s) => typeof s === "string"))
-      ) {
-        throw new ValidationError(
-          `${context}: ruleset '${name}' conditions.refName.exclude must be an array of strings`
-        );
+      if (refName.exclude !== undefined) {
+        const exclude = extractArrayOrDirectiveValues(refName.exclude);
+        if (exclude === null || !exclude.every((s) => typeof s === "string")) {
+          throw new ValidationError(
+            `${context}: ruleset '${name}' conditions.refName.exclude must be an array of strings or $arrayMerge directive with string $values`
+          );
+        }
       }
     }
   }
 
   // Validate rules array
   if (rs.rules !== undefined) {
-    if (!Array.isArray(rs.rules)) {
+    const rules = extractArrayOrDirectiveValues(rs.rules);
+    if (rules === null) {
       throw new ValidationError(
-        `${context}: ruleset '${name}' rules must be an array`
+        `${context}: ruleset '${name}' rules must be an array or $arrayMerge directive`
       );
     }
-    for (let i = 0; i < rs.rules.length; i++) {
-      validateRule(rs.rules[i], `${context}: ruleset '${name}' rules[${i}]`);
+    for (let i = 0; i < rules.length; i++) {
+      validateRule(rules[i], `${context}: ruleset '${name}' rules[${i}]`);
     }
   }
 }
