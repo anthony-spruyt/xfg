@@ -1,8 +1,12 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-26T22:59:51+00:00",
+  "updated": "2026-03-27T11:25:20+00:00",
   "queue_order": [
+    "subjective::convention_outlier",
+    "subjective::design_coherence",
+    "subjective::error_consistency",
+    "subjective::logic_clarity",
     "review::.::holistic::low_level_elegance::indexOf_first_iteration_detection",
     "review::.::holistic::mid_level_elegance::settings_processor_factory_cast",
     "review::.::holistic::convention_outlier::type_import_keyword_drift",
@@ -220,6 +224,86 @@
       "created_at": "2026-03-26T22:40:47+00:00",
       "review_after": null,
       "skipped_at_scan": 183
+    },
+    "unused::src/cli/sync-command.ts::options:275": {
+      "issue_id": "unused::src/cli/sync-command.ts::options:275",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 options is used extensively throughout the function (lines 195, 196, 244, 380, etc). Not gaming the score \u2014 this is a false detection.",
+      "created_at": "2026-03-27T11:24:08+00:00",
+      "review_after": null,
+      "skipped_at_scan": 187
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 'secretScanning' is a GitHub API property name for the secret scanning feature setting, not an actual hardcoded secret. Not gaming the score.",
+      "created_at": "2026-03-27T11:24:15+00:00",
+      "review_after": null,
+      "skipped_at_scan": 187
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 'secretScanningPushProtection' is a GitHub API property name for the push protection feature setting, not an actual hardcoded secret. Not gaming the score.",
+      "created_at": "2026-03-27T11:24:16+00:00",
+      "review_after": null,
+      "skipped_at_scan": 187
+    },
+    "exports::src/settings/index.ts::SettingsAction": {
+      "issue_id": "exports::src/settings/index.ts::SettingsAction",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 SettingsAction is not exported from src/settings/index.ts; the file only has 33 lines and no such export. Not gaming the score.",
+      "created_at": "2026-03-27T11:24:24+00:00",
+      "review_after": null,
+      "skipped_at_scan": 187
+    },
+    "exports::src/settings/index.ts::formatPropertyTree": {
+      "issue_id": "exports::src/settings/index.ts::formatPropertyTree",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 formatPropertyTree is not exported from src/settings/index.ts; the file only has 33 lines and no such export. Not gaming the score.",
+      "created_at": "2026-03-27T11:24:23+00:00",
+      "review_after": null,
+      "skipped_at_scan": 187
+    },
+    "exports::src/settings/rulesets/index.ts::formatPropertyTree": {
+      "issue_id": "exports::src/settings/rulesets/index.ts::formatPropertyTree",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 formatPropertyTree is not exported from src/settings/rulesets/index.ts; the file only has 17 lines and no such export. Not gaming the score.",
+      "created_at": "2026-03-27T11:24:24+00:00",
+      "review_after": null,
+      "skipped_at_scan": 187
+    },
+    "smells::src/cli/sync-command.ts::async_no_await": {
+      "issue_id": "smells::src/cli/sync-command.ts::async_no_await",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 runAndStore uses await on line 209 and runSync uses await on line 677. Both functions correctly use await. Not gaming the score.",
+      "created_at": "2026-03-27T11:24:49+00:00",
+      "review_after": null,
+      "skipped_at_scan": 187
+    },
+    "smells::src/shared/gh-api-utils.ts::async_no_await": {
+      "issue_id": "smells::src/shared/gh-api-utils.ts::async_no_await",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 ghApiCall at line 98 uses await on lines 127, 148, 151. The only other async function (execAndParse at line 125) also uses await on line 127. Not gaming the score.",
+      "created_at": "2026-03-27T11:25:20+00:00",
+      "review_after": null,
+      "skipped_at_scan": 187
     }
   },
   "active_cluster": null,
@@ -6884,12 +6968,7 @@
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {
-    "strict": 92.0,
-    "overall": 93.3,
-    "objective": 97.6,
-    "verified": 95.6
-  },
+  "plan_start_scores": {},
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -25757,6 +25836,163 @@
       "detail": {
         "scan_count": 186
       }
+    },
+    {
+      "timestamp": "2026-03-27T11:22:42+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-27T11:22:42+00:00",
+      "action": "clear_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-27T11:22:42+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 187
+      }
+    },
+    {
+      "timestamp": "2026-03-27T11:24:08+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "unused::src/cli/sync-command.ts::options:275"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-27T11:24:08+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-03-27T11:24:15+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-27T11:24:16+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-27T11:24:24+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "exports::src/settings/index.ts::SettingsAction"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-27T11:24:23+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "exports::src/settings/index.ts::formatPropertyTree"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-27T11:24:24+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "exports::src/settings/rulesets/index.ts::formatPropertyTree"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-27T11:24:49+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-27T11:25:20+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/shared/gh-api-utils.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
     }
   ],
   "epic_triage_meta": {
@@ -26236,8 +26472,7 @@
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 185,
     "lifecycle_phase": "plan",
-    "_subjective_migration_pruned": true,
-    "postflight_scan_completed_at_scan_count": 186
+    "_subjective_migration_pruned": true
   },
   "scan_count_at_plan_start": 186
 }

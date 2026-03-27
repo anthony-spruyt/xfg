@@ -177,6 +177,31 @@ interface SettingsDescriptor {
   run: () => Promise<SettingsResult>;
 }
 
+// Each processor returns a subtype of BaseProcessorResult whose planOutput
+// contains both `lines` (for CLI display) and `entries` (for report building).
+// ProcessorResults fields capture only the `entries` slice; the runtime object
+// satisfies both views, so we assign with an explicit per-field cast.
+async function runAndStoreResult(
+  factory: () => ISettingsProcessor,
+  repoConfig: RepoConfig,
+  repoInfo: RepoInfo,
+  opts: { dryRun?: boolean; noDelete?: boolean; token?: string },
+  repoName: string,
+  settingsCollector: ResultsCollector,
+  assign: (entry: ProcessorResults, result: SettingsResult) => void
+): Promise<SettingsResult> {
+  const result = await runSettingsProcessor(
+    factory,
+    repoConfig,
+    repoInfo,
+    opts
+  );
+  if (!result.skipped) {
+    assign(settingsCollector.getOrCreate(repoName), result);
+  }
+  return result;
+}
+
 function buildSettingsDescriptors(
   ctx: ApplyRepoSettingsContext
 ): SettingsDescriptor[] {
@@ -197,51 +222,50 @@ function buildSettingsDescriptors(
     token,
   };
 
-  // Each processor returns a subtype of BaseProcessorResult whose planOutput
-  // contains both `lines` (for CLI display) and `entries` (for report building).
-  // ProcessorResults fields capture only the `entries` slice; the runtime object
-  // satisfies both views, so we assign with an explicit per-field cast.
-  const runAndStore = async (
-    factory: () => ISettingsProcessor,
-    opts: { dryRun?: boolean; noDelete?: boolean; token?: string },
-    assign: (entry: ProcessorResults, result: SettingsResult) => void
-  ): Promise<SettingsResult> => {
-    const result = await runSettingsProcessor(
-      factory,
-      repoConfig,
-      repoInfo,
-      opts
-    );
-    if (!result.skipped) {
-      assign(settingsCollector.getOrCreate(repoName), result);
-    }
-    return result;
-  };
-
   return [
     {
       key: "rulesets" as const,
       label: "Rulesets",
       run: () =>
-        runAndStore(rulesetProcessorFactory, sharedOpts, (e, r) => {
-          e.rulesetResult = r as ProcessorResults["rulesetResult"];
-        }),
+        runAndStoreResult(
+          rulesetProcessorFactory,
+          repoConfig,
+          repoInfo,
+          sharedOpts,
+          repoName,
+          settingsCollector,
+          (e, r) => {
+            e.rulesetResult = r as ProcessorResults["rulesetResult"];
+          }
+        ),
     },
     {
       key: "labels" as const,
       label: "Labels",
       run: () =>
-        runAndStore(labelsProcessorFactory, sharedOpts, (e, r) => {
-          e.labelsResult = r as ProcessorResults["labelsResult"];
-        }),
+        runAndStoreResult(
+          labelsProcessorFactory,
+          repoConfig,
+          repoInfo,
+          sharedOpts,
+          repoName,
+          settingsCollector,
+          (e, r) => {
+            e.labelsResult = r as ProcessorResults["labelsResult"];
+          }
+        ),
     },
     {
       key: "repo" as const,
       label: "Repo Settings",
       run: () =>
-        runAndStore(
+        runAndStoreResult(
           repoSettingsProcessorFactory,
+          repoConfig,
+          repoInfo,
           { dryRun: options.dryRun, token },
+          repoName,
+          settingsCollector,
           (e, r) => {
             e.settingsResult = r as ProcessorResults["settingsResult"];
           }
