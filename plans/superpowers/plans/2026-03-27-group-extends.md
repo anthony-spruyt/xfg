@@ -1446,51 +1446,7 @@ The effective group set used for conditional group evaluation includes transitiv
 - `extends` is a reserved name and cannot be used as a group name
 ````
 
-- [ ] **Step 4: Update docs/configuration/inheritance.md**
-
-In `docs/configuration/inheritance.md`, update line 3. Replace:
-
-```markdown
-The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**.
-```
-
-With:
-
-```markdown
-The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**. When groups use [`extends`](groups.md#group-inheritance), parent groups are automatically included in the chain before the child group.
-```
-
-- [ ] **Step 5: Update docs/index.md Mermaid pipeline diagrams**
-
-In `docs/index.md`, update the two Mermaid pipeline diagrams. Replace the `EXPAND --> GROUPS` lines to include an extends resolution step.
-
-At line 226, replace:
-
-```text
-EXPAND["Expand git arrays"] --> GROUPS["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
-```
-
-With:
-
-```text
-EXPAND["Expand git arrays"] --> EXTENDS["Resolve group extends<br/>(expand parent chains)"]
-EXTENDS --> GROUPS["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
-```
-
-At line 314, replace:
-
-```text
-EXPAND["Expand git arrays"] --> GROUPS_S["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
-```
-
-With:
-
-```text
-EXPAND["Expand git arrays"] --> EXTENDS_S["Resolve group extends<br/>(expand parent chains)"]
-EXTENDS_S --> GROUPS_S["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
-```
-
-- [ ] **Step 6: Update config-schema.json**
+- [ ] **Step 4: Update config-schema.json**
 
 In `config-schema.json`, add the `extends` property as the **first property** in `definitions.groupConfig.properties` (before `files`):
 
@@ -1518,7 +1474,7 @@ In `config-schema.json`, add the `extends` property as the **first property** in
 }
 ```
 
-- [ ] **Step 7: Update docs/reference/config-schema.md**
+- [ ] **Step 5: Update docs/reference/config-schema.md**
 
 In `docs/reference/config-schema.md`, add the `extends` row to the Group Config table (around line 72-76):
 
@@ -1543,16 +1499,146 @@ With:
 Groups support `extends` (inherit from parent groups), `inherit: false` (discard accumulated files), `file: false` (remove a file), and full file config or override objects.
 ```
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add docs/configuration/groups.md docs/configuration/inheritance.md docs/index.md docs/reference/config-schema.md config-schema.json
+git add docs/configuration/groups.md docs/reference/config-schema.md config-schema.json
 git commit -m "docs: add group inheritance documentation and update config schema (#649)"
 ```
 
 ---
 
-### Task 6: Type-check, lint, and full test pass
+### Task 6: Fix #651 (conditional groups) documentation gaps
+
+These docs gaps were shipped with PR #655 and should be fixed before release.
+
+**Files:**
+- Modify: `docs/configuration/groups.md` (Restrictions section)
+- Modify: `docs/configuration/inheritance.md` (line 3)
+- Modify: `docs/configuration/pr-options.md` (Priority Order, line 122-128)
+- Modify: `docs/reference/cli-options.md` (Priority Order, line 70-78)
+- Modify: `docs/configuration/rulesets.md` (Inheritance section, ~line 246)
+- Modify: `docs/configuration/labels.md` (Inheritance section, ~line 91)
+- Modify: `docs/index.md` (Mermaid diagrams — combine with #649 extends step)
+
+- [ ] **Step 1: Add missing restrictions to groups.md Conditional Groups section**
+
+In `docs/configuration/groups.md`, add these bullets to the "### Restrictions" section at the end of the Conditional Groups block (after line 315):
+
+```markdown
+- A repo with no `groups` field or `groups: []` has an empty effective group
+  set — no conditional group can match it
+- Conditional groups do not expand the effective group set — one conditional
+  group matching cannot cause another conditional group to match. All
+  conditions are evaluated against the same frozen set of explicit groups.
+```
+
+- [ ] **Step 2: Update inheritance.md to mention conditional groups**
+
+In `docs/configuration/inheritance.md`, update line 3. The current text is:
+
+```markdown
+The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**.
+```
+
+Replace with:
+
+```markdown
+The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**. With [conditional groups](groups.md#conditional-groups), matching conditional groups merge after explicit groups: **root → groups → conditional groups → repo overrides**. When groups use [`extends`](groups.md#group-inheritance), parent groups are automatically included in the chain before the child group.
+```
+
+Note: This combines the #651 and #649 inheritance.md updates into one (replacing the separate #649-only update in Task 5 Step 4).
+
+- [ ] **Step 3: Update pr-options.md Priority Order**
+
+In `docs/configuration/pr-options.md`, replace lines 124-128:
+
+```markdown
+1. CLI flags (highest)
+2. Per-repo `prOptions`
+3. Group `prOptions` (applied in order, later groups override earlier ones)
+4. Global `prOptions`
+```
+
+With:
+
+```markdown
+1. CLI flags (highest)
+2. Per-repo `prOptions`
+3. Conditional group `prOptions` (applied in array order)
+4. Group `prOptions` (applied in order, later groups override earlier ones)
+5. Global `prOptions`
+```
+
+- [ ] **Step 4: Update cli-options.md Priority Order**
+
+In `docs/reference/cli-options.md`, replace lines 74-78:
+
+```markdown
+1. CLI flags (highest priority)
+2. Per-repo settings (e.g., `prOptions`, `settings.rulesets`)
+3. Group settings (applied in order, later groups override earlier ones)
+4. Global settings
+5. Built-in defaults (lowest priority)
+```
+
+With:
+
+```markdown
+1. CLI flags (highest priority)
+2. Per-repo settings (e.g., `prOptions`, `settings.rulesets`)
+3. Conditional group settings (applied in array order)
+4. Group settings (applied in order, later groups override earlier ones)
+5. Global settings
+6. Built-in defaults (lowest priority)
+```
+
+- [ ] **Step 5: Update rulesets.md Inheritance section**
+
+In `docs/configuration/rulesets.md`, add a note after the "## Inheritance and Opt-Out" heading (after line 248):
+
+```markdown
+Rulesets from [conditional groups](groups.md#conditional-groups) merge after explicit group rulesets and before repo overrides. Per-repo `inherit: false` discards all inherited rulesets including those from conditional groups.
+```
+
+- [ ] **Step 6: Update labels.md Inheritance section**
+
+In `docs/configuration/labels.md`, add a note after the "## Inheritance" heading (after line 93):
+
+```markdown
+Labels from [conditional groups](groups.md#conditional-groups) merge after explicit group labels and before repo overrides. Per-repo `inherit: false` discards all inherited labels including those from conditional groups.
+```
+
+- [ ] **Step 7: Update docs/index.md Mermaid diagrams (conditional + extends combined)**
+
+This step combines the #651 conditional groups gap with the #649 extends step. In `docs/index.md`, replace line 226:
+
+```text
+EXPAND["Expand git arrays"] --> GROUPS["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
+GROUPS --> MERGE["Merge per-repo overrides<br/>(deep merge / text merge / override)"]
+```
+
+With:
+
+```text
+EXPAND["Expand git arrays"] --> EXTENDS["Resolve group extends<br/>(expand parent chains)"]
+EXTENDS --> GROUPS["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
+GROUPS --> COND["Evaluate conditional groups<br/>(merge matching conditionalGroups<br/>in array order)"]
+COND --> MERGE["Merge per-repo overrides<br/>(deep merge / text merge / override)"]
+```
+
+Apply the same pattern to line 314 (Settings Workflow diagram), using `EXTENDS_S`, `GROUPS_S`, `COND_S`, `MERGE_S` suffixes.
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add docs/configuration/groups.md docs/configuration/inheritance.md docs/configuration/pr-options.md docs/reference/cli-options.md docs/configuration/rulesets.md docs/configuration/labels.md docs/index.md
+git commit -m "docs: fix conditional groups (#651) documentation gaps"
+```
+
+---
+
+### Task 7: Type-check, lint, and full test pass
 
 **Files:** None (verification only)
 

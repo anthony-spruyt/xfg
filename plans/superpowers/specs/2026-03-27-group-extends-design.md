@@ -268,3 +268,15 @@ Update `config-schema.json`:
 Update `docs/reference/config-schema.md`:
 - Add `extends` row to the Group Config table.
 - Update context text (line 78) to mention `extends`.
+
+### Fix #651 Documentation Gaps
+
+The conditional groups feature (PR #655) shipped with documentation gaps. These are fixed as part of this release:
+
+- `docs/configuration/groups.md`: Add "empty groups = no match" and "frozen effective set" to Restrictions.
+- `docs/configuration/inheritance.md`: Mention conditional groups in the inheritance chain.
+- `docs/configuration/pr-options.md`: Add conditional groups to Priority Order.
+- `docs/reference/cli-options.md`: Add conditional groups to Priority Order.
+- `docs/configuration/rulesets.md`: Mention conditional groups in Inheritance section.
+- `docs/configuration/labels.md`: Mention conditional groups in Inheritance section.
+- `docs/index.md`: Add conditional groups evaluation step to both Mermaid diagrams (combined with extends step).
