@@ -4545,4 +4545,62 @@ describe("group extends validation", () => {
       /duplicate 'parent' in extends/
     );
   });
+
+  test("repo can override file from transitive parent group", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        parent: {
+          files: { "parent-file.json": { content: { from: "parent" } } },
+        },
+        child: {
+          extends: "parent",
+          files: { "child-file.json": { content: { from: "child" } } },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["child"],
+          files: {
+            "parent-file.json": { content: { override: true } },
+          },
+        },
+      ],
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("repo can opt out of settings from transitive parent group", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      groups: {
+        parent: {
+          settings: {
+            labels: {
+              "parent-label": { color: "ff0000", description: "" },
+            },
+          },
+        },
+        child: {
+          extends: "parent",
+          files: {},
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["child"],
+          settings: {
+            labels: {
+              "parent-label": false,
+            },
+          },
+        },
+      ],
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
 });

@@ -4,7 +4,7 @@ import type {
   RawRootSettings,
   RawGroupConfig,
 } from "./types.js";
-import { resolveExtendsChain } from "./extends-resolver.js";
+import { resolveExtendsChain, expandRepoGroups } from "./extends-resolver.js";
 import {
   isTextContent,
   isObjectContent,
@@ -748,7 +748,8 @@ function validateRepoFiles(
     config.files ? Object.keys(config.files) : []
   );
   if (repo.groups && config.groups) {
-    for (const groupName of repo.groups) {
+    const expandedGroups = expandRepoGroups(repo.groups, config.groups);
+    for (const groupName of expandedGroups) {
       const group = config.groups[groupName];
       if (group?.files) {
         for (const fn of Object.keys(group.files)) {
@@ -815,7 +816,8 @@ function validateRepoSettingsEntry(
   const rootCtx = buildRootSettingsContext(config);
 
   if (repo.groups && config.groups) {
-    for (const groupName of repo.groups) {
+    const expandedGroups = expandRepoGroups(repo.groups, config.groups);
+    for (const groupName of expandedGroups) {
       const group = config.groups[groupName];
       if (group?.settings?.rulesets) {
         for (const name of Object.keys(group.settings.rulesets)) {
