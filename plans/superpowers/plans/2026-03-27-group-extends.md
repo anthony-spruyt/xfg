@@ -454,7 +454,7 @@ function expandRepoGroups(
 
 - [ ] **Step 4: Integrate extends expansion into `normalizeConfig`**
 
-In `src/config/normalizer.ts`, modify the `normalizeConfig` function. Replace the section at lines 614-617 that reads:
+In `src/config/normalizer.ts`, modify the `normalizeConfig` function. Replace the section at lines 614-629 that reads:
 
 ```typescript
     // Phase 1: Resolve groups - build effective root files/prOptions/settings by merging group layers
@@ -705,7 +705,7 @@ Expected: Tests for invalid configs fail (validation doesn't check extends yet);
 
 - [ ] **Step 3: Add extends validation to `validateGroups`**
 
-In `src/config/validator.ts`, modify the `validateGroups` function. After the existing `inherit` reserved key check (line 405-409), add extends reserved key check and extends field validation:
+In `src/config/validator.ts`, replace the entire `validateGroups` function (lines 395-429) with the following (adds `extends` reserved name check, extends field validation, `groupNames` extraction, and circular extends detection call):
 
 ```typescript
 function validateGroups(config: RawConfig): void {
@@ -880,7 +880,7 @@ import type { RawConfig, RawRepoSettings, RawRootSettings, RawGroupConfig } from
 - [ ] **Step 7: Run tests to verify they pass**
 
 Run: `npm test -- --test-name-pattern="group extends validation" 2>&1 | tail -30`
-Expected: All 14 tests pass
+Expected: All 13 tests pass
 
 - [ ] **Step 8: Run full validator test suite to verify no regressions**
 
@@ -980,6 +980,9 @@ Add a helper function in `src/config/validator.ts` that the validator can use to
  * Expands a repo's group list by following extends chains.
  * Returns the full list including transitive parents.
  * Used by validation to build complete knownFiles and rootCtx sets.
+ *
+ * Note: Parallels expandRepoGroups in normalizer.ts. Kept separate to avoid
+ * coupling validator to normalizer — validator runs before normalization.
  */
 function expandGroupsForValidation(
   repoGroups: string[],
@@ -1130,7 +1133,20 @@ git commit -m "feat(config): expand knownFiles and rootCtx for transitive parent
 **Files:**
 - Modify: `docs/configuration/groups.md`
 
-- [ ] **Step 1: Add "Group Inheritance" section to groups.md**
+- [ ] **Step 1: Update "Group Fields" table to include extends**
+
+In `docs/configuration/groups.md`, add the `extends` row to the existing "Group Fields" table (around line 42-50):
+
+```markdown
+| Field        | Description                                           |
+| ------------ | ----------------------------------------------------- |
+| `extends`    | Parent group name(s) to inherit files, settings, PR options |
+| `files`      | File definitions or overrides (same syntax as repos)  |
+| `prOptions`  | PR merge options (merged into chain)                  |
+| `settings`   | Repository settings like rulesets, labels             |
+```
+
+- [ ] **Step 2: Add "Group Inheritance" section to groups.md**
 
 In `docs/configuration/groups.md`, add a new section after "## Multiple Groups" (after line 85) and before "## File Exclusion in Groups":
 
@@ -1236,7 +1252,7 @@ The effective group set used for conditional group evaluation includes transitiv
 - A group cannot extend itself
 ````
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 3: Commit**
 
 ```bash
 git add docs/configuration/groups.md

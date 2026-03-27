@@ -146,7 +146,7 @@ function expandRepoGroups(repoGroups, groupDefs):
 
 No changes to merge semantics. The `extends` feature only affects which groups are in the list and in what order. All existing merge behaviors apply:
 
-- `inherit: false` on a child group's files discards files from all ancestors.
+- `inherit: false` on a child group's files discards all accumulated files (root and ancestor groups).
 - `file: false` on a child removes a specific file introduced by a parent.
 - Later groups in the expanded list override earlier ones (child overrides parent).
 - PR options and settings merge identically to today.
