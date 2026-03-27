@@ -12,4 +12,4 @@ permissions:
   issues: "write"
 jobs:
   scan:
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-scan.yaml@main"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-scan.yaml@605fcdfab864797e519666120966a1e2b999eb0b" # main
