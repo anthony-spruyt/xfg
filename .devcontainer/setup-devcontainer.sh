@@ -21,6 +21,12 @@ curl -sL -o /tmp/gcm.deb https://github.com/git-ecosystem/git-credential-manager
 sudo dpkg -i /tmp/gcm.deb
 rm /tmp/gcm.deb
 
+# renovate: depName=cclsp datasource=npm
+CCLSP_VERSION="0.7.0"
+
+echo "Installing cclsp ${CCLSP_VERSION}..."
+npm install -g "cclsp@${CCLSP_VERSION}"
+
 # Install and build the project
 echo "Installing project dependencies..."
 cd "/workspaces/xfg"
