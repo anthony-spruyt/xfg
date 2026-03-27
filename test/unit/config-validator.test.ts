@@ -4427,6 +4427,32 @@ describe("group extends validation", () => {
     );
   });
 
+  test("throws for extends as empty string", () => {
+    const config = createValidConfig({
+      groups: {
+        parent: { files: {} },
+        child: { extends: "", files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /groups\.child: 'extends' must be a non-empty string or array of strings/
+    );
+  });
+
+  test("throws for extends array with self-reference entry", () => {
+    const config = createValidConfig({
+      groups: {
+        parent: { files: {} },
+        child: { extends: ["parent", "child"], files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /groups\.child: extends cannot reference itself/
+    );
+  });
+
   test("throws for circular extends (a -> b -> a)", () => {
     const config = createValidConfig({
       groups: {
