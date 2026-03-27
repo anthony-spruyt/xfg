@@ -297,6 +297,65 @@ export function mergeSettings(
 }
 
 /**
+ * Applies a single file-layer onto an accumulated file map: inherit:false clears,
+ * file:false removes entries, otherwise deep-merges content.
+ */
+function applyFileLayer(
+  accumulated: Record<string, RawFileConfig>,
+  layerFiles: Record<
+    string,
+    RawFileConfig | RawRepoFileOverride | false | undefined
+  >
+): Record<string, RawFileConfig> {
+  const inheritFiles = shouldInherit(layerFiles);
+
+  if (!inheritFiles) {
+    accumulated = {};
+  }
+
+  for (const [fileName, fileConfig] of Object.entries(layerFiles)) {
+    if (fileName === "inherit") continue;
+
+    if (fileConfig === false) {
+      delete accumulated[fileName];
+      continue;
+    }
+
+    if (fileConfig === undefined) continue;
+
+    const existing = accumulated[fileName];
+    if (existing) {
+      const overlay = fileConfig as RawRepoFileOverride;
+      let mergedContent: ContentValue | undefined;
+
+      if (overlay.override || !existing.content || !overlay.content) {
+        mergedContent = overlay.content ?? existing.content;
+      } else {
+        mergedContent = mergeContentPair(
+          existing.content,
+          overlay.content,
+          existing.mergeStrategy ?? "replace"
+        );
+      }
+
+      const { override: _override, ...restFileConfig } = fileConfig as Record<
+        string,
+        unknown
+      >;
+      accumulated[fileName] = {
+        ...existing,
+        ...restFileConfig,
+        content: mergedContent,
+      } as RawFileConfig;
+    } else {
+      accumulated[fileName] = structuredClone(fileConfig) as RawFileConfig;
+    }
+  }
+
+  return accumulated;
+}
+
+/**
  * Merges group file layers onto root files, producing an effective root file map.
  * Each group layer is processed in order: inherit:false clears accumulated,
  * file:false removes a file, otherwise deep-merge content.
@@ -312,55 +371,7 @@ function mergeGroupFiles(
     const group = groupDefs[groupName];
     if (!group?.files) continue;
 
-    const inheritFiles = shouldInherit(group.files);
-
-    if (!inheritFiles) {
-      // Intentionally clear: "discard everything above me"
-      accumulated = {};
-    }
-
-    for (const [fileName, fileConfig] of Object.entries(group.files)) {
-      if (fileName === "inherit") continue;
-
-      // file: false removes from accumulated set
-      if (fileConfig === false) {
-        delete accumulated[fileName];
-        continue;
-      }
-
-      if (fileConfig === undefined) continue;
-
-      const existing = accumulated[fileName];
-      if (existing) {
-        // Deep-merge content if both sides have object content
-        const overlay = fileConfig as RawRepoFileOverride;
-        let mergedContent: ContentValue | undefined;
-
-        if (overlay.override || !existing.content || !overlay.content) {
-          // override:true or one side missing content — use overlay content
-          mergedContent = overlay.content ?? existing.content;
-        } else {
-          mergedContent = mergeContentPair(
-            existing.content,
-            overlay.content,
-            existing.mergeStrategy ?? "replace"
-          );
-        }
-
-        const { override: _override, ...restFileConfig } = fileConfig as Record<
-          string,
-          unknown
-        >;
-        accumulated[fileName] = {
-          ...existing,
-          ...restFileConfig,
-          content: mergedContent,
-        } as RawFileConfig;
-      } else {
-        // New file introduced by group
-        accumulated[fileName] = structuredClone(fileConfig) as RawFileConfig;
-      }
-    }
+    accumulated = applyFileLayer(accumulated, group.files);
   }
 
   return accumulated;
@@ -523,50 +534,8 @@ function mergeConditionalGroups(
   for (const cg of conditionalGroups) {
     if (!evaluateWhenClause(cg.when, effectiveGroups)) continue;
 
-    // Merge files using same logic as mergeGroupFiles inner loop
     if (cg.files) {
-      const inheritFiles = shouldInherit(cg.files);
-
-      if (!inheritFiles) {
-        files = {};
-      }
-
-      for (const [fileName, fileConfig] of Object.entries(cg.files)) {
-        if (fileName === "inherit") continue;
-
-        if (fileConfig === false) {
-          delete files[fileName];
-          continue;
-        }
-
-        if (fileConfig === undefined) continue;
-
-        const existing = files[fileName];
-        if (existing) {
-          const overlay = fileConfig as RawRepoFileOverride;
-          let mergedContent: ContentValue | undefined;
-
-          if (overlay.override || !existing.content || !overlay.content) {
-            mergedContent = overlay.content ?? existing.content;
-          } else {
-            mergedContent = mergeContentPair(
-              existing.content,
-              overlay.content,
-              existing.mergeStrategy ?? "replace"
-            );
-          }
-
-          const { override: _override, ...restFileConfig } =
-            fileConfig as Record<string, unknown>;
-          files[fileName] = {
-            ...existing,
-            ...restFileConfig,
-            content: mergedContent,
-          } as RawFileConfig;
-        } else {
-          files[fileName] = structuredClone(fileConfig) as RawFileConfig;
-        }
-      }
+      files = applyFileLayer(files, cg.files);
     }
 
     // Merge prOptions

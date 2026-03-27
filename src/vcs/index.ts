@@ -19,6 +19,8 @@ export {
   createCommitStrategy,
   createTokenManager,
 } from "./commit-strategy-selector.js";
+// Token manager type (concrete class used as type by sync module)
+export type { GitHubAppTokenManager } from "./github-app-token-manager.js";
 // PR strategy factory
 export { createPRStrategy } from "./pr-strategy-factory.js";
 // PR creation and merge

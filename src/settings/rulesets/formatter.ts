@@ -6,6 +6,7 @@ import {
   type RulesetAction,
 } from "./diff.js";
 import type { Ruleset } from "../../config/index.js";
+import { formatScalarValue } from "../../shared/string-utils.js";
 import {
   computePropertyDiffs,
   type DiffAction,
@@ -87,9 +88,8 @@ function buildTree(diffs: PropertyDiff[]): TreeNode {
  * Format a value for inline display (scalars and simple arrays only).
  */
 function formatValue(val: unknown): string {
-  if (val === null) return "null";
-  if (val === undefined) return "undefined";
-  if (typeof val === "string") return `"${val}"`;
+  const scalar = formatScalarValue(val);
+  if (scalar !== undefined) return scalar;
   if (Array.isArray(val)) {
     if (val.every((v) => typeof v !== "object" || v === null)) {
       return `[${val.map(formatValue).join(", ")}]`;
@@ -99,7 +99,7 @@ function formatValue(val: unknown): string {
   }
   if (typeof val === "object") {
     // Objects are rendered by renderNestedValue
-    return `{${Object.keys(val).length} properties}`;
+    return `{${Object.keys(val as object).length} properties}`;
   }
   return String(val);
 }
@@ -328,10 +328,10 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     grouped[c.action].push(c);
   }
 
+  if (grouped.create.length > 0) {
+    lines.push(chalk.bold("  Create:"));
+  }
   for (const change of grouped.create) {
-    if (grouped.create.indexOf(change) === 0) {
-      lines.push(chalk.bold("  Create:"));
-    }
     lines.push(chalk.green(`    + ruleset "${change.name}"`));
     if (change.desired) {
       lines.push(...formatFullConfig(change.desired, 2));
@@ -348,10 +348,10 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     lines.push("");
   }
 
+  if (grouped.update.length > 0) {
+    lines.push(chalk.bold("  Update:"));
+  }
   for (const change of grouped.update) {
-    if (grouped.update.indexOf(change) === 0) {
-      lines.push(chalk.bold("  Update:"));
-    }
     lines.push(chalk.yellow(`    ~ ruleset "${change.name}"`));
     if (change.current && change.desired) {
       const currentNorm = normalizeRuleset(change.current);
