@@ -1917,6 +1917,43 @@ describe("normalizeConfig", () => {
         1
       );
     });
+
+    // $arrayMerge: directive with no base resolves to $values
+    // (uses `as never` because TypeScript types don't include directive shape yet)
+    test("$arrayMerge directive with no base resolves to $values", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  target: "branch",
+                  bypassActors: {
+                    $arrayMerge: "append",
+                    $values: [
+                      {
+                        actorId: 9999,
+                        actorType: "Integration",
+                        bypassMode: "always",
+                      },
+                    ],
+                  } as never,
+                },
+              },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw, process.env);
+      const actors =
+        result.repos[0].settings?.rulesets?.["pr-rules"]?.bypassActors;
+      assert.equal(actors?.length, 1);
+      assert.equal(actors?.[0]?.actorId, 9999);
+    });
   });
 
   describe("inheritance opt-out", () => {

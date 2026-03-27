@@ -255,10 +255,13 @@ export function mergeSettings(
         continue;
       }
 
-      result.rulesets[name] = mergeRuleset(
+      const merged = mergeRuleset(
         rootRuleset as Ruleset | undefined,
         repoRuleset as Ruleset | undefined
       );
+      result.rulesets[name] = stripMergeDirectives(
+        merged as Record<string, unknown>
+      ) as Ruleset;
     }
 
     // Clean up empty rulesets object
