@@ -11,36 +11,36 @@
     "total": 1443,
     "auto_resolved": 1082,
     "deferred": 0,
-    "false_positive": 61,
+    "false_positive": 64,
     "fixed": 202,
-    "open": 96,
+    "open": 93,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
       "1": {
         "auto_resolved": 8,
         "deferred": 0,
-        "false_positive": 2,
+        "false_positive": 3,
         "fixed": 69,
-        "open": 12,
+        "open": 11,
         "triaged_out": 0,
         "wontfix": 0
       },
       "2": {
         "auto_resolved": 363,
         "deferred": 0,
-        "false_positive": 32,
+        "false_positive": 33,
         "fixed": 98,
-        "open": 12,
+        "open": 11,
         "triaged_out": 0,
         "wontfix": 2
       },
       "3": {
         "auto_resolved": 636,
         "deferred": 0,
-        "false_positive": 27,
+        "false_positive": 28,
         "fixed": 15,
-        "open": 72,
+        "open": 71,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -132,7 +132,10 @@
         "Delegation Density": 95.0,
         "Definition Directness": 90.0,
         "Type Discipline": 93.0
-      }
+      },
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-03-27T12:37:41+00:00"
     },
     "api_surface_coherence": {
       "score": 91.5,
@@ -162,7 +165,10 @@
     "high_level_elegance": {
       "score": 89.5,
       "source": "holistic",
-      "assessed_at": "2026-03-27T12:13:44+00:00"
+      "assessed_at": "2026-03-27T12:13:44+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-03-27T12:37:31+00:00"
     },
     "mid_level_elegance": {
       "score": 87.5,
@@ -192,8 +198,8 @@
       "source": "holistic",
       "assessed_at": "2026-03-27T12:13:44+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-03-27T12:13:44+00:00"
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-03-27T12:37:24+00:00"
     },
     "initialization_coupling": {
       "score": 93.0,
@@ -3019,13 +3025,13 @@
       "strict": 88.5,
       "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.885,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.15,
           "assessment_score": 88.5,
           "placeholder": false,
@@ -3181,13 +3187,13 @@
       "strict": 88.0,
       "verified_strict_score": 88.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.88,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.2,
           "assessment_score": 88.0,
           "placeholder": false,
@@ -3244,13 +3250,13 @@
       "strict": 89.5,
       "verified_strict_score": 89.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.895,
-          "failing": 2,
+          "failing": 1,
           "weighted_failures": 1.05,
           "assessment_score": 89.5,
           "placeholder": false,
@@ -65653,11 +65659,11 @@
         "reasoning": "",
         "summary_hash": "edee18ce"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-27T12:13:44+00:00",
       "last_seen": "2026-03-27T12:13:44+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-27T12:37:31+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -65665,7 +65671,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this \u2014 renderActionDiffLines and renderLifecycleLines have intentional formatting differences (repo name prefix, line prefix characters, indentation) for their different output contexts (CLI vs GitHub summary). Consolidating would require parameterization that hurts readability. Not gaming the score.",
+        "attested_at": "2026-03-27T12:37:31+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::convention_outlier::import_type_inconsistency": {
       "id": "review::.::holistic::convention_outlier::import_type_inconsistency",
@@ -65936,11 +65948,11 @@
         "reasoning": "",
         "summary_hash": "672dd47e"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-27T12:13:44+00:00",
       "last_seen": "2026-03-27T12:13:44+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-27T12:37:41+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -65948,7 +65960,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this \u2014 ProcessorOptions carries fields through the strategy layer because the same options bag is consumed at different depths. Narrowing to Pick<> would introduce a fragile coupling where adding a new option requires updating the Pick in multiple places. The current design trades interface honesty for ease of change. Not gaming the score.",
+        "attested_at": "2026-03-27T12:37:41+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::dependency_health::p_retry_engine_mismatch": {
       "id": "review::.::holistic::dependency_health::p_retry_engine_mismatch",
@@ -65972,11 +65990,11 @@
         "reasoning": "",
         "summary_hash": "fdd204ad"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-27T12:13:44+00:00",
       "last_seen": "2026-03-27T12:13:44+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-03-27T12:37:24+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -65984,7 +66002,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this \u2014 p-retry 7.x requires node>=20 but the project declares >=18. This is a policy decision (bump engine floor or downgrade p-retry) that needs user input, not a false positive per se but deferring for user decision. Not gaming the score.",
+        "attested_at": "2026-03-27T12:37:24+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::validator_duplicate_cond_group_probes": {
       "id": "review::.::holistic::low_level_elegance::validator_duplicate_cond_group_probes",

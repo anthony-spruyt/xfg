@@ -2,7 +2,7 @@ import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { escapeShellArg } from "../shared/shell-utils.js";
 import {
-  AzureDevOpsRepoInfo,
+  type AzureDevOpsRepoInfo,
   assertAzureDevOpsRepo,
 } from "../shared/repo-detector.js";
 import type { PRResult } from "./types.js";
@@ -16,7 +16,7 @@ import type {
   MergeResult,
 } from "./types.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
-import { ICommandExecutor } from "../shared/command-executor.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";

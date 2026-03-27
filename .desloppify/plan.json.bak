@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-27T12:13:50+00:00",
+  "updated": "2026-03-27T12:37:32+00:00",
   "queue_order": [
     "review::.::holistic::abstraction_fitness::processor_options_overfill",
     "review::.::holistic::ai_generated_debt::manifest_restating_comments",
@@ -9,10 +9,8 @@
     "review::.::holistic::contract_coherence::withretry_throws_aborderror_inaccurate",
     "review::.::holistic::convention_outlier::import_type_inconsistency",
     "review::.::holistic::convention_outlier::settings_test_split_organization",
-    "review::.::holistic::dependency_health::p_retry_engine_mismatch",
     "review::.::holistic::error_consistency::pr_workflow_executor_broad_catch",
     "review::.::holistic::error_consistency::resolve_github_token_silent_no_fallback",
-    "review::.::holistic::high_level_elegance::lifecycle_action_render_duplication",
     "review::.::holistic::high_level_elegance::repo_detector_responsibility_blur",
     "review::.::holistic::logic_clarity::redundant_async_vcs_helpers",
     "review::.::holistic::low_level_elegance::validator_duplicate_cond_group_probes",
@@ -264,6 +262,26 @@
       "created_at": "2026-03-27T11:24:24+00:00",
       "review_after": null,
       "skipped_at_scan": 187
+    },
+    "review::.::holistic::dependency_health::p_retry_engine_mismatch": {
+      "issue_id": "review::.::holistic::dependency_health::p_retry_engine_mismatch",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 p-retry 7.x requires node>=20 but the project declares >=18. This is a policy decision (bump engine floor or downgrade p-retry) that needs user input, not a false positive per se but deferring for user decision. Not gaming the score.",
+      "created_at": "2026-03-27T12:37:24+00:00",
+      "review_after": null,
+      "skipped_at_scan": 191
+    },
+    "review::.::holistic::high_level_elegance::lifecycle_action_render_duplication": {
+      "issue_id": "review::.::holistic::high_level_elegance::lifecycle_action_render_duplication",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 renderActionDiffLines and renderLifecycleLines have intentional formatting differences (repo name prefix, line prefix characters, indentation) for their different output contexts (CLI vs GitHub summary). Consolidating would require parameterization that hurts readability. Not gaming the score.",
+      "created_at": "2026-03-27T12:37:32+00:00",
+      "review_after": null,
+      "skipped_at_scan": 191
     }
   },
   "active_cluster": null,
@@ -6928,7 +6946,12 @@
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {},
+  "plan_start_scores": {
+    "strict": 88.9,
+    "overall": 89.6,
+    "objective": 91.9,
+    "verified": 90.5
+  },
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -26123,6 +26146,68 @@
       "detail": {
         "scan_count": 190
       }
+    },
+    {
+      "timestamp": "2026-03-27T12:36:31+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-27T12:36:31+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-27T12:36:31+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 191
+      }
+    },
+    {
+      "timestamp": "2026-03-27T12:37:24+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::dependency_health::p_retry_engine_mismatch"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-27T12:37:32+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::high_level_elegance::lifecycle_action_render_duplication"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
     }
   ],
   "epic_triage_meta": {
@@ -26603,7 +26688,7 @@
     "subjective_review_completed_at_scan_count": 189,
     "lifecycle_phase": "plan",
     "_subjective_migration_pruned": true,
-    "postflight_scan_completed_at_scan_count": 190
+    "postflight_scan_completed_at_scan_count": 191
   },
-  "scan_count_at_plan_start": 188
+  "scan_count_at_plan_start": 191
 }

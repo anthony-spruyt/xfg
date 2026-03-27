@@ -1,7 +1,7 @@
 import { toErrorMessage } from "../shared/type-guards.js";
 import { withRetry } from "../shared/retry-utils.js";
 import type { PRResult } from "./types.js";
-import { ICommandExecutor } from "../shared/command-executor.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import type {
   MergeResult,
   PRStrategyOptions,

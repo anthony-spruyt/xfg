@@ -1,18 +1,15 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-27T12:36:31+00:00",
+  "updated": "2026-03-27T12:37:41+00:00",
   "queue_order": [
-    "review::.::holistic::abstraction_fitness::processor_options_overfill",
     "review::.::holistic::ai_generated_debt::manifest_restating_comments",
     "review::.::holistic::api_surface_coherence::type_guards_async_outlier",
     "review::.::holistic::contract_coherence::withretry_throws_aborderror_inaccurate",
     "review::.::holistic::convention_outlier::import_type_inconsistency",
     "review::.::holistic::convention_outlier::settings_test_split_organization",
-    "review::.::holistic::dependency_health::p_retry_engine_mismatch",
     "review::.::holistic::error_consistency::pr_workflow_executor_broad_catch",
     "review::.::holistic::error_consistency::resolve_github_token_silent_no_fallback",
-    "review::.::holistic::high_level_elegance::lifecycle_action_render_duplication",
     "review::.::holistic::high_level_elegance::repo_detector_responsibility_blur",
     "review::.::holistic::logic_clarity::redundant_async_vcs_helpers",
     "review::.::holistic::low_level_elegance::validator_duplicate_cond_group_probes",
@@ -264,6 +261,36 @@
       "created_at": "2026-03-27T11:24:24+00:00",
       "review_after": null,
       "skipped_at_scan": 187
+    },
+    "review::.::holistic::dependency_health::p_retry_engine_mismatch": {
+      "issue_id": "review::.::holistic::dependency_health::p_retry_engine_mismatch",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 p-retry 7.x requires node>=20 but the project declares >=18. This is a policy decision (bump engine floor or downgrade p-retry) that needs user input, not a false positive per se but deferring for user decision. Not gaming the score.",
+      "created_at": "2026-03-27T12:37:24+00:00",
+      "review_after": null,
+      "skipped_at_scan": 191
+    },
+    "review::.::holistic::high_level_elegance::lifecycle_action_render_duplication": {
+      "issue_id": "review::.::holistic::high_level_elegance::lifecycle_action_render_duplication",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 renderActionDiffLines and renderLifecycleLines have intentional formatting differences (repo name prefix, line prefix characters, indentation) for their different output contexts (CLI vs GitHub summary). Consolidating would require parameterization that hurts readability. Not gaming the score.",
+      "created_at": "2026-03-27T12:37:32+00:00",
+      "review_after": null,
+      "skipped_at_scan": 191
+    },
+    "review::.::holistic::abstraction_fitness::processor_options_overfill": {
+      "issue_id": "review::.::holistic::abstraction_fitness::processor_options_overfill",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 ProcessorOptions carries fields through the strategy layer because the same options bag is consumed at different depths. Narrowing to Pick<> would introduce a fragile coupling where adding a new option requires updating the Pick in multiple places. The current design trades interface honesty for ease of change. Not gaming the score.",
+      "created_at": "2026-03-27T12:37:41+00:00",
+      "review_after": null,
+      "skipped_at_scan": 191
     }
   },
   "active_cluster": null,
@@ -26161,6 +26188,48 @@
       "note": null,
       "detail": {
         "scan_count": 191
+      }
+    },
+    {
+      "timestamp": "2026-03-27T12:37:24+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::dependency_health::p_retry_engine_mismatch"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-27T12:37:32+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::high_level_elegance::lifecycle_action_render_duplication"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-03-27T12:37:41+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::abstraction_fitness::processor_options_overfill"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
       }
     }
   ],

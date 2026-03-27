@@ -12,8 +12,9 @@ import {
   parseGitUrl,
   getRepoDisplayName,
   isGitHubRepo,
+  type RepoInfo,
+  type GitHubRepoInfo,
 } from "../shared/repo-detector.js";
-import type { GitHubRepoInfo } from "../shared/repo-detector.js";
 import { sanitizeBranchName, validateBranchName } from "./branch-utils.js";
 import { createTokenManager } from "../vcs/index.js";
 import { RepositoryProcessor } from "../sync/index.js";
@@ -29,7 +30,6 @@ import {
 import { ShellCommandExecutor } from "../shared/command-executor.js";
 import { Logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
-import { RepoInfo } from "../shared/repo-detector.js";
 import {
   type SyncDependencies,
   type SyncResultEntry,

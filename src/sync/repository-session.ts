@@ -1,5 +1,5 @@
-import { RepoInfo } from "../shared/repo-detector.js";
-import { ILogger } from "../shared/logger.js";
+import type { RepoInfo } from "../shared/repo-detector.js";
+import type { ILogger } from "../shared/logger.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import type {
   GitOpsFactory,
