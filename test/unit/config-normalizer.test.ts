@@ -1954,6 +1954,246 @@ describe("normalizeConfig", () => {
       assert.equal(actors?.length, 1);
       assert.equal(actors?.[0]?.actorId, 9999);
     });
+
+    test("$arrayMerge: prepend on rules prepends per-repo to root", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  rules: {
+                    $arrayMerge: "prepend",
+                    $values: [{ type: "required_signatures" }],
+                  } as never,
+                },
+              },
+            },
+          },
+        ],
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "branch",
+              rules: [
+                {
+                  type: "pull_request",
+                  parameters: { requiredApprovingReviewCount: 1 },
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw, process.env);
+      const rules = result.repos[0].settings?.rulesets?.["pr-rules"]?.rules;
+      assert.equal(rules?.length, 2);
+      assert.equal(rules?.[0]?.type, "required_signatures");
+      assert.equal(rules?.[1]?.type, "pull_request");
+    });
+
+    test("$arrayMerge: append on conditions.refName.include", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  conditions: {
+                    refName: {
+                      include: {
+                        $arrayMerge: "append",
+                        $values: ["refs/heads/develop"],
+                      } as never,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "branch",
+              conditions: {
+                refName: {
+                  include: ["refs/heads/main"],
+                  exclude: [],
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw, process.env);
+      const include =
+        result.repos[0].settings?.rulesets?.["pr-rules"]?.conditions?.refName
+          ?.include;
+      assert.deepEqual(include, ["refs/heads/main", "refs/heads/develop"]);
+    });
+
+    test("$arrayMerge: append on bypassActors appends per-repo to root", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  bypassActors: {
+                    $arrayMerge: "append",
+                    $values: [
+                      {
+                        actorId: 9999,
+                        actorType: "Integration",
+                        bypassMode: "always",
+                      },
+                    ],
+                  } as never,
+                },
+              },
+            },
+          },
+        ],
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "branch",
+              bypassActors: [
+                {
+                  actorId: 2740,
+                  actorType: "Integration",
+                  bypassMode: "always",
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw, process.env);
+      const actors =
+        result.repos[0].settings?.rulesets?.["pr-rules"]?.bypassActors;
+      assert.equal(actors?.length, 2);
+      assert.equal(actors?.[0]?.actorId, 2740);
+      assert.equal(actors?.[1]?.actorId, 9999);
+    });
+
+    test("$arrayMerge: replace behaves same as default array replacement", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  rules: {
+                    $arrayMerge: "replace",
+                    $values: [{ type: "required_signatures" }],
+                  } as never,
+                },
+              },
+            },
+          },
+        ],
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "branch",
+              rules: [
+                {
+                  type: "pull_request",
+                  parameters: { requiredApprovingReviewCount: 1 },
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw, process.env);
+      const rules = result.repos[0].settings?.rulesets?.["pr-rules"]?.rules;
+      assert.equal(rules?.length, 1);
+      assert.equal(rules?.[0]?.type, "required_signatures");
+    });
+
+    test("different $arrayMerge strategies on sibling arrays in same ruleset", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                "pr-rules": {
+                  bypassActors: {
+                    $arrayMerge: "append",
+                    $values: [
+                      {
+                        actorId: 9999,
+                        actorType: "Integration",
+                        bypassMode: "always",
+                      },
+                    ],
+                  } as never,
+                  rules: {
+                    $arrayMerge: "prepend",
+                    $values: [{ type: "required_signatures" }],
+                  } as never,
+                },
+              },
+            },
+          },
+        ],
+        settings: {
+          rulesets: {
+            "pr-rules": {
+              target: "branch",
+              bypassActors: [
+                {
+                  actorId: 2740,
+                  actorType: "Integration",
+                  bypassMode: "always",
+                },
+              ],
+              rules: [
+                {
+                  type: "pull_request",
+                  parameters: { requiredApprovingReviewCount: 1 },
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw, process.env);
+      const actors =
+        result.repos[0].settings?.rulesets?.["pr-rules"]?.bypassActors;
+      const rules = result.repos[0].settings?.rulesets?.["pr-rules"]?.rules;
+      // bypassActors: append
+      assert.equal(actors?.length, 2);
+      assert.equal(actors?.[0]?.actorId, 2740);
+      assert.equal(actors?.[1]?.actorId, 9999);
+      // rules: prepend
+      assert.equal(rules?.length, 2);
+      assert.equal(rules?.[0]?.type, "required_signatures");
+      assert.equal(rules?.[1]?.type, "pull_request");
+    });
   });
 
   describe("inheritance opt-out", () => {
