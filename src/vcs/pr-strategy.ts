@@ -1,5 +1,6 @@
 import { toErrorMessage } from "../shared/type-guards.js";
-import { withRetry } from "../shared/retry-utils.js";
+import { withRetry, isPermanentError } from "../shared/retry-utils.js";
+import type { DebugWarnLog } from "../shared/logger.js";
 import type { PRResult } from "./types.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type {
@@ -56,7 +57,10 @@ export abstract class BasePRStrategy implements IPRStrategy {
 }
 
 export class PRWorkflowExecutor {
-  constructor(private readonly strategy: IPRStrategy) {}
+  constructor(
+    private readonly strategy: IPRStrategy,
+    private readonly log?: DebugWarnLog
+  ) {}
 
   async execute(options: PRStrategyOptions): Promise<PRResult> {
     try {
@@ -71,6 +75,9 @@ export class PRWorkflowExecutor {
       return await this.strategy.create(options);
     } catch (error) {
       const message = toErrorMessage(error);
+      if (isPermanentError(error)) {
+        this.log?.warn(`PR creation failed (permanent): ${message}`);
+      }
       return {
         success: false,
         message: `Failed to create PR: ${message}`,

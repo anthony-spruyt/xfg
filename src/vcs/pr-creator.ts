@@ -177,7 +177,7 @@ export function createPR(options: PROptions): Promise<PRResult> {
   // Get the appropriate strategy and execute via workflow executor
   const resolvedStrategy =
     options.strategy ?? createPRStrategy(repoInfo, executor, log);
-  const workflow = new PRWorkflowExecutor(resolvedStrategy);
+  const workflow = new PRWorkflowExecutor(resolvedStrategy, log);
   return workflow.execute({
     repoInfo,
     title,
