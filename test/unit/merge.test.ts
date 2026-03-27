@@ -265,6 +265,29 @@ describe("deepMerge", () => {
     const result = deepMerge(base, overlay, createContext());
     assert.deepEqual(result, { items: [1, 2, 3] });
   });
+
+  test("resolves base directive before applying overlay directive (stacked directives)", () => {
+    const base = {
+      items: { $arrayMerge: "append", $values: [1, 2] },
+    };
+    const overlay = {
+      items: { $arrayMerge: "append", $values: [3, 4] },
+    };
+    const result = deepMerge(base, overlay, createContext("replace"));
+    assert.deepEqual(result, { items: [1, 2, 3, 4] });
+  });
+
+  test("resolves base directive when overlay is a plain array", () => {
+    const base = {
+      items: { $arrayMerge: "append", $values: [1, 2] },
+    };
+    const overlay = {
+      items: [3, 4],
+    };
+    const result = deepMerge(base, overlay, createContext("replace"));
+    // Plain array overlay replaces (default strategy) the resolved base
+    assert.deepEqual(result, { items: [3, 4] });
+  });
 });
 
 describe("stripMergeDirectives", () => {
@@ -358,6 +381,28 @@ describe("stripMergeDirectives", () => {
     const obj = { $arrayMerge: "append", $values: [1, 2] };
     const result = stripMergeDirectives(obj);
     assert.deepEqual(result, {});
+  });
+
+  test("resolves unmerged $arrayMerge directive to its $values array", () => {
+    const obj = {
+      name: "test",
+      items: { $arrayMerge: "append", $values: [1, 2, 3] },
+    };
+    const result = stripMergeDirectives(obj);
+    assert.deepEqual(result, { name: "test", items: [1, 2, 3] });
+  });
+
+  test("resolves nested unmerged $arrayMerge directive", () => {
+    const obj = {
+      outer: {
+        inner: { $arrayMerge: "prepend", $values: ["a", "b"] },
+        keep: "yes",
+      },
+    };
+    const result = stripMergeDirectives(obj);
+    assert.deepEqual(result, {
+      outer: { inner: ["a", "b"], keep: "yes" },
+    });
   });
 });
 

@@ -23,6 +23,24 @@ const arrayMergeStrategies: Map<ArrayMergeStrategy, ArrayMergeHandler> =
     ["prepend", (base, overlay) => [...overlay, ...base]],
   ]);
 
+/**
+ * Checks if a value is an unresolved $arrayMerge directive object
+ * (only contains $arrayMerge + $values keys, with a valid strategy and array values).
+ */
+function isUnresolvedDirective(
+  value: unknown
+): value is Record<string, unknown> & { $values: unknown[] } {
+  if (!isPlainObject(value)) return false;
+  const keys = Object.keys(value);
+  return (
+    keys.length === 2 &&
+    keys.every((k) => XFG_DIRECTIVES.has(k)) &&
+    typeof value.$arrayMerge === "string" &&
+    arrayMergeStrategies.has(value.$arrayMerge as ArrayMergeStrategy) &&
+    Array.isArray(value.$values)
+  );
+}
+
 export interface MergeContext {
   defaultArrayStrategy: ArrayMergeStrategy;
 }
@@ -60,6 +78,12 @@ export function deepMerge(
 
     const baseValue = base[key];
 
+    // If base is an unresolved directive (from a previous layer with no base array),
+    // resolve it to its $values array before proceeding with merge logic.
+    const resolvedBase = isUnresolvedDirective(baseValue)
+      ? baseValue.$values
+      : baseValue;
+
     // Per-field $arrayMerge + $values directive
     if (isPlainObject(overlayValue) && "$arrayMerge" in overlayValue) {
       const strategy = overlayValue.$arrayMerge;
@@ -70,17 +94,17 @@ export function deepMerge(
           strategy === "append" ||
           strategy === "prepend") &&
         Array.isArray(values) &&
-        Array.isArray(baseValue)
+        Array.isArray(resolvedBase)
       ) {
-        result[key] = mergeArrays(baseValue, values, strategy);
+        result[key] = mergeArrays(resolvedBase, values, strategy);
         continue;
       }
     }
 
     // Both are arrays — use default strategy
-    if (Array.isArray(baseValue) && Array.isArray(overlayValue)) {
+    if (Array.isArray(resolvedBase) && Array.isArray(overlayValue)) {
       result[key] = mergeArrays(
-        baseValue,
+        resolvedBase,
         overlayValue,
         ctx.defaultArrayStrategy
       );
@@ -88,8 +112,8 @@ export function deepMerge(
     }
 
     // Both are plain objects — recurse
-    if (isPlainObject(baseValue) && isPlainObject(overlayValue)) {
-      result[key] = deepMerge(baseValue, overlayValue, ctx);
+    if (isPlainObject(resolvedBase) && isPlainObject(overlayValue)) {
+      result[key] = deepMerge(resolvedBase, overlayValue, ctx);
       continue;
     }
 
@@ -104,6 +128,10 @@ export function deepMerge(
  * Strip xfg merge directive keys ($arrayMerge, $values) from an object.
  * Works recursively on nested objects and arrays.
  * Standard $-prefixed keys ($schema, $id, $ref, etc.) are preserved.
+ *
+ * When an unresolved directive object is found (only contains $arrayMerge + $values),
+ * it is replaced with the $values array. This handles the case where a directive
+ * had no base array to merge with.
  */
 export function stripMergeDirectives(
   obj: Record<string, unknown>
@@ -115,7 +143,14 @@ export function stripMergeDirectives(
     if (XFG_DIRECTIVES.has(key)) continue;
 
     if (isPlainObject(value)) {
-      result[key] = stripMergeDirectives(value);
+      if (isUnresolvedDirective(value)) {
+        // Resolve to the $values array, stripping directives from items
+        result[key] = value.$values.map((item) =>
+          isPlainObject(item) ? stripMergeDirectives(item) : item
+        );
+      } else {
+        result[key] = stripMergeDirectives(value);
+      }
     } else if (Array.isArray(value)) {
       result[key] = value.map((item) =>
         isPlainObject(item) ? stripMergeDirectives(item) : item
