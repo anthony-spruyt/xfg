@@ -1,4 +1,10 @@
-import type { RawConfig, RawRepoSettings, RawRootSettings } from "./types.js";
+import type {
+  RawConfig,
+  RawRepoSettings,
+  RawRootSettings,
+  RawGroupConfig,
+} from "./types.js";
+import { resolveExtendsChain } from "./extends-resolver.js";
 import {
   isTextContent,
   isObjectContent,
@@ -392,6 +398,96 @@ function validatePrOptions(config: RawConfig): void {
   }
 }
 
+/**
+ * Validates the extends field on a single group definition.
+ * Checks type, self-reference, and that all referenced groups exist.
+ */
+function validateGroupExtends(
+  groupName: string,
+  extends_: string | string[],
+  groupNames: string[]
+): void {
+  // Type check
+  if (typeof extends_ === "string") {
+    if (extends_.length === 0) {
+      throw new ValidationError(
+        `groups.${groupName}: 'extends' must be a non-empty string or array of strings`
+      );
+    }
+    // Self-reference
+    if (extends_ === groupName) {
+      throw new ValidationError(
+        `groups.${groupName}: extends cannot reference itself`
+      );
+    }
+    // Existence
+    if (!groupNames.includes(extends_)) {
+      throw new ValidationError(
+        `groups.${groupName}: extends references undefined group '${extends_}'`
+      );
+    }
+  } else if (Array.isArray(extends_)) {
+    if (extends_.length === 0) {
+      throw new ValidationError(
+        `groups.${groupName}: 'extends' must be a non-empty string or array of strings`
+      );
+    }
+    const seen = new Set<string>();
+    for (const entry of extends_) {
+      if (typeof entry !== "string") {
+        throw new ValidationError(
+          `groups.${groupName}: 'extends' array entries must be strings`
+        );
+      }
+      if (entry.length === 0) {
+        throw new ValidationError(
+          `groups.${groupName}: 'extends' array entries must be non-empty strings`
+        );
+      }
+      if (entry === groupName) {
+        throw new ValidationError(
+          `groups.${groupName}: extends cannot reference itself`
+        );
+      }
+      if (!groupNames.includes(entry)) {
+        throw new ValidationError(
+          `groups.${groupName}: extends references undefined group '${entry}'`
+        );
+      }
+      if (seen.has(entry)) {
+        throw new ValidationError(
+          `groups.${groupName}: duplicate '${entry}' in extends`
+        );
+      }
+      seen.add(entry);
+    }
+  } else {
+    throw new ValidationError(
+      `groups.${groupName}: 'extends' must be a non-empty string or array of strings`
+    );
+  }
+}
+
+/**
+ * Detects circular extends chains across all groups.
+ * Reuses resolveExtendsChain from extends-resolver.ts to avoid
+ * duplicating the chain-walking logic. Converts thrown errors
+ * to ValidationError.
+ */
+function validateNoCircularExtends(
+  groups: Record<string, RawGroupConfig>
+): void {
+  for (const name of Object.keys(groups)) {
+    try {
+      resolveExtendsChain(name, groups);
+    } catch (error) {
+      throw new ValidationError(
+        error instanceof Error ? error.message : String(error)
+      );
+    }
+  }
+}
+
 function validateGroups(config: RawConfig): void {
   if (config.groups === undefined) return;
 
@@ -400,12 +496,24 @@ function validateGroups(config: RawConfig): void {
   }
 
   const rootCtx = buildRootSettingsContext(config);
+  const groupNames = Object.keys(config.groups);
 
   for (const [groupName, group] of Object.entries(config.groups)) {
     if (groupName === "inherit") {
       throw new ValidationError(
         "'inherit' is a reserved key and cannot be used as a group name"
       );
+    }
+
+    if (groupName === "extends") {
+      throw new ValidationError(
+        "'extends' is a reserved key and cannot be used as a group name"
+      );
+    }
+
+    // Validate extends field
+    if (group.extends !== undefined) {
+      validateGroupExtends(groupName, group.extends, groupNames);
     }
 
     if (group.files) {
@@ -426,6 +534,9 @@ function validateGroups(config: RawConfig): void {
       validateSettings(group.settings, `groups.${groupName}`, rootCtx);
     }
   }
+
+  // Validate no circular extends after individual validation
+  validateNoCircularExtends(config.groups);
 }
 
 function validateConditionalGroups(config: RawConfig): void {

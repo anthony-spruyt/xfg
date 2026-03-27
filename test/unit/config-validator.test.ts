@@ -4360,3 +4360,189 @@ describe("validateRawConfig - group files with no root files", () => {
     );
   });
 });
+
+describe("group extends validation", () => {
+  const createValidConfig = (overrides?: Partial<RawConfig>): RawConfig => ({
+    id: "test-config",
+    files: { "config.json": { content: { key: "value" } } },
+    repos: [{ git: "git@github.com:org/repo.git" }],
+    ...overrides,
+  });
+
+  test("valid extends with string passes", () => {
+    const config = createValidConfig({
+      groups: {
+        parent: { files: {} },
+        child: { extends: "parent", files: {} },
+      },
+    });
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("valid extends with array passes", () => {
+    const config = createValidConfig({
+      groups: {
+        parentA: { files: {} },
+        parentB: { files: {} },
+        child: { extends: ["parentA", "parentB"], files: {} },
+      },
+    });
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("throws for extends referencing non-existent group", () => {
+    const config = createValidConfig({
+      groups: {
+        child: { extends: "nonexistent", files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /groups\.child: extends references undefined group 'nonexistent'/
+    );
+  });
+
+  test("throws for extends array with non-existent group", () => {
+    const config = createValidConfig({
+      groups: {
+        parent: { files: {} },
+        child: { extends: ["parent", "missing"], files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /groups\.child: extends references undefined group 'missing'/
+    );
+  });
+
+  test("throws for extends self-reference", () => {
+    const config = createValidConfig({
+      groups: {
+        selfref: { extends: "selfref", files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /groups\.selfref: extends cannot reference itself/
+    );
+  });
+
+  test("throws for circular extends (a -> b -> a)", () => {
+    const config = createValidConfig({
+      groups: {
+        a: { extends: "b", files: {} },
+        b: { extends: "a", files: {} },
+      },
+    });
+    assert.throws(() => validateRawConfig(config), /[Cc]ircular extends/);
+  });
+
+  test("throws for circular extends (a -> b -> c -> a)", () => {
+    const config = createValidConfig({
+      groups: {
+        a: { extends: "b", files: {} },
+        b: { extends: "c", files: {} },
+        c: { extends: "a", files: {} },
+      },
+    });
+    assert.throws(() => validateRawConfig(config), /[Cc]ircular extends/);
+  });
+
+  test("throws for extends as empty array", () => {
+    const config = createValidConfig({
+      groups: {
+        child: { extends: [] as string[], files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /groups\.child: 'extends' must be a non-empty string or array of strings/
+    );
+  });
+
+  test("throws for extends with non-string value", () => {
+    const config = createValidConfig({
+      groups: {
+        child: { extends: 123 as unknown as string, files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /groups\.child: 'extends' must be a non-empty string or array of strings/
+    );
+  });
+
+  test("throws for extends array with non-string entry", () => {
+    const config = createValidConfig({
+      groups: {
+        parent: { files: {} },
+        child: { extends: ["parent", 42 as unknown as string], files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /groups\.child: 'extends' array entries must be strings/
+    );
+  });
+
+  test("throws for extends as reserved group name", () => {
+    const config = createValidConfig({
+      groups: {
+        extends: { files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /'extends' is a reserved key and cannot be used as a group name/
+    );
+  });
+
+  test("transitive extends with valid chain passes", () => {
+    const config = createValidConfig({
+      groups: {
+        grandparent: { files: {} },
+        parent: { extends: "grandparent", files: {} },
+        child: { extends: "parent", files: {} },
+      },
+    });
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("diamond extends passes (no cycle)", () => {
+    const config = createValidConfig({
+      groups: {
+        base: { files: {} },
+        left: { extends: "base", files: {} },
+        right: { extends: "base", files: {} },
+        top: { extends: ["left", "right"], files: {} },
+      },
+    });
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("throws for empty string in extends array", () => {
+    const config = createValidConfig({
+      groups: {
+        parent: { files: {} },
+        child: { extends: ["parent", ""] as string[], files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /extends.*non-empty strings/
+    );
+  });
+
+  test("throws for duplicate entry in extends array", () => {
+    const config = createValidConfig({
+      groups: {
+        parent: { files: {} },
+        child: { extends: ["parent", "parent"], files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /duplicate 'parent' in extends/
+    );
+  });
+});
