@@ -85,13 +85,16 @@ const VALID_MERGE_STRATEGIES = ["replace", "append", "prepend"];
 /**
  * Checks if a value is an $arrayMerge directive: { $arrayMerge: strategy, $values: [...] }
  */
-export function isArrayMergeDirective(value: unknown): boolean {
+function isArrayMergeDirective(value: unknown): boolean {
+  if (!isPlainObject(value)) return false;
+  const keys = Object.keys(value);
   return (
-    isPlainObject(value) &&
-    "$arrayMerge" in value &&
-    "$values" in value &&
-    VALID_MERGE_STRATEGIES.includes(value.$arrayMerge as string) &&
-    Array.isArray(value.$values)
+    keys.length === 2 &&
+    keys.every((k) => k === "$arrayMerge" || k === "$values") &&
+    VALID_MERGE_STRATEGIES.includes(
+      (value as Record<string, unknown>).$arrayMerge as string
+    ) &&
+    Array.isArray((value as Record<string, unknown>).$values)
   );
 }
 

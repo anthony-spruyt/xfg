@@ -2486,6 +2486,98 @@ describe("validateRawConfig", () => {
       );
     });
 
+    test("rejects rules with invalid $arrayMerge strategy", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              rules: {
+                $arrayMerge: "invalid",
+                $values: [{ type: "required_signatures" }],
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /rules must be an array or \$arrayMerge directive/
+      );
+    });
+
+    test("rejects rules with invalid $values items (rule without type field)", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              rules: {
+                $arrayMerge: "append",
+                $values: [{ parameters: {} }],
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /rule must have a 'type' string field/
+      );
+    });
+
+    test("rejects conditions.refName.include with non-string $values items", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              conditions: {
+                refName: {
+                  include: {
+                    $arrayMerge: "append",
+                    $values: [123],
+                  } as never,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /include must be an array of strings or \$arrayMerge directive with string \$values/
+      );
+    });
+
+    test("rejects conditions.refName.exclude with non-string $values items", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              conditions: {
+                refName: {
+                  exclude: {
+                    $arrayMerge: "prepend",
+                    $values: [456],
+                  } as never,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /exclude must be an array of strings or \$arrayMerge directive with string \$values/
+      );
+    });
+
     test("rejects $arrayMerge directive with invalid $values items in bypassActors", () => {
       const config = createValidConfig({
         settings: {

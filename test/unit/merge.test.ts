@@ -392,6 +392,24 @@ describe("stripMergeDirectives", () => {
     assert.deepEqual(result, { name: "test", items: [1, 2, 3] });
   });
 
+  test("strips directive keys from objects nested inside $values", () => {
+    const obj = {
+      name: "test",
+      items: {
+        $arrayMerge: "append",
+        $values: [
+          { $arrayMerge: "replace", $values: ["nested"], label: "keep" },
+          { clean: "already" },
+        ],
+      },
+    };
+    const result = stripMergeDirectives(obj);
+    assert.deepEqual(result, {
+      name: "test",
+      items: [{ label: "keep" }, { clean: "already" }],
+    });
+  });
+
   test("resolves nested unmerged $arrayMerge directive", () => {
     const obj = {
       outer: {

@@ -781,6 +781,7 @@
         },
         "$values": {
           "type": "array",
+          "items": { "type": "string" },
           "description": "Values to merge with the base array"
         }
       },
