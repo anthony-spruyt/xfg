@@ -2339,6 +2339,7 @@ When groups use <a href="../groups/#group-inheritance"><code>extends</code></a>,
 <ul>
 <li><strong>Objects</strong>: Fields are merged recursively; overlay fields overwrite base fields</li>
 <li><strong>Arrays</strong>: By default, overlay arrays replace base arrays (see <a href="../merge-strategies/">Merge Strategies</a> to change this)</li>
+<li><strong>Settings arrays</strong>: By default, overlay arrays replace base arrays in settings too (rulesets, bypass actors, rules, conditions). Use the <a href="../merge-strategies/#settings-array-merge"><code>$arrayMerge</code> directive</a> to append or prepend instead — same syntax as file content.</li>
 <li><strong>Scalars</strong>: Overlay values replace base values</li>
 </ul>
 <h2 id="file-exclusion">File Exclusion<a class="headerlink" href="#file-exclusion" title="Permanent link">&para;</a></h2>
