@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-27T12:13:50+00:00",
+  "updated": "2026-03-27T12:36:31+00:00",
   "queue_order": [
     "review::.::holistic::abstraction_fitness::processor_options_overfill",
     "review::.::holistic::ai_generated_debt::manifest_restating_comments",
@@ -6928,7 +6928,12 @@
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {},
+  "plan_start_scores": {
+    "strict": 88.9,
+    "overall": 89.6,
+    "objective": 91.9,
+    "verified": 90.5
+  },
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -26123,6 +26128,40 @@
       "detail": {
         "scan_count": 190
       }
+    },
+    {
+      "timestamp": "2026-03-27T12:36:31+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-03-27T12:36:31+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-03-27T12:36:31+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 191
+      }
     }
   ],
   "epic_triage_meta": {
@@ -26603,7 +26642,7 @@
     "subjective_review_completed_at_scan_count": 189,
     "lifecycle_phase": "plan",
     "_subjective_migration_pruned": true,
-    "postflight_scan_completed_at_scan_count": 190
+    "postflight_scan_completed_at_scan_count": 191
   },
-  "scan_count_at_plan_start": 188
+  "scan_count_at_plan_start": 191
 }
