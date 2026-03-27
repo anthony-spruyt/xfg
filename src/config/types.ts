@@ -411,6 +411,7 @@ export interface RawRepoFileOverride {
 // Groups need inherit: false support on settings sub-sections (rulesets, labels),
 // so settings uses RawRepoSettings (which has inherit on rulesets/labels).
 export interface RawGroupConfig {
+  extends?: string | string[];
   files?: Record<string, RawFileConfig | RawRepoFileOverride | false> & {
     inherit?: boolean;
   };

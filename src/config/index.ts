@@ -23,6 +23,7 @@ export type {
   // Raw Config
   RawFileConfig,
   RawRepoFileOverride,
+  RawGroupConfig,
   RawRepoSettings,
   RawRepoConfig,
   RawConfig,
