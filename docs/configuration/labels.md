@@ -90,6 +90,8 @@ settings:
 
 ## Inheritance
 
+Labels from [conditional groups](groups.md#conditional-groups) merge after explicit group labels and before repo overrides. Per-repo `inherit: false` discards all inherited labels including those from conditional groups.
+
 Labels support the same inheritance pattern as rulesets. Root-level labels are inherited by all repos:
 
 ```yaml

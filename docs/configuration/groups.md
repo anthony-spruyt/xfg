@@ -413,3 +413,8 @@ Conditional groups support the same capabilities as regular groups:
   the `groups` map
 - Conditional groups cannot be listed in a repo's `groups` array
 - Conditional groups cannot reference other conditional groups
+- A repo with no `groups` field or `groups: []` has an empty effective group
+  set — no conditional group can match it
+- Conditional groups do not expand the effective group set — one conditional
+  group matching cannot cause another conditional group to match. All
+  conditions are evaluated against the same frozen set of explicit groups.
