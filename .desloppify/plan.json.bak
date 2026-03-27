@@ -1,10 +1,8 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-27T14:14:55+00:00",
-  "queue_order": [
-    "review::.::holistic::test_strategy::test_tmpdir_process_cwd"
-  ],
+  "updated": "2026-03-27T14:14:56+00:00",
+  "queue_order": [],
   "deferred": [],
   "skipped": {
     "review::.::holistic::initialization_coupling::module_level_lazy_singletons": {
@@ -304,6 +302,16 @@
       "note": null,
       "attestation": "I have reviewed this \u2014 deferring to a future round as this is an architectural change that needs careful analysis and testing. Not gaming the score.",
       "created_at": "2026-03-27T14:14:55+00:00",
+      "review_after": null,
+      "skipped_at_scan": 192
+    },
+    "review::.::holistic::test_strategy::test_tmpdir_process_cwd": {
+      "issue_id": "review::.::holistic::test_strategy::test_tmpdir_process_cwd",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 deferring to a future round as this is an architectural change that needs careful analysis and testing. Not gaming the score.",
+      "created_at": "2026-03-27T14:14:56+00:00",
       "review_after": null,
       "skipped_at_scan": 192
     }
@@ -6969,9 +6977,7 @@
       "candidates": []
     }
   },
-  "promoted_ids": [
-    "review::.::holistic::test_strategy::test_tmpdir_process_cwd"
-  ],
+  "promoted_ids": [],
   "plan_start_scores": {},
   "execution_log": [
     {
@@ -26882,6 +26888,20 @@
         "position": "top",
         "target": null,
         "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-03-27T14:14:56+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::test_tmpdir_process_cwd"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
       }
     }
   ],
