@@ -1023,7 +1023,7 @@ function expandGroupsForValidation(
 
 - [ ] **Step 4: Update `validateRepoFiles` to expand groups**
 
-In `src/config/validator.ts`, modify the `validateRepoFiles` function. Replace the existing group-file collection block (lines 639-647):
+In `src/config/validator.ts`, modify the `validateRepoFiles` function. Replace the existing group-file collection block (lines 639-648):
 
 ```typescript
   if (repo.groups && config.groups) {
