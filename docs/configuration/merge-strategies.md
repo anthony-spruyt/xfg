@@ -145,6 +145,72 @@ coverage/
 !!! note
     String content (not lines array) always uses replace strategy - the entire string is replaced.
 
+## Settings Array Merge
+
+The `$arrayMerge` directive also works in settings overrides — rulesets, bypass actors, rules, conditions, and any other array field. This eliminates duplicating shared entries when a repo needs to add its own items.
+
+### Appending Bypass Actors
+
+```yaml
+# Root — shared across all repos
+settings:
+  rulesets:
+    pr-rules:
+      bypassActors:
+        - actorId: 2740          # Renovate
+          actorType: Integration
+          bypassMode: always
+
+repos:
+  # Adds a repo-specific actor without duplicating Renovate
+  - git: git@github.com:org/repo.git
+    settings:
+      rulesets:
+        pr-rules:
+          bypassActors:
+            $arrayMerge: append
+            $values:
+              - actorId: 2719952   # repo-specific bot
+                actorType: Integration
+                bypassMode: always
+```
+
+Result: `bypassActors` contains both Renovate (actorId 2740) and the repo-specific bot (actorId 2719952).
+
+### Appending Rules via Conditional Groups
+
+```yaml
+settings:
+  rulesets:
+    pr-rules:
+      rules:
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 1
+
+groups:
+  github-ci: {}
+
+conditionalGroups:
+  - when:
+      allOf: [github-ci]
+    settings:
+      rulesets:
+        pr-rules:
+          rules:
+            $arrayMerge: append
+            $values:
+              - type: required_status_checks
+                parameters:
+                  requiredStatusChecks:
+                    - context: "summary / Check Results"
+```
+
+Repos with the `github-ci` group get both the `pull_request` rule and the `required_status_checks` rule. Repos without `github-ci` only get the `pull_request` rule.
+
+!!! note "Same syntax as file content"
+    The `$arrayMerge` directive uses the same `$arrayMerge` + `$values` syntax in settings as in file content (see Inline Array Merge Directive above). Strategies: `append`, `prepend`, `replace`.
+
 ## Example: Different Strategies per File
 
 ```yaml
