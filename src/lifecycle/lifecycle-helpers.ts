@@ -44,9 +44,10 @@ export function toCreateRepoSettings(
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-interface LifecycleCheckResult {
+export interface LifecycleCheckResult {
   lifecycleResult: LifecycleResult;
   outputLines: string[];
+  createSettings: CreateRepoSettings | undefined;
 }
 
 /**
@@ -89,5 +90,5 @@ export async function runLifecycleCheck(
       : undefined,
   });
 
-  return { lifecycleResult, outputLines };
+  return { lifecycleResult, outputLines, createSettings };
 }

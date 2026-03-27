@@ -100,7 +100,6 @@ import { resolveGitHubToken } from "../shared/gh-api-utils.js";
 import {
   RepoLifecycleManager,
   runLifecycleCheck,
-  toCreateRepoSettings,
   type IRepoLifecycleManager,
 } from "../lifecycle/index.js";
 
@@ -493,10 +492,8 @@ async function runLifecyclePhase(
   const repoNumber = repo.index + 1;
 
   try {
-    const { outputLines, lifecycleResult } = await runLifecycleCheck(
-      repo.repoConfig,
-      repo.repoInfo,
-      {
+    const { outputLines, lifecycleResult, createSettings } =
+      await runLifecycleCheck(repo.repoConfig, repo.repoInfo, {
         dryRun: ctx.options.dryRun ?? false,
         resolvedWorkDir: repo.workDir,
         githubHosts: ctx.config.githubHosts,
@@ -504,14 +501,11 @@ async function runLifecyclePhase(
         repoIndex: repo.index,
         lifecycleManager: ctx.lifecycleManager,
         repoSettings: ctx.config.settings?.repo,
-      }
-    );
+      });
 
     for (const line of outputLines) {
       getLogger().info(line);
     }
-
-    const createSettings = toCreateRepoSettings(ctx.config.settings?.repo);
     ctx.lifecycleReportInputs.push({
       repoName: repo.repoName,
       action: lifecycleResult.action,
