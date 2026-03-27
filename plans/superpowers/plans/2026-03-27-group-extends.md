@@ -202,60 +202,61 @@ const MAX_EXTENDS_DEPTH = 100;
  */
 export function resolveExtendsChain(
   groupName: string,
-  groupDefs: Record<string, RawGroupConfig>,
-  visited: Set<string> = new Set(),
-  depth: number = 0
+  groupDefs: Record<string, RawGroupConfig>
 ): string[] {
-  if (depth > MAX_EXTENDS_DEPTH) {
-    throw new Error(
-      `Extends chain exceeds maximum depth of ${MAX_EXTENDS_DEPTH} — likely misconfigured`
-    );
-  }
+  function walk(
+    name: string,
+    visited: Set<string>,
+    depth: number
+  ): string[] {
+    if (depth > MAX_EXTENDS_DEPTH) {
+      throw new Error(
+        `Extends chain exceeds maximum depth of ${MAX_EXTENDS_DEPTH} — likely misconfigured`
+      );
+    }
 
-  if (visited.has(groupName)) {
-    const cycle = [...visited, groupName].join(" -> ");
-    throw new Error(`Circular extends detected: ${cycle}`);
-  }
-  visited.add(groupName);
+    if (visited.has(name)) {
+      const cycle = [...visited, name].join(" -> ");
+      throw new Error(`Circular extends detected: ${cycle}`);
+    }
+    visited.add(name);
 
-  const group = groupDefs[groupName];
-  if (!group) {
-    throw new Error(
-      `Group '${groupName}' referenced in extends chain does not exist`
-    );
-  }
+    const group = groupDefs[name];
+    if (!group) {
+      throw new Error(
+        `Group '${name}' referenced in extends chain does not exist`
+      );
+    }
 
-  if (!group.extends) {
-    return [groupName];
-  }
+    if (!group.extends) {
+      return [name];
+    }
 
-  const parents = Array.isArray(group.extends)
-    ? group.extends
-    : [group.extends];
+    const parents = Array.isArray(group.extends)
+      ? group.extends
+      : [group.extends];
 
-  const result: string[] = [];
-  const seen = new Set<string>();
+    const result: string[] = [];
+    const seen = new Set<string>();
 
-  for (const parent of parents) {
-    const chain = resolveExtendsChain(
-      parent,
-      groupDefs,
-      new Set(visited),
-      depth + 1
-    );
-    for (const name of chain) {
-      if (!seen.has(name)) {
-        seen.add(name);
-        result.push(name);
+    for (const parent of parents) {
+      const chain = walk(parent, new Set(visited), depth + 1);
+      for (const n of chain) {
+        if (!seen.has(n)) {
+          seen.add(n);
+          result.push(n);
+        }
       }
     }
+
+    if (!seen.has(name)) {
+      result.push(name);
+    }
+
+    return result;
   }
 
-  if (!seen.has(groupName)) {
-    result.push(groupName);
-  }
-
-  return result;
+  return walk(groupName, new Set(), 0);
 }
 
 /**
@@ -1044,45 +1045,21 @@ Add this function after `validateGroupExtends` in `src/config/validator.ts`:
 ```typescript
 /**
  * Detects circular extends chains across all groups.
- * Uses depth-first traversal with Set-based cycle detection (O(1) lookups)
- * and a separate path array for error messages.
+ * Reuses resolveExtendsChain from extends-resolver.ts to avoid
+ * duplicating the chain-walking logic. Converts thrown errors
+ * to ValidationError.
  */
 function validateNoCircularExtends(
   groups: Record<string, RawGroupConfig>
 ): void {
-  const validated = new Set<string>();
-
-  function walk(name: string, pathSet: Set<string>, pathList: string[]): void {
-    if (pathSet.has(name)) {
-      const cycleStart = pathList.indexOf(name);
-      const cycle = [...pathList.slice(cycleStart), name].join(" -> ");
-      throw new ValidationError(`circular extends detected: ${cycle}`);
-    }
-    if (validated.has(name)) return;
-
-    const group = groups[name];
-    if (!group?.extends) {
-      validated.add(name);
-      return;
-    }
-
-    const parents = Array.isArray(group.extends)
-      ? group.extends
-      : [group.extends];
-
-    const nextPathSet = new Set(pathSet);
-    nextPathSet.add(name);
-    const nextPathList = [...pathList, name];
-
-    for (const parent of parents) {
-      walk(parent, nextPathSet, nextPathList);
-    }
-
-    validated.add(name);
-  }
-
   for (const name of Object.keys(groups)) {
-    walk(name, new Set(), []);
+    try {
+      resolveExtendsChain(name, groups);
+    } catch (error) {
+      throw new ValidationError(
+        error instanceof Error ? error.message : String(error)
+      );
+    }
   }
 }
 ```
@@ -1093,7 +1070,7 @@ In `src/config/validator.ts`, add `RawGroupConfig` to the type import on line 1,
 
 ```typescript
 import type { RawConfig, RawRepoSettings, RawRootSettings, RawGroupConfig } from "./types.js";
-import { expandRepoGroups } from "./extends-resolver.js";
+import { resolveExtendsChain, expandRepoGroups } from "./extends-resolver.js";
 ```
 
 - [ ] **Step 7: Run tests to verify they pass**
@@ -1305,10 +1282,10 @@ git commit -m "feat(config): expand knownFiles and rootCtx for transitive parent
 
 **Files:**
 - Modify: `docs/configuration/groups.md`
-- Modify: `docs/configuration/inheritance.md`
-- Modify: `docs/index.md` (Mermaid pipeline diagrams)
 - Modify: `docs/reference/config-schema.md:70-78`
 - Modify: `config-schema.json` (root `definitions.groupConfig`)
+
+Note: `docs/configuration/inheritance.md` and `docs/index.md` are updated in Task 6, which combines both #649 and #651 documentation fixes.
 
 - [ ] **Step 1: Update "Group Fields" table to include extends**
 
@@ -1535,29 +1512,30 @@ In `docs/configuration/groups.md`, add these bullets to the "### Restrictions" s
 
 - [ ] **Step 2: Update inheritance.md to mention conditional groups**
 
-In `docs/configuration/inheritance.md`, update line 3. The current text is:
+In `docs/configuration/inheritance.md`, update line 3. The full current line is:
 
 ```markdown
-The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**.
+xfg uses a multi-level inheritance system that lets you define base configurations once and customize them per-repository. The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**.
 ```
 
-Replace with:
+Replace the entire line with:
 
 ```markdown
-The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**. With [conditional groups](groups.md#conditional-groups), matching conditional groups merge after explicit groups: **root → groups → conditional groups → repo overrides**. When groups use [`extends`](groups.md#group-inheritance), parent groups are automatically included in the chain before the child group.
+xfg uses a multi-level inheritance system that lets you define base configurations once and customize them per-repository. The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**. With [conditional groups](groups.md#conditional-groups), matching conditional groups merge after explicit groups: **root → groups → conditional groups → repo overrides**. When groups use [`extends`](groups.md#group-inheritance), parent groups are automatically included in the chain before the child group.
 ```
 
-Note: This combines the #651 and #649 inheritance.md updates into one (replacing the separate #649-only update in Task 5 Step 4).
+Note: This is the only inheritance.md update — both #651 and #649 changes are combined here. Task 5 does not include a separate inheritance.md step.
 
 - [ ] **Step 3: Update pr-options.md Priority Order**
 
-In `docs/configuration/pr-options.md`, replace lines 124-128:
+In `docs/configuration/pr-options.md`, replace the priority list at lines 124-128:
 
 ```markdown
 1. CLI flags (highest)
 2. Per-repo `prOptions`
 3. Group `prOptions` (applied in order, later groups override earlier ones)
 4. Global `prOptions`
+5. Built-in defaults (lowest)
 ```
 
 With:
@@ -1568,6 +1546,7 @@ With:
 3. Conditional group `prOptions` (applied in array order)
 4. Group `prOptions` (applied in order, later groups override earlier ones)
 5. Global `prOptions`
+6. Built-in defaults (lowest)
 ```
 
 - [ ] **Step 4: Update cli-options.md Priority Order**
@@ -1627,7 +1606,21 @@ GROUPS --> COND["Evaluate conditional groups<br/>(merge matching conditionalGrou
 COND --> MERGE["Merge per-repo overrides<br/>(deep merge / text merge / override)"]
 ```
 
-Apply the same pattern to line 314 (Settings Workflow diagram), using `EXTENDS_S`, `GROUPS_S`, `COND_S`, `MERGE_S` suffixes.
+At line 314 (Settings Workflow diagram), replace:
+
+```text
+EXPAND["Expand git arrays"] --> GROUPS_S["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
+GROUPS_S --> MERGE_S["Merge per-repo overrides<br/>(deep merge / text merge / override)"]
+```
+
+With:
+
+```text
+EXPAND["Expand git arrays"] --> EXTENDS_S["Resolve group extends<br/>(expand parent chains)"]
+EXTENDS_S --> GROUPS_S["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
+GROUPS_S --> COND_S["Evaluate conditional groups<br/>(merge matching conditionalGroups<br/>in array order)"]
+COND_S --> MERGE_S["Merge per-repo overrides<br/>(deep merge / text merge / override)"]
+```
 
 - [ ] **Step 8: Commit**
 
