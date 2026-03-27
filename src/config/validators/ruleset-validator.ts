@@ -1,4 +1,5 @@
 import { ValidationError } from "../../shared/errors.js";
+import { isPlainObject } from "../../shared/type-guards.js";
 import type {
   RulesetTarget,
   RulesetEnforcement,
@@ -77,6 +78,36 @@ const VALID_RULE_TYPES = validValues<RulesetRule["type"]>([
   "max_file_path_length",
   "max_file_size",
 ]);
+
+// Intentionally duplicated from merge.ts — validator should not depend on merge internals
+const VALID_MERGE_STRATEGIES = ["replace", "append", "prepend"];
+
+/**
+ * Checks if a value is an $arrayMerge directive: { $arrayMerge: strategy, $values: [...] }
+ */
+function isArrayMergeDirective(value: unknown): boolean {
+  if (!isPlainObject(value)) return false;
+  const keys = Object.keys(value);
+  return (
+    keys.length === 2 &&
+    keys.every((k) => k === "$arrayMerge" || k === "$values") &&
+    VALID_MERGE_STRATEGIES.includes(
+      (value as Record<string, unknown>).$arrayMerge as string
+    ) &&
+    Array.isArray((value as Record<string, unknown>).$values)
+  );
+}
+
+/**
+ * Extracts the $values array from a directive, or returns the value as-is if it's already an array.
+ * Returns null if value is neither an array nor a valid directive.
+ */
+function extractArrayOrDirectiveValues(value: unknown): unknown[] | null {
+  if (Array.isArray(value)) return value;
+  if (isArrayMergeDirective(value))
+    return (value as Record<string, unknown>).$values as unknown[];
+  return null;
+}
 
 /**
  * Validates a single ruleset rule.
@@ -239,13 +270,14 @@ export function validateRuleset(
 
   // Validate bypassActors
   if (rs.bypassActors !== undefined) {
-    if (!Array.isArray(rs.bypassActors)) {
+    const actors = extractArrayOrDirectiveValues(rs.bypassActors);
+    if (actors === null) {
       throw new ValidationError(
-        `${context}: ruleset '${name}' bypassActors must be an array`
+        `${context}: ruleset '${name}' bypassActors must be an array or $arrayMerge directive`
       );
     }
-    for (let i = 0; i < rs.bypassActors.length; i++) {
-      const actor = rs.bypassActors[i] as Record<string, unknown>;
+    for (let i = 0; i < actors.length; i++) {
+      const actor = actors[i] as Record<string, unknown>;
       if (typeof actor !== "object" || actor === null) {
         throw new ValidationError(
           `${context}: ruleset '${name}' bypassActors[${i}] must be an object`
@@ -295,36 +327,35 @@ export function validateRuleset(
           `${context}: ruleset '${name}' conditions.refName must be an object`
         );
       }
-      if (
-        refName.include !== undefined &&
-        (!Array.isArray(refName.include) ||
-          !refName.include.every((s) => typeof s === "string"))
-      ) {
-        throw new ValidationError(
-          `${context}: ruleset '${name}' conditions.refName.include must be an array of strings`
-        );
+      if (refName.include !== undefined) {
+        const include = extractArrayOrDirectiveValues(refName.include);
+        if (include === null || !include.every((s) => typeof s === "string")) {
+          throw new ValidationError(
+            `${context}: ruleset '${name}' conditions.refName.include must be an array of strings or $arrayMerge directive with string $values`
+          );
+        }
       }
-      if (
-        refName.exclude !== undefined &&
-        (!Array.isArray(refName.exclude) ||
-          !refName.exclude.every((s) => typeof s === "string"))
-      ) {
-        throw new ValidationError(
-          `${context}: ruleset '${name}' conditions.refName.exclude must be an array of strings`
-        );
+      if (refName.exclude !== undefined) {
+        const exclude = extractArrayOrDirectiveValues(refName.exclude);
+        if (exclude === null || !exclude.every((s) => typeof s === "string")) {
+          throw new ValidationError(
+            `${context}: ruleset '${name}' conditions.refName.exclude must be an array of strings or $arrayMerge directive with string $values`
+          );
+        }
       }
     }
   }
 
   // Validate rules array
   if (rs.rules !== undefined) {
-    if (!Array.isArray(rs.rules)) {
+    const rules = extractArrayOrDirectiveValues(rs.rules);
+    if (rules === null) {
       throw new ValidationError(
-        `${context}: ruleset '${name}' rules must be an array`
+        `${context}: ruleset '${name}' rules must be an array or $arrayMerge directive`
       );
     }
-    for (let i = 0; i < rs.rules.length; i++) {
-      validateRule(rs.rules[i], `${context}: ruleset '${name}' rules[${i}]`);
+    for (let i = 0; i < rules.length; i++) {
+      validateRule(rules[i], `${context}: ruleset '${name}' rules[${i}]`);
     }
   }
 }

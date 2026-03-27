@@ -150,6 +150,90 @@ describe("GitHub Settings Integration Test", () => {
     );
   });
 
+  test("settings $arrayMerge: append adds rules without replacing", async () => {
+    // First, create a ruleset with a pull_request rule via root settings
+    const initialConfig = makeConfig();
+    console.log("Creating initial ruleset with pull_request rule...");
+    await exec(`node dist/cli.js sync --config ${initialConfig}`, {
+      cwd: projectRoot,
+    });
+
+    // List endpoint to get ID, then fetch by ID to get rules
+    const rulesetListStr = await execWithRetry(
+      `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+    );
+    const rulesetListItem = JSON.parse(rulesetListStr);
+    await waitForRulesetVisible(rulesetListItem.id);
+
+    const rulesetBeforeStr = await execWithRetry(
+      `gh api repos/${testRepo}/rulesets/${rulesetListItem.id}`
+    );
+    const rulesetBefore = JSON.parse(rulesetBeforeStr);
+
+    assert.equal(rulesetBefore.rules.length, 1, "Should start with 1 rule");
+    assert.equal(rulesetBefore.rules[0].type, "pull_request");
+
+    // Now sync with $arrayMerge: append to add required_signatures
+    const appendConfig = writeConfig(
+      tmpDir,
+      `id: integration-test-github-rulesets
+files:
+  .xfg-settings-test:
+    content: "# Placeholder for settings integration test"
+    createOnly: true
+settings:
+  rulesets:
+    ${RULESET_NAME}:
+      target: branch
+      enforcement: active
+      conditions:
+        refName:
+          include:
+            - refs/heads/main
+      rules:
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 1
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+    files:
+      .xfg-settings-test: false
+    settings:
+      rulesets:
+        ${RULESET_NAME}:
+          rules:
+            $arrayMerge: append
+            $values:
+              - type: required_signatures
+`
+    );
+
+    console.log("\nRunning xfg sync with $arrayMerge: append...");
+    await exec(`node dist/cli.js sync --config ${appendConfig}`, {
+      cwd: projectRoot,
+    });
+
+    console.log("\nVerifying ruleset has both rules...");
+    const rulesetAfterStr = await execWithRetry(
+      `gh api repos/${testRepo}/rulesets/${rulesetBefore.id}`
+    );
+    const rulesetAfter = JSON.parse(rulesetAfterStr);
+
+    assert.equal(
+      rulesetAfter.id,
+      rulesetBefore.id,
+      "Same ruleset ID = updated not recreated"
+    );
+    assert.equal(rulesetAfter.rules.length, 2, "Should now have 2 rules");
+
+    const ruleTypes = rulesetAfter.rules.map((r: { type: string }) => r.type);
+    assert.ok(ruleTypes.includes("pull_request"), "Should keep pull_request");
+    assert.ok(
+      ruleTypes.includes("required_signatures"),
+      "Should add required_signatures"
+    );
+  });
+
   test("settings dry-run shows changes without applying", async () => {
     const configPath = makeConfig();
 

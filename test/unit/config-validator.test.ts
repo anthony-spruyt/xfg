@@ -2378,6 +2378,248 @@ describe("validateRawConfig", () => {
         /conditions\.refName\.exclude must be an array of strings/
       );
     });
+
+    test("accepts $arrayMerge directive on bypassActors", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              bypassActors: {
+                $arrayMerge: "append",
+                $values: [
+                  {
+                    actorId: 123,
+                    actorType: "Integration",
+                    bypassMode: "always",
+                  },
+                ],
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("accepts $arrayMerge directive on rules array", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              rules: {
+                $arrayMerge: "append",
+                $values: [{ type: "required_signatures" }],
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("accepts $arrayMerge directive on conditions.refName.include", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              conditions: {
+                refName: {
+                  include: {
+                    $arrayMerge: "append",
+                    $values: ["refs/heads/develop"],
+                  } as never,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("accepts $arrayMerge directive on conditions.refName.exclude", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              conditions: {
+                refName: {
+                  exclude: {
+                    $arrayMerge: "prepend",
+                    $values: ["refs/heads/temp/*"],
+                  } as never,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("rejects invalid $arrayMerge strategy in bypassActors", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              bypassActors: {
+                $arrayMerge: "invalid",
+                $values: [{ actorId: 1, actorType: "User" }],
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /bypassActors must be an array or \$arrayMerge directive/
+      );
+    });
+
+    test("rejects rules with invalid $arrayMerge strategy", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              rules: {
+                $arrayMerge: "invalid",
+                $values: [{ type: "required_signatures" }],
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /rules must be an array or \$arrayMerge directive/
+      );
+    });
+
+    test("rejects rules with invalid $values items (rule without type field)", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              rules: {
+                $arrayMerge: "append",
+                $values: [{ parameters: {} }],
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /rule must have a 'type' string field/
+      );
+    });
+
+    test("rejects conditions.refName.include with non-string $values items", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              conditions: {
+                refName: {
+                  include: {
+                    $arrayMerge: "append",
+                    $values: [123],
+                  } as never,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /include must be an array of strings or \$arrayMerge directive with string \$values/
+      );
+    });
+
+    test("rejects conditions.refName.exclude with non-string $values items", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              conditions: {
+                refName: {
+                  exclude: {
+                    $arrayMerge: "prepend",
+                    $values: [456],
+                  } as never,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /exclude must be an array of strings or \$arrayMerge directive with string \$values/
+      );
+    });
+
+    test("rejects $arrayMerge directive with extra properties in bypassActors", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              bypassActors: {
+                $arrayMerge: "append",
+                $values: [{ actorId: 1, actorType: "User" }],
+                extra: "key",
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /bypassActors must be an array or \$arrayMerge directive/
+      );
+    });
+
+    test("rejects $arrayMerge directive with invalid $values items in bypassActors", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              bypassActors: {
+                $arrayMerge: "append",
+                $values: [{ actorId: "not-a-number", actorType: "User" }],
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /actorId must be a number/
+      );
+    });
   });
 
   describe("files/settings decoupling", () => {

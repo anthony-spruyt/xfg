@@ -769,6 +769,64 @@
         }
       }
     },
+    "arrayMergeDirective": {
+      "type": "object",
+      "description": "Merge directive for arrays. Instead of replacing the base array, append or prepend values to the inherited array.",
+      "required": ["$arrayMerge", "$values"],
+      "properties": {
+        "$arrayMerge": {
+          "type": "string",
+          "enum": ["replace", "append", "prepend"],
+          "description": "How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely"
+        },
+        "$values": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Values to merge with the base array"
+        }
+      },
+      "additionalProperties": false
+    },
+    "bypassActorsArrayMergeDirective": {
+      "type": "object",
+      "description": "Merge directive for bypassActors array",
+      "required": ["$arrayMerge", "$values"],
+      "properties": {
+        "$arrayMerge": {
+          "type": "string",
+          "enum": ["replace", "append", "prepend"],
+          "description": "How to merge with the base array"
+        },
+        "$values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/bypassActor"
+          },
+          "description": "Bypass actor values to merge"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rulesArrayMergeDirective": {
+      "type": "object",
+      "description": "Merge directive for rules array",
+      "required": ["$arrayMerge", "$values"],
+      "properties": {
+        "$arrayMerge": {
+          "type": "string",
+          "enum": ["replace", "append", "prepend"],
+          "description": "How to merge with the base array"
+        },
+        "$values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/rulesetRule"
+          },
+          "description": "Rule values to merge"
+        }
+      },
+      "additionalProperties": false
+    },
     "ruleset": {
       "type": "object",
       "description": "GitHub Ruleset configuration",
@@ -793,22 +851,36 @@
           "description": "Enforcement level: 'active' enforces rules, 'disabled' turns off rules, 'evaluate' evaluates rules without blocking (dry run). Default: active"
         },
         "bypassActors": {
-          "type": "array",
-          "description": "Actors who can bypass this ruleset",
-          "items": {
-            "$ref": "#/definitions/bypassActor"
-          }
+          "oneOf": [
+            {
+              "type": "array",
+              "description": "Actors who can bypass this ruleset",
+              "items": {
+                "$ref": "#/definitions/bypassActor"
+              }
+            },
+            {
+              "$ref": "#/definitions/bypassActorsArrayMergeDirective"
+            }
+          ]
         },
         "conditions": {
           "$ref": "#/definitions/rulesetConditions",
           "description": "Conditions for when this ruleset applies (which branches/tags to target)"
         },
         "rules": {
-          "type": "array",
-          "description": "Rules to enforce on matching refs",
-          "items": {
-            "$ref": "#/definitions/rulesetRule"
-          }
+          "oneOf": [
+            {
+              "type": "array",
+              "description": "Rules to enforce on matching refs",
+              "items": {
+                "$ref": "#/definitions/rulesetRule"
+              }
+            },
+            {
+              "$ref": "#/definitions/rulesArrayMergeDirective"
+            }
+          ]
         }
       }
     },
@@ -852,18 +924,32 @@
           "description": "Ref name patterns to include/exclude",
           "properties": {
             "include": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Patterns to include (e.g., 'refs/heads/main', 'refs/heads/release/*')"
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Patterns to include (e.g., 'refs/heads/main', 'refs/heads/release/*')"
+                },
+                {
+                  "$ref": "#/definitions/arrayMergeDirective"
+                }
+              ]
             },
             "exclude": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Patterns to exclude from this ruleset"
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Patterns to exclude from this ruleset"
+                },
+                {
+                  "$ref": "#/definitions/arrayMergeDirective"
+                }
+              ]
             }
           }
         }
