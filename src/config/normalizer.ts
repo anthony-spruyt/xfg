@@ -26,6 +26,7 @@ import type {
   Label,
   GitHubRepoSettings,
 } from "./types.js";
+import { expandRepoGroups } from "./extends-resolver.js";
 
 /**
  * Clone content, stripping merge directives from object content.
@@ -611,22 +612,27 @@ export function normalizeConfig(
   for (const rawRepo of raw.repos) {
     const gitUrls = Array.isArray(rawRepo.git) ? rawRepo.git : [rawRepo.git];
 
+    // Phase 0: Expand extends chains
+    const expandedGroups = rawRepo.groups?.length
+      ? expandRepoGroups(rawRepo.groups, raw.groups ?? {})
+      : [];
+
     // Phase 1: Resolve groups - build effective root files/prOptions/settings by merging group layers
-    let effectiveRootFiles = rawRepo.groups?.length
-      ? mergeGroupFiles(raw.files ?? {}, rawRepo.groups, raw.groups ?? {})
+    let effectiveRootFiles = expandedGroups.length
+      ? mergeGroupFiles(raw.files ?? {}, expandedGroups, raw.groups ?? {})
       : (raw.files ?? {});
 
-    let effectivePROptions = rawRepo.groups?.length
-      ? mergeGroupPROptions(raw.prOptions, rawRepo.groups, raw.groups ?? {})
+    let effectivePROptions = expandedGroups.length
+      ? mergeGroupPROptions(raw.prOptions, expandedGroups, raw.groups ?? {})
       : raw.prOptions;
 
-    let effectiveSettings = rawRepo.groups?.length
-      ? mergeGroupSettings(raw.settings, rawRepo.groups, raw.groups ?? {})
+    let effectiveSettings = expandedGroups.length
+      ? mergeGroupSettings(raw.settings, expandedGroups, raw.groups ?? {})
       : raw.settings;
 
     // Phase 2 + 3: Evaluate and merge conditional groups
     if (raw.conditionalGroups?.length) {
-      const effectiveGroups = new Set(rawRepo.groups ?? []);
+      const effectiveGroups = new Set(expandedGroups);
       const merged = mergeConditionalGroups(
         effectiveRootFiles,
         effectivePROptions,
