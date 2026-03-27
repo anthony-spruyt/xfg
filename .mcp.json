@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "cclsp": {
+      "type": "stdio",
+      "command": "cclsp",
+      "env": {
+        "CCLSP_CONFIG_PATH": "/workspaces/xfg/.claude/cclsp.json"
+      }
+    }
+  }
+}
