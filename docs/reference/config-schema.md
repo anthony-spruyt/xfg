@@ -69,13 +69,14 @@ Or configure in `.vscode/settings.json`:
 
 ### Group Config
 
-| Field       | Type        | Required | Description                                                  |
-| ----------- | ----------- | -------- | ------------------------------------------------------------ |
-| `files`     | `object`    | No       | Files defined or overridden by this group                    |
-| `prOptions` | `PROptions` | No       | PR options for repos using this group                        |
-| `settings`  | `object`    | No       | Settings for repos using this group (supports `inherit`)     |
+| Field       | Type                 | Required | Description                                                  |
+| ----------- | -------------------- | -------- | ------------------------------------------------------------ |
+| `extends`   | `string \| string[]` | No       | Parent group name(s) to inherit from                         |
+| `files`     | `object`             | No       | Files defined or overridden by this group                    |
+| `prOptions` | `PROptions`          | No       | PR options for repos using this group                        |
+| `settings`  | `object`             | No       | Settings for repos using this group (supports `inherit`)     |
 
-Group files support `inherit: false` (discard accumulated files), `file: false` (remove a file), and full file config or override objects.
+Groups support `extends` (inherit from parent groups), `inherit: false` (discard accumulated files), `file: false` (remove a file), and full file config or override objects.
 
 ### Conditional Group Config
 

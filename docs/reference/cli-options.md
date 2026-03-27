@@ -73,9 +73,10 @@ CLI flags override config file settings:
 
 1. CLI flags (highest priority)
 2. Per-repo settings (e.g., `prOptions`, `settings.rulesets`)
-3. Group settings (applied in order, later groups override earlier ones)
-4. Global settings
-5. Built-in defaults (lowest priority)
+3. Conditional group settings (applied in array order)
+4. Group settings (applied in order, later groups override earlier ones)
+5. Global settings
+6. Built-in defaults (lowest priority)
 
 ## Exit Codes
 

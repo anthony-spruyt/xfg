@@ -4146,6 +4146,333 @@ describe("group configuration", () => {
   });
 });
 
+describe("group extends", () => {
+  test("single parent: child inherits parent files", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        parent: {
+          files: { "parent.json": { content: { from: "parent" } } },
+        },
+        child: {
+          extends: "parent",
+          files: { "child.json": { content: { from: "child" } } },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["child"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("parent.json"), "should include parent file");
+    assert.ok(fileNames.includes("child.json"), "should include child file");
+  });
+
+  test("single parent: child overrides parent file content", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        parent: {
+          files: {
+            "shared.json": { content: { source: "parent", kept: true } },
+          },
+        },
+        child: {
+          extends: "parent",
+          files: { "shared.json": { content: { source: "child" } } },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["child"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const shared = result.repos[0].files.find(
+      (f) => f.fileName === "shared.json"
+    );
+    assert.deepStrictEqual(shared?.content, { source: "child", kept: true });
+  });
+
+  test("multi-parent: extends array merges parents left-to-right", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        parentA: {
+          files: { "a.json": { content: { from: "A" } } },
+        },
+        parentB: {
+          files: { "b.json": { content: { from: "B" } } },
+        },
+        child: {
+          extends: ["parentA", "parentB"],
+          files: { "child.json": { content: { from: "child" } } },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["child"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("a.json"));
+    assert.ok(fileNames.includes("b.json"));
+    assert.ok(fileNames.includes("child.json"));
+  });
+
+  test("transitive: grandparent -> parent -> child", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        grandparent: {
+          files: { "gp.json": { content: { from: "grandparent" } } },
+        },
+        parent: {
+          extends: "grandparent",
+          files: { "p.json": { content: { from: "parent" } } },
+        },
+        child: {
+          extends: "parent",
+          files: { "c.json": { content: { from: "child" } } },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["child"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("gp.json"));
+    assert.ok(fileNames.includes("p.json"));
+    assert.ok(fileNames.includes("c.json"));
+  });
+
+  test("diamond: shared ancestor appears once, before both children", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        base: {
+          files: { "base.json": { content: { from: "base" } } },
+        },
+        left: {
+          extends: "base",
+          files: { "left.json": { content: { from: "left" } } },
+        },
+        right: {
+          extends: "base",
+          files: { "right.json": { content: { from: "right" } } },
+        },
+      },
+      repos: [
+        { git: "git@github.com:org/repo.git", groups: ["left", "right"] },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("base.json"), "base appears");
+    assert.ok(fileNames.includes("left.json"), "left appears");
+    assert.ok(fileNames.includes("right.json"), "right appears");
+    // base.json should only appear once
+    assert.equal(
+      result.repos[0].files.filter((f) => f.fileName === "base.json").length,
+      1,
+      "base appears exactly once"
+    );
+  });
+
+  test("no extends: group without extends unchanged", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "root.json": { content: { from: "root" } } },
+      groups: {
+        standalone: {
+          files: { "standalone.json": { content: { from: "standalone" } } },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["standalone"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("root.json"));
+    assert.ok(fileNames.includes("standalone.json"));
+    assert.equal(result.repos[0].files.length, 2);
+  });
+
+  test("mixed: repo with extending and non-extending groups", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        base: {
+          files: { "base.json": { content: { from: "base" } } },
+        },
+        derived: {
+          extends: "base",
+          files: { "derived.json": { content: { from: "derived" } } },
+        },
+        standalone: {
+          files: { "standalone.json": { content: { from: "standalone" } } },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["derived", "standalone"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.deepStrictEqual(fileNames.sort(), [
+      "base.json",
+      "derived.json",
+      "standalone.json",
+    ]);
+  });
+
+  test("child inherit:false discards parent files", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "root.json": { content: { from: "root" } } },
+      groups: {
+        parent: {
+          files: { "parent.json": { content: { from: "parent" } } },
+        },
+        child: {
+          extends: "parent",
+          files: {
+            inherit: false,
+            "child.json": { content: { from: "child" } },
+          },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["child"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(!fileNames.includes("root.json"), "root discarded");
+    assert.ok(!fileNames.includes("parent.json"), "parent discarded");
+    assert.ok(fileNames.includes("child.json"), "child kept");
+  });
+
+  test("child file:false removes specific parent file", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        parent: {
+          files: {
+            "keep.json": { content: { keep: true } },
+            "remove.json": { content: { remove: true } },
+          },
+        },
+        child: {
+          extends: "parent",
+          files: {
+            "remove.json": false,
+            "child.json": { content: { from: "child" } },
+          },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["child"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("keep.json"), "keep.json stays");
+    assert.ok(!fileNames.includes("remove.json"), "remove.json removed");
+    assert.ok(fileNames.includes("child.json"), "child.json added");
+  });
+
+  test("parent prOptions merge into child", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      groups: {
+        parent: {
+          prOptions: { merge: "auto", labels: ["parent-label"] },
+        },
+        child: {
+          extends: "parent",
+          prOptions: { labels: ["child-label"] },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["child"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.equal(result.repos[0].prOptions?.merge, "auto");
+    assert.deepStrictEqual(result.repos[0].prOptions?.labels, ["child-label"]);
+  });
+
+  test("parent settings merge into child", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      groups: {
+        parent: {
+          settings: {
+            labels: {
+              "parent-label": { color: "ff0000", description: "from parent" },
+            },
+          },
+        },
+        child: {
+          extends: "parent",
+          settings: {
+            labels: {
+              "child-label": { color: "00ff00", description: "from child" },
+            },
+          },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["child"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const labels = result.repos[0].settings?.labels;
+    assert.ok(labels?.["parent-label"], "parent label present");
+    assert.ok(labels?.["child-label"], "child label present");
+  });
+
+  test("effective group set includes transitive parents for conditional groups", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        github: {
+          files: { "github.json": { content: { from: "github" } } },
+        },
+        "github-ci": {
+          extends: "github",
+          files: { "ci.json": { content: { from: "ci" } } },
+        },
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["github"] },
+          files: { "conditional.json": { content: { from: "conditional" } } },
+        },
+      ],
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["github-ci"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("github.json"), "parent file");
+    assert.ok(fileNames.includes("ci.json"), "child file");
+    assert.ok(
+      fileNames.includes("conditional.json"),
+      "conditional group matched via transitive parent"
+    );
+  });
+});
+
 describe("conditional group configuration", () => {
   test("conditional group with allOf matches when all groups present", () => {
     const raw: RawConfig = {

@@ -1,6 +1,10 @@
 # Content Inheritance
 
-xfg uses a multi-level inheritance system that lets you define base configurations once and customize them per-repository. The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**.
+xfg uses a multi-level inheritance system that lets you define base configurations once and customize them per-repository.
+The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**.
+With [conditional groups](groups.md#conditional-groups), matching conditional groups merge after explicit groups:
+**root → groups → conditional groups → repo overrides**.
+When groups use [`extends`](groups.md#group-inheritance), parent groups are automatically included in the chain before the child group.
 
 ## Inheritance Levels
 

@@ -223,8 +223,10 @@ flowchart TB
     end
 
     subgraph Normalization
-        EXPAND["Expand git arrays"] --> GROUPS["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
-        GROUPS --> MERGE["Merge per-repo overrides<br/>(deep merge / text merge / override)"]
+        EXPAND["Expand git arrays"] --> EXTENDS["Resolve group extends<br/>(expand parent chains)"]
+        EXTENDS --> GROUPS["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
+        GROUPS --> COND["Evaluate conditional groups<br/>(merge matching conditionalGroups<br/>in array order)"]
+        COND --> MERGE["Merge per-repo overrides<br/>(deep merge / text merge / override)"]
         MERGE --> ENV["Interpolate env vars<br/><code>${VAR}</code>, <code>${VAR:-default}</code>"]
         ENV --> OPTS["Resolve per-repo fields<br/>(createOnly, executable,<br/>template, vars, etc.)"]
     end
@@ -311,8 +313,10 @@ flowchart TB
     end
 
     subgraph Normalization
-        EXPAND["Expand git arrays"] --> GROUPS_S["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
-        GROUPS_S --> MERGE_S["Merge per-repo overrides<br/>(deep merge / text merge / override)"]
+        EXPAND["Expand git arrays"] --> EXTENDS_S["Resolve group extends<br/>(expand parent chains)"]
+        EXTENDS_S --> GROUPS_S["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
+        GROUPS_S --> COND_S["Evaluate conditional groups<br/>(merge matching conditionalGroups<br/>in array order)"]
+        COND_S --> MERGE_S["Merge per-repo overrides<br/>(deep merge / text merge / override)"]
         MERGE_S --> ENV_S["Interpolate env vars<br/><code>${VAR}</code>, <code>${VAR:-default}</code>"]
         ENV_S --> OPTS_S["Resolve per-repo fields<br/>(createOnly, executable,<br/>template, vars, etc.)"]
     end

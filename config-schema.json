@@ -385,6 +385,25 @@
       "type": "object",
       "description": "Configuration group that can define files, prOptions, and settings. Referenced by repos via 'groups: [groupName]'.",
       "properties": {
+        "extends": {
+          "description": "Parent group name(s) to inherit files, settings, and PR options from. Accepts a single group name or an array of group names. Parents are merged before the child group.",
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "description": "Single parent group name"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "description": "Array of parent group names, merged left-to-right"
+            }
+          ]
+        },
         "files": {
           "type": "object",
           "description": "Files defined or overridden by this group. Keys are filenames. Set to false to remove an inherited file. Set inherit: false to discard all accumulated files from prior layers.",

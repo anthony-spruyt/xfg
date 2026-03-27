@@ -245,6 +245,8 @@ All pattern rules support the same parameters:
 
 ## Inheritance and Opt-Out
 
+Rulesets from [conditional groups](groups.md#conditional-groups) merge after explicit group rulesets and before repo overrides. Per-repo `inherit: false` discards all inherited rulesets including those from conditional groups.
+
 Like files, rulesets support inheritance with options to opt out.
 
 ### Default Inheritance
