@@ -341,6 +341,50 @@ repos:
             - type: required_signatures
 ```
 
+### Appending to Arrays
+
+By default, per-repo arrays (like `bypassActors` and `rules`) replace inherited arrays entirely. Use the `$arrayMerge` directive to append or prepend instead:
+
+```yaml
+settings:
+  rulesets:
+    main-protection:
+      target: branch
+      enforcement: active
+      bypassActors:
+        - actorId: 2740          # Renovate — shared
+          actorType: Integration
+          bypassMode: always
+      rules:
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 1
+
+repos:
+  # Add a repo-specific bypass actor without losing Renovate
+  - git: git@github.com:your-org/special-repo.git
+    settings:
+      rulesets:
+        main-protection:
+          bypassActors:
+            $arrayMerge: append
+            $values:
+              - actorId: 123456
+                actorType: Team
+                bypassMode: pull_request
+          rules:
+            $arrayMerge: append
+            $values:
+              - type: required_status_checks
+                parameters:
+                  requiredStatusChecks:
+                    - context: "ci/build"
+```
+
+Result for `special-repo`: `bypassActors` has both Renovate and the team; `rules` has both `pull_request` and `required_status_checks`.
+
+Available strategies: `append` (add after), `prepend` (add before), `replace` (same as default). See [Merge Strategies](merge-strategies.md#settings-array-merge) for more details.
+
 ## Bypass Actors
 
 Allow specific users, teams, or integrations to bypass rules:
