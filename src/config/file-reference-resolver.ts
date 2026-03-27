@@ -189,6 +189,26 @@ export function resolveFileReferencesInConfig(
     }
   }
 
+  // Resolve conditional group file content
+  if (result.conditionalGroups) {
+    for (const cg of result.conditionalGroups) {
+      if (cg.files) {
+        for (const [fileName, fileConfig] of Object.entries(cg.files)) {
+          if (
+            fileConfig &&
+            typeof fileConfig === "object" &&
+            "content" in fileConfig
+          ) {
+            const resolved = resolveContentValue(fileConfig.content, configDir);
+            if (resolved !== undefined) {
+              cg.files[fileName] = { ...fileConfig, content: resolved };
+            }
+          }
+        }
+      }
+    }
+  }
+
   // Resolve per-repo file content
   if (result.repos) {
     for (const repo of result.repos) {

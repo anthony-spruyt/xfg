@@ -548,4 +548,109 @@ describe("File Reference Resolver", () => {
       assert.deepStrictEqual(groupFile.content, { fromGroup: true });
     });
   });
+
+  describe("conditional group file references", () => {
+    test("resolves @file refs in conditional group file content", () => {
+      const yamlPath = join(testDir, "templates", "trivy.yaml");
+      writeFileSync(yamlPath, "severity: HIGH\n", "utf-8");
+
+      const raw: RawConfig = {
+        id: "test",
+        files: {},
+        groups: {
+          a: { files: { "a.txt": { content: "a" } } },
+        },
+        conditionalGroups: [
+          {
+            when: { anyOf: ["a"] },
+            files: {
+              "trivy.yaml": { content: "@templates/trivy.yaml" },
+            },
+          },
+        ],
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["a"] }],
+      };
+
+      const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
+      const condFile = result.conditionalGroups![0].files![
+        "trivy.yaml"
+      ] as RawFileConfig;
+      assert.deepStrictEqual(condFile.content, { severity: "HIGH" });
+    });
+
+    test("resolves @file refs for text files in conditional groups", () => {
+      const txtPath = join(testDir, "templates", "ignore.txt");
+      writeFileSync(txtPath, "ignore this\n", "utf-8");
+
+      const raw: RawConfig = {
+        id: "test",
+        files: {},
+        groups: {
+          a: { files: { "a.txt": { content: "a" } } },
+        },
+        conditionalGroups: [
+          {
+            when: { anyOf: ["a"] },
+            files: {
+              "ignore.txt": { content: "@templates/ignore.txt" },
+            },
+          },
+        ],
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["a"] }],
+      };
+
+      const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
+      const condFile = result.conditionalGroups![0].files![
+        "ignore.txt"
+      ] as RawFileConfig;
+      assert.strictEqual(condFile.content, "ignore this\n");
+    });
+
+    test("preserves non-reference content in conditional groups", () => {
+      const raw: RawConfig = {
+        id: "test",
+        files: {},
+        groups: {
+          a: { files: { "a.txt": { content: "a" } } },
+        },
+        conditionalGroups: [
+          {
+            when: { anyOf: ["a"] },
+            files: {
+              "readme.txt": { content: "plain string" },
+            },
+          },
+        ],
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["a"] }],
+      };
+
+      const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
+      const condFile = result.conditionalGroups![0].files![
+        "readme.txt"
+      ] as RawFileConfig;
+      assert.strictEqual(condFile.content, "plain string");
+    });
+
+    test("preserves file exclusions in conditional groups", () => {
+      const raw: RawConfig = {
+        id: "test",
+        files: {},
+        groups: {
+          a: { files: { "a.txt": { content: "a" } } },
+        },
+        conditionalGroups: [
+          {
+            when: { anyOf: ["a"] },
+            files: {
+              "a.txt": false,
+            },
+          },
+        ],
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["a"] }],
+      };
+
+      const result = resolveFileReferencesInConfig(raw, { configDir: testDir });
+      assert.strictEqual(result.conditionalGroups![0].files!["a.txt"], false);
+    });
+  });
 });
