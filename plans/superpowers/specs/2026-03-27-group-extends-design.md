@@ -100,15 +100,21 @@ Phase 4: Apply repo overrides (existing, unchanged)
 
 ### Extends Resolution Algorithm
 
+Both `resolveExtendsChain` and `expandRepoGroups` live in a shared `src/config/extends-resolver.ts` module, imported by both the normalizer and validator. This avoids duplicating the resolution logic (Dependency Inversion — both depend on a shared abstraction rather than each reimplementing the same algorithm).
+
 The `resolveExtendsChain` function expands a single group name into its full ordered chain:
 
 ```text
-function resolveExtendsChain(groupName, groupDefs, visited = Set()):
+function resolveExtendsChain(groupName, groupDefs, visited = Set(), depth = 0):
+  if depth > MAX_EXTENDS_DEPTH:
+    error: exceeds maximum depth
   if groupName in visited:
     error: circular extends detected
   visited.add(groupName)
 
   group = groupDefs[groupName]
+  if !group:
+    error: group does not exist
   if !group.extends:
     return [groupName]
 
@@ -240,17 +246,25 @@ The existing `resolveFileReferencesInConfig` processes all groups' file entries.
 ### Documentation
 
 Update `docs/configuration/groups.md` with:
+- Update "Group Fields" table to include `extends`.
+- Update existing "Merge Chain" section to mention extends expansion.
 - New "Group Inheritance" section explaining the `extends` field.
 - Single and multi-parent examples.
 - Transitive inheritance explanation.
-- Merge order (parents before child, L->R for multi-parent).
 - Interaction with conditional groups (expanded effective group set).
-- Note that `inherit: false` on child files/settings discards parent contributions.
+- Restrictions (circular chains, self-reference, reserved name).
+
+Update `docs/configuration/inheritance.md`:
+- Update line 3 to mention extends expansion in the group chain description.
+
+Update `docs/index.md`:
+- Add "Resolve group extends" step to both Mermaid pipeline diagrams (between "Expand git arrays" and "Merge group layers").
 
 ### Config Schema Updates
 
 Update `config-schema.json`:
-- Add `extends` property to `definitions.groupConfig.properties` with `oneOf: [string, string[]]`.
+- Add `extends` property as first property in `definitions.groupConfig.properties` with `oneOf: [string, string[]]`.
 
 Update `docs/reference/config-schema.md`:
 - Add `extends` row to the Group Config table.
+- Update context text (line 78) to mention `extends`.

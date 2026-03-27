@@ -4,7 +4,7 @@
 
 **Goal:** Add an `extends` field to group config so child groups automatically inherit files, settings, and PR options from parent groups.
 
-**Architecture:** A new `resolveExtendsChain` function in `normalizer.ts` expands each group name into its full parent chain (depth-first, parents before child, deduplicated). This runs as Phase 0 before the existing merge pipeline. The validator gets cycle detection and `extends` field validation. The effective group set for conditional groups includes transitive parents.
+**Architecture:** A shared `src/config/extends-resolver.ts` provides `resolveExtendsChain` and `expandRepoGroups`, imported by both normalizer and validator (DRY, Dependency Inversion). Normalizer calls `expandRepoGroups` as Phase 0 before the existing merge pipeline. Validator uses the same functions for `knownFiles`/`rootCtx` expansion. Effective group set for conditionals includes transitive parents.
 
 **Tech Stack:** TypeScript, Node.js test runner, YAML config
 
@@ -18,7 +18,7 @@
 
 **Files:**
 - Modify: `src/config/types.ts:413-419`
-- Modify: `src/config/index.ts:1-50` (barrel export — no change needed since `RawGroupConfig` is not exported, but verify)
+- Modify: `src/config/index.ts` (add `RawGroupConfig` to barrel export for test and extends-resolver imports)
 
 - [ ] **Step 1: Add `extends` field to `RawGroupConfig`**
 
@@ -35,27 +35,268 @@ export interface RawGroupConfig {
 }
 ```
 
-- [ ] **Step 2: Verify type-check passes**
+- [ ] **Step 2: Add `RawGroupConfig` to barrel export**
+
+In `src/config/index.ts`, add `RawGroupConfig` to the type re-exports (in the "Raw Config" section):
+
+```typescript
+  // Raw Config
+  RawFileConfig,
+  RawRepoFileOverride,
+  RawGroupConfig,
+  RawRepoSettings,
+  RawRepoConfig,
+  RawConfig,
+```
+
+- [ ] **Step 3: Verify type-check passes**
 
 Run: `npx tsc --noEmit`
 Expected: No errors (the field is optional, so no consumers break)
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git add src/config/types.ts
+git add src/config/types.ts src/config/index.ts
 git commit -m "feat(config): add extends field to RawGroupConfig type (#649)"
 ```
 
 ---
 
-### Task 2: Add extends resolution functions to normalizer
+### Task 2: Create shared extends resolver and integrate with normalizer
 
 **Files:**
-- Modify: `src/config/normalizer.ts` (add two new functions before `mergeGroupFiles` at line 363)
+- Create: `src/config/extends-resolver.ts`
+- Create: `test/unit/config-extends-resolver.test.ts`
+- Modify: `src/config/normalizer.ts` (import and call `expandRepoGroups`)
 - Test: `test/unit/config-normalizer.test.ts`
 
-- [ ] **Step 1: Write failing tests for extends resolution**
+- [ ] **Step 1: Write unit tests for extends-resolver**
+
+Create `test/unit/config-extends-resolver.test.ts` with focused tests for the resolver functions:
+
+```typescript
+import { test, describe } from "node:test";
+import { strict as assert } from "node:assert";
+import {
+  resolveExtendsChain,
+  expandRepoGroups,
+} from "../../src/config/extends-resolver.js";
+import type { RawGroupConfig } from "../../src/config/index.js";
+
+describe("resolveExtendsChain", () => {
+  test("group without extends returns just itself", () => {
+    const groups: Record<string, RawGroupConfig> = {
+      a: { files: {} },
+    };
+    assert.deepStrictEqual(resolveExtendsChain("a", groups), ["a"]);
+  });
+
+  test("single parent returns [parent, child]", () => {
+    const groups: Record<string, RawGroupConfig> = {
+      parent: { files: {} },
+      child: { extends: "parent", files: {} },
+    };
+    assert.deepStrictEqual(resolveExtendsChain("child", groups), ["parent", "child"]);
+  });
+
+  test("multi-parent returns parents L-R then child", () => {
+    const groups: Record<string, RawGroupConfig> = {
+      a: { files: {} },
+      b: { files: {} },
+      child: { extends: ["a", "b"], files: {} },
+    };
+    assert.deepStrictEqual(resolveExtendsChain("child", groups), ["a", "b", "child"]);
+  });
+
+  test("transitive: grandparent -> parent -> child", () => {
+    const groups: Record<string, RawGroupConfig> = {
+      gp: { files: {} },
+      p: { extends: "gp", files: {} },
+      c: { extends: "p", files: {} },
+    };
+    assert.deepStrictEqual(resolveExtendsChain("c", groups), ["gp", "p", "c"]);
+  });
+
+  test("diamond: shared ancestor appears once", () => {
+    const groups: Record<string, RawGroupConfig> = {
+      base: { files: {} },
+      left: { extends: "base", files: {} },
+      right: { extends: "base", files: {} },
+      top: { extends: ["left", "right"], files: {} },
+    };
+    assert.deepStrictEqual(resolveExtendsChain("top", groups), ["base", "left", "right", "top"]);
+  });
+
+  test("throws on circular extends", () => {
+    const groups: Record<string, RawGroupConfig> = {
+      a: { extends: "b", files: {} },
+      b: { extends: "a", files: {} },
+    };
+    assert.throws(
+      () => resolveExtendsChain("a", groups),
+      /[Cc]ircular extends/
+    );
+  });
+
+  test("throws when referenced group does not exist", () => {
+    const groups: Record<string, RawGroupConfig> = {
+      child: { extends: "missing", files: {} },
+    };
+    assert.throws(
+      () => resolveExtendsChain("child", groups),
+      /does not exist/
+    );
+  });
+});
+
+describe("expandRepoGroups", () => {
+  test("expands multiple groups with deduplication", () => {
+    const groups: Record<string, RawGroupConfig> = {
+      base: { files: {} },
+      left: { extends: "base", files: {} },
+      right: { extends: "base", files: {} },
+    };
+    assert.deepStrictEqual(
+      expandRepoGroups(["left", "right"], groups),
+      ["base", "left", "right"]
+    );
+  });
+
+  test("mixed extending and non-extending groups", () => {
+    const groups: Record<string, RawGroupConfig> = {
+      base: { files: {} },
+      derived: { extends: "base", files: {} },
+      standalone: { files: {} },
+    };
+    assert.deepStrictEqual(
+      expandRepoGroups(["derived", "standalone"], groups),
+      ["base", "derived", "standalone"]
+    );
+  });
+
+  test("empty groups returns empty", () => {
+    assert.deepStrictEqual(expandRepoGroups([], {}), []);
+  });
+});
+```
+
+- [ ] **Step 2: Run tests to verify they fail**
+
+Run: `npm test -- --test-name-pattern="resolveExtendsChain|expandRepoGroups" 2>&1 | tail -10`
+Expected: Fails (module doesn't exist yet)
+
+- [ ] **Step 3: Implement extends-resolver.ts**
+
+Create `src/config/extends-resolver.ts`:
+
+```typescript
+import type { RawGroupConfig } from "./types.js";
+
+const MAX_EXTENDS_DEPTH = 100;
+
+/**
+ * Resolves a single group's extends chain into an ordered list of group names.
+ * Parents appear before children (topological order). Detects circular extends
+ * and missing group references.
+ */
+export function resolveExtendsChain(
+  groupName: string,
+  groupDefs: Record<string, RawGroupConfig>,
+  visited: Set<string> = new Set(),
+  depth: number = 0
+): string[] {
+  if (depth > MAX_EXTENDS_DEPTH) {
+    throw new Error(
+      `Extends chain exceeds maximum depth of ${MAX_EXTENDS_DEPTH} — likely misconfigured`
+    );
+  }
+
+  if (visited.has(groupName)) {
+    const cycle = [...visited, groupName].join(" -> ");
+    throw new Error(`Circular extends detected: ${cycle}`);
+  }
+  visited.add(groupName);
+
+  const group = groupDefs[groupName];
+  if (!group) {
+    throw new Error(
+      `Group '${groupName}' referenced in extends chain does not exist`
+    );
+  }
+
+  if (!group.extends) {
+    return [groupName];
+  }
+
+  const parents = Array.isArray(group.extends)
+    ? group.extends
+    : [group.extends];
+
+  const result: string[] = [];
+  const seen = new Set<string>();
+
+  for (const parent of parents) {
+    const chain = resolveExtendsChain(
+      parent,
+      groupDefs,
+      new Set(visited),
+      depth + 1
+    );
+    for (const name of chain) {
+      if (!seen.has(name)) {
+        seen.add(name);
+        result.push(name);
+      }
+    }
+  }
+
+  if (!seen.has(groupName)) {
+    result.push(groupName);
+  }
+
+  return result;
+}
+
+/**
+ * Expands a repo's group list by resolving extends chains for each group.
+ * Returns the full ordered list with transitive parents, deduplicated.
+ * First occurrence wins for deduplication (preserves topological order).
+ */
+export function expandRepoGroups(
+  repoGroups: string[],
+  groupDefs: Record<string, RawGroupConfig>
+): string[] {
+  const result: string[] = [];
+  const seen = new Set<string>();
+
+  for (const groupName of repoGroups) {
+    const chain = resolveExtendsChain(groupName, groupDefs);
+    for (const name of chain) {
+      if (!seen.has(name)) {
+        seen.add(name);
+        result.push(name);
+      }
+    }
+  }
+
+  return result;
+}
+```
+
+- [ ] **Step 4: Run resolver tests to verify they pass**
+
+Run: `npm test -- --test-name-pattern="resolveExtendsChain|expandRepoGroups" 2>&1 | tail -20`
+Expected: All 10 tests pass
+
+- [ ] **Step 5: Commit resolver module**
+
+```bash
+git add src/config/extends-resolver.ts test/unit/config-extends-resolver.test.ts
+git commit -m "feat(config): add shared extends-resolver module (#649)"
+```
+
+- [ ] **Step 6: Write failing normalizer integration tests**
 
 Add a new `describe("group extends", ...)` block in `test/unit/config-normalizer.test.ts` after the existing `describe("group configuration", ...)` block (after line ~4147). These tests call `normalizeConfig` and verify the expanded merge behavior.
 
@@ -373,86 +614,20 @@ describe("group extends", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [ ] **Step 7: Run normalizer tests to verify they fail**
 
 Run: `npm test -- --test-name-pattern="group extends" 2>&1 | tail -20`
-Expected: All tests fail (normalizer doesn't expand extends yet)
+Expected: All tests fail (normalizer doesn't call expandRepoGroups yet)
 
-- [ ] **Step 3: Implement `resolveExtendsChain` and `expandRepoGroups` in normalizer**
+- [ ] **Step 8: Add `expandRepoGroups` import to normalizer**
 
-In `src/config/normalizer.ts`, add these two functions before the `mergeGroupFiles` function (before line 363):
+In `src/config/normalizer.ts`, add the import at the top of the file (after the existing imports):
 
 ```typescript
-/**
- * Resolves a single group's extends chain into an ordered list of group names.
- * Parents appear before children (topological order). Detects circular extends.
- */
-function resolveExtendsChain(
-  groupName: string,
-  groupDefs: Record<string, RawGroupConfig>,
-  visited: Set<string>
-): string[] {
-  if (visited.has(groupName)) {
-    const cycle = [...visited, groupName].join(" -> ");
-    throw new Error(`Circular extends detected: ${cycle}`);
-  }
-  visited.add(groupName);
-
-  const group = groupDefs[groupName];
-  if (!group?.extends) {
-    return [groupName];
-  }
-
-  const parents = Array.isArray(group.extends)
-    ? group.extends
-    : [group.extends];
-
-  const result: string[] = [];
-  const seen = new Set<string>();
-
-  for (const parent of parents) {
-    const chain = resolveExtendsChain(parent, groupDefs, new Set(visited));
-    for (const name of chain) {
-      if (!seen.has(name)) {
-        seen.add(name);
-        result.push(name);
-      }
-    }
-  }
-
-  if (!seen.has(groupName)) {
-    result.push(groupName);
-  }
-
-  return result;
-}
-
-/**
- * Expands a repo's group list by resolving extends chains for each group.
- * Returns the full ordered list with transitive parents, deduplicated.
- */
-function expandRepoGroups(
-  repoGroups: string[],
-  groupDefs: Record<string, RawGroupConfig>
-): string[] {
-  const result: string[] = [];
-  const seen = new Set<string>();
-
-  for (const groupName of repoGroups) {
-    const chain = resolveExtendsChain(groupName, groupDefs, new Set());
-    for (const name of chain) {
-      if (!seen.has(name)) {
-        seen.add(name);
-        result.push(name);
-      }
-    }
-  }
-
-  return result;
-}
+import { expandRepoGroups } from "./extends-resolver.js";
 ```
 
-- [ ] **Step 4: Integrate extends expansion into `normalizeConfig`**
+- [ ] **Step 9: Integrate extends expansion into `normalizeConfig`**
 
 In `src/config/normalizer.ts`, modify the `normalizeConfig` function. Replace the section at lines 614-629 that reads:
 
@@ -501,21 +676,21 @@ With:
       const effectiveGroups = new Set(expandedGroups);
 ```
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [ ] **Step 10: Run tests to verify they pass**
 
 Run: `npm test -- --test-name-pattern="group extends" 2>&1 | tail -30`
 Expected: All 12 tests pass
 
-- [ ] **Step 6: Run full normalizer test suite to verify no regressions**
+- [ ] **Step 11: Run full normalizer test suite to verify no regressions**
 
 Run: `npm test -- --test-name-pattern="normalizeConfig|group configuration|conditional group" 2>&1 | tail -10`
 Expected: All existing tests still pass
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 12: Commit**
 
 ```bash
 git add src/config/normalizer.ts test/unit/config-normalizer.test.ts
-git commit -m "feat(config): implement group extends resolution in normalizer (#649)"
+git commit -m "feat(config): integrate extends-resolver into normalizer (#649)"
 ```
 
 ---
@@ -695,6 +870,32 @@ describe("group extends validation", () => {
     });
     assert.doesNotThrow(() => validateRawConfig(config));
   });
+
+  test("throws for empty string in extends array", () => {
+    const config = createValidConfig({
+      groups: {
+        parent: { files: {} },
+        child: { extends: ["parent", ""] as string[], files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /extends.*non-empty strings/
+    );
+  });
+
+  test("throws for duplicate entry in extends array", () => {
+    const config = createValidConfig({
+      groups: {
+        parent: { files: {} },
+        child: { extends: ["parent", "parent"], files: {} },
+      },
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /duplicate 'parent' in extends/
+    );
+  });
 });
 ```
 
@@ -799,10 +1000,16 @@ function validateGroupExtends(
         `groups.${groupName}: 'extends' must be a non-empty string or array of strings`
       );
     }
+    const seen = new Set<string>();
     for (const entry of extends_) {
       if (typeof entry !== "string") {
         throw new ValidationError(
           `groups.${groupName}: 'extends' array entries must be strings`
+        );
+      }
+      if (entry.length === 0) {
+        throw new ValidationError(
+          `groups.${groupName}: 'extends' array entries must be non-empty strings`
         );
       }
       if (entry === groupName) {
@@ -815,6 +1022,12 @@ function validateGroupExtends(
           `groups.${groupName}: extends references undefined group '${entry}'`
         );
       }
+      if (seen.has(entry)) {
+        throw new ValidationError(
+          `groups.${groupName}: duplicate '${entry}' in extends`
+        );
+      }
+      seen.add(entry);
     }
   } else {
     throw new ValidationError(
@@ -831,17 +1044,18 @@ Add this function after `validateGroupExtends` in `src/config/validator.ts`:
 ```typescript
 /**
  * Detects circular extends chains across all groups.
- * Uses depth-first traversal with cycle detection.
+ * Uses depth-first traversal with Set-based cycle detection (O(1) lookups)
+ * and a separate path array for error messages.
  */
 function validateNoCircularExtends(
   groups: Record<string, RawGroupConfig>
 ): void {
   const validated = new Set<string>();
 
-  function walk(name: string, path: string[]): void {
-    if (path.includes(name)) {
-      const cycleStart = path.indexOf(name);
-      const cycle = [...path.slice(cycleStart), name].join(" -> ");
+  function walk(name: string, pathSet: Set<string>, pathList: string[]): void {
+    if (pathSet.has(name)) {
+      const cycleStart = pathList.indexOf(name);
+      const cycle = [...pathList.slice(cycleStart), name].join(" -> ");
       throw new ValidationError(`circular extends detected: ${cycle}`);
     }
     if (validated.has(name)) return;
@@ -856,31 +1070,36 @@ function validateNoCircularExtends(
       ? group.extends
       : [group.extends];
 
+    const nextPathSet = new Set(pathSet);
+    nextPathSet.add(name);
+    const nextPathList = [...pathList, name];
+
     for (const parent of parents) {
-      walk(parent, [...path, name]);
+      walk(parent, nextPathSet, nextPathList);
     }
 
     validated.add(name);
   }
 
   for (const name of Object.keys(groups)) {
-    walk(name, []);
+    walk(name, new Set(), []);
   }
 }
 ```
 
-- [ ] **Step 6: Add `RawGroupConfig` to the validator's type import**
+- [ ] **Step 6: Add imports to validator**
 
-In `src/config/validator.ts` line 1, add `RawGroupConfig` to the import:
+In `src/config/validator.ts`, add `RawGroupConfig` to the type import on line 1, and add the extends-resolver import:
 
 ```typescript
 import type { RawConfig, RawRepoSettings, RawRootSettings, RawGroupConfig } from "./types.js";
+import { expandRepoGroups } from "./extends-resolver.js";
 ```
 
 - [ ] **Step 7: Run tests to verify they pass**
 
 Run: `npm test -- --test-name-pattern="group extends validation" 2>&1 | tail -30`
-Expected: All 13 tests pass
+Expected: All 15 tests pass
 
 - [ ] **Step 8: Run full validator test suite to verify no regressions**
 
@@ -971,57 +1190,11 @@ test("repo can opt out of settings from transitive parent group", () => {
 Run: `npm test -- --test-name-pattern="repo can override file from transitive|repo can opt out of settings from transitive" 2>&1 | tail -10`
 Expected: Fails with "references undefined file 'parent-file.json'" or similar
 
-- [ ] **Step 3: Add extends expansion helper for validator**
+- [ ] **Step 3: Update `validateRepoFiles` to expand groups**
 
-Add a helper function in `src/config/validator.ts` that the validator can use to expand a repo's groups. Place it near the other validation helpers (before `validateRepoFiles`):
+The validator now uses the shared `expandRepoGroups` from `extends-resolver.ts` (imported in Task 3 Step 6).
 
-```typescript
-/**
- * Expands a repo's group list by following extends chains.
- * Returns the full list including transitive parents.
- * Used by validation to build complete knownFiles and rootCtx sets.
- *
- * Note: Parallels expandRepoGroups in normalizer.ts. Kept separate to avoid
- * coupling validator to normalizer — validator runs before normalization.
- */
-function expandGroupsForValidation(
-  repoGroups: string[],
-  groups: Record<string, RawGroupConfig>
-): string[] {
-  const result: string[] = [];
-  const seen = new Set<string>();
 
-  function expand(name: string, visited: Set<string>): void {
-    if (seen.has(name)) return;
-    if (visited.has(name)) return; // Circular — already caught by validateNoCircularExtends
-
-    const group = groups[name];
-    if (group?.extends) {
-      const parents = Array.isArray(group.extends)
-        ? group.extends
-        : [group.extends];
-      const nextVisited = new Set(visited);
-      nextVisited.add(name);
-      for (const parent of parents) {
-        expand(parent, nextVisited);
-      }
-    }
-
-    if (!seen.has(name)) {
-      seen.add(name);
-      result.push(name);
-    }
-  }
-
-  for (const name of repoGroups) {
-    expand(name, new Set());
-  }
-
-  return result;
-}
-```
-
-- [ ] **Step 4: Update `validateRepoFiles` to expand groups**
 
 In `src/config/validator.ts`, modify the `validateRepoFiles` function. Replace the existing group-file collection block (lines 639-648):
 
@@ -1042,7 +1215,7 @@ With:
 
 ```typescript
   if (repo.groups && config.groups) {
-    const expandedGroups = expandGroupsForValidation(repo.groups, config.groups);
+    const expandedGroups = expandRepoGroups(repo.groups, config.groups);
     for (const groupName of expandedGroups) {
       const group = config.groups[groupName];
       if (group?.files) {
@@ -1054,7 +1227,7 @@ With:
   }
 ```
 
-- [ ] **Step 5: Update `validateRepoSettingsEntry` to expand groups**
+- [ ] **Step 4: Update `validateRepoSettingsEntry` to expand groups**
 
 In `src/config/validator.ts`, modify `validateRepoSettingsEntry`. Replace the existing group-settings collection block (lines 706-726):
 
@@ -1086,7 +1259,7 @@ With:
 
 ```typescript
   if (repo.groups && config.groups) {
-    const expandedGroups = expandGroupsForValidation(repo.groups, config.groups);
+    const expandedGroups = expandRepoGroups(repo.groups, config.groups);
     for (const groupName of expandedGroups) {
       const group = config.groups[groupName];
       if (group?.settings?.rulesets) {
@@ -1109,17 +1282,17 @@ With:
   }
 ```
 
-- [ ] **Step 6: Run tests to verify they pass**
+- [ ] **Step 5: Run tests to verify they pass**
 
 Run: `npm test -- --test-name-pattern="group extends" 2>&1 | tail -20`
 Expected: All extends tests pass (both normalizer and validator)
 
-- [ ] **Step 7: Run full test suite**
+- [ ] **Step 6: Run full test suite**
 
 Run: `npm test 2>&1 | tail -10`
 Expected: All tests pass
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add src/config/validator.ts test/unit/config-validator.test.ts
@@ -1132,6 +1305,8 @@ git commit -m "feat(config): expand knownFiles and rootCtx for transitive parent
 
 **Files:**
 - Modify: `docs/configuration/groups.md`
+- Modify: `docs/configuration/inheritance.md`
+- Modify: `docs/index.md` (Mermaid pipeline diagrams)
 - Modify: `docs/reference/config-schema.md:70-78`
 - Modify: `config-schema.json` (root `definitions.groupConfig`)
 
@@ -1142,18 +1317,36 @@ In `docs/configuration/groups.md`, add the `extends` row to the existing "Group 
 ```markdown
 | Field        | Description                                           |
 | ------------ | ----------------------------------------------------- |
-| `extends`    | Parent group name(s) to inherit files, settings, PR options |
+| `extends`    | Parent group name(s) to inherit from                  |
 | `files`      | File definitions or overrides (same syntax as repos)  |
 | `prOptions`  | PR merge options (merged into chain)                  |
 | `settings`   | Repository settings like rulesets, labels             |
 ```
 
-- [ ] **Step 2: Add "Group Inheritance" section to groups.md**
+- [ ] **Step 2: Update existing "Merge Chain" section**
+
+In `docs/configuration/groups.md`, update the existing "Merge Chain" section (lines 51-59) to mention extends. Replace:
+
+```markdown
+1. **Root files** — base layer
+2. **Group layers** — applied left-to-right in array order
+3. **Repo overrides** — final layer
+```
+
+With:
+
+```markdown
+1. **Root files** — base layer
+2. **Group layers** — applied left-to-right in array order (when groups use `extends`, parent groups are automatically included before the child)
+3. **Repo overrides** — final layer
+```
+
+- [ ] **Step 3: Add "Group Inheritance" section to groups.md**
 
 In `docs/configuration/groups.md`, add a new section after "## Multiple Groups" (after line 85) and before "## File Exclusion in Groups":
 
 ````markdown
-## Group Inheritance (`extends`)
+## Group Inheritance
 
 Groups can inherit from parent groups using the `extends` field. When a repo references a child group, it automatically gets the parent group's files, settings, and PR options — no need to list parent groups explicitly.
 
@@ -1215,15 +1408,21 @@ Inheritance is transitive — if `c extends b` and `b extends a`, a repo with `g
 groups:
   base:
     files:
-      base.json: { content: { base: true } }
+      base.json:
+        content:
+          base: true
   mid:
     extends: base
     files:
-      mid.json: { content: { mid: true } }
+      mid.json:
+        content:
+          mid: true
   leaf:
     extends: mid
     files:
-      leaf.json: { content: { leaf: true } }
+      leaf.json:
+        content:
+          leaf: true
 
 repos:
   - git: git@github.com:org/repo.git
@@ -1233,15 +1432,7 @@ repos:
 
 ### Merge Order
 
-The expanded group chain merges in topological order — parents before children:
-
-1. **Root files** — base layer
-2. **Transitive parent groups** — in dependency order
-3. **Child group** — overrides parents
-4. **Conditional groups** — evaluated against expanded group set
-5. **Repo overrides** — final layer
-
-Child groups can use `inherit: false` to discard parent files, or `file: false` to remove specific parent files.
+Parent groups are inserted before the child in the [merge chain](groups.md#merge-chain). Child groups can use `inherit: false` to discard all accumulated files (root and parent groups), or `file: false` to remove specific parent files.
 
 ### Interaction with Conditional Groups
 
@@ -1252,11 +1443,56 @@ The effective group set used for conditional group evaluation includes transitiv
 - Circular extends chains are not allowed
 - All referenced parent groups must exist in the `groups` map
 - A group cannot extend itself
+- `extends` is a reserved name and cannot be used as a group name
 ````
 
-- [ ] **Step 3: Update config-schema.json**
+- [ ] **Step 4: Update docs/configuration/inheritance.md**
 
-In `config-schema.json`, add the `extends` property to the `definitions.groupConfig.properties` object:
+In `docs/configuration/inheritance.md`, update line 3. Replace:
+
+```markdown
+The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**.
+```
+
+With:
+
+```markdown
+The basic chain is **root → repo overrides**. With [groups](groups.md), the chain becomes **root → group1 → group2 → repo overrides**. When groups use [`extends`](groups.md#group-inheritance), parent groups are automatically included in the chain before the child group.
+```
+
+- [ ] **Step 5: Update docs/index.md Mermaid pipeline diagrams**
+
+In `docs/index.md`, update the two Mermaid pipeline diagrams. Replace the `EXPAND --> GROUPS` lines to include an extends resolution step.
+
+At line 226, replace:
+
+```text
+EXPAND["Expand git arrays"] --> GROUPS["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
+```
+
+With:
+
+```text
+EXPAND["Expand git arrays"] --> EXTENDS["Resolve group extends<br/>(expand parent chains)"]
+EXTENDS --> GROUPS["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
+```
+
+At line 314, replace:
+
+```text
+EXPAND["Expand git arrays"] --> GROUPS_S["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
+```
+
+With:
+
+```text
+EXPAND["Expand git arrays"] --> EXTENDS_S["Resolve group extends<br/>(expand parent chains)"]
+EXTENDS_S --> GROUPS_S["Merge group layers per-repo<br/>(files, prOptions, settings)<br/>root → group1 → group2 → …"]
+```
+
+- [ ] **Step 6: Update config-schema.json**
+
+In `config-schema.json`, add the `extends` property as the **first property** in `definitions.groupConfig.properties` (before `files`):
 
 ```json
 {
@@ -1282,7 +1518,7 @@ In `config-schema.json`, add the `extends` property to the `definitions.groupCon
 }
 ```
 
-- [ ] **Step 4: Update docs/reference/config-schema.md**
+- [ ] **Step 7: Update docs/reference/config-schema.md**
 
 In `docs/reference/config-schema.md`, add the `extends` row to the Group Config table (around line 72-76):
 
@@ -1295,10 +1531,22 @@ In `docs/reference/config-schema.md`, add the `extends` row to the Group Config 
 | `settings`  | `object`             | No       | Settings for repos using this group (supports `inherit`)     |
 ```
 
-- [ ] **Step 5: Commit**
+Also update the context text on line 78. Replace:
+
+```markdown
+Group files support `inherit: false` (discard accumulated files), `file: false` (remove a file), and full file config or override objects.
+```
+
+With:
+
+```markdown
+Groups support `extends` (inherit from parent groups), `inherit: false` (discard accumulated files), `file: false` (remove a file), and full file config or override objects.
+```
+
+- [ ] **Step 8: Commit**
 
 ```bash
-git add docs/configuration/groups.md docs/reference/config-schema.md config-schema.json
+git add docs/configuration/groups.md docs/configuration/inheritance.md docs/index.md docs/reference/config-schema.md config-schema.json
 git commit -m "docs: add group inheritance documentation and update config schema (#649)"
 ```
 
