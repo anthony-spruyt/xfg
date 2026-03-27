@@ -405,7 +405,7 @@ function validatePrOptions(config: RawConfig): void {
 function validateGroupExtends(
   groupName: string,
   extends_: string | string[],
-  groupNames: string[]
+  groupNames: Set<string>
 ): void {
   // Type check
   if (typeof extends_ === "string") {
@@ -421,7 +421,7 @@ function validateGroupExtends(
       );
     }
     // Existence
-    if (!groupNames.includes(extends_)) {
+    if (!groupNames.has(extends_)) {
       throw new ValidationError(
         `groups.${groupName}: extends references undefined group '${extends_}'`
       );
@@ -449,7 +449,7 @@ function validateGroupExtends(
           `groups.${groupName}: extends cannot reference itself`
         );
       }
-      if (!groupNames.includes(entry)) {
+      if (!groupNames.has(entry)) {
         throw new ValidationError(
           `groups.${groupName}: extends references undefined group '${entry}'`
         );
@@ -478,6 +478,7 @@ function validateNoCircularExtends(
   groups: Record<string, RawGroupConfig>
 ): void {
   for (const name of Object.keys(groups)) {
+    if (!groups[name].extends) continue;
     try {
       resolveExtendsChain(name, groups);
     } catch (error) {
@@ -496,7 +497,7 @@ function validateGroups(config: RawConfig): void {
   }
 
   const rootCtx = buildRootSettingsContext(config);
-  const groupNames = Object.keys(config.groups);
+  const groupNames = new Set(Object.keys(config.groups));
 
   for (const [groupName, group] of Object.entries(config.groups)) {
     if (groupName === "inherit") {

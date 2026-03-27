@@ -79,6 +79,23 @@ describe("resolveExtendsChain", () => {
     };
     assert.throws(() => resolveExtendsChain("child", groups), /does not exist/);
   });
+
+  test("throws when extends chain exceeds MAX_EXTENDS_DEPTH", () => {
+    const depth = 102;
+    const groups: Record<string, RawGroupConfig> = {};
+    for (let i = 0; i < depth; i++) {
+      const name = `g${i}`;
+      if (i === 0) {
+        groups[name] = { files: {} };
+      } else {
+        groups[name] = { extends: `g${i - 1}`, files: {} };
+      }
+    }
+    assert.throws(
+      () => resolveExtendsChain(`g${depth - 1}`, groups),
+      /exceeds maximum depth of 100/
+    );
+  });
 });
 
 describe("expandRepoGroups", () => {
