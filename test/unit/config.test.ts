@@ -1114,4 +1114,198 @@ describe("GitHubRepoSettings type", () => {
     };
     assert.equal(settings.secretScanning, true);
   });
+
+  describe("directory loading", () => {
+    test("loads and merges all yaml files from a directory", () => {
+      const configDir = join(testDir, "config-dir-" + Date.now());
+      mkdirSync(configDir, { recursive: true });
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `
+id: test-dir
+files:
+  base.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:org/repo-a.git
+`,
+        "utf-8"
+      );
+
+      writeFileSync(
+        join(configDir, "teams.yaml"),
+        `
+repos:
+  - git: git@github.com:org/repo-b.git
+`,
+        "utf-8"
+      );
+
+      const config = loadConfig(configDir, {});
+
+      assert.equal(config.repos.length, 2);
+      assert.equal(config.repos[0].git, "git@github.com:org/repo-a.git");
+      assert.equal(config.repos[1].git, "git@github.com:org/repo-b.git");
+    });
+
+    test("sorts files alphabetically so merge order is deterministic", () => {
+      const configDir = join(testDir, "config-sort-" + Date.now());
+      mkdirSync(configDir, { recursive: true });
+
+      writeFileSync(
+        join(configDir, "b-teams.yaml"),
+        `
+repos:
+  - git: git@github.com:org/repo-b.git
+`,
+        "utf-8"
+      );
+
+      writeFileSync(
+        join(configDir, "a-base.yaml"),
+        `
+id: test-sort
+files:
+  base.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:org/repo-a.git
+`,
+        "utf-8"
+      );
+
+      const config = loadConfig(configDir, {});
+
+      // a-base.yaml sorts before b-teams.yaml
+      assert.equal(config.repos[0].git, "git@github.com:org/repo-a.git");
+      assert.equal(config.repos[1].git, "git@github.com:org/repo-b.git");
+    });
+
+    test("errors when directory has no yaml files", () => {
+      const configDir = join(testDir, "config-empty-" + Date.now());
+      mkdirSync(configDir, { recursive: true });
+
+      assert.throws(
+        () => loadConfig(configDir, {}),
+        (err: Error) => err.message.includes("No .yaml or .yml files found")
+      );
+    });
+
+    test("loads both .yaml and .yml files", () => {
+      const configDir = join(testDir, "config-ext-" + Date.now());
+      mkdirSync(configDir, { recursive: true });
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `
+id: test-ext
+files:
+  base.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:org/repo-a.git
+`,
+        "utf-8"
+      );
+
+      writeFileSync(
+        join(configDir, "extra.yml"),
+        `
+repos:
+  - git: git@github.com:org/repo-b.git
+`,
+        "utf-8"
+      );
+
+      const config = loadConfig(configDir, {});
+      assert.equal(config.repos.length, 2);
+    });
+
+    test("ignores non-yaml files in directory", () => {
+      const configDir = join(testDir, "config-ignore-" + Date.now());
+      mkdirSync(configDir, { recursive: true });
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `
+id: test-ignore
+files:
+  base.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:org/repo-a.git
+`,
+        "utf-8"
+      );
+
+      writeFileSync(join(configDir, "README.md"), "# Not a config", "utf-8");
+      writeFileSync(join(configDir, "notes.txt"), "not yaml", "utf-8");
+
+      const config = loadConfig(configDir, {});
+      assert.equal(config.repos.length, 1);
+    });
+
+    test("errors when a yaml file in directory is empty", () => {
+      const configDir = join(testDir, "config-empty-yaml-" + Date.now());
+      mkdirSync(configDir, { recursive: true });
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `
+id: test-empty
+files:
+  base.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:org/repo-a.git
+`,
+        "utf-8"
+      );
+
+      writeFileSync(join(configDir, "empty.yaml"), "", "utf-8");
+
+      assert.throws(
+        () => loadConfig(configDir, {}),
+        (err: Error) => err.message.includes("empty or invalid")
+      );
+    });
+
+    test("does not recurse into subdirectories", () => {
+      const configDir = join(testDir, "config-norecurse-" + Date.now());
+      const subDir = join(configDir, "subdir");
+      mkdirSync(subDir, { recursive: true });
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `
+id: test-norecurse
+files:
+  base.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:org/repo-a.git
+`,
+        "utf-8"
+      );
+
+      writeFileSync(
+        join(subDir, "nested.yaml"),
+        `
+repos:
+  - git: git@github.com:org/repo-nested.git
+`,
+        "utf-8"
+      );
+
+      const config = loadConfig(configDir, {});
+      assert.equal(config.repos.length, 1);
+    });
+  });
 });

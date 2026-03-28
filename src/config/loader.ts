@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { readFileSync, statSync, readdirSync } from "node:fs";
+import { dirname, join, extname } from "node:path";
 import { parse } from "yaml";
 import { validateRawConfig } from "./validator.js";
 import { normalizeConfig as normalizeConfigInternal } from "./normalizer.js";
@@ -7,6 +7,7 @@ import { resolveFileReferencesInConfig } from "./file-reference-resolver.js";
 import type { RawConfig, Config } from "./types.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
+import { mergeConfigFragments, type ConfigFragment } from "./config-merger.js";
 
 export { normalizeConfigInternal as normalizeConfig };
 
@@ -14,7 +15,25 @@ export { normalizeConfigInternal as normalizeConfig };
  * Load and validate raw config without normalization.
  * Use this when you need to perform command-specific validation before normalizing.
  */
-export function loadRawConfig(filePath: string): RawConfig {
+export function loadRawConfig(configPath: string): RawConfig {
+  const stat = statSync(configPath);
+
+  if (stat.isDirectory()) {
+    return loadRawConfigFromDirectory(configPath);
+  }
+
+  return loadRawConfigFromFile(configPath);
+}
+
+export function loadConfig(
+  configPath: string,
+  env: Record<string, string | undefined>
+): Config {
+  const rawConfig = loadRawConfig(configPath);
+  return normalizeConfigInternal(rawConfig, env);
+}
+
+function loadRawConfigFromFile(filePath: string): RawConfig {
   const content = readFileSync(filePath, "utf-8");
   const configDir = dirname(filePath);
 
@@ -36,10 +55,56 @@ export function loadRawConfig(filePath: string): RawConfig {
   return rawConfig;
 }
 
-export function loadConfig(
-  filePath: string,
-  env: Record<string, string | undefined>
-): Config {
-  const rawConfig = loadRawConfig(filePath);
-  return normalizeConfigInternal(rawConfig, env);
+function loadRawConfigFromDirectory(dirPath: string): RawConfig {
+  const entries = readdirSync(dirPath, { withFileTypes: true });
+  const yamlFiles = entries
+    .filter(
+      (entry) =>
+        entry.isFile() &&
+        [".yaml", ".yml"].includes(extname(entry.name).toLowerCase())
+    )
+    .map((entry) => entry.name)
+    .sort();
+
+  if (yamlFiles.length === 0) {
+    throw new ValidationError(
+      `No .yaml or .yml files found in directory: ${dirPath}`
+    );
+  }
+
+  const fragments: ConfigFragment[] = yamlFiles.map((fileName) => {
+    const filePath = join(dirPath, fileName);
+    const content = readFileSync(filePath, "utf-8");
+    const configDir = dirname(filePath);
+
+    let config: Partial<RawConfig>;
+    try {
+      config = parse(content) as Partial<RawConfig>;
+    } catch (error) {
+      const message = toErrorMessage(error);
+      throw new ValidationError(
+        `Failed to parse YAML config at ${filePath}: ${message}`
+      );
+    }
+
+    if (!config || typeof config !== "object") {
+      throw new ValidationError(
+        `Config file ${fileName} is empty or invalid — expected a YAML mapping`
+      );
+    }
+
+    // Safe cast: resolveFileReferencesInConfig only accesses optional fields
+    // (files, groups, etc.), so fragments missing id/repos work correctly.
+    config = resolveFileReferencesInConfig(config as RawConfig, {
+      configDir,
+    });
+
+    return { fileName, config };
+  });
+
+  const merged = mergeConfigFragments(fragments);
+
+  validateRawConfig(merged);
+
+  return merged;
 }
