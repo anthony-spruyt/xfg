@@ -676,6 +676,32 @@ repos:
       assert.equal(config.repos.length, 1);
     });
 
+    test("errors when a yaml file in directory is empty", () => {
+      const configDir = join(testDir, "config-empty-yaml-" + Date.now());
+      mkdirSync(configDir, { recursive: true });
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `
+id: test-empty
+files:
+  base.json:
+    content:
+      key: value
+repos:
+  - git: git@github.com:org/repo-a.git
+`,
+        "utf-8"
+      );
+
+      writeFileSync(join(configDir, "empty.yaml"), "", "utf-8");
+
+      assert.throws(
+        () => loadConfig(configDir, {}),
+        (err: Error) => err.message.includes("empty or invalid")
+      );
+    });
+
     test("does not recurse into subdirectories", () => {
       const configDir = join(testDir, "config-norecurse-" + Date.now());
       const subDir = join(configDir, "subdir");
@@ -809,6 +835,14 @@ function loadRawConfigFromDirectory(dirPath: string): RawConfig {
       );
     }
 
+    if (!config || typeof config !== "object") {
+      throw new ValidationError(
+        `Config file ${fileName} is empty or invalid — expected a YAML mapping`
+      );
+    }
+
+    // Safe cast: resolveFileReferencesInConfig only accesses optional fields
+    // (files, groups, etc.), so fragments missing id/repos work correctly.
     config = resolveFileReferencesInConfig(config as RawConfig, {
       configDir,
     });
@@ -837,7 +871,7 @@ Expected: PASS — all existing single-file tests still pass
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/config/loader.ts
+git add src/config/loader.ts test/unit/config.test.ts
 git commit -m "feat(config): add directory-based config loading (#671)"
 ```
 
