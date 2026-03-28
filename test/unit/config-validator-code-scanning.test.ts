@@ -77,11 +77,11 @@ describe("validateRawConfig - codeScanning", () => {
   test("accepts codeScanning: false at repo level", () => {
     const config = {
       id: "test",
-      settings: { codeScanning: { state: "configured" } },
+      settings: { codeScanning: { state: "configured" as const } },
       repos: [
         {
           git: "https://github.com/org/repo.git",
-          settings: { codeScanning: false },
+          settings: { codeScanning: false as const },
         },
       ],
     };

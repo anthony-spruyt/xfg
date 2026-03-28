@@ -70,9 +70,11 @@ function createDefaultRulesetProcessorFactory(): RulesetProcessorFactory {
 
 function createDefaultRepoSettingsProcessorFactory(): RepoSettingsProcessorFactory {
   const cwd = process.cwd();
+  const executor = getDefaultExecutor();
   return () =>
     new RepoSettingsProcessor(
-      new GitHubRepoSettingsStrategy(getDefaultExecutor(), { cwd })
+      new GitHubRepoSettingsStrategy(executor, { cwd }),
+      new GitHubRepoMetadataProvider(executor, { cwd })
     );
 }
 

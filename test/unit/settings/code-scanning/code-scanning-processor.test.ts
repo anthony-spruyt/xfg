@@ -10,7 +10,10 @@ import type {
   RepoMetadata,
 } from "../../../../src/shared/repo-metadata-provider.js";
 import type { GitHubRepoInfo } from "../../../../src/shared/repo-detector.js";
-import type { RepoConfig } from "../../../../src/config/index.js";
+import type {
+  RepoConfig,
+  CodeScanningSettings,
+} from "../../../../src/config/index.js";
 import type { RepoInfo } from "../../../../src/shared/repo-detector.js";
 import type { GhApiOptions } from "../../../../src/shared/gh-api-utils.js";
 
@@ -68,11 +71,7 @@ class MockMetadataProvider implements IRepoMetadataProvider {
   }
 }
 
-function makeRepoConfig(
-  codeScanning?: RepoConfig["settings"] extends { codeScanning?: infer T }
-    ? T
-    : never
-): RepoConfig {
+function makeRepoConfig(codeScanning?: CodeScanningSettings): RepoConfig {
   return {
     git: "https://github.com/test-org/test-repo.git",
     files: [],
