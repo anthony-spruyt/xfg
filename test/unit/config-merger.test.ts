@@ -188,4 +188,98 @@ describe("mergeConfigFragments", () => {
         err.message.includes("No 'repos' found in any config file")
     );
   });
+
+  test("merges unique groups from multiple files", () => {
+    const fragments: ConfigFragment[] = [
+      {
+        fileName: "a.yaml",
+        config: {
+          id: "test",
+          groups: {
+            "group-a": { files: { "a.json": { content: {} } } },
+          },
+          repos: [{ git: "git@github.com:org/a.git", groups: ["group-a"] }],
+        },
+      },
+      {
+        fileName: "b.yaml",
+        config: {
+          groups: {
+            "group-b": { files: { "b.json": { content: {} } } },
+          },
+          repos: [{ git: "git@github.com:org/b.git", groups: ["group-b"] }],
+        },
+      },
+    ];
+
+    const result = mergeConfigFragments(fragments);
+
+    assert.ok(result.groups);
+    assert.ok("group-a" in result.groups);
+    assert.ok("group-b" in result.groups);
+    assert.equal(Object.keys(result.groups).length, 2);
+  });
+
+  test("errors when same group name appears in multiple files", () => {
+    const fragments: ConfigFragment[] = [
+      {
+        fileName: "a.yaml",
+        config: {
+          id: "test",
+          groups: { shared: { files: { "a.json": { content: {} } } } },
+          repos: [],
+        },
+      },
+      {
+        fileName: "b.yaml",
+        config: {
+          groups: { shared: { files: { "b.json": { content: {} } } } },
+          repos: [],
+        },
+      },
+    ];
+
+    assert.throws(
+      () => mergeConfigFragments(fragments),
+      (err: Error) =>
+        err.message.includes(
+          "group 'shared' is defined in both a.yaml and b.yaml"
+        )
+    );
+  });
+
+  test("concatenates conditionalGroups from multiple files", () => {
+    const fragments: ConfigFragment[] = [
+      {
+        fileName: "a.yaml",
+        config: {
+          id: "test",
+          files: { "base.json": { content: {} } },
+          conditionalGroups: [
+            {
+              when: { allOf: ["g1"] },
+              files: { "cond-a.json": { content: {} } },
+            },
+          ],
+          repos: [{ git: "git@github.com:org/repo.git" }],
+        },
+      },
+      {
+        fileName: "b.yaml",
+        config: {
+          conditionalGroups: [
+            {
+              when: { anyOf: ["g2"] },
+              files: { "cond-b.json": { content: {} } },
+            },
+          ],
+        },
+      },
+    ];
+
+    const result = mergeConfigFragments(fragments);
+
+    assert.ok(result.conditionalGroups);
+    assert.equal(result.conditionalGroups.length, 2);
+  });
 });
