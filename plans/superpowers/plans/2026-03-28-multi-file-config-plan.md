@@ -20,7 +20,7 @@
 | `src/config/loader.ts` | Modify | Directory detection, scan, load-each, merge, return |
 | `src/config/types.ts` | Modify | Make `id` and `repos` optional on `RawConfig` |
 | `src/config/validator.ts` | Modify | Handle optional `id`/`repos` for fragment validation |
-| `src/config/index.ts` | Modify | Re-export `loadConfigFromDirectory` |
+| `src/config/index.ts` | No changes | Existing re-exports cover directory support via `loadRawConfig` |
 | `src/cli/sync-command.ts` | Modify | Accept directory path (update existence check) |
 | `config-schema.json` | Modify | Remove `id` and `repos` from `required` |
 | `test/unit/config-merger.test.ts` | Create | Unit tests for `mergeConfigFragments()` |
@@ -165,9 +165,22 @@ git commit -m "feat(config): add mergeConfigFragments with repos concatenation (
 
 - [ ] **Step 1: Write failing tests for all single-file keys**
 
-Add to `test/unit/config-merger.test.ts`:
+Add to `test/unit/config-merger.test.ts`. First, update the import to include `ConfigFragment`:
 
 ```typescript
+import { mergeConfigFragments, type ConfigFragment } from "../../src/config/config-merger.js";
+```
+
+Then add the tests:
+
+```typescript
+  test("errors when no fragments are provided", () => {
+    assert.throws(
+      () => mergeConfigFragments([]),
+      (err: Error) => err.message.includes("No config fragments to merge")
+    );
+  });
+
   test("errors when id is defined in multiple files", () => {
     const fragments: ConfigFragment[] = [
       { fileName: "a.yaml", config: { id: "one", repos: [] } },
@@ -262,6 +275,17 @@ Add to `test/unit/config-merger.test.ts`:
       (err: Error) => err.message.includes("No 'id' found in any config file")
     );
   });
+
+  test("errors when no file defines repos", () => {
+    const fragments: ConfigFragment[] = [
+      { fileName: "a.yaml", config: { id: "test", files: { "a.json": { content: {} } } } },
+    ];
+
+    assert.throws(
+      () => mergeConfigFragments(fragments),
+      (err: Error) => err.message.includes("No 'repos' found in any config file")
+    );
+  });
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -349,6 +373,12 @@ export function mergeConfigFragments(fragments: ConfigFragment[]): RawConfig {
     );
   }
 
+  if (allRepos.length === 0) {
+    throw new ValidationError(
+      "No 'repos' found in any config file — at least one file must define 'repos'"
+    );
+  }
+
   return {
     ...merged,
     repos: allRepos,
@@ -393,7 +423,7 @@ git commit -m "feat(config): enforce single-file keys and filename error attribu
 - Modify: `test/unit/config-merger.test.ts`
 - Modify: `src/config/config-merger.ts` (already has the logic from Task 2, this task adds tests)
 
-- [ ] **Step 1: Write failing tests for group merging**
+- [ ] **Step 1: Write regression tests for group merging**
 
 Add to `test/unit/config-merger.test.ts`:
 
@@ -489,7 +519,7 @@ Add to `test/unit/config-merger.test.ts`:
 - [ ] **Step 2: Run tests to verify they pass**
 
 Run: `npx tsx --test test/unit/config-merger.test.ts`
-Expected: PASS (logic already implemented in Task 2)
+Expected: PASS — these test logic already implemented in Task 2
 
 - [ ] **Step 3: Commit**
 
@@ -505,7 +535,6 @@ git commit -m "test(config): add group merge and conditionalGroups tests (#671)"
 **Files:**
 - Modify: `test/unit/config.test.ts`
 - Modify: `src/config/loader.ts`
-- Modify: `src/config/index.ts`
 
 - [ ] **Step 1: Write failing test for loading a config directory**
 
@@ -808,7 +837,7 @@ Expected: PASS — all existing single-file tests still pass
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/config/loader.ts src/config/index.ts
+git add src/config/loader.ts
 git commit -m "feat(config): add directory-based config loading (#671)"
 ```
 
@@ -874,40 +903,23 @@ if (!existsSync(configPath)) {
 }
 ```
 
-- [ ] **Step 2: Update the existence check and log message**
+- [ ] **Step 2: Update the existence check error message**
 
-Change `src/cli/sync-command.ts` lines 620-626:
+Change `src/cli/sync-command.ts` line 623 — the error message says "Config file not found" but now it could
+be a directory too:
 
 Old:
 ```typescript
-  const configPath = resolve(options.config);
-
-  if (!existsSync(configPath)) {
     throw new ValidationError(`Config file not found: ${configPath}`);
-  }
-
-  getLogger().log(`Loading config from: ${configPath}`);
 ```
 
 New:
 ```typescript
-  const configPath = resolve(options.config);
-
-  if (!existsSync(configPath)) {
     throw new ValidationError(`Config path not found: ${configPath}`);
-  }
-
-  const stat = statSync(configPath);
-  const isDirectory = stat.isDirectory();
-  getLogger().log(
-    `Loading config from ${isDirectory ? "directory" : "file"}: ${configPath}`
-  );
 ```
 
-Add `statSync` to the existing `node:fs` import at line 2:
-```typescript
-import { existsSync, statSync } from "node:fs";
-```
+No other changes needed — `loadRawConfig()` already handles directory detection internally via
+`statSync`. Adding another `statSync` here for the log message would be redundant I/O.
 
 - [ ] **Step 3: Run full test suite**
 
