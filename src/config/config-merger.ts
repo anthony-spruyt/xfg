@@ -6,43 +6,63 @@ export interface ConfigFragment {
   config: Partial<RawConfig>;
 }
 
-/**
- * Merge multiple config fragments into a single RawConfig.
- * Rules:
- * - groups, conditionalGroups, repos can span multiple files
- * - group names must be unique across files
- * - all other keys must appear in at most one file
- * - exactly one file must define 'id'
- */
+/** Keys that can only appear in one file across a config directory. */
+const SINGLE_FILE_KEYS: ReadonlyArray<keyof RawConfig> = [
+  "id",
+  "files",
+  "prOptions",
+  "prTemplate",
+  "settings",
+  "githubHosts",
+  "deleteOrphaned",
+];
+
 export function mergeConfigFragments(fragments: ConfigFragment[]): RawConfig {
   if (fragments.length === 0) {
     throw new ValidationError("No config fragments to merge");
   }
 
-  const merged: Partial<RawConfig> = {};
-  const repos: RawConfig["repos"] = [];
+  const merged: Record<string, unknown> = {};
+  const singleKeySource: Partial<Record<keyof RawConfig, string>> = {};
+  const allRepos: RawConfig["repos"][number][] = [];
+  const allGroups: Record<string, unknown> = {};
+  const allConditionalGroups: RawConfig["conditionalGroups"] = [];
 
   for (const { fileName, config } of fragments) {
+    // Enforce single-file keys
+    for (const key of SINGLE_FILE_KEYS) {
+      if (config[key] !== undefined) {
+        if (singleKeySource[key] !== undefined) {
+          throw new ValidationError(
+            `'${key}' is defined in both ${singleKeySource[key]} and ${fileName} — this key can only appear in one file`
+          );
+        }
+        singleKeySource[key] = fileName;
+        merged[key] = config[key];
+      }
+    }
+
+    // Concatenate repos
     if (config.repos) {
-      repos.push(...config.repos);
+      allRepos.push(...config.repos);
     }
 
-    if (config.id !== undefined) {
-      if (merged.id !== undefined) {
-        throw new ValidationError(
-          `'id' is defined in multiple files — this key can only appear in one file`
-        );
+    // Merge groups (unique names only)
+    if (config.groups) {
+      for (const [groupName, groupConfig] of Object.entries(config.groups)) {
+        if (groupName in allGroups) {
+          const existingFile = findGroupSource(fragments, groupName, fileName);
+          throw new ValidationError(
+            `group '${groupName}' is defined in both ${existingFile} and ${fileName} — group names must be unique across files`
+          );
+        }
+        allGroups[groupName] = groupConfig;
       }
-      merged.id = config.id;
     }
 
-    if (config.files !== undefined) {
-      if (merged.files !== undefined) {
-        throw new ValidationError(
-          `'files' is defined in multiple files — this key can only appear in one file`
-        );
-      }
-      merged.files = config.files;
+    // Concatenate conditional groups
+    if (config.conditionalGroups) {
+      allConditionalGroups.push(...config.conditionalGroups);
     }
   }
 
@@ -52,9 +72,35 @@ export function mergeConfigFragments(fragments: ConfigFragment[]): RawConfig {
     );
   }
 
+  if (allRepos.length === 0) {
+    throw new ValidationError(
+      "No 'repos' found in any config file — at least one file must define 'repos'"
+    );
+  }
+
   return {
     ...merged,
-    id: merged.id,
-    repos,
+    repos: allRepos,
+    ...(Object.keys(allGroups).length > 0 ? { groups: allGroups } : {}),
+    ...(allConditionalGroups.length > 0
+      ? { conditionalGroups: allConditionalGroups }
+      : {}),
   } as RawConfig;
+}
+
+function findGroupSource(
+  fragments: ConfigFragment[],
+  groupName: string,
+  currentFile: string
+): string {
+  for (const { fileName, config } of fragments) {
+    if (
+      fileName !== currentFile &&
+      config.groups &&
+      groupName in config.groups
+    ) {
+      return fileName;
+    }
+  }
+  return "unknown";
 }
