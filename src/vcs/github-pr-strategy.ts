@@ -1,7 +1,10 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { escapeShellArg, escapeRegExp } from "../shared/shell-utils.js";
-import { assertGitHubRepo, GitHubRepoInfo } from "../shared/repo-detector.js";
+import {
+  assertGitHubRepo,
+  type GitHubRepoInfo,
+} from "../shared/repo-detector.js";
 import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
 import type {
@@ -12,7 +15,8 @@ import type {
 } from "./types.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
-import { toErrorMessage, safeCleanup } from "../shared/type-guards.js";
+import { toErrorMessage } from "../shared/type-guards.js";
+import { safeCleanup } from "../shared/cleanup-utils.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";

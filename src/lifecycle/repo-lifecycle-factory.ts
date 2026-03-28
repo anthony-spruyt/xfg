@@ -1,4 +1,4 @@
-import { ICommandExecutor } from "../shared/command-executor.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import { LifecycleError } from "../shared/errors.js";
 import type { DebugWarnLog } from "../shared/logger.js";
 import type {

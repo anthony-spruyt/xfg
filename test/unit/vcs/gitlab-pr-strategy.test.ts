@@ -2,6 +2,7 @@ import { describe, test, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { GitLabPRStrategy } from "../../../src/vcs/gitlab-pr-strategy.js";
 import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
 import {
@@ -14,7 +15,7 @@ import {
   type ExecutorMockResult,
 } from "../../mocks/executor.mock.js";
 
-const testDir = join(process.cwd(), "test-gitlab-strategy-tmp");
+const testDir = join(tmpdir(), "test-gitlab-strategy-tmp");
 
 describe("GitLabPRStrategy with mock executor", () => {
   const gitlabRepoInfo: GitLabRepoInfo = {
@@ -463,7 +464,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
   };
 
   let mockExecutor: ExecutorMockResult;
-  const testDirClose = join(process.cwd(), "test-gitlab-strategy-close-tmp");
+  const testDirClose = join(tmpdir(), "test-gitlab-strategy-close-tmp");
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
@@ -841,7 +842,7 @@ describe("GitLabPRStrategy URL extraction edge cases", () => {
   };
 
   let mockExecutor: ExecutorMockResult;
-  const testDirEdge = join(process.cwd(), "test-gitlab-strategy-edge-tmp");
+  const testDirEdge = join(tmpdir(), "test-gitlab-strategy-edge-tmp");
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();

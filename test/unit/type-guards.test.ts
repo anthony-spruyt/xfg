@@ -1,10 +1,7 @@
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
-import {
-  isPlainObject,
-  toErrorMessage,
-  safeCleanup,
-} from "../../src/shared/type-guards.js";
+import { isPlainObject, toErrorMessage } from "../../src/shared/type-guards.js";
+import { safeCleanup } from "../../src/shared/cleanup-utils.js";
 
 describe("isPlainObject", () => {
   test("returns true for plain objects", () => {

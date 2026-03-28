@@ -199,24 +199,18 @@ export function mergeTextContent(
     return overlay;
   }
 
-  // If overlay is an array
-  if (Array.isArray(overlay)) {
-    // If base is also an array, apply merge strategy
-    if (Array.isArray(base)) {
-      switch (strategy) {
-        case "append":
-          return [...base, ...overlay];
-        case "prepend":
-          return [...overlay, ...base];
-        case "replace":
-        default:
-          return overlay;
-      }
+  // If base is also an array, apply merge strategy
+  if (Array.isArray(base)) {
+    switch (strategy) {
+      case "append":
+        return [...base, ...overlay];
+      case "prepend":
+        return [...overlay, ...base];
+      case "replace":
+      default:
+        return overlay;
     }
-    // Base is string, overlay is array - overlay replaces
-    return overlay;
   }
-
-  // Fallback (shouldn't reach here with proper types)
+  // Base is string, overlay is array - overlay replaces
   return overlay;
 }

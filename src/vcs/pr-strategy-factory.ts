@@ -1,5 +1,5 @@
 import {
-  RepoInfo,
+  type RepoInfo,
   isGitHubRepo,
   isAzureDevOpsRepo,
   isGitLabRepo,
@@ -9,7 +9,7 @@ import { SyncError } from "../shared/errors.js";
 import { GitHubPRStrategy } from "./github-pr-strategy.js";
 import { AzurePRStrategy } from "./azure-pr-strategy.js";
 import { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
-import { ICommandExecutor } from "../shared/command-executor.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";
 
 export function createPRStrategy(

@@ -30,6 +30,10 @@ coverage/
 # Temp work directory
 tmp/
 
+# Test temp directories (cleanup in afterEach, but gitignore as safety net)
+test-*-tmp/
+tmp-*-test/
+
 # Logs
 *.log
 npm-debug.log*

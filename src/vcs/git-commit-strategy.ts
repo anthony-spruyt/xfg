@@ -1,5 +1,5 @@
 import type { ICommitStrategy, CommitOptions, CommitResult } from "./types.js";
-import { ICommandExecutor } from "../shared/command-executor.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
 

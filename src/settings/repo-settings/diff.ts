@@ -1,7 +1,8 @@
 import type { GitHubRepoSettings } from "../../config/index.js";
+import type { SettingsAction } from "../base-processor.js";
 import type { CurrentRepoSettings } from "./types.js";
 
-export type RepoSettingsAction = "create" | "update" | "unchanged";
+export type RepoSettingsAction = Exclude<SettingsAction, "delete">;
 
 export interface RepoSettingsChange {
   property: keyof GitHubRepoSettings;

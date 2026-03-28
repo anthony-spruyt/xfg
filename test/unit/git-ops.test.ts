@@ -14,7 +14,7 @@ import { GitOps } from "../../src/vcs/git-ops.js";
 import {
   sanitizeBranchName,
   validateBranchName,
-} from "../../src/shared/branch-utils.js";
+} from "../../src/cli/branch-utils.js";
 import { ICommandExecutor } from "../../src/shared/command-executor.js";
 import { SyncError } from "../../src/shared/errors.js";
 

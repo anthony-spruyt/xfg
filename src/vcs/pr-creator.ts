@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { RepoInfo } from "../shared/repo-detector.js";
+import type { RepoInfo } from "../shared/repo-detector.js";
 import { createPRStrategy } from "./pr-strategy-factory.js";
 import { PRWorkflowExecutor } from "./pr-strategy.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";
@@ -13,7 +13,7 @@ import type {
   PRResult,
 } from "./types.js";
 import { interpolateXfgContent } from "../shared/xfg-template.js";
-import { ICommandExecutor } from "../shared/command-executor.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
 
 export type { FileAction };
 
@@ -177,7 +177,7 @@ export function createPR(options: PROptions): Promise<PRResult> {
   // Get the appropriate strategy and execute via workflow executor
   const resolvedStrategy =
     options.strategy ?? createPRStrategy(repoInfo, executor, log);
-  const workflow = new PRWorkflowExecutor(resolvedStrategy);
+  const workflow = new PRWorkflowExecutor(resolvedStrategy, log);
   return workflow.execute({
     repoInfo,
     title,

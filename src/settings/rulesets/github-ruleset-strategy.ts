@@ -1,5 +1,5 @@
-import { ICommandExecutor } from "../../shared/command-executor.js";
-import { assertGitHubRepo, RepoInfo } from "../../shared/repo-detector.js";
+import type { ICommandExecutor } from "../../shared/command-executor.js";
+import { assertGitHubRepo, type RepoInfo } from "../../shared/repo-detector.js";
 import { camelToSnake } from "../../shared/string-utils.js";
 import { GhApiClient, type GhApiOptions } from "../../shared/gh-api-utils.js";
 import { parseApiJson } from "../../shared/json-utils.js";

@@ -56,7 +56,7 @@ export interface SyncResultEntry {
     diffLines?: string[];
   }>;
   prUrl?: string;
-  mergeOutcome?: "manual" | "auto" | "force" | "direct";
+  mergeOutcome?: MergeMode;
   error?: string;
 }
 

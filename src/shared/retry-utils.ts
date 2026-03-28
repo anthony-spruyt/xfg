@@ -176,7 +176,7 @@ export function isTransientError(
  * @param fn The async function to run with retry
  * @param options Retry configuration options
  * @returns The result of the function if successful
- * @throws AbortError for permanent failures, or the last error after all retries exhausted
+ * @throws The original error for permanent failures (pRetry unwraps AbortError before propagating), or the last transient error after all retries exhausted
  */
 export async function withRetry<T>(
   fn: () => Promise<T>,

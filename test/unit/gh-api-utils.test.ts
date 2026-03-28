@@ -167,7 +167,10 @@ describe("resolveGitHubToken", () => {
 
   test("logs debug message on error", async () => {
     const debugMessages: string[] = [];
-    const log = { debug: (msg: string) => debugMessages.push(msg) };
+    const log = {
+      debug: (msg: string) => debugMessages.push(msg),
+      warn: () => {},
+    };
     const tokenManager = {
       getTokenForRepo: async () => {
         throw new Error("auth failed");
@@ -186,9 +189,12 @@ describe("resolveGitHubToken", () => {
     assert.match(debugMessages[0], /falling back to GH_TOKEN/);
   });
 
-  test("logs 'no fallback' when no envToken on error", async () => {
-    const debugMessages: string[] = [];
-    const log = { debug: (msg: string) => debugMessages.push(msg) };
+  test("warns 'no fallback' when no envToken on error", async () => {
+    const warnMessages: string[] = [];
+    const log = {
+      debug: () => {},
+      warn: (msg: string) => warnMessages.push(msg),
+    };
     const tokenManager = {
       getTokenForRepo: async () => {
         throw new Error("auth failed");
@@ -200,7 +206,8 @@ describe("resolveGitHubToken", () => {
       context: "my-repo",
       log,
     });
-    assert.match(debugMessages[0], /no fallback token available/);
+    assert.equal(warnMessages.length, 1);
+    assert.match(warnMessages[0], /no fallback token available/);
   });
 });
 
