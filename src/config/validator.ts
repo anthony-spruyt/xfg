@@ -673,10 +673,10 @@ function validateConditionalGroups(config: RawConfig): void {
       );
     }
 
-    const { allOf, anyOf } = entry.when;
-    if (!allOf && !anyOf) {
+    const { allOf, anyOf, noneOf } = entry.when;
+    if (!allOf && !anyOf && !noneOf) {
       throw new ValidationError(
-        `${ctx}: 'when' must have at least one of 'allOf' or 'anyOf'`
+        `${ctx}: 'when' must have at least one of 'allOf', 'anyOf', or 'noneOf'`
       );
     }
 
@@ -686,6 +686,33 @@ function validateConditionalGroups(config: RawConfig): void {
 
     if (anyOf !== undefined) {
       validateGroupRefArray(anyOf, "anyOf", ctx, groupNames);
+    }
+
+    if (noneOf !== undefined) {
+      validateGroupRefArray(noneOf, "noneOf", ctx, groupNames);
+    }
+
+    // Cross-operator overlap: noneOf must not share groups with allOf or anyOf
+    if (noneOf) {
+      const noneOfSet = new Set(noneOf);
+      if (allOf) {
+        for (const g of allOf) {
+          if (noneOfSet.has(g)) {
+            throw new ValidationError(
+              `${ctx}: noneOf group '${g}' overlaps with allOf (contradictory condition)`
+            );
+          }
+        }
+      }
+      if (anyOf) {
+        for (const g of anyOf) {
+          if (noneOfSet.has(g)) {
+            throw new ValidationError(
+              `${ctx}: noneOf group '${g}' overlaps with anyOf (contradictory condition)`
+            );
+          }
+        }
+      }
     }
 
     // Validate files

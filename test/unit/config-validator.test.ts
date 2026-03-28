@@ -2913,7 +2913,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /at least one of.*allOf.*anyOf/i
+        /at least one of.*allOf.*anyOf.*noneOf/i
       );
     });
 
