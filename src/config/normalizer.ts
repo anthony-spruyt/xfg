@@ -532,14 +532,16 @@ function evaluateWhenClause(
   when: RawConditionalGroupWhen,
   effectiveGroups: ReadonlySet<string>
 ): boolean {
-  // Defensive: if neither condition is specified, don't match
-  if (!when.allOf && !when.anyOf) return false;
+  // Defensive: if no condition is specified, don't match
+  if (!when.allOf && !when.anyOf && !when.noneOf) return false;
 
   const allOfSatisfied =
     !when.allOf || when.allOf.every((g) => effectiveGroups.has(g));
   const anyOfSatisfied =
     !when.anyOf || when.anyOf.some((g) => effectiveGroups.has(g));
-  return allOfSatisfied && anyOfSatisfied;
+  const noneOfSatisfied =
+    !when.noneOf || when.noneOf.every((g) => !effectiveGroups.has(g));
+  return allOfSatisfied && anyOfSatisfied && noneOfSatisfied;
 }
 
 /**

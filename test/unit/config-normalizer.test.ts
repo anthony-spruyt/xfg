@@ -5533,7 +5533,7 @@ describe("conditional group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    const fileNames = result.repos[0].files.map((f) => f.name);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
     assert.ok(
       fileNames.includes("fallback.json"),
       "noneOf matched: group absent"
@@ -5569,7 +5569,7 @@ describe("conditional group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    const fileNames = result.repos[0].files.map((f) => f.name);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
     assert.ok(
       !fileNames.includes("default-tf.json"),
       "noneOf excluded: terraform-custom present"
@@ -5607,8 +5607,8 @@ describe("conditional group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    const normalFiles = result.repos[0].files.map((f) => f.name);
-    const customFiles = result.repos[1].files.map((f) => f.name);
+    const normalFiles = result.repos[0].files.map((f) => f.fileName);
+    const customFiles = result.repos[1].files.map((f) => f.fileName);
     assert.ok(
       normalFiles.includes("default-hooks.json"),
       "normal repo gets default hooks"
@@ -5657,8 +5657,8 @@ describe("conditional group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    const ciFiles = result.repos[0].files.map((f) => f.name);
-    const otherFiles = result.repos[1].files.map((f) => f.name);
+    const ciFiles = result.repos[0].files.map((f) => f.fileName);
+    const otherFiles = result.repos[1].files.map((f) => f.fileName);
     assert.ok(
       !ciFiles.includes("non-github.json"),
       "noneOf excludes via transitive parent: github-ci extends github"
@@ -5694,7 +5694,7 @@ describe("conditional group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    const fileNames = result.repos[0].files.map((f) => f.name);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
     assert.ok(fileNames.includes("default.json"), "noneOf standalone matched");
   });
 
@@ -5735,8 +5735,8 @@ describe("conditional group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    const standardFiles = result.repos[0].files.map((f) => f.name);
-    const customFiles = result.repos[1].files.map((f) => f.name);
+    const standardFiles = result.repos[0].files.map((f) => f.fileName);
+    const customFiles = result.repos[1].files.map((f) => f.fileName);
     assert.ok(
       standardFiles.includes("default-renovate-tf.json"),
       "allOf+noneOf matched: standard repo"
@@ -5781,9 +5781,9 @@ describe("conditional group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    const noneFiles = result.repos[0].files.map((f) => f.name);
-    const oneFiles = result.repos[1].files.map((f) => f.name);
-    const bothFiles = result.repos[2].files.map((f) => f.name);
+    const noneFiles = result.repos[0].files.map((f) => f.fileName);
+    const oneFiles = result.repos[1].files.map((f) => f.fileName);
+    const bothFiles = result.repos[2].files.map((f) => f.fileName);
     assert.ok(
       noneFiles.includes("default.json"),
       "matches when no excluded groups present"
