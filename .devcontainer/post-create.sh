@@ -57,10 +57,10 @@ else
 fi
 
 # 2. Pre-commit hooks installed
-if pre-commit run --all-files &>/dev/null; then
-  pass "Pre-commit hooks pass"
+if pre-commit --version &>/dev/null; then
+  pass "Pre-commit is installed"
 else
-  fail "Pre-commit hooks failed"
+  fail "Pre-commit is not installed"
 fi
 
 # 3. Safe-chain blocks malicious packages
