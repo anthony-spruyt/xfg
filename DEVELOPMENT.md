@@ -100,10 +100,10 @@ The devcontainer expects these directories on your host machine:
 ~/.ssh/
 ├── id_ed25519              # SSH private key
 ├── id_ed25519.pub          # SSH public key
-├── known_hosts             # Known host keys (required mount)
-└── allowed_signers         # SSH signing trust store (required mount)
+├── known_hosts             # Known host keys
+└── allowed_signers         # SSH signing trust store
 
-~/.gitconfig                # Git identity and signing config (mounted read-only)
+~/.gitconfig                # Git identity and signing config
 ```
 
 Create the required structure:

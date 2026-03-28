@@ -59,6 +59,7 @@ repos:
         language: "system"
         types:
           - "json"
+        exclude: "test/fixtures/templates/invalid\\.json"
   - repo: "https://github.com/rhysd/actionlint"
     rev: "v1.7.11"
     hooks:
