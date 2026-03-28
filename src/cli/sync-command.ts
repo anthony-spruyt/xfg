@@ -620,7 +620,7 @@ export async function runSync(
   const configPath = resolve(options.config);
 
   if (!existsSync(configPath)) {
-    throw new ValidationError(`Config file not found: ${configPath}`);
+    throw new ValidationError(`Config path not found: ${configPath}`);
   }
 
   getLogger().log(`Loading config from: ${configPath}`);

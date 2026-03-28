@@ -4,32 +4,6 @@
   "title": "xfg Configuration",
   "description": "Configuration file for xfg CLI tool that syncs JSON, YAML, or text config files across multiple Git repositories",
   "type": "object",
-  "required": [
-    "id",
-    "repos"
-  ],
-  "anyOf": [
-    {
-      "required": [
-        "files"
-      ]
-    },
-    {
-      "required": [
-        "settings"
-      ]
-    },
-    {
-      "required": [
-        "groups"
-      ]
-    },
-    {
-      "required": [
-        "conditionalGroups"
-      ]
-    }
-  ],
   "properties": {
     "id": {
       "type": "string",
@@ -62,8 +36,7 @@
     },
     "repos": {
       "type": "array",
-      "description": "List of repository configurations",
-      "minItems": 1,
+      "description": "List of repository configurations. When using directory-based config, repos can be split across multiple files.",
       "items": {
         "$ref": "#/definitions/repo"
       }
