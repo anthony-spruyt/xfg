@@ -19,6 +19,11 @@ export type {
   MergeCommitMessage,
   // Labels
   Label,
+  // Code Scanning
+  CodeScanningSettings,
+  CodeScanningState,
+  CodeScanningQuerySuite,
+  CodeScanningLanguage,
   RepoSettings,
   // Raw Config
   RawFileConfig,
