@@ -44,6 +44,7 @@
     "test:integration:github-rulesets": "npm run build && node --import tsx --test test/integration/github-rulesets.test.ts",
     "test:integration:github-repo-settings": "npm run build && node --import tsx --test test/integration/github-repo-settings.test.ts",
     "test:integration:github-labels": "npm run build && node --import tsx --test test/integration/github-labels.test.ts",
+    "test:integration:github-code-scanning": "npm run build && node --import tsx --test test/integration/github-code-scanning.test.ts",
     "test:integration:github-lifecycle": "npm run build && node --import tsx --test test/integration/github-lifecycle.test.ts",
     "test:integration:github-lifecycle-app": "npm run build && node --import tsx --test test/integration/github-lifecycle-app.test.ts",
     "test:typecheck": "tsc --project tsconfig.check-tests.json --noEmit",
