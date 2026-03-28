@@ -69,15 +69,8 @@ export class CodeScanningProcessor implements ICodeScanningProcessor {
     repoName: string
   ): Promise<CodeScanningProcessorResult> {
     const { dryRun } = options;
-    const desiredSettings = repoConfig.settings?.codeScanning;
-    if (!desiredSettings || typeof desiredSettings !== "object") {
-      return {
-        success: true,
-        repoName,
-        message: "No code scanning settings configured",
-        skipped: true,
-      };
-    }
+    const desiredSettings = repoConfig.settings!
+      .codeScanning! as CodeScanningSettings;
 
     const strategyOptions = { token: effectiveToken, host: githubRepo.host };
 

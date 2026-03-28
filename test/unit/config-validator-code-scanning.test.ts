@@ -105,6 +105,52 @@ describe("validateRawConfig - codeScanning", () => {
     assert.doesNotThrow(() => validateRawConfig(config));
   });
 
+  test("accepts codeScanning: false at repo level when group defines codeScanning", () => {
+    const config = {
+      id: "test",
+      groups: {
+        scanning: {
+          settings: {
+            codeScanning: { state: "configured" as const },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "https://github.com/org/repo.git",
+          groups: ["scanning"],
+          settings: { codeScanning: false as const },
+        },
+      ],
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("accepts codeScanning: false at repo level when conditionalGroup defines codeScanning", () => {
+    const config = {
+      id: "test",
+      groups: {
+        base: {},
+      },
+      conditionalGroups: [
+        {
+          when: { allOf: ["base"] },
+          settings: {
+            codeScanning: { state: "configured" as const },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "https://github.com/org/repo.git",
+          groups: ["base"],
+          settings: { codeScanning: false as const },
+        },
+      ],
+    };
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
   test("rejects codeScanning: false at repo level when root has no codeScanning settings", () => {
     const config = {
       id: "test",
