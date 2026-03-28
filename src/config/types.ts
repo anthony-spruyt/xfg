@@ -446,6 +446,8 @@ export interface RawConditionalGroupWhen {
   allOf?: string[];
   /** At least one listed group must be present */
   anyOf?: string[];
+  /** None of the listed groups may be present */
+  noneOf?: string[];
 }
 
 /** Conditional group: activates based on which groups a repo has */
