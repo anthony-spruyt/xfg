@@ -5797,4 +5797,43 @@ describe("conditional group configuration", () => {
       "excluded when all noneOf groups present"
     );
   });
+
+  test("noneOf matches repo with empty groups (no groups assigned)", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        special: {},
+      },
+      conditionalGroups: [
+        {
+          when: { noneOf: ["special"] },
+          files: {
+            "fallback.json": { content: { fallback: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/no-groups-repo.git",
+        },
+        {
+          git: "git@github.com:org/empty-groups-repo.git",
+          groups: [],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const noGroupsFiles = result.repos[0].files.map((f) => f.fileName);
+    const emptyGroupsFiles = result.repos[1].files.map((f) => f.fileName);
+    assert.ok(
+      noGroupsFiles.includes("fallback.json"),
+      "noneOf matched: repo with no groups field"
+    );
+    assert.ok(
+      emptyGroupsFiles.includes("fallback.json"),
+      "noneOf matched: repo with empty groups array"
+    );
+  });
 });

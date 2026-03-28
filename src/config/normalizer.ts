@@ -525,8 +525,9 @@ function mergeGroupSettings(
 
 /**
  * Evaluates a conditional group's `when` clause against a repo's effective groups.
- * Both `allOf` (every listed group present) and `anyOf` (at least one present)
- * must be satisfied. Absent conditions are treated as satisfied.
+ * All specified operators must be satisfied: `allOf` (every listed group present),
+ * `anyOf` (at least one present), and `noneOf` (none of the listed groups present).
+ * Absent conditions are treated as satisfied.
  */
 function evaluateWhenClause(
   when: RawConditionalGroupWhen,
