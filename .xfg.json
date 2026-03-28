@@ -17,6 +17,7 @@
         ".github/workflows/trivy-scan.yaml",
         ".gitignore",
         ".gitleaks.toml",
+        ".jsonlintrc",
         ".lycheeignore",
         ".markdownlint.json",
         ".markdownlintignore",
