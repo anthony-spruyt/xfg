@@ -56,7 +56,7 @@ New `src/settings/code-scanning/` module with its own processor, strategy, diff,
 | File | Purpose |
 | ---- | ------- |
 | `types.ts` | `ICodeScanningStrategy` interface, `CurrentCodeScanningSettings` type |
-| `github-code-scanning-strategy.ts` | Strategy impl — GET/PUT on `/repos/{owner}/{repo}/code-scanning/default-setup` |
+| `github-code-scanning-strategy.ts` | Strategy impl — GET/PATCH on `/repos/{owner}/{repo}/code-scanning/default-setup` |
 | `diff.ts` | Compare current vs desired, return changes list |
 | `formatter.ts` | Format diff into plan output for dry-run display |
 | `processor.ts` | `CodeScanningProcessor` — orchestrates get, diff, apply. Uses `withGitHubGuards` |

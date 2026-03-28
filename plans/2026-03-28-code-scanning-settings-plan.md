@@ -280,7 +280,7 @@ Create `test/unit/config-validator-code-scanning.test.ts`:
 ```typescript
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
-import { validateForSync } from "../../src/config/validator.js";
+import { validateRawConfig } from "../../src/config/validator.js";
 
 function makeConfig(codeScanning: unknown) {
   return {
@@ -290,10 +290,10 @@ function makeConfig(codeScanning: unknown) {
   };
 }
 
-describe("validateForSync - codeScanning", () => {
+describe("validateRawConfig - codeScanning", () => {
   test("accepts valid codeScanning settings", () => {
     assert.doesNotThrow(() =>
-      validateForSync(
+      validateRawConfig(
         makeConfig({
           state: "configured",
           querySuite: "extended",
@@ -305,20 +305,20 @@ describe("validateForSync - codeScanning", () => {
 
   test("accepts minimal codeScanning (state only)", () => {
     assert.doesNotThrow(() =>
-      validateForSync(makeConfig({ state: "configured" }))
+      validateRawConfig(makeConfig({ state: "configured" }))
     );
   });
 
   test("rejects codeScanning without state", () => {
     assert.throws(
-      () => validateForSync(makeConfig({ querySuite: "default" })),
+      () => validateRawConfig(makeConfig({ querySuite: "default" })),
       /state is required/
     );
   });
 
   test("rejects invalid state value", () => {
     assert.throws(
-      () => validateForSync(makeConfig({ state: "enabled" })),
+      () => validateRawConfig(makeConfig({ state: "enabled" })),
       /state must be.*configured.*not-configured/
     );
   });
@@ -326,7 +326,7 @@ describe("validateForSync - codeScanning", () => {
   test("rejects invalid querySuite value", () => {
     assert.throws(
       () =>
-        validateForSync(
+        validateRawConfig(
           makeConfig({ state: "configured", querySuite: "full" })
         ),
       /querySuite must be.*default.*extended/
@@ -336,7 +336,7 @@ describe("validateForSync - codeScanning", () => {
   test("rejects non-array languages", () => {
     assert.throws(
       () =>
-        validateForSync(
+        validateRawConfig(
           makeConfig({ state: "configured", languages: "python" })
         ),
       /languages must be an array/
@@ -346,7 +346,7 @@ describe("validateForSync - codeScanning", () => {
   test("rejects invalid language value", () => {
     assert.throws(
       () =>
-        validateForSync(
+        validateRawConfig(
           makeConfig({ state: "configured", languages: ["rust"] })
         ),
       /invalid language.*rust/i
@@ -364,7 +364,7 @@ describe("validateForSync - codeScanning", () => {
         },
       ],
     };
-    assert.doesNotThrow(() => validateForSync(config));
+    assert.doesNotThrow(() => validateRawConfig(config));
   });
 });
 ```
@@ -540,7 +540,7 @@ class MockExecutor implements ICommandExecutor {
   lastCommand = "";
   result = "";
 
-  async execute(command: string): Promise<string> {
+  async exec(command: string, _cwd: string): Promise<string> {
     this.lastCommand = command;
     return this.result;
   }
@@ -1038,7 +1038,7 @@ const githubRepo: GitHubRepoInfo = {
 
 class MockExecutor implements ICommandExecutor {
   result = "";
-  async execute(_command: string): Promise<string> {
+  async exec(_command: string, _cwd: string): Promise<string> {
     return this.result;
   }
 }
@@ -1219,9 +1219,13 @@ const githubRepo: GitHubRepoInfo = {
 };
 
 const adoRepo: RepoInfo = {
-  type: "ado",
+  type: "azure-devops",
   gitUrl: "https://dev.azure.com/org/project/_git/repo",
   host: "dev.azure.com",
+  owner: "org",
+  organization: "org",
+  project: "project",
+  repo: "repo",
 };
 
 class MockStrategy implements ICodeScanningStrategy {
@@ -1267,7 +1271,8 @@ function makeRepoConfig(
     : never
 ): RepoConfig {
   return {
-    gitUrl: "https://github.com/test-org/test-repo.git",
+    git: "https://github.com/test-org/test-repo.git",
+    files: [],
     settings: { codeScanning },
   } as RepoConfig;
 }
@@ -1292,7 +1297,7 @@ describe("CodeScanningProcessor", () => {
   });
 
   test("skips when no codeScanning settings", async () => {
-    const config = { gitUrl: "https://github.com/test-org/test-repo.git" } as RepoConfig;
+    const config = { git: "https://github.com/test-org/test-repo.git", files: [] } as RepoConfig;
     const result = await processor.process(config, githubRepo, {});
 
     assert.ok(result.skipped);
@@ -1668,20 +1673,22 @@ codeScanningResult?: {
 };
 ```
 
-Add a conversion block after the labels conversion (around line 99), before `repos.push(repoChanges)`:
+Add a conversion block after the labels conversion (around line 104), before the error check:
 
 ```typescript
     // Convert code scanning processor output
     if (result.codeScanningResult?.planOutput?.entries) {
       for (const entry of result.codeScanningResult.planOutput.entries) {
         repoChanges.settings.push({
-          property: `codeScanning.${entry.property}`,
+          name: `codeScanning.${entry.property}`,
           action: entry.action,
           oldValue: entry.oldValue,
-          newValue: entry.newValue,
+          newValue: entry.newValue ?? null,
         });
-        totals[entry.action]++;
       }
+      const counts = countActions(repoChanges.settings);
+      totals.settings.create += counts.create;
+      totals.settings.update += counts.update;
     }
 ```
 
@@ -1747,20 +1754,35 @@ Add a new descriptor entry to the array returned by `buildSettingsDescriptors`:
 },
 ```
 
-- [ ] **Step 4: Verify build compiles**
+- [ ] **Step 4: Update `hasActionableSettings` in validator.ts**
+
+In `src/config/validator.ts`, find `hasActionableSettings` and add a check for `codeScanning` after the `labels` check:
+
+```typescript
+  if (
+    settings.codeScanning &&
+    typeof settings.codeScanning === "object"
+  ) {
+    return true;
+  }
+```
+
+This ensures a config with only `codeScanning` settings (no files, repo, labels, or rulesets) is recognized as having actionable content.
+
+- [ ] **Step 5: Verify build compiles**
 
 Run: `npm run build`
 Expected: Compilation succeeds.
 
-- [ ] **Step 5: Run full test suite**
+- [ ] **Step 6: Run full test suite**
 
 Run: `npm test`
 Expected: All tests pass.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/cli/types.ts src/cli/sync-command.ts src/cli/settings-report-builder.ts
+git add src/cli/types.ts src/cli/sync-command.ts src/cli/settings-report-builder.ts src/config/validator.ts
 git commit -m "feat(cli): wire code scanning processor into orchestrator (#669)"
 ```
 
