@@ -217,7 +217,11 @@ Customize PR descriptions with [PR templates](configuration/pr-templates.md) usi
 ```mermaid
 flowchart TB
     subgraph Loading["Config Loading"]
-        YAML[/"YAML Config File"/] --> REFS["Resolve @file references<br/>(root, group & repo levels)"]
+        INPUT{{"File or directory?"}} -->|File| YAML[/"YAML Config File"/]
+        INPUT -->|Directory| DIR["Load all *.yaml/*.yml<br/>(alphabetical order)"]
+        DIR --> MERGE_CFG["Merge fragments<br/>(single-file keys exclusive,<br/>groups by name, repos concat)"]
+        MERGE_CFG --> REFS["Resolve @file references<br/>(root, group & repo levels)"]
+        YAML --> REFS
         REFS --> VALIDATE["Validate structure"]
         VALIDATE --> VALIDATE_CMD_S["Validate for sync<br/>(require files to sync)"]
     end
@@ -307,7 +311,11 @@ flowchart TB
 ```mermaid
 flowchart TB
     subgraph Loading["Config Loading"]
-        YAML[/"YAML Config File"/] --> REFS["Resolve @file references"]
+        INPUT{{"File or directory?"}} -->|File| YAML[/"YAML Config File"/]
+        INPUT -->|Directory| DIR["Load all *.yaml/*.yml<br/>(alphabetical order)"]
+        DIR --> MERGE_CFG["Merge fragments"]
+        MERGE_CFG --> REFS["Resolve @file references"]
+        YAML --> REFS
         REFS --> VALIDATE["Validate structure"]
         VALIDATE --> VALIDATE_CMD["Validate for sync"]
     end
@@ -340,6 +348,10 @@ flowchart TB
         LBL["For each repo with labels<br/><i>(see detail below)</i>"]
     end
 
+    subgraph Phase4["Phase 4: Code Scanning"]
+        CS["For each repo with codeScanning<br/><i>(see detail below)</i>"]
+    end
+
     REPORT["Generate Summary Report"]
 
     VALIDATE_CMD --> EXPAND
@@ -347,7 +359,8 @@ flowchart TB
     Lifecycle --> Phase1
     Phase1 --> Phase2
     Phase2 --> Phase3
-    Phase3 --> REPORT
+    Phase3 --> Phase4
+    Phase4 --> REPORT
 ```
 
 #### Ruleset Processing (per repo)
@@ -439,6 +452,29 @@ flowchart TB
         U["PUT — update changed labels"]
         C["POST — create new labels"]
     end
+
+    APPLY --> DONE["Done ✓"]
+```
+
+#### Code Scanning Processing (per repo)
+
+```mermaid
+flowchart TB
+    GUARD{GitHub repo?} -->|No| SKIP_P["Skip (GitHub only)"]
+    GUARD -->|Yes| TOKEN["Resolve auth token"]
+
+    TOKEN --> META["Fetch repo metadata<br/>(visibility, owner type, GHAS)"]
+    META --> GHAS{Private/internal<br/>+ GHAS enabled?}
+    GHAS -->|"Private + no GHAS"| GHAS_ERR["Error — GHAS required"]
+    GHAS -->|"Public or GHAS ok"| FETCH["GET code-scanning/default-setup"]
+
+    FETCH --> DIFF["Diff: state / querySuite /<br/>languages"]
+    DIFF --> CHANGES{Changes needed?}
+    CHANGES -->|No| SKIP_NC["Skip — already matches ✓"]
+    CHANGES -->|Yes| PLAN["Format terraform-style plan"]
+    PLAN --> DRY{Dry run?}
+    DRY -->|Yes| SHOW["Show plan ✓"]
+    DRY -->|No| APPLY["PATCH code-scanning/default-setup"]
 
     APPLY --> DONE["Done ✓"]
 ```
