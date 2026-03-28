@@ -135,7 +135,7 @@ Add a new definition in the `definitions` section of `config-schema.json`:
       },
       "description": "Languages to analyze. If omitted, GitHub auto-detects languages in the repository."
     }
-  },
+  }
 }
 ```
 
@@ -271,7 +271,27 @@ In `src/config/normalizer.ts`, inside `mergeSettings()`, after the labels merge 
 Run: `npx tsx --test test/unit/config-normalizer-code-scanning.test.ts`
 Expected: PASS — all 4 tests pass.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: Add code scanning to `mergeRawSettings`**
+
+In `src/config/normalizer.ts`, inside `mergeRawSettings()` (around line 470, after the
+`deleteOrphaned` block and before `return result`), add:
+
+```typescript
+  // Merge code scanning: overlay fully replaces base (same semantics as mergeSettings)
+  if (overlay.codeScanning !== undefined) {
+    if (overlay.codeScanning === false) {
+      result.codeScanning = false;
+    } else {
+      result.codeScanning = structuredClone(overlay.codeScanning);
+    }
+  }
+```
+
+This ensures code scanning settings defined at the group or conditional-group level are
+properly merged during layer resolution, matching the full-replacement semantics used in
+`mergeSettings`.
+
+- [ ] **Step 6: Commit**
 
 ```bash
 git add src/config/normalizer.ts test/unit/config-normalizer-code-scanning.test.ts
