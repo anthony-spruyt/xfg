@@ -1307,5 +1307,37 @@ repos:
       const config = loadConfig(configDir, {});
       assert.equal(config.repos.length, 1);
     });
+
+    test("resolves @path file references relative to each fragment file", () => {
+      const configDir = join(testDir, "config-refs-" + Date.now());
+      const templatesDir = join(configDir, "templates");
+      mkdirSync(templatesDir, { recursive: true });
+
+      writeFileSync(
+        join(templatesDir, "base-content.json"),
+        JSON.stringify({ fromTemplate: true }),
+        "utf-8"
+      );
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `
+id: test-refs
+files:
+  base.json:
+    content: "@templates/base-content.json"
+repos:
+  - git: git@github.com:org/repo-a.git
+`,
+        "utf-8"
+      );
+
+      const config = loadConfig(configDir, {});
+      const baseFile = config.repos[0].files.find(
+        (f) => f.fileName === "base.json"
+      );
+      assert.ok(baseFile);
+      assert.deepEqual(baseFile.content, { fromTemplate: true });
+    });
   });
 });
