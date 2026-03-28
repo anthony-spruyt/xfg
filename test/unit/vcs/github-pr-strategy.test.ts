@@ -2,6 +2,7 @@ import { describe, test, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { GitHubPRStrategy } from "../../../src/vcs/github-pr-strategy.js";
 import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
 import { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
@@ -11,7 +12,7 @@ import {
   type ExecutorMockResult,
 } from "../../mocks/executor.mock.js";
 
-const testDir = join(process.cwd(), "test-github-strategy-tmp");
+const testDir = join(tmpdir(), "test-github-strategy-tmp");
 
 describe("GitHubPRStrategy with mock executor", () => {
   const githubRepoInfo: GitHubRepoInfo = {
@@ -508,7 +509,7 @@ describe("GitHubPRStrategy URL extraction edge cases (TDD for issue #92)", () =>
   };
 
   let mockExecutor: ExecutorMockResult;
-  const testDirEdge = join(process.cwd(), "test-github-strategy-edge-tmp");
+  const testDirEdge = join(tmpdir(), "test-github-strategy-edge-tmp");
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
@@ -656,7 +657,7 @@ describe("GitHubPRStrategy closeExistingPR", () => {
   };
 
   let mockExecutor: ExecutorMockResult;
-  const testDirClose = join(process.cwd(), "test-github-strategy-close-tmp");
+  const testDirClose = join(tmpdir(), "test-github-strategy-close-tmp");
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();

@@ -10,6 +10,7 @@ import { strict as assert } from "node:assert";
 type MockFn = Mock<(...args: unknown[]) => unknown>;
 import { writeFileSync, rmSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { runSync, type SyncOptions } from "../../src/cli/sync-command.js";
 import type { ProcessorResult } from "../../src/sync/types.js";
 import type { IRepositoryProcessor } from "../../src/sync/types.js";
@@ -32,7 +33,7 @@ import {
   creatingLifecycleManager,
 } from "../mocks/index.js";
 
-const testDir = join(process.cwd(), "test-sync-cmd-tmp");
+const testDir = join(tmpdir(), "test-sync-cmd-tmp");
 const testConfigPath = join(testDir, "test-config.yaml");
 
 // Minimal files section to satisfy validation

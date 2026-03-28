@@ -2,6 +2,7 @@ import { describe, test, beforeEach, afterEach, mock } from "node:test";
 import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { GitCommitStrategy } from "../../../src/vcs/git-commit-strategy.js";
 import { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import { CommitOptions } from "../../../src/vcs/types.js";
@@ -11,7 +12,7 @@ import {
   type ExecutorMockResult,
 } from "../../mocks/executor.mock.js";
 
-const testDir = join(process.cwd(), "test-git-commit-strategy-tmp");
+const testDir = join(tmpdir(), "test-git-commit-strategy-tmp");
 
 describe("GitCommitStrategy", () => {
   const githubRepoInfo: GitHubRepoInfo = {

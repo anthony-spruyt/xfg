@@ -117,7 +117,6 @@ export function computeUnifiedDiff(
     return result;
   }
 
-  // Modified file: LCS diff
   const oldLines = oldContent.split("\n");
   const newLines = newContent.split("\n");
 
@@ -159,14 +158,12 @@ function computeDiffHunks(
   newLines: string[],
   contextLines: number
 ): DiffHunk[] {
-  // Compute edit script using LCS
   const editScript = computeEditScript(oldLines, newLines);
 
   if (editScript.length === 0) {
     return [];
   }
 
-  // Group edits into hunks with context
   return groupIntoHunks(editScript, oldLines, newLines, contextLines);
 }
 
@@ -182,7 +179,6 @@ function computeEditScript(oldLines: string[], newLines: string[]): EditOp[] {
   const m = oldLines.length;
   const n = newLines.length;
 
-  // Build LCS table
   const lcs: number[][] = Array(m + 1)
     .fill(null)
     .map(() => Array(n + 1).fill(0));
@@ -197,7 +193,6 @@ function computeEditScript(oldLines: string[], newLines: string[]): EditOp[] {
     }
   }
 
-  // Backtrack to find edit script
   const ops: EditOp[] = [];
   let i = m;
   let j = n;
@@ -228,7 +223,6 @@ function groupIntoHunks(
   newLines: string[],
   contextLines: number
 ): DiffHunk[] {
-  // Find ranges of changes
   const changeRanges: { start: number; end: number }[] = [];
   let inChange = false;
   let changeStart = 0;
@@ -253,7 +247,6 @@ function groupIntoHunks(
     return [];
   }
 
-  // Merge ranges that are close together (within 2*contextLines)
   const mergedRanges: { start: number; end: number }[] = [];
   let currentRange = { ...changeRanges[0] };
 

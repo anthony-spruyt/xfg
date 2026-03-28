@@ -1,9 +1,11 @@
 import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
-import { GitOps } from "../vcs/git-ops.js";
-import { AuthenticatedGitOps } from "../vcs/authenticated-git-ops.js";
 import type { ILogger } from "../shared/logger.js";
-import type { GitHubAppTokenManager } from "../vcs/index.js";
+import {
+  GitOps,
+  AuthenticatedGitOps,
+  type GitHubAppTokenManager,
+} from "../vcs/index.js";
 import { FileWriter } from "./file-writer.js";
 import { ManifestManager } from "./manifest-manager.js";
 import { BranchManager } from "./branch-manager.js";

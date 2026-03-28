@@ -2,23 +2,18 @@ import { createPRStrategy } from "../vcs/index.js";
 import type { IPRStrategy } from "../vcs/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
+import type { DebugInfoWarnLog } from "../shared/logger.js";
 import type { IBranchManager, BranchSetupOptions } from "./types.js";
-
-type SyncLog = {
-  debug(msg: string): void;
-  info(msg: string): void;
-  warn(msg: string): void;
-};
 
 type PRStrategyFactory = (
   repoInfo: RepoInfo,
   executor: ICommandExecutor,
-  log?: SyncLog
+  log?: DebugInfoWarnLog
 ) => IPRStrategy;
 
 export class BranchManager implements IBranchManager {
   constructor(
-    private readonly log: SyncLog,
+    private readonly log: DebugInfoWarnLog,
     private readonly prStrategyFactory: PRStrategyFactory = createPRStrategy
   ) {}
 

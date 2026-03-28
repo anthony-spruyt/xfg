@@ -4,6 +4,7 @@ import {
   loadRawConfig,
   normalizeConfig,
   validateForSync,
+  type MergeMode,
   type RepoConfig,
   type Config,
 } from "../config/index.js";
@@ -130,9 +131,7 @@ function formatFileNames(fileNames: string[]): string {
   return `${fileNames.length} files`;
 }
 
-function determineMergeOutcome(
-  result: ProcessorResult
-): "manual" | "auto" | "force" | "direct" | undefined {
+function determineMergeOutcome(result: ProcessorResult): MergeMode | undefined {
   if (!result.success) return undefined;
   if (!result.prUrl) return "direct";
   if (result.mergeResult?.merged) return "force";
