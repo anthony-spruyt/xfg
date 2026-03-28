@@ -6,6 +6,7 @@ import type {
   IRulesetProcessor,
   IRepoSettingsProcessor,
   ILabelsProcessor,
+  ICodeScanningProcessor,
   BaseProcessorResult,
 } from "../settings/index.js";
 import type { RepoInfo } from "../shared/repo-detector.js";
@@ -20,6 +21,8 @@ export type RulesetProcessorFactory =
 export type RepoSettingsProcessorFactory =
   SettingsProcessorFactory<IRepoSettingsProcessor>;
 export type LabelsProcessorFactory = SettingsProcessorFactory<ILabelsProcessor>;
+export type CodeScanningProcessorFactory =
+  SettingsProcessorFactory<ICodeScanningProcessor>;
 
 /**
  * Dependencies for the sync command (dependency injection).
@@ -30,6 +33,7 @@ export interface SyncDependencies {
   rulesetProcessorFactory?: RulesetProcessorFactory;
   repoSettingsProcessorFactory?: RepoSettingsProcessorFactory;
   labelsProcessorFactory?: LabelsProcessorFactory;
+  codeScanningProcessorFactory?: CodeScanningProcessorFactory;
 }
 
 export interface SharedOptions {
@@ -85,5 +89,8 @@ export interface ApplyRepoSettingsContext {
   >;
   labelsProcessorFactory: NonNullable<
     SyncDependencies["labelsProcessorFactory"]
+  >;
+  codeScanningProcessorFactory: NonNullable<
+    SyncDependencies["codeScanningProcessorFactory"]
   >;
 }

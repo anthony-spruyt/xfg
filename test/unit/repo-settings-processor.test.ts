@@ -10,6 +10,24 @@ import type {
 import type { GhApiOptions } from "../../src/shared/gh-api-utils.js";
 import type { GitHubRepoSettings } from "../../src/config/index.js";
 import type { RepoInfo } from "../../src/shared/repo-detector.js";
+import type {
+  IRepoMetadataProvider,
+  RepoMetadata,
+} from "../../src/shared/repo-metadata-provider.js";
+
+class MockMetadataProvider implements IRepoMetadataProvider {
+  result: RepoMetadata = {
+    visibility: "public",
+    ownerType: "Organization",
+    hasGHAS: true,
+  };
+
+  async getMetadata(): Promise<RepoMetadata> {
+    return this.result;
+  }
+}
+
+const mockMetadataProvider = new MockMetadataProvider();
 
 // Mock strategy for testing
 class MockStrategy implements IRepoSettingsStrategy {
@@ -105,7 +123,10 @@ describe("RepoSettingsProcessor", () => {
   });
 
   test("should skip non-GitHub repos", async () => {
-    const processor = new RepoSettingsProcessor(mockStrategy);
+    const processor = new RepoSettingsProcessor(
+      mockStrategy,
+      mockMetadataProvider
+    );
     const adoRepo = {
       type: "azure-devops" as const,
       gitUrl: "https://dev.azure.com/org/project/_git/repo",
@@ -127,7 +148,10 @@ describe("RepoSettingsProcessor", () => {
   });
 
   test("should skip repos with no repo settings", async () => {
-    const processor = new RepoSettingsProcessor(mockStrategy);
+    const processor = new RepoSettingsProcessor(
+      mockStrategy,
+      mockMetadataProvider
+    );
     const repoConfig: RepoConfig = {
       git: githubRepo.gitUrl,
       files: [],
@@ -143,7 +167,10 @@ describe("RepoSettingsProcessor", () => {
   });
 
   test("should skip repos where repo settings were opted out (undefined after normalization)", async () => {
-    const processor = new RepoSettingsProcessor(mockStrategy);
+    const processor = new RepoSettingsProcessor(
+      mockStrategy,
+      mockMetadataProvider
+    );
     const repoConfig: RepoConfig = {
       git: githubRepo.gitUrl,
       files: [],
@@ -167,7 +194,10 @@ describe("RepoSettingsProcessor", () => {
   test("should detect and report changes in dry-run mode", async () => {
     mockStrategy.getSettingsResult = { has_wiki: true };
 
-    const processor = new RepoSettingsProcessor(mockStrategy);
+    const processor = new RepoSettingsProcessor(
+      mockStrategy,
+      mockMetadataProvider
+    );
     const repoConfig: RepoConfig = {
       git: githubRepo.gitUrl,
       files: [],
@@ -187,7 +217,10 @@ describe("RepoSettingsProcessor", () => {
   test("should apply changes when not in dry-run mode", async () => {
     mockStrategy.getSettingsResult = { has_wiki: true };
 
-    const processor = new RepoSettingsProcessor(mockStrategy);
+    const processor = new RepoSettingsProcessor(
+      mockStrategy,
+      mockMetadataProvider
+    );
     const repoConfig: RepoConfig = {
       git: githubRepo.gitUrl,
       files: [],
@@ -205,7 +238,10 @@ describe("RepoSettingsProcessor", () => {
   test("should include planOutput with entries in non-dry-run results", async () => {
     mockStrategy.getSettingsResult = { has_wiki: true };
 
-    const processor = new RepoSettingsProcessor(mockStrategy);
+    const processor = new RepoSettingsProcessor(
+      mockStrategy,
+      mockMetadataProvider
+    );
     const repoConfig: RepoConfig = {
       git: githubRepo.gitUrl,
       files: [],
@@ -231,7 +267,10 @@ describe("RepoSettingsProcessor", () => {
   test("should report no changes when settings match", async () => {
     mockStrategy.getSettingsResult = { has_wiki: true };
 
-    const processor = new RepoSettingsProcessor(mockStrategy);
+    const processor = new RepoSettingsProcessor(
+      mockStrategy,
+      mockMetadataProvider
+    );
     const repoConfig: RepoConfig = {
       git: githubRepo.gitUrl,
       files: [],
@@ -252,7 +291,10 @@ describe("RepoSettingsProcessor", () => {
   test("should call setVulnerabilityAlerts for vulnerabilityAlerts setting", async () => {
     mockStrategy.getSettingsResult = {};
 
-    const processor = new RepoSettingsProcessor(mockStrategy);
+    const processor = new RepoSettingsProcessor(
+      mockStrategy,
+      mockMetadataProvider
+    );
     const repoConfig: RepoConfig = {
       git: githubRepo.gitUrl,
       files: [],
@@ -270,7 +312,10 @@ describe("RepoSettingsProcessor", () => {
   test("should call setAutomatedSecurityFixes for automatedSecurityFixes setting", async () => {
     mockStrategy.getSettingsResult = {};
 
-    const processor = new RepoSettingsProcessor(mockStrategy);
+    const processor = new RepoSettingsProcessor(
+      mockStrategy,
+      mockMetadataProvider
+    );
     const repoConfig: RepoConfig = {
       git: githubRepo.gitUrl,
       files: [],
@@ -291,7 +336,10 @@ describe("RepoSettingsProcessor", () => {
       owner_type: "User",
     };
 
-    const processor = new RepoSettingsProcessor(mockStrategy);
+    const processor = new RepoSettingsProcessor(
+      mockStrategy,
+      mockMetadataProvider
+    );
     const repoConfig: RepoConfig = {
       git: githubRepo.gitUrl,
       files: [],
@@ -320,7 +368,10 @@ describe("RepoSettingsProcessor", () => {
       delete_branch_on_merge: false, // Different from desired
     };
 
-    const processor = new RepoSettingsProcessor(mockStrategy);
+    const processor = new RepoSettingsProcessor(
+      mockStrategy,
+      mockMetadataProvider
+    );
     const repoConfig: RepoConfig = {
       git: githubRepo.gitUrl,
       files: [],
@@ -363,7 +414,10 @@ describe("RepoSettingsProcessor", () => {
       setPrivateVulnerabilityReporting: async () => {},
     };
 
-    const processor = new RepoSettingsProcessor(errorStrategy);
+    const processor = new RepoSettingsProcessor(
+      errorStrategy,
+      mockMetadataProvider
+    );
     const repoConfig: RepoConfig = {
       git: githubRepo.gitUrl,
       files: [],
@@ -381,7 +435,10 @@ describe("RepoSettingsProcessor", () => {
   describe("token passthrough", () => {
     test("passes caller-provided token directly to strategy", async () => {
       const freshStrategy = new MockStrategy();
-      const freshProcessor = new RepoSettingsProcessor(freshStrategy);
+      const freshProcessor = new RepoSettingsProcessor(
+        freshStrategy,
+        mockMetadataProvider
+      );
       freshStrategy.getSettingsResult = { has_wiki: true };
 
       const repoConfig: RepoConfig = {
@@ -406,7 +463,10 @@ describe("RepoSettingsProcessor", () => {
 
     test("passes undefined token when caller provides none", async () => {
       const freshStrategy = new MockStrategy();
-      const freshProcessor = new RepoSettingsProcessor(freshStrategy);
+      const freshProcessor = new RepoSettingsProcessor(
+        freshStrategy,
+        mockMetadataProvider
+      );
       freshStrategy.getSettingsResult = { has_wiki: true };
 
       const repoConfig: RepoConfig = {
@@ -435,7 +495,15 @@ describe("RepoSettingsProcessor", () => {
         owner_type: "User",
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "User",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -463,7 +531,15 @@ describe("RepoSettingsProcessor", () => {
         owner_type: "Organization",
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "Organization",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -484,7 +560,15 @@ describe("RepoSettingsProcessor", () => {
         owner_type: "Organization",
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "internal",
+        ownerType: "Organization",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -506,7 +590,15 @@ describe("RepoSettingsProcessor", () => {
         private_vulnerability_reporting: false,
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "public",
+        ownerType: "User",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -526,7 +618,15 @@ describe("RepoSettingsProcessor", () => {
         owner_type: "User",
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "User",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -547,7 +647,15 @@ describe("RepoSettingsProcessor", () => {
         owner_type: "User",
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "User",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -569,7 +677,15 @@ describe("RepoSettingsProcessor", () => {
         security_and_analysis: undefined,
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "Organization",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -591,7 +707,15 @@ describe("RepoSettingsProcessor", () => {
         security_and_analysis: null as unknown as undefined,
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "Organization",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -613,7 +737,15 @@ describe("RepoSettingsProcessor", () => {
         security_and_analysis: undefined,
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "Organization",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -635,7 +767,15 @@ describe("RepoSettingsProcessor", () => {
         security_and_analysis: undefined,
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "internal",
+        ownerType: "Organization",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -659,7 +799,15 @@ describe("RepoSettingsProcessor", () => {
         },
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "internal",
+        ownerType: "Organization",
+        hasGHAS: true,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -682,7 +830,15 @@ describe("RepoSettingsProcessor", () => {
         },
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "Organization",
+        hasGHAS: true,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -702,7 +858,15 @@ describe("RepoSettingsProcessor", () => {
         owner_type: "User",
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "public",
+        ownerType: "User",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -722,7 +886,15 @@ describe("RepoSettingsProcessor", () => {
         owner_type: "User",
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "User",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -748,7 +920,15 @@ describe("RepoSettingsProcessor", () => {
         owner_type: "User",
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "User",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -779,7 +959,15 @@ describe("RepoSettingsProcessor", () => {
         owner_type: "User",
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "User",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -809,7 +997,15 @@ describe("RepoSettingsProcessor", () => {
         private_vulnerability_reporting: false,
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "User",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -836,7 +1032,15 @@ describe("RepoSettingsProcessor", () => {
         owner_type: "Organization",
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "internal",
+        ownerType: "Organization",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],
@@ -862,7 +1066,15 @@ describe("RepoSettingsProcessor", () => {
         owner_type: "User",
       };
 
-      const processor = new RepoSettingsProcessor(mockStrategy);
+      mockMetadataProvider.result = {
+        visibility: "private",
+        ownerType: "User",
+        hasGHAS: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
       const repoConfig: RepoConfig = {
         git: githubRepo.gitUrl,
         files: [],

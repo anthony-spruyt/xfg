@@ -81,6 +81,7 @@ nav:
       - Repository Settings: configuration/repo-settings.md
       - GitHub Rulesets: configuration/rulesets.md
       - GitHub Labels: configuration/labels.md
+      - Code Scanning: configuration/code-scanning.md
   - Examples:
       - Overview: examples/index.md
       - Multi-File Sync: examples/multi-file-sync.md

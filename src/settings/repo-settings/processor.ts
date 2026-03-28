@@ -1,6 +1,10 @@
 import type { RepoConfig, GitHubRepoSettings } from "../../config/index.js";
 import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
-import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
+import type { IRepoSettingsStrategy } from "./types.js";
+import type {
+  IRepoMetadataProvider,
+  RepoMetadata,
+} from "../../shared/repo-metadata-provider.js";
 import { diffRepoSettings, hasChanges } from "./diff.js";
 import {
   formatRepoSettingsPlan,
@@ -31,9 +35,14 @@ export interface RepoSettingsProcessorResult extends BaseProcessorResult {
 
 export class RepoSettingsProcessor implements IRepoSettingsProcessor {
   private readonly strategy: IRepoSettingsStrategy;
+  private readonly metadataProvider: IRepoMetadataProvider;
 
-  constructor(strategy: IRepoSettingsStrategy) {
+  constructor(
+    strategy: IRepoSettingsStrategy,
+    metadataProvider: IRepoMetadataProvider
+  ) {
     this.strategy = strategy;
+    this.metadataProvider = metadataProvider;
   }
 
   async process(
@@ -64,16 +73,16 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
 
     const strategyOptions = { token: effectiveToken, host: githubRepo.host };
 
-    // Fetch current settings
-    const currentSettings = await this.strategy.getSettings(
-      githubRepo,
-      strategyOptions
-    );
+    // Fetch current settings and metadata in parallel
+    const [currentSettings, metadata] = await Promise.all([
+      this.strategy.getSettings(githubRepo, strategyOptions),
+      this.metadataProvider.getMetadata(githubRepo, strategyOptions),
+    ]);
 
     // Validate security settings compatibility
     const securityErrors = this.validateSecuritySettings(
       desiredSettings,
-      currentSettings
+      metadata
     );
     if (securityErrors.length > 0) {
       return {
@@ -183,29 +192,22 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
 
   private validateSecuritySettings(
     desiredSettings: GitHubRepoSettings,
-    currentSettings: CurrentRepoSettings
+    metadata: RepoMetadata
   ): string[] {
     const errors: string[] = [];
-    // Use desired visibility if specified (repo may be transitioning to public),
-    // otherwise fall back to current visibility
     const effectiveVisibility =
-      desiredSettings.visibility ?? currentSettings.visibility;
+      desiredSettings.visibility ?? metadata.visibility;
     const isPublic = effectiveVisibility === "public";
 
-    // privateVulnerabilityReporting is only available on public repos
     if (desiredSettings.privateVulnerabilityReporting === true && !isPublic) {
       errors.push(
         "privateVulnerabilityReporting is only available for public repositories"
       );
     }
 
-    // secretScanning and secretScanningPushProtection:
-    // - Available on public repos (free)
-    // - Available on org private/internal repos with GHAS (security_and_analysis is populated)
-    // - NOT available on user private repos or org private/internal repos without GHAS
     if (!isPublic) {
-      const isUserOwned = currentSettings.owner_type === "User";
-      const hasGHAS = currentSettings.security_and_analysis != null;
+      const isUserOwned = metadata.ownerType === "User";
+      const hasGHAS = metadata.hasGHAS;
 
       if (
         desiredSettings.secretScanning === true &&

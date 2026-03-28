@@ -488,6 +488,41 @@
         }
       }
     },
+    "codeScanningSettings": {
+      "type": "object",
+      "description": "GitHub code scanning default setup configuration",
+      "required": ["state"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["configured", "not-configured"],
+          "description": "Enable or disable code scanning default setup"
+        },
+        "querySuite": {
+          "type": "string",
+          "enum": ["default", "extended"],
+          "description": "Query suite to use: 'default' for standard queries, 'extended' for additional queries"
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "actions",
+              "c-cpp",
+              "csharp",
+              "go",
+              "java-kotlin",
+              "javascript-typescript",
+              "python",
+              "ruby",
+              "swift"
+            ]
+          },
+          "description": "Languages to analyze. If omitted, GitHub auto-detects languages in the repository."
+        }
+      }
+    },
     "rootSettings": {
       "type": "object",
       "description": "Global repository settings including GitHub Rulesets and repository features. inherit is not valid at root level.",
@@ -533,6 +568,10 @@
               }
             ]
           }
+        },
+        "codeScanning": {
+          "$ref": "#/definitions/codeScanningSettings",
+          "description": "GitHub code scanning default setup configuration."
         },
         "deleteOrphaned": {
           "type": "boolean",
@@ -601,6 +640,19 @@
               }
             ]
           }
+        },
+        "codeScanning": {
+          "oneOf": [
+            {
+              "type": "boolean",
+              "const": false,
+              "description": "Set to false to opt out of inherited code scanning settings"
+            },
+            {
+              "$ref": "#/definitions/codeScanningSettings"
+            }
+          ],
+          "description": "GitHub code scanning default setup configuration. Set to false at per-repo level to opt out of inherited settings."
         },
         "deleteOrphaned": {
           "type": "boolean",

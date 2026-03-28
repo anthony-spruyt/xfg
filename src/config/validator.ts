@@ -189,6 +189,7 @@ function validateLabel(label: unknown, name: string, context: string): void {
 interface RootSettingsContext {
   rulesetNames: string[];
   hasRepoSettings: boolean;
+  hasCodeScanningSettings: boolean;
   labelNames: string[];
 }
 
@@ -199,6 +200,9 @@ function buildRootSettingsContext(config: RawConfig): RootSettingsContext {
       : [],
     hasRepoSettings:
       config.settings?.repo !== undefined && config.settings.repo !== false,
+    hasCodeScanningSettings:
+      config.settings?.codeScanning !== undefined &&
+      config.settings.codeScanning !== false,
     labelNames: config.settings?.labels
       ? Object.keys(config.settings.labels).filter((k) => k !== "inherit")
       : [],
@@ -285,6 +289,82 @@ function validateSettings(
       // Valid opt-out, skip further repo validation
     } else {
       validateRepoSettings(settings.repo, context);
+    }
+  }
+
+  if (settings.codeScanning !== undefined) {
+    if (settings.codeScanning === false) {
+      if (!rootCtx) {
+        throw new ValidationError(
+          `${context}: codeScanning: false is not valid at root level. Define codeScanning settings or remove the field.`
+        );
+      }
+      // Per-repo level — check root has codeScanning settings to opt out of
+      if (!rootCtx.hasCodeScanningSettings) {
+        throw new ValidationError(
+          `${context}: Cannot opt out of code scanning settings — not defined in root settings.codeScanning`
+        );
+      }
+    } else {
+      validateCodeScanningSettings(
+        settings.codeScanning,
+        `${context} codeScanning`
+      );
+    }
+  }
+}
+
+const VALID_CODE_SCANNING_STATES = ["configured", "not-configured"];
+const VALID_CODE_SCANNING_QUERY_SUITES = ["default", "extended"];
+const VALID_CODE_SCANNING_LANGUAGES = [
+  "actions",
+  "c-cpp",
+  "csharp",
+  "go",
+  "java-kotlin",
+  "javascript-typescript",
+  "python",
+  "ruby",
+  "swift",
+];
+
+function validateCodeScanningSettings(
+  settings: unknown,
+  context: string
+): void {
+  if (!isPlainObject(settings)) {
+    throw new ValidationError(`${context}: must be an object`);
+  }
+
+  if (settings.state === undefined) {
+    throw new ValidationError(`${context}: state is required`);
+  }
+
+  if (!VALID_CODE_SCANNING_STATES.includes(settings.state as string)) {
+    throw new ValidationError(
+      `${context}: state must be one of: ${VALID_CODE_SCANNING_STATES.join(", ")}`
+    );
+  }
+
+  if (
+    settings.querySuite !== undefined &&
+    !VALID_CODE_SCANNING_QUERY_SUITES.includes(settings.querySuite as string)
+  ) {
+    throw new ValidationError(
+      `${context}: querySuite must be one of: ${VALID_CODE_SCANNING_QUERY_SUITES.join(", ")}`
+    );
+  }
+
+  if (settings.languages !== undefined) {
+    if (!Array.isArray(settings.languages)) {
+      throw new ValidationError(`${context}: languages must be an array`);
+    }
+    for (const lang of settings.languages) {
+      if (!VALID_CODE_SCANNING_LANGUAGES.includes(lang as string)) {
+        throw new ValidationError(
+          `${context}: invalid language "${lang}". Valid languages: ${VALID_CODE_SCANNING_LANGUAGES.join(", ")}`
+        );
+      }
     }
   }
 }
@@ -826,6 +906,12 @@ function validateRepoSettingsEntry(
       ) {
         rootCtx.hasRepoSettings = true;
       }
+      if (
+        group?.settings?.codeScanning !== undefined &&
+        group.settings.codeScanning !== false
+      ) {
+        rootCtx.hasCodeScanningSettings = true;
+      }
     }
   }
   if (config.conditionalGroups) {
@@ -842,6 +928,12 @@ function validateRepoSettingsEntry(
       }
       if (cg.settings?.repo !== undefined && cg.settings.repo !== false) {
         rootCtx.hasRepoSettings = true;
+      }
+      if (
+        cg.settings?.codeScanning !== undefined &&
+        cg.settings.codeScanning !== false
+      ) {
+        rootCtx.hasCodeScanningSettings = true;
       }
     }
   }
@@ -1034,6 +1126,10 @@ export function hasActionableSettings(
     settings.labels &&
     Object.keys(settings.labels).filter((k) => k !== "inherit").length > 0
   ) {
+    return true;
+  }
+
+  if (settings.codeScanning && typeof settings.codeScanning === "object") {
     return true;
   }
 

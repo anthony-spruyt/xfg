@@ -366,6 +366,25 @@ export interface Label {
   new_name?: string;
 }
 
+export type CodeScanningState = "configured" | "not-configured";
+export type CodeScanningQuerySuite = "default" | "extended";
+export type CodeScanningLanguage =
+  | "actions"
+  | "c-cpp"
+  | "csharp"
+  | "go"
+  | "java-kotlin"
+  | "javascript-typescript"
+  | "python"
+  | "ruby"
+  | "swift";
+
+export interface CodeScanningSettings {
+  state: CodeScanningState;
+  querySuite?: CodeScanningQuerySuite;
+  languages?: CodeScanningLanguage[];
+}
+
 export interface RepoSettings {
   /** GitHub rulesets keyed by name */
   rulesets?: Record<string, Ruleset>;
@@ -373,6 +392,8 @@ export interface RepoSettings {
   repo?: GitHubRepoSettings;
   /** GitHub labels keyed by name */
   labels?: Record<string, Label>;
+  /** GitHub code scanning default setup */
+  codeScanning?: CodeScanningSettings;
   deleteOrphaned?: boolean;
 }
 
@@ -446,6 +467,7 @@ export interface RawRootSettings {
   rulesets?: Record<string, Ruleset | false>;
   repo?: GitHubRepoSettings | false;
   labels?: Record<string, Label | false>;
+  codeScanning?: CodeScanningSettings | false;
   deleteOrphaned?: boolean;
 }
 
@@ -454,6 +476,7 @@ export interface RawRepoSettings {
   rulesets?: Record<string, Ruleset | false> & { inherit?: boolean };
   repo?: GitHubRepoSettings | false;
   labels?: Record<string, Label | false> & { inherit?: boolean };
+  codeScanning?: CodeScanningSettings | false;
   deleteOrphaned?: boolean;
 }
 
