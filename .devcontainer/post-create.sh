@@ -36,6 +36,7 @@ safe-chain setup-ci # Executable shims for scripts/CI
 export PATH="$HOME/.safe-chain/shims:$PATH"
 
 echo "Installing pre-commit hooks..."
+git config --unset-all core.hooksPath 2>/dev/null || true
 pre-commit install --install-hooks
 
 echo "Installing Claude Code CLI..."
