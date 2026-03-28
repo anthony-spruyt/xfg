@@ -1078,6 +1078,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#noneof-exclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      noneOf — Exclusion
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#combined-conditions" class="md-nav__link">
     <span class="md-ellipsis">
       Combined Conditions
@@ -2608,6 +2617,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#noneof-exclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      noneOf — Exclusion
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#combined-conditions" class="md-nav__link">
     <span class="md-ellipsis">
       Combined Conditions
@@ -2988,19 +3006,37 @@ regular groups.</p>
 </span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">      </span><span class="nt">.github/actionlint.yaml</span><span class="p">:</span>
 </span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">        </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;@templates/.github/actionlint.yaml&quot;</span>
 </span></code></pre></div>
-<h3 id="combined-conditions">Combined Conditions<a class="headerlink" href="#combined-conditions" title="Permanent link">&para;</a></h3>
-<p>Both <code>allOf</code> and <code>anyOf</code> can be used together — both must be satisfied:</p>
+<h3 id="noneof-exclusion"><code>noneOf</code> — Exclusion<a class="headerlink" href="#noneof-exclusion" title="Permanent link">&para;</a></h3>
+<p>Include config when <strong>none</strong> of the listed groups are present:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nt">conditionalGroups</span><span class="p">:</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">when</span><span class="p">:</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">      </span><span class="nt">allOf</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">renovate</span><span class="p p-Indicator">]</span>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">      </span><span class="nt">anyOf</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">go</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">terraform</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">typescript</span><span class="p p-Indicator">]</span>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">    </span><span class="nt">settings</span><span class="p">:</span>
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">      </span><span class="nt">labels</span><span class="p">:</span>
-</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">        </span><span class="s">&quot;renovate/language&quot;</span><span class="p p-Indicator">:</span>
-</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">          </span><span class="nt">color</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#ededed&quot;</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">      </span><span class="nt">noneOf</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">custom-pre-commit</span><span class="p p-Indicator">]</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="nt">files</span><span class="p">:</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">      </span><span class="nt">.pre-commit-config.yaml</span><span class="p">:</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">        </span><span class="nt">content</span><span class="p">:</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">          </span><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/pre-commit/pre-commit-hooks</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">              </span><span class="nt">hooks</span><span class="p">:</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trailing-whitespace</span>
 </span></code></pre></div>
-<p>This matches repos that have <code>renovate</code> <strong>and</strong> at least one of <code>go</code>,
-<code>terraform</code>, or <code>typescript</code>.</p>
+<p>This applies the default pre-commit config to all repos except those with the
+<code>custom-pre-commit</code> group, which can define their own variant.</p>
+<h3 id="combined-conditions">Combined Conditions<a class="headerlink" href="#combined-conditions" title="Permanent link">&para;</a></h3>
+<p>All operators in a <code>when</code> clause must be satisfied (AND logic). Any
+combination of <code>allOf</code>, <code>anyOf</code>, and <code>noneOf</code> can be used together:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nt">conditionalGroups</span><span class="p">:</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">when</span><span class="p">:</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">      </span><span class="nt">anyOf</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">pre-commit</span><span class="p p-Indicator">]</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">      </span><span class="nt">noneOf</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">pre-commit-custom-exclude</span><span class="p p-Indicator">]</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span><span class="nt">files</span><span class="p">:</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">      </span><span class="nt">.pre-commit-config.yaml</span><span class="p">:</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">        </span><span class="nt">content</span><span class="p">:</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">          </span><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">repo</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/pre-commit/pre-commit-hooks</span>
+</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">              </span><span class="nt">hooks</span><span class="p">:</span>
+</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trailing-whitespace</span>
+</span></code></pre></div>
+<p>This matches repos that have <code>pre-commit</code> but <strong>not</strong> <code>pre-commit-custom-exclude</code>.</p>
 <h3 id="merge-order">Merge Order<a class="headerlink" href="#merge-order" title="Permanent link">&para;</a></h3>
 <p>Conditional groups merge <strong>after</strong> explicit groups and <strong>before</strong> repo overrides:</p>
 <ol>
@@ -3020,12 +3056,14 @@ regular groups.</p>
 </ul>
 <h3 id="restrictions">Restrictions<a class="headerlink" href="#restrictions" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Group names in <code>allOf</code>/<code>anyOf</code> must reference groups defined in
+<li>Group names in <code>allOf</code>/<code>anyOf</code>/<code>noneOf</code> must reference groups defined in
   the <code>groups</code> map</li>
+<li>Group names in <code>noneOf</code> must not overlap with <code>allOf</code> or <code>anyOf</code> in the
+  same <code>when</code> clause</li>
 <li>Conditional groups cannot be listed in a repo's <code>groups</code> array</li>
 <li>Conditional groups cannot reference other conditional groups</li>
 <li>A repo with no <code>groups</code> field or <code>groups: []</code> has an empty effective group
-  set — no conditional group can match it</li>
+  set — only <code>noneOf</code> conditions can match it</li>
 <li>Conditional groups do not expand the effective group set — one conditional
   group matching cannot cause another conditional group to match. All
   conditions are evaluated against the same frozen set of explicit groups.</li>
