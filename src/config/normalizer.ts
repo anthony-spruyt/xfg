@@ -525,21 +525,24 @@ function mergeGroupSettings(
 
 /**
  * Evaluates a conditional group's `when` clause against a repo's effective groups.
- * Both `allOf` (every listed group present) and `anyOf` (at least one present)
- * must be satisfied. Absent conditions are treated as satisfied.
+ * All specified operators must be satisfied: `allOf` (every listed group present),
+ * `anyOf` (at least one present), and `noneOf` (none of the listed groups present).
+ * Absent conditions are treated as satisfied.
  */
 function evaluateWhenClause(
   when: RawConditionalGroupWhen,
   effectiveGroups: ReadonlySet<string>
 ): boolean {
-  // Defensive: if neither condition is specified, don't match
-  if (!when.allOf && !when.anyOf) return false;
+  // Defensive: if no condition is specified, don't match
+  if (!when.allOf && !when.anyOf && !when.noneOf) return false;
 
   const allOfSatisfied =
     !when.allOf || when.allOf.every((g) => effectiveGroups.has(g));
   const anyOfSatisfied =
     !when.anyOf || when.anyOf.some((g) => effectiveGroups.has(g));
-  return allOfSatisfied && anyOfSatisfied;
+  const noneOfSatisfied =
+    !when.noneOf || when.noneOf.every((g) => !effectiveGroups.has(g));
+  return allOfSatisfied && anyOfSatisfied && noneOfSatisfied;
 }
 
 /**

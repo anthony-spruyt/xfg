@@ -5501,4 +5501,339 @@ describe("conditional group configuration", () => {
     assert.equal(repo?.hasWiki, false);
     assert.equal(repo?.hasDiscussions, true);
   });
+
+  test("conditional group with noneOf matches when none of listed groups present", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { base: true } },
+      },
+      groups: {
+        terraform: {
+          files: { "tf.json": { content: { tf: true } } },
+        },
+        "no-terraform": {
+          files: { "other.json": { content: { other: true } } },
+        },
+      },
+      conditionalGroups: [
+        {
+          when: { noneOf: ["terraform"] },
+          files: {
+            "fallback.json": { content: { fallback: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/no-tf.git",
+          groups: ["no-terraform"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(
+      fileNames.includes("fallback.json"),
+      "noneOf matched: group absent"
+    );
+  });
+
+  test("conditional group with noneOf does not match when excluded group present", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { base: true } },
+      },
+      groups: {
+        terraform: {
+          files: { "tf.json": { content: { tf: true } } },
+        },
+        "terraform-custom": {},
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["terraform"], noneOf: ["terraform-custom"] },
+          files: {
+            "default-tf.json": { content: { defaultTf: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/has-both.git",
+          groups: ["terraform", "terraform-custom"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(
+      !fileNames.includes("default-tf.json"),
+      "noneOf excluded: terraform-custom present"
+    );
+  });
+
+  test("conditional group with anyOf and noneOf matches correctly", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        "pre-commit": {
+          files: { "hooks.json": { content: { hooks: true } } },
+        },
+        "pre-commit-custom": {},
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["pre-commit"], noneOf: ["pre-commit-custom"] },
+          files: {
+            "default-hooks.json": { content: { defaultHooks: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/normal.git",
+          groups: ["pre-commit"],
+        },
+        {
+          git: "git@github.com:org/custom.git",
+          groups: ["pre-commit", "pre-commit-custom"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const normalFiles = result.repos[0].files.map((f) => f.fileName);
+    const customFiles = result.repos[1].files.map((f) => f.fileName);
+    assert.ok(
+      normalFiles.includes("default-hooks.json"),
+      "normal repo gets default hooks"
+    );
+    assert.ok(
+      !customFiles.includes("default-hooks.json"),
+      "custom repo excluded by noneOf"
+    );
+  });
+
+  test("noneOf excludes via transitive parent groups", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        github: {
+          files: { "github.json": { content: { from: "github" } } },
+        },
+        "github-ci": {
+          extends: "github",
+          files: { "ci.json": { content: { from: "ci" } } },
+        },
+        "non-github-platform": {},
+      },
+      conditionalGroups: [
+        {
+          when: {
+            anyOf: ["github-ci", "non-github-platform"],
+            noneOf: ["github"],
+          },
+          files: {
+            "non-github.json": { content: { nonGithub: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/ci-repo.git",
+          groups: ["github-ci"],
+        },
+        {
+          git: "git@github.com:org/other-repo.git",
+          groups: ["non-github-platform"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const ciFiles = result.repos[0].files.map((f) => f.fileName);
+    const otherFiles = result.repos[1].files.map((f) => f.fileName);
+    assert.ok(
+      !ciFiles.includes("non-github.json"),
+      "noneOf excludes via transitive parent: github-ci extends github"
+    );
+    assert.ok(
+      otherFiles.includes("non-github.json"),
+      "noneOf matches: non-github-platform does not have github in parent chain"
+    );
+  });
+
+  test("noneOf standalone matches repo that has none of the listed groups", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        special: {},
+        basic: {},
+      },
+      conditionalGroups: [
+        {
+          when: { noneOf: ["special"] },
+          files: {
+            "default.json": { content: { isDefault: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["basic"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const fileNames = result.repos[0].files.map((f) => f.fileName);
+    assert.ok(fileNames.includes("default.json"), "noneOf standalone matched");
+  });
+
+  test("conditional group with allOf and noneOf matches correctly", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        renovate: {
+          files: { "renovate.json": { content: { renovate: true } } },
+        },
+        terraform: {},
+        "custom-renovate": {},
+      },
+      conditionalGroups: [
+        {
+          when: {
+            allOf: ["renovate", "terraform"],
+            noneOf: ["custom-renovate"],
+          },
+          files: {
+            "default-renovate-tf.json": {
+              content: { defaultRenovateTf: true },
+            },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/standard.git",
+          groups: ["renovate", "terraform"],
+        },
+        {
+          git: "git@github.com:org/custom.git",
+          groups: ["renovate", "terraform", "custom-renovate"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const standardFiles = result.repos[0].files.map((f) => f.fileName);
+    const customFiles = result.repos[1].files.map((f) => f.fileName);
+    assert.ok(
+      standardFiles.includes("default-renovate-tf.json"),
+      "allOf+noneOf matched: standard repo"
+    );
+    assert.ok(
+      !customFiles.includes("default-renovate-tf.json"),
+      "allOf+noneOf excluded: custom repo"
+    );
+  });
+
+  test("noneOf with multiple entries requires all to be absent", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        base: {},
+        "exclude-a": {},
+        "exclude-b": {},
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["base"], noneOf: ["exclude-a", "exclude-b"] },
+          files: {
+            "default.json": { content: { isDefault: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/has-none.git",
+          groups: ["base"],
+        },
+        {
+          git: "git@github.com:org/has-one.git",
+          groups: ["base", "exclude-a"],
+        },
+        {
+          git: "git@github.com:org/has-both.git",
+          groups: ["base", "exclude-a", "exclude-b"],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const noneFiles = result.repos[0].files.map((f) => f.fileName);
+    const oneFiles = result.repos[1].files.map((f) => f.fileName);
+    const bothFiles = result.repos[2].files.map((f) => f.fileName);
+    assert.ok(
+      noneFiles.includes("default.json"),
+      "matches when no excluded groups present"
+    );
+    assert.ok(
+      !oneFiles.includes("default.json"),
+      "excluded when one of noneOf groups present"
+    );
+    assert.ok(
+      !bothFiles.includes("default.json"),
+      "excluded when all noneOf groups present"
+    );
+  });
+
+  test("noneOf matches repo with empty groups (no groups assigned)", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        special: {},
+      },
+      conditionalGroups: [
+        {
+          when: { noneOf: ["special"] },
+          files: {
+            "fallback.json": { content: { fallback: true } },
+          },
+        },
+      ],
+      repos: [
+        {
+          git: "git@github.com:org/no-groups-repo.git",
+        },
+        {
+          git: "git@github.com:org/empty-groups-repo.git",
+          groups: [],
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const noGroupsFiles = result.repos[0].files.map((f) => f.fileName);
+    const emptyGroupsFiles = result.repos[1].files.map((f) => f.fileName);
+    assert.ok(
+      noGroupsFiles.includes("fallback.json"),
+      "noneOf matched: repo with no groups field"
+    );
+    assert.ok(
+      emptyGroupsFiles.includes("fallback.json"),
+      "noneOf matched: repo with empty groups array"
+    );
+  });
 });

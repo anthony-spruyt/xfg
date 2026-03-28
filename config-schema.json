@@ -29,7 +29,7 @@
     },
     "conditionalGroups": {
       "type": "array",
-      "description": "Conditional groups that activate based on which groups a repo has. Each entry has a 'when' clause (allOf/anyOf) and the same files/prOptions/settings as regular groups. Merges after explicit groups, before repo overrides.",
+      "description": "Conditional groups that activate based on which groups a repo has. Each entry has a 'when' clause (allOf/anyOf/noneOf) and the same files/prOptions/settings as regular groups. Merges after explicit groups, before repo overrides.",
       "items": {
         "$ref": "#/definitions/conditionalGroupConfig"
       }
@@ -421,7 +421,7 @@
       "properties": {
         "when": {
           "type": "object",
-          "description": "Condition that determines when this group activates. At least one of allOf or anyOf is required.",
+          "description": "Condition that determines when this group activates. At least one of allOf, anyOf, or noneOf is required.",
           "properties": {
             "allOf": {
               "type": "array",
@@ -438,6 +438,14 @@
               },
               "minItems": 1,
               "description": "At least one listed group must be present in the repo's groups array"
+            },
+            "noneOf": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "description": "None of the listed groups may be present in the repo's groups array"
             }
           },
           "anyOf": [
@@ -449,6 +457,11 @@
             {
               "required": [
                 "anyOf"
+              ]
+            },
+            {
+              "required": [
+                "noneOf"
               ]
             }
           ]
