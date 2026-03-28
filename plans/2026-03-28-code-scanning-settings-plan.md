@@ -1221,7 +1221,6 @@ const githubRepo: GitHubRepoInfo = {
 const adoRepo: RepoInfo = {
   type: "azure-devops",
   gitUrl: "https://dev.azure.com/org/project/_git/repo",
-  host: "dev.azure.com",
   owner: "org",
   organization: "org",
   project: "project",
