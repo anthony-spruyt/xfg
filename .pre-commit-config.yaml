@@ -51,14 +51,6 @@ repos:
     rev: "v0.48.0"
     hooks:
       - id: "markdownlint"
-  - repo: "local"
-    hooks:
-      - id: "jsonlint"
-        name: "jsonlint"
-        entry: "npx @prantlf/jsonlint --quiet --config .jsonlintrc"
-        language: "system"
-        types:
-          - "json"
   - repo: "https://github.com/rhysd/actionlint"
     rev: "v1.7.11"
     hooks:
