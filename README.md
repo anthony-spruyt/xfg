@@ -96,6 +96,8 @@ repos:
 
 **Result:** PRs are created with `.prettierrc.json` files, and repos get standardized merge options, security settings, and branch protection rulesets.
 
+> **Tip:** Pass a directory to `-c` to split config across multiple files — see [Multi-File Configuration](https://anthony-spruyt.github.io/xfg/configuration/multi-file/).
+
 ## Documentation
 
 See **[anthony-spruyt.github.io/xfg](https://anthony-spruyt.github.io/xfg/)** for the full feature list, configuration reference, examples, platform setup, and troubleshooting.

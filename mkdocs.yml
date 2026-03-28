@@ -74,6 +74,7 @@ nav:
       - Templating: configuration/templating.md
       - Merge Strategies: configuration/merge-strategies.md
       - File References: configuration/file-references.md
+      - Multi-File Config: configuration/multi-file.md
       - PR Options: configuration/pr-options.md
       - PR Templates: configuration/pr-templates.md
       - Repo Lifecycle: configuration/lifecycle.md
