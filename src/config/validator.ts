@@ -693,10 +693,10 @@ function validateConditionalGroups(config: RawConfig): void {
     }
 
     // Cross-operator overlap: noneOf must not share groups with allOf or anyOf
-    if (noneOf) {
-      const noneOfSet = new Set(noneOf);
-      if (allOf) {
-        for (const g of allOf) {
+    if (noneOf && Array.isArray(noneOf)) {
+      const noneOfSet = new Set(noneOf as string[]);
+      if (allOf && Array.isArray(allOf)) {
+        for (const g of allOf as string[]) {
           if (noneOfSet.has(g)) {
             throw new ValidationError(
               `${ctx}: noneOf group '${g}' overlaps with allOf (contradictory condition)`
@@ -704,8 +704,8 @@ function validateConditionalGroups(config: RawConfig): void {
           }
         }
       }
-      if (anyOf) {
-        for (const g of anyOf) {
+      if (anyOf && Array.isArray(anyOf)) {
+        for (const g of anyOf as string[]) {
           if (noneOfSet.has(g)) {
             throw new ValidationError(
               `${ctx}: noneOf group '${g}' overlaps with anyOf (contradictory condition)`
