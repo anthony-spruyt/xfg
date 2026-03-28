@@ -85,7 +85,17 @@ export interface RawRepoSettings {
 
 - [ ] **Step 3: Export new types from config barrel**
 
-Ensure `CodeScanningSettings`, `CodeScanningState`, `CodeScanningQuerySuite`, and `CodeScanningLanguage` are exported from `src/config/index.ts`.
+In `src/config/index.ts`, add the new types to the existing `export type { ... }` block from `"./types.js"`:
+
+```typescript
+export type {
+  // ...existing exports...
+  CodeScanningSettings,
+  CodeScanningState,
+  CodeScanningQuerySuite,
+  CodeScanningLanguage,
+} from "./types.js";
+```
 
 - [ ] **Step 4: Add `codeScanningSettings` definition to config-schema.json**
 
@@ -126,7 +136,6 @@ Add a new definition in the `definitions` section of `config-schema.json`:
       "description": "Languages to analyze. If omitted, GitHub auto-detects languages in the repository."
     }
   },
-  "additionalProperties": false
 }
 ```
 
@@ -240,7 +249,11 @@ Expected: FAIL — `codeScanning` not handled in `mergeSettings`.
 In `src/config/normalizer.ts`, inside `mergeSettings()`, after the labels merge block (around line 298) and before the final `return`, add:
 
 ```typescript
-  // Merge code scanning: per-repo overrides root (replace, not deep merge)
+  // Merge code scanning: per-repo fully replaces root (not shallow merge).
+  // Unlike `repo` settings (which shallow-merge via spread), code scanning
+  // uses full replacement because its 3 fields (state, querySuite, languages)
+  // are tightly coupled — partial inheritance (e.g., inheriting languages
+  // from root while changing querySuite) would be confusing.
   // codeScanning: false means opt out of all root code scanning settings
   if (perRepo?.codeScanning === false) {
     // Opt-out: don't include any code scanning settings
@@ -1974,26 +1987,36 @@ git commit -m "refactor(settings): extract IRepoMetadataProvider from RepoSettin
 
 **Files:**
 
-- Modify: `docs/configuration/settings.md` (or equivalent settings docs page)
+- Create: `docs/configuration/code-scanning.md` (new page, matching the pattern of `labels.md` and `rulesets.md`)
+- Modify: `docs/mkdocs.yml` or `mkdocs.yml` (add nav entry for the new page)
 
-- [ ] **Step 1: Find the correct docs file**
+- [ ] **Step 1: Check docs structure and nav config**
 
-Run: `find docs/ -name "*.md" | head -20` and check which file documents settings.
+Read `mkdocs.yml` (at project root or `docs/`) to understand the nav structure and how
+`labels.md` and `rulesets.md` are listed. The new page should be added alongside them.
 
-- [ ] **Step 2: Add code scanning documentation**
+- [ ] **Step 2: Create `docs/configuration/code-scanning.md`**
 
-Add a new section documenting the `codeScanning` settings with:
+Follow the format of existing docs pages (`docs/configuration/repo-settings.md`,
+`docs/configuration/labels.md`) which use MkDocs Material admonition syntax, tables, and
+YAML code examples. Include:
 
-- Config example
-- Supported languages
-- Explanation of `state`, `querySuite`, and `languages` fields
-- Note about GHAS requirement for private repos
+- Overview paragraph explaining what code scanning default setup is
+- Config example (minimal and full)
+- Table of fields: `state` (required), `querySuite` (optional), `languages` (optional)
+- Supported languages list
+- Note about GHAS requirement for private/internal repos
 - Per-repo opt-out with `codeScanning: false`
+- Per-repo override behavior (full replacement, not shallow merge — see Task 2)
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: Add nav entry**
+
+Add the new page to the navigation in the mkdocs config, alongside existing settings pages.
+
+- [ ] **Step 4: Commit**
 
 ```bash
-git add docs/
+git add docs/ mkdocs.yml
 git commit -m "docs: add code scanning settings documentation (#669)"
 ```
 
