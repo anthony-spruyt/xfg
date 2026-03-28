@@ -3274,6 +3274,102 @@ describe("validateRawConfig", () => {
       };
       assert.doesNotThrow(() => validateRawConfig(config));
     });
+
+    test("valid conditional group with noneOf only", () => {
+      const config = createValidConfig({
+        groups: {
+          a: { files: { "a.txt": { content: "a" } } },
+          b: { files: { "b.txt": { content: "b" } } },
+        },
+        conditionalGroups: [
+          {
+            when: { noneOf: ["a"] },
+            files: { "fallback.txt": { content: "fallback" } },
+          },
+        ],
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["b"],
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws when noneOf is empty array", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { noneOf: [] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(() => validateRawConfig(config), /noneOf.*non-empty/i);
+    });
+
+    test("throws for non-existent group in noneOf", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { noneOf: ["nonexistent"] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /nonexistent.*not defined/i
+      );
+    });
+
+    test("throws for duplicate group in noneOf", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { noneOf: ["a", "a"] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(() => validateRawConfig(config), /duplicate.*noneOf/i);
+    });
+
+    test("throws when noneOf overlaps with allOf", () => {
+      const config = createValidConfig({
+        groups: {
+          a: { files: { "a.txt": { content: "a" } } },
+          b: { files: { "b.txt": { content: "b" } } },
+        },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"], noneOf: ["a"] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(() => validateRawConfig(config), /noneOf.*overlap.*allOf/i);
+    });
+
+    test("throws when noneOf overlaps with anyOf", () => {
+      const config = createValidConfig({
+        groups: {
+          a: { files: { "a.txt": { content: "a" } } },
+          b: { files: { "b.txt": { content: "b" } } },
+        },
+        conditionalGroups: [
+          {
+            when: { anyOf: ["a", "b"], noneOf: ["a"] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.throws(() => validateRawConfig(config), /noneOf.*overlap.*anyOf/i);
+    });
   });
 });
 
