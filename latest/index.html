@@ -759,6 +759,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#code-scanning-processing-per-repo" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Scanning Processing (per repo)
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2501,6 +2510,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#code-scanning-processing-per-repo" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Scanning Processing (per repo)
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2781,7 +2799,11 @@
 <h3 id="sync-workflow-xfg-sync">Sync Workflow (<code>xfg sync</code>)<a class="headerlink" href="#sync-workflow-xfg-sync" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>flowchart TB
     subgraph Loading["Config Loading"]
-        YAML[/"YAML Config File"/] --&gt; REFS["Resolve @file references&lt;br/&gt;(root, group &amp; repo levels)"]
+        INPUT{{"File or directory?"}} --&gt;|File| YAML[/"YAML Config File"/]
+        INPUT --&gt;|Directory| DIR["Load all *.yaml/*.yml&lt;br/&gt;(alphabetical order)"]
+        DIR --&gt; MERGE_CFG["Merge fragments&lt;br/&gt;(single-file keys exclusive,&lt;br/&gt;groups by name, repos concat)"]
+        MERGE_CFG --&gt; REFS["Resolve @file references&lt;br/&gt;(root, group &amp; repo levels)"]
+        YAML --&gt; REFS
         REFS --&gt; VALIDATE["Validate structure"]
         VALIDATE --&gt; VALIDATE_CMD_S["Validate for sync&lt;br/&gt;(require files to sync)"]
     end
@@ -2863,7 +2885,11 @@
 <h3 id="settings-workflow">Settings Workflow<a class="headerlink" href="#settings-workflow" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>flowchart TB
     subgraph Loading["Config Loading"]
-        YAML[/"YAML Config File"/] --&gt; REFS["Resolve @file references"]
+        INPUT{{"File or directory?"}} --&gt;|File| YAML[/"YAML Config File"/]
+        INPUT --&gt;|Directory| DIR["Load all *.yaml/*.yml&lt;br/&gt;(alphabetical order)"]
+        DIR --&gt; MERGE_CFG["Merge fragments"]
+        MERGE_CFG --&gt; REFS["Resolve @file references"]
+        YAML --&gt; REFS
         REFS --&gt; VALIDATE["Validate structure"]
         VALIDATE --&gt; VALIDATE_CMD["Validate for sync"]
     end
@@ -2896,6 +2922,10 @@
         LBL["For each repo with labels&lt;br/&gt;&lt;i&gt;(see detail below)&lt;/i&gt;"]
     end
 
+    subgraph Phase4["Phase 4: Code Scanning"]
+        CS["For each repo with codeScanning&lt;br/&gt;&lt;i&gt;(see detail below)&lt;/i&gt;"]
+    end
+
     REPORT["Generate Summary Report"]
 
     VALIDATE_CMD --&gt; EXPAND
@@ -2903,7 +2933,8 @@
     Lifecycle --&gt; Phase1
     Phase1 --&gt; Phase2
     Phase2 --&gt; Phase3
-    Phase3 --&gt; REPORT</code></pre>
+    Phase3 --&gt; Phase4
+    Phase4 --&gt; REPORT</code></pre>
 <h4 id="ruleset-processing-per-repo">Ruleset Processing (per repo)<a class="headerlink" href="#ruleset-processing-per-repo" title="Permanent link">&para;</a></h4>
 <pre class="mermaid"><code>flowchart TB
     GUARD{GitHub repo?} --&gt;|No| SKIP_P["Skip (GitHub only)"]
@@ -2983,6 +3014,25 @@
         U["PUT — update changed labels"]
         C["POST — create new labels"]
     end
+
+    APPLY --&gt; DONE["Done ✓"]</code></pre>
+<h4 id="code-scanning-processing-per-repo">Code Scanning Processing (per repo)<a class="headerlink" href="#code-scanning-processing-per-repo" title="Permanent link">&para;</a></h4>
+<pre class="mermaid"><code>flowchart TB
+    GUARD{GitHub repo?} --&gt;|No| SKIP_P["Skip (GitHub only)"]
+    GUARD --&gt;|Yes| TOKEN["Resolve auth token"]
+
+    TOKEN --&gt; META["Fetch repo metadata&lt;br/&gt;(visibility, owner type, GHAS)"]
+    META --&gt; GHAS{Private/internal&lt;br/&gt;+ GHAS enabled?}
+    GHAS --&gt;|"Private + no GHAS"| GHAS_ERR["Error — GHAS required"]
+    GHAS --&gt;|"Public or GHAS ok"| FETCH["GET code-scanning/default-setup"]
+
+    FETCH --&gt; DIFF["Diff: state / querySuite /&lt;br/&gt;languages"]
+    DIFF --&gt; CHANGES{Changes needed?}
+    CHANGES --&gt;|No| SKIP_NC["Skip — already matches ✓"]
+    CHANGES --&gt;|Yes| PLAN["Format terraform-style plan"]
+    PLAN --&gt; DRY{Dry run?}
+    DRY --&gt;|Yes| SHOW["Show plan ✓"]
+    DRY --&gt;|No| APPLY["PATCH code-scanning/default-setup"]
 
     APPLY --&gt; DONE["Done ✓"]</code></pre>
 <p><strong>See <a href="use-cases/">Use Cases</a></strong> for real-world scenarios: platform engineering, CI/CD standardization, security governance, repo migration, and more.</p>
