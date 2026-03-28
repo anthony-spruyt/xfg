@@ -30,3 +30,11 @@ export {
   type ILabelsProcessor,
   GitHubLabelsStrategy,
 } from "./labels/index.js";
+
+// Code scanning
+export {
+  type CodeScanningPlanEntry,
+  CodeScanningProcessor,
+  type ICodeScanningProcessor,
+  GitHubCodeScanningStrategy,
+} from "./code-scanning/index.js";
