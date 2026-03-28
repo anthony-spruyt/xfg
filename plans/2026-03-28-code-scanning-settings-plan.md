@@ -281,13 +281,14 @@ Create `test/unit/config-validator-code-scanning.test.ts`:
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
 import { validateRawConfig } from "../../src/config/validator.js";
+import type { RawConfig } from "../../src/config/types.js";
 
-function makeConfig(codeScanning: unknown) {
+function makeConfig(codeScanning: unknown): RawConfig {
   return {
     id: "test",
     settings: { codeScanning },
     repos: [{ git: "https://github.com/org/repo.git" }],
-  };
+  } as unknown as RawConfig;
 }
 
 describe("validateRawConfig - codeScanning", () => {
@@ -1677,6 +1678,8 @@ Add a conversion block after the labels conversion (around line 104), before the
 ```typescript
     // Convert code scanning processor output
     if (result.codeScanningResult?.planOutput?.entries) {
+      let csCreates = 0;
+      let csUpdates = 0;
       for (const entry of result.codeScanningResult.planOutput.entries) {
         repoChanges.settings.push({
           name: `codeScanning.${entry.property}`,
@@ -1684,10 +1687,11 @@ Add a conversion block after the labels conversion (around line 104), before the
           oldValue: entry.oldValue,
           newValue: entry.newValue ?? null,
         });
+        if (entry.action === "create") csCreates++;
+        if (entry.action === "update") csUpdates++;
       }
-      const counts = countActions(repoChanges.settings);
-      totals.settings.create += counts.create;
-      totals.settings.update += counts.update;
+      totals.settings.create += csCreates;
+      totals.settings.update += csUpdates;
     }
 ```
 
