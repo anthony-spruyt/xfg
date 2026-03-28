@@ -287,6 +287,77 @@ function validateSettings(
       validateRepoSettings(settings.repo, context);
     }
   }
+
+  if (settings.codeScanning !== undefined) {
+    if (settings.codeScanning === false) {
+      if (!rootCtx) {
+        throw new ValidationError(
+          `${context}: codeScanning: false is not valid at root level. Define codeScanning settings or remove the field.`
+        );
+      }
+      // Per-repo level — valid opt-out
+    } else {
+      validateCodeScanningSettings(
+        settings.codeScanning,
+        `${context} codeScanning`
+      );
+    }
+  }
+}
+
+const VALID_CODE_SCANNING_STATES = ["configured", "not-configured"];
+const VALID_CODE_SCANNING_QUERY_SUITES = ["default", "extended"];
+const VALID_CODE_SCANNING_LANGUAGES = [
+  "actions",
+  "c-cpp",
+  "csharp",
+  "go",
+  "java-kotlin",
+  "javascript-typescript",
+  "python",
+  "ruby",
+  "swift",
+];
+
+function validateCodeScanningSettings(
+  settings: unknown,
+  context: string
+): void {
+  if (!isPlainObject(settings)) {
+    throw new ValidationError(`${context}: must be an object`);
+  }
+
+  if (settings.state === undefined) {
+    throw new ValidationError(`${context}: state is required`);
+  }
+
+  if (!VALID_CODE_SCANNING_STATES.includes(settings.state as string)) {
+    throw new ValidationError(
+      `${context}: state must be one of: ${VALID_CODE_SCANNING_STATES.join(", ")}`
+    );
+  }
+
+  if (
+    settings.querySuite !== undefined &&
+    !VALID_CODE_SCANNING_QUERY_SUITES.includes(settings.querySuite as string)
+  ) {
+    throw new ValidationError(
+      `${context}: querySuite must be one of: ${VALID_CODE_SCANNING_QUERY_SUITES.join(", ")}`
+    );
+  }
+
+  if (settings.languages !== undefined) {
+    if (!Array.isArray(settings.languages)) {
+      throw new ValidationError(`${context}: languages must be an array`);
+    }
+    for (const lang of settings.languages) {
+      if (!VALID_CODE_SCANNING_LANGUAGES.includes(lang as string)) {
+        throw new ValidationError(
+          `${context}: invalid language "${lang}". Valid languages: ${VALID_CODE_SCANNING_LANGUAGES.join(", ")}`
+        );
+      }
+    }
+  }
 }
 
 function validateConfigId(config: RawConfig): void {
