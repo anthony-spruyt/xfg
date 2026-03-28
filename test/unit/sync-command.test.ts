@@ -292,7 +292,7 @@ repos:
 
       await assert.rejects(
         async () => runSync(options),
-        /Config file not found/
+        /Config path not found/
       );
     });
   });

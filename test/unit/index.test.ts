@@ -87,7 +87,7 @@ describe("CLI", () => {
       const result = runCLI(["sync", "-c", "/nonexistent/config.yaml"]);
       assert.equal(result.success, false);
       const output = result.stdout + result.stderr;
-      assert.ok(output.includes("Config file not found"));
+      assert.ok(output.includes("Config path not found"));
     });
 
     test("accepts --dry-run flag", () => {
