@@ -104,6 +104,23 @@ describe("validateRawConfig - codeScanning", () => {
     };
     assert.doesNotThrow(() => validateRawConfig(config));
   });
+
+  test("rejects codeScanning: false at repo level when root has no codeScanning settings", () => {
+    const config = {
+      id: "test",
+      settings: { repo: { visibility: "public" as const } },
+      repos: [
+        {
+          git: "https://github.com/org/repo.git",
+          settings: { codeScanning: false as const },
+        },
+      ],
+    };
+    assert.throws(
+      () => validateRawConfig(config),
+      /Cannot opt out of code scanning settings/
+    );
+  });
 });
 
 describe("hasActionableSettings - codeScanning", () => {

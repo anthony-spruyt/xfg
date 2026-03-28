@@ -189,6 +189,7 @@ function validateLabel(label: unknown, name: string, context: string): void {
 interface RootSettingsContext {
   rulesetNames: string[];
   hasRepoSettings: boolean;
+  hasCodeScanningSettings: boolean;
   labelNames: string[];
 }
 
@@ -199,6 +200,9 @@ function buildRootSettingsContext(config: RawConfig): RootSettingsContext {
       : [],
     hasRepoSettings:
       config.settings?.repo !== undefined && config.settings.repo !== false,
+    hasCodeScanningSettings:
+      config.settings?.codeScanning !== undefined &&
+      config.settings.codeScanning !== false,
     labelNames: config.settings?.labels
       ? Object.keys(config.settings.labels).filter((k) => k !== "inherit")
       : [],
@@ -295,7 +299,12 @@ function validateSettings(
           `${context}: codeScanning: false is not valid at root level. Define codeScanning settings or remove the field.`
         );
       }
-      // Per-repo level — valid opt-out
+      // Per-repo level — check root has codeScanning settings to opt out of
+      if (!rootCtx.hasCodeScanningSettings) {
+        throw new ValidationError(
+          `${context}: Cannot opt out of code scanning settings — not defined in root settings.codeScanning`
+        );
+      }
     } else {
       validateCodeScanningSettings(
         settings.codeScanning,
@@ -897,6 +906,12 @@ function validateRepoSettingsEntry(
       ) {
         rootCtx.hasRepoSettings = true;
       }
+      if (
+        group?.settings?.codeScanning !== undefined &&
+        group.settings.codeScanning !== false
+      ) {
+        rootCtx.hasCodeScanningSettings = true;
+      }
     }
   }
   if (config.conditionalGroups) {
@@ -913,6 +928,12 @@ function validateRepoSettingsEntry(
       }
       if (cg.settings?.repo !== undefined && cg.settings.repo !== false) {
         rootCtx.hasRepoSettings = true;
+      }
+      if (
+        cg.settings?.codeScanning !== undefined &&
+        cg.settings.codeScanning !== false
+      ) {
+        rootCtx.hasCodeScanningSettings = true;
       }
     }
   }

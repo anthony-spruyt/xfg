@@ -95,6 +95,7 @@ function createDefaultCodeScanningProcessorFactory(): CodeScanningProcessorFacto
       new GitHubRepoMetadataProvider(executor, { cwd })
     );
 }
+
 export type { SharedOptions, SyncOptions } from "./types.js";
 import { ResultsCollector } from "./results-collector.js";
 import {
