@@ -495,7 +495,7 @@ Add to `test/unit/config-merger.test.ts`:
           conditionalGroups: [
             { when: { allOf: ["g1"] }, files: { "cond-a.json": { content: {} } } },
           ],
-          repos: [],
+          repos: [{ git: "git@github.com:org/repo.git" }],
         },
       },
       {
@@ -504,7 +504,6 @@ Add to `test/unit/config-merger.test.ts`:
           conditionalGroups: [
             { when: { anyOf: ["g2"] }, files: { "cond-b.json": { content: {} } } },
           ],
-          repos: [],
         },
       },
     ];
