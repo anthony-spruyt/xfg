@@ -1909,7 +1909,9 @@ function createDefaultRepoSettingsProcessorFactory(): RepoSettingsProcessorFacto
 
 - [ ] **Step 4: Update tests**
 
-In `test/unit/repo-settings-processor.test.ts`, add a `MockMetadataProvider` and pass it to the processor constructor:
+In `test/unit/repo-settings-processor.test.ts`, there are 33 inline `new RepoSettingsProcessor(mockStrategy)` calls — there is NO shared `beforeEach` that creates the processor. All 33 sites must be updated.
+
+First, add the `MockMetadataProvider` class and a shared instance at the top of the describe block:
 
 ```typescript
 import type {
@@ -1930,19 +1932,24 @@ class MockMetadataProvider implements IRepoMetadataProvider {
 }
 ```
 
-Update the processor instantiation in `beforeEach`:
+Add a shared `mockMetadataProvider` variable in the test's top-level scope:
 
 ```typescript
-let metadataProvider: MockMetadataProvider;
-
-beforeEach(() => {
-  strategy = new MockStrategy();
-  metadataProvider = new MockMetadataProvider();
-  processor = new RepoSettingsProcessor(strategy, metadataProvider);
-});
+const mockMetadataProvider = new MockMetadataProvider();
 ```
 
-Update any tests that test GHAS validation to set `metadataProvider.result` instead of relying on `currentSettings.security_and_analysis` and `currentSettings.owner_type`.
+Then do a bulk find-and-replace across the entire test file:
+
+- Replace: `new RepoSettingsProcessor(mockStrategy)` → `new RepoSettingsProcessor(mockStrategy, mockMetadataProvider)`
+- Replace: `new RepoSettingsProcessor(errorStrategy)` → `new RepoSettingsProcessor(errorStrategy, mockMetadataProvider)`
+- Replace: `new RepoSettingsProcessor(freshStrategy)` → `new RepoSettingsProcessor(freshStrategy, mockMetadataProvider)`
+
+For tests that validate GHAS behavior (secret scanning, push protection on private repos):
+update them to set `mockMetadataProvider.result` with appropriate `visibility`, `ownerType`,
+and `hasGHAS` values instead of relying on `mockStrategy.getSettingsResult.security_and_analysis`
+and `mockStrategy.getSettingsResult.owner_type`.
+Reset `mockMetadataProvider.result` back to defaults after each GHAS test to avoid
+cross-test contamination.
 
 - [ ] **Step 5: Run tests**
 
