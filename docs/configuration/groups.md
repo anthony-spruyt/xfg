@@ -369,23 +369,46 @@ conditionalGroups:
         content: "@templates/.github/actionlint.yaml"
 ```
 
-### Combined Conditions
+### `noneOf` — Exclusion
 
-Both `allOf` and `anyOf` can be used together — both must be satisfied:
+Include config when **none** of the listed groups are present:
 
 ```yaml
 conditionalGroups:
   - when:
-      allOf: [renovate]
-      anyOf: [go, terraform, typescript]
-    settings:
-      labels:
-        "renovate/language":
-          color: "#ededed"
+      noneOf: [custom-pre-commit]
+    files:
+      .pre-commit-config.yaml:
+        content:
+          repos:
+            - repo: https://github.com/pre-commit/pre-commit-hooks
+              hooks:
+                - id: trailing-whitespace
 ```
 
-This matches repos that have `renovate` **and** at least one of `go`,
-`terraform`, or `typescript`.
+This applies the default pre-commit config to all repos except those with the
+`custom-pre-commit` group, which can define their own variant.
+
+### Combined Conditions
+
+All operators in a `when` clause must be satisfied (AND logic). Any
+combination of `allOf`, `anyOf`, and `noneOf` can be used together:
+
+```yaml
+conditionalGroups:
+  - when:
+      anyOf: [pre-commit]
+      noneOf: [pre-commit-custom-exclude]
+    files:
+      .pre-commit-config.yaml:
+        content:
+          repos:
+            - repo: https://github.com/pre-commit/pre-commit-hooks
+              hooks:
+                - id: trailing-whitespace
+```
+
+This matches repos that have `pre-commit` but **not** `pre-commit-custom-exclude`.
 
 ### Merge Order
 
@@ -409,12 +432,14 @@ Conditional groups support the same capabilities as regular groups:
 
 ### Restrictions
 
-- Group names in `allOf`/`anyOf` must reference groups defined in
+- Group names in `allOf`/`anyOf`/`noneOf` must reference groups defined in
   the `groups` map
+- Group names in `noneOf` must not overlap with `allOf` or `anyOf` in the
+  same `when` clause
 - Conditional groups cannot be listed in a repo's `groups` array
 - Conditional groups cannot reference other conditional groups
 - A repo with no `groups` field or `groups: []` has an empty effective group
-  set — no conditional group can match it
+  set — only `noneOf` conditions can match it
 - Conditional groups do not expand the effective group set — one conditional
   group matching cannot cause another conditional group to match. All
   conditions are evaluated against the same frozen set of explicit groups.
