@@ -1,6 +1,9 @@
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
-import { validateRawConfig } from "../../src/config/validator.js";
+import {
+  validateRawConfig,
+  hasActionableSettings,
+} from "../../src/config/validator.js";
 import type { RawConfig } from "../../src/config/types.js";
 
 function makeConfig(codeScanning: unknown): RawConfig {
@@ -74,6 +77,20 @@ describe("validateRawConfig - codeScanning", () => {
     );
   });
 
+  test("rejects codeScanning: false at root level", () => {
+    assert.throws(
+      () => validateRawConfig(makeConfig(false)),
+      /codeScanning: false is not valid at root level/
+    );
+  });
+
+  test("rejects non-object codeScanning", () => {
+    assert.throws(
+      () => validateRawConfig(makeConfig("configured")),
+      /must be an object/
+    );
+  });
+
   test("accepts codeScanning: false at repo level", () => {
     const config = {
       id: "test",
@@ -86,5 +103,22 @@ describe("validateRawConfig - codeScanning", () => {
       ],
     };
     assert.doesNotThrow(() => validateRawConfig(config));
+  });
+});
+
+describe("hasActionableSettings - codeScanning", () => {
+  test("returns true when codeScanning is an object", () => {
+    assert.equal(
+      hasActionableSettings({ codeScanning: { state: "configured" } }),
+      true
+    );
+  });
+
+  test("returns false when codeScanning is false", () => {
+    assert.equal(hasActionableSettings({ codeScanning: false }), false);
+  });
+
+  test("returns false when settings is undefined", () => {
+    assert.equal(hasActionableSettings(undefined), false);
   });
 });

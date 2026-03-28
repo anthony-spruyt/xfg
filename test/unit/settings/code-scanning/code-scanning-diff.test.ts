@@ -100,6 +100,42 @@ describe("diffCodeScanning", () => {
     assert.ok(!changes.find((c) => c.property === "languages"));
   });
 
+  test("uses create action when querySuite is new", () => {
+    const current: CurrentCodeScanningSettings = {
+      state: "configured",
+    };
+    const desired: CodeScanningSettings = {
+      state: "configured",
+      querySuite: "extended",
+    };
+
+    const changes = diffCodeScanning(current, desired);
+    const qsChange = changes.find((c) => c.property === "querySuite");
+
+    assert.ok(qsChange);
+    assert.equal(qsChange.action, "create");
+    assert.equal(qsChange.oldValue, undefined);
+    assert.equal(qsChange.newValue, "extended");
+  });
+
+  test("uses create action when languages is new", () => {
+    const current: CurrentCodeScanningSettings = {
+      state: "configured",
+    };
+    const desired: CodeScanningSettings = {
+      state: "configured",
+      languages: ["python"],
+    };
+
+    const changes = diffCodeScanning(current, desired);
+    const langChange = changes.find((c) => c.property === "languages");
+
+    assert.ok(langChange);
+    assert.equal(langChange.action, "create");
+    assert.equal(langChange.oldValue, undefined);
+    assert.deepStrictEqual(langChange.newValue, ["python"]);
+  });
+
   test("hasCodeScanningChanges returns true when changes exist", () => {
     const current: CurrentCodeScanningSettings = {
       state: "not-configured",
