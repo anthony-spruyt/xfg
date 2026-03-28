@@ -287,9 +287,17 @@ function buildSettingsDescriptors(
       key: "codeScanning" as const,
       label: "Code Scanning",
       run: () =>
-        runAndStore(codeScanningProcessorFactory, sharedOpts, (e, r) => {
-          e.codeScanningResult = r as ProcessorResults["codeScanningResult"];
-        }),
+        runAndStoreResult(
+          codeScanningProcessorFactory,
+          repoConfig,
+          repoInfo,
+          sharedOpts,
+          repoName,
+          settingsCollector,
+          (e, r) => {
+            e.codeScanningResult = r as ProcessorResults["codeScanningResult"];
+          }
+        ),
     },
   ];
 }
