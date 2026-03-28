@@ -307,8 +307,13 @@ export function mergeSettings(
     // Opt-out: don't include any code scanning settings
   } else {
     const mergedCodeScanning = perRepo?.codeScanning ?? root?.codeScanning;
-    if (mergedCodeScanning && mergedCodeScanning !== false) {
-      result.codeScanning = mergedCodeScanning;
+    if (mergedCodeScanning) {
+      // At this point mergedCodeScanning is CodeScanningSettings (not false),
+      // because root uses RawRootSettings where false is filtered by the
+      // outer check on perRepo?.codeScanning === false
+      if (typeof mergedCodeScanning === "object") {
+        result.codeScanning = mergedCodeScanning;
+      }
     }
   }
 
