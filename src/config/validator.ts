@@ -1,5 +1,6 @@
 import type {
   RawConfig,
+  RawConditionalGroupWhen,
   RawRepoSettings,
   RawRootSettings,
   RawGroupConfig,
@@ -673,7 +674,7 @@ function validateConditionalGroups(config: RawConfig): void {
       );
     }
 
-    const { allOf, anyOf, noneOf } = entry.when;
+    const { allOf, anyOf, noneOf } = entry.when as RawConditionalGroupWhen;
     if (!allOf && !anyOf && !noneOf) {
       throw new ValidationError(
         `${ctx}: 'when' must have at least one of 'allOf', 'anyOf', or 'noneOf'`
@@ -694,9 +695,9 @@ function validateConditionalGroups(config: RawConfig): void {
 
     // Cross-operator overlap: noneOf must not share groups with allOf or anyOf
     if (noneOf) {
-      const noneOfSet = new Set(noneOf as string[]);
+      const noneOfSet = new Set(noneOf);
       if (allOf) {
-        for (const g of allOf as string[]) {
+        for (const g of allOf) {
           if (noneOfSet.has(g)) {
             throw new ValidationError(
               `${ctx}: noneOf group '${g}' overlaps with allOf (contradictory condition)`
@@ -705,7 +706,7 @@ function validateConditionalGroups(config: RawConfig): void {
         }
       }
       if (anyOf) {
-        for (const g of anyOf as string[]) {
+        for (const g of anyOf) {
           if (noneOfSet.has(g)) {
             throw new ValidationError(
               `${ctx}: noneOf group '${g}' overlaps with anyOf (contradictory condition)`

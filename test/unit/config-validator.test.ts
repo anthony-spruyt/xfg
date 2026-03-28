@@ -3370,6 +3370,55 @@ describe("validateRawConfig", () => {
       });
       assert.throws(() => validateRawConfig(config), /noneOf.*overlap.*anyOf/i);
     });
+
+    test("accepts noneOf with non-overlapping allOf", () => {
+      const config = createValidConfig({
+        groups: {
+          a: { files: { "a.txt": { content: "a" } } },
+          b: { files: { "b.txt": { content: "b" } } },
+        },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"], noneOf: ["b"] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("accepts noneOf with non-overlapping anyOf", () => {
+      const config = createValidConfig({
+        groups: {
+          a: { files: { "a.txt": { content: "a" } } },
+          b: { files: { "b.txt": { content: "b" } } },
+        },
+        conditionalGroups: [
+          {
+            when: { anyOf: ["a"], noneOf: ["b"] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("accepts noneOf with non-overlapping allOf and anyOf", () => {
+      const config = createValidConfig({
+        groups: {
+          a: { files: { "a.txt": { content: "a" } } },
+          b: { files: { "b.txt": { content: "b" } } },
+          c: { files: { "c.txt": { content: "c" } } },
+        },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"], anyOf: ["b"], noneOf: ["c"] },
+            settings: { labels: { x: { color: "aabbcc" } } },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
   });
 });
 
