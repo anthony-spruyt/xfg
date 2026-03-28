@@ -3,6 +3,7 @@ import {
   type RepoSettingsPlanEntry,
   type RulesetPlanEntry,
   type LabelsPlanEntry,
+  type CodeScanningPlanEntry,
   countActions,
   isActiveAction,
 } from "../settings/index.js";
@@ -26,6 +27,11 @@ export interface ProcessorResults {
   labelsResult?: {
     planOutput?: {
       entries?: LabelsPlanEntry[];
+    };
+  };
+  codeScanningResult?: {
+    planOutput?: {
+      entries?: CodeScanningPlanEntry[];
     };
   };
   error?: string;
@@ -101,6 +107,24 @@ export function buildSettingsReport(
       totals.labels.create += counts.create;
       totals.labels.update += counts.update;
       totals.labels.delete += counts.delete;
+    }
+
+    // Convert code scanning processor output
+    if (result.codeScanningResult?.planOutput?.entries) {
+      let csCreates = 0;
+      let csUpdates = 0;
+      for (const entry of result.codeScanningResult.planOutput.entries) {
+        repoChanges.settings.push({
+          name: `codeScanning.${entry.property}`,
+          action: entry.action,
+          oldValue: entry.oldValue,
+          newValue: entry.newValue ?? null,
+        });
+        if (entry.action === "create") csCreates++;
+        if (entry.action === "update") csUpdates++;
+      }
+      totals.settings.create += csCreates;
+      totals.settings.update += csUpdates;
     }
 
     if (result.error) {

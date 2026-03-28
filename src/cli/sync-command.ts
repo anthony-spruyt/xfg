@@ -24,10 +24,13 @@ import {
   RulesetProcessor,
   RepoSettingsProcessor,
   LabelsProcessor,
+  CodeScanningProcessor,
   GitHubRulesetStrategy,
   GitHubRepoSettingsStrategy,
   GitHubLabelsStrategy,
+  GitHubCodeScanningStrategy,
 } from "../settings/index.js";
+import { GitHubRepoMetadataProvider } from "../shared/repo-metadata-provider.js";
 import { ShellCommandExecutor } from "../shared/command-executor.js";
 import { Logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
@@ -40,6 +43,7 @@ import {
   type RulesetProcessorFactory,
   type RepoSettingsProcessorFactory,
   type LabelsProcessorFactory,
+  type CodeScanningProcessorFactory,
 } from "./types.js";
 import type { IRepositoryProcessor } from "../sync/index.js";
 
@@ -77,6 +81,16 @@ function createDefaultLabelsProcessorFactory(): LabelsProcessorFactory {
   return () =>
     new LabelsProcessor(
       new GitHubLabelsStrategy(getDefaultExecutor(), { cwd })
+    );
+}
+
+function createDefaultCodeScanningProcessorFactory(): CodeScanningProcessorFactory {
+  const cwd = process.cwd();
+  const executor = getDefaultExecutor();
+  return () =>
+    new CodeScanningProcessor(
+      new GitHubCodeScanningStrategy(executor, { cwd }),
+      new GitHubRepoMetadataProvider(executor, { cwd })
     );
 }
 export type { SharedOptions, SyncOptions } from "./types.js";
@@ -167,7 +181,7 @@ function logSettingsResult(
 }
 
 interface SettingsDescriptor {
-  key: "rulesets" | "labels" | "repo";
+  key: "rulesets" | "labels" | "repo" | "codeScanning";
   label: string;
   run: () => Promise<SettingsResult>;
 }
@@ -210,6 +224,7 @@ function buildSettingsDescriptors(
     rulesetProcessorFactory,
     repoSettingsProcessorFactory,
     labelsProcessorFactory,
+    codeScanningProcessorFactory,
   } = ctx;
   const sharedOpts = {
     dryRun: options.dryRun,
@@ -265,6 +280,14 @@ function buildSettingsDescriptors(
             e.settingsResult = r as ProcessorResults["settingsResult"];
           }
         ),
+    },
+    {
+      key: "codeScanning" as const,
+      label: "Code Scanning",
+      run: () =>
+        runAndStore(codeScanningProcessorFactory, sharedOpts, (e, r) => {
+          e.codeScanningResult = r as ProcessorResults["codeScanningResult"];
+        }),
     },
   ];
 }
@@ -376,6 +399,9 @@ interface RepoIterationContext {
   labelsProcessorFactory: NonNullable<
     SyncDependencies["labelsProcessorFactory"]
   >;
+  codeScanningProcessorFactory: NonNullable<
+    SyncDependencies["codeScanningProcessorFactory"]
+  >;
 }
 
 interface RepoPhaseParams {
@@ -477,6 +503,7 @@ async function processSingleRepo(
     rulesetProcessorFactory: ctx.rulesetProcessorFactory,
     repoSettingsProcessorFactory: ctx.repoSettingsProcessorFactory,
     labelsProcessorFactory: ctx.labelsProcessorFactory,
+    codeScanningProcessorFactory: ctx.codeScanningProcessorFactory,
   });
 }
 
@@ -616,6 +643,7 @@ export async function runSync(
     rulesetProcessorFactory = createDefaultRulesetProcessorFactory(),
     repoSettingsProcessorFactory = createDefaultRepoSettingsProcessorFactory(),
     labelsProcessorFactory = createDefaultLabelsProcessorFactory(),
+    codeScanningProcessorFactory = createDefaultCodeScanningProcessorFactory(),
   } = deps;
   const configPath = resolve(options.config);
 
@@ -685,6 +713,7 @@ export async function runSync(
     rulesetProcessorFactory,
     repoSettingsProcessorFactory,
     labelsProcessorFactory,
+    codeScanningProcessorFactory,
   };
 
   for (let i = 0; i < config.repos.length; i++) {
