@@ -297,6 +297,21 @@ export function mergeSettings(
     result.labels = mergedLabels;
   }
 
+  // Merge code scanning: per-repo fully replaces root (not shallow merge).
+  // Unlike `repo` settings (which shallow-merge via spread), code scanning
+  // uses full replacement because its 3 fields (state, querySuite, languages)
+  // are tightly coupled — partial inheritance (e.g., inheriting languages
+  // from root while changing querySuite) would be confusing.
+  // codeScanning: false means opt out of all root code scanning settings
+  if (perRepo?.codeScanning === false) {
+    // Opt-out: don't include any code scanning settings
+  } else {
+    const mergedCodeScanning = perRepo?.codeScanning ?? root?.codeScanning;
+    if (mergedCodeScanning && mergedCodeScanning !== false) {
+      result.codeScanning = mergedCodeScanning;
+    }
+  }
+
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
@@ -465,6 +480,15 @@ function mergeRawSettings(
           ...label,
         };
       }
+    }
+  }
+
+  // Merge code scanning: overlay fully replaces base (same semantics as mergeSettings)
+  if (overlay.codeScanning !== undefined) {
+    if (overlay.codeScanning === false) {
+      result.codeScanning = false;
+    } else {
+      result.codeScanning = structuredClone(overlay.codeScanning);
     }
   }
 
