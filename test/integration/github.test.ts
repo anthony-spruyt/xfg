@@ -713,4 +713,49 @@ repos:
     assert.equal(json.fromConditional, true, "conditional group content");
     assert.equal(json.repoOverride, true, "repo override content");
   });
+
+  test("sync with directory-based multi-file config", async () => {
+    const configDir = join(tmpDir, "multi-file-config");
+    mkdirSync(configDir, { recursive: true });
+
+    writeFileSync(
+      join(configDir, "base.yaml"),
+      `id: integration-test-multifile
+files:
+  ${TARGET_FILE}:
+    content:
+      fromBase: true
+      shared: base-value
+`,
+      "utf-8"
+    );
+
+    writeFileSync(
+      join(configDir, "repos.yaml"),
+      `repos:
+  - git: https://github.com/${testRepo}.git
+    files:
+      ${TARGET_FILE}:
+        content:
+          fromRepo: true
+`,
+      "utf-8"
+    );
+
+    const output = await exec(`node dist/cli.js sync --config ${configDir}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    const pr = await waitForPrVisible(testRepo, BRANCH_NAME);
+    assert.ok(pr.number);
+
+    const raw = await execWithRetry(
+      `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
+    );
+    const json = JSON.parse(raw);
+    assert.equal(json.fromBase, true, "content from base.yaml fragment");
+    assert.equal(json.shared, "base-value", "shared content from base.yaml");
+    assert.equal(json.fromRepo, true, "repo override from repos.yaml");
+  });
 });
