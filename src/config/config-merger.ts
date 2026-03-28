@@ -26,6 +26,7 @@ export function mergeConfigFragments(fragments: ConfigFragment[]): RawConfig {
   const singleKeySource: Partial<Record<keyof RawConfig, string>> = {};
   const allRepos: RawConfig["repos"][number][] = [];
   const allGroups: Record<string, unknown> = {};
+  const groupSource: Record<string, string> = {};
   const allConditionalGroups: RawConfig["conditionalGroups"] = [];
 
   for (const { fileName, config } of fragments) {
@@ -51,12 +52,12 @@ export function mergeConfigFragments(fragments: ConfigFragment[]): RawConfig {
     if (config.groups) {
       for (const [groupName, groupConfig] of Object.entries(config.groups)) {
         if (groupName in allGroups) {
-          const existingFile = findGroupSource(fragments, groupName, fileName);
           throw new ValidationError(
-            `group '${groupName}' is defined in both ${existingFile} and ${fileName} — group names must be unique across files`
+            `group '${groupName}' is defined in both ${groupSource[groupName]} and ${fileName} — group names must be unique across files`
           );
         }
         allGroups[groupName] = groupConfig;
+        groupSource[groupName] = fileName;
       }
     }
 
@@ -86,21 +87,4 @@ export function mergeConfigFragments(fragments: ConfigFragment[]): RawConfig {
       ? { conditionalGroups: allConditionalGroups }
       : {}),
   } as RawConfig;
-}
-
-function findGroupSource(
-  fragments: ConfigFragment[],
-  groupName: string,
-  currentFile: string
-): string {
-  for (const { fileName, config } of fragments) {
-    if (
-      fileName !== currentFile &&
-      config.groups &&
-      groupName in config.groups
-    ) {
-      return fileName;
-    }
-  }
-  return "unknown";
 }

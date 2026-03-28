@@ -1339,5 +1339,56 @@ repos:
       assert.ok(baseFile);
       assert.deepEqual(baseFile.content, { fromTemplate: true });
     });
+
+    test("errors when a yaml file contains invalid YAML syntax", () => {
+      const configDir = join(testDir, "config-bad-yaml-" + Date.now());
+      mkdirSync(configDir, { recursive: true });
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `
+id: test-bad
+repos:
+  - git: git@github.com:org/repo.git
+`,
+        "utf-8"
+      );
+
+      writeFileSync(
+        join(configDir, "broken.yaml"),
+        `
+this is: [not: valid: yaml
+  broken: {nope
+`,
+        "utf-8"
+      );
+
+      assert.throws(
+        () => loadConfig(configDir, {}),
+        (err: Error) => err.message.includes("Failed to parse YAML config")
+      );
+    });
+
+    test("errors when a yaml file contains only a scalar value", () => {
+      const configDir = join(testDir, "config-scalar-" + Date.now());
+      mkdirSync(configDir, { recursive: true });
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `
+id: test-scalar
+repos:
+  - git: git@github.com:org/repo.git
+`,
+        "utf-8"
+      );
+
+      writeFileSync(join(configDir, "scalar.yaml"), "just a string", "utf-8");
+
+      assert.throws(
+        () => loadConfig(configDir, {}),
+        (err: Error) => err.message.includes("empty or invalid")
+      );
+    });
   });
 });
