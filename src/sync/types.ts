@@ -23,6 +23,7 @@ export interface FileWriteResult {
   content: string | null;
   action: "create" | "update" | "delete" | "skip";
   diffLines?: string[];
+  mode?: "100755" | "100644";
 }
 
 export interface FileWriteContext {

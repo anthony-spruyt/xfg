@@ -150,6 +150,7 @@ export interface FileAction {
 export interface FileChange {
   path: string;
   content: string | null; // null = deletion
+  mode?: "100755" | "100644";
 }
 
 export interface CommitOptions {
