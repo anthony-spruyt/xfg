@@ -23,6 +23,9 @@ export interface FileWriteResult {
   content: string | null;
   action: "create" | "update" | "delete" | "skip";
   diffLines?: string[];
+  /** Git file mode. Only set for executable files ("100755"). "100644" is included
+   *  in the union for type completeness — non-executable files omit this field. */
+  mode?: "100755" | "100644";
 }
 
 export interface FileWriteContext {
@@ -32,7 +35,7 @@ export interface FileWriteContext {
   dryRun: boolean;
   noDelete: boolean;
   configId: string;
-  /** True when using GraphQL commit strategy (GitHub App) which cannot set file modes */
+  /** True when using GraphQL commit strategy (GitHub App) */
   hasAppCredentials?: boolean;
 }
 
@@ -174,7 +177,7 @@ export interface ProcessorOptions {
   noDelete?: boolean;
   /** GitHub token for authentication (resolved by caller) */
   token?: string;
-  /** True when using GraphQL commit strategy (GitHub App) which cannot set file modes */
+  /** True when using GraphQL commit strategy (GitHub App) */
   hasAppCredentials?: boolean;
 }
 

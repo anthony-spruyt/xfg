@@ -47,7 +47,11 @@ export class CommitPushManager implements ICommitPushManager {
 
     const changes: FileChange[] = Array.from(fileChanges.entries())
       .filter(([, info]) => info.action !== "skip")
-      .map(([path, info]) => ({ path, content: info.content }));
+      .map(([path, info]) => ({
+        path,
+        content: info.content,
+        ...(info.mode ? { mode: info.mode } : {}),
+      }));
 
     this.log.info("Staging changes...");
     await gitOps.stageAll();

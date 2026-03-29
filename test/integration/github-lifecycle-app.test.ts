@@ -10,6 +10,7 @@ import {
   generateRepoName,
   deleteRepo,
   repoExists,
+  repoExistsNoRetry,
   isForkedFrom,
   writeConfig,
 } from "./test-helpers.js";
@@ -102,6 +103,87 @@ repos:
       console.log("  Create lifecycle test (App) passed");
     });
 
+    test("executable: sync sets 100755 mode on .sh files via fixup commit (App auth)", async () => {
+      const repoName = generateRepoName();
+      reposToDelete.push(repoName);
+
+      const configPath = writeConfig(
+        tmpDir,
+        `id: lifecycle-executable-app-test
+files:
+  deploy.sh:
+    content: |-
+      #!/bin/bash
+      echo "deploying"
+  run-me:
+    executable: true
+    content: |-
+      #!/usr/bin/env python3
+      print("hello")
+  config.json:
+    content:
+      key: value
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+`
+      );
+
+      console.log(
+        `\nCreating repo ${OWNER}/${repoName} with executable files via xfg sync (App)...`
+      );
+      const output = await exec(
+        `node dist/cli.js sync --config ${configPath} --merge direct`,
+        xfgEnv
+      );
+      console.log(output);
+
+      // Verify repo was created
+      assert.ok(
+        await repoExists(OWNER, repoName),
+        `Repo ${repoName} should exist after sync`
+      );
+
+      // Verify file modes via the Git tree API
+      const treeJson = await execWithRetry(
+        `gh api repos/${OWNER}/${repoName}/git/trees/HEAD?recursive=1`
+      );
+      const tree = JSON.parse(treeJson).tree as Array<{
+        path: string;
+        mode: string;
+        type: string;
+      }>;
+
+      const deploySh = tree.find(
+        (e) => e.path === "deploy.sh" && e.type === "blob"
+      );
+      assert.ok(deploySh, "deploy.sh should exist in tree");
+      assert.equal(
+        deploySh!.mode,
+        "100755",
+        "deploy.sh should be executable (100755)"
+      );
+
+      const runMe = tree.find((e) => e.path === "run-me" && e.type === "blob");
+      assert.ok(runMe, "run-me should exist in tree");
+      assert.equal(
+        runMe!.mode,
+        "100755",
+        "run-me should be executable (100755) via explicit executable: true"
+      );
+
+      const configJson = tree.find(
+        (e) => e.path === "config.json" && e.type === "blob"
+      );
+      assert.ok(configJson, "config.json should exist in tree");
+      assert.equal(
+        configJson!.mode,
+        "100644",
+        "config.json should NOT be executable (100644)"
+      );
+
+      console.log("  Executable file mode test (App) passed");
+    });
+
     test("fork: sync forks upstream when repo doesn't exist (App auth)", async () => {
       const repoName = generateRepoName();
       reposToDelete.push(repoName);
@@ -176,7 +258,7 @@ repos:
 
       // Verify repo was NOT actually created
       assert.ok(
-        !(await repoExists(OWNER, repoName)),
+        !(await repoExistsNoRetry(OWNER, repoName)),
         `Repo ${repoName} should NOT exist after dry-run`
       );
 
@@ -467,7 +549,7 @@ repos:
 
       // Verify repo was NOT actually created
       assert.ok(
-        !(await repoExists(OWNER, repoName)),
+        !(await repoExistsNoRetry(OWNER, repoName)),
         `Repo ${repoName} should NOT exist after dry-run`
       );
 
@@ -511,7 +593,7 @@ repos:
 
         // Verify repo was NOT actually created
         assert.ok(
-          !(await repoExists(OWNER, repoName)),
+          !(await repoExistsNoRetry(OWNER, repoName)),
           `Repo ${repoName} should NOT exist after dry-run`
         );
 

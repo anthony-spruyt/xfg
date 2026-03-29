@@ -5,7 +5,7 @@ import {
   createTokenManager,
 } from "../../../src/vcs/commit-strategy-selector.js";
 import { GitCommitStrategy } from "../../../src/vcs/git-commit-strategy.js";
-import { GraphQLCommitStrategy } from "../../../src/vcs/graphql-commit-strategy.js";
+import { FileModeFixupCommitStrategy } from "../../../src/vcs/file-mode-fixup-commit-strategy.js";
 import {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
@@ -67,12 +67,12 @@ describe("createCommitStrategy", () => {
     );
   });
 
-  test("returns GraphQLCommitStrategy for GitHub with app credentials", () => {
+  test("returns FileModeFixupCommitStrategy for GitHub with app credentials", () => {
     const strategy = createCommitStrategy(githubRepoInfo, mockExecutor, true);
 
     assert.ok(
-      strategy instanceof GraphQLCommitStrategy,
-      "Should return GraphQLCommitStrategy when hasAppCredentials is true"
+      strategy instanceof FileModeFixupCommitStrategy,
+      "Should return FileModeFixupCommitStrategy when hasAppCredentials is true"
     );
   });
 

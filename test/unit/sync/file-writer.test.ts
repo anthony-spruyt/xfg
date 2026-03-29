@@ -368,6 +368,112 @@ describe("FileWriter", () => {
       assert.ok(entry.diffLines.length > 0);
     });
 
+    test("populates mode 100755 for executable .sh files", async () => {
+      const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
+        fileExists: false,
+        wouldChange: true,
+      });
+      const { mock: mockLogger } = createMockLogger();
+
+      const writer = new FileWriter();
+      const files: FileContent[] = [
+        {
+          fileName: "deploy.sh",
+          content: "#!/bin/bash\necho hello",
+        },
+      ];
+
+      const result = await writer.writeFiles(
+        files,
+        {
+          repoInfo: mockRepoInfo,
+          baseBranch: "main",
+          workDir,
+          dryRun: false,
+          noDelete: false,
+          configId: "test",
+        },
+        {
+          gitOps: mockGitOps,
+          log: mockLogger,
+        }
+      );
+
+      const entry = result.fileChanges.get("deploy.sh");
+      assert.equal(entry?.mode, "100755");
+    });
+
+    test("does not populate mode for non-executable files", async () => {
+      const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
+        fileExists: false,
+        wouldChange: true,
+      });
+      const { mock: mockLogger } = createMockLogger();
+
+      const writer = new FileWriter();
+      const files: FileContent[] = [
+        {
+          fileName: "config.json",
+          content: { key: "value" },
+        },
+      ];
+
+      const result = await writer.writeFiles(
+        files,
+        {
+          repoInfo: mockRepoInfo,
+          baseBranch: "main",
+          workDir,
+          dryRun: false,
+          noDelete: false,
+          configId: "test",
+        },
+        {
+          gitOps: mockGitOps,
+          log: mockLogger,
+        }
+      );
+
+      const entry = result.fileChanges.get("config.json");
+      assert.equal(entry?.mode, undefined);
+    });
+
+    test("populates mode 100755 for files with executable: true", async () => {
+      const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
+        fileExists: false,
+        wouldChange: true,
+      });
+      const { mock: mockLogger } = createMockLogger();
+
+      const writer = new FileWriter();
+      const files: FileContent[] = [
+        {
+          fileName: "run",
+          content: "#!/usr/bin/env python3\nprint('hello')",
+          executable: true,
+        },
+      ];
+
+      const result = await writer.writeFiles(
+        files,
+        {
+          repoInfo: mockRepoInfo,
+          baseBranch: "main",
+          workDir,
+          dryRun: false,
+          noDelete: false,
+          configId: "test",
+        },
+        {
+          gitOps: mockGitOps,
+          log: mockLogger,
+        }
+      );
+
+      const entry = result.fileChanges.get("run");
+      assert.equal(entry?.mode, "100755");
+    });
+
     test("does not populate diffLines for binary files", async () => {
       const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
         wouldChange: true,
@@ -400,7 +506,7 @@ describe("FileWriter", () => {
       assert.equal(entry.diffLines, undefined);
     });
 
-    test("warns when creating new executable file under GitHub App auth", async () => {
+    test("does not warn about executable mode under GitHub App auth", async () => {
       const { gitOps: mockGitOps } = createMockAuthenticatedGitOps({
         fileExists: false,
         wouldChange: true,
@@ -435,9 +541,10 @@ describe("FileWriter", () => {
       const warningMsg = warnings.find((m) =>
         /cannot set executable mode/i.test(m)
       );
-      assert.ok(
+      assert.equal(
         warningMsg,
-        `Expected warning about executable mode, got warnings: ${JSON.stringify(warnings)}`
+        undefined,
+        "Should not warn about executable mode since fixup commit handles it"
       );
     });
   });

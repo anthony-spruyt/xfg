@@ -118,6 +118,9 @@ export class FileWriter implements IFileWriter {
           fileName: file.fileName,
           content: fileContent,
           action,
+          // mode is only set on changed files — unchanged files won't trigger a
+          // fixup commit, which is correct since their mode was set on a prior sync
+          ...(shouldBeExecutable(file) ? { mode: "100755" as const } : {}),
         };
 
         // Compute raw diff lines for text files (all modes)
@@ -152,13 +155,6 @@ export class FileWriter implements IFileWriter {
       }
 
       if (shouldBeExecutable(file)) {
-        if (tracked?.action === "create" && ctx.hasAppCredentials) {
-          log.warn(
-            `${file.fileName}: GitHub App commits cannot set executable mode on new files. ` +
-              `The file will be created as non-executable (100644). ` +
-              `See: https://anthony-spruyt.github.io/xfg/examples/executable-files/`
-          );
-        }
         log.info(`Setting executable: ${file.fileName}`);
         await gitOps.setExecutable(file.fileName);
       }
