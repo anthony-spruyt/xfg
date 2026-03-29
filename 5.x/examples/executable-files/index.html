@@ -1440,15 +1440,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#github-app-limitation" class="md-nav__link">
-    <span class="md-ellipsis">
-      GitHub App Limitation
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -2231,15 +2222,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#github-app-limitation" class="md-nav__link">
-    <span class="md-ellipsis">
-      GitHub App Limitation
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -2334,21 +2316,6 @@
 </tr>
 </tbody>
 </table>
-<h2 id="github-app-limitation">GitHub App Limitation<a class="headerlink" href="#github-app-limitation" title="Permanent link">&para;</a></h2>
-<p>When using GitHub App authentication, xfg uses the <code>createCommitOnBranch</code> GraphQL API to create verified (signed) commits. This API does not support setting file modes.</p>
-<p><strong>Impact:</strong></p>
-<ul>
-<li>New executable files are created as <code>100644</code> (non-executable) on the remote</li>
-<li>Updating an existing file preserves whatever mode it already has -- if a file is <code>100755</code>, it stays <code>100755</code></li>
-</ul>
-<p><strong>Workaround:</strong></p>
-<p>After the first sync creates the file, manually set it to executable:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>git<span class="w"> </span>update-index<span class="w"> </span>--chmod<span class="o">=</span>+x<span class="w"> </span>path/to/script.sh
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;fix: set executable mode&quot;</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>git<span class="w"> </span>push
-</span></code></pre></div>
-<p>All future xfg syncs will preserve the <code>100755</code> mode.</p>
-<p><strong>PAT authentication</strong> is not affected -- it uses <code>git commit</code> which correctly records file modes.</p>
 
 
 

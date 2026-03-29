@@ -2518,8 +2518,7 @@
 <li><strong>Commit author</strong> - Commits appear as the GitHub App, not a custom user</li>
 <li><strong>File size</strong> - Large files (&gt;50MB) should use PAT flow instead</li>
 <li><strong>GHE compatibility</strong> - Requires GitHub Enterprise Server 3.6+</li>
-<li><strong>Atomic commits</strong> - All file changes in a single commit</li>
-<li><strong>Executable file modes</strong> -- The <code>createCommitOnBranch</code> GraphQL API cannot set file modes. New <code>.sh</code> files (or files with <code>executable: true</code>) are created as non-executable. See <a href="../../examples/executable-files/#github-app-limitation">Executable Files -- GitHub App Limitation</a> for details and workaround.</li>
+<li><strong>Atomic commits</strong> - All file changes in a single commit (executable file mode changes use a follow-up commit)</li>
 </ol>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <h3 id="resource-not-accessible-by-integration">"Resource not accessible by integration"<a class="headerlink" href="#resource-not-accessible-by-integration" title="Permanent link">&para;</a></h3>
