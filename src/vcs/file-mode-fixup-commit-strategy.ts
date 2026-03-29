@@ -81,7 +81,7 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
     return await this.createFixupCommit(
       options.repoInfo,
       options.branchName,
-      innerResult.sha,
+      innerResult,
       executableFiles,
       options.workDir,
       options.retries ?? 3,
@@ -102,12 +102,13 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
   private async createFixupCommit(
     repoInfo: GitHubRepoInfo,
     branchName: string,
-    parentSha: string,
+    innerResult: CommitResult,
     executableFiles: FileChange[],
     workDir: string,
     retries: number,
     token?: string
   ): Promise<CommitResult> {
+    const parentSha = innerResult.sha;
     const client = this.clientFactory(this.executor, retries, workDir);
     const apiOpts: GhApiOptions = {
       token,
@@ -160,7 +161,7 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
 
     if (treeEntries.length === 0) {
       // All files already 100755 or not found in tree — no fixup needed
-      return { sha: parentSha, verified: true, pushed: true };
+      return innerResult;
     }
 
     // 3. Create new tree with updated modes
