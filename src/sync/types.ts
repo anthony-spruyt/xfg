@@ -23,6 +23,8 @@ export interface FileWriteResult {
   content: string | null;
   action: "create" | "update" | "delete" | "skip";
   diffLines?: string[];
+  /** Git file mode. Only set for executable files ("100755"). "100644" is included
+   *  in the union for type completeness — non-executable files omit this field. */
   mode?: "100755" | "100644";
 }
 

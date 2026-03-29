@@ -45,12 +45,16 @@ function createMockClientFactory(
     const client = new GhApiClient(executor, retries, cwd);
     client.call = async (method, endpoint, params) => {
       calls.push({ method, endpoint, payload: params?.payload });
+      // Match the longest (most specific) pattern to avoid insertion-order dependence
+      let bestMatch = "";
+      let bestResponse = "{}";
       for (const [pattern, response] of responses) {
-        if (endpoint.includes(pattern)) {
-          return response;
+        if (endpoint.includes(pattern) && pattern.length > bestMatch.length) {
+          bestMatch = pattern;
+          bestResponse = response;
         }
       }
-      return "{}";
+      return bestResponse;
     };
     return client;
   };
