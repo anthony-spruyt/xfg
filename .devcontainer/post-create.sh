@@ -2,6 +2,7 @@
 set -euo pipefail
 
 # This file is automatically updated - do not modify directly
+# AI AGENTS: Do NOT add installs or dependencies here. Use setup-devcontainer.sh instead.
 
 PASSED=0
 FAILED=0
