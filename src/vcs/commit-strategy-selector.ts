@@ -2,6 +2,7 @@ import { type RepoInfo, isGitHubRepo } from "../shared/repo-detector.js";
 import type { ICommitStrategy } from "./types.js";
 import { GitCommitStrategy } from "./git-commit-strategy.js";
 import { GraphQLCommitStrategy } from "./graphql-commit-strategy.js";
+import { FileModeFixupCommitStrategy } from "./file-mode-fixup-commit-strategy.js";
 import { GitHubAppTokenManager } from "./github-app-token-manager.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 
@@ -23,8 +24,9 @@ export function createTokenManager(
 }
 
 /**
- * Returns GraphQLCommitStrategy for GitHub repos with App credentials (verified commits),
- * or GitCommitStrategy for all other cases.
+ * Returns FileModeFixupCommitStrategy (decorating GraphQLCommitStrategy) for
+ * GitHub repos with App credentials (verified commits + executable file mode
+ * support), or GitCommitStrategy for all other cases.
  */
 export function createCommitStrategy(
   repoInfo: RepoInfo,
@@ -32,7 +34,8 @@ export function createCommitStrategy(
   hasAppCredentials?: boolean
 ): ICommitStrategy {
   if (isGitHubRepo(repoInfo) && hasAppCredentials) {
-    return new GraphQLCommitStrategy(executor);
+    const inner = new GraphQLCommitStrategy(executor);
+    return new FileModeFixupCommitStrategy(inner, executor);
   }
   return new GitCommitStrategy(executor);
 }

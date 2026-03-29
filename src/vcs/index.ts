@@ -19,6 +19,7 @@ export {
   createCommitStrategy,
   createTokenManager,
 } from "./commit-strategy-selector.js";
+export { FileModeFixupCommitStrategy } from "./file-mode-fixup-commit-strategy.js";
 // Token manager type (concrete class used as type by sync module)
 export type { GitHubAppTokenManager } from "./github-app-token-manager.js";
 // Git operations
