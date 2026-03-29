@@ -29,7 +29,11 @@ export const projectRoot = join(__dirname, "../..");
  */
 export async function exec(
   command: string,
-  options?: { cwd?: string; env?: Record<string, string | undefined> }
+  options?: {
+    cwd?: string;
+    env?: Record<string, string | undefined>;
+    quiet?: boolean;
+  }
 ): Promise<string> {
   return limiter.schedule(async () => {
     try {
@@ -41,10 +45,12 @@ export async function exec(
       });
       return stdout.trim();
     } catch (error) {
-      const err = error as { stderr?: string; stdout?: string };
-      console.error("Command failed:", command);
-      console.error("stderr:", err.stderr);
-      console.error("stdout:", err.stdout);
+      if (!options?.quiet) {
+        const err = error as { stderr?: string; stdout?: string };
+        console.error("Command failed:", command);
+        console.error("stderr:", err.stderr);
+        console.error("stdout:", err.stdout);
+      }
       throw error;
     }
   });
@@ -224,7 +230,11 @@ export async function waitForPrVisible(
  */
 export async function execWithRetry(
   command: string,
-  options?: { cwd?: string; env?: Record<string, string | undefined> },
+  options?: {
+    cwd?: string;
+    env?: Record<string, string | undefined>;
+    quiet?: boolean;
+  },
   retries = 3,
   delayMs = 2000
 ): Promise<string> {
@@ -495,7 +505,9 @@ async function waitForRepoReady(
 }
 
 /**
- * Check whether a repo exists via the GitHub API.
+ * Check whether a repo exists, retrying transient failures to handle GitHub's
+ * eventual consistency (e.g. repo was just created and may not be visible yet).
+ * Use this when asserting a repo SHOULD exist.
  */
 export async function repoExists(
   owner: string,
@@ -503,10 +515,31 @@ export async function repoExists(
   envOptions?: { env: Record<string, string | undefined> }
 ): Promise<boolean> {
   try {
-    await execWithRetry(
-      `gh api repos/${owner}/${repoName} --jq '.full_name'`,
-      envOptions
-    );
+    await execWithRetry(`gh api repos/${owner}/${repoName} --jq '.full_name'`, {
+      ...envOptions,
+      quiet: true,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check whether a repo exists with a single API call, no retries.
+ * Use this when asserting a repo should NOT exist (e.g. after a dry-run),
+ * where a 404 is the expected outcome.
+ */
+export async function repoExistsNoRetry(
+  owner: string,
+  repoName: string,
+  envOptions?: { env: Record<string, string | undefined> }
+): Promise<boolean> {
+  try {
+    await exec(`gh api repos/${owner}/${repoName} --jq '.full_name'`, {
+      ...envOptions,
+      quiet: true,
+    });
     return true;
   } catch {
     return false;

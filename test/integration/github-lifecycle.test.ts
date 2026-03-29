@@ -10,6 +10,7 @@ import {
   generateRepoName,
   deleteRepo,
   repoExists,
+  repoExistsNoRetry,
   isForkedFrom,
   writeConfig,
 } from "./test-helpers.js";
@@ -153,7 +154,7 @@ repos:
 
     // Verify repo was NOT actually created
     assert.ok(
-      !(await repoExists(OWNER, repoName)),
+      !(await repoExistsNoRetry(OWNER, repoName)),
       `Repo ${repoName} should NOT exist after dry-run`
     );
 
@@ -440,7 +441,7 @@ repos:
 
     // Verify repo was NOT actually created
     assert.ok(
-      !(await repoExists(OWNER, repoName)),
+      !(await repoExistsNoRetry(OWNER, repoName)),
       `Repo ${repoName} should NOT exist after dry-run`
     );
 
@@ -482,7 +483,7 @@ repos:
 
       // Verify repo was NOT actually created
       assert.ok(
-        !(await repoExists(OWNER, repoName)),
+        !(await repoExistsNoRetry(OWNER, repoName)),
         `Repo ${repoName} should NOT exist after dry-run`
       );
 
