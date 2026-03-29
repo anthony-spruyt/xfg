@@ -178,6 +178,25 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     await this.api.call(method, endpoint, { options });
   }
 
+  async branchExists(
+    repoInfo: RepoInfo,
+    branch: string,
+    options?: GhApiOptions
+  ): Promise<boolean> {
+    assertGitHubRepo(repoInfo, "GitHub Repo Settings strategy");
+
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/branches/${encodeURIComponent(branch)}`;
+    try {
+      await this.api.call("GET", endpoint, { options });
+      return true;
+    } catch (error) {
+      if (isHttp404Error(error)) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
   private async getVulnerabilityAlerts(
     github: GitHubRepoInfo,
     options?: GhApiOptions

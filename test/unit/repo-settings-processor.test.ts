@@ -56,6 +56,12 @@ class MockStrategy implements IRepoSettingsStrategy {
     enable: boolean;
     options?: GhApiOptions;
   }> = [];
+  branchExistsResult = true;
+  branchExistsCalls: Array<{
+    repoInfo: RepoInfo;
+    branch: string;
+    options?: GhApiOptions;
+  }> = [];
 
   async getSettings(
     repoInfo: RepoInfo,
@@ -97,6 +103,15 @@ class MockStrategy implements IRepoSettingsStrategy {
     this.privateVulnerabilityReportingCalls.push({ repoInfo, enable, options });
   }
 
+  async branchExists(
+    repoInfo: RepoInfo,
+    branch: string,
+    options?: GhApiOptions
+  ): Promise<boolean> {
+    this.branchExistsCalls.push({ repoInfo, branch, options });
+    return this.branchExistsResult;
+  }
+
   reset(): void {
     this.getSettingsResult = {};
     this.getSettingsCalls = [];
@@ -104,6 +119,8 @@ class MockStrategy implements IRepoSettingsStrategy {
     this.vulnerabilityAlertsCalls = [];
     this.automatedSecurityFixesCalls = [];
     this.privateVulnerabilityReportingCalls = [];
+    this.branchExistsResult = true;
+    this.branchExistsCalls = [];
   }
 }
 
@@ -412,6 +429,7 @@ describe("RepoSettingsProcessor", () => {
       setVulnerabilityAlerts: async () => {},
       setAutomatedSecurityFixes: async () => {},
       setPrivateVulnerabilityReporting: async () => {},
+      branchExists: async () => true,
     };
 
     const processor = new RepoSettingsProcessor(
