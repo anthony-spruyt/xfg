@@ -89,6 +89,48 @@ export function attachRetryAfter(error: unknown): void {
 }
 
 /**
+ * Extracts GitHub API validation error details from `gh api --include` stdout
+ * and appends them to the error message. This surfaces the descriptive error
+ * messages that GitHub returns in 422 responses (e.g., "The branch main was
+ * not found") which are otherwise lost when only stderr is shown.
+ *
+ * No-op if stdout is absent or does not contain parseable error JSON.
+ */
+export function attachValidationDetails(error: unknown): void {
+  const stdout = (error as { stdout?: string | Buffer }).stdout;
+  if (!stdout) return;
+
+  const stdoutStr = typeof stdout === "string" ? stdout : stdout.toString();
+  const body = parseResponseBody(stdoutStr);
+
+  try {
+    const parsed = JSON.parse(body) as {
+      message?: string;
+      errors?: Array<{ message?: string; field?: string }>;
+    };
+
+    const details: string[] = [];
+
+    if (parsed.errors && parsed.errors.length > 0) {
+      for (const err of parsed.errors) {
+        if (err.message) {
+          const fieldPrefix = err.field ? `${err.field}: ` : "";
+          details.push(`${fieldPrefix}${err.message}`);
+        }
+      }
+    } else if (parsed.message) {
+      details.push(parsed.message);
+    }
+
+    if (details.length > 0 && error instanceof Error) {
+      error.message += ` [${details.join("; ")}]`;
+    }
+  } catch {
+    // JSON parse failed — stdout is not a JSON error response
+  }
+}
+
+/**
  * Executes a GitHub API call using the gh CLI.
  * Shared by labels, rulesets, and repo-settings strategies.
  *
@@ -129,6 +171,7 @@ async function ghApiCall(
     } catch (error) {
       if (!paginate) {
         attachRetryAfter(error);
+        attachValidationDetails(error);
       }
       throw error;
     }

@@ -56,6 +56,12 @@ class MockStrategy implements IRepoSettingsStrategy {
     enable: boolean;
     options?: GhApiOptions;
   }> = [];
+  branchExistsResult = true;
+  branchExistsCalls: Array<{
+    repoInfo: RepoInfo;
+    branch: string;
+    options?: GhApiOptions;
+  }> = [];
 
   async getSettings(
     repoInfo: RepoInfo,
@@ -97,6 +103,15 @@ class MockStrategy implements IRepoSettingsStrategy {
     this.privateVulnerabilityReportingCalls.push({ repoInfo, enable, options });
   }
 
+  async branchExists(
+    repoInfo: RepoInfo,
+    branch: string,
+    options?: GhApiOptions
+  ): Promise<boolean> {
+    this.branchExistsCalls.push({ repoInfo, branch, options });
+    return this.branchExistsResult;
+  }
+
   reset(): void {
     this.getSettingsResult = {};
     this.getSettingsCalls = [];
@@ -104,6 +119,8 @@ class MockStrategy implements IRepoSettingsStrategy {
     this.vulnerabilityAlertsCalls = [];
     this.automatedSecurityFixesCalls = [];
     this.privateVulnerabilityReportingCalls = [];
+    this.branchExistsResult = true;
+    this.branchExistsCalls = [];
   }
 }
 
@@ -412,6 +429,7 @@ describe("RepoSettingsProcessor", () => {
       setVulnerabilityAlerts: async () => {},
       setAutomatedSecurityFixes: async () => {},
       setPrivateVulnerabilityReporting: async () => {},
+      branchExists: async () => true,
     };
 
     const processor = new RepoSettingsProcessor(
@@ -1094,6 +1112,170 @@ describe("RepoSettingsProcessor", () => {
       assert.equal(result.success, false);
       assert.ok(result.message.includes("secretScanning"));
       assert.ok(result.message.includes("privateVulnerabilityReporting"));
+    });
+  });
+
+  describe("defaultBranch validation", () => {
+    test("should fail when defaultBranch target does not exist", async () => {
+      mockStrategy.getSettingsResult = {
+        default_branch: "master",
+      };
+      mockStrategy.branchExistsResult = false;
+      mockMetadataProvider.result = {
+        visibility: "public",
+        ownerType: "Organization",
+        hasGHAS: true,
+      };
+
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: { defaultBranch: "main" },
+        },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false);
+      assert.match(result.message, /branch 'main' does not exist/);
+      assert.match(result.message, /current: 'master'/);
+      assert.equal(mockStrategy.branchExistsCalls.length, 1);
+      assert.equal(mockStrategy.branchExistsCalls[0].branch, "main");
+      assert.equal(mockStrategy.updateSettingsCalls.length, 0);
+    });
+
+    test("should proceed when defaultBranch target exists", async () => {
+      mockStrategy.getSettingsResult = {
+        default_branch: "master",
+        has_wiki: true,
+      };
+      mockStrategy.branchExistsResult = true;
+      mockMetadataProvider.result = {
+        visibility: "public",
+        ownerType: "Organization",
+        hasGHAS: true,
+      };
+
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: { defaultBranch: "main", hasWiki: false },
+        },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, true);
+      assert.equal(mockStrategy.branchExistsCalls.length, 1);
+      assert.equal(mockStrategy.updateSettingsCalls.length, 1);
+    });
+
+    test("should not check branchExists when defaultBranch is unchanged", async () => {
+      mockStrategy.getSettingsResult = {
+        default_branch: "main",
+        has_wiki: true,
+      };
+      mockMetadataProvider.result = {
+        visibility: "public",
+        ownerType: "Organization",
+        hasGHAS: true,
+      };
+
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: { defaultBranch: "main", hasWiki: false },
+        },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, true);
+      assert.equal(mockStrategy.branchExistsCalls.length, 0);
+      assert.equal(mockStrategy.updateSettingsCalls.length, 1);
+    });
+
+    test("should fail when defaultBranch is new (create action) and target does not exist", async () => {
+      mockStrategy.getSettingsResult = {};
+      mockStrategy.branchExistsResult = false;
+      mockMetadataProvider.result = {
+        visibility: "public",
+        ownerType: "Organization",
+        hasGHAS: true,
+      };
+
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: { defaultBranch: "main" },
+        },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(result.success, false);
+      assert.match(result.message, /branch 'main' does not exist/);
+      assert.equal(mockStrategy.branchExistsCalls.length, 1);
+      assert.equal(mockStrategy.updateSettingsCalls.length, 0);
+    });
+
+    test("should fail in dry-run when defaultBranch target does not exist", async () => {
+      mockStrategy.getSettingsResult = {
+        default_branch: "master",
+      };
+      mockStrategy.branchExistsResult = false;
+      mockMetadataProvider.result = {
+        visibility: "public",
+        ownerType: "Organization",
+        hasGHAS: true,
+      };
+
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: { defaultBranch: "main" },
+        },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: true,
+      });
+
+      assert.equal(result.success, false);
+      assert.match(result.message, /branch 'main' does not exist/);
     });
   });
 });

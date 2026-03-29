@@ -107,6 +107,29 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
       };
     }
 
+    // Validate defaultBranch target exists before attempting to apply
+    const defaultBranchChange = changes.find(
+      (c) => c.property === "defaultBranch" && c.action !== "unchanged"
+    );
+    if (defaultBranchChange) {
+      const targetBranch = String(defaultBranchChange.newValue);
+      const exists = await this.strategy.branchExists(
+        githubRepo,
+        targetBranch,
+        strategyOptions
+      );
+      if (!exists) {
+        const currentBranch = defaultBranchChange.oldValue
+          ? String(defaultBranchChange.oldValue)
+          : "unknown";
+        return {
+          success: false,
+          repoName,
+          message: `Failed: Cannot set default branch to '${targetBranch}': branch '${targetBranch}' does not exist (current: '${currentBranch}'). Create or rename the branch first.`,
+        };
+      }
+    }
+
     // Format plan output
     const planOutput = formatRepoSettingsPlan(changes);
 

@@ -89,4 +89,13 @@ export interface IRepoSettingsStrategy {
     enable: boolean,
     options?: GhApiOptions
   ): Promise<void>;
+
+  /**
+   * Checks whether a branch exists in the repository.
+   */
+  branchExists(
+    repoInfo: RepoInfo,
+    branch: string,
+    options?: GhApiOptions
+  ): Promise<boolean>;
 }

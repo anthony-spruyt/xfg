@@ -89,6 +89,11 @@ describe("isPermanentError", () => {
     const error = new Error("glab: GITLAB_TOKEN environment variable not set");
     assert.equal(isPermanentError(error), true);
   });
+
+  test("returns true for 422 validation failed", () => {
+    const error = new Error("Validation Failed (HTTP 422)");
+    assert.equal(isPermanentError(error), true);
+  });
 });
 
 describe("isTransientError", () => {

@@ -635,6 +635,65 @@ describe("GitHubRepoSettingsStrategy", () => {
     });
   });
 
+  describe("branchExists", () => {
+    test("returns true when branch exists (200)", async () => {
+      mockExecutor.setResponse("/branches/main", "{}");
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
+        cwd: "/tmp",
+        retries: 0,
+      });
+      const result = await strategy.branchExists(githubRepo, "main");
+      assert.equal(result, true);
+    });
+
+    test("returns false when branch does not exist (404)", async () => {
+      mockExecutor.setError(
+        "/branches/nonexistent",
+        "gh: Not Found (HTTP 404)"
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
+        cwd: "/tmp",
+        retries: 0,
+      });
+      const result = await strategy.branchExists(githubRepo, "nonexistent");
+      assert.equal(result, false);
+    });
+
+    test("re-throws non-404 errors", async () => {
+      mockExecutor.setError(
+        "/branches/main",
+        "Internal Server Error (HTTP 500)"
+      );
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
+        cwd: "/tmp",
+        retries: 0,
+      });
+      await assert.rejects(
+        () => strategy.branchExists(githubRepo, "main"),
+        /500/
+      );
+    });
+
+    test("encodes branch names with slashes", async () => {
+      mockExecutor.setResponse("/branches/feature%2Fmy-branch", "{}");
+
+      const strategy = new GitHubRepoSettingsStrategy(mockExecutor, {
+        cwd: "/tmp",
+        retries: 0,
+      });
+      await strategy.branchExists(githubRepo, "feature/my-branch");
+      assert.ok(
+        mockExecutor.commands.some((cmd) =>
+          cmd.includes("feature%2Fmy-branch")
+        ),
+        `Expected command with feature%2Fmy-branch, got: ${mockExecutor.commands.join(", ")}`
+      );
+    });
+  });
+
   describe("retry behavior", () => {
     test("should retry on transient error and succeed", async () => {
       let callCount = 0;

@@ -8,6 +8,7 @@ import {
   GhApiClient,
   parseResponseBody,
   attachRetryAfter,
+  attachValidationDetails,
 } from "../../src/shared/gh-api-utils.js";
 import { parseApiJson } from "../../src/shared/json-utils.js";
 import type { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
@@ -323,6 +324,53 @@ describe("attachRetryAfter", () => {
       "HTTP/2.0 403\nRetry-After: Thu, 01 Jan 2099 00:00:00 GMT\n\n{}";
     attachRetryAfter(error);
     assert.equal(error.retryAfter, undefined);
+  });
+});
+
+describe("attachValidationDetails", () => {
+  test("extracts GitHub validation error message from stdout", () => {
+    const error = new Error("Validation Failed (HTTP 422)") as Error & {
+      stdout?: string;
+    };
+    error.stdout =
+      'HTTP/2.0 422 Unprocessable Entity\nContent-Type: application/json\n\n{"message":"Validation Failed","errors":[{"message":"The branch main was not found.","resource":"Repository","field":"default_branch","code":"invalid"}]}';
+    attachValidationDetails(error);
+    assert.match(error.message, /The branch main was not found/);
+  });
+
+  test("handles multiple validation errors", () => {
+    const error = new Error("Validation Failed (HTTP 422)") as Error & {
+      stdout?: string;
+    };
+    error.stdout =
+      'HTTP/2.0 422\n\n{"message":"Validation Failed","errors":[{"message":"error one","resource":"R","field":"f1","code":"invalid"},{"message":"error two","resource":"R","field":"f2","code":"invalid"}]}';
+    attachValidationDetails(error);
+    assert.match(error.message, /error one/);
+    assert.match(error.message, /error two/);
+  });
+
+  test("no-op when stdout is absent", () => {
+    const error = new Error("Validation Failed (HTTP 422)");
+    attachValidationDetails(error);
+    assert.equal(error.message, "Validation Failed (HTTP 422)");
+  });
+
+  test("no-op when stdout has no parseable JSON body", () => {
+    const error = new Error("Validation Failed (HTTP 422)") as Error & {
+      stdout?: string;
+    };
+    error.stdout = "HTTP/2.0 422\n\nnot json";
+    attachValidationDetails(error);
+    assert.equal(error.message, "Validation Failed (HTTP 422)");
+  });
+
+  test("handles message-only response (no errors array)", () => {
+    const error = new Error("Validation Failed (HTTP 422)") as Error & {
+      stdout?: string;
+    };
+    error.stdout = 'HTTP/2.0 422\n\n{"message":"Something went wrong"}';
+    attachValidationDetails(error);
+    assert.match(error.message, /Something went wrong/);
   });
 });
 

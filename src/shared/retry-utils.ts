@@ -16,6 +16,7 @@ export const CORE_PERMANENT_ERROR_PATTERNS: RegExp[] = [
   /401\b/,
   /403\b/,
   /404\b/,
+  /422\b/,
   /not\s*found/i,
   /does\s*not\s*exist/i,
   /repository\s*not\s*found/i,
