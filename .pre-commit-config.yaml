@@ -18,15 +18,6 @@ repos:
           - "--markdown-linebreak-ext=md"
       - id: "end-of-file-fixer"
       - id: "mixed-line-ending"
-  - repo: "https://github.com/Lucas-C/pre-commit-hooks"
-    rev: "v1.5.6"
-    hooks:
-      - id: "remove-crlf"
-      - id: "remove-tabs"
-        args:
-          - "--whitespaces-count"
-          - "2"
-        exclude: "(go\\.mod|go\\.sum)$"
   - repo: "https://github.com/sirosen/texthooks"
     rev: "0.7.1"
     hooks:
@@ -55,3 +46,11 @@ repos:
     rev: "v1.7.11"
     hooks:
       - id: "actionlint"
+  - repo: "https://github.com/Lucas-C/pre-commit-hooks"
+    rev: "v1.5.6"
+    hooks:
+      - id: "remove-crlf"
+      - id: "remove-tabs"
+        args:
+          - "--whitespaces-count"
+          - "2"
