@@ -11,6 +11,7 @@ import {
 } from "../../mocks/index.js";
 import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
 import type { FileWriteResult } from "../../../src/sync/types.js";
+import type { FileChange } from "../../../src/vcs/types.js";
 
 const testDir = join(tmpdir(), "commit-push-manager-test-" + Date.now());
 
@@ -173,6 +174,64 @@ describe("CommitPushManager", () => {
       });
 
       assert.equal(result.success, true);
+    });
+
+    test("passes mode through to FileChange array", async () => {
+      const { gitOps } = createMockAuthenticatedGitOps({
+        hasStagedChanges: true,
+      });
+      const { mock: mockLogger } = createMockLogger();
+      const { mock: mockExecutor } = createMockExecutor({});
+
+      let capturedFileChanges: FileChange[] = [];
+      const mockStrategy = {
+        async commit(options: { fileChanges: FileChange[] }) {
+          capturedFileChanges = options.fileChanges;
+          return { sha: "abc123", verified: true, pushed: true };
+        },
+      };
+
+      const manager = new CommitPushManager(mockLogger, () => mockStrategy);
+      const fileChanges = new Map<string, FileWriteResult>([
+        [
+          "deploy.sh",
+          {
+            fileName: "deploy.sh",
+            content: "#!/bin/bash",
+            action: "create" as const,
+            mode: "100755" as const,
+          },
+        ],
+        [
+          "config.json",
+          {
+            fileName: "config.json",
+            content: "{}",
+            action: "create" as const,
+          },
+        ],
+      ]);
+
+      await manager.commitAndPush({
+        repoInfo: mockRepoInfo,
+        gitOps,
+        workDir,
+        fileChanges,
+        commitMessage: "chore: sync config",
+        pushBranch: "chore/sync-config",
+        isDirectMode: false,
+        dryRun: false,
+        retries: 3,
+        executor: mockExecutor,
+      });
+
+      const shEntry = capturedFileChanges.find((fc) => fc.path === "deploy.sh");
+      assert.equal(shEntry?.mode, "100755");
+
+      const jsonEntry = capturedFileChanges.find(
+        (fc) => fc.path === "config.json"
+      );
+      assert.equal(jsonEntry?.mode, undefined);
     });
 
     test("calls gitOps.stageAll when not in dry-run mode", async () => {
