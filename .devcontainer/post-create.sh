@@ -17,7 +17,9 @@ fail() {
 }
 
 # Make all shell scripts executable (runs from repo root via postCreateCommand)
-find . -type f -name '*.sh' -exec chmod +x {} +
+# Uses git ls-files to only touch tracked files, avoiding permission denied errors
+# on directories we don't own (e.g. mounted volumes, .git objects)
+git ls-files -z '*.sh' | xargs -0 -r chmod +x
 
 # Change to script directory for package.json access
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
