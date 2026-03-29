@@ -33,7 +33,7 @@ export interface FileWriteContext {
   dryRun: boolean;
   noDelete: boolean;
   configId: string;
-  /** True when using GraphQL commit strategy (GitHub App) which cannot set file modes */
+  /** True when using GraphQL commit strategy (GitHub App) */
   hasAppCredentials?: boolean;
 }
 
@@ -175,7 +175,7 @@ export interface ProcessorOptions {
   noDelete?: boolean;
   /** GitHub token for authentication (resolved by caller) */
   token?: string;
-  /** True when using GraphQL commit strategy (GitHub App) which cannot set file modes */
+  /** True when using GraphQL commit strategy (GitHub App) */
   hasAppCredentials?: boolean;
 }
 
