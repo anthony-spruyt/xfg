@@ -174,7 +174,10 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
     }
 
     if (treeEntries.length === 0) {
-      // All files already 100755 — no fixup needed
+      // All requested files are either already 100755 or absent from the tree.
+      // Absent files in a non-truncated tree means createCommitOnBranch did not
+      // include them (e.g., concurrent deletion) — safe to skip since there is
+      // no blob to patch.
       return innerResult;
     }
 
@@ -188,7 +191,8 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
       "POST git tree"
     );
 
-    // 4. Create fixup commit
+    // 4. Create fixup commit (message is not user-customizable; this is an
+    // internal implementation detail of the mode-patching decorator)
     const newCommitRaw = await client.call("POST", `${repoPath}/git/commits`, {
       payload: {
         message: "chore: set executable file modes",

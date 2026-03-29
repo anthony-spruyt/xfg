@@ -655,6 +655,63 @@ describe("FileModeFixupCommitStrategy", () => {
     assert.equal(result.sha, "content-sha");
   });
 
+  test("throws when tree is truncated with some files already 100755 and others missing", async () => {
+    const innerResult: CommitResult = {
+      sha: "content-sha",
+      verified: true,
+      pushed: true,
+    };
+    const inner = createMockInnerStrategy(innerResult);
+
+    const responses = new Map<string, string>([
+      [
+        "/git/commits/content-sha",
+        JSON.stringify({ sha: "content-sha", tree: { sha: "tree-1" } }),
+      ],
+      [
+        "/git/trees/tree-1",
+        JSON.stringify({
+          sha: "tree-1",
+          truncated: true,
+          tree: [
+            {
+              path: "deploy.sh",
+              mode: "100755",
+              type: "blob",
+              sha: "blob-deploy",
+            },
+          ],
+        }),
+      ],
+    ]);
+
+    const factory = createMockClientFactory(responses);
+    const strategy = new FileModeFixupCommitStrategy(
+      inner,
+      mockExecutor,
+      factory
+    );
+
+    await assert.rejects(
+      () =>
+        strategy.commit({
+          repoInfo: githubRepoInfo,
+          branchName: "test",
+          message: "chore: sync",
+          fileChanges: [
+            { path: "deploy.sh", content: "#!/bin/bash", mode: "100755" },
+            {
+              path: "scripts/setup.sh",
+              content: "#!/bin/bash",
+              mode: "100755",
+            },
+          ],
+          workDir: "/tmp/test",
+        }),
+      { message: /truncated.*scripts\/setup\.sh/ }
+    );
+  });
+
   test("returns inner result when executable file not found in tree", async () => {
     const innerResult: CommitResult = {
       sha: "content-sha",

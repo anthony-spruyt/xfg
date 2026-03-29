@@ -118,6 +118,8 @@ export class FileWriter implements IFileWriter {
           fileName: file.fileName,
           content: fileContent,
           action,
+          // mode is only set on changed files — unchanged files won't trigger a
+          // fixup commit, which is correct since their mode was set on a prior sync
           ...(shouldBeExecutable(file) ? { mode: "100755" as const } : {}),
         };
 
