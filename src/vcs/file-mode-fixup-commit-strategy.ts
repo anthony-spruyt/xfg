@@ -8,6 +8,7 @@ import type { ICommandExecutor } from "../shared/command-executor.js";
 import { isGitHubRepo, type GitHubRepoInfo } from "../shared/repo-detector.js";
 import { GhApiClient, type GhApiOptions } from "../shared/gh-api-utils.js";
 import { parseApiJson } from "../shared/json-utils.js";
+import { SyncError } from "../shared/errors.js";
 
 interface GitCommitResponse {
   sha: string;
@@ -24,6 +25,7 @@ interface GitTreeEntry {
 interface GitTreeResponse {
   sha: string;
   tree: GitTreeEntry[];
+  truncated?: boolean;
 }
 
 interface GitCreateTreeResponse {
@@ -160,7 +162,19 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
     }
 
     if (treeEntries.length === 0) {
-      // All files already 100755 or not found in tree — no fixup needed
+      if (treeData.truncated && executablePaths.size > 0) {
+        // Tree was truncated and we didn't find any files to fix — some may have been missed
+        const missing = [...executablePaths].filter(
+          (p) => !treeData.tree.some((e) => e.path === p)
+        );
+        if (missing.length > 0) {
+          throw new SyncError(
+            `File mode fixup incomplete: tree response was truncated (>100k entries) ` +
+              `and ${missing.length} executable file(s) were not found: ${missing.join(", ")}`
+          );
+        }
+      }
+      // All files already 100755 — no fixup needed
       return innerResult;
     }
 
