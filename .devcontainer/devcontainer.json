@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
   "name": "Ubuntu",
-  "image": "mcr.microsoft.com/devcontainers/base:jammy",
+  "image": "mcr.microsoft.com/devcontainers/base:jammy@sha256:0e50c6443341c5302ad4728049013750eb9ca35b1a3cbf003ba5fcbd5e033798",
   "runArgs": [
     "--env-file",
     "${localEnv:HOME}/.secrets/.env"
