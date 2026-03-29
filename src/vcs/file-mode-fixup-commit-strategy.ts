@@ -166,7 +166,9 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
 
     // If tree was truncated (>100k entries), check that all executable files were found
     if (treeData.truncated) {
-      const foundPaths = new Set(treeData.tree.map((e) => e.path));
+      const foundPaths = new Set(
+        treeData.tree.filter((e) => e.type === "blob").map((e) => e.path)
+      );
       const missing = [...executablePaths].filter((p) => !foundPaths.has(p));
       if (missing.length > 0) {
         throw new SyncError(
