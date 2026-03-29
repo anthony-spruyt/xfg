@@ -761,4 +761,81 @@ describe("FileModeFixupCommitStrategy", () => {
     // Should fall back to inner result since file not found in tree
     assert.equal(result.sha, "content-sha");
   });
+
+  test("passes retries option through to client factory", async () => {
+    const innerResult: CommitResult = {
+      sha: "content-sha",
+      verified: true,
+      pushed: true,
+    };
+    const inner = createMockInnerStrategy(innerResult);
+
+    let capturedRetries: number | undefined;
+    const responses = new Map<string, string>([
+      [
+        "/git/commits/content-sha",
+        JSON.stringify({ sha: "content-sha", tree: { sha: "tree-1" } }),
+      ],
+      [
+        "/git/trees/tree-1",
+        JSON.stringify({
+          sha: "tree-1",
+          tree: [
+            {
+              path: "deploy.sh",
+              mode: "100644",
+              type: "blob",
+              sha: "blob-1",
+            },
+          ],
+        }),
+      ],
+      ["/git/trees", JSON.stringify({ sha: "tree-2" })],
+      ["/git/commits", JSON.stringify({ sha: "fixup-sha" })],
+      [
+        "/git/refs/heads/",
+        JSON.stringify({
+          ref: "refs/heads/test",
+          object: { sha: "fixup-sha" },
+        }),
+      ],
+    ]);
+
+    const factory: GhApiClientFactory = (executor, retries, cwd) => {
+      capturedRetries = retries;
+      const client = new GhApiClient(executor, retries, cwd);
+      client.call = async (_method, endpoint) => {
+        for (const [pattern, response] of responses) {
+          if (endpoint.includes(pattern)) {
+            return response;
+          }
+        }
+        return "{}";
+      };
+      return client;
+    };
+
+    const strategy = new FileModeFixupCommitStrategy(
+      inner,
+      mockExecutor,
+      factory
+    );
+
+    await strategy.commit({
+      repoInfo: githubRepoInfo,
+      branchName: "test",
+      message: "chore: sync",
+      fileChanges: [
+        { path: "deploy.sh", content: "#!/bin/bash", mode: "100755" },
+      ],
+      workDir: "/tmp/test",
+      retries: 7,
+    });
+
+    assert.equal(
+      capturedRetries,
+      7,
+      "Should pass retries option to client factory"
+    );
+  });
 });

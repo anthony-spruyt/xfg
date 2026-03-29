@@ -76,6 +76,9 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
       return innerResult;
     }
 
+    // Safety net: only GitHub repos use the REST Git Data API for fixup.
+    // Currently only composed for GitHub repos in createCommitStrategy(),
+    // but guard defensively in case the decorator is reused elsewhere.
     if (!isGitHubRepo(options.repoInfo)) {
       return innerResult;
     }
@@ -206,7 +209,10 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
       "POST git commit"
     );
 
-    // 5. Update branch ref
+    // 5. Update branch ref (fast-forward only; force is not needed since the
+    // fixup commit's parent is always the content commit we just created).
+    // Branch names with slashes (e.g. "chore/sync-config") are passed verbatim —
+    // the GitHub REST API accepts literal slashes in ref paths.
     await client.call("PATCH", `${repoPath}/git/refs/heads/${branchName}`, {
       payload: { sha: newCommit.sha },
       options: apiOpts,
