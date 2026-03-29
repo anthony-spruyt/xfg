@@ -161,19 +161,19 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
       }
     }
 
-    if (treeEntries.length === 0) {
-      if (treeData.truncated && executablePaths.size > 0) {
-        // Tree was truncated and we didn't find any files to fix — some may have been missed
-        const missing = [...executablePaths].filter(
-          (p) => !treeData.tree.some((e) => e.path === p)
+    // If tree was truncated (>100k entries), check that all executable files were found
+    if (treeData.truncated) {
+      const foundPaths = new Set(treeData.tree.map((e) => e.path));
+      const missing = [...executablePaths].filter((p) => !foundPaths.has(p));
+      if (missing.length > 0) {
+        throw new SyncError(
+          `File mode fixup incomplete: tree response was truncated (>100k entries) ` +
+            `and ${missing.length} executable file(s) were not found: ${missing.join(", ")}`
         );
-        if (missing.length > 0) {
-          throw new SyncError(
-            `File mode fixup incomplete: tree response was truncated (>100k entries) ` +
-              `and ${missing.length} executable file(s) were not found: ${missing.join(", ")}`
-          );
-        }
       }
+    }
+
+    if (treeEntries.length === 0) {
       // All files already 100755 — no fixup needed
       return innerResult;
     }
