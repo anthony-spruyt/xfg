@@ -26,7 +26,7 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 | `merge-strategy`         | No       | -                     | Merge strategy (`merge`/`squash`/`rebase`)                 |
 | `delete-branch`          | No       | `false`               | Delete branch after merge                                  |
 | `github-token`           | No       | `${{ github.token }}` | GitHub token for authentication                            |
-| `github-app-id`          | No       | -                     | GitHub App ID for installation token generation            |
+| `github-client-id`       | No       | -                     | GitHub App Client ID for installation token generation     |
 | `github-app-private-key` | No       | -                     | GitHub App private key (PEM) for JWT signing               |
 | `azure-devops-token`     | No       | -                     | Azure DevOps Personal Access Token                         |
 | `gitlab-token`           | No       | -                     | GitLab token for authentication                            |
@@ -99,7 +99,7 @@ jobs:
       - uses: anthony-spruyt/xfg@v5
         with:
           config: ./sync-config.yml
-          github-app-id: ${{ vars.APP_ID }}
+          github-client-id: ${{ vars.CLIENT_ID }}
           github-app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
 ```
 
