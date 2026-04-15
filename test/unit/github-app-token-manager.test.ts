@@ -1,7 +1,7 @@
 import { test, describe, beforeEach, afterEach, mock } from "node:test";
 import { strict as assert } from "node:assert";
 import { GitHubAppTokenManager } from "../../src/vcs/github-app-token-manager.js";
-import { TEST_PRIVATE_KEY, TEST_APP_ID } from "../fixtures/test-fixtures.js";
+import { TEST_PRIVATE_KEY, TEST_CLIENT_ID } from "../fixtures/test-fixtures.js";
 function base64UrlDecode(str: string): string {
   // Add padding if needed
   const padded = str + "=".repeat((4 - (str.length % 4)) % 4);
@@ -38,13 +38,19 @@ describe("GitHubAppTokenManager", () => {
   // Task 1: JWT Generation Tests
   // ============================================================
   describe("constructor and generateJWT", () => {
-    test("creates instance with appId and privateKey", () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+    test("creates instance with clientId and privateKey", () => {
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
       assert.ok(manager);
     });
 
     test("generateJWT returns a valid JWT structure", () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
       const jwt = manager.generateJWT();
 
       // JWT should have 3 parts separated by dots
@@ -61,7 +67,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("JWT header has correct algorithm and type", () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
       const jwt = manager.generateJWT();
       const { header } = parseJwt(jwt);
 
@@ -71,20 +80,26 @@ describe("GitHubAppTokenManager", () => {
       });
     });
 
-    test("JWT payload has correct issuer (appId)", () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+    test("JWT payload has correct issuer (clientId)", () => {
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
       const jwt = manager.generateJWT();
       const { payload } = parseJwt(jwt);
 
       assert.equal(
         (payload as { iss: string }).iss,
-        TEST_APP_ID,
+        TEST_CLIENT_ID,
         "iss should be the app ID"
       );
     });
 
     test("JWT payload has iat set to now minus 60 seconds", () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
       const beforeTime = Math.floor(Date.now() / 1000) - 60;
       const jwt = manager.generateJWT();
       const afterTime = Math.floor(Date.now() / 1000) - 60;
@@ -96,7 +111,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("JWT payload has exp set to now plus 600 seconds", () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
       const beforeTime = Math.floor(Date.now() / 1000) + 600;
       const jwt = manager.generateJWT();
       const afterTime = Math.floor(Date.now() / 1000) + 600;
@@ -114,7 +132,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("JWT signature is valid RS256", () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
       const jwt = manager.generateJWT();
 
       // Verify that the signature part exists and is non-empty
@@ -134,7 +155,10 @@ describe("GitHubAppTokenManager", () => {
   // ============================================================
   describe("discoverInstallations", () => {
     test("calls GET /app/installations with JWT auth", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       let capturedUrl: string | undefined;
       let capturedHeaders: Record<string, string> | undefined;
@@ -171,7 +195,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("stores installations in map by apiHost:owner", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       globalThis.fetch = mock.fn(async () => {
         return new Response(
@@ -201,7 +228,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("getInstallationId returns undefined for unknown owner", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       globalThis.fetch = mock.fn(async () => {
         return new Response(
@@ -223,7 +253,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("handles GitHub Enterprise API host", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       let capturedUrl: string | undefined;
 
@@ -252,7 +285,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("throws on non-200 response", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       globalThis.fetch = mock.fn(async () => {
         return new Response("Not Found", { status: 404 });
@@ -271,7 +307,10 @@ describe("GitHubAppTokenManager", () => {
   // ============================================================
   describe("getTokenForOwner", () => {
     test("calls POST /app/installations/{id}/access_tokens", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       let capturedUrl: string | undefined;
       let capturedMethod: string | undefined;
@@ -315,7 +354,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("returns null if no installation found", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       globalThis.fetch = mock.fn(async () => {
         return new Response(JSON.stringify([]), {
@@ -334,7 +376,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("caches tokens for 45 minutes", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       let tokenCallCount = 0;
 
@@ -379,7 +424,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("fetches new token after cache expires", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       let tokenCallCount = 0;
 
@@ -431,7 +479,10 @@ describe("GitHubAppTokenManager", () => {
   // ============================================================
   describe("getTokenForRepo", () => {
     test("derives api.github.com for github.com host", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       let discoveryHost: string | undefined;
 
@@ -475,7 +526,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("derives GHE API host with /api/v3 suffix", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       let capturedUrl: string | undefined;
 
@@ -517,7 +571,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("auto-discovers installations if not already discovered", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       let discoveryCalled = false;
 
@@ -558,7 +615,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("does not re-discover if already discovered for host", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       let discoveryCount = 0;
 
@@ -603,7 +663,10 @@ describe("GitHubAppTokenManager", () => {
   // ============================================================
   describe("retry logic", () => {
     test("retries discoverInstallations on 5xx errors", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       let callCount = 0;
 
@@ -628,7 +691,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("retries getTokenForOwner on 5xx errors", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       let discoveryDone = false;
       let tokenCallCount = 0;
@@ -672,7 +738,10 @@ describe("GitHubAppTokenManager", () => {
     });
 
     test("does not retry on 4xx errors", async () => {
-      const manager = new GitHubAppTokenManager(TEST_APP_ID, TEST_PRIVATE_KEY);
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
 
       let callCount = 0;
 
