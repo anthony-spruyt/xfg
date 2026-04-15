@@ -104,7 +104,7 @@ jobs:
       - name: Act — run GitHub App integration tests
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-          XFG_GITHUB_APP_ID: ${{ vars.TEST_CLIENT_ID }}
+          XFG_GITHUB_CLIENT_ID: ${{ vars.TEST_CLIENT_ID }}
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
         run: npm run test:integration:github-app
 
@@ -257,7 +257,7 @@ jobs:
           # Include github-token to simulate real usage where both are set
           # This tests that GitHub App credentials take precedence over PAT
           github-token: ${{ github.token }}
-          github-app-id: ${{ vars.TEST_CLIENT_ID }}
+          github-client-id: ${{ vars.TEST_CLIENT_ID }}
           github-app-private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
@@ -388,7 +388,7 @@ jobs:
       - name: Run lifecycle integration tests (GitHub App)
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-          XFG_GITHUB_APP_ID: ${{ vars.TEST_CLIENT_ID }}
+          XFG_GITHUB_CLIENT_ID: ${{ vars.TEST_CLIENT_ID }}
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         run: npm run test:integration:github-lifecycle-app
@@ -487,7 +487,7 @@ jobs:
           config: /tmp/lifecycle-action-app-config.yaml
           merge: direct
           github-token: ${{ github.token }}
-          github-app-id: ${{ vars.TEST_CLIENT_ID }}
+          github-client-id: ${{ vars.TEST_CLIENT_ID }}
           github-app-private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 

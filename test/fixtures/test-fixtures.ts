@@ -34,4 +34,4 @@ FjHEMfmuYQEHGa7e2Tuo1ox4FdqKCSJ1F7lgsKsHqBVvYByh07blegIym4q8AVXE
 lHSxz4gPIusCQdTECjW4mmA=
 -----END PRIVATE KEY-----`;
 
-export const TEST_APP_ID = "12345";
+export const TEST_CLIENT_ID = "12345";

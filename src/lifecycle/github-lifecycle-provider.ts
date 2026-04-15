@@ -516,6 +516,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       () => this.executor.exec(command, this.cwd, { env: tokenEnv }),
       {
         retries: this.retries,
+        permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
       }
     );
   }

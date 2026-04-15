@@ -23,7 +23,7 @@ describe("createTokenManager", () => {
 
   test("returns token manager when credentials provided", () => {
     const manager = createTokenManager({
-      appId: "12345",
+      clientId: "12345",
       privateKey: "-----BEGIN RSA PRIVATE KEY-----",
     });
 

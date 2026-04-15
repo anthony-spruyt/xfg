@@ -23,7 +23,7 @@ For enterprises that prefer GitHub Apps over personal access tokens (PATs).
      - Pull requests: Read and write
      - Workflows: Read and write _(required if syncing `.github/workflows/` files)_
    - **Where can this GitHub App be installed?** Any account
-4. Create the app and note the **App ID**
+4. Create the app and note the **Client ID** (starts with `Iv23`)
 5. Generate a **private key** (downloads a .pem file)
 
 ### 2. Install the App
@@ -36,7 +36,7 @@ For enterprises that prefer GitHub Apps over personal access tokens (PATs).
 
 In your GitHub repository:
 
-- **Variables:** `APP_ID` (the numeric app ID)
+- **Variables:** `CLIENT_ID` (the GitHub App Client ID, starts with `Iv23`)
 - **Secrets:** `APP_PRIVATE_KEY` (contents of the .pem file)
 
 ### 4. Update Your Workflow
@@ -51,7 +51,7 @@ jobs:
       - uses: anthony-spruyt/xfg@v5
         with:
           config: sync-config.yaml
-          github-app-id: ${{ vars.APP_ID }}
+          github-client-id: ${{ vars.CLIENT_ID }}
           github-app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
 ```
 
@@ -66,7 +66,7 @@ This approach:
 
 When GitHub App credentials are provided, xfg:
 
-1. **Generates a JWT** using your App ID and private key
+1. **Generates a JWT** using your Client ID and private key
 2. **Discovers installations** by calling GitHub's API to list all installations
 3. **Generates installation tokens** per-installation (tokens are cached for 55 minutes)
 4. **Uses GraphQL API** for commits with the installation token, creating verified commits
@@ -79,13 +79,13 @@ This uses GitHub's `createCommitOnBranch` mutation instead of git commands, whic
 
 ## Environment Variables
 
-| Variable                     | Auth Type  | Description                              |
-| ---------------------------- | ---------- | ---------------------------------------- |
-| `XFG_GITHUB_APP_ID`          | GitHub App | App ID for installation token generation |
-| `XFG_GITHUB_APP_PRIVATE_KEY` | GitHub App | Private key (PEM) for JWT signing        |
-| `GH_TOKEN`                   | PAT        | Personal Access Token for GitHub API     |
+| Variable                     | Auth Type  | Description                                            |
+| ---------------------------- | ---------- | ------------------------------------------------------ |
+| `XFG_GITHUB_CLIENT_ID`       | GitHub App | GitHub App Client ID for installation token generation |
+| `XFG_GITHUB_APP_PRIVATE_KEY` | GitHub App | Private key (PEM) for JWT signing                      |
+| `GH_TOKEN`                   | PAT        | Personal Access Token for GitHub API                   |
 
-When `XFG_GITHUB_APP_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` are set, xfg uses GitHub App authentication with automatic per-installation token generation. For repositories without app access, xfg will skip processing with a warning.
+When `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` are set, xfg uses GitHub App authentication with automatic per-installation token generation. For repositories without app access, xfg will skip processing with a warning.
 
 > **Note:** You can also get verified commits with PATs by [configuring GPG signing](https://docs.github.com/en/authentication/managing-commit-signature-verification). GitHub App authentication is an alternative that doesn't require GPG key management.
 
@@ -111,7 +111,7 @@ The app lacks required permissions. Check that:
 
 ### Commits not showing as verified
 
-Ensure you're using GitHub App authentication (`github-app-id` and `github-app-private-key` inputs). Only installation tokens from GitHub Apps trigger the GraphQL verified commit flow.
+Ensure you're using GitHub App authentication (`github-client-id` and `github-app-private-key` inputs). Only installation tokens from GitHub Apps trigger the GraphQL verified commit flow.
 
 ### Payload too large
 
