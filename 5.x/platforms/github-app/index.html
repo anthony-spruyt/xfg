@@ -2433,7 +2433,7 @@
 </ul>
 </li>
 <li><strong>Where can this GitHub App be installed?</strong> Any account</li>
-<li>Create the app and note the <strong>Client ID</strong> (starts with <code>Iv23</code>)</li>
+<li>Create the app and note the <strong>App ID</strong></li>
 <li>Generate a <strong>private key</strong> (downloads a .pem file)</li>
 </ol>
 <h3 id="2-install-the-app">2. Install the App<a class="headerlink" href="#2-install-the-app" title="Permanent link">&para;</a></h3>
@@ -2445,7 +2445,7 @@
 <h3 id="3-store-credentials">3. Store Credentials<a class="headerlink" href="#3-store-credentials" title="Permanent link">&para;</a></h3>
 <p>In your GitHub repository:</p>
 <ul>
-<li><strong>Variables:</strong> <code>CLIENT_ID</code> (the GitHub App Client ID, starts with <code>Iv23</code>)</li>
+<li><strong>Variables:</strong> <code>APP_ID</code> (the numeric app ID)</li>
 <li><strong>Secrets:</strong> <code>APP_PRIVATE_KEY</code> (contents of the .pem file)</li>
 </ul>
 <h3 id="4-update-your-workflow">4. Update Your Workflow<a class="headerlink" href="#4-update-your-workflow" title="Permanent link">&para;</a></h3>
@@ -2458,7 +2458,7 @@
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthony-spruyt/xfg@v5</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">        </span><span class="nt">with</span><span class="p">:</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">          </span><span class="nt">config</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sync-config.yaml</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">          </span><span class="nt">github-client-id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ vars.CLIENT_ID }}</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">          </span><span class="nt">github-app-id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ vars.APP_ID }}</span>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">          </span><span class="nt">github-app-private-key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.APP_PRIVATE_KEY }}</span>
 </span></code></pre></div>
 <p>This approach:</p>
@@ -2471,7 +2471,7 @@
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
 <p>When GitHub App credentials are provided, xfg:</p>
 <ol>
-<li><strong>Generates a JWT</strong> using your Client ID and private key</li>
+<li><strong>Generates a JWT</strong> using your App ID and private key</li>
 <li><strong>Discovers installations</strong> by calling GitHub's API to list all installations</li>
 <li><strong>Generates installation tokens</strong> per-installation (tokens are cached for 55 minutes)</li>
 <li><strong>Uses GraphQL API</strong> for commits with the installation token, creating verified commits</li>
@@ -2493,9 +2493,9 @@
 </thead>
 <tbody>
 <tr>
-<td><code>XFG_GITHUB_CLIENT_ID</code></td>
+<td><code>XFG_GITHUB_APP_ID</code></td>
 <td>GitHub App</td>
-<td>GitHub App Client ID for installation token generation</td>
+<td>App ID for installation token generation</td>
 </tr>
 <tr>
 <td><code>XFG_GITHUB_APP_PRIVATE_KEY</code></td>
@@ -2509,7 +2509,7 @@
 </tr>
 </tbody>
 </table>
-<p>When <code>XFG_GITHUB_CLIENT_ID</code> and <code>XFG_GITHUB_APP_PRIVATE_KEY</code> are set, xfg uses GitHub App authentication with automatic per-installation token generation. For repositories without app access, xfg will skip processing with a warning.</p>
+<p>When <code>XFG_GITHUB_APP_ID</code> and <code>XFG_GITHUB_APP_PRIVATE_KEY</code> are set, xfg uses GitHub App authentication with automatic per-installation token generation. For repositories without app access, xfg will skip processing with a warning.</p>
 <blockquote>
 <p><strong>Note:</strong> You can also get verified commits with PATs by <a href="https://docs.github.com/en/authentication/managing-commit-signature-verification">configuring GPG signing</a>. GitHub App authentication is an alternative that doesn't require GPG key management.</p>
 </blockquote>
@@ -2533,7 +2533,7 @@
 <p><strong>Note:</strong> The Workflows permission is required when syncing workflow files (<code>.github/workflows/</code>) because the <code>createCommitOnBranch</code> GraphQL mutation enforces this separately from the Contents permission. Without it, git push may succeed but the GraphQL commit will fail.</p>
 </blockquote>
 <h3 id="commits-not-showing-as-verified">Commits not showing as verified<a class="headerlink" href="#commits-not-showing-as-verified" title="Permanent link">&para;</a></h3>
-<p>Ensure you're using GitHub App authentication (<code>github-client-id</code> and <code>github-app-private-key</code> inputs). Only installation tokens from GitHub Apps trigger the GraphQL verified commit flow.</p>
+<p>Ensure you're using GitHub App authentication (<code>github-app-id</code> and <code>github-app-private-key</code> inputs). Only installation tokens from GitHub Apps trigger the GraphQL verified commit flow.</p>
 <h3 id="payload-too-large">Payload too large<a class="headerlink" href="#payload-too-large" title="Permanent link">&para;</a></h3>
 <p>Files exceeding 50MB cannot be committed via the GraphQL API. Use <code>GH_TOKEN</code> (PAT authentication) for repositories with large files.</p>
 
