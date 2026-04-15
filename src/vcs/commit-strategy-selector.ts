@@ -7,7 +7,7 @@ import { GitHubAppTokenManager } from "./github-app-token-manager.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 
 interface GitHubAppCredentials {
-  appId: string;
+  clientId: string;
   privateKey: string;
 }
 
@@ -20,7 +20,10 @@ export function createTokenManager(
   if (!credentials) {
     return null;
   }
-  return new GitHubAppTokenManager(credentials.appId, credentials.privateKey);
+  return new GitHubAppTokenManager(
+    credentials.clientId,
+    credentials.privateKey
+  );
 }
 
 /**
