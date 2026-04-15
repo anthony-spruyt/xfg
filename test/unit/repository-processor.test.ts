@@ -1746,12 +1746,12 @@ describe("RepositoryProcessor", () => {
   describe("CommitStrategy integration", () => {
     test("should use GraphQL commit strategy when GitHub App credentials are set", async () => {
       // Save original env values
-      const originalAppId = process.env.XFG_GITHUB_APP_ID;
+      const originalClientId = process.env.XFG_GITHUB_CLIENT_ID;
       const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
       try {
         // Set GitHub App credentials to trigger GraphQL strategy
-        process.env.XFG_GITHUB_APP_ID = "12345";
+        process.env.XFG_GITHUB_CLIENT_ID = "12345";
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const { mock: mockLogger, messages: loggerMessages } =
@@ -1854,10 +1854,10 @@ describe("RepositoryProcessor", () => {
         assert.ok(verifiedLog, "Should log that commit is verified");
       } finally {
         // Restore original env values
-        if (originalAppId === undefined) {
-          delete process.env.XFG_GITHUB_APP_ID;
+        if (originalClientId === undefined) {
+          delete process.env.XFG_GITHUB_CLIENT_ID;
         } else {
-          process.env.XFG_GITHUB_APP_ID = originalAppId;
+          process.env.XFG_GITHUB_CLIENT_ID = originalClientId;
         }
         if (originalPrivateKey === undefined) {
           delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
@@ -1869,12 +1869,12 @@ describe("RepositoryProcessor", () => {
 
     test("direct mode with CommitStrategy should return helpful error on branch protection", async () => {
       // Save original env values
-      const originalAppId = process.env.XFG_GITHUB_APP_ID;
+      const originalClientId = process.env.XFG_GITHUB_CLIENT_ID;
       const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
       try {
         // Set GitHub App credentials to trigger GraphQL strategy
-        process.env.XFG_GITHUB_APP_ID = "12345";
+        process.env.XFG_GITHUB_CLIENT_ID = "12345";
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const { mock: mockLogger } = createMockLogger();
@@ -1934,10 +1934,10 @@ describe("RepositoryProcessor", () => {
         );
       } finally {
         // Restore original env values
-        if (originalAppId === undefined) {
-          delete process.env.XFG_GITHUB_APP_ID;
+        if (originalClientId === undefined) {
+          delete process.env.XFG_GITHUB_CLIENT_ID;
         } else {
-          process.env.XFG_GITHUB_APP_ID = originalAppId;
+          process.env.XFG_GITHUB_CLIENT_ID = originalClientId;
         }
         if (originalPrivateKey === undefined) {
           delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
@@ -1948,11 +1948,11 @@ describe("RepositoryProcessor", () => {
     });
 
     test("direct mode handles 'protected' keyword in error message", async () => {
-      const originalAppId = process.env.XFG_GITHUB_APP_ID;
+      const originalClientId = process.env.XFG_GITHUB_CLIENT_ID;
       const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
       try {
-        process.env.XFG_GITHUB_APP_ID = "12345";
+        process.env.XFG_GITHUB_CLIENT_ID = "12345";
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const { mock: mockLogger } = createMockLogger();
@@ -2006,10 +2006,10 @@ describe("RepositoryProcessor", () => {
           "Message should mention branch protection"
         );
       } finally {
-        if (originalAppId === undefined) {
-          delete process.env.XFG_GITHUB_APP_ID;
+        if (originalClientId === undefined) {
+          delete process.env.XFG_GITHUB_CLIENT_ID;
         } else {
-          process.env.XFG_GITHUB_APP_ID = originalAppId;
+          process.env.XFG_GITHUB_CLIENT_ID = originalClientId;
         }
         if (originalPrivateKey === undefined) {
           delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
@@ -2020,11 +2020,11 @@ describe("RepositoryProcessor", () => {
     });
 
     test("direct mode handles 'denied' keyword in error message", async () => {
-      const originalAppId = process.env.XFG_GITHUB_APP_ID;
+      const originalClientId = process.env.XFG_GITHUB_CLIENT_ID;
       const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
       try {
-        process.env.XFG_GITHUB_APP_ID = "12345";
+        process.env.XFG_GITHUB_CLIENT_ID = "12345";
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const { mock: mockLogger } = createMockLogger();
@@ -2078,10 +2078,10 @@ describe("RepositoryProcessor", () => {
           "Message should mention branch protection"
         );
       } finally {
-        if (originalAppId === undefined) {
-          delete process.env.XFG_GITHUB_APP_ID;
+        if (originalClientId === undefined) {
+          delete process.env.XFG_GITHUB_CLIENT_ID;
         } else {
-          process.env.XFG_GITHUB_APP_ID = originalAppId;
+          process.env.XFG_GITHUB_CLIENT_ID = originalClientId;
         }
         if (originalPrivateKey === undefined) {
           delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
@@ -2092,11 +2092,11 @@ describe("RepositoryProcessor", () => {
     });
 
     test("direct mode returns error result for unrecognized errors", async () => {
-      const originalAppId = process.env.XFG_GITHUB_APP_ID;
+      const originalClientId = process.env.XFG_GITHUB_CLIENT_ID;
       const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
       try {
-        process.env.XFG_GITHUB_APP_ID = "12345";
+        process.env.XFG_GITHUB_CLIENT_ID = "12345";
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = "test-private-key";
 
         const { mock: mockLogger } = createMockLogger();
@@ -2149,10 +2149,10 @@ describe("RepositoryProcessor", () => {
           "Error message should contain the original error"
         );
       } finally {
-        if (originalAppId === undefined) {
-          delete process.env.XFG_GITHUB_APP_ID;
+        if (originalClientId === undefined) {
+          delete process.env.XFG_GITHUB_CLIENT_ID;
         } else {
-          process.env.XFG_GITHUB_APP_ID = originalAppId;
+          process.env.XFG_GITHUB_CLIENT_ID = originalClientId;
         }
         if (originalPrivateKey === undefined) {
           delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
@@ -2288,22 +2288,22 @@ describe("RepositoryProcessor", () => {
   });
 
   describe("GitHub App token manager integration", () => {
-    let originalAppId: string | undefined;
+    let originalClientId: string | undefined;
     let originalPrivateKey: string | undefined;
 
     beforeEach(() => {
-      originalAppId = process.env.XFG_GITHUB_APP_ID;
+      originalClientId = process.env.XFG_GITHUB_CLIENT_ID;
       originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
       // Clear env vars before each test
-      delete process.env.XFG_GITHUB_APP_ID;
+      delete process.env.XFG_GITHUB_CLIENT_ID;
       delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
     });
 
     afterEach(() => {
-      if (originalAppId !== undefined) {
-        process.env.XFG_GITHUB_APP_ID = originalAppId;
+      if (originalClientId !== undefined) {
+        process.env.XFG_GITHUB_CLIENT_ID = originalClientId;
       } else {
-        delete process.env.XFG_GITHUB_APP_ID;
+        delete process.env.XFG_GITHUB_CLIENT_ID;
       }
       if (originalPrivateKey !== undefined) {
         process.env.XFG_GITHUB_APP_PRIVATE_KEY = originalPrivateKey;
@@ -2315,9 +2315,9 @@ describe("RepositoryProcessor", () => {
     test("does not use token manager when GitHub App credentials are not set", async () => {
       // Verify env vars are cleared
       assert.equal(
-        process.env.XFG_GITHUB_APP_ID,
+        process.env.XFG_GITHUB_CLIENT_ID,
         undefined,
-        "XFG_GITHUB_APP_ID should not be set"
+        "XFG_GITHUB_CLIENT_ID should not be set"
       );
       assert.equal(
         process.env.XFG_GITHUB_APP_PRIVATE_KEY,
@@ -2375,7 +2375,7 @@ describe("RepositoryProcessor", () => {
       );
 
       const manager = createTokenManager({
-        appId: "12345",
+        clientId: "12345",
         privateKey: "test-key",
       });
 
@@ -2386,7 +2386,7 @@ describe("RepositoryProcessor", () => {
     });
 
     test("skips repo when no GitHub App installation found for owner", async () => {
-      const { TEST_PRIVATE_KEY, TEST_APP_ID } =
+      const { TEST_PRIVATE_KEY, TEST_CLIENT_ID } =
         await import("../fixtures/test-fixtures.js");
 
       const { mock: mockLogger } = createMockLogger();
@@ -2411,7 +2411,7 @@ describe("RepositoryProcessor", () => {
         });
 
         const tokenManager = new GitHubAppTokenManager(
-          TEST_APP_ID,
+          TEST_CLIENT_ID,
           TEST_PRIVATE_KEY
         );
         const processor = new RepositoryProcessor(
@@ -2452,11 +2452,11 @@ describe("RepositoryProcessor", () => {
     });
 
     test("logs warning and continues when GitHub App token retrieval fails", async () => {
-      const { TEST_PRIVATE_KEY, TEST_APP_ID } =
+      const { TEST_PRIVATE_KEY, TEST_CLIENT_ID } =
         await import("../fixtures/test-fixtures.js");
 
       // Set GitHub App credentials
-      process.env.XFG_GITHUB_APP_ID = TEST_APP_ID;
+      process.env.XFG_GITHUB_CLIENT_ID = TEST_CLIENT_ID;
       process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
 
       const { mock: mockLogger } = createMockLogger();
