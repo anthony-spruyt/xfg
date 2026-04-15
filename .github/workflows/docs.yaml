@@ -52,22 +52,35 @@ jobs:
           git config user.name "xfg-release[bot]"
           git config user.email "xfg-release[bot]@users.noreply.github.com"
 
-      - name: Build v3 docs from tag
+      - name: Build released majors from floating tags
+        # Source of truth is the `v{N}` floating tags maintained by
+        # release.yaml. The highest one also gets the `latest` alias.
+        # Adding a new major (v6+) needs no changes here — release.yaml
+        # creates the floating tag and this loop picks it up automatically.
         run: |
-          # Check out v3 docs sources into a temp directory
-          git worktree add /tmp/v3-docs v3
-          # Build v3 docs using v3's mkdocs.yml
-          mike deploy --config-file /tmp/v3-docs/mkdocs.yml 3.x
-          git worktree remove /tmp/v3-docs
+          set -euo pipefail
+          highest="$(git tag -l 'v[0-9]' | sort -V | tail -1)"
+          if [ -z "$highest" ]; then
+            echo "No released major tags (v[0-9]) found; skipping versioned deploys"
+            exit 0
+          fi
+          for tag in $(git tag -l 'v[0-9]' | sort -V); do
+            major="${tag#v}"
+            workdir="/tmp/${tag}-docs"
+            git worktree add "$workdir" "$tag"
+            if [ "$tag" = "$highest" ]; then
+              mike deploy --update-aliases --alias-type copy \
+                --config-file "$workdir/mkdocs.yml" "${major}.x" latest
+            else
+              mike deploy --config-file "$workdir/mkdocs.yml" "${major}.x"
+            fi
+            git worktree remove "$workdir"
+          done
 
-      - name: Build v4 docs from tag
-        run: |
-          git worktree add /tmp/v4-docs v4.0.5
-          mike deploy --config-file /tmp/v4-docs/mkdocs.yml 4.x
-          git worktree remove /tmp/v4-docs
-
-      - name: Build v5 docs from main
-        run: mike deploy --update-aliases --alias-type copy 5.x latest
+      - name: Build unreleased main under `next`
+        # Preview of unreleased docs — shown as its own tab, never aliased
+        # to `latest`, so users don't see main's content as a released version.
+        run: mike deploy next
 
       - name: Set default version
         run: mike set-default latest
