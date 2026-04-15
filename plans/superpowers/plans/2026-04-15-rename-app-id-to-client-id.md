@@ -157,14 +157,14 @@ git commit -m "refactor(vcs)!: rename GitHubAppTokenManager appId to clientId"
 
 ---
 
-## Task 3: Rename `AppCredentials` in `commit-strategy-selector.ts`
+## Task 3: Rename `GitHubAppCredentials` in `commit-strategy-selector.ts`
 
 **Files:**
 - Modify: `src/vcs/commit-strategy-selector.ts:10-23`
 
 - [ ] **Step 1: Rename the type field and the constructor argument**
 
-In `src/vcs/commit-strategy-selector.ts`, change line 10 from `appId: string;` to `clientId: string;`, and change line 23 from `new GitHubAppTokenManager(credentials.appId, credentials.privateKey)` to `new GitHubAppTokenManager(credentials.clientId, credentials.privateKey)`.
+In `src/vcs/commit-strategy-selector.ts` (in the `GitHubAppCredentials` interface and the `createTokenManager` function), change line 10 from `appId: string;` to `clientId: string;`, and change line 23 from `new GitHubAppTokenManager(credentials.appId, credentials.privateKey)` to `new GitHubAppTokenManager(credentials.clientId, credentials.privateKey)`.
 
 - [ ] **Step 2: Verify**
 
@@ -441,7 +441,7 @@ git commit -m "ci!: rename github-app-id to github-client-id in integration work
 
 - [ ] **Step 1: Update `docs/platforms/github-app.md`**
 
-- Line 39: `**Variables:** \`APP_ID\` (the numeric app ID)` → `**Variables:** \`CLIENT_ID\` (the GitHub App Client ID, starts with \`Iv23\`)`
+- Line 39: `- **Variables:** \`APP_ID\` (the numeric app ID)` → `- **Variables:** \`CLIENT_ID\` (the GitHub App Client ID, starts with \`Iv23\`)`
 - Line 54: `github-app-id: ${{ vars.APP_ID }}` → `github-client-id: ${{ vars.CLIENT_ID }}`
 - Line 84: in the env var table, `XFG_GITHUB_APP_ID` → `XFG_GITHUB_CLIENT_ID` and description `App ID for installation token generation` → `GitHub App Client ID for installation token generation`
 - Line 88: `When \`XFG_GITHUB_APP_ID\` and \`XFG_GITHUB_APP_PRIVATE_KEY\` are set` → `When \`XFG_GITHUB_CLIENT_ID\` and \`XFG_GITHUB_APP_PRIVATE_KEY\` are set`
