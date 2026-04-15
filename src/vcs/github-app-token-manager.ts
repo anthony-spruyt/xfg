@@ -35,7 +35,7 @@ async function assertOkResponse(res: Response, context: string): Promise<void> {
  * Handles JWT generation, installation discovery, and token caching.
  */
 export class GitHubAppTokenManager {
-  private readonly appId: string;
+  private readonly clientId: string;
   private readonly privateKey: string;
 
   /** Map of "apiHost:owner" -> installation ID */
@@ -47,8 +47,8 @@ export class GitHubAppTokenManager {
   /** Map of "apiHost:owner" -> cached token */
   private tokenCache = new Map<string, CachedToken>();
 
-  constructor(appId: string, privateKey: string) {
-    this.appId = appId;
+  constructor(clientId: string, privateKey: string) {
+    this.clientId = clientId;
     this.privateKey = privateKey;
   }
 
@@ -67,7 +67,7 @@ export class GitHubAppTokenManager {
     const payload = {
       iat: now - 60, // Issued 60 seconds ago to account for clock drift
       exp: now + 600, // Expires in 10 minutes
-      iss: this.appId,
+      iss: this.clientId,
     };
 
     const encodedHeader = base64UrlEncode(JSON.stringify(header));
