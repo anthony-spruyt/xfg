@@ -22,11 +22,11 @@ const HAS_ADO_CREDS = !!process.env.AZURE_DEVOPS_EXT_PAT;
 
 // Skip all tests if GitHub App credentials are not set
 const SKIP_TESTS =
-  !process.env.XFG_GITHUB_APP_ID || !process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+  !process.env.XFG_GITHUB_CLIENT_ID || !process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
 if (SKIP_TESTS) {
   console.log(
-    "\n  Skipping GitHub App lifecycle tests: XFG_GITHUB_APP_ID and XFG_GITHUB_APP_PRIVATE_KEY not set\n"
+    "\n  Skipping GitHub App lifecycle tests: XFG_GITHUB_CLIENT_ID and XFG_GITHUB_APP_PRIVATE_KEY not set\n"
   );
 }
 

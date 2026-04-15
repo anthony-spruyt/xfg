@@ -18,11 +18,11 @@ import {
 
 const OWNER = "spruyt-labs";
 const SKIP_TESTS =
-  !process.env.XFG_GITHUB_APP_ID || !process.env.XFG_GITHUB_APP_PRIVATE_KEY;
+  !process.env.XFG_GITHUB_CLIENT_ID || !process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
 if (SKIP_TESTS) {
   console.log(
-    "\n  Skipping GitHub App integration tests: XFG_GITHUB_APP_ID and XFG_GITHUB_APP_PRIVATE_KEY not set\n"
+    "\n  Skipping GitHub App integration tests: XFG_GITHUB_CLIENT_ID and XFG_GITHUB_APP_PRIVATE_KEY not set\n"
   );
 }
 
@@ -284,7 +284,7 @@ repos:
 // Force PAT-only auth
 const patOnlyEnv = {
   env: {
-    XFG_GITHUB_APP_ID: undefined,
+    XFG_GITHUB_CLIENT_ID: undefined,
     XFG_GITHUB_APP_PRIVATE_KEY: undefined,
   },
 };
