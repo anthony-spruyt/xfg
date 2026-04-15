@@ -45,8 +45,8 @@ inputs:
   gitlab-token:
     description: "GitLab token for authentication"
     required: false
-  github-app-id:
-    description: "GitHub App ID (generates installation tokens automatically)"
+  github-client-id:
+    description: "GitHub App Client ID (generates installation tokens automatically)"
     required: false
   github-app-private-key:
     description: "GitHub App private key (PEM format) for JWT signing"
@@ -126,7 +126,7 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
-        XFG_GITHUB_APP_ID: ${{ inputs.github-app-id }}
+        XFG_GITHUB_CLIENT_ID: ${{ inputs.github-client-id }}
         XFG_GITHUB_APP_PRIVATE_KEY: ${{ inputs.github-app-private-key }}
         AZURE_DEVOPS_EXT_PAT: ${{ inputs.azure-devops-token }}
         GITLAB_TOKEN: ${{ inputs.gitlab-token }}
