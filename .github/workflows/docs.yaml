@@ -10,6 +10,8 @@ on:
       - "docs/**"
       - "!docs/superpowers/**"
       - "mkdocs.yml"
+    tags:
+      - "v*"
   workflow_dispatch:
 
 permissions:
