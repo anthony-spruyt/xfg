@@ -688,9 +688,9 @@ export async function runSync(
   getLogger().log(`Branch: ${branchName}\n`);
 
   const tokenManager = createTokenManager(
-    process.env.XFG_GITHUB_APP_ID && process.env.XFG_GITHUB_APP_PRIVATE_KEY
+    process.env.XFG_GITHUB_CLIENT_ID && process.env.XFG_GITHUB_APP_PRIVATE_KEY
       ? {
-          appId: process.env.XFG_GITHUB_APP_ID,
+          clientId: process.env.XFG_GITHUB_CLIENT_ID,
           privateKey: process.env.XFG_GITHUB_APP_PRIVATE_KEY,
         }
       : undefined
