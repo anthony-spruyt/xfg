@@ -7,8 +7,8 @@
 self-hosted-runner:
   labels: []
 config-variables:
-  - RELEASE_APP_ID
-  - TEST_APP_ID
+  - RELEASE_CLIENT_ID
+  - TEST_CLIENT_ID
 paths:
   .github/workflows/**/*.{yml,yaml}:
     ignore:
