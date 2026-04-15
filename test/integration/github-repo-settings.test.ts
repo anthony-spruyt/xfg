@@ -199,12 +199,28 @@ describe("GitHub Repo Settings Integration Test", () => {
       cwd: projectRoot,
     });
 
-    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
-      cwd: projectRoot,
-    });
-    assert.ok(
-      output.includes("No changes needed") ||
-        output.includes("0 to add, 0 to change")
+    // Security settings have eventual consistency on the GitHub API — a second
+    // sync run immediately after the first can read stale state and plan a
+    // non-zero diff. Retry until the idempotent run reports no changes.
+    await withTestRetry(
+      async () => {
+        const output = await exec(
+          `node dist/cli.js sync --config ${configPath}`,
+          {
+            cwd: projectRoot,
+          }
+        );
+        assert.ok(
+          output.includes("No changes needed") ||
+            output.includes("0 to add, 0 to change"),
+          `expected idempotent sync to report no changes; got:\n${output}`
+        );
+      },
+      {
+        description: "idempotent sync reports no changes",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
   });
 
