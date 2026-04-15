@@ -91,7 +91,7 @@ describe("GitHubAppTokenManager", () => {
       assert.equal(
         (payload as { iss: string }).iss,
         TEST_CLIENT_ID,
-        "iss should be the app ID"
+        "iss should be the client ID"
       );
     });
 

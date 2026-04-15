@@ -23,7 +23,7 @@ For enterprises that prefer GitHub Apps over personal access tokens (PATs).
      - Pull requests: Read and write
      - Workflows: Read and write _(required if syncing `.github/workflows/` files)_
    - **Where can this GitHub App be installed?** Any account
-4. Create the app and note the **App ID**
+4. Create the app and note the **Client ID** (starts with `Iv23`)
 5. Generate a **private key** (downloads a .pem file)
 
 ### 2. Install the App
@@ -66,7 +66,7 @@ This approach:
 
 When GitHub App credentials are provided, xfg:
 
-1. **Generates a JWT** using your App ID and private key
+1. **Generates a JWT** using your Client ID and private key
 2. **Discovers installations** by calling GitHub's API to list all installations
 3. **Generates installation tokens** per-installation (tokens are cached for 55 minutes)
 4. **Uses GraphQL API** for commits with the installation token, creating verified commits
