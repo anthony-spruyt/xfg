@@ -165,13 +165,20 @@
     "plugin-dev@claude-plugins-official": false,
     "security-guidance@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
-    "hookify-plus@hookify-plus": true
+    "hookify-plus@hookify-plus": true,
+    "caveman@caveman": true
   },
   "extraKnownMarketplaces": {
     "hookify-plus": {
       "source": {
         "source": "github",
         "repo": "anthony-spruyt/hookify-plus"
+      }
+    },
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
       }
     }
   }
