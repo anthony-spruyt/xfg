@@ -12,6 +12,19 @@
 
 ---
 
+## Task 0: Verify branch
+
+Branch `chore/rename-app-id-to-client-id` was created when the spec was committed. Confirm you are on it before any other task.
+
+- [ ] **Step 1: Confirm branch**
+
+Run: `git rev-parse --abbrev-ref HEAD`
+Expected output: `chore/rename-app-id-to-client-id`
+
+If not on that branch, run `git checkout chore/rename-app-id-to-client-id`. If it does not exist locally, run `git checkout -b chore/rename-app-id-to-client-id` from `main`.
+
+---
+
 ## File Map
 
 **Production code (modify):**
@@ -19,6 +32,9 @@
 - `src/vcs/github-app-token-manager.ts` — constructor param, private field, JWT iss
 - `src/vcs/commit-strategy-selector.ts` — `AppCredentials.appId` type field + usage
 - `src/cli/sync-command.ts` — `process.env.XFG_GITHUB_APP_ID` reads + factory options key
+
+**Verified re-export only (no edit):**
+- `src/vcs/index.ts` — re-exports from `commit-strategy-selector.ts`; no direct `appId` reference.
 
 **Tests (modify):**
 - `test/fixtures/test-fixtures.ts` — `TEST_APP_ID` export
@@ -200,19 +216,24 @@ git commit -m "refactor(cli)!: read XFG_GITHUB_CLIENT_ID instead of XFG_GITHUB_A
 
 ---
 
-## Task 5: Verify build + run unit tests (fail-first expected)
+## Task 5: Verify build + check red state
 
-- [ ] **Step 1: TypeScript build**
+- [ ] **Step 1: TypeScript build (production only — should PASS)**
 
 Run: `npm run build`
-Expected: FAIL — tests still reference `TEST_APP_ID` and unrenamed fixture keys, compile errors in `src/` should all be gone. Any compile errors should be in test files only. If any compile error is in `src/**`, STOP and fix before proceeding.
+Expected: PASS. `tsconfig.json` excludes tests, so `tsc` compiles only `src/**` which is now internally consistent after Tasks 1–4.
 
-- [ ] **Step 2: Run unit tests**
+If this FAILS, a production-code change is broken — fix before proceeding.
+
+- [ ] **Step 2: Test typecheck (should FAIL — this is the red state)**
+
+Run: `npm run test:typecheck`
+Expected: FAIL with type errors in `test/unit/github-app-token-manager.test.ts`, `test/unit/vcs/commit-strategy-selector.test.ts`, `test/unit/repository-processor.test.ts`, and both `test/integration/github*.ts` files — they reference the old `TEST_APP_ID` / `appId` / `XFG_GITHUB_APP_ID` names.
+
+- [ ] **Step 3: Run unit tests (should FAIL)**
 
 Run: `npm test`
-Expected: FAIL in `test/unit/github-app-token-manager.test.ts`, `test/unit/vcs/commit-strategy-selector.test.ts`, `test/unit/repository-processor.test.ts` (missing `TEST_APP_ID`, wrong fixture key, wrong env var).
-
-This is the red state — proceed to Task 6.
+Expected: FAIL in the same test files. This is the red state — proceed to Task 6.
 
 ---
 
@@ -436,20 +457,22 @@ git commit -m "ci!: rename github-app-id to github-client-id in integration work
 Run: `grep -n "github-app-id\|XFG_GITHUB_APP_ID\|APP_ID" README.md`
 For each match: if it's a reference to the xfg input/env var/repo var, update to the new name. If it's talking about something else (unlikely), leave it.
 
-- [ ] **Step 4: Final grep across the whole repo (excluding historical plans and desloppify state)**
+- [ ] **Step 4: Final grep across the whole repo (excluding historical plans and scanner state)**
 
 Run:
 
 ```bash
-grep -rn "XFG_GITHUB_APP_ID\|github-app-id\|TEST_APP_ID" \
+grep -rn -E "XFG_GITHUB_APP_ID|github-app-id|TEST_APP_ID|originalAppId|\bappId\b|\bAPP_ID\b" \
   --exclude-dir=node_modules \
   --exclude-dir=.desloppify \
   --exclude-dir=plans \
+  --exclude-dir=docs/superpowers \
   --exclude-dir=dist \
+  --exclude-dir=.git \
   .
 ```
 
-Expected: no matches.
+Expected: no matches. (Note: `appId` may still appear as a word inside a comment referring to Octokit's `createAppAuth({ appId })` third-party parameter if such a comment exists — if so, that is acceptable and the only allowed match. Otherwise no matches.)
 
 - [ ] **Step 5: Commit**
 
