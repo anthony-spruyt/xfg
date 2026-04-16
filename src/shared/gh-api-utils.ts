@@ -188,10 +188,10 @@ async function ghApiCall(
   ) {
     const payloadJson = JSON.stringify(payload);
     const command = `echo ${escapeShellArg(payloadJson)} | ${baseCommand} --input -`;
-    return await withRetry(() => execAndParse(command), retryOpts);
+    return withRetry(() => execAndParse(command), retryOpts);
   }
 
-  return await withRetry(() => execAndParse(baseCommand), retryOpts);
+  return withRetry(() => execAndParse(baseCommand), retryOpts);
 }
 
 /**

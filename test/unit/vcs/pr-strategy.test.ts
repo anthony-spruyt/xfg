@@ -2,7 +2,7 @@ import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
 import { createPRStrategy } from "../../../src/vcs/index.js";
 import { GitHubPRStrategy } from "../../../src/vcs/github-pr-strategy.js";
-import { AzurePRStrategy } from "../../../src/vcs/azure-pr-strategy.js";
+import { AdoPRStrategy } from "../../../src/vcs/ado-pr-strategy.js";
 import { GitLabPRStrategy } from "../../../src/vcs/gitlab-pr-strategy.js";
 import {
   GitHubRepoInfo,
@@ -34,7 +34,7 @@ describe("createPRStrategy", () => {
     assert.ok(strategy instanceof GitHubPRStrategy);
   });
 
-  test("returns AzurePRStrategy for Azure DevOps repos", () => {
+  test("returns AdoPRStrategy for Azure DevOps repos", () => {
     const repoInfo: AzureDevOpsRepoInfo = {
       type: "azure-devops",
       gitUrl: "git@ssh.dev.azure.com:v3/org/project/repo",
@@ -45,7 +45,7 @@ describe("createPRStrategy", () => {
     };
 
     const strategy = createPRStrategy(repoInfo, mockExecutor);
-    assert.ok(strategy instanceof AzurePRStrategy);
+    assert.ok(strategy instanceof AdoPRStrategy);
   });
 
   test("returns GitLabPRStrategy for GitLab repos", () => {
@@ -131,9 +131,9 @@ describe("GitHubPRStrategy type guards", () => {
   });
 });
 
-describe("AzurePRStrategy type guards", () => {
+describe("AdoPRStrategy type guards", () => {
   test("checkExistingPR throws for non-Azure repo", async () => {
-    const strategy = new AzurePRStrategy(mockExecutor);
+    const strategy = new AdoPRStrategy(mockExecutor);
     const githubRepoInfo: GitHubRepoInfo = {
       type: "github",
       gitUrl: "git@github.com:owner/repo.git",
@@ -158,7 +158,7 @@ describe("AzurePRStrategy type guards", () => {
   });
 
   test("create throws for non-Azure repo", async () => {
-    const strategy = new AzurePRStrategy(mockExecutor);
+    const strategy = new AdoPRStrategy(mockExecutor);
     const githubRepoInfo: GitHubRepoInfo = {
       type: "github",
       gitUrl: "git@github.com:owner/repo.git",

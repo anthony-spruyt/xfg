@@ -21,7 +21,7 @@ describe("createPRStrategy", () => {
     assert.ok(strategy);
   });
 
-  test("returns AzurePRStrategy for Azure DevOps repos", () => {
+  test("returns AdoPRStrategy for Azure DevOps repos", () => {
     const repoInfo: AzureDevOpsRepoInfo = {
       type: "azure-devops",
       gitUrl: "git@ssh.dev.azure.com:test/repo.git",

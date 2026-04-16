@@ -24,20 +24,20 @@ export interface GitOpsOptions {
 }
 
 export class GitOps implements ILocalGitOps {
-  private readonly _workDir: string;
+  private readonly workDir: string;
   private readonly dryRun: boolean;
-  private readonly _executor: ICommandExecutor;
+  private readonly executor: ICommandExecutor;
   private readonly log?: DebugLog;
 
   constructor(options: GitOpsOptions) {
-    this._workDir = options.workDir;
+    this.workDir = options.workDir;
     this.dryRun = options.dryRun ?? false;
-    this._executor = options.executor;
+    this.executor = options.executor;
     this.log = options.log;
   }
 
   private exec(command: string, cwd?: string): Promise<string> {
-    return this._executor.exec(command, cwd ?? this._workDir);
+    return this.executor.exec(command, cwd ?? this.workDir);
   }
 
   /**
@@ -46,9 +46,9 @@ export class GitOps implements ILocalGitOps {
    * @throws ValidationError if path traversal is detected
    */
   private validatePath(fileName: string): string {
-    const filePath = join(this._workDir, fileName);
+    const filePath = join(this.workDir, fileName);
     const resolvedPath = resolve(filePath);
-    const resolvedWorkDir = resolve(this._workDir);
+    const resolvedWorkDir = resolve(this.workDir);
     const relativePath = relative(resolvedWorkDir, resolvedPath);
     if (relativePath.startsWith("..") || isAbsolute(relativePath)) {
       throw new ValidationError(`Path traversal detected: ${fileName}`);
@@ -58,13 +58,13 @@ export class GitOps implements ILocalGitOps {
 
   cleanWorkspace(): void {
     try {
-      if (existsSync(this._workDir)) {
-        rmSync(this._workDir, { recursive: true, force: true });
+      if (existsSync(this.workDir)) {
+        rmSync(this.workDir, { recursive: true, force: true });
       }
-      mkdirSync(this._workDir, { recursive: true });
+      mkdirSync(this.workDir, { recursive: true });
     } catch (error) {
       throw new SyncError(
-        `Failed to clean workspace '${this._workDir}': ${toErrorMessage(error)}`
+        `Failed to clean workspace '${this.workDir}': ${toErrorMessage(error)}`
       );
     }
   }
@@ -78,7 +78,7 @@ export class GitOps implements ILocalGitOps {
     try {
       await this.exec(
         `git checkout -b ${escapeShellArg(branchName)}`,
-        this._workDir
+        this.workDir
       );
     } catch (error) {
       const message = toErrorMessage(error);
@@ -127,10 +127,10 @@ export class GitOps implements ILocalGitOps {
     }
 
     // Also update git's index so the executable bit is committed
-    const relativePath = relative(this._workDir, filePath);
+    const relativePath = relative(this.workDir, filePath);
     await this.exec(
       `git update-index --add --chmod=+x ${escapeShellArg(relativePath)}`,
-      this._workDir
+      this.workDir
     );
   }
 
@@ -187,7 +187,7 @@ export class GitOps implements ILocalGitOps {
   }
 
   async hasChanges(): Promise<boolean> {
-    const status = await this.exec("git status --porcelain", this._workDir);
+    const status = await this.exec("git status --porcelain", this.workDir);
     return status.length > 0;
   }
 
@@ -196,7 +196,7 @@ export class GitOps implements ILocalGitOps {
    * Returns relative file paths for files that are modified, added, or untracked.
    */
   async getChangedFiles(): Promise<string[]> {
-    const status = await this.exec("git status --porcelain", this._workDir);
+    const status = await this.exec("git status --porcelain", this.workDir);
     if (!status) return [];
 
     return status
@@ -206,14 +206,11 @@ export class GitOps implements ILocalGitOps {
   }
 
   async stageAll(): Promise<void> {
-    await this.exec("git add -A", this._workDir);
+    await this.exec("git add -A", this.workDir);
   }
 
   async hasStagedChanges(): Promise<boolean> {
-    const diff = await this.exec(
-      "git diff --cached --name-only",
-      this._workDir
-    );
+    const diff = await this.exec("git diff --cached --name-only", this.workDir);
     return diff.length > 0;
   }
 
@@ -225,7 +222,7 @@ export class GitOps implements ILocalGitOps {
     try {
       await this.exec(
         `git show ${escapeShellArg(branch)}:${escapeShellArg(fileName)}`,
-        this._workDir
+        this.workDir
       );
       return true;
     } catch (error) {
@@ -283,7 +280,7 @@ export class GitOps implements ILocalGitOps {
     if (this.dryRun) {
       return true;
     }
-    await this.exec("git add -A", this._workDir);
+    await this.exec("git add -A", this.workDir);
 
     // Check if there are actually staged changes after git add
     if (!(await this.hasStagedChanges())) {
@@ -293,7 +290,7 @@ export class GitOps implements ILocalGitOps {
     // Use --no-verify to skip pre-commit hooks
     await this.exec(
       `git commit --no-verify -m ${escapeShellArg(message)}`,
-      this._workDir
+      this.workDir
     );
     return true;
   }
@@ -307,7 +304,7 @@ export class GitOps implements ILocalGitOps {
     method: string;
   }> {
     try {
-      await this.exec("git rev-parse --verify origin/main", this._workDir);
+      await this.exec("git rev-parse --verify origin/main", this.workDir);
       return { branch: "main", method: "origin/main exists" };
     } catch (error) {
       const msg = toErrorMessage(error);
@@ -315,7 +312,7 @@ export class GitOps implements ILocalGitOps {
     }
 
     try {
-      await this.exec("git rev-parse --verify origin/master", this._workDir);
+      await this.exec("git rev-parse --verify origin/master", this.workDir);
       return { branch: "master", method: "origin/master exists" };
     } catch (error) {
       const msg = toErrorMessage(error);

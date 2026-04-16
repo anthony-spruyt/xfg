@@ -2,7 +2,7 @@ import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   diffRepoSettings,
-  hasChanges,
+  hasRepoSettingsChanges,
 } from "../../src/settings/repo-settings/diff.js";
 import type { GitHubRepoSettings } from "../../src/config/index.js";
 import type { CurrentRepoSettings } from "../../src/settings/repo-settings/types.js";
@@ -250,7 +250,7 @@ describe("diffRepoSettings", () => {
   });
 });
 
-describe("hasChanges", () => {
+describe("hasRepoSettingsChanges", () => {
   test("should return true when there are changes", () => {
     const changes = [
       {
@@ -260,7 +260,7 @@ describe("hasChanges", () => {
         newValue: false,
       },
     ];
-    assert.equal(hasChanges(changes), true);
+    assert.equal(hasRepoSettingsChanges(changes), true);
   });
 
   test("should return true for add actions", () => {
@@ -271,17 +271,17 @@ describe("hasChanges", () => {
         newValue: true,
       },
     ];
-    assert.equal(hasChanges(changes), true);
+    assert.equal(hasRepoSettingsChanges(changes), true);
   });
 
   test("should return false for empty array", () => {
-    assert.equal(hasChanges([]), false);
+    assert.equal(hasRepoSettingsChanges([]), false);
   });
 
   test("should return false for only unchanged", () => {
     const changes = [
       { property: "hasWiki" as const, action: "unchanged" as const },
     ];
-    assert.equal(hasChanges(changes), false);
+    assert.equal(hasRepoSettingsChanges(changes), false);
   });
 });

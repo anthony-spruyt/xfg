@@ -23,7 +23,7 @@ import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 
-export class AzurePRStrategy extends BasePRStrategy {
+export class AdoPRStrategy extends BasePRStrategy {
   constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {
     super(executor, log);
     this.bodyFilePath = ".pr-description.md";

@@ -3,7 +3,7 @@ import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { AzurePRStrategy } from "../../../src/vcs/azure-pr-strategy.js";
+import { AdoPRStrategy } from "../../../src/vcs/ado-pr-strategy.js";
 import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
 import {
   AzureDevOpsRepoInfo,
@@ -17,7 +17,7 @@ import {
 
 const testDir = join(tmpdir(), "test-azure-strategy-tmp");
 
-describe("AzurePRStrategy with mock executor", () => {
+describe("AdoPRStrategy with mock executor", () => {
   const azureRepoInfo: AzureDevOpsRepoInfo = {
     type: "azure-devops",
     gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
@@ -47,7 +47,7 @@ describe("AzurePRStrategy with mock executor", () => {
     test("returns PR URL when PR exists", async () => {
       mockExecutor.responses.set("az repos pr list", "456");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: azureRepoInfo,
         title: "Test PR",
@@ -69,7 +69,7 @@ describe("AzurePRStrategy with mock executor", () => {
     test("returns null when no PR exists", async () => {
       mockExecutor.responses.set("az repos pr list", "");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: azureRepoInfo,
         title: "Test PR",
@@ -89,7 +89,7 @@ describe("AzurePRStrategy with mock executor", () => {
       const authError = new Error("401 Unauthorized");
       mockExecutor.responses.set("az repos pr list", authError);
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: azureRepoInfo,
         title: "Test PR",
@@ -110,7 +110,7 @@ describe("AzurePRStrategy with mock executor", () => {
       const networkError = new Error("Connection timed out");
       mockExecutor.responses.set("az repos pr list", networkError);
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: azureRepoInfo,
         title: "Test PR",
@@ -131,7 +131,7 @@ describe("AzurePRStrategy with mock executor", () => {
       });
       mockExecutor.responses.set("az repos pr list", errorWithStderr);
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: azureRepoInfo,
         title: "Test PR",
@@ -151,7 +151,7 @@ describe("AzurePRStrategy with mock executor", () => {
     test("creates PR and returns URL", async () => {
       mockExecutor.responses.set("az repos pr create", "789");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: azureRepoInfo,
         title: "Test PR",
@@ -174,7 +174,7 @@ describe("AzurePRStrategy with mock executor", () => {
     test("cleans up description file after success", async () => {
       mockExecutor.responses.set("az repos pr create", "123");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: azureRepoInfo,
         title: "Test PR",
@@ -194,7 +194,7 @@ describe("AzurePRStrategy with mock executor", () => {
     test("cleans up description file after error", async () => {
       mockExecutor.responses.set("az repos pr create", new Error("Failed"));
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: azureRepoInfo,
         title: "Test PR",
@@ -216,7 +216,7 @@ describe("AzurePRStrategy with mock executor", () => {
     test("returns existing PR if found", async () => {
       mockExecutor.responses.set("az repos pr list", "existing-pr-id");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: azureRepoInfo,
         title: "Test PR",
@@ -238,7 +238,7 @@ describe("AzurePRStrategy with mock executor", () => {
       mockExecutor.responses.set("az repos pr list", "");
       mockExecutor.responses.set("az repos pr create", "new-pr-id");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: azureRepoInfo,
         title: "Test PR",
@@ -259,7 +259,7 @@ describe("AzurePRStrategy with mock executor", () => {
       mockExecutor.responses.set("az repos pr list", "");
       mockExecutor.responses.set("az repos pr create", new Error("Failed"));
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
         repoInfo: azureRepoInfo,
         title: "Test PR",
@@ -278,7 +278,7 @@ describe("AzurePRStrategy with mock executor", () => {
   });
 });
 
-describe("AzurePRStrategy cleanup error handling", () => {
+describe("AdoPRStrategy cleanup error handling", () => {
   let mockExecutor: ExecutorMockResult;
 
   beforeEach(() => {
@@ -307,7 +307,7 @@ describe("AzurePRStrategy cleanup error handling", () => {
 
     mockExecutor.responses.set("az repos pr create", "123");
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock);
+    const strategy = new AdoPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: azureRepoInfo,
       title: "Test PR",
@@ -340,7 +340,7 @@ describe("AzurePRStrategy cleanup error handling", () => {
       new Error("PR creation failed")
     );
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock);
+    const strategy = new AdoPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: azureRepoInfo,
       title: "Test PR",
@@ -362,7 +362,7 @@ describe("AzurePRStrategy cleanup error handling", () => {
   });
 });
 
-describe("AzurePRStrategy Azure CLI command format", () => {
+describe("AdoPRStrategy Azure CLI command format", () => {
   let mockExecutor: ExecutorMockResult;
 
   beforeEach(() => {
@@ -391,7 +391,7 @@ describe("AzurePRStrategy Azure CLI command format", () => {
 
     mockExecutor.responses.set("az repos pr create", "123");
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock);
+    const strategy = new AdoPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: azureRepoInfo,
       title: "Test PR",
@@ -417,7 +417,7 @@ describe("AzurePRStrategy Azure CLI command format", () => {
   });
 });
 
-describe("AzurePRStrategy URL building", () => {
+describe("AdoPRStrategy URL building", () => {
   test("builds correct PR URL with special characters", () => {
     const org = "my-org";
     const project = "my project"; // Has space
@@ -441,7 +441,7 @@ describe("AzurePRStrategy URL building", () => {
   });
 });
 
-describe("AzurePRStrategy merge", () => {
+describe("AdoPRStrategy merge", () => {
   const azureRepoInfo: AzureDevOpsRepoInfo = {
     type: "azure-devops",
     gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
@@ -472,7 +472,7 @@ describe("AzurePRStrategy merge", () => {
 
   describe("merge with manual mode", () => {
     test("returns success without making any calls", async () => {
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl: validPRUrl,
         repoInfo: azureRepoInfo,
@@ -492,7 +492,7 @@ describe("AzurePRStrategy merge", () => {
     test("enables auto-complete", async () => {
       mockExecutor.responses.set("az repos pr update", "");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl: validPRUrl,
         repoInfo: azureRepoInfo,
@@ -514,7 +514,7 @@ describe("AzurePRStrategy merge", () => {
     test("uses squash flag when configured", async () => {
       mockExecutor.responses.set("az repos pr update", "");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       await strategy.merge({
         prUrl: validPRUrl,
         repoInfo: azureRepoInfo,
@@ -530,7 +530,7 @@ describe("AzurePRStrategy merge", () => {
     test("uses delete-source-branch flag when configured", async () => {
       mockExecutor.responses.set("az repos pr update", "");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       await strategy.merge({
         prUrl: validPRUrl,
         repoInfo: azureRepoInfo,
@@ -549,7 +549,7 @@ describe("AzurePRStrategy merge", () => {
         new Error("Update failed")
       );
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl: validPRUrl,
         repoInfo: azureRepoInfo,
@@ -568,7 +568,7 @@ describe("AzurePRStrategy merge", () => {
     test("bypasses policies and completes PR", async () => {
       mockExecutor.responses.set("az repos pr update", "");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl: validPRUrl,
         repoInfo: azureRepoInfo,
@@ -590,7 +590,7 @@ describe("AzurePRStrategy merge", () => {
     test("uses custom bypass reason when provided", async () => {
       mockExecutor.responses.set("az repos pr update", "");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       await strategy.merge({
         prUrl: validPRUrl,
         repoInfo: azureRepoInfo,
@@ -607,7 +607,7 @@ describe("AzurePRStrategy merge", () => {
     test("uses default bypass reason when not provided", async () => {
       mockExecutor.responses.set("az repos pr update", "");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       await strategy.merge({
         prUrl: validPRUrl,
         repoInfo: azureRepoInfo,
@@ -624,7 +624,7 @@ describe("AzurePRStrategy merge", () => {
     test("uses squash and delete-branch with force mode", async () => {
       mockExecutor.responses.set("az repos pr update", "");
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       await strategy.merge({
         prUrl: validPRUrl,
         repoInfo: azureRepoInfo,
@@ -645,7 +645,7 @@ describe("AzurePRStrategy merge", () => {
         new Error("Permission denied")
       );
 
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl: validPRUrl,
         repoInfo: azureRepoInfo,
@@ -662,7 +662,7 @@ describe("AzurePRStrategy merge", () => {
 
   describe("merge with invalid PR URL", () => {
     test("returns failure for invalid URL format", async () => {
-      const strategy = new AzurePRStrategy(mockExecutor.mock);
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
       const result = await strategy.merge({
         prUrl: "https://invalid-url.com/not-azure",
         repoInfo: azureRepoInfo,
@@ -679,7 +679,7 @@ describe("AzurePRStrategy merge", () => {
   });
 });
 
-describe("AzurePRStrategy closeExistingPR", () => {
+describe("AdoPRStrategy closeExistingPR", () => {
   const azureRepoInfo: AzureDevOpsRepoInfo = {
     type: "azure-devops",
     gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
@@ -709,7 +709,7 @@ describe("AzurePRStrategy closeExistingPR", () => {
   test("returns false when no PR exists", async () => {
     mockExecutor.responses.set("az repos pr list", "");
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock);
+    const strategy = new AdoPRStrategy(mockExecutor.mock);
     const result = await strategy.closeExistingPR({
       repoInfo: azureRepoInfo,
       branchName: "test-branch",
@@ -726,7 +726,7 @@ describe("AzurePRStrategy closeExistingPR", () => {
     mockExecutor.responses.set("az repos pr update", "");
     mockExecutor.responses.set("az repos ref delete", "");
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock);
+    const strategy = new AdoPRStrategy(mockExecutor.mock);
     const result = await strategy.closeExistingPR({
       repoInfo: azureRepoInfo,
       branchName: "test-branch",
@@ -750,7 +750,7 @@ describe("AzurePRStrategy closeExistingPR", () => {
     mockExecutor.responses.set("az repos ref list", "abc123def456"); // object_id for branch
     mockExecutor.responses.set("az repos ref delete", "");
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock);
+    const strategy = new AdoPRStrategy(mockExecutor.mock);
     await strategy.closeExistingPR({
       repoInfo: azureRepoInfo,
       branchName: "test-branch",
@@ -779,7 +779,7 @@ describe("AzurePRStrategy closeExistingPR", () => {
       new Error("Branch deletion failed")
     );
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock);
+    const strategy = new AdoPRStrategy(mockExecutor.mock);
     const result = await strategy.closeExistingPR({
       repoInfo: azureRepoInfo,
       branchName: "test-branch",
@@ -799,7 +799,7 @@ describe("AzurePRStrategy closeExistingPR", () => {
       new Error("Abandon failed")
     );
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock);
+    const strategy = new AdoPRStrategy(mockExecutor.mock);
     const result = await strategy.closeExistingPR({
       repoInfo: azureRepoInfo,
       branchName: "test-branch",
@@ -812,7 +812,7 @@ describe("AzurePRStrategy closeExistingPR", () => {
   });
 });
 
-describe("AzurePRStrategy URL extraction edge cases", () => {
+describe("AdoPRStrategy URL extraction edge cases", () => {
   const azureRepoInfo: AzureDevOpsRepoInfo = {
     type: "azure-devops",
     gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
@@ -843,7 +843,7 @@ describe("AzurePRStrategy URL extraction edge cases", () => {
     // Azure CLI output may include whitespace/newlines
     mockExecutor.responses.set("az repos pr create", "  456  \n");
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock);
+    const strategy = new AdoPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: azureRepoInfo,
       title: "Test PR",
@@ -864,7 +864,7 @@ describe("AzurePRStrategy URL extraction edge cases", () => {
   test("handles empty response from create command", async () => {
     mockExecutor.responses.set("az repos pr create", "");
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock);
+    const strategy = new AdoPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: azureRepoInfo,
       title: "Test PR",
@@ -883,7 +883,7 @@ describe("AzurePRStrategy URL extraction edge cases", () => {
   });
 });
 
-describe("AzurePRStrategy type guards", () => {
+describe("AdoPRStrategy type guards", () => {
   const githubRepoInfo: GitHubRepoInfo = {
     type: "github",
     gitUrl: "git@github.com:owner/repo.git",
@@ -909,7 +909,7 @@ describe("AzurePRStrategy type guards", () => {
   });
 
   test("closeExistingPR throws for non-Azure repo", async () => {
-    const strategy = new AzurePRStrategy(mockExecutor.mock);
+    const strategy = new AdoPRStrategy(mockExecutor.mock);
 
     await assert.rejects(
       () =>
@@ -925,7 +925,7 @@ describe("AzurePRStrategy type guards", () => {
   });
 });
 
-describe("AzurePRStrategy merge unknown mode", () => {
+describe("AdoPRStrategy merge unknown mode", () => {
   const azureRepoInfo: AzureDevOpsRepoInfo = {
     type: "azure-devops",
     gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
@@ -942,7 +942,7 @@ describe("AzurePRStrategy merge unknown mode", () => {
   });
 
   test("returns failure for unknown merge mode", async () => {
-    const strategy = new AzurePRStrategy(mockExecutor.mock);
+    const strategy = new AdoPRStrategy(mockExecutor.mock);
     const result = await strategy.merge({
       prUrl:
         "https://dev.azure.com/myorg/myproject/_git/myrepo/pullrequest/123",
@@ -958,7 +958,7 @@ describe("AzurePRStrategy merge unknown mode", () => {
   });
 });
 
-describe("AzurePRStrategy logger coverage", () => {
+describe("AdoPRStrategy logger coverage", () => {
   const azureRepoInfo: AzureDevOpsRepoInfo = {
     type: "azure-devops",
     gitUrl: "git@ssh.dev.azure.com:v3/myorg/myproject/myrepo",
@@ -999,7 +999,7 @@ describe("AzurePRStrategy logger coverage", () => {
     });
     mockExecutor.responses.set("az repos pr list", errorWithStderr);
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock, mockLogger);
+    const strategy = new AdoPRStrategy(mockExecutor.mock, mockLogger);
     const result = await strategy.checkExistingPR({
       repoInfo: azureRepoInfo,
       branchName: "test-branch",
@@ -1028,7 +1028,7 @@ describe("AzurePRStrategy logger coverage", () => {
       new Error("Abandon failed")
     );
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock, mockLogger);
+    const strategy = new AdoPRStrategy(mockExecutor.mock, mockLogger);
     const result = await strategy.closeExistingPR({
       repoInfo: azureRepoInfo,
       branchName: "test-branch",
@@ -1059,7 +1059,7 @@ describe("AzurePRStrategy logger coverage", () => {
       new Error("Branch deletion failed")
     );
 
-    const strategy = new AzurePRStrategy(mockExecutor.mock, mockLogger);
+    const strategy = new AdoPRStrategy(mockExecutor.mock, mockLogger);
     const result = await strategy.closeExistingPR({
       repoInfo: azureRepoInfo,
       branchName: "test-branch",

@@ -5,7 +5,7 @@ import type {
   IRepoMetadataProvider,
   RepoMetadata,
 } from "../../repo/metadata-provider.js";
-import { diffRepoSettings, hasChanges } from "./diff.js";
+import { diffRepoSettings, hasRepoSettingsChanges } from "./diff.js";
 import {
   formatRepoSettingsPlan,
   type RepoSettingsPlanResult,
@@ -95,7 +95,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     // Compute diff
     const changes = diffRepoSettings(currentSettings, desiredSettings);
 
-    if (!hasChanges(changes)) {
+    if (!hasRepoSettingsChanges(changes)) {
       const unchangedCount = changes.filter(
         (c) => c.action === "unchanged"
       ).length;
