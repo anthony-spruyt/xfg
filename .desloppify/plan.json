@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-16T04:55:47+00:00",
+  "updated": "2026-04-16T04:57:04+00:00",
   "queue_order": [
     "workflow::create-plan"
   ],
@@ -344,6 +344,16 @@
       "note": null,
       "attestation": "I have reviewed src/config/loader.ts line 67: .sort() is called on an array of YAML filename strings (yamlFiles), where JavaScript's default lexicographic sort produces correct deterministic ordering. No comparator is needed for string arrays. I am not gaming the score by suppressing a real defect.",
       "created_at": "2026-04-16T04:55:47+00:00",
+      "review_after": null,
+      "skipped_at_scan": 197
+    },
+    "test_coverage::src/sync/types.ts::transitive_only": {
+      "issue_id": "test_coverage::src/sync/types.ts::transitive_only",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed src/sync/types.ts against the code: it contains only TypeScript interfaces and type aliases, no runtime exports, so direct unit tests are not meaningful. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-16T04:57:04+00:00",
       "review_after": null,
       "skipped_at_scan": 197
     }
@@ -28215,6 +28225,35 @@
       "action": "skip",
       "issue_ids": [
         "smells::src/config/loader.ts::sort_no_comparator"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:57:04+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "test_coverage::src/sync/types.ts::transitive_only"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:57:04+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "test_coverage::src/sync/types.ts::transitive_only"
       ],
       "cluster_name": null,
       "actor": "user",

@@ -3,17 +3,17 @@
   "created": "2026-03-03T09:08:56+00:00",
   "last_scan": "2026-04-16T04:31:57+00:00",
   "scan_count": 197,
-  "overall_score": 92.1,
-  "objective_score": 92.6,
-  "strict_score": 90.9,
+  "overall_score": 92.2,
+  "objective_score": 92.9,
+  "strict_score": 91.0,
   "verified_strict_score": 90.3,
   "stats": {
     "total": 1609,
     "auto_resolved": 1093,
     "deferred": 0,
-    "false_positive": 82,
+    "false_positive": 83,
     "fixed": 226,
-    "open": 206,
+    "open": 205,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -29,9 +29,9 @@
       "2": {
         "auto_resolved": 364,
         "deferred": 0,
-        "false_positive": 48,
+        "false_positive": 49,
         "fixed": 106,
-        "open": 30,
+        "open": 29,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -2975,18 +2975,18 @@
       }
     },
     "Test health": {
-      "score": 69.6,
-      "strict": 64.7,
+      "score": 71.0,
+      "strict": 66.2,
       "verified_strict_score": 62.8,
       "checks": 1159,
-      "failing": 28,
+      "failing": 27,
       "tier": 4,
       "detectors": {
         "test_coverage": {
           "potential": 1159,
-          "pass_rate": 0.6961549563100876,
-          "failing": 28,
-          "weighted_failures": 352.15640563660844
+          "pass_rate": 0.7103848290473358,
+          "failing": 27,
+          "weighted_failures": 335.66398313413777
         }
       }
     },
@@ -66503,11 +66503,11 @@
         "loc_weight": 16.492422502470642,
         "complexity_score": 30
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-27T11:22:41+00:00",
       "last_seen": "2026-03-27T23:18:29+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T04:57:04+00:00",
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
@@ -66516,7 +66516,13 @@
       "zone": "production",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed src/sync/types.ts against the code: it contains only TypeScript interfaces and type aliases, no runtime exports, so direct unit tests are not meaningful. I am not gaming the score by suppressing a real defect.",
+        "attested_at": "2026-04-16T04:57:04+00:00",
+        "scan_verified": false
+      }
     },
     "test_coverage::src/settings/labels/github-labels-strategy.ts::transitive_only": {
       "id": "test_coverage::src/settings/labels/github-labels-strategy.ts::transitive_only",
