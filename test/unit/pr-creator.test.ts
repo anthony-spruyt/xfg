@@ -11,7 +11,7 @@ import {
   FileAction,
 } from "../../src/vcs/pr-creator.js";
 import { escapeShellArg } from "../../src/shared/shell-utils.js";
-import type { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../../src/repo/detector.js";
 import type { ICommandExecutor } from "../../src/shared/command-executor.js";
 
 const stubExecutor: ICommandExecutor = { exec: async () => "" };

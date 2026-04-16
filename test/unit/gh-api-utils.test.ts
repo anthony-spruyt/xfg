@@ -11,7 +11,7 @@ import {
   attachValidationDetails,
 } from "../../src/shared/gh-api-utils.js";
 import { parseApiJson } from "../../src/shared/json-utils.js";
-import type { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../../src/repo/detector.js";
 
 function makeRepoInfo(overrides: Partial<GitHubRepoInfo> = {}): GitHubRepoInfo {
   return {

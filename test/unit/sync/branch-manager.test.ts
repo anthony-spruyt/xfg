@@ -9,7 +9,7 @@ import {
   createMockLogger,
   createMockExecutor,
 } from "../../mocks/index.js";
-import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../../../src/repo/detector.js";
 
 const testDir = join(tmpdir(), "branch-manager-test-" + Date.now());
 

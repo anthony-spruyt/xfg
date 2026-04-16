@@ -5,7 +5,7 @@ import type { RepoConfig, Ruleset } from "../../src/config/index.js";
 import type {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
-} from "../../src/shared/repo-detector.js";
+} from "../../src/repo/detector.js";
 import type { GitHubRulesetStrategy } from "../../src/settings/rulesets/github-ruleset-strategy.js";
 import type { GitHubRuleset } from "../../src/settings/rulesets/types.js";
 

@@ -1,41 +1,24 @@
-import { ValidationError } from "./errors.js";
+import { ValidationError } from "../shared/errors.js";
+import type {
+  GitHubRepoInfo,
+  AzureDevOpsRepoInfo,
+  GitLabRepoInfo,
+  RepoInfo,
+} from "./types.js";
 
 type RepoType = "github" | "azure-devops" | "gitlab";
 
-// Context for repo detection with optional GitHub Enterprise hosts
 interface RepoDetectorContext {
   githubHosts?: string[];
 }
 
-interface BaseRepoInfo {
-  gitUrl: string;
-  repo: string;
-}
+export type {
+  GitHubRepoInfo,
+  AzureDevOpsRepoInfo,
+  GitLabRepoInfo,
+  RepoInfo,
+} from "./types.js";
 
-export interface GitHubRepoInfo extends BaseRepoInfo {
-  type: "github";
-  owner: string;
-  host: string; // "github.com" or GHE hostname
-}
-
-export interface AzureDevOpsRepoInfo extends BaseRepoInfo {
-  type: "azure-devops";
-  owner: string;
-  organization: string;
-  project: string;
-}
-
-export interface GitLabRepoInfo extends BaseRepoInfo {
-  type: "gitlab";
-  owner: string; // First path segment (for consistency with other platforms)
-  namespace: string; // Full path before repo (supports nested groups)
-  host: string; // gitlab.com or self-hosted domain
-}
-
-export type RepoInfo = GitHubRepoInfo | AzureDevOpsRepoInfo | GitLabRepoInfo;
-
-// Type guards, assertions, and display helpers live in repo-info-utils.ts.
-// Re-exported here for backward compatibility.
 export {
   isGitHubRepo,
   isAzureDevOpsRepo,
@@ -44,7 +27,7 @@ export {
   assertAzureDevOpsRepo,
   assertGitLabRepo,
   getRepoDisplayName,
-} from "./repo-info-utils.js";
+} from "./utils.js";
 
 function extractHostFromUrl(gitUrl: string): string | null {
   // SSH: git@hostname:path

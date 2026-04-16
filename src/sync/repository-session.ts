@@ -1,4 +1,4 @@
-import type { RepoInfo } from "../shared/repo-detector.js";
+import type { RepoInfo } from "../repo/detector.js";
 import type { ILogger } from "../shared/logger.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import type {

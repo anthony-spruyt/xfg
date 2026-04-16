@@ -1,6 +1,6 @@
 import type { ICommitStrategy, CommitOptions, CommitResult } from "./types.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
-import { isGitHubRepo, type GitHubRepoInfo } from "../shared/repo-detector.js";
+import { isGitHubRepo, type GitHubRepoInfo } from "../repo/detector.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
 import {
   withRetry,

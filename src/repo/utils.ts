@@ -1,10 +1,10 @@
-import { ValidationError } from "./errors.js";
+import { ValidationError } from "../shared/errors.js";
 import type {
   RepoInfo,
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
   GitLabRepoInfo,
-} from "./repo-detector.js";
+} from "./types.js";
 
 export function isGitHubRepo(info: RepoInfo): info is GitHubRepoInfo {
   return info.type === "github";

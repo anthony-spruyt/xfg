@@ -1,10 +1,7 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { escapeShellArg } from "../shared/shell-utils.js";
-import {
-  assertGitLabRepo,
-  type GitLabRepoInfo,
-} from "../shared/repo-detector.js";
+import { assertGitLabRepo, type GitLabRepoInfo } from "../repo/detector.js";
 import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";

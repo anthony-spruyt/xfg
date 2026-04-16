@@ -1,7 +1,7 @@
 import { describe, test, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { RepoSettingsProcessor } from "../../src/settings/repo-settings/processor.js";
-import type { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../../src/repo/detector.js";
 import type { RepoConfig } from "../../src/config/index.js";
 import type {
   IRepoSettingsStrategy,
@@ -9,11 +9,11 @@ import type {
 } from "../../src/settings/repo-settings/types.js";
 import type { GhApiOptions } from "../../src/shared/gh-api-utils.js";
 import type { GitHubRepoSettings } from "../../src/config/index.js";
-import type { RepoInfo } from "../../src/shared/repo-detector.js";
+import type { RepoInfo } from "../../src/repo/detector.js";
 import type {
   IRepoMetadataProvider,
   RepoMetadata,
-} from "../../src/shared/repo-metadata-provider.js";
+} from "../../src/repo/metadata-provider.js";
 
 class MockMetadataProvider implements IRepoMetadataProvider {
   result: RepoMetadata = {

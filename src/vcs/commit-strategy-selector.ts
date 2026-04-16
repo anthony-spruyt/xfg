@@ -1,4 +1,4 @@
-import { type RepoInfo, isGitHubRepo } from "../shared/repo-detector.js";
+import { type RepoInfo, isGitHubRepo } from "../repo/detector.js";
 import type { ICommitStrategy } from "./types.js";
 import { GitCommitStrategy } from "./git-commit-strategy.js";
 import { GraphQLCommitStrategy } from "./graphql-commit-strategy.js";

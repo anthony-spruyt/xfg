@@ -1,4 +1,4 @@
-import type { RepoInfo } from "../shared/repo-detector.js";
+import type { RepoInfo } from "../repo/detector.js";
 import type { MergeMode, MergeStrategy } from "../config/index.js";
 
 export interface GitAuthOptions {

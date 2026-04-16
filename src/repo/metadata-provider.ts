@@ -1,7 +1,7 @@
-import type { ICommandExecutor } from "./command-executor.js";
-import { assertGitHubRepo, type RepoInfo } from "./repo-detector.js";
-import { GhApiClient, type GhApiOptions } from "./gh-api-utils.js";
-import { parseApiJson } from "./json-utils.js";
+import type { ICommandExecutor } from "../shared/command-executor.js";
+import { assertGitHubRepo, type RepoInfo } from "./detector.js";
+import { GhApiClient, type GhApiOptions } from "../shared/gh-api-utils.js";
+import { parseApiJson } from "../shared/json-utils.js";
 import type { RepoVisibility } from "../config/index.js";
 
 export interface RepoMetadata {

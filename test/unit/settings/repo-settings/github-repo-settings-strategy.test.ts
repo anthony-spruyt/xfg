@@ -1,7 +1,7 @@
 import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { GitHubRepoSettingsStrategy } from "../../../../src/settings/repo-settings/github-repo-settings-strategy.js";
-import type { GitHubRepoInfo } from "../../../../src/shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../../../../src/repo/detector.js";
 import type {
   ICommandExecutor,
   ExecOptions,

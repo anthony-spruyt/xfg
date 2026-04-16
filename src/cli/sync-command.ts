@@ -15,7 +15,7 @@ import {
   isGitHubRepo,
   type RepoInfo,
   type GitHubRepoInfo,
-} from "../shared/repo-detector.js";
+} from "../repo/detector.js";
 import { sanitizeBranchName, validateBranchName } from "./branch-utils.js";
 import { createTokenManager } from "../vcs/index.js";
 import { RepositoryProcessor } from "../sync/index.js";
@@ -30,7 +30,7 @@ import {
   GitHubLabelsStrategy,
   GitHubCodeScanningStrategy,
 } from "../settings/index.js";
-import { GitHubRepoMetadataProvider } from "../shared/repo-metadata-provider.js";
+import { GitHubRepoMetadataProvider } from "../repo/metadata-provider.js";
 import { ShellCommandExecutor } from "../shared/command-executor.js";
 import { Logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";

@@ -1,5 +1,5 @@
 import type { RepoConfig } from "../../config/index.js";
-import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
+import type { GitHubRepoInfo, RepoInfo } from "../../repo/detector.js";
 import { diffLabels } from "./diff.js";
 import { formatLabelsPlan, type LabelsPlanResult } from "./formatter.js";
 import { labelConfigToPayload } from "./converter.js";

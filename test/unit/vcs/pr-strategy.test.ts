@@ -8,7 +8,7 @@ import {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
   GitLabRepoInfo,
-} from "../../../src/shared/repo-detector.js";
+} from "../../../src/repo/detector.js";
 import type {
   PRStrategyOptions,
   IPRStrategy,

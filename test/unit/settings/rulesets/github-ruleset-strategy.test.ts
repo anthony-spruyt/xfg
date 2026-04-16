@@ -9,7 +9,7 @@ import type { Ruleset } from "../../../../src/config/index.js";
 import type {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
-} from "../../../../src/shared/repo-detector.js";
+} from "../../../../src/repo/detector.js";
 import type {
   ICommandExecutor,
   ExecOptions,

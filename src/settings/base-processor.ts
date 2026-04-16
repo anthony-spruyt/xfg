@@ -1,6 +1,6 @@
 import type { RepoConfig } from "../config/index.js";
-import type { RepoInfo, GitHubRepoInfo } from "../shared/repo-detector.js";
-import { isGitHubRepo, getRepoDisplayName } from "../shared/repo-detector.js";
+import type { RepoInfo, GitHubRepoInfo } from "../repo/detector.js";
+import { isGitHubRepo, getRepoDisplayName } from "../repo/detector.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 
 export interface BaseProcessorOptions {

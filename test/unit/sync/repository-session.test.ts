@@ -8,7 +8,7 @@ import {
   createMockAuthenticatedGitOps,
   createMockLogger,
 } from "../../mocks/index.js";
-import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../../../src/repo/detector.js";
 import type { GitOpsFactory } from "../../../src/sync/types.js";
 import type { GitAuthOptions } from "../../../src/vcs/types.js";
 import type { ICommandExecutor } from "../../../src/shared/command-executor.js";

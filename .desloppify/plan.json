@@ -1,18 +1,9 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-03-27T23:32:14+00:00",
+  "updated": "2026-04-16T04:49:26+00:00",
   "queue_order": [
-    "workflow::create-plan",
-    "subjective::ai_generated_debt",
-    "subjective::convention_outlier",
-    "subjective::design_coherence",
-    "subjective::error_consistency",
-    "subjective::incomplete_migration",
-    "subjective::logic_clarity",
-    "subjective::naming_quality",
-    "subjective::test_strategy",
-    "subjective::type_safety"
+    "workflow::create-plan"
   ],
   "deferred": [],
   "skipped": {
@@ -305,6 +296,36 @@
       "created_at": "2026-03-27T23:28:16+00:00",
       "review_after": null,
       "skipped_at_scan": 196
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this finding against the code: secretScanning is a GitHub Settings API property name for the secret-scanning feature, not a hardcoded secret value. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-16T04:40:29+00:00",
+      "review_after": null,
+      "skipped_at_scan": 197
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this finding against the code: secretScanning is a GitHub Settings API property name for the secret-scanning feature, not a hardcoded secret value. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-16T04:40:29+00:00",
+      "review_after": null,
+      "skipped_at_scan": 197
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::42": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::42",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this finding against the code: secretScanningPushProtection is a GitHub Settings API property name, not a hardcoded secret value. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-16T04:40:30+00:00",
+      "review_after": null,
+      "skipped_at_scan": 197
     }
   },
   "active_cluster": null,
@@ -354,8 +375,8 @@
     "test_coverage::src/cli/types.ts::transitive_only": {
       "issue_id": "test_coverage::src/cli/types.ts::transitive_only",
       "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "auto/test_coverage-transitive_only",
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "smells::test/unit/authenticated-git-ops.test.ts::hardcoded_url": {
       "issue_id": "smells::test/unit/authenticated-git-ops.test.ts::hardcoded_url",
@@ -655,7 +676,7 @@
       "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
       "created_at": "2026-03-06T08:53:44+00:00",
       "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::src/vcs/index.ts::FileAction": {
       "issue_id": "exports::src/vcs/index.ts::FileAction",
@@ -1230,86 +1251,86 @@
     "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module": {
       "issue_id": "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
       "created_at": "2026-03-18T11:51:36+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "api-consolidation",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::interpolate_value_untyped_return": {
       "issue_id": "review::.::holistic::type_safety::interpolate_value_untyped_return",
       "created_at": "2026-03-18T11:51:36+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "api-consolidation",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::action_param_typed_as_string": {
       "issue_id": "review::.::holistic::type_safety::action_param_typed_as_string",
       "created_at": "2026-03-18T11:51:36+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "api-consolidation",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions": {
       "issue_id": "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
       "created_at": "2026-03-18T11:51:37+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "design-coherence-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::incomplete_summary_format_consolidation": {
       "issue_id": "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
       "created_at": "2026-03-18T11:51:37+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "design-coherence-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::logic_clarity::count_actions_multi_pass": {
       "issue_id": "review::.::holistic::logic_clarity::count_actions_multi_pass",
       "created_at": "2026-03-18T11:51:37+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "design-coherence-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
       "created_at": "2026-03-18T11:51:38+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "module-boundary-fixes",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers": {
       "issue_id": "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
       "created_at": "2026-03-18T11:51:38+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "module-boundary-fixes",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation": {
       "issue_id": "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
       "created_at": "2026-03-18T11:51:38+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "module-boundary-fixes",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean": {
       "issue_id": "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
       "created_at": "2026-03-18T11:51:43+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-wins",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments": {
       "issue_id": "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
       "created_at": "2026-03-18T11:51:43+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-wins",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals": {
       "issue_id": "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
       "created_at": "2026-03-18T11:51:43+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-wins",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons": {
       "issue_id": "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
       "created_at": "2026-03-18T11:51:43+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-wins",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::test_strategy::gh_api_utils_zero_coverage": {
       "issue_id": "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
       "created_at": "2026-03-18T11:51:44+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "test-coverage",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "test_coverage::src/cli/program.ts::untested_module": {
       "issue_id": "test_coverage::src/cli/program.ts::untested_module",
@@ -1320,440 +1341,440 @@
     "test_coverage::src/shared/json-utils.ts::transitive_only": {
       "issue_id": "test_coverage::src/shared/json-utils.ts::transitive_only",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "auto/test_coverage-transitive_only",
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns": {
       "issue_id": "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns",
-      "cluster": null,
+      "cluster": "token-resolution",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels": {
       "issue_id": "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels",
-      "cluster": null,
+      "cluster": "token-resolution",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::mid_level_elegance::token-resolution-dual-path": {
       "issue_id": "review::.::holistic::mid_level_elegance::token-resolution-dual-path",
-      "cluster": null,
+      "cluster": "token-resolution",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param": {
       "issue_id": "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param",
-      "cluster": null,
+      "cluster": "accepted-debt",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return": {
       "issue_id": "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return",
-      "cluster": null,
+      "cluster": "accepted-debt",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check": {
       "issue_id": "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check",
-      "cluster": null,
+      "cluster": "accepted-debt",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::api_surface_coherence::FileChange-name-collision": {
       "issue_id": "review::.::holistic::api_surface_coherence::FileChange-name-collision",
-      "cluster": null,
+      "cluster": "stale-findings",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation": {
       "issue_id": "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation",
-      "cluster": null,
+      "cluster": "stale-findings",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::incomplete_migration::logger-process-env-direct-read": {
       "issue_id": "review::.::holistic::incomplete_migration::logger-process-env-direct-read",
-      "cluster": null,
+      "cluster": "stale-findings",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::incomplete_shared_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::incomplete_shared_barrel",
-      "cluster": null,
+      "cluster": "barrel-hygiene",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::incomplete_vcs_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::incomplete_vcs_barrel",
-      "cluster": null,
+      "cluster": "barrel-hygiene",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::fileaction_imported_from_reexport": {
       "issue_id": "review::.::holistic::cross_module_architecture::fileaction_imported_from_reexport",
-      "cluster": null,
+      "cluster": "barrel-hygiene",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::sync_types_imports_concrete_vcs_file": {
       "issue_id": "review::.::holistic::cross_module_architecture::sync_types_imports_concrete_vcs_file",
-      "cluster": null,
+      "cluster": "barrel-hygiene",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::mid_level_elegance::file_action_import_bypass": {
       "issue_id": "review::.::holistic::mid_level_elegance::file_action_import_bypass",
-      "cluster": null,
+      "cluster": "barrel-hygiene",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::github_summary_process_env": {
       "issue_id": "review::.::holistic::cross_module_architecture::github_summary_process_env",
-      "cluster": null,
+      "cluster": "barrel-hygiene",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::duplicate_lifecycle_types": {
       "issue_id": "review::.::holistic::design_coherence::duplicate_lifecycle_types",
-      "cluster": null,
+      "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::naming_quality::lifecycle_report_input_redundant_type": {
       "issue_id": "review::.::holistic::naming_quality::lifecycle_report_input_redundant_type",
-      "cluster": null,
+      "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::convention_outlier::lifecycle_duplicate_interface": {
       "issue_id": "review::.::holistic::convention_outlier::lifecycle_duplicate_interface",
-      "cluster": null,
+      "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::convention_outlier::is_object_naming_drift": {
       "issue_id": "review::.::holistic::convention_outlier::is_object_naming_drift",
-      "cluster": null,
+      "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::naming_quality::isObject_vs_isPlainObject_divergence": {
       "issue_id": "review::.::holistic::naming_quality::isObject_vs_isPlainObject_divergence",
-      "cluster": null,
+      "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::manifest_migration_duplication": {
       "issue_id": "review::.::holistic::low_level_elegance::manifest_migration_duplication",
-      "cluster": null,
+      "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::validator_duplicate_group_checks": {
       "issue_id": "review::.::holistic::low_level_elegance::validator_duplicate_group_checks",
-      "cluster": null,
+      "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::contract_coherence::parseManifestContent_stale_docstring": {
       "issue_id": "review::.::holistic::contract_coherence::parseManifestContent_stale_docstring",
-      "cluster": null,
+      "cluster": "stale-docs",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::contract_coherence::resolveGitHubToken_skipped_docstring": {
       "issue_id": "review::.::holistic::contract_coherence::resolveGitHubToken_skipped_docstring",
-      "cluster": null,
+      "cluster": "stale-docs",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::contract_coherence::validateForSync_stale_throws_clause": {
       "issue_id": "review::.::holistic::contract_coherence::validateForSync_stale_throws_clause",
-      "cluster": null,
+      "cluster": "stale-docs",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::restating_type_docstrings": {
       "issue_id": "review::.::holistic::ai_generated_debt::restating_type_docstrings",
-      "cluster": null,
+      "cluster": "stale-docs",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::validate_settings_param_sprawl": {
       "issue_id": "review::.::holistic::design_coherence::validate_settings_param_sprawl",
-      "cluster": null,
+      "cluster": "param-sprawl",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::api_surface_coherence::runLifecycleCheck_6_positional_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::runLifecycleCheck_6_positional_params",
-      "cluster": null,
+      "cluster": "param-sprawl",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::sync_command_positional_params": {
       "issue_id": "review::.::holistic::low_level_elegance::sync_command_positional_params",
-      "cluster": null,
+      "cluster": "param-sprawl",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::error_consistency::github_summary_no_error_handling": {
       "issue_id": "review::.::holistic::error_consistency::github_summary_no_error_handling",
-      "cluster": null,
+      "cluster": "error-gaps",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::error_consistency::close_pr_error_swallowed": {
       "issue_id": "review::.::holistic::error_consistency::close_pr_error_swallowed",
-      "cluster": null,
+      "cluster": "error-gaps",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::error_consistency::commit_error_string_matching": {
       "issue_id": "review::.::holistic::error_consistency::commit_error_string_matching",
-      "cluster": null,
+      "cluster": "error-gaps",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::validation_arrays_not_type_linked": {
       "issue_id": "review::.::holistic::type_safety::validation_arrays_not_type_linked",
-      "cluster": null,
+      "cluster": "type-narrowing",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::current_repo_settings_broad_string_types": {
       "issue_id": "review::.::holistic::type_safety::current_repo_settings_broad_string_types",
-      "cluster": null,
+      "cluster": "type-narrowing",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::double_cast_in_merge_ruleset": {
       "issue_id": "review::.::holistic::type_safety::double_cast_in_merge_ruleset",
-      "cluster": null,
+      "cluster": "type-narrowing",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count": {
       "issue_id": "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count",
-      "cluster": null,
+      "cluster": "code-cleanup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::logic_clarity::unreachable_merge_mode_branches": {
       "issue_id": "review::.::holistic::logic_clarity::unreachable_merge_mode_branches",
-      "cluster": null,
+      "cluster": "code-cleanup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs": {
       "issue_id": "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs",
-      "cluster": null,
+      "cluster": "code-cleanup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments": {
       "issue_id": "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
       "created_at": "2026-03-19T11:32:01+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-cleanups",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::convention_outlier::residual_filepath_comments": {
       "issue_id": "review::.::holistic::convention_outlier::residual_filepath_comments",
       "created_at": "2026-03-19T11:32:01+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-cleanups",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops": {
       "issue_id": "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
       "created_at": "2026-03-19T11:32:02+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-cleanups",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::naming_quality::handle_commit_error_param_mismatch": {
       "issue_id": "review::.::holistic::naming_quality::handle_commit_error_param_mismatch",
       "created_at": "2026-03-19T11:32:02+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-cleanups",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::inline_label_action_formatting": {
       "issue_id": "review::.::holistic::low_level_elegance::inline_label_action_formatting",
       "created_at": "2026-03-19T11:32:03+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-cleanups",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale": {
       "issue_id": "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale",
       "created_at": "2026-03-19T11:32:40+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "import-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types": {
       "issue_id": "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types",
       "created_at": "2026-03-19T11:32:40+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "import-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::labels_manual_filter_counting": {
       "issue_id": "review::.::holistic::design_coherence::labels_manual_filter_counting",
       "created_at": "2026-03-19T11:32:41+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "consolidate-utilities",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::sync_diff_line_duplication": {
       "issue_id": "review::.::holistic::design_coherence::sync_diff_line_duplication",
       "created_at": "2026-03-19T11:32:42+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "consolidate-utilities",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented": {
       "issue_id": "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented",
       "created_at": "2026-03-19T11:32:42+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "consolidate-utilities",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::parallel_action_type_aliases": {
       "issue_id": "review::.::holistic::type_safety::parallel_action_type_aliases",
       "created_at": "2026-03-19T11:32:42+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "consolidate-utilities",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::contract_coherence::format_pr_body_as_string_cast": {
       "issue_id": "review::.::holistic::contract_coherence::format_pr_body_as_string_cast",
       "created_at": "2026-03-19T11:32:43+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "type-safety-fixes",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads": {
       "issue_id": "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads",
       "created_at": "2026-03-19T11:32:44+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "type-safety-fixes",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency": {
       "issue_id": "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency",
       "created_at": "2026-03-19T11:33:40+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "error-handling",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::naming_quality::diff_action_vocabulary_divergence": {
       "issue_id": "review::.::holistic::naming_quality::diff_action_vocabulary_divergence",
       "created_at": "2026-03-19T11:33:40+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "naming-alignment",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::convention_outlier::azure_devops_prefix_drift": {
       "issue_id": "review::.::holistic::convention_outlier::azure_devops_prefix_drift",
       "created_at": "2026-03-19T11:33:41+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "naming-alignment",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::mid_level_elegance::redundant_manifest_load": {
       "issue_id": "review::.::holistic::mid_level_elegance::redundant_manifest_load",
       "created_at": "2026-03-19T11:33:41+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "mid-level-refactor",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map": {
       "issue_id": "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map",
       "created_at": "2026-03-19T11:33:42+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "mid-level-refactor",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params",
       "created_at": "2026-03-19T11:33:42+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "api-refactor",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers": {
       "issue_id": "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
       "created_at": "2026-03-20T02:17:39+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "output-structural-debt",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle": {
       "issue_id": "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
       "created_at": "2026-03-20T02:17:39+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "output-structural-debt",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::dependency_health::type_only_import_cycle_output": {
       "issue_id": "review::.::holistic::dependency_health::type_only_import_cycle_output",
       "created_at": "2026-03-20T02:17:39+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "output-structural-debt",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::incomplete_migration::old_summary_api_dead_code": {
       "issue_id": "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "output-dead-code",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter": {
       "issue_id": "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-consistency-fixes",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector": {
       "issue_id": "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-consistency-fixes",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::inline_action_unions_github_summary": {
       "issue_id": "review::.::holistic::type_safety::inline_action_unions_github_summary",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-consistency-fixes",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-consistency-fixes",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors": {
       "issue_id": "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "quick-consistency-fixes",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::initialization_coupling::module_scope_lazy_singletons": {
       "issue_id": "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "cli-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::test_strategy::untested_cli_entry_point": {
       "issue_id": "review::.::holistic::test_strategy::untested_cli_entry_point",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "cli-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::high_level_elegance::orphaned_summary_utils": {
       "issue_id": "review::.::holistic::high_level_elegance::orphaned_summary_utils",
       "created_at": "2026-03-22T02:07:30+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "dead-summary-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::incomplete_migration::dead_old_summary_api": {
       "issue_id": "review::.::holistic::incomplete_migration::dead_old_summary_api",
       "created_at": "2026-03-22T02:07:30+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "dead-summary-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast": {
       "issue_id": "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
       "created_at": "2026-03-22T02:07:31+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "type-safety-docs",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::as_tresult_cast_in_guards": {
       "issue_id": "review::.::holistic::type_safety::as_tresult_cast_in_guards",
       "created_at": "2026-03-22T02:07:31+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "type-safety-docs",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "exports::.output/updated_sources/src/shared/gh-api-utils.ts::GhApiOptions": {
       "issue_id": "exports::.output/updated_sources/src/shared/gh-api-utils.ts::GhApiOptions",
@@ -1878,68 +1899,68 @@
     "review::.::holistic::cross_module_architecture::renderSyncLines_misplaced_in_aggregator": {
       "issue_id": "review::.::holistic::cross_module_architecture::renderSyncLines_misplaced_in_aggregator",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "output-renderSyncLines-fix",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::high_level_elegance::renderSyncLines_ownership_inversion": {
       "issue_id": "review::.::holistic::high_level_elegance::renderSyncLines_ownership_inversion",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "output-renderSyncLines-fix",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::lifecycle_duplicate_flag_building": {
       "issue_id": "review::.::holistic::low_level_elegance::lifecycle_duplicate_flag_building",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "lifecycle-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::lifecycle_polling_loop_style_divergence": {
       "issue_id": "review::.::holistic::low_level_elegance::lifecycle_polling_loop_style_divergence",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "lifecycle-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::orphan_docblock_normalizer": {
       "issue_id": "review::.::holistic::ai_generated_debt::orphan_docblock_normalizer",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "comment-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::type_labeling_comments_repo_detector": {
       "issue_id": "review::.::holistic::ai_generated_debt::type_labeling_comments_repo_detector",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "comment-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::file_writer_split_loop_unannounced": {
       "issue_id": "review::.::holistic::low_level_elegance::file_writer_split_loop_unannounced",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "comment-cleanup",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::settings_report_duplicate_counting": {
       "issue_id": "review::.::holistic::design_coherence::settings_report_duplicate_counting",
       "created_at": "2026-03-22T03:53:36+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "design-fixes",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::api_surface_coherence::ruleset_update_5_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::ruleset_update_5_params",
       "created_at": "2026-03-22T03:53:36+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "design-fixes",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::test_strategy::ts_github_summary_untested": {
       "issue_id": "review::.::holistic::test_strategy::ts_github_summary_untested",
       "created_at": "2026-03-22T03:53:36+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "test-coverage",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::initialization_coupling::program_ts_module_level_file_io": {
       "issue_id": "review::.::holistic::initialization_coupling::program_ts_module_level_file_io",
       "created_at": "2026-03-22T03:53:36+00:00",
-      "cluster": null,
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "cluster": "init-fix",
+      "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "test_coverage::src/output/github-summary.ts::transitive_only": {
       "issue_id": "test_coverage::src/output/github-summary.ts::transitive_only",
@@ -2095,307 +2116,319 @@
       "issue_id": "test_coverage::src/shared/string-utils.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/config/loader.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/loader.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/output/settings-report.ts::transitive_only": {
       "issue_id": "test_coverage::src/output/settings-report.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/rulesets/formatter.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/rulesets/formatter.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/config/extends-resolver.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/extends-resolver.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/labels/formatter.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/labels/formatter.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/labels/converter.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/labels/converter.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/cli/lifecycle-report-builder.ts::transitive_only": {
       "issue_id": "test_coverage::src/cli/lifecycle-report-builder.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/config/types.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/types.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/config/normalizer.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/normalizer.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/repo-settings/diff.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/repo-settings/diff.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/labels/diff.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/labels/diff.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/rulesets/processor.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/rulesets/processor.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/config/formatter.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/formatter.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/repo-settings/formatter.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/repo-settings/formatter.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/output/sync-report.ts::transitive_only": {
       "issue_id": "test_coverage::src/output/sync-report.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/sync/types.ts::transitive_only": {
       "issue_id": "test_coverage::src/sync/types.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/labels/github-labels-strategy.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/labels/github-labels-strategy.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/config/validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validator.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/labels/processor.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/labels/processor.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/shared/errors.ts::transitive_only": {
       "issue_id": "test_coverage::src/shared/errors.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/repo-settings/processor.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/repo-settings/processor.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/rulesets/diff.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/rulesets/diff.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/shared/cleanup-utils.ts::transitive_only": {
       "issue_id": "test_coverage::src/shared/cleanup-utils.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/cli/branch-utils.ts::transitive_only": {
       "issue_id": "test_coverage::src/cli/branch-utils.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/program.ts::program": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/program.ts::program",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-export",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::computeUnifiedDiff": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::computeUnifiedDiff",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-export",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::isBinaryFile": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::isBinaryFile",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-export",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/authenticated-git-ops.ts::AuthenticatedGitOpsOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/authenticated-git-ops.ts::AuthenticatedGitOpsOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/config/index.ts::ContentValue": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/config/index.ts::ContentValue",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SyncOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SyncOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SharedOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SharedOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RulesetProcessorFactory": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RulesetProcessorFactory",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RepoSettingsProcessorFactory": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RepoSettingsProcessorFactory",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::LabelsProcessorFactory": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::LabelsProcessorFactory",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::IRulesetProcessor": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::IRulesetProcessor",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::ILabelsProcessor": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::ILabelsProcessor",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/sync-command.ts::SharedOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/sync-command.ts::SharedOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::INetworkGitOps": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::INetworkGitOps",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::PRStrategyOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::PRStrategyOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeResult": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeResult",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CloseExistingPROptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CloseExistingPROptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitResult": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitResult",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RulesetProcessorFactory": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RulesetProcessorFactory",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RepoSettingsProcessorFactory": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RepoSettingsProcessorFactory",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::LabelsProcessorFactory": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::LabelsProcessorFactory",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SyncOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SyncOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SharedOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SharedOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/types.ts::SharedOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/types.ts::SharedOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-03-27T14:15:23+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::42": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::42",
+      "created_at": "2026-04-16T04:40:29+00:00",
+      "cluster": null,
+      "updated_at": "2026-04-16T04:49:26+00:00"
+    },
+    "test_coverage::src/shared/repo-info-utils.ts::transitive_only": {
+      "issue_id": "test_coverage::src/shared/repo-info-utils.ts::transitive_only",
+      "created_at": "2026-04-16T04:40:29+00:00",
+      "cluster": "auto/test_coverage-transitive_only",
+      "updated_at": "2026-04-16T04:49:26+00:00"
     }
   },
   "clusters": {
@@ -2795,20 +2828,6 @@
       "action_type": "manual_fix",
       "execution_policy": "planned_only",
       "execution_status": "review"
-    },
-    "auto/stale-review": {
-      "name": "auto/stale-review",
-      "description": "Re-review 13 stale subjective dimensions",
-      "issue_ids": [],
-      "created_at": "2026-03-06T13:26:46+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00",
-      "auto": true,
-      "cluster_key": "subjective::stale",
-      "action": "desloppify review --prepare --dimensions abstraction_fitness,ai_generated_debt,api_surface_coherence,contract_coherence,convention_outlier,design_coherence,error_consistency,high_level_elegance,logic_clarity,mid_level_elegance,naming_quality,package_organization,test_strategy",
-      "user_modified": false,
-      "execution_status": "review",
-      "action_type": "manual_fix",
-      "execution_policy": "planned_only"
     },
     "api-consolidation": {
       "name": "api-consolidation",
@@ -3819,24 +3838,12 @@
         }
       ]
     },
-    "auto/security-hardcoded_secret_name": {
-      "name": "auto/security-hardcoded_secret_name",
-      "description": "Fix 2 security issues",
-      "issue_ids": [],
-      "created_at": "2026-03-27T14:15:23+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00",
-      "auto": true,
-      "cluster_key": "detector::security::hardcoded_secret_name",
-      "action": "review and fix security issues",
-      "execution_status": "review",
-      "user_modified": false,
-      "action_type": "manual_fix",
-      "execution_policy": "planned_only"
-    },
     "auto/test_coverage-transitive_only": {
       "name": "auto/test_coverage-transitive_only",
-      "description": "Fix 27 test coverage issues",
+      "description": "Fix 28 test coverage issues",
       "issue_ids": [
+        "test_coverage::src/cli/types.ts::transitive_only",
+        "test_coverage::src/shared/json-utils.ts::transitive_only",
         "test_coverage::src/shared/string-utils.ts::transitive_only",
         "test_coverage::src/config/loader.ts::transitive_only",
         "test_coverage::src/output/settings-report.ts::transitive_only",
@@ -3861,10 +3868,11 @@
         "test_coverage::src/settings/repo-settings/processor.ts::transitive_only",
         "test_coverage::src/settings/rulesets/diff.ts::transitive_only",
         "test_coverage::src/shared/cleanup-utils.ts::transitive_only",
-        "test_coverage::src/cli/branch-utils.ts::transitive_only"
+        "test_coverage::src/cli/branch-utils.ts::transitive_only",
+        "test_coverage::src/shared/repo-info-utils.ts::transitive_only"
       ],
       "created_at": "2026-03-27T14:15:23+00:00",
-      "updated_at": "2026-03-27T14:15:23+00:00",
+      "updated_at": "2026-04-16T04:40:29+00:00",
       "auto": true,
       "cluster_key": "detector::test_coverage::transitive_only",
       "action": "review test coverage gaps",
@@ -7342,12 +7350,7 @@
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {
-    "strict": 91.3,
-    "overall": 91.9,
-    "objective": 91.8,
-    "verified": 90.3
-  },
+  "plan_start_scores": {},
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -27923,6 +27926,225 @@
       "detail": {
         "changes": true
       }
+    },
+    {
+      "timestamp": "2026-03-27T23:32:51+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::unnecessary_async_ghapiclient_call",
+        "review::.::holistic::ai_generated_debt::manifest_restating_comments",
+        "review::.::holistic::api_surface_coherence::type_guards_async_outlier",
+        "review::.::holistic::contract_coherence::withretry_throws_aborderror_inaccurate",
+        "review::.::holistic::convention_outlier::import_type_inconsistency",
+        "review::.::holistic::convention_outlier::settings_test_split_organization",
+        "review::.::holistic::error_consistency::resolve_github_token_silent_no_fallback",
+        "review::.::holistic::logic_clarity::redundant_async_vcs_helpers",
+        "review::.::holistic::naming_quality::get_builtin_var_abbreviation",
+        "review::.::holistic::naming_quality::handle_commit_error_generic_verb",
+        "review::.::holistic::package_organization::branch_utils_shared_straggler",
+        "review::.::holistic::low_level_elegance::validator_duplicate_cond_group_probes",
+        "review::.::holistic::error_consistency::pr_workflow_executor_broad_catch",
+        "review::.::holistic::high_level_elegance::repo_detector_responsibility_blur",
+        "review::.::holistic::mid_level_elegance::lifecycle_create_settings_recomputed",
+        "review::.::holistic::test_strategy::test_tmpdir_process_cwd",
+        "review::.::holistic::ai_generated_debt::diff_utils_restating_comments",
+        "review::.::holistic::convention_outlier::repo_settings_action_independent_definition",
+        "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel",
+        "review::.::holistic::logic_clarity::merge_text_content_redundant_branch_and_dead_code",
+        "review::.::holistic::low_level_elegance::allof_anyof_validation_duplication",
+        "review::.::holistic::naming_quality::sync_log_breaks_capability_naming_convention",
+        "review::.::holistic::test_strategy::process_cwd_temp_dirs_incomplete_migration",
+        "review::.::holistic::type_safety::parallel_merge_outcome_type"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Round 7: subjective reviews (20 dimensions) + 8 code fixes across 7 dimensions",
+      "detail": {
+        "sha": "d181ab587960",
+        "branch": "chore/desloppify-round-7"
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:31:57+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:31:57+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:31:57+00:00",
+      "action": "clear_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T04:31:57+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 197
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:40:29+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:40:29+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:40:29+00:00",
+      "action": "auto_cluster",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:40:29+00:00",
+      "action": "sync_communicate_score",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "auto_resolved": true
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:40:29+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:40:30+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::42"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:49:20+00:00",
+      "action": "done",
+      "issue_ids": [
+        "cycles::src/shared/repo-detector.ts::src/shared/repo-detector.ts::src/shared/repo-info-utils.ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved repo-detector, repo-info-utils, repo-types, repo-metadata-provider out of src/shared/ into dedicated src/repo/ domain folder (detector.ts, utils.ts, types.ts, metadata-provider.ts). Extracted RepoInfo type hierarchy into types.ts so utils no longer reaches back to detector, breaking the cycle.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T04:49:25+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "cycles::src/shared/repo-detector.ts::src/shared/repo-detector.ts::src/shared/repo-info-utils.ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:49:25+00:00",
+      "action": "done",
+      "issue_ids": [
+        "cycles::src/shared/repo-detector.ts::src/shared/repo-detector.ts::src/shared/repo-info-utils.ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved repo-detector, repo-info-utils, repo-types, repo-metadata-provider out of src/shared/ into dedicated src/repo/ domain folder. Extracted RepoInfo type hierarchy into types.ts so utils no longer reaches back to detector, breaking the cycle.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T04:49:26+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "cycles::src/shared/repo-detector.ts::src/shared/repo-detector.ts::src/shared/repo-info-utils.ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved repo-detector, repo-info-utils, repo-types, repo-metadata-provider out of src/shared/ into dedicated src/repo/ domain folder. Extracted RepoInfo type hierarchy into types.ts so utils no longer reaches back to detector, breaking the cycle.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually moved the four repo-* files from src/shared/ into a new src/repo/ domain folder and split the RepoInfo types out into repo/types.ts so that utils.ts only depends on types.ts, eliminating the import cycle between detector and utils. I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:49:26+00:00",
+      "action": "auto_cluster",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
     }
   ],
   "epic_triage_meta": {
@@ -28393,40 +28615,50 @@
       "recorded_at": "2026-03-26T22:23:56+00:00",
       "note": "Round 4 code fixes: normalizer dedup, formatValue dedup, @throws annotations, commit docstring, async removal, SettingsResult type fix, withGitHubGuards cast centralization",
       "cluster_name": null
+    },
+    {
+      "sha": "d181ab587960",
+      "branch": "chore/desloppify-round-7",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::unnecessary_async_ghapiclient_call",
+        "review::.::holistic::ai_generated_debt::manifest_restating_comments",
+        "review::.::holistic::api_surface_coherence::type_guards_async_outlier",
+        "review::.::holistic::contract_coherence::withretry_throws_aborderror_inaccurate",
+        "review::.::holistic::convention_outlier::import_type_inconsistency",
+        "review::.::holistic::convention_outlier::settings_test_split_organization",
+        "review::.::holistic::error_consistency::resolve_github_token_silent_no_fallback",
+        "review::.::holistic::logic_clarity::redundant_async_vcs_helpers",
+        "review::.::holistic::naming_quality::get_builtin_var_abbreviation",
+        "review::.::holistic::naming_quality::handle_commit_error_generic_verb",
+        "review::.::holistic::package_organization::branch_utils_shared_straggler",
+        "review::.::holistic::low_level_elegance::validator_duplicate_cond_group_probes",
+        "review::.::holistic::error_consistency::pr_workflow_executor_broad_catch",
+        "review::.::holistic::high_level_elegance::repo_detector_responsibility_blur",
+        "review::.::holistic::mid_level_elegance::lifecycle_create_settings_recomputed",
+        "review::.::holistic::test_strategy::test_tmpdir_process_cwd",
+        "review::.::holistic::ai_generated_debt::diff_utils_restating_comments",
+        "review::.::holistic::convention_outlier::repo_settings_action_independent_definition",
+        "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel",
+        "review::.::holistic::logic_clarity::merge_text_content_redundant_branch_and_dead_code",
+        "review::.::holistic::low_level_elegance::allof_anyof_validation_duplication",
+        "review::.::holistic::naming_quality::sync_log_breaks_capability_naming_convention",
+        "review::.::holistic::test_strategy::process_cwd_temp_dirs_incomplete_migration",
+        "review::.::holistic::type_safety::parallel_merge_outcome_type"
+      ],
+      "recorded_at": "2026-03-27T23:32:51+00:00",
+      "note": "Round 7: subjective reviews (20 dimensions) + 8 code fixes across 7 dimensions",
+      "cluster_name": null
     }
   ],
   "uncommitted_issues": [
-    "review::.::holistic::logic_clarity::unnecessary_async_ghapiclient_call",
-    "review::.::holistic::ai_generated_debt::manifest_restating_comments",
-    "review::.::holistic::api_surface_coherence::type_guards_async_outlier",
-    "review::.::holistic::contract_coherence::withretry_throws_aborderror_inaccurate",
-    "review::.::holistic::convention_outlier::import_type_inconsistency",
-    "review::.::holistic::convention_outlier::settings_test_split_organization",
-    "review::.::holistic::error_consistency::resolve_github_token_silent_no_fallback",
-    "review::.::holistic::logic_clarity::redundant_async_vcs_helpers",
-    "review::.::holistic::naming_quality::get_builtin_var_abbreviation",
-    "review::.::holistic::naming_quality::handle_commit_error_generic_verb",
-    "review::.::holistic::package_organization::branch_utils_shared_straggler",
-    "review::.::holistic::low_level_elegance::validator_duplicate_cond_group_probes",
-    "review::.::holistic::error_consistency::pr_workflow_executor_broad_catch",
-    "review::.::holistic::high_level_elegance::repo_detector_responsibility_blur",
-    "review::.::holistic::mid_level_elegance::lifecycle_create_settings_recomputed",
-    "review::.::holistic::test_strategy::test_tmpdir_process_cwd",
-    "review::.::holistic::ai_generated_debt::diff_utils_restating_comments",
-    "review::.::holistic::convention_outlier::repo_settings_action_independent_definition",
-    "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel",
-    "review::.::holistic::logic_clarity::merge_text_content_redundant_branch_and_dead_code",
-    "review::.::holistic::low_level_elegance::allof_anyof_validation_duplication",
-    "review::.::holistic::naming_quality::sync_log_breaks_capability_naming_convention",
-    "review::.::holistic::test_strategy::process_cwd_temp_dirs_incomplete_migration",
-    "review::.::holistic::type_safety::parallel_merge_outcome_type"
+    "cycles::src/shared/repo-detector.ts::src/shared/repo-detector.ts::src/shared/repo-info-utils.ts"
   ],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 195,
     "lifecycle_phase": "plan",
-    "_subjective_migration_pruned": true,
-    "postflight_scan_completed_at_scan_count": 196
+    "_subjective_migration_pruned": true
   },
-  "scan_count_at_plan_start": 196
+  "scan_count_at_plan_start": 196,
+  "previous_plan_start_scores": {}
 }

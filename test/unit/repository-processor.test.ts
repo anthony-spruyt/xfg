@@ -11,7 +11,7 @@ import type {
   IAuthOptionsBuilder,
 } from "../../src/sync/index.js";
 import { RepoConfig } from "../../src/config/index.js";
-import { GitHubRepoInfo } from "../../src/shared/repo-detector.js";
+import { GitHubRepoInfo } from "../../src/repo/detector.js";
 import { ICommandExecutor } from "../../src/shared/command-executor.js";
 import type { GitAuthOptions } from "../../src/vcs/types.js";
 import { GitHubAppTokenManager } from "../../src/vcs/github-app-token-manager.js";

@@ -12,7 +12,7 @@ import {
 import {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
-} from "../../../src/shared/repo-detector.js";
+} from "../../../src/repo/detector.js";
 import { CommitOptions } from "../../../src/vcs/types.js";
 import type { INetworkGitOps } from "../../../src/vcs/types.js";
 import {

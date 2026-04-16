@@ -9,7 +9,7 @@ import type {
   ICodeScanningProcessor,
   BaseProcessorResult,
 } from "../settings/index.js";
-import type { RepoInfo } from "../shared/repo-detector.js";
+import type { RepoInfo } from "../repo/detector.js";
 import type { ResultsCollector } from "./results-collector.js";
 
 export type ProcessorFactory = () => IRepositoryProcessor;

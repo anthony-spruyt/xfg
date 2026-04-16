@@ -1,7 +1,7 @@
 import { createSign } from "node:crypto";
 import { withRetry } from "../shared/retry-utils.js";
 import { SyncError } from "../shared/errors.js";
-import type { GitHubRepoInfo } from "../shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../repo/detector.js";
 
 /** Duration to cache tokens (45 minutes in milliseconds) */
 const TOKEN_CACHE_DURATION_MS = 45 * 60 * 1000;

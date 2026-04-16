@@ -8,7 +8,7 @@ import type {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
   GitLabRepoInfo,
-} from "../../src/shared/repo-detector.js";
+} from "../../src/repo/detector.js";
 
 // Helper to create a GitHub repo context
 function createGitHubContext(

@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { PRMergeHandler } from "../../../src/sync/pr-merge-handler.js";
 import { createMockLogger, createMockExecutor } from "../../mocks/index.js";
-import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../../../src/repo/detector.js";
 import type { RepoConfig } from "../../../src/config/types.js";
 import type { FileAction } from "../../../src/vcs/pr-creator.js";
 

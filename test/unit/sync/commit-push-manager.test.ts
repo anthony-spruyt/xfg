@@ -9,7 +9,7 @@ import {
   createMockLogger,
   createMockExecutor,
 } from "../../mocks/index.js";
-import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../../../src/repo/detector.js";
 import type { FileWriteResult } from "../../../src/sync/types.js";
 import type { FileChange } from "../../../src/vcs/types.js";
 

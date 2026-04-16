@@ -9,7 +9,7 @@ import {
   assertGitHubRepo,
   type RepoInfo,
   type GitHubRepoInfo,
-} from "../shared/repo-detector.js";
+} from "../repo/detector.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { LifecycleError } from "../shared/errors.js";
 import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";

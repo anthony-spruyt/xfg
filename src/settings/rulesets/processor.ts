@@ -1,5 +1,5 @@
 import type { RepoConfig, Ruleset } from "../../config/index.js";
-import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
+import type { GitHubRepoInfo, RepoInfo } from "../../repo/detector.js";
 import type { IRulesetStrategy, GitHubRuleset } from "./types.js";
 import { diffRulesets } from "./diff.js";
 import { formatRulesetPlan, type RulesetPlanResult } from "./formatter.js";

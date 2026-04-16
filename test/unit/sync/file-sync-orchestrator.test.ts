@@ -14,7 +14,7 @@ import {
   incrementDiffStats,
 } from "../../../src/sync/diff-utils.js";
 import type { IFileWriter, IManifestManager } from "../../../src/sync/types.js";
-import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../../../src/repo/detector.js";
 import type { RepoConfig } from "../../../src/config/types.js";
 
 const testDir = join(tmpdir(), "file-sync-orchestrator-test-" + Date.now());

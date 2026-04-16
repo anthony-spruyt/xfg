@@ -4,7 +4,7 @@ import { escapeShellArg } from "../shared/shell-utils.js";
 import {
   type AzureDevOpsRepoInfo,
   assertAzureDevOpsRepo,
-} from "../shared/repo-detector.js";
+} from "../repo/detector.js";
 import type { PRResult } from "./types.js";
 import { SyncError } from "../shared/errors.js";
 import { BasePRStrategy } from "./pr-strategy.js";
