@@ -126,6 +126,31 @@ function resolveContentValue(
   return value;
 }
 
+function resolveContentInFilesMap(
+  filesMap: Record<string, unknown> | undefined,
+  configDir: string
+): void {
+  if (!filesMap) {
+    return;
+  }
+  for (const [fileName, fileConfig] of Object.entries(filesMap)) {
+    if (fileConfig === false) {
+      continue;
+    }
+    if (
+      fileConfig &&
+      typeof fileConfig === "object" &&
+      "content" in fileConfig
+    ) {
+      const typed = fileConfig as { content?: ContentValue };
+      const resolved = resolveContentValue(typed.content, configDir);
+      if (resolved !== undefined) {
+        filesMap[fileName] = { ...fileConfig, content: resolved };
+      }
+    }
+  }
+}
+
 /**
  * Resolve all file references in a raw config.
  * Walks through files at root level and per-repo level.
@@ -151,88 +176,38 @@ export function resolveFileReferencesInConfig(
   }
 
   // Resolve root-level file content
-  if (result.files) {
-    for (const [fileName, fileConfig] of Object.entries(result.files)) {
-      if (
-        fileConfig &&
-        typeof fileConfig === "object" &&
-        "content" in fileConfig
-      ) {
-        const resolved = resolveContentValue(fileConfig.content, configDir);
-        if (resolved !== undefined) {
-          result.files[fileName] = { ...fileConfig, content: resolved };
-        }
-      }
-    }
-  }
+  resolveContentInFilesMap(
+    result.files as Record<string, unknown> | undefined,
+    configDir
+  );
 
   // Resolve group-level file content
   if (result.groups) {
-    for (const [groupName, group] of Object.entries(result.groups)) {
-      if (group.files) {
-        for (const [fileName, fileConfig] of Object.entries(group.files)) {
-          if (
-            fileConfig &&
-            typeof fileConfig === "object" &&
-            "content" in fileConfig
-          ) {
-            const resolved = resolveContentValue(fileConfig.content, configDir);
-            if (resolved !== undefined) {
-              result.groups[groupName].files![fileName] = {
-                ...fileConfig,
-                content: resolved,
-              };
-            }
-          }
-        }
-      }
+    for (const group of Object.values(result.groups)) {
+      resolveContentInFilesMap(
+        group.files as Record<string, unknown> | undefined,
+        configDir
+      );
     }
   }
 
   // Resolve conditional group file content
   if (result.conditionalGroups) {
     for (const cg of result.conditionalGroups) {
-      if (cg.files) {
-        for (const [fileName, fileConfig] of Object.entries(cg.files)) {
-          if (
-            fileConfig &&
-            typeof fileConfig === "object" &&
-            "content" in fileConfig
-          ) {
-            const resolved = resolveContentValue(fileConfig.content, configDir);
-            if (resolved !== undefined) {
-              cg.files[fileName] = { ...fileConfig, content: resolved };
-            }
-          }
-        }
-      }
+      resolveContentInFilesMap(
+        cg.files as Record<string, unknown> | undefined,
+        configDir
+      );
     }
   }
 
   // Resolve per-repo file content
   if (result.repos) {
     for (const repo of result.repos) {
-      if (repo.files) {
-        for (const [fileName, fileOverride] of Object.entries(repo.files)) {
-          // Skip false (exclusion) entries
-          if (fileOverride === false) {
-            continue;
-          }
-          if (
-            fileOverride &&
-            typeof fileOverride === "object" &&
-            "content" in fileOverride
-          ) {
-            const resolved = resolveContentValue(
-              fileOverride.content,
-              configDir
-            );
-            if (resolved !== undefined) {
-              repo.files[fileName] = { ...fileOverride, content: resolved };
-            }
-          }
-        }
-      }
+      resolveContentInFilesMap(
+        repo.files as Record<string, unknown> | undefined,
+        configDir
+      );
     }
   }
 
