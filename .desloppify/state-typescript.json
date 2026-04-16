@@ -11,9 +11,9 @@
     "total": 1609,
     "auto_resolved": 1093,
     "deferred": 0,
-    "false_positive": 81,
+    "false_positive": 82,
     "fixed": 226,
-    "open": 207,
+    "open": 206,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -38,9 +38,9 @@
       "3": {
         "auto_resolved": 646,
         "deferred": 0,
-        "false_positive": 29,
+        "false_positive": 30,
         "fixed": 16,
-        "open": 176,
+        "open": 175,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -2845,11 +2845,11 @@
   },
   "dimension_scores": {
     "Code quality": {
-      "score": 96.9,
-      "strict": 94.4,
+      "score": 97.0,
+      "strict": 94.5,
       "verified_strict_score": 96.4,
       "checks": 687,
-      "failing": 43,
+      "failing": 42,
       "tier": 3,
       "detectors": {
         "unused": {
@@ -2866,9 +2866,9 @@
         },
         "smells": {
           "potential": 122,
-          "pass_rate": 0.839344262295082,
-          "failing": 39,
-          "weighted_failures": 19.599999999999998
+          "pass_rate": 0.8450819672131147,
+          "failing": 38,
+          "weighted_failures": 18.9
         },
         "orphaned": {
           "potential": 117,
@@ -68323,11 +68323,11 @@
           67
         ]
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-04-16T04:31:55+00:00",
       "last_seen": "2026-04-16T04:31:55+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T04:55:47+00:00",
       "reopen_count": 0,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
@@ -68336,7 +68336,13 @@
       "zone": "production",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed src/config/loader.ts line 67: .sort() is called on an array of YAML filename strings (yamlFiles), where JavaScript's default lexicographic sort produces correct deterministic ordering. No comparator is needed for string arrays. I am not gaming the score by suppressing a real defect.",
+        "attested_at": "2026-04-16T04:55:47+00:00",
+        "scan_verified": false
+      }
     },
     "smells::src/settings/code-scanning/diff.ts::sort_no_comparator": {
       "id": "smells::src/settings/code-scanning/diff.ts::sort_no_comparator",

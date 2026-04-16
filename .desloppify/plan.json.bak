@@ -1,9 +1,9 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-16T04:55:37+00:00",
+  "updated": "2026-04-16T04:55:46+00:00",
   "queue_order": [
-    "test_coverage::src/cli/types.ts::transitive_only",
+    "smells::src/config/loader.ts::sort_no_comparator",
     "workflow::create-plan"
   ],
   "deferred": [],
@@ -325,6 +325,16 @@
       "note": null,
       "attestation": "I have reviewed this finding against the code: secretScanningPushProtection is a GitHub Settings API property name, not a hardcoded secret value. I am not gaming the score by suppressing a real defect.",
       "created_at": "2026-04-16T04:40:30+00:00",
+      "review_after": null,
+      "skipped_at_scan": 197
+    },
+    "test_coverage::src/cli/types.ts::transitive_only": {
+      "issue_id": "test_coverage::src/cli/types.ts::transitive_only",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed src/cli/types.ts against the code: it contains only TypeScript type aliases, interfaces, and factory type definitions (no runtime code), so direct unit tests are not meaningful. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-16T04:55:37+00:00",
       "review_after": null,
       "skipped_at_scan": 197
     }
@@ -7351,7 +7361,7 @@
     }
   },
   "promoted_ids": [
-    "test_coverage::src/cli/types.ts::transitive_only"
+    "smells::src/config/loader.ts::sort_no_comparator"
   ],
   "plan_start_scores": {},
   "execution_log": [
@@ -28154,6 +28164,35 @@
       "action": "reorder",
       "issue_ids": [
         "test_coverage::src/cli/types.ts::transitive_only"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:55:37+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "test_coverage::src/cli/types.ts::transitive_only"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:55:46+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "smells::src/config/loader.ts::sort_no_comparator"
       ],
       "cluster_name": null,
       "actor": "user",
