@@ -2,35 +2,95 @@
   "command": "next",
   "items": [
     {
-      "id": "workflow::create-plan",
-      "confidence": "high",
-      "detector": "workflow",
-      "file": ".",
-      "summary": "Create prioritized plan from review results",
-      "detail": {
-        "planning_tools": [
-          {
-            "label": "Codex",
-            "command": "desloppify plan triage --run-stages --runner codex --only-stages strategize"
-          },
-          {
-            "label": "Claude",
-            "command": "desloppify plan triage --run-stages --runner claude --only-stages strategize"
-          },
-          {
-            "label": "Manual fallback",
-            "command": "desloppify plan triage --stage strategize --report '\"{\"score_trend\":\"stable\",\"debt_trend\":\"stable\"}\"'"
-          },
-          {
-            "label": "Dashboard",
-            "command": "desloppify plan triage"
-          }
-        ]
-      },
-      "status": null,
-      "kind": "workflow_action",
-      "primary_command": "desloppify plan triage --run-stages --runner codex --only-stages strategize",
-      "queue_position": 1
+      "id": "structure-nav-layout",
+      "action_type": "manual_fix",
+      "summary": "Add src/repo/index.ts barrel, relocate sanitize-utils into src/vcs/, move unified-summary.ts to src/cli/, and stage test/unit/ mirror migration in four validate-after-each steps",
+      "member_count": 5,
+      "members": [
+        {
+          "id": "review::.::holistic::package_organization::repo_missing_index_barrel",
+          "confidence": "medium",
+          "detector": "review",
+          "file": ".",
+          "summary": "src/repo/ is the only production domain folder without an index.ts barrel; detector.ts re-exports serve as a makeshift substitute",
+          "status": "open",
+          "kind": "issue",
+          "primary_command": "desloppify plan resolve \"review::.::holistic::package_organization::repo_missing_index_barrel\" --note \"<what you did>\" --confirm"
+        },
+        {
+          "id": "review::.::holistic::package_organization::sanitize_utils_vcs_only",
+          "confidence": "high",
+          "detector": "review",
+          "file": ".",
+          "summary": "src/shared/sanitize-utils.ts has 100% of production importers inside src/vcs/ \u2014 misplaced in shared-kernel",
+          "status": "open",
+          "kind": "issue",
+          "primary_command": "desloppify plan resolve \"review::.::holistic::package_organization::sanitize_utils_vcs_only\" --note \"<what you did>\" --confirm"
+        },
+        {
+          "id": "review::.::holistic::package_organization::test_layout_partially_mirrored",
+          "confidence": "high",
+          "detector": "review",
+          "file": ".",
+          "summary": "test/unit/ mirrors src/ structure inconsistently \u2014 57 flat files coexist with 6 domain subdirectories",
+          "status": "open",
+          "kind": "issue",
+          "primary_command": "desloppify plan resolve \"review::.::holistic::package_organization::test_layout_partially_mirrored\" --note \"<what you did>\" --confirm"
+        },
+        {
+          "id": "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping",
+          "confidence": "medium",
+          "detector": "review",
+          "file": ".",
+          "summary": "Test files use flat kebab-case names in test/unit/ instead of mirroring src/ directory structure, obscuring coverage-to-source mapping",
+          "status": "open",
+          "kind": "issue",
+          "primary_command": "desloppify plan resolve \"review::.::holistic::test_strategy::flat_test_naming_obscures_mapping\" --note \"<what you did>\" --confirm"
+        },
+        {
+          "id": "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output",
+          "confidence": "medium",
+          "detector": "review",
+          "file": ".",
+          "summary": "output/unified-summary.ts is a CLI-only multi-report stitcher living among the generic per-domain output formatters",
+          "status": "open",
+          "kind": "issue",
+          "primary_command": "desloppify plan resolve \"review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output\" --note \"<what you did>\" --confirm"
+        }
+      ],
+      "cluster_name": "structure-nav-layout",
+      "cluster_auto": false,
+      "detector": "review",
+      "kind": "cluster",
+      "primary_command": "desloppify next --cluster structure-nav-layout --count 10",
+      "action_steps": [
+        {
+          "title": "Add src/repo/index.ts barrel and redirect imports away from detector.ts",
+          "detail": "src/repo/ currently has detector.ts, metadata-provider.ts, types.ts, utils.ts but no barrel file. Create a new barrel (index.ts) in src/repo/ re-exporting from src/repo/types.ts (RepoInfo and platform-specific variants), src/repo/utils.ts (isGitHubRepo, assertGitHubRepo, getRepoDisplayName), src/repo/detector.ts (detectRepoInfo), and src/repo/metadata-provider.ts (GitHubRepoMetadataProvider plus IRepoMetadataProvider). Redirect the ~43 importers of '../repo/detector.js' under src/cli/, src/sync/, and src/vcs/ to the new barrel where appropriate.",
+          "effort": "medium",
+          "issue_refs": [
+            "repo_missing_index_barrel"
+          ]
+        },
+        {
+          "title": "Relocate sanitize-utils into src/vcs/ and move unified-summary into src/cli/",
+          "detail": "git mv src/shared/sanitize-utils.ts into src/vcs/ and update the three src/vcs/github-pr-strategy.ts, src/vcs/azure-pr-strategy.ts, src/vcs/gitlab-pr-strategy.ts imports (plus test/unit/sanitize-utils.test.ts). git mv src/output/unified-summary.ts into src/cli/ and update src/cli/sync-command.ts import. Note: src/output/ currently has no index.ts barrel, so no re-export cleanup needed there.",
+          "effort": "small",
+          "issue_refs": [
+            "sanitize_utils_vcs_only",
+            "unified_summary_is_cli_stitcher_in_output"
+          ]
+        },
+        {
+          "title": "Stage test/unit/ directory migration to mirror src/ in four validated batches",
+          "detail": "Run npm test between each batch: (1) vcs tests move into test/unit/vcs/; (2) settings tests (ruleset/labels/repo-settings/code-scanning diff/formatter/processor) move into test/unit/settings/<kind>/; (3) shared-utility tests move into test/unit/shared/; (4) verify no remaining flat-root tests for modules that already have a subdirectory.",
+          "effort": "medium",
+          "issue_refs": [
+            "review::.::holistic::package_organization::test_layout_partially_mirrored",
+            "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping"
+          ]
+        }
+      ]
     }
   ],
   "queue": {
@@ -39,7 +99,7 @@
   },
   "narrative": {
     "phase": "refinement",
-    "headline": "\u26a0 1 security issue \u2014 review before other cleanup.  (41 review work items \u2014 run `desloppify show review --status open`)",
+    "headline": "\u26a0 1 security issue \u2014 review before other cleanup.  (25 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -236,8 +296,8 @@
       {
         "type": "refactor",
         "detector": "review",
-        "count": 41,
-        "description": "41 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
+        "count": 25,
+        "description": "25 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
         "command": "desloppify show review --status open",
         "impact": 0.0,
         "dimension": "Unknown",
@@ -297,7 +357,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 336,
+        "total_count": 288,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -391,7 +451,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "9 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 41 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "9 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 25 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -437,7 +497,7 @@
       "command": "desloppify show flat_dirs --status open",
       "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "9 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 41 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "9 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 25 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -717,7 +777,7 @@
         "item_count": 1
       }
     ],
-    "total_ordered": 51,
+    "total_ordered": 31,
     "total_skipped": 38,
     "plan_overrides_narrative": true
   },
@@ -739,7 +799,7 @@
       "score": 93.5,
       "strict": 93.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -813,7 +873,7 @@
       "score": 91.5,
       "strict": 91.5,
       "checks": 10,
-      "failing": 3,
+      "failing": 0,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -889,7 +949,7 @@
       "score": 91.5,
       "strict": 91.5,
       "checks": 10,
-      "failing": 3,
+      "failing": 1,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -911,7 +971,7 @@
       "score": 97.5,
       "strict": 97.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -959,7 +1019,7 @@
       "score": 89.5,
       "strict": 89.5,
       "checks": 10,
-      "failing": 6,
+      "failing": 0,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -974,7 +1034,7 @@
       "score": 93.5,
       "strict": 93.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -1039,7 +1099,7 @@
       "score": 91.5,
       "strict": 91.5,
       "checks": 10,
-      "failing": 3,
+      "failing": 0,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -1106,7 +1166,7 @@
       "score": 91.5,
       "strict": 91.5,
       "checks": 10,
-      "failing": 3,
+      "failing": 1,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -1119,7 +1179,7 @@
       "score": 97.5,
       "strict": 97.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "subjective": true,
       "placeholder": false,
@@ -1158,7 +1218,7 @@
       "score": 89.5,
       "strict": 89.5,
       "checks": 10,
-      "failing": 6,
+      "failing": 0,
       "tier": 4,
       "subjective": true,
       "placeholder": false,

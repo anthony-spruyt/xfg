@@ -5,7 +5,7 @@ import type {
   FileChange,
 } from "./types.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
-import { isGitHubRepo, type GitHubRepoInfo } from "../repo/detector.js";
+import { isGitHubRepo, type GitHubRepoInfo } from "../repo/index.js";
 import { GhApiClient, type GhApiOptions } from "../shared/gh-api-utils.js";
 import { parseApiJson } from "../shared/json-utils.js";
 import { SyncError } from "../shared/errors.js";

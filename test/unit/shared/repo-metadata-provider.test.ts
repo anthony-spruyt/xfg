@@ -1,8 +1,8 @@
 import { describe, test, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { GitHubRepoMetadataProvider } from "../../../src/repo/metadata-provider.js";
+import { GitHubRepoMetadataProvider } from "../../../src/repo/index.js";
 import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
-import type { GitHubRepoInfo } from "../../../src/repo/detector.js";
+import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 
 const githubRepo: GitHubRepoInfo = {
   type: "github",

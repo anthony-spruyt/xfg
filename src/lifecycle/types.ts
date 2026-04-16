@@ -1,4 +1,4 @@
-import type { RepoInfo, RepoPlatform } from "../repo/detector.js";
+import type { RepoInfo, RepoPlatform } from "../repo/index.js";
 import type { RepoConfig, RepoVisibility } from "../config/index.js";
 
 export type LifecyclePlatform = RepoPlatform;

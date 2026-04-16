@@ -1,7 +1,7 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import { AuthOptionsBuilder } from "../../../src/sync/auth-options-builder.js";
-import type { GitHubRepoInfo } from "../../../src/repo/detector.js";
+import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 import type { GitHubAppTokenManager } from "../../../src/vcs/github-app-token-manager.js";
 
 /** Mock token manager - only needs getTokenForRepo method */

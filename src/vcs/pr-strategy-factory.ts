@@ -3,7 +3,7 @@ import {
   isGitHubRepo,
   isAzureDevOpsRepo,
   isGitLabRepo,
-} from "../repo/detector.js";
+} from "../repo/index.js";
 import type { IPRStrategy } from "./types.js";
 import { SyncError } from "../shared/errors.js";
 import { GitHubPRStrategy } from "./github-pr-strategy.js";

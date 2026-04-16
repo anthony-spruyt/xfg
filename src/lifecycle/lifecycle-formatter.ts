@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import type { LifecycleResult } from "./types.js";
-import { getRepoDisplayName } from "../repo/detector.js";
+import { getRepoDisplayName } from "../repo/index.js";
 import { SyncError } from "../shared/errors.js";
 import type { RepoVisibility } from "../config/index.js";
 

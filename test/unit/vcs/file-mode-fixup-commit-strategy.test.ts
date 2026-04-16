@@ -6,7 +6,7 @@ import {
 } from "../../../src/vcs/file-mode-fixup-commit-strategy.js";
 import type { ICommitStrategy, CommitResult } from "../../../src/vcs/types.js";
 import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
-import type { GitHubRepoInfo } from "../../../src/repo/detector.js";
+import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 import { GhApiClient } from "../../../src/shared/gh-api-utils.js";
 
 const githubRepoInfo: GitHubRepoInfo = {

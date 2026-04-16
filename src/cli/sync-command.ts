@@ -15,7 +15,7 @@ import {
   isGitHubRepo,
   type RepoInfo,
   type GitHubRepoInfo,
-} from "../repo/detector.js";
+} from "../repo/index.js";
 import { sanitizeBranchName, validateBranchName } from "./branch-utils.js";
 import { createTokenManager } from "../vcs/index.js";
 import { RepositoryProcessor } from "../sync/index.js";
@@ -30,7 +30,7 @@ import {
   GitHubLabelsStrategy,
   GitHubCodeScanningStrategy,
 } from "../settings/index.js";
-import { GitHubRepoMetadataProvider } from "../repo/metadata-provider.js";
+import { GitHubRepoMetadataProvider } from "../repo/index.js";
 import { ShellCommandExecutor } from "../shared/command-executor.js";
 import { Logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
@@ -111,7 +111,7 @@ import {
   hasLifecycleChanges,
   type LifecycleAction,
 } from "../output/lifecycle-report.js";
-import { writeUnifiedSummary } from "../output/unified-summary.js";
+import { writeUnifiedSummary } from "./unified-summary.js";
 import type { ProcessorResult } from "../sync/index.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { resolveGitHubToken } from "../shared/gh-api-utils.js";

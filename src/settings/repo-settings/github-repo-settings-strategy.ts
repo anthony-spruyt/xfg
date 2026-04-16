@@ -3,7 +3,7 @@ import {
   assertGitHubRepo,
   type GitHubRepoInfo,
   type RepoInfo,
-} from "../../repo/detector.js";
+} from "../../repo/index.js";
 import {
   GhApiClient,
   isHttp404Error,

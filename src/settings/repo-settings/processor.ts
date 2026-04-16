@@ -1,10 +1,7 @@
 import type { RepoConfig, GitHubRepoSettings } from "../../config/index.js";
-import type { GitHubRepoInfo, RepoInfo } from "../../repo/detector.js";
+import type { GitHubRepoInfo, RepoInfo } from "../../repo/index.js";
 import type { IRepoSettingsStrategy } from "./types.js";
-import type {
-  IRepoMetadataProvider,
-  RepoMetadata,
-} from "../../repo/metadata-provider.js";
+import type { IRepoMetadataProvider, RepoMetadata } from "../../repo/index.js";
 import { diffRepoSettings, hasRepoSettingsChanges } from "./diff.js";
 import {
   formatRepoSettingsPlan,

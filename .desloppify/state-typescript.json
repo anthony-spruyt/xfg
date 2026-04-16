@@ -12,8 +12,8 @@
     "auto_resolved": 1095,
     "deferred": 0,
     "false_positive": 87,
-    "fixed": 226,
-    "open": 254,
+    "fixed": 242,
+    "open": 238,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 5,
-        "fixed": 84,
-        "open": 21,
+        "fixed": 95,
+        "open": 10,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 50,
-        "fixed": 106,
-        "open": 51,
+        "fixed": 110,
+        "open": 47,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -39,8 +39,8 @@
         "auto_resolved": 648,
         "deferred": 0,
         "false_positive": 32,
-        "fixed": 16,
-        "open": 181,
+        "fixed": 17,
+        "open": 180,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -102,8 +102,8 @@
       "source": "holistic",
       "assessed_at": "2026-04-16T05:39:25+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-16T05:39:33+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T07:52:31+00:00"
     },
     "error_consistency": {
       "score": 92.0,
@@ -153,12 +153,18 @@
     "ai_generated_debt": {
       "score": 93.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T07:52:29+00:00"
     },
     "incomplete_migration": {
       "score": 97.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T07:52:32+00:00"
     },
     "package_organization": {
       "score": 88.5,
@@ -204,8 +210,8 @@
       "source": "holistic",
       "assessed_at": "2026-04-16T05:39:25+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-16T05:39:25+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T07:52:32+00:00"
     },
     "initialization_coupling": {
       "score": 94.5,
@@ -217,13 +223,16 @@
       "source": "holistic",
       "assessed_at": "2026-04-16T05:39:25+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-16T05:39:33+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T07:52:33+00:00"
     },
     "naming_quality": {
       "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T07:52:34+00:00"
     },
     "test_strategy": {
       "score": 92.0,
@@ -233,7 +242,10 @@
     "type_safety": {
       "score": 89.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T07:43:39+00:00"
     }
   },
   "lang_capabilities": {
@@ -3061,13 +3073,13 @@
       "strict": 93.5,
       "verified_strict_score": 93.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.935,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.65,
           "assessment_score": 93.5,
           "placeholder": false,
@@ -3145,13 +3157,13 @@
       "strict": 91.5,
       "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 3,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.915,
-          "failing": 3,
+          "failing": 0,
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
@@ -3187,13 +3199,13 @@
       "strict": 94.5,
       "verified_strict_score": 94.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.945,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.55,
           "assessment_score": 94.5,
           "placeholder": false,
@@ -3271,13 +3283,13 @@
       "strict": 97.5,
       "verified_strict_score": 97.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.975,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.25,
           "assessment_score": 97.5,
           "placeholder": false,
@@ -3313,13 +3325,13 @@
       "strict": 93.5,
       "verified_strict_score": 93.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.935,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.65,
           "assessment_score": 93.5,
           "placeholder": false,
@@ -3376,13 +3388,13 @@
       "strict": 91.5,
       "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 3,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.915,
-          "failing": 3,
+          "failing": 1,
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
@@ -3439,13 +3451,13 @@
       "strict": 89.5,
       "verified_strict_score": 89.5,
       "checks": 10,
-      "failing": 6,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.895,
-          "failing": 6,
+          "failing": 0,
           "weighted_failures": 1.05,
           "assessment_score": 89.5,
           "placeholder": false,
@@ -68852,11 +68864,11 @@
         "reasoning": "",
         "summary_hash": "69eca704"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:52:30+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -68864,7 +68876,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:52:30+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::convention_outlier::has_changes_helper_drift": {
       "id": "review::.::holistic::convention_outlier::has_changes_helper_drift",
@@ -68891,11 +68909,11 @@
         "reasoning": "",
         "summary_hash": "0d91de63"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:52:30+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -68903,7 +68921,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:52:30+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts": {
       "id": "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
@@ -68931,11 +68955,11 @@
         "reasoning": "",
         "summary_hash": "0faa4de3"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:52:31+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -68943,7 +68967,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:52:31+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::error_consistency::branch_protection_string_match": {
       "id": "review::.::holistic::error_consistency::branch_protection_string_match",
@@ -69080,11 +69110,11 @@
         "reasoning": "",
         "summary_hash": "411aea55"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:52:34+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69092,7 +69122,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:52:34+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::naming_quality::fn_as_filename_in_validator": {
       "id": "review::.::holistic::naming_quality::fn_as_filename_in_validator",
@@ -69116,11 +69152,11 @@
         "reasoning": "",
         "summary_hash": "f9b8279e"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:52:34+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69128,7 +69164,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:52:34+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::abstraction_fitness::file_sync_strategy_passthrough": {
       "id": "review::.::holistic::abstraction_fitness::file_sync_strategy_passthrough",
@@ -69235,11 +69277,11 @@
         "reasoning": "",
         "summary_hash": "5c9fe319"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:52:32+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69247,7 +69289,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:52:32+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks": {
       "id": "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks",
@@ -69732,11 +69780,11 @@
         "reasoning": "",
         "summary_hash": "ea43523e"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:52:29+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69744,7 +69792,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:52:29+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented": {
       "id": "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
@@ -69767,11 +69821,11 @@
         "reasoning": "",
         "summary_hash": "7ef0c425"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:52:32+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69779,7 +69833,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:52:32+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::package_organization::test_layout_partially_mirrored": {
       "id": "review::.::holistic::package_organization::test_layout_partially_mirrored",
@@ -70184,11 +70244,11 @@
         "reasoning": "",
         "summary_hash": "c665ceeb"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:52:33+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70196,7 +70256,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:52:33+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch": {
       "id": "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
@@ -70220,11 +70286,11 @@
         "reasoning": "",
         "summary_hash": "5d7b35e0"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:52:33+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70232,7 +70298,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:52:33+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::type_safety::lifecycle_platform_parallel_literal": {
       "id": "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
@@ -70258,11 +70330,11 @@
         "reasoning": "",
         "summary_hash": "65a7fcd1"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Renamed private RepoType to exported RepoPlatform in repo/detector; LifecyclePlatform now aliases RepoPlatform eliminating parallel literal unions",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:43:38+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70270,7 +70342,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Renamed private RepoType to exported RepoPlatform in repo/detector; LifecyclePlatform now aliases RepoPlatform eliminating parallel literal unions and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:43:38+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::type_safety::create_repo_visibility_inlined": {
       "id": "review::.::holistic::type_safety::create_repo_visibility_inlined",
@@ -70294,11 +70372,11 @@
         "reasoning": "",
         "summary_hash": "3ddfab81"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "CreateRepoSettings.visibility now typed as RepoVisibility imported from config module, replacing the inlined public|private|internal literal union",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:43:36+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70306,7 +70384,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually CreateRepoSettings.visibility now typed as RepoVisibility imported from config module, replacing the inlined public|private|internal literal union and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:43:36+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::type_safety::lifecycle_settings_visibility_string": {
       "id": "review::.::holistic::type_safety::lifecycle_settings_visibility_string",
@@ -70330,11 +70414,11 @@
         "reasoning": "",
         "summary_hash": "4792140f"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Formatter and lifecycle-report visibility fields retyped from string to RepoVisibility, preserving the narrower public|private|internal contract",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:43:38+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70342,7 +70426,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Formatter and lifecycle-report visibility fields retyped from string to RepoVisibility, preserving the narrower public|private|internal contract and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:43:38+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::type_safety::lifecycle_action_literal_duplicated": {
       "id": "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
@@ -70366,11 +70456,11 @@
         "reasoning": "",
         "summary_hash": "cd8cf47c"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Added LifecycleActionKind = LifecycleResult['action']; LifecycleAction.action in output/lifecycle-report now references the shared alias",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:43:37+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70378,7 +70468,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Added LifecycleActionKind = LifecycleResult['action']; LifecycleAction.action in output/lifecycle-report now references the shared alias and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:43:37+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::type_safety::active_action_literal_redundant_across_reports": {
       "id": "review::.::holistic::type_safety::active_action_literal_redundant_across_reports",
@@ -70405,11 +70501,11 @@
         "reasoning": "",
         "summary_hash": "7c9dae09"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "SettingChange, RulesetChange, LabelChange, FileChangeDetail, SyncResultEntry.fileChanges, and file-sync narrowing predicate now reference ActiveAction",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:43:39+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70417,7 +70513,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually SettingChange, RulesetChange, LabelChange, FileChangeDetail, SyncResultEntry.fileChanges, and file-sync narrowing predicate now reference ActiveAction and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:43:39+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::type_safety::file_write_action_duplicates_fileaction": {
       "id": "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
@@ -70441,11 +70543,11 @@
         "reasoning": "",
         "summary_hash": "ad60d37f"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Added FileActionKind = FileAction['action'] alias in vcs/types; FileWriteResult.action now references the shared alias instead of duplicating the union",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T07:43:37+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70453,7 +70555,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Added FileActionKind = FileAction['action'] alias in vcs/types; FileWriteResult.action now references the shared alias instead of duplicating the union and I am not gaming the score.",
+        "attested_at": "2026-04-16T07:43:37+00:00",
+        "scan_verified": false
+      }
     },
     "test_coverage::src/repo/utils.ts::transitive_only": {
       "id": "test_coverage::src/repo/utils.ts::transitive_only",

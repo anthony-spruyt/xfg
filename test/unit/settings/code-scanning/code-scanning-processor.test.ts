@@ -8,13 +8,13 @@ import type {
 import type {
   IRepoMetadataProvider,
   RepoMetadata,
-} from "../../../../src/repo/metadata-provider.js";
-import type { GitHubRepoInfo } from "../../../../src/repo/detector.js";
+} from "../../../../src/repo/index.js";
+import type { GitHubRepoInfo } from "../../../../src/repo/index.js";
 import type {
   RepoConfig,
   CodeScanningSettings,
 } from "../../../../src/config/index.js";
-import type { RepoInfo } from "../../../../src/repo/detector.js";
+import type { RepoInfo } from "../../../../src/repo/index.js";
 import type { GhApiOptions } from "../../../../src/shared/gh-api-utils.js";
 
 const githubRepo: GitHubRepoInfo = {

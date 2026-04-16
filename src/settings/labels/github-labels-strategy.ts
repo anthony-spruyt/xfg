@@ -1,5 +1,5 @@
 import type { ICommandExecutor } from "../../shared/command-executor.js";
-import { assertGitHubRepo, type RepoInfo } from "../../repo/detector.js";
+import { assertGitHubRepo, type RepoInfo } from "../../repo/index.js";
 import { GhApiClient, type GhApiOptions } from "../../shared/gh-api-utils.js";
 import { parseApiJson } from "../../shared/json-utils.js";
 import type { ILabelsStrategy, GitHubLabel } from "./types.js";

@@ -2,7 +2,7 @@ import { describe, test, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { GitHubCodeScanningStrategy } from "../../../../src/settings/code-scanning/github-code-scanning-strategy.js";
 import type { ICommandExecutor } from "../../../../src/shared/command-executor.js";
-import type { GitHubRepoInfo } from "../../../../src/repo/detector.js";
+import type { GitHubRepoInfo } from "../../../../src/repo/index.js";
 
 const githubRepo: GitHubRepoInfo = {
   type: "github",

@@ -5,7 +5,7 @@ import {
   runLifecycleCheck,
 } from "../../../src/lifecycle/lifecycle-helpers.js";
 import type { IRepoLifecycleManager } from "../../../src/lifecycle/types.js";
-import type { GitHubRepoInfo } from "../../../src/repo/detector.js";
+import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 import type { RepoConfig } from "../../../src/config/types.js";
 
 describe("lifecycle-helpers", () => {

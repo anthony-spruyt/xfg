@@ -12,23 +12,6 @@ interface RepoDetectorContext {
   githubHosts?: string[];
 }
 
-export type {
-  GitHubRepoInfo,
-  AzureDevOpsRepoInfo,
-  GitLabRepoInfo,
-  RepoInfo,
-} from "./types.js";
-
-export {
-  isGitHubRepo,
-  isAzureDevOpsRepo,
-  isGitLabRepo,
-  assertGitHubRepo,
-  assertAzureDevOpsRepo,
-  assertGitLabRepo,
-  getRepoDisplayName,
-} from "./utils.js";
-
 function extractHostFromUrl(gitUrl: string): string | null {
   // SSH: git@hostname:path
   const sshMatch = gitUrl.match(/^git@([^:]+):/);

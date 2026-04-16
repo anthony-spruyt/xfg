@@ -7,7 +7,7 @@ import { FileWriter } from "../../../src/sync/file-writer.js";
 import { createMockAuthenticatedGitOps } from "../../mocks/index.js";
 import { createMockLogger } from "../../mocks/index.js";
 import type { FileContent } from "../../../src/config/types.js";
-import type { GitHubRepoInfo } from "../../../src/repo/detector.js";
+import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 
 const testDir = join(tmpdir(), "file-writer-test-" + Date.now());
 

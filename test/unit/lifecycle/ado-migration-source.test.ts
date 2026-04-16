@@ -2,7 +2,7 @@ import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import { AdoMigrationSource } from "../../../src/lifecycle/ado-migration-source.js";
 import { createMockExecutor } from "../../mocks/index.js";
-import type { AzureDevOpsRepoInfo } from "../../../src/repo/detector.js";
+import type { AzureDevOpsRepoInfo } from "../../../src/repo/index.js";
 
 describe("AdoMigrationSource", () => {
   const mockRepoInfo: AzureDevOpsRepoInfo = {

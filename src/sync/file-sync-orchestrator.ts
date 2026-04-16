@@ -1,5 +1,5 @@
 import type { RepoConfig } from "../config/index.js";
-import type { RepoInfo } from "../repo/detector.js";
+import type { RepoInfo } from "../repo/index.js";
 import type { ILogger } from "../shared/logger.js";
 import type { FileAction } from "../vcs/index.js";
 import { incrementDiffStats } from "./diff-utils.js";

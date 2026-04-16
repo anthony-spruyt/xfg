@@ -1,6 +1,6 @@
 import { createPRStrategy } from "../vcs/index.js";
 import type { IPRStrategy } from "../vcs/index.js";
-import type { RepoInfo } from "../repo/detector.js";
+import type { RepoInfo } from "../repo/index.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { DebugInfoWarnLog } from "../shared/logger.js";
 import type { IBranchManager, BranchSetupOptions } from "./types.js";

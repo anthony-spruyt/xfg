@@ -1,14 +1,8 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-16T07:36:43+00:00",
+  "updated": "2026-04-16T07:53:11+00:00",
   "queue_order": [
-    "review::.::holistic::type_safety::create_repo_visibility_inlined",
-    "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
-    "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
-    "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
-    "review::.::holistic::type_safety::lifecycle_settings_visibility_string",
-    "review::.::holistic::type_safety::active_action_literal_redundant_across_reports",
     "review::.::holistic::package_organization::repo_missing_index_barrel",
     "review::.::holistic::package_organization::sanitize_utils_vcs_only",
     "review::.::holistic::package_organization::test_layout_partially_mirrored",
@@ -19,16 +13,6 @@
     "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins",
     "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record",
     "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks",
-    "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue",
-    "review::.::holistic::convention_outlier::azure_ado_prefix_split",
-    "review::.::holistic::convention_outlier::has_changes_helper_drift",
-    "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
-    "review::.::holistic::dependency_health::engines_node_floor_mismatch",
-    "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
-    "review::.::holistic::logic_clarity::deepequal_redundant_return",
-    "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
-    "review::.::holistic::naming_quality::fn_as_filename_in_validator",
-    "review::.::holistic::naming_quality::gitops_underscore_field_outlier",
     "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl",
     "review::.::holistic::design_coherence::validate_settings_multi_concern",
     "review::.::holistic::abstraction_fitness::settings_processor_factory_ceremony",
@@ -2539,38 +2523,38 @@
     "review::.::holistic::type_safety::create_repo_visibility_inlined": {
       "issue_id": "review::.::holistic::type_safety::create_repo_visibility_inlined",
       "created_at": "2026-04-16T07:26:01+00:00",
-      "cluster": "type-safety-literal-consolidation",
-      "updated_at": "2026-04-16T07:26:01+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:43:36+00:00"
     },
     "review::.::holistic::type_safety::file_write_action_duplicates_fileaction": {
       "issue_id": "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
       "created_at": "2026-04-16T07:26:01+00:00",
-      "cluster": "type-safety-literal-consolidation",
-      "updated_at": "2026-04-16T07:26:01+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:43:37+00:00"
     },
     "review::.::holistic::type_safety::lifecycle_action_literal_duplicated": {
       "issue_id": "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
       "created_at": "2026-04-16T07:26:01+00:00",
-      "cluster": "type-safety-literal-consolidation",
-      "updated_at": "2026-04-16T07:26:01+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:43:37+00:00"
     },
     "review::.::holistic::type_safety::lifecycle_platform_parallel_literal": {
       "issue_id": "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
       "created_at": "2026-04-16T07:26:01+00:00",
-      "cluster": "type-safety-literal-consolidation",
-      "updated_at": "2026-04-16T07:26:01+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:43:38+00:00"
     },
     "review::.::holistic::type_safety::lifecycle_settings_visibility_string": {
       "issue_id": "review::.::holistic::type_safety::lifecycle_settings_visibility_string",
       "created_at": "2026-04-16T07:26:01+00:00",
-      "cluster": "type-safety-literal-consolidation",
-      "updated_at": "2026-04-16T07:26:01+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:43:38+00:00"
     },
     "review::.::holistic::type_safety::active_action_literal_redundant_across_reports": {
       "issue_id": "review::.::holistic::type_safety::active_action_literal_redundant_across_reports",
       "created_at": "2026-04-16T07:26:01+00:00",
-      "cluster": "type-safety-literal-consolidation",
-      "updated_at": "2026-04-16T07:26:01+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:43:39+00:00"
     },
     "review::.::holistic::package_organization::repo_missing_index_barrel": {
       "issue_id": "review::.::holistic::package_organization::repo_missing_index_barrel",
@@ -2635,62 +2619,62 @@
     "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue": {
       "issue_id": "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue",
       "created_at": "2026-04-16T07:26:17+00:00",
-      "cluster": "convention-and-naming-quick-wins",
-      "updated_at": "2026-04-16T07:26:17+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:52:29+00:00"
     },
     "review::.::holistic::convention_outlier::azure_ado_prefix_split": {
       "issue_id": "review::.::holistic::convention_outlier::azure_ado_prefix_split",
       "created_at": "2026-04-16T07:26:17+00:00",
-      "cluster": "convention-and-naming-quick-wins",
-      "updated_at": "2026-04-16T07:26:17+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:52:30+00:00"
     },
     "review::.::holistic::convention_outlier::has_changes_helper_drift": {
       "issue_id": "review::.::holistic::convention_outlier::has_changes_helper_drift",
       "created_at": "2026-04-16T07:26:17+00:00",
-      "cluster": "convention-and-naming-quick-wins",
-      "updated_at": "2026-04-16T07:26:17+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:52:31+00:00"
     },
     "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts": {
       "issue_id": "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
       "created_at": "2026-04-16T07:26:17+00:00",
-      "cluster": "convention-and-naming-quick-wins",
-      "updated_at": "2026-04-16T07:26:17+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:52:31+00:00"
     },
     "review::.::holistic::dependency_health::engines_node_floor_mismatch": {
       "issue_id": "review::.::holistic::dependency_health::engines_node_floor_mismatch",
       "created_at": "2026-04-16T07:26:17+00:00",
-      "cluster": "convention-and-naming-quick-wins",
-      "updated_at": "2026-04-16T07:26:17+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:52:32+00:00"
     },
     "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented": {
       "issue_id": "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
       "created_at": "2026-04-16T07:26:17+00:00",
-      "cluster": "convention-and-naming-quick-wins",
-      "updated_at": "2026-04-16T07:26:17+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:52:32+00:00"
     },
     "review::.::holistic::logic_clarity::deepequal_redundant_return": {
       "issue_id": "review::.::holistic::logic_clarity::deepequal_redundant_return",
       "created_at": "2026-04-16T07:26:17+00:00",
-      "cluster": "convention-and-naming-quick-wins",
-      "updated_at": "2026-04-16T07:26:17+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:52:33+00:00"
     },
     "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch": {
       "issue_id": "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
       "created_at": "2026-04-16T07:26:17+00:00",
-      "cluster": "convention-and-naming-quick-wins",
-      "updated_at": "2026-04-16T07:26:17+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:52:33+00:00"
     },
     "review::.::holistic::naming_quality::fn_as_filename_in_validator": {
       "issue_id": "review::.::holistic::naming_quality::fn_as_filename_in_validator",
       "created_at": "2026-04-16T07:26:17+00:00",
-      "cluster": "convention-and-naming-quick-wins",
-      "updated_at": "2026-04-16T07:26:17+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:52:34+00:00"
     },
     "review::.::holistic::naming_quality::gitops_underscore_field_outlier": {
       "issue_id": "review::.::holistic::naming_quality::gitops_underscore_field_outlier",
       "created_at": "2026-04-16T07:26:17+00:00",
-      "cluster": "convention-and-naming-quick-wins",
-      "updated_at": "2026-04-16T07:26:17+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T07:52:35+00:00"
     },
     "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl": {
       "issue_id": "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl",
@@ -4314,7 +4298,8 @@
           "effort": "small",
           "issue_refs": [
             "review::.::holistic::type_safety::lifecycle_platform_parallel_literal"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Export LifecycleActionKind and FileActionKind named aliases and replace inline literal unions",
@@ -4323,7 +4308,8 @@
           "issue_refs": [
             "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
             "review::.::holistic::type_safety::file_write_action_duplicates_fileaction"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Reference RepoVisibility from lifecycle and formatter option shapes",
@@ -4332,7 +4318,8 @@
           "issue_refs": [
             "review::.::holistic::type_safety::create_repo_visibility_inlined",
             "review::.::holistic::type_safety::lifecycle_settings_visibility_string"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Reuse existing ActiveAction across report and sync change shapes",
@@ -4340,7 +4327,8 @@
           "effort": "small",
           "issue_refs": [
             "review::.::holistic::type_safety::active_action_literal_redundant_across_reports"
-          ]
+          ],
+          "done": true
         }
       ]
     },
@@ -4474,7 +4462,8 @@
             "review::.::holistic::naming_quality::fn_as_filename_in_validator",
             "review::.::holistic::naming_quality::gitops_underscore_field_outlier",
             "review::.::holistic::convention_outlier::azure_ado_prefix_split"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Align sibling helpers and reuse existing countActions utility",
@@ -4483,7 +4472,8 @@
           "issue_refs": [
             "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
             "review::.::holistic::convention_outlier::has_changes_helper_drift"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Fix logic-clarity and return patterns",
@@ -4492,7 +4482,8 @@
           "issue_refs": [
             "review::.::holistic::logic_clarity::deepequal_redundant_return",
             "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Bump engines.node and document manifest migration sunset policy",
@@ -4501,7 +4492,8 @@
           "issue_refs": [
             "review::.::holistic::dependency_health::engines_node_floor_mismatch",
             "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented"
-          ]
+          ],
+          "done": true
         }
       ]
     },
@@ -8161,14 +8153,7 @@
       "candidates": []
     }
   },
-  "promoted_ids": [
-    "review::.::holistic::type_safety::create_repo_visibility_inlined",
-    "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
-    "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
-    "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
-    "review::.::holistic::type_safety::lifecycle_settings_visibility_string",
-    "review::.::holistic::type_safety::active_action_literal_redundant_across_reports"
-  ],
+  "promoted_ids": [],
   "plan_start_scores": {
     "strict": 90.1,
     "overall": 91.4,
@@ -30485,6 +30470,727 @@
         "strategy_len": 925,
         "coverage": "41/41"
       }
+    },
+    {
+      "timestamp": "2026-04-16T07:43:36+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::create_repo_visibility_inlined"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "CreateRepoSettings.visibility now typed as RepoVisibility imported from config module, replacing the inlined public|private|internal literal union",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:43:36+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::type_safety::create_repo_visibility_inlined"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "CreateRepoSettings.visibility now typed as RepoVisibility imported from config module, replacing the inlined public|private|internal literal union",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually CreateRepoSettings.visibility now typed as RepoVisibility imported from config module, replacing the inlined public|private|internal literal union and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:43:37+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::file_write_action_duplicates_fileaction"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added FileActionKind = FileAction['action'] alias in vcs/types; FileWriteResult.action now references the shared alias instead of duplicating the union",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:43:37+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::type_safety::file_write_action_duplicates_fileaction"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added FileActionKind = FileAction['action'] alias in vcs/types; FileWriteResult.action now references the shared alias instead of duplicating the union",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Added FileActionKind = FileAction['action'] alias in vcs/types; FileWriteResult.action now references the shared alias instead of duplicating the union and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:43:37+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::lifecycle_action_literal_duplicated"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added LifecycleActionKind = LifecycleResult['action']; LifecycleAction.action in output/lifecycle-report now references the shared alias",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:43:37+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::type_safety::lifecycle_action_literal_duplicated"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added LifecycleActionKind = LifecycleResult['action']; LifecycleAction.action in output/lifecycle-report now references the shared alias",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Added LifecycleActionKind = LifecycleResult['action']; LifecycleAction.action in output/lifecycle-report now references the shared alias and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:43:38+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::lifecycle_platform_parallel_literal"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed private RepoType to exported RepoPlatform in repo/detector; LifecyclePlatform now aliases RepoPlatform eliminating parallel literal unions",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:43:38+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::type_safety::lifecycle_platform_parallel_literal"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed private RepoType to exported RepoPlatform in repo/detector; LifecyclePlatform now aliases RepoPlatform eliminating parallel literal unions",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Renamed private RepoType to exported RepoPlatform in repo/detector; LifecyclePlatform now aliases RepoPlatform eliminating parallel literal unions and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:43:38+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::lifecycle_settings_visibility_string"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Formatter and lifecycle-report visibility fields retyped from string to RepoVisibility, preserving the narrower public|private|internal contract",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:43:38+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::type_safety::lifecycle_settings_visibility_string"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Formatter and lifecycle-report visibility fields retyped from string to RepoVisibility, preserving the narrower public|private|internal contract",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Formatter and lifecycle-report visibility fields retyped from string to RepoVisibility, preserving the narrower public|private|internal contract and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:43:39+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::active_action_literal_redundant_across_reports"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "SettingChange, RulesetChange, LabelChange, FileChangeDetail, SyncResultEntry.fileChanges, and file-sync narrowing predicate now reference ActiveAction",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:43:39+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::type_safety::active_action_literal_redundant_across_reports"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "SettingChange, RulesetChange, LabelChange, FileChangeDetail, SyncResultEntry.fileChanges, and file-sync narrowing predicate now reference ActiveAction",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually SettingChange, RulesetChange, LabelChange, FileChangeDetail, SyncResultEntry.fileChanges, and file-sync narrowing predicate now reference ActiveAction and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:43:46+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::type_safety::create_repo_visibility_inlined",
+        "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
+        "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
+        "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
+        "review::.::holistic::type_safety::lifecycle_settings_visibility_string",
+        "review::.::holistic::type_safety::active_action_literal_redundant_across_reports"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "sha": "a1d2b71039fd",
+        "branch": "desloppify/round-8"
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:44:14+00:00",
+      "action": "focus",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "action": "clear",
+        "previous": "type-safety-literal-consolidation"
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:51:55+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 (convention-and-naming-quick-wins cluster).",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:51:55+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::azure_ado_prefix_split"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 (convention-and-naming-quick-wins cluster).",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:51:56+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::has_changes_helper_drift"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 (convention-and-naming-quick-wins cluster).",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:51:56+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 (convention-and-naming-quick-wins cluster).",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:51:56+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::dependency_health::engines_node_floor_mismatch"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 (convention-and-naming-quick-wins cluster).",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:51:57+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 (convention-and-naming-quick-wins cluster).",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:51:57+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::deepequal_redundant_return"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 (convention-and-naming-quick-wins cluster).",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:51:58+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 (convention-and-naming-quick-wins cluster).",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:51:58+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::fn_as_filename_in_validator"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 (convention-and-naming-quick-wins cluster).",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:51:58+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::gitops_underscore_field_outlier"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 (convention-and-naming-quick-wins cluster).",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:13+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of the convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:13+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::azure_ado_prefix_split"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of the convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:13+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::has_changes_helper_drift"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of the convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:14+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of the convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:14+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::dependency_health::engines_node_floor_mismatch"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of the convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:15+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of the convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:15+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::deepequal_redundant_return"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of the convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:16+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of the convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:16+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::fn_as_filename_in_validator"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of the convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:16+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::gitops_underscore_field_outlier"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of the convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:20+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of the convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:24+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue",
+        "review::.::holistic::convention_outlier::azure_ado_prefix_split",
+        "review::.::holistic::convention_outlier::has_changes_helper_drift",
+        "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
+        "review::.::holistic::dependency_health::engines_node_floor_mismatch",
+        "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
+        "review::.::holistic::logic_clarity::deepequal_redundant_return",
+        "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
+        "review::.::holistic::naming_quality::fn_as_filename_in_validator",
+        "review::.::holistic::naming_quality::gitops_underscore_field_outlier"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:52:29+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:29+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:52:30+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::azure_ado_prefix_split"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:30+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::azure_ado_prefix_split"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:52:30+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::has_changes_helper_drift"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:31+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::has_changes_helper_drift"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:52:31+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:31+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:52:31+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::dependency_health::engines_node_floor_mismatch"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:32+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::dependency_health::engines_node_floor_mismatch"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:52:32+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:32+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:52:33+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::deepequal_redundant_return"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:33+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::deepequal_redundant_return"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:52:33+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:33+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:52:34+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::fn_as_filename_in_validator"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:34+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::fn_as_filename_in_validator"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:52:34+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::gitops_underscore_field_outlier"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T07:52:35+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::gitops_underscore_field_outlier"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Fixed in commit 55e670c7 as part of convention-and-naming-quick-wins cluster. Tests 2600/2600 pass, typecheck clean, lint clean. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:52:44+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue",
+        "review::.::holistic::convention_outlier::azure_ado_prefix_split",
+        "review::.::holistic::convention_outlier::has_changes_helper_drift",
+        "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
+        "review::.::holistic::dependency_health::engines_node_floor_mismatch",
+        "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
+        "review::.::holistic::logic_clarity::deepequal_redundant_return",
+        "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
+        "review::.::holistic::naming_quality::fn_as_filename_in_validator",
+        "review::.::holistic::naming_quality::gitops_underscore_field_outlier"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "sha": "55e670c7e18b",
+        "branch": "desloppify/round-8"
+      }
+    },
+    {
+      "timestamp": "2026-04-16T07:53:11+00:00",
+      "action": "focus",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "action": "clear",
+        "previous": "convention-and-naming-quick-wins"
+      }
     }
   ],
   "epic_triage_meta": {
@@ -32020,6 +32726,40 @@
       ],
       "recorded_at": "2026-04-16T04:58:43+00:00",
       "note": "Moved repo-detector, repo-info-utils, repo-types, repo-metadata-provider from src/shared/ into a new src/repo/ domain folder. Extracted RepoInfo types into repo/types.ts so utils no longer depends on detector \u2014 cycle broken at commit 9f46691.",
+      "cluster_name": null
+    },
+    {
+      "sha": "a1d2b71039fd",
+      "branch": "desloppify/round-8",
+      "issue_ids": [
+        "review::.::holistic::type_safety::create_repo_visibility_inlined",
+        "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
+        "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
+        "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
+        "review::.::holistic::type_safety::lifecycle_settings_visibility_string",
+        "review::.::holistic::type_safety::active_action_literal_redundant_across_reports"
+      ],
+      "recorded_at": "2026-04-16T07:43:46+00:00",
+      "note": null,
+      "cluster_name": null
+    },
+    {
+      "sha": "55e670c7e18b",
+      "branch": "desloppify/round-8",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue",
+        "review::.::holistic::convention_outlier::azure_ado_prefix_split",
+        "review::.::holistic::convention_outlier::has_changes_helper_drift",
+        "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
+        "review::.::holistic::dependency_health::engines_node_floor_mismatch",
+        "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
+        "review::.::holistic::logic_clarity::deepequal_redundant_return",
+        "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
+        "review::.::holistic::naming_quality::fn_as_filename_in_validator",
+        "review::.::holistic::naming_quality::gitops_underscore_field_outlier"
+      ],
+      "recorded_at": "2026-04-16T07:52:44+00:00",
+      "note": null,
       "cluster_name": null
     }
   ],

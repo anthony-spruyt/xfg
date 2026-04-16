@@ -1,5 +1,5 @@
 import type { RepoConfig } from "../config/index.js";
-import { type RepoInfo, getRepoDisplayName } from "../repo/detector.js";
+import { type RepoInfo, getRepoDisplayName } from "../repo/index.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import type { DebugInfoLog } from "../shared/logger.js";
 import type {

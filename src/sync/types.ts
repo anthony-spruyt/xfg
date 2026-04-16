@@ -1,5 +1,5 @@
 import type { FileContent, RepoConfig } from "../config/index.js";
-import type { RepoInfo } from "../repo/detector.js";
+import type { RepoInfo } from "../repo/index.js";
 import type { ActiveAction } from "../settings/index.js";
 import type {
   ILocalGitOps,

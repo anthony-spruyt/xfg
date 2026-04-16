@@ -1,7 +1,7 @@
 import { escapeShellArg } from "./shell-utils.js";
 import { withRetry } from "./retry-utils.js";
 import type { ICommandExecutor } from "./command-executor.js";
-import type { GitHubRepoInfo } from "../repo/detector.js";
+import type { GitHubRepoInfo } from "../repo/index.js";
 import { toErrorMessage } from "./type-guards.js";
 
 import type { DebugWarnLog } from "./logger.js";

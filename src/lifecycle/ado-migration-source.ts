@@ -7,7 +7,7 @@ import {
   isAzureDevOpsRepo,
   type RepoInfo,
   type AzureDevOpsRepoInfo,
-} from "../repo/detector.js";
+} from "../repo/index.js";
 import type { IMigrationSource, LifecyclePlatform } from "./types.js";
 
 /**

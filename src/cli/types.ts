@@ -10,7 +10,7 @@ import type {
   BaseProcessorResult,
   ActiveAction,
 } from "../settings/index.js";
-import type { RepoInfo } from "../repo/detector.js";
+import type { RepoInfo } from "../repo/index.js";
 import type { ResultsCollector } from "./results-collector.js";
 
 export type ProcessorFactory = () => IRepositoryProcessor;

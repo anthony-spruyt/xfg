@@ -1,5 +1,6 @@
 import type { ICommandExecutor } from "../shared/command-executor.js";
-import { assertGitHubRepo, type RepoInfo } from "./detector.js";
+import { assertGitHubRepo } from "./utils.js";
+import type { RepoInfo } from "./types.js";
 import { GhApiClient, type GhApiOptions } from "../shared/gh-api-utils.js";
 import { parseApiJson } from "../shared/json-utils.js";
 import type { RepoVisibility } from "../config/index.js";

@@ -8,7 +8,7 @@ import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
 import {
   GitLabRepoInfo,
   AzureDevOpsRepoInfo,
-} from "../../../src/repo/detector.js";
+} from "../../../src/repo/index.js";
 import type { PRStrategyOptions } from "../../../src/vcs/types.js";
 import {
   createMockExecutor,
