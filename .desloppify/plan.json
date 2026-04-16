@@ -1,9 +1,56 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-16T04:58:43+00:00",
+  "updated": "2026-04-16T05:39:33+00:00",
   "queue_order": [
-    "workflow::create-plan"
+    "workflow::create-plan",
+    "review::.::holistic::abstraction_fitness::file_sync_strategy_passthrough",
+    "review::.::holistic::abstraction_fitness::settings_processor_factory_ceremony",
+    "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue",
+    "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
+    "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
+    "review::.::holistic::authorization_consistency::force_merge_audit_log_only",
+    "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
+    "review::.::holistic::contract_coherence::rethrow_name_but_returns",
+    "review::.::holistic::convention_outlier::azure_ado_prefix_split",
+    "review::.::holistic::convention_outlier::has_changes_helper_drift",
+    "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
+    "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
+    "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
+    "review::.::holistic::dependency_health::engines_node_floor_mismatch",
+    "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl",
+    "review::.::holistic::design_coherence::validate_settings_multi_concern",
+    "review::.::holistic::error_consistency::branch_protection_string_match",
+    "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous",
+    "review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli",
+    "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output",
+    "review::.::holistic::high_level_elegance::vcs_barrel_mixes_classes_and_factories",
+    "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
+    "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
+    "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons",
+    "review::.::holistic::logic_clarity::deepequal_redundant_return",
+    "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
+    "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks",
+    "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets",
+    "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins",
+    "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record",
+    "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks",
+    "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
+    "review::.::holistic::mid_level_elegance::session_options_runcontext_outlier",
+    "review::.::holistic::mid_level_elegance::settings_result_dual_view_casts",
+    "review::.::holistic::naming_quality::check_existing_pr_returns_url",
+    "review::.::holistic::naming_quality::fn_as_filename_in_validator",
+    "review::.::holistic::naming_quality::gitops_underscore_field_outlier",
+    "review::.::holistic::package_organization::repo_missing_index_barrel",
+    "review::.::holistic::package_organization::sanitize_utils_vcs_only",
+    "review::.::holistic::package_organization::test_layout_partially_mirrored",
+    "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping",
+    "review::.::holistic::type_safety::active_action_literal_redundant_across_reports",
+    "review::.::holistic::type_safety::create_repo_visibility_inlined",
+    "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
+    "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
+    "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
+    "review::.::holistic::type_safety::lifecycle_settings_visibility_string"
   ],
   "deferred": [],
   "skipped": {
@@ -297,26 +344,6 @@
       "review_after": null,
       "skipped_at_scan": 196
     },
-    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40": {
-      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::40",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding against the code: secretScanning is a GitHub Settings API property name for the secret-scanning feature, not a hardcoded secret value. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-04-16T04:40:29+00:00",
-      "review_after": null,
-      "skipped_at_scan": 197
-    },
-    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
-      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding against the code: secretScanning is a GitHub Settings API property name for the secret-scanning feature, not a hardcoded secret value. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-04-16T04:40:29+00:00",
-      "review_after": null,
-      "skipped_at_scan": 197
-    },
     "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::42": {
       "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::42",
       "kind": "false_positive",
@@ -324,16 +351,6 @@
       "note": null,
       "attestation": "I have reviewed this finding against the code: secretScanningPushProtection is a GitHub Settings API property name, not a hardcoded secret value. I am not gaming the score by suppressing a real defect.",
       "created_at": "2026-04-16T04:40:30+00:00",
-      "review_after": null,
-      "skipped_at_scan": 197
-    },
-    "test_coverage::src/cli/types.ts::transitive_only": {
-      "issue_id": "test_coverage::src/cli/types.ts::transitive_only",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed src/cli/types.ts against the code: it contains only TypeScript type aliases, interfaces, and factory type definitions (no runtime code), so direct unit tests are not meaningful. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-04-16T04:55:37+00:00",
       "review_after": null,
       "skipped_at_scan": 197
     },
@@ -354,26 +371,6 @@
       "note": null,
       "attestation": "I have reviewed src/sync/types.ts against the code: it contains only TypeScript interfaces and type aliases, no runtime exports, so direct unit tests are not meaningful. I am not gaming the score by suppressing a real defect.",
       "created_at": "2026-04-16T04:57:04+00:00",
-      "review_after": null,
-      "skipped_at_scan": 197
-    },
-    "smells::src/cli/sync-command.ts::async_no_await": {
-      "issue_id": "smells::src/cli/sync-command.ts::async_no_await",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed src/cli/sync-command.ts at lines 196 and 644: both functions (runAndStoreResult and runSync) clearly use the await keyword inside their bodies. runAndStoreResult awaits runSettingsProcessor at line 205, and runSync has multiple awaits throughout its body. The async_no_await detector is misreporting here. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-04-16T04:57:50+00:00",
-      "review_after": null,
-      "skipped_at_scan": 197
-    },
-    "smells::src/cli/sync-command.ts::nested_closure": {
-      "issue_id": "smells::src/cli/sync-command.ts::nested_closure",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed src/cli/sync-command.ts line 217 (buildSettingsDescriptors): the flagged nested closures are one-line property-assignment callbacks inside the run arrow of each descriptor in a declarative array literal \u2014 the nesting is only 2 levels deep and cohesive to the descriptor-building. Extracting to module level would scatter tightly-coupled config across the file with no clarity gain. I am not gaming the score by suppressing a real defect.",
-      "created_at": "2026-04-16T04:58:22+00:00",
       "review_after": null,
       "skipped_at_scan": 197
     }
@@ -425,7 +422,7 @@
     "test_coverage::src/cli/types.ts::transitive_only": {
       "issue_id": "test_coverage::src/cli/types.ts::transitive_only",
       "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/test_coverage-transitive_only",
+      "cluster": null,
       "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "smells::test/unit/authenticated-git-ops.test.ts::hardcoded_url": {
@@ -1301,85 +1298,85 @@
     "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module": {
       "issue_id": "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
       "created_at": "2026-03-18T11:51:36+00:00",
-      "cluster": "api-consolidation",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::interpolate_value_untyped_return": {
       "issue_id": "review::.::holistic::type_safety::interpolate_value_untyped_return",
       "created_at": "2026-03-18T11:51:36+00:00",
-      "cluster": "api-consolidation",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::action_param_typed_as_string": {
       "issue_id": "review::.::holistic::type_safety::action_param_typed_as_string",
       "created_at": "2026-03-18T11:51:36+00:00",
-      "cluster": "api-consolidation",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions": {
       "issue_id": "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
       "created_at": "2026-03-18T11:51:37+00:00",
-      "cluster": "design-coherence-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::incomplete_summary_format_consolidation": {
       "issue_id": "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
       "created_at": "2026-03-18T11:51:37+00:00",
-      "cluster": "design-coherence-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::logic_clarity::count_actions_multi_pass": {
       "issue_id": "review::.::holistic::logic_clarity::count_actions_multi_pass",
       "created_at": "2026-03-18T11:51:37+00:00",
-      "cluster": "design-coherence-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
       "created_at": "2026-03-18T11:51:38+00:00",
-      "cluster": "module-boundary-fixes",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers": {
       "issue_id": "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
       "created_at": "2026-03-18T11:51:38+00:00",
-      "cluster": "module-boundary-fixes",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation": {
       "issue_id": "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
       "created_at": "2026-03-18T11:51:38+00:00",
-      "cluster": "module-boundary-fixes",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean": {
       "issue_id": "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
       "created_at": "2026-03-18T11:51:43+00:00",
-      "cluster": "quick-wins",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments": {
       "issue_id": "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
       "created_at": "2026-03-18T11:51:43+00:00",
-      "cluster": "quick-wins",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals": {
       "issue_id": "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
       "created_at": "2026-03-18T11:51:43+00:00",
-      "cluster": "quick-wins",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons": {
       "issue_id": "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
       "created_at": "2026-03-18T11:51:43+00:00",
-      "cluster": "quick-wins",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::test_strategy::gh_api_utils_zero_coverage": {
       "issue_id": "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
       "created_at": "2026-03-18T11:51:44+00:00",
-      "cluster": "test-coverage",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "test_coverage::src/cli/program.ts::untested_module": {
@@ -1391,439 +1388,439 @@
     "test_coverage::src/shared/json-utils.ts::transitive_only": {
       "issue_id": "test_coverage::src/shared/json-utils.ts::transitive_only",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "cluster": "auto/test_coverage-transitive_only",
+      "cluster": null,
       "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns": {
       "issue_id": "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns",
-      "cluster": "token-resolution",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels": {
       "issue_id": "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels",
-      "cluster": "token-resolution",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::mid_level_elegance::token-resolution-dual-path": {
       "issue_id": "review::.::holistic::mid_level_elegance::token-resolution-dual-path",
-      "cluster": "token-resolution",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param": {
       "issue_id": "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param",
-      "cluster": "accepted-debt",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return": {
       "issue_id": "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return",
-      "cluster": "accepted-debt",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check": {
       "issue_id": "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check",
-      "cluster": "accepted-debt",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::api_surface_coherence::FileChange-name-collision": {
       "issue_id": "review::.::holistic::api_surface_coherence::FileChange-name-collision",
-      "cluster": "stale-findings",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation": {
       "issue_id": "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation",
-      "cluster": "stale-findings",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::incomplete_migration::logger-process-env-direct-read": {
       "issue_id": "review::.::holistic::incomplete_migration::logger-process-env-direct-read",
-      "cluster": "stale-findings",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::incomplete_shared_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::incomplete_shared_barrel",
-      "cluster": "barrel-hygiene",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::incomplete_vcs_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::incomplete_vcs_barrel",
-      "cluster": "barrel-hygiene",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::fileaction_imported_from_reexport": {
       "issue_id": "review::.::holistic::cross_module_architecture::fileaction_imported_from_reexport",
-      "cluster": "barrel-hygiene",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::sync_types_imports_concrete_vcs_file": {
       "issue_id": "review::.::holistic::cross_module_architecture::sync_types_imports_concrete_vcs_file",
-      "cluster": "barrel-hygiene",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::mid_level_elegance::file_action_import_bypass": {
       "issue_id": "review::.::holistic::mid_level_elegance::file_action_import_bypass",
-      "cluster": "barrel-hygiene",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::github_summary_process_env": {
       "issue_id": "review::.::holistic::cross_module_architecture::github_summary_process_env",
-      "cluster": "barrel-hygiene",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::duplicate_lifecycle_types": {
       "issue_id": "review::.::holistic::design_coherence::duplicate_lifecycle_types",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::naming_quality::lifecycle_report_input_redundant_type": {
       "issue_id": "review::.::holistic::naming_quality::lifecycle_report_input_redundant_type",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::convention_outlier::lifecycle_duplicate_interface": {
       "issue_id": "review::.::holistic::convention_outlier::lifecycle_duplicate_interface",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::convention_outlier::is_object_naming_drift": {
       "issue_id": "review::.::holistic::convention_outlier::is_object_naming_drift",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::naming_quality::isObject_vs_isPlainObject_divergence": {
       "issue_id": "review::.::holistic::naming_quality::isObject_vs_isPlainObject_divergence",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::manifest_migration_duplication": {
       "issue_id": "review::.::holistic::low_level_elegance::manifest_migration_duplication",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::validator_duplicate_group_checks": {
       "issue_id": "review::.::holistic::low_level_elegance::validator_duplicate_group_checks",
-      "cluster": "type-dedup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::contract_coherence::parseManifestContent_stale_docstring": {
       "issue_id": "review::.::holistic::contract_coherence::parseManifestContent_stale_docstring",
-      "cluster": "stale-docs",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::contract_coherence::resolveGitHubToken_skipped_docstring": {
       "issue_id": "review::.::holistic::contract_coherence::resolveGitHubToken_skipped_docstring",
-      "cluster": "stale-docs",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::contract_coherence::validateForSync_stale_throws_clause": {
       "issue_id": "review::.::holistic::contract_coherence::validateForSync_stale_throws_clause",
-      "cluster": "stale-docs",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::restating_type_docstrings": {
       "issue_id": "review::.::holistic::ai_generated_debt::restating_type_docstrings",
-      "cluster": "stale-docs",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::validate_settings_param_sprawl": {
       "issue_id": "review::.::holistic::design_coherence::validate_settings_param_sprawl",
-      "cluster": "param-sprawl",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::api_surface_coherence::runLifecycleCheck_6_positional_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::runLifecycleCheck_6_positional_params",
-      "cluster": "param-sprawl",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::sync_command_positional_params": {
       "issue_id": "review::.::holistic::low_level_elegance::sync_command_positional_params",
-      "cluster": "param-sprawl",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::error_consistency::github_summary_no_error_handling": {
       "issue_id": "review::.::holistic::error_consistency::github_summary_no_error_handling",
-      "cluster": "error-gaps",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::error_consistency::close_pr_error_swallowed": {
       "issue_id": "review::.::holistic::error_consistency::close_pr_error_swallowed",
-      "cluster": "error-gaps",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::error_consistency::commit_error_string_matching": {
       "issue_id": "review::.::holistic::error_consistency::commit_error_string_matching",
-      "cluster": "error-gaps",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::validation_arrays_not_type_linked": {
       "issue_id": "review::.::holistic::type_safety::validation_arrays_not_type_linked",
-      "cluster": "type-narrowing",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::current_repo_settings_broad_string_types": {
       "issue_id": "review::.::holistic::type_safety::current_repo_settings_broad_string_types",
-      "cluster": "type-narrowing",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::double_cast_in_merge_ruleset": {
       "issue_id": "review::.::holistic::type_safety::double_cast_in_merge_ruleset",
-      "cluster": "type-narrowing",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count": {
       "issue_id": "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count",
-      "cluster": "code-cleanup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::logic_clarity::unreachable_merge_mode_branches": {
       "issue_id": "review::.::holistic::logic_clarity::unreachable_merge_mode_branches",
-      "cluster": "code-cleanup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs": {
       "issue_id": "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs",
-      "cluster": "code-cleanup",
+      "cluster": null,
       "created_at": "2026-03-19T10:10:47+00:00",
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments": {
       "issue_id": "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
       "created_at": "2026-03-19T11:32:01+00:00",
-      "cluster": "quick-cleanups",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::convention_outlier::residual_filepath_comments": {
       "issue_id": "review::.::holistic::convention_outlier::residual_filepath_comments",
       "created_at": "2026-03-19T11:32:01+00:00",
-      "cluster": "quick-cleanups",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops": {
       "issue_id": "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
       "created_at": "2026-03-19T11:32:02+00:00",
-      "cluster": "quick-cleanups",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::naming_quality::handle_commit_error_param_mismatch": {
       "issue_id": "review::.::holistic::naming_quality::handle_commit_error_param_mismatch",
       "created_at": "2026-03-19T11:32:02+00:00",
-      "cluster": "quick-cleanups",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::inline_label_action_formatting": {
       "issue_id": "review::.::holistic::low_level_elegance::inline_label_action_formatting",
       "created_at": "2026-03-19T11:32:03+00:00",
-      "cluster": "quick-cleanups",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale": {
       "issue_id": "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale",
       "created_at": "2026-03-19T11:32:40+00:00",
-      "cluster": "import-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types": {
       "issue_id": "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types",
       "created_at": "2026-03-19T11:32:40+00:00",
-      "cluster": "import-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::labels_manual_filter_counting": {
       "issue_id": "review::.::holistic::design_coherence::labels_manual_filter_counting",
       "created_at": "2026-03-19T11:32:41+00:00",
-      "cluster": "consolidate-utilities",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::sync_diff_line_duplication": {
       "issue_id": "review::.::holistic::design_coherence::sync_diff_line_duplication",
       "created_at": "2026-03-19T11:32:42+00:00",
-      "cluster": "consolidate-utilities",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented": {
       "issue_id": "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented",
       "created_at": "2026-03-19T11:32:42+00:00",
-      "cluster": "consolidate-utilities",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::parallel_action_type_aliases": {
       "issue_id": "review::.::holistic::type_safety::parallel_action_type_aliases",
       "created_at": "2026-03-19T11:32:42+00:00",
-      "cluster": "consolidate-utilities",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::contract_coherence::format_pr_body_as_string_cast": {
       "issue_id": "review::.::holistic::contract_coherence::format_pr_body_as_string_cast",
       "created_at": "2026-03-19T11:32:43+00:00",
-      "cluster": "type-safety-fixes",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads": {
       "issue_id": "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads",
       "created_at": "2026-03-19T11:32:44+00:00",
-      "cluster": "type-safety-fixes",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency": {
       "issue_id": "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency",
       "created_at": "2026-03-19T11:33:40+00:00",
-      "cluster": "error-handling",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::naming_quality::diff_action_vocabulary_divergence": {
       "issue_id": "review::.::holistic::naming_quality::diff_action_vocabulary_divergence",
       "created_at": "2026-03-19T11:33:40+00:00",
-      "cluster": "naming-alignment",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::convention_outlier::azure_devops_prefix_drift": {
       "issue_id": "review::.::holistic::convention_outlier::azure_devops_prefix_drift",
       "created_at": "2026-03-19T11:33:41+00:00",
-      "cluster": "naming-alignment",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::mid_level_elegance::redundant_manifest_load": {
       "issue_id": "review::.::holistic::mid_level_elegance::redundant_manifest_load",
       "created_at": "2026-03-19T11:33:41+00:00",
-      "cluster": "mid-level-refactor",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map": {
       "issue_id": "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map",
       "created_at": "2026-03-19T11:33:42+00:00",
-      "cluster": "mid-level-refactor",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params",
       "created_at": "2026-03-19T11:33:42+00:00",
-      "cluster": "api-refactor",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers": {
       "issue_id": "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
       "created_at": "2026-03-20T02:17:39+00:00",
-      "cluster": "output-structural-debt",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle": {
       "issue_id": "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
       "created_at": "2026-03-20T02:17:39+00:00",
-      "cluster": "output-structural-debt",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::dependency_health::type_only_import_cycle_output": {
       "issue_id": "review::.::holistic::dependency_health::type_only_import_cycle_output",
       "created_at": "2026-03-20T02:17:39+00:00",
-      "cluster": "output-structural-debt",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::incomplete_migration::old_summary_api_dead_code": {
       "issue_id": "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "output-dead-code",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter": {
       "issue_id": "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "quick-consistency-fixes",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector": {
       "issue_id": "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "quick-consistency-fixes",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::inline_action_unions_github_summary": {
       "issue_id": "review::.::holistic::type_safety::inline_action_unions_github_summary",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "quick-consistency-fixes",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "quick-consistency-fixes",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors": {
       "issue_id": "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "quick-consistency-fixes",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::initialization_coupling::module_scope_lazy_singletons": {
       "issue_id": "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "cli-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::test_strategy::untested_cli_entry_point": {
       "issue_id": "review::.::holistic::test_strategy::untested_cli_entry_point",
       "created_at": "2026-03-20T02:17:40+00:00",
-      "cluster": "cli-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::high_level_elegance::orphaned_summary_utils": {
       "issue_id": "review::.::holistic::high_level_elegance::orphaned_summary_utils",
       "created_at": "2026-03-22T02:07:30+00:00",
-      "cluster": "dead-summary-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::incomplete_migration::dead_old_summary_api": {
       "issue_id": "review::.::holistic::incomplete_migration::dead_old_summary_api",
       "created_at": "2026-03-22T02:07:30+00:00",
-      "cluster": "dead-summary-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast": {
       "issue_id": "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
       "created_at": "2026-03-22T02:07:31+00:00",
-      "cluster": "type-safety-docs",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::type_safety::as_tresult_cast_in_guards": {
       "issue_id": "review::.::holistic::type_safety::as_tresult_cast_in_guards",
       "created_at": "2026-03-22T02:07:31+00:00",
-      "cluster": "type-safety-docs",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "exports::.output/updated_sources/src/shared/gh-api-utils.ts::GhApiOptions": {
@@ -1949,67 +1946,67 @@
     "review::.::holistic::cross_module_architecture::renderSyncLines_misplaced_in_aggregator": {
       "issue_id": "review::.::holistic::cross_module_architecture::renderSyncLines_misplaced_in_aggregator",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": "output-renderSyncLines-fix",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::high_level_elegance::renderSyncLines_ownership_inversion": {
       "issue_id": "review::.::holistic::high_level_elegance::renderSyncLines_ownership_inversion",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": "output-renderSyncLines-fix",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::lifecycle_duplicate_flag_building": {
       "issue_id": "review::.::holistic::low_level_elegance::lifecycle_duplicate_flag_building",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": "lifecycle-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::lifecycle_polling_loop_style_divergence": {
       "issue_id": "review::.::holistic::low_level_elegance::lifecycle_polling_loop_style_divergence",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": "lifecycle-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::orphan_docblock_normalizer": {
       "issue_id": "review::.::holistic::ai_generated_debt::orphan_docblock_normalizer",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": "comment-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::ai_generated_debt::type_labeling_comments_repo_detector": {
       "issue_id": "review::.::holistic::ai_generated_debt::type_labeling_comments_repo_detector",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": "comment-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::low_level_elegance::file_writer_split_loop_unannounced": {
       "issue_id": "review::.::holistic::low_level_elegance::file_writer_split_loop_unannounced",
       "created_at": "2026-03-22T03:53:35+00:00",
-      "cluster": "comment-cleanup",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::design_coherence::settings_report_duplicate_counting": {
       "issue_id": "review::.::holistic::design_coherence::settings_report_duplicate_counting",
       "created_at": "2026-03-22T03:53:36+00:00",
-      "cluster": "design-fixes",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::api_surface_coherence::ruleset_update_5_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::ruleset_update_5_params",
       "created_at": "2026-03-22T03:53:36+00:00",
-      "cluster": "design-fixes",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::test_strategy::ts_github_summary_untested": {
       "issue_id": "review::.::holistic::test_strategy::ts_github_summary_untested",
       "created_at": "2026-03-22T03:53:36+00:00",
-      "cluster": "test-coverage",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "review::.::holistic::initialization_coupling::program_ts_module_level_file_io": {
       "issue_id": "review::.::holistic::initialization_coupling::program_ts_module_level_file_io",
       "created_at": "2026-03-22T03:53:36+00:00",
-      "cluster": "init-fix",
+      "cluster": null,
       "updated_at": "2026-04-16T04:40:29+00:00"
     },
     "test_coverage::src/output/github-summary.ts::transitive_only": {
@@ -3892,8 +3889,6 @@
       "name": "auto/test_coverage-transitive_only",
       "description": "Fix 28 test coverage issues",
       "issue_ids": [
-        "test_coverage::src/cli/types.ts::transitive_only",
-        "test_coverage::src/shared/json-utils.ts::transitive_only",
         "test_coverage::src/shared/string-utils.ts::transitive_only",
         "test_coverage::src/config/loader.ts::transitive_only",
         "test_coverage::src/output/settings-report.ts::transitive_only",
@@ -7400,7 +7395,12 @@
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {},
+  "plan_start_scores": {
+    "strict": 90.1,
+    "overall": 91.4,
+    "objective": 92.5,
+    "verified": 90.3
+  },
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -28354,6 +28354,187 @@
         "sha": "f618109bf5ed",
         "branch": "desloppify/round-8"
       }
+    },
+    {
+      "timestamp": "2026-04-16T05:39:25+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::abstraction_fitness::file_sync_strategy_passthrough",
+          "review::.::holistic::abstraction_fitness::settings_processor_factory_ceremony",
+          "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue",
+          "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
+          "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
+          "review::.::holistic::authorization_consistency::force_merge_audit_log_only",
+          "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
+          "review::.::holistic::contract_coherence::rethrow_name_but_returns",
+          "review::.::holistic::convention_outlier::azure_ado_prefix_split",
+          "review::.::holistic::convention_outlier::has_changes_helper_drift",
+          "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
+          "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
+          "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
+          "review::.::holistic::dependency_health::engines_node_floor_mismatch",
+          "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl",
+          "review::.::holistic::design_coherence::validate_settings_multi_concern",
+          "review::.::holistic::error_consistency::branch_protection_string_match",
+          "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous",
+          "review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli",
+          "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output",
+          "review::.::holistic::high_level_elegance::vcs_barrel_mixes_classes_and_factories",
+          "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
+          "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
+          "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons",
+          "review::.::holistic::logic_clarity::deepequal_redundant_return",
+          "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
+          "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks",
+          "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets",
+          "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins",
+          "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record",
+          "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks",
+          "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
+          "review::.::holistic::mid_level_elegance::session_options_runcontext_outlier",
+          "review::.::holistic::mid_level_elegance::settings_result_dual_view_casts",
+          "review::.::holistic::naming_quality::check_existing_pr_returns_url",
+          "review::.::holistic::naming_quality::fn_as_filename_in_validator",
+          "review::.::holistic::naming_quality::gitops_underscore_field_outlier",
+          "review::.::holistic::package_organization::repo_missing_index_barrel",
+          "review::.::holistic::package_organization::sanitize_utils_vcs_only",
+          "review::.::holistic::package_organization::test_layout_partially_mirrored",
+          "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping",
+          "review::.::holistic::type_safety::active_action_literal_redundant_across_reports",
+          "review::.::holistic::type_safety::create_repo_visibility_inlined",
+          "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
+          "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
+          "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
+          "review::.::holistic::type_safety::lifecycle_settings_visibility_string"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::abstraction_fitness::file_sync_strategy_passthrough",
+          "review::.::holistic::abstraction_fitness::settings_processor_factory_ceremony",
+          "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue",
+          "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
+          "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
+          "review::.::holistic::authorization_consistency::force_merge_audit_log_only",
+          "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
+          "review::.::holistic::contract_coherence::rethrow_name_but_returns",
+          "review::.::holistic::convention_outlier::azure_ado_prefix_split",
+          "review::.::holistic::convention_outlier::has_changes_helper_drift",
+          "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
+          "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
+          "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
+          "review::.::holistic::dependency_health::engines_node_floor_mismatch",
+          "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl",
+          "review::.::holistic::design_coherence::validate_settings_multi_concern",
+          "review::.::holistic::error_consistency::branch_protection_string_match",
+          "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous",
+          "review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli",
+          "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output",
+          "review::.::holistic::high_level_elegance::vcs_barrel_mixes_classes_and_factories",
+          "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
+          "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
+          "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons",
+          "review::.::holistic::logic_clarity::deepequal_redundant_return",
+          "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
+          "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks",
+          "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets",
+          "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins",
+          "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record",
+          "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks",
+          "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
+          "review::.::holistic::mid_level_elegance::session_options_runcontext_outlier",
+          "review::.::holistic::mid_level_elegance::settings_result_dual_view_casts",
+          "review::.::holistic::naming_quality::check_existing_pr_returns_url",
+          "review::.::holistic::naming_quality::fn_as_filename_in_validator",
+          "review::.::holistic::naming_quality::gitops_underscore_field_outlier",
+          "review::.::holistic::package_organization::repo_missing_index_barrel",
+          "review::.::holistic::package_organization::sanitize_utils_vcs_only",
+          "review::.::holistic::package_organization::test_layout_partially_mirrored",
+          "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping",
+          "review::.::holistic::type_safety::active_action_literal_redundant_across_reports",
+          "review::.::holistic::type_safety::create_repo_visibility_inlined",
+          "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
+          "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
+          "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
+          "review::.::holistic::type_safety::lifecycle_settings_visibility_string"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 47,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 33,
+        "stale_pruned_from_queue": [],
+        "covered_subjective_pruned_from_queue": [],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T05:39:33+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-04-16T05:39:33+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T05:39:33+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 199
+      }
     }
   ],
   "epic_triage_meta": {
@@ -28872,10 +29053,10 @@
   "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
-    "subjective_review_completed_at_scan_count": 195,
+    "subjective_review_completed_at_scan_count": 198,
     "lifecycle_phase": "plan",
-    "_subjective_migration_pruned": true
+    "_subjective_migration_pruned": true,
+    "postflight_scan_completed_at_scan_count": 199
   },
-  "scan_count_at_plan_start": 196,
-  "previous_plan_start_scores": {}
+  "scan_count_at_plan_start": 199
 }
