@@ -1,0 +1,7 @@
+name: xfg CodeQL config
+
+paths-ignore:
+  - test
+  - tests
+  - '**/*.test.ts'
+  - '**/*.spec.ts'
