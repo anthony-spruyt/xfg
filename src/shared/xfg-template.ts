@@ -10,14 +10,38 @@ import {
   type InterpolationConfig,
 } from "./interpolation-engine.js";
 
-import type { RepoInfo } from "../repo/index.js";
 import { ValidationError } from "./errors.js";
 
 type TemplateContent = Record<string, unknown> | string | string[];
 
+export type RepoDisplayInfo =
+  | {
+      type: "github";
+      gitUrl: string;
+      repo: string;
+      owner: string;
+      host: string;
+    }
+  | {
+      type: "azure-devops";
+      gitUrl: string;
+      repo: string;
+      owner: string;
+      organization: string;
+      project: string;
+    }
+  | {
+      type: "gitlab";
+      gitUrl: string;
+      repo: string;
+      owner: string;
+      namespace: string;
+      host: string;
+    };
+
 export interface XfgTemplateContext {
   /** Repository information from URL parsing */
-  repoInfo: RepoInfo;
+  repoInfo: RepoDisplayInfo;
   /** Current file being processed */
   fileName: string;
   /** Custom variables defined in config */

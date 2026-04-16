@@ -12,8 +12,8 @@
     "auto_resolved": 1095,
     "deferred": 0,
     "false_positive": 87,
-    "fixed": 247,
-    "open": 233,
+    "fixed": 255,
+    "open": 225,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 5,
-        "fixed": 97,
-        "open": 8,
+        "fixed": 101,
+        "open": 4,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 50,
-        "fixed": 113,
-        "open": 44,
+        "fixed": 116,
+        "open": 41,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -39,8 +39,8 @@
         "auto_resolved": 648,
         "deferred": 0,
         "false_positive": 32,
-        "fixed": 17,
-        "open": 180,
+        "fixed": 18,
+        "open": 179,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -134,8 +134,8 @@
         "Type Discipline": 93.0
       },
       "needs_review_refresh": true,
-      "refresh_reason": "review_issue_false_positive",
-      "stale_since": "2026-04-16T07:26:38+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T09:14:45+00:00"
     },
     "api_surface_coherence": {
       "score": 92.0,
@@ -193,15 +193,18 @@
     "low_level_elegance": {
       "score": 89.0,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T09:04:35+00:00"
     },
     "design_coherence": {
       "score": 89.0,
       "source": "holistic",
       "assessed_at": "2026-04-16T05:39:25+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-16T05:39:33+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T09:14:44+00:00"
     },
     "contract_coherence": {
       "score": 92.5,
@@ -3043,13 +3046,13 @@
       "strict": 90.5,
       "verified_strict_score": 90.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.905,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.95,
           "assessment_score": 90.5,
           "placeholder": false,
@@ -3226,13 +3229,13 @@
       "strict": 89.0,
       "verified_strict_score": 89.0,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.89,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 1.1,
           "assessment_score": 89.0,
           "placeholder": false,
@@ -3352,13 +3355,13 @@
       "strict": 89.0,
       "verified_strict_score": 89.0,
       "checks": 10,
-      "failing": 5,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.89,
-          "failing": 5,
+          "failing": 0,
           "weighted_failures": 1.1,
           "assessment_score": 89.0,
           "placeholder": false,
@@ -69251,11 +69254,11 @@
         "reasoning": "",
         "summary_hash": "4310e945"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Collapsed four factory fields into a single SettingsProcessorFactories record, reducing ceremony while preserving per-kind typing via interface members.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:14:45+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69263,7 +69266,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Collapsed four factory fields into a single SettingsProcessorFactories record, reducing ceremony while preserving per-kind typing via interface members. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:14:45+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::dependency_health::engines_node_floor_mismatch": {
       "id": "review::.::holistic::dependency_health::engines_node_floor_mismatch",
@@ -69331,11 +69340,11 @@
         "reasoning": "",
         "summary_hash": "5b4cb102"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Helper extraction cluster complete; twin blocks collapsed.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:04:33+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69343,7 +69352,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Helper extraction cluster complete; twin blocks collapsed. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:04:33+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets": {
       "id": "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets",
@@ -69368,11 +69383,11 @@
         "reasoning": "",
         "summary_hash": "3641af2c"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Helper extraction cluster complete; twin blocks collapsed.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:04:34+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69380,7 +69395,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Helper extraction cluster complete; twin blocks collapsed. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:04:34+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks": {
       "id": "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks",
@@ -69404,11 +69425,11 @@
         "reasoning": "",
         "summary_hash": "78967a75"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Helper extraction cluster complete; twin blocks collapsed.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:04:35+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69416,7 +69437,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Helper extraction cluster complete; twin blocks collapsed. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:04:35+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins": {
       "id": "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins",
@@ -69440,11 +69467,11 @@
         "reasoning": "",
         "summary_hash": "253c1112"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Helper extraction cluster complete; twin blocks collapsed.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:04:34+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69452,7 +69479,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Helper extraction cluster complete; twin blocks collapsed. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:04:34+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record": {
       "id": "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record",
@@ -69477,11 +69510,11 @@
         "reasoning": "",
         "summary_hash": "d6b0cac1"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Helper extraction cluster complete; twin blocks collapsed.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:04:35+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69489,7 +69522,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Helper extraction cluster complete; twin blocks collapsed. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:04:35+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::mid_level_elegance::session_options_runcontext_outlier": {
       "id": "review::.::holistic::mid_level_elegance::session_options_runcontext_outlier",
@@ -70139,11 +70178,11 @@
         "reasoning": "",
         "summary_hash": "02713cf2"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Replaced 4 flat factory fields with SettingsProcessorFactories record on RepoIterationContext, SyncDependencies, and ApplyRepoSettingsContext.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:14:43+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70151,7 +70190,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Replaced 4 flat factory fields with SettingsProcessorFactories record on RepoIterationContext, SyncDependencies, and ApplyRepoSettingsContext. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:14:43+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::design_coherence::validate_settings_multi_concern": {
       "id": "review::.::holistic::design_coherence::validate_settings_multi_concern",
@@ -70174,11 +70219,11 @@
         "reasoning": "",
         "summary_hash": "e2fe3086"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Split validateSettings into 5 per-concern dispatchers: validateSettingsRulesets/Labels/DeleteOrphaned/Repo/CodeScanning. validateSettings now thin orchestrator.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:14:44+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70186,7 +70231,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Split validateSettings into 5 per-concern dispatchers: validateSettingsRulesets/Labels/DeleteOrphaned/Repo/CodeScanning. validateSettings now thin orchestrator. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:14:44+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::contract_coherence::rethrow_name_but_returns": {
       "id": "review::.::holistic::contract_coherence::rethrow_name_but_returns",
