@@ -1,6 +1,8 @@
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatCountEntry } from "./settings-report.js";
+import type { LifecycleActionKind } from "../lifecycle/types.js";
+import type { RepoVisibility } from "../config/index.js";
 
 export interface LifecycleReport {
   actions: LifecycleAction[];
@@ -14,11 +16,11 @@ export interface LifecycleReport {
 
 export interface LifecycleAction {
   repoName: string;
-  action: "existed" | "created" | "forked" | "migrated";
+  action: LifecycleActionKind;
   upstream?: string;
   source?: string;
   settings?: {
-    visibility?: string;
+    visibility?: RepoVisibility;
     description?: string;
   };
 }

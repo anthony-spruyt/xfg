@@ -1,11 +1,13 @@
 import type { FileContent, RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../repo/detector.js";
+import type { ActiveAction } from "../settings/index.js";
 import type {
   ILocalGitOps,
   IGitOps,
   GitAuthOptions,
   GitOpsOptions,
   FileAction,
+  FileActionKind,
 } from "../vcs/index.js";
 import type { DiffStats } from "./diff-utils.js";
 import type { ILogger } from "../shared/logger.js";
@@ -21,7 +23,7 @@ export type GitOpsFactory = (
 export interface FileWriteResult {
   fileName: string;
   content: string | null;
-  action: "create" | "update" | "delete" | "skip";
+  action: FileActionKind;
   diffLines?: string[];
   /** Git file mode. Only set for executable files ("100755"). "100644" is included
    *  in the union for type completeness — non-executable files omit this field. */
@@ -183,7 +185,7 @@ export interface ProcessorOptions {
 
 export interface FileChangeDetail {
   path: string;
-  action: "create" | "update" | "delete";
+  action: ActiveAction;
   diffLines?: string[];
 }
 

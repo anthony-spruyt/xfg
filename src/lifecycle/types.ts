@@ -1,13 +1,15 @@
-import type { RepoInfo } from "../repo/detector.js";
-import type { RepoConfig } from "../config/index.js";
+import type { RepoInfo, RepoPlatform } from "../repo/detector.js";
+import type { RepoConfig, RepoVisibility } from "../config/index.js";
 
-export type LifecyclePlatform = "github" | "azure-devops" | "gitlab";
+export type LifecyclePlatform = RepoPlatform;
 
 export interface LifecycleResult {
   repoInfo: RepoInfo;
   action: "existed" | "created" | "forked" | "migrated";
   skipped?: boolean;
 }
+
+export type LifecycleActionKind = LifecycleResult["action"];
 
 export interface LifecycleOptions {
   dryRun: boolean;
@@ -22,7 +24,7 @@ export interface LifecycleOptions {
  * Subset of GitHubRepoSettings that makes sense for creation.
  */
 export interface CreateRepoSettings {
-  visibility?: "public" | "private" | "internal";
+  visibility?: RepoVisibility;
   description?: string;
   hasIssues?: boolean;
   hasWiki?: boolean;

@@ -147,6 +147,8 @@ export interface FileAction {
   action: "create" | "update" | "skip" | "delete";
 }
 
+export type FileActionKind = FileAction["action"];
+
 export interface FileChange {
   path: string;
   content: string | null; // null = deletion

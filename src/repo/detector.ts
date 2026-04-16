@@ -6,7 +6,7 @@ import type {
   RepoInfo,
 } from "./types.js";
 
-type RepoType = "github" | "azure-devops" | "gitlab";
+export type RepoPlatform = "github" | "azure-devops" | "gitlab";
 
 interface RepoDetectorContext {
   githubHosts?: string[];
@@ -87,7 +87,7 @@ function isGitLabStyleUrl(gitUrl: string): boolean {
 export function detectRepoType(
   gitUrl: string,
   context?: RepoDetectorContext
-): RepoType {
+): RepoPlatform {
   if (context?.githubHosts?.length) {
     const host = extractHostFromUrl(gitUrl)?.toLowerCase();
     const normalizedHosts = context.githubHosts.map((h) => h.toLowerCase());
