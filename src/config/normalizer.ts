@@ -420,6 +420,33 @@ function mergeGroupPROptions(
 }
 
 /**
+ * Merges a named-entry map (e.g. rulesets, labels) where overlay entries
+ * extend or replace base entries. `inherit: false` in the overlay discards
+ * the base; `false` values mark explicit opt-outs. The merge callback runs
+ * when both base and overlay have an entry with the same name.
+ */
+function mergeNamedEntries<T>(
+  base: Record<string, T | false> | undefined,
+  overlay: Record<string, T | false | boolean | undefined>,
+  merge: (existing: T | false | undefined, entry: T) => T
+): Record<string, T | false> {
+  const inherit = shouldInherit(overlay);
+  const result: Record<string, T | false> = inherit ? { ...(base ?? {}) } : {};
+
+  for (const [name, entry] of Object.entries(overlay)) {
+    if (name === "inherit") continue;
+    if (entry === false) {
+      result[name] = false;
+    } else if (typeof entry === "object" && entry !== null) {
+      const existing = result[name];
+      result[name] = merge(existing, entry as T);
+    }
+  }
+
+  return result;
+}
+
+/**
  * Merges two raw settings layers (root/group into accumulated).
  * Unlike mergeSettings(), this operates on raw types and returns raw types,
  * preserving false values and inherit keys for downstream processing.
@@ -436,23 +463,14 @@ function mergeRawSettings(
 
   // Merge rulesets
   if (overlay.rulesets) {
-    const inheritRulesets = shouldInherit(overlay.rulesets);
-    if (!inheritRulesets) {
-      // Discard accumulated rulesets, start fresh with overlay's own
-      result.rulesets = {};
-    }
-    if (!result.rulesets) result.rulesets = {};
-    for (const [name, ruleset] of Object.entries(overlay.rulesets)) {
-      if (name === "inherit") continue;
-      if (ruleset === false) {
-        result.rulesets[name] = false;
-      } else if (typeof ruleset === "object") {
-        const existing = result.rulesets[name];
-        result.rulesets[name] = existing
-          ? mergeRuleset(existing, ruleset)
-          : structuredClone(ruleset);
-      }
-    }
+    result.rulesets = mergeNamedEntries(
+      result.rulesets,
+      overlay.rulesets,
+      (existing, entry) =>
+        existing && typeof existing === "object"
+          ? mergeRuleset(existing as Ruleset, entry as Ruleset)
+          : structuredClone(entry)
+    );
   }
 
   // Merge repo settings: overlay replaces base (shallow merge, same as mergeSettings)
@@ -469,23 +487,14 @@ function mergeRawSettings(
 
   // Merge labels
   if (overlay.labels) {
-    const inheritLabels = shouldInherit(overlay.labels);
-    if (!inheritLabels) {
-      result.labels = {};
-    }
-    if (!result.labels) result.labels = {};
-    for (const [name, label] of Object.entries(overlay.labels)) {
-      if (name === "inherit") continue;
-      if (label === false) {
-        result.labels[name] = false;
-      } else if (typeof label === "object") {
-        const existing = result.labels[name];
-        result.labels[name] = {
-          ...(existing && typeof existing === "object" ? existing : {}),
-          ...label,
-        };
-      }
-    }
+    result.labels = mergeNamedEntries(
+      result.labels,
+      overlay.labels,
+      (existing, entry) => ({
+        ...(existing && typeof existing === "object" ? existing : {}),
+        ...(entry as Label),
+      })
+    );
   }
 
   // Merge code scanning: overlay fully replaces base (same semantics as mergeSettings)

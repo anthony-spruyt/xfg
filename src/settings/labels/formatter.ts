@@ -37,15 +37,21 @@ export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
     delete: deletes,
     unchanged,
   } = countActions(changes);
-  const createChanges = changes.filter((c) => c.action === "create");
-  const updateChanges = changes.filter((c) => c.action === "update");
-  const deleteChanges = changes.filter((c) => c.action === "delete");
-  const unchangedItems = changes.filter((c) => c.action === "unchanged");
+
+  const grouped: Record<LabelAction, LabelChange[]> = {
+    create: [],
+    update: [],
+    delete: [],
+    unchanged: [],
+  };
+  for (const c of changes) {
+    grouped[c.action].push(c);
+  }
 
   // Format creates
-  if (createChanges.length > 0) {
+  if (grouped.create.length > 0) {
     lines.push(chalk.bold("  Create:"));
-    for (const change of createChanges) {
+    for (const change of grouped.create) {
       lines.push(chalk.green(`    + label "${change.name}"`));
       if (change.desired) {
         lines.push(chalk.green(`        color: "${change.desired.color}"`));
@@ -65,9 +71,9 @@ export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
   }
 
   // Format updates
-  if (updateChanges.length > 0) {
+  if (grouped.update.length > 0) {
     lines.push(chalk.bold("  Update:"));
-    for (const change of updateChanges) {
+    for (const change of grouped.update) {
       if (change.newName) {
         lines.push(
           chalk.yellow(
@@ -104,9 +110,9 @@ export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
   }
 
   // Format deletes
-  if (deleteChanges.length > 0) {
+  if (grouped.delete.length > 0) {
     lines.push(chalk.bold("  Delete:"));
-    for (const change of deleteChanges) {
+    for (const change of grouped.delete) {
       lines.push(chalk.red(`    - label "${change.name}"`));
       entries.push({ name: change.name, action: "delete" });
     }
@@ -114,7 +120,7 @@ export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
   }
 
   // Unchanged (entries only, no output lines)
-  for (const change of unchangedItems) {
+  for (const change of grouped.unchanged) {
     entries.push({ name: change.name, action: "unchanged" });
   }
 
