@@ -12,8 +12,8 @@
     "auto_resolved": 1095,
     "deferred": 0,
     "false_positive": 87,
-    "fixed": 255,
-    "open": 225,
+    "fixed": 257,
+    "open": 223,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 5,
-        "fixed": 101,
-        "open": 4,
+        "fixed": 102,
+        "open": 3,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 50,
-        "fixed": 116,
-        "open": 41,
+        "fixed": 117,
+        "open": 40,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -94,8 +94,8 @@
       "source": "holistic",
       "assessed_at": "2026-04-16T05:39:25+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-16T05:39:25+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T09:20:50+00:00"
     },
     "convention_outlier": {
       "score": 91.5,
@@ -3187,13 +3187,13 @@
       "strict": 93.5,
       "verified_strict_score": 93.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.935,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.65,
           "assessment_score": 93.5,
           "placeholder": false,
@@ -68667,11 +68667,11 @@
         "reasoning": "",
         "summary_hash": "9e22bfd1"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "src/repo/index.ts barrel exists with all public re-exports (types, detector, utils, metadata-provider).",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:20:50+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -68679,7 +68679,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually src/repo/index.ts barrel exists with all public re-exports (types, detector, utils, metadata-provider). and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:20:50+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::cross_module_architecture::shared_imports_repo_type": {
       "id": "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
@@ -68706,11 +68712,11 @@
         "reasoning": "",
         "summary_hash": "f419f2f1"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Inverted dependency: gh-api-utils defines local GitHubApiTarget, xfg-template defines local RepoDisplayInfo \u2014 both structurally compatible with repo types. shared/ no longer imports repo/.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:20:49+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -68718,7 +68724,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Inverted dependency: gh-api-utils defines local GitHubApiTarget, xfg-template defines local RepoDisplayInfo \u2014 both structurally compatible with repo types. shared/ no longer imports repo/. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:20:49+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli": {
       "id": "review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli",

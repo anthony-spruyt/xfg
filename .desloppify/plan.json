@@ -1,10 +1,8 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-16T09:15:12+00:00",
+  "updated": "2026-04-16T09:20:50+00:00",
   "queue_order": [
-    "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
-    "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
     "review::.::holistic::contract_coherence::rethrow_name_but_returns",
     "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
     "review::.::holistic::naming_quality::check_existing_pr_returns_url",
@@ -405,7 +403,7 @@
       "skipped_at_scan": 199
     }
   },
-  "active_cluster": null,
+  "active_cluster": "cross-module-architecture-layering",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -2684,14 +2682,14 @@
     "review::.::holistic::cross_module_architecture::repo_module_missing_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
       "created_at": "2026-04-16T07:26:24+00:00",
-      "cluster": "cross-module-architecture-layering",
-      "updated_at": "2026-04-16T07:26:24+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T09:20:50+00:00"
     },
     "review::.::holistic::cross_module_architecture::shared_imports_repo_type": {
       "issue_id": "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
       "created_at": "2026-04-16T07:26:24+00:00",
-      "cluster": "cross-module-architecture-layering",
-      "updated_at": "2026-04-16T07:26:24+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T09:20:50+00:00"
     },
     "review::.::holistic::contract_coherence::rethrow_name_but_returns": {
       "issue_id": "review::.::holistic::contract_coherence::rethrow_name_but_returns",
@@ -4547,11 +4545,11 @@
       "name": "cross-module-architecture-layering",
       "description": "Relocate gh-api-utils and xfg-template RepoInfo couplings out of src/shared/ to restore shared-as-leaf layering, and fix the repo barrel import angle at the same time",
       "issue_ids": [
-        "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
-        "review::.::holistic::cross_module_architecture::shared_imports_repo_type"
+        "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
+        "review::.::holistic::cross_module_architecture::repo_module_missing_barrel"
       ],
       "created_at": "2026-04-16T07:25:43+00:00",
-      "updated_at": "2026-04-16T07:33:20+00:00",
+      "updated_at": "2026-04-16T09:20:40+00:00",
       "auto": false,
       "cluster_key": "",
       "action": null,
@@ -4570,7 +4568,8 @@
           "issue_refs": [
             "shared_imports_repo_type",
             "repo_module_missing_barrel"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Verify madge graph after shared/repo layering fix",
@@ -4579,7 +4578,8 @@
           "issue_refs": [
             "repo_module_missing_barrel",
             "shared_imports_repo_type"
-          ]
+          ],
+          "done": true
         }
       ]
     },
@@ -31677,6 +31677,78 @@
         "action": "clear",
         "previous": "design-coherence-factory-consolidation"
       }
+    },
+    {
+      "timestamp": "2026-04-16T09:20:20+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "cross-module-architecture-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:20:40+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "cross-module-architecture-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:20:49+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::shared_imports_repo_type"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Inverted dependency: gh-api-utils defines local GitHubApiTarget, xfg-template defines local RepoDisplayInfo \u2014 both structurally compatible with repo types. shared/ no longer imports repo/.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T09:20:50+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::shared_imports_repo_type"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Inverted dependency: gh-api-utils defines local GitHubApiTarget, xfg-template defines local RepoDisplayInfo \u2014 both structurally compatible with repo types. shared/ no longer imports repo/.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Inverted dependency: gh-api-utils defines local GitHubApiTarget, xfg-template defines local RepoDisplayInfo \u2014 both structurally compatible with repo types. shared/ no longer imports repo/. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:20:50+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::repo_module_missing_barrel"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "src/repo/index.ts barrel exists with all public re-exports (types, detector, utils, metadata-provider).",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T09:20:50+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::repo_module_missing_barrel"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "src/repo/index.ts barrel exists with all public re-exports (types, detector, utils, metadata-provider).",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually src/repo/index.ts barrel exists with all public re-exports (types, detector, utils, metadata-provider). and I am not gaming the score."
+      }
     }
   ],
   "epic_triage_meta": {
@@ -33289,7 +33361,10 @@
       "cluster_name": null
     }
   ],
-  "uncommitted_issues": [],
+  "uncommitted_issues": [
+    "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
+    "review::.::holistic::cross_module_architecture::repo_module_missing_barrel"
+  ],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 198,
