@@ -1,332 +1,42 @@
 {
-  "command": "show",
-  "query": "src",
-  "status_filter": "open",
-  "total": 20,
-  "summary": {
-    "by_tier": {
-      "T2": 3,
-      "T3": 17
-    },
-    "by_detector": {
-      "test_coverage": 10,
-      "smells": 10
-    },
-    "files": 15
+  "command": "next",
+  "items": [
+    {
+      "id": "workflow::create-plan",
+      "confidence": "high",
+      "detector": "workflow",
+      "file": ".",
+      "summary": "Create prioritized plan from review results",
+      "detail": {
+        "planning_tools": [
+          {
+            "label": "Codex",
+            "command": "desloppify plan triage --run-stages --runner codex --only-stages strategize"
+          },
+          {
+            "label": "Claude",
+            "command": "desloppify plan triage --run-stages --runner claude --only-stages strategize"
+          },
+          {
+            "label": "Manual fallback",
+            "command": "desloppify plan triage --stage strategize --report '\"{\"score_trend\":\"stable\",\"debt_trend\":\"stable\"}\"'"
+          },
+          {
+            "label": "Dashboard",
+            "command": "desloppify plan triage"
+          }
+        ]
+      },
+      "status": null,
+      "kind": "workflow_action",
+      "primary_command": "desloppify plan triage --run-stages --runner codex",
+      "queue_position": 1
+    }
+  ],
+  "queue": {
+    "total": 1,
+    "mode": "execution"
   },
-  "by_file": {
-    "src/cli/sync-command.ts": [
-      {
-        "id": "smells::src/cli/sync-command.ts::async_no_await",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "2x Async functions without await",
-        "detail": {
-          "smell_id": "async_no_await",
-          "severity": "medium",
-          "count": 2,
-          "lines": [
-            196,
-            644
-          ]
-        }
-      },
-      {
-        "id": "smells::src/cli/sync-command.ts::high_cyclomatic_complexity",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "1x High cyclomatic complexity (>15 branches)",
-        "detail": {
-          "smell_id": "high_cyclomatic_complexity",
-          "severity": "medium",
-          "count": 1,
-          "lines": [
-            431
-          ]
-        }
-      },
-      {
-        "id": "smells::src/cli/sync-command.ts::nested_closure",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "1x Deeply nested closures \u2014 extract to module level",
-        "detail": {
-          "smell_id": "nested_closure",
-          "severity": "medium",
-          "count": 1,
-          "lines": [
-            217
-          ]
-        }
-      }
-    ],
-    "src/config/formatter.ts": [
-      {
-        "id": "smells::src/config/formatter.ts::high_cyclomatic_complexity",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "1x High cyclomatic complexity (>15 branches)",
-        "detail": {
-          "smell_id": "high_cyclomatic_complexity",
-          "severity": "medium",
-          "count": 1,
-          "lines": [
-            72
-          ]
-        }
-      },
-      {
-        "id": "test_coverage::src/config/formatter.ts::transitive_only",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "No direct tests (142 LOC, 1 importers) \u2014 covered only via imports from tested modules",
-        "detail": {
-          "kind": "transitive_only",
-          "loc": 142,
-          "importer_count": 1,
-          "loc_weight": 11.916375287812984
-        }
-      }
-    ],
-    "src/config/loader.ts": [
-      {
-        "id": "smells::src/config/loader.ts::sort_no_comparator",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "1x .sort() without comparator function",
-        "detail": {
-          "smell_id": "sort_no_comparator",
-          "severity": "medium",
-          "count": 1,
-          "lines": [
-            67
-          ]
-        }
-      },
-      {
-        "id": "test_coverage::src/config/loader.ts::transitive_only",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "No direct tests (45 LOC, 1 importers) \u2014 covered only via imports from tested modules",
-        "detail": {
-          "kind": "transitive_only",
-          "loc": 45,
-          "importer_count": 1,
-          "loc_weight": 6.708203932499369
-        }
-      }
-    ],
-    "src/config/normalizer.ts": [
-      {
-        "id": "smells::src/config/normalizer.ts::high_cyclomatic_complexity",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "5x High cyclomatic complexity (>15 branches)",
-        "detail": {
-          "smell_id": "high_cyclomatic_complexity",
-          "severity": "medium",
-          "count": 5,
-          "lines": [
-            122,
-            180,
-            223,
-            428,
-            641
-          ]
-        }
-      },
-      {
-        "id": "test_coverage::src/config/normalizer.ts::transitive_only",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "No direct tests (704 LOC, 1 importers) \u2014 covered only via imports from tested modules",
-        "detail": {
-          "kind": "transitive_only",
-          "loc": 704,
-          "importer_count": 1,
-          "loc_weight": 26.5329983228432
-        }
-      }
-    ],
-    "src/cli/branch-utils.ts": [
-      {
-        "id": "test_coverage::src/cli/branch-utils.ts::transitive_only",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "No direct tests (37 LOC, 1 importers) \u2014 covered only via imports from tested modules",
-        "detail": {
-          "kind": "transitive_only",
-          "loc": 37,
-          "importer_count": 1,
-          "loc_weight": 6.082762530298219
-        }
-      }
-    ],
-    "src/cli/lifecycle-report-builder.ts": [
-      {
-        "id": "test_coverage::src/cli/lifecycle-report-builder.ts::transitive_only",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "No direct tests (25 LOC, 1 importers) \u2014 covered only via imports from tested modules",
-        "detail": {
-          "kind": "transitive_only",
-          "loc": 25,
-          "importer_count": 1,
-          "loc_weight": 5.0
-        }
-      }
-    ],
-    "src/cli/settings-report-builder.ts": [
-      {
-        "id": "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "1x High cyclomatic complexity (>15 branches)",
-        "detail": {
-          "smell_id": "high_cyclomatic_complexity",
-          "severity": "medium",
-          "count": 1,
-          "lines": [
-            40
-          ]
-        }
-      }
-    ],
-    "src/cli/types.ts": [
-      {
-        "id": "test_coverage::src/cli/types.ts::transitive_only",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "No direct tests (96 LOC, 2 importers) \u2014 covered only via imports from tested modules",
-        "detail": {
-          "kind": "transitive_only",
-          "loc": 96,
-          "importer_count": 2,
-          "loc_weight": 9.797958971132712
-        }
-      }
-    ],
-    "src/config/extends-resolver.ts": [
-      {
-        "id": "test_coverage::src/config/extends-resolver.ts::transitive_only",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "No direct tests (88 LOC, 2 importers) \u2014 covered only via imports from tested modules",
-        "detail": {
-          "kind": "transitive_only",
-          "loc": 88,
-          "importer_count": 2,
-          "loc_weight": 9.38083151964686
-        }
-      }
-    ],
-    "src/config/file-reference-resolver.ts": [
-      {
-        "id": "smells::src/config/file-reference-resolver.ts::high_cyclomatic_complexity",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "1x High cyclomatic complexity (>15 branches)",
-        "detail": {
-          "smell_id": "high_cyclomatic_complexity",
-          "severity": "medium",
-          "count": 1,
-          "lines": [
-            133
-          ]
-        }
-      }
-    ],
-    "src/config/types.ts": [
-      {
-        "id": "test_coverage::src/config/types.ts::transitive_only",
-        "tier": 2,
-        "confidence": "medium",
-        "summary": "No direct tests (522 LOC, 7 importers) \u2014 covered only via imports from tested modules",
-        "detail": {
-          "kind": "transitive_only",
-          "loc": 522,
-          "importer_count": 7,
-          "loc_weight": 22.847319317591726,
-          "complexity_score": 71
-        }
-      }
-    ],
-    "src/config/validator.ts": [
-      {
-        "id": "smells::src/config/validator.ts::high_cyclomatic_complexity",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "5x High cyclomatic complexity (>15 branches)",
-        "detail": {
-          "smell_id": "high_cyclomatic_complexity",
-          "severity": "medium",
-          "count": 5,
-          "lines": [
-            62,
-            216,
-            656,
-            908,
-            1033
-          ]
-        }
-      }
-    ],
-    "src/config/validators/repo-settings-validator.ts": [
-      {
-        "id": "smells::src/config/validators/repo-settings-validator.ts::high_cyclomatic_complexity",
-        "tier": 3,
-        "confidence": "medium",
-        "summary": "1x High cyclomatic complexity (>15 branches)",
-        "detail": {
-          "smell_id": "high_cyclomatic_complexity",
-          "severity": "medium",
-          "count": 1,
-          "lines": [
-            16
-          ]
-        }
-      }
-    ],
-    "src/shared/errors.ts": [
-      {
-        "id": "test_coverage::src/shared/errors.ts::transitive_only",
-        "tier": 2,
-        "confidence": "medium",
-        "summary": "No direct tests (41 LOC, 31 importers) \u2014 covered only via imports from tested modules",
-        "detail": {
-          "kind": "transitive_only",
-          "loc": 41,
-          "importer_count": 31,
-          "loc_weight": 6.4031242374328485
-        }
-      }
-    ],
-    "src/sync/types.ts": [
-      {
-        "id": "test_coverage::src/sync/types.ts::transitive_only",
-        "tier": 2,
-        "confidence": "medium",
-        "summary": "No direct tests (272 LOC, 12 importers) \u2014 covered only via imports from tested modules",
-        "detail": {
-          "kind": "transitive_only",
-          "loc": 272,
-          "importer_count": 12,
-          "loc_weight": 16.492422502470642,
-          "complexity_score": 30
-        }
-      }
-    ]
-  },
-  "total_matching": 52,
-  "hidden": {
-    "by_detector": {
-      "test_coverage": 19,
-      "smells": 13
-    },
-    "total": 32
-  },
-  "noise_budget": 10,
-  "noise_global_budget": 0,
   "narrative": {
     "phase": "stagnation",
     "headline": "All T1 items cleared!",
@@ -334,8 +44,8 @@
       "lowest_dimensions": [
         {
           "name": "Test health",
-          "strict": 63.9,
-          "failing": 29,
+          "strict": 66.2,
+          "failing": 27,
           "impact": 0.0
         },
         {
@@ -363,9 +73,9 @@
         },
         {
           "name": "Test health",
-          "lenient": 68.8,
-          "strict": 63.9,
-          "gap": 4.9,
+          "lenient": 71.0,
+          "strict": 66.2,
+          "gap": 4.8,
           "wontfix_count": 0
         },
         {
@@ -458,12 +168,16 @@
       {
         "type": "refactor",
         "detector": "test_coverage",
-        "count": 29,
-        "description": "29 test_coverage work items \u2014 review test coverage gaps \u2014 focus on critical modules with many importers first; defer test writing until code quality issues are resolved",
-        "command": "desloppify show test_coverage --status open",
+        "count": 27,
+        "description": "27 test_coverage issues in 1 cluster(s) \u2014 run `desloppify next`",
+        "command": "desloppify next",
         "impact": 0.0,
         "dimension": "Test health",
         "priority": 6,
+        "clusters": [
+          "auto/test_coverage-transitive_only"
+        ],
+        "cluster_count": 1,
         "lane": "test_coverage"
       },
       {
@@ -502,8 +216,8 @@
       {
         "type": "manual_fix",
         "detector": "smells",
-        "count": 98,
-        "description": "98 smells issues \u2014 inspect with `desloppify next` and fix manually",
+        "count": 95,
+        "description": "95 smells issues \u2014 inspect with `desloppify next` and fix manually",
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
@@ -514,11 +228,16 @@
         "type": "manual_fix",
         "detector": "exports",
         "count": 26,
-        "description": "26 exports work items \u2014 run `knip --fix` to remove dead exports",
-        "command": "desloppify show exports --status open",
+        "description": "26 exports issues in 2 cluster(s) \u2014 run `desloppify next`",
+        "command": "desloppify next",
         "impact": 0.0,
         "dimension": "Code quality",
         "priority": 11,
+        "clusters": [
+          "auto/exports-export",
+          "auto/exports-type"
+        ],
+        "cluster_count": 2,
         "lane": "refactor_3"
       },
       {
@@ -536,7 +255,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 208,
+        "total_count": 203,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -560,7 +279,7 @@
             7,
             10
           ],
-          "file_count": 95,
+          "file_count": 94,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -605,7 +324,7 @@
           "actions": [
             6
           ],
-          "file_count": 29,
+          "file_count": 27,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -619,13 +338,13 @@
         {
           "name": "dead-useeffect",
           "detector": "smells",
-          "open_count": 98,
+          "open_count": 95,
           "command": "desloppify autofix dead-useeffect --dry-run"
         },
         {
           "name": "empty-if-chain",
           "detector": "smells",
-          "open_count": 98,
+          "open_count": 95,
           "command": "desloppify autofix empty-if-chain --dry-run"
         }
       ],
@@ -672,8 +391,8 @@
     ],
     "strict_target": {
       "target": 85.0,
-      "current": 90.9,
-      "gap": -5.9,
+      "current": 91.0,
+      "gap": -6.0,
       "state": "above",
       "warning": null
     },
@@ -693,6 +412,651 @@
       "fp_calibration_test_coverage_production": 3
     }
   },
+  "agent_notes": [
+    "Do NOT use `desloppify plan skip` unless the user explicitly asks you to skip an item.",
+    "If you cannot fix an item, report it and move to the next one.",
+    "For cluster items: if the autofix_hint finds 0 results, drill into individual issues with the primary_command."
+  ],
+  "plan": {
+    "active": true,
+    "focus": null,
+    "clusters": [
+      {
+        "name": "token-resolution",
+        "description": "Extract resolveGitHubToken from gh-api-utils.ts into dedicated auth module, centralize token resolution to happen once per repo",
+        "item_count": 3
+      },
+      {
+        "name": "accepted-debt",
+        "description": "Intentional design decisions to skip: unused token param in Azure/GitLab (documented interface sharing), merge mode convention (internally consistent), isPermanentError string matching (pragmatic)",
+        "item_count": 3
+      },
+      {
+        "name": "stale-findings",
+        "description": "Findings likely already fixed in prior commits (FileChange consolidation, Logger DI fix). Verify with rescan then resolve.",
+        "item_count": 3
+      },
+      {
+        "name": "barrel-hygiene",
+        "description": "Complete barrel exports in shared/ and vcs/, fix all cross-module import bypasses",
+        "item_count": 6
+      },
+      {
+        "name": "type-dedup",
+        "description": "Eliminate duplicate types, functions, and logic across codebase",
+        "item_count": 7
+      },
+      {
+        "name": "stale-docs",
+        "description": "Fix stale docstrings and JSDoc that contradict implementation",
+        "item_count": 4
+      },
+      {
+        "name": "param-sprawl",
+        "description": "Reduce positional parameter counts by grouping into context objects",
+        "item_count": 3
+      },
+      {
+        "name": "error-gaps",
+        "description": "Fix inconsistent error handling: swallowed errors, string matching, missing try/catch",
+        "item_count": 3
+      },
+      {
+        "name": "type-narrowing",
+        "description": "Strengthen type safety: link validation arrays to types, narrow string fields, remove double casts",
+        "item_count": 3
+      },
+      {
+        "name": "code-cleanup",
+        "description": "Fix logic issues: redundant checks, unreachable code, misplaced utilities",
+        "item_count": 3
+      },
+      {
+        "name": "api-consolidation",
+        "description": "Move misplaced utilities, add type overloads, narrow action parameter types \u2014 improves type_safety, api_surface_coherence",
+        "item_count": 3
+      },
+      {
+        "name": "design-coherence-cleanup",
+        "description": "Complete round 3 consolidation: use countActions utility, use formatCountEntry, single-pass countActions \u2014 improves design_coherence, logic_clarity",
+        "item_count": 3
+      },
+      {
+        "name": "module-boundary-fixes",
+        "description": "Fix vcs barrel exports, remove dead shared barrel, share PR strategy instance \u2014 improves cross_module_architecture, mid_level_elegance",
+        "item_count": 3
+      },
+      {
+        "name": "quick-wins",
+        "description": "Trivial fixes: simplify boolean return, remove formulaic comments, extract leaf renderer, defer sync-command singletons \u2014 improves logic_clarity, ai_generated_debt, low_level_elegance, initialization_coupling",
+        "item_count": 4
+      },
+      {
+        "name": "test-coverage",
+        "description": "Write unit tests for gh-api-utils.ts pure functions and resolveGitHubToken branching \u2014 improves test_strategy",
+        "item_count": 2
+      },
+      {
+        "name": "quick-cleanups",
+        "description": "Single-edit cleanups: remove comments, fix param name, use existing helpers",
+        "item_count": 5
+      },
+      {
+        "name": "import-cleanup",
+        "description": "Fix import paths to use canonical locations and barrel exports",
+        "item_count": 2
+      },
+      {
+        "name": "consolidate-utilities",
+        "description": "Reuse existing shared utilities instead of reimplementing",
+        "item_count": 4
+      },
+      {
+        "name": "type-safety-fixes",
+        "description": "Add function overloads and remove unsafe casts",
+        "item_count": 2
+      },
+      {
+        "name": "error-handling",
+        "description": "Consistent error wrapping across PR strategies",
+        "item_count": 1
+      },
+      {
+        "name": "naming-alignment",
+        "description": "Align naming conventions across codebase",
+        "item_count": 2
+      },
+      {
+        "name": "mid-level-refactor",
+        "description": "Reduce redundant IO and implicit mutation contracts",
+        "item_count": 2
+      },
+      {
+        "name": "api-refactor",
+        "description": "Align constructor signatures with options bag pattern",
+        "item_count": 1
+      },
+      {
+        "name": "output-structural-debt",
+        "description": "Fix import cycle between sync-report.ts and unified-summary.ts, delete dead output barrel",
+        "item_count": 3
+      },
+      {
+        "name": "output-dead-code",
+        "description": "Remove dead old summary API (formatSummary/writeSummary/SummaryData) superseded by unified-summary",
+        "item_count": 1
+      },
+      {
+        "name": "quick-consistency-fixes",
+        "description": "Standalone 1-2 file fixes: restating comments, options bag, error wrapping, type alias usage",
+        "item_count": 5
+      },
+      {
+        "name": "cli-cleanup",
+        "description": "Fix module-level singletons and add unit tests for CLI entry point",
+        "item_count": 2
+      },
+      {
+        "name": "dead-summary-cleanup",
+        "description": "Remove dead old summary API code: delete summary-utils.ts, remove formatSummary/writeSummary/SummaryData and all private helpers from github-summary.ts, update tests",
+        "item_count": 2
+      },
+      {
+        "name": "type-safety-docs",
+        "description": "Add documenting comment to withGitHubGuards in base-processor.ts explaining the TResult cast invariant",
+        "item_count": 2
+      },
+      {
+        "name": "output-renderSyncLines-fix",
+        "description": "Move renderSyncLines from unified-summary.ts to sync-report.ts, fixing dependency inversion",
+        "item_count": 2
+      },
+      {
+        "name": "lifecycle-cleanup",
+        "description": "Extract shared flag-building helper and standardize polling loop idiom in github-lifecycle-provider.ts",
+        "item_count": 2
+      },
+      {
+        "name": "comment-cleanup",
+        "description": "Fix mispositioned/restating comments: orphan docblock, type-labeling comments, missing loop explanation",
+        "item_count": 3
+      },
+      {
+        "name": "design-fixes",
+        "description": "Use countActions utility in settings-report-builder.ts and refactor ruleset update params",
+        "item_count": 2
+      },
+      {
+        "name": "init-fix",
+        "description": "Defer package.json readFileSync from module scope to lazy callback in program.ts",
+        "item_count": 1
+      },
+      {
+        "name": "auto/test_coverage-transitive_only",
+        "description": "Fix 28 test coverage issues",
+        "item_count": 28
+      },
+      {
+        "name": "auto/exports-export",
+        "description": "Fix 3 exports issues",
+        "item_count": 3
+      },
+      {
+        "name": "auto/exports-type",
+        "description": "Fix 23 exports issues",
+        "item_count": 23
+      }
+    ],
+    "total_ordered": 1,
+    "total_skipped": 37,
+    "plan_overrides_narrative": true
+  },
+  "overall_score": 92.2,
+  "objective_score": 92.9,
+  "strict_score": 91.0,
+  "scorecard_dimensions": [
+    {
+      "name": "File health",
+      "score": 96.4,
+      "strict": 96.4,
+      "checks": 117,
+      "failing": 6,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "AI generated debt",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "ai_generated_debt"
+      ]
+    },
+    {
+      "name": "API coherence",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "api_surface_coherence"
+      ]
+    },
+    {
+      "name": "Abstraction fit",
+      "score": 91.5,
+      "strict": 91.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "abstraction_fitness"
+      ]
+    },
+    {
+      "name": "Auth consistency",
+      "score": 95.0,
+      "strict": 95.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "authorization_consistency"
+      ]
+    },
+    {
+      "name": "Code quality",
+      "score": 97.0,
+      "strict": 94.5,
+      "checks": 687,
+      "failing": 40,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "Contracts",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "contract_coherence"
+      ]
+    },
+    {
+      "name": "Convention drift",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "convention_outlier"
+      ]
+    },
+    {
+      "name": "Cross-module arch",
+      "score": 91.5,
+      "strict": 91.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "cross_module_architecture"
+      ]
+    },
+    {
+      "name": "Design coherence",
+      "score": 91.5,
+      "strict": 91.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "design_coherence"
+      ]
+    },
+    {
+      "name": "Duplication",
+      "score": 99.5,
+      "strict": 86.5,
+      "checks": 293,
+      "failing": 2,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "Elegance",
+      "score": 90.5,
+      "strict": 90.5,
+      "checks": 30,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "high_level_elegance",
+        "low_level_elegance",
+        "mid_level_elegance"
+      ]
+    },
+    {
+      "name": "Error consistency",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "error_consistency"
+      ]
+    },
+    {
+      "name": "Logic clarity",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "logic_clarity"
+      ]
+    },
+    {
+      "name": "Naming quality",
+      "score": 92.5,
+      "strict": 92.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "naming_quality"
+      ]
+    },
+    {
+      "name": "Security",
+      "score": 100.0,
+      "strict": 95.5,
+      "checks": 234,
+      "failing": 0,
+      "tier": 4,
+      "subjective": false
+    },
+    {
+      "name": "Stale migration",
+      "score": 95.0,
+      "strict": 95.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "incomplete_migration"
+      ]
+    },
+    {
+      "name": "Structure nav",
+      "score": 92.0,
+      "strict": 92.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "package_organization"
+      ]
+    },
+    {
+      "name": "Test health",
+      "score": 71.0,
+      "strict": 66.2,
+      "checks": 1159,
+      "failing": 27,
+      "tier": 4,
+      "subjective": false
+    },
+    {
+      "name": "Test strategy",
+      "score": 89.5,
+      "strict": 89.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "test_strategy"
+      ]
+    }
+  ],
+  "subjective_measures": [
+    {
+      "name": "AI generated debt",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "ai_generated_debt"
+      ]
+    },
+    {
+      "name": "API coherence",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "api_surface_coherence"
+      ]
+    },
+    {
+      "name": "Abstraction fit",
+      "score": 91.5,
+      "strict": 91.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "abstraction_fitness"
+      ]
+    },
+    {
+      "name": "Auth consistency",
+      "score": 95.0,
+      "strict": 95.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "authorization_consistency"
+      ]
+    },
+    {
+      "name": "Contracts",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "contract_coherence"
+      ]
+    },
+    {
+      "name": "Convention drift",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "convention_outlier"
+      ]
+    },
+    {
+      "name": "Cross-module arch",
+      "score": 91.5,
+      "strict": 91.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "cross_module_architecture"
+      ]
+    },
+    {
+      "name": "Design coherence",
+      "score": 91.5,
+      "strict": 91.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "design_coherence"
+      ]
+    },
+    {
+      "name": "Elegance",
+      "score": 90.5,
+      "strict": 90.5,
+      "checks": 30,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "high_level_elegance",
+        "low_level_elegance",
+        "mid_level_elegance"
+      ]
+    },
+    {
+      "name": "Error consistency",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "error_consistency"
+      ]
+    },
+    {
+      "name": "Logic clarity",
+      "score": 93.5,
+      "strict": 93.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "logic_clarity"
+      ]
+    },
+    {
+      "name": "Naming quality",
+      "score": 92.5,
+      "strict": 92.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "naming_quality"
+      ]
+    },
+    {
+      "name": "Stale migration",
+      "score": 95.0,
+      "strict": 95.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "incomplete_migration"
+      ]
+    },
+    {
+      "name": "Structure nav",
+      "score": 92.0,
+      "strict": 92.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "package_organization"
+      ]
+    },
+    {
+      "name": "Test strategy",
+      "score": 89.5,
+      "strict": 89.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "test_strategy"
+      ]
+    }
+  ],
   "config": {
     "target_strict_score": 100,
     "review_max_age_days": 30,

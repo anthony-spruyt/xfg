@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-16T04:58:22+00:00",
+  "updated": "2026-04-16T04:58:43+00:00",
   "queue_order": [
     "workflow::create-plan"
   ],
@@ -28340,6 +28340,20 @@
         "kind": "false_positive",
         "reason": null
       }
+    },
+    {
+      "timestamp": "2026-04-16T04:58:43+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "cycles::src/shared/repo-detector.ts::src/shared/repo-detector.ts::src/shared/repo-info-utils.ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved repo-detector, repo-info-utils, repo-types, repo-metadata-provider from src/shared/ into a new src/repo/ domain folder. Extracted RepoInfo types into repo/types.ts so utils no longer depends on detector \u2014 cycle broken at commit 9f46691.",
+      "detail": {
+        "sha": "f618109bf5ed",
+        "branch": "desloppify/round-8"
+      }
     }
   ],
   "epic_triage_meta": {
@@ -28843,11 +28857,19 @@
       "recorded_at": "2026-03-27T23:32:51+00:00",
       "note": "Round 7: subjective reviews (20 dimensions) + 8 code fixes across 7 dimensions",
       "cluster_name": null
+    },
+    {
+      "sha": "f618109bf5ed",
+      "branch": "desloppify/round-8",
+      "issue_ids": [
+        "cycles::src/shared/repo-detector.ts::src/shared/repo-detector.ts::src/shared/repo-info-utils.ts"
+      ],
+      "recorded_at": "2026-04-16T04:58:43+00:00",
+      "note": "Moved repo-detector, repo-info-utils, repo-types, repo-metadata-provider from src/shared/ into a new src/repo/ domain folder. Extracted RepoInfo types into repo/types.ts so utils no longer depends on detector \u2014 cycle broken at commit 9f46691.",
+      "cluster_name": null
     }
   ],
-  "uncommitted_issues": [
-    "cycles::src/shared/repo-detector.ts::src/shared/repo-detector.ts::src/shared/repo-info-utils.ts"
-  ],
+  "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 195,

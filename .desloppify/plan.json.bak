@@ -1,9 +1,8 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-16T04:58:21+00:00",
+  "updated": "2026-04-16T04:58:22+00:00",
   "queue_order": [
-    "smells::src/cli/sync-command.ts::nested_closure",
     "workflow::create-plan"
   ],
   "deferred": [],
@@ -365,6 +364,16 @@
       "note": null,
       "attestation": "I have reviewed src/cli/sync-command.ts at lines 196 and 644: both functions (runAndStoreResult and runSync) clearly use the await keyword inside their bodies. runAndStoreResult awaits runSettingsProcessor at line 205, and runSync has multiple awaits throughout its body. The async_no_await detector is misreporting here. I am not gaming the score by suppressing a real defect.",
       "created_at": "2026-04-16T04:57:50+00:00",
+      "review_after": null,
+      "skipped_at_scan": 197
+    },
+    "smells::src/cli/sync-command.ts::nested_closure": {
+      "issue_id": "smells::src/cli/sync-command.ts::nested_closure",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed src/cli/sync-command.ts line 217 (buildSettingsDescriptors): the flagged nested closures are one-line property-assignment callbacks inside the run arrow of each descriptor in a declarative array literal \u2014 the nesting is only 2 levels deep and cohesive to the descriptor-building. Extracting to module level would scatter tightly-coupled config across the file with no clarity gain. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-16T04:58:22+00:00",
       "review_after": null,
       "skipped_at_scan": 197
     }
@@ -7390,9 +7399,7 @@
       "candidates": []
     }
   },
-  "promoted_ids": [
-    "smells::src/cli/sync-command.ts::nested_closure"
-  ],
+  "promoted_ids": [],
   "plan_start_scores": {},
   "execution_log": [
     {
@@ -28318,6 +28325,20 @@
         "position": "top",
         "target": null,
         "offset": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:58:22+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::nested_closure"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
       }
     }
   ],
