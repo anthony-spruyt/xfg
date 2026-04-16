@@ -424,6 +424,19 @@ interface RepoPhaseParams {
   token: string | undefined;
 }
 
+function pushFailure(
+  results: SyncResultEntry[],
+  repoName: string,
+  error: unknown
+): void {
+  results.push({
+    repoName,
+    success: false,
+    fileChanges: [],
+    error: toErrorMessage(error),
+  });
+}
+
 /**
  * Process a single repository: resolve URL, run lifecycle check, sync files, apply settings.
  * Pushes results into ctx.reportResults, ctx.lifecycleReportInputs, and ctx.settingsCollector.
@@ -461,12 +474,7 @@ async function processSingleRepo(
     });
   } catch (error) {
     getLogger().error(repoNumber, repoConfig.git, toErrorMessage(error));
-    ctx.reportResults.push({
-      repoName: repoConfig.git,
-      success: false,
-      fileChanges: [],
-      error: toErrorMessage(error),
-    });
+    pushFailure(ctx.reportResults, repoConfig.git, error);
     return;
   }
 
@@ -573,12 +581,7 @@ async function runLifecyclePhase(
       repo.repoName,
       `Lifecycle error: ${toErrorMessage(error)}`
     );
-    ctx.reportResults.push({
-      repoName: repo.repoName,
-      success: false,
-      fileChanges: [],
-      error: toErrorMessage(error),
-    });
+    pushFailure(ctx.reportResults, repo.repoName, error);
     return true;
   }
 }
@@ -632,12 +635,7 @@ async function runFileSyncPhase(
     }
   } catch (error) {
     getLogger().error(repoNumber, repo.repoName, toErrorMessage(error));
-    ctx.reportResults.push({
-      repoName: repo.repoName,
-      success: false,
-      fileChanges: [],
-      error: toErrorMessage(error),
-    });
+    pushFailure(ctx.reportResults, repo.repoName, error);
   }
 }
 

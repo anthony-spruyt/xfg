@@ -905,6 +905,29 @@ function validateRepoFiles(
   }
 }
 
+function enrichSettingsContext(
+  rootCtx: RootSettingsContext,
+  settings: RawRepoSettings | RawRootSettings | undefined
+): void {
+  if (!settings) return;
+  if (settings.rulesets) {
+    for (const name of Object.keys(settings.rulesets)) {
+      if (name !== "inherit") rootCtx.rulesetNames.push(name);
+    }
+  }
+  if (settings.labels) {
+    for (const name of Object.keys(settings.labels)) {
+      if (name !== "inherit") rootCtx.labelNames.push(name);
+    }
+  }
+  if (settings.repo !== undefined && settings.repo !== false) {
+    rootCtx.hasRepoSettings = true;
+  }
+  if (settings.codeScanning !== undefined && settings.codeScanning !== false) {
+    rootCtx.hasCodeScanningSettings = true;
+  }
+}
+
 function validateRepoSettingsEntry(
   config: RawConfig,
   repo: RawConfig["repos"][number],
@@ -917,52 +940,12 @@ function validateRepoSettingsEntry(
   if (repo.groups && config.groups) {
     const expandedGroups = expandRepoGroups(repo.groups, config.groups);
     for (const groupName of expandedGroups) {
-      const group = config.groups[groupName];
-      if (group?.settings?.rulesets) {
-        for (const name of Object.keys(group.settings.rulesets)) {
-          if (name !== "inherit") rootCtx.rulesetNames.push(name);
-        }
-      }
-      if (group?.settings?.labels) {
-        for (const name of Object.keys(group.settings.labels)) {
-          if (name !== "inherit") rootCtx.labelNames.push(name);
-        }
-      }
-      if (
-        group?.settings?.repo !== undefined &&
-        group.settings.repo !== false
-      ) {
-        rootCtx.hasRepoSettings = true;
-      }
-      if (
-        group?.settings?.codeScanning !== undefined &&
-        group.settings.codeScanning !== false
-      ) {
-        rootCtx.hasCodeScanningSettings = true;
-      }
+      enrichSettingsContext(rootCtx, config.groups[groupName]?.settings);
     }
   }
   if (config.conditionalGroups) {
     for (const cg of config.conditionalGroups) {
-      if (cg.settings?.rulesets) {
-        for (const name of Object.keys(cg.settings.rulesets)) {
-          if (name !== "inherit") rootCtx.rulesetNames.push(name);
-        }
-      }
-      if (cg.settings?.labels) {
-        for (const name of Object.keys(cg.settings.labels)) {
-          if (name !== "inherit") rootCtx.labelNames.push(name);
-        }
-      }
-      if (cg.settings?.repo !== undefined && cg.settings.repo !== false) {
-        rootCtx.hasRepoSettings = true;
-      }
-      if (
-        cg.settings?.codeScanning !== undefined &&
-        cg.settings.codeScanning !== false
-      ) {
-        rootCtx.hasCodeScanningSettings = true;
-      }
+      enrichSettingsContext(rootCtx, cg.settings);
     }
   }
 
