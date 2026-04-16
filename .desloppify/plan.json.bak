@@ -1,9 +1,9 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-16T04:49:25+00:00",
+  "updated": "2026-04-16T04:55:37+00:00",
   "queue_order": [
-    "cycles::src/shared/repo-detector.ts::src/shared/repo-detector.ts::src/shared/repo-info-utils.ts",
+    "test_coverage::src/cli/types.ts::transitive_only",
     "workflow::create-plan"
   ],
   "deferred": [],
@@ -377,7 +377,7 @@
       "issue_id": "test_coverage::src/cli/types.ts::transitive_only",
       "created_at": "2026-03-06T08:53:44+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "smells::test/unit/authenticated-git-ops.test.ts::hardcoded_url": {
       "issue_id": "smells::test/unit/authenticated-git-ops.test.ts::hardcoded_url",
@@ -676,8 +676,8 @@
     "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
       "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
       "created_at": "2026-03-06T08:53:44+00:00",
-      "cluster": "auto/security-hardcoded_secret_name",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::src/vcs/index.ts::FileAction": {
       "issue_id": "exports::src/vcs/index.ts::FileAction",
@@ -1343,7 +1343,7 @@
       "issue_id": "test_coverage::src/shared/json-utils.ts::transitive_only",
       "created_at": "2026-03-19T10:10:47+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns": {
       "issue_id": "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns",
@@ -2117,319 +2117,319 @@
       "issue_id": "test_coverage::src/shared/string-utils.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/config/loader.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/loader.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/output/settings-report.ts::transitive_only": {
       "issue_id": "test_coverage::src/output/settings-report.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/rulesets/formatter.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/rulesets/formatter.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/config/extends-resolver.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/extends-resolver.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/labels/formatter.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/labels/formatter.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/labels/converter.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/labels/converter.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/cli/lifecycle-report-builder.ts::transitive_only": {
       "issue_id": "test_coverage::src/cli/lifecycle-report-builder.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/config/types.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/types.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/config/normalizer.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/normalizer.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/repo-settings/diff.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/repo-settings/diff.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/labels/diff.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/labels/diff.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/rulesets/processor.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/rulesets/processor.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/config/formatter.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/formatter.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/repo-settings/formatter.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/repo-settings/formatter.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/output/sync-report.ts::transitive_only": {
       "issue_id": "test_coverage::src/output/sync-report.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/sync/types.ts::transitive_only": {
       "issue_id": "test_coverage::src/sync/types.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/labels/github-labels-strategy.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/labels/github-labels-strategy.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/config/validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validator.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/labels/processor.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/labels/processor.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/shared/errors.ts::transitive_only": {
       "issue_id": "test_coverage::src/shared/errors.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/repo-settings/processor.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/repo-settings/processor.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/settings/rulesets/diff.ts::transitive_only": {
       "issue_id": "test_coverage::src/settings/rulesets/diff.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/shared/cleanup-utils.ts::transitive_only": {
       "issue_id": "test_coverage::src/shared/cleanup-utils.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/cli/branch-utils.ts::transitive_only": {
       "issue_id": "test_coverage::src/cli/branch-utils.ts::transitive_only",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/program.ts::program": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/program.ts::program",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-export",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::computeUnifiedDiff": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::computeUnifiedDiff",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-export",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::isBinaryFile": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::isBinaryFile",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-export",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/authenticated-git-ops.ts::AuthenticatedGitOpsOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/authenticated-git-ops.ts::AuthenticatedGitOpsOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/config/index.ts::ContentValue": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/config/index.ts::ContentValue",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SyncOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SyncOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SharedOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SharedOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RulesetProcessorFactory": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RulesetProcessorFactory",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RepoSettingsProcessorFactory": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RepoSettingsProcessorFactory",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::LabelsProcessorFactory": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::LabelsProcessorFactory",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::IRulesetProcessor": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::IRulesetProcessor",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::ILabelsProcessor": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::ILabelsProcessor",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/sync-command.ts::SharedOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/sync-command.ts::SharedOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::INetworkGitOps": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::INetworkGitOps",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::PRStrategyOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::PRStrategyOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeResult": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeResult",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CloseExistingPROptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CloseExistingPROptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitResult": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitResult",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RulesetProcessorFactory": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RulesetProcessorFactory",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RepoSettingsProcessorFactory": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RepoSettingsProcessorFactory",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::LabelsProcessorFactory": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::LabelsProcessorFactory",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SyncOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SyncOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SharedOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SharedOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "exports::.worktrees/ci-skip-integration-on-pr/src/cli/types.ts::SharedOptions": {
       "issue_id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/types.ts::SharedOptions",
       "created_at": "2026-03-27T14:15:23+00:00",
       "cluster": "auto/exports-type",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::42": {
       "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::42",
       "created_at": "2026-04-16T04:40:29+00:00",
-      "cluster": "auto/security-hardcoded_secret_name",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T04:49:26+00:00"
     },
     "test_coverage::src/shared/repo-info-utils.ts::transitive_only": {
       "issue_id": "test_coverage::src/shared/repo-info-utils.ts::transitive_only",
       "created_at": "2026-04-16T04:40:29+00:00",
       "cluster": "auto/test_coverage-transitive_only",
-      "updated_at": "2026-04-16T04:40:29+00:00"
+      "updated_at": "2026-04-16T04:49:26+00:00"
     }
   },
   "clusters": {
@@ -3838,23 +3838,6 @@
           "done": true
         }
       ]
-    },
-    "auto/security-hardcoded_secret_name": {
-      "name": "auto/security-hardcoded_secret_name",
-      "description": "Fix 2 security issues",
-      "issue_ids": [
-        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
-        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::42"
-      ],
-      "created_at": "2026-03-27T14:15:23+00:00",
-      "updated_at": "2026-04-16T04:40:29+00:00",
-      "auto": true,
-      "cluster_key": "detector::security::hardcoded_secret_name",
-      "action": "review and fix security issues",
-      "execution_status": "review",
-      "user_modified": false,
-      "action_type": "manual_fix",
-      "execution_policy": "planned_only"
     },
     "auto/test_coverage-transitive_only": {
       "name": "auto/test_coverage-transitive_only",
@@ -7368,7 +7351,7 @@
     }
   },
   "promoted_ids": [
-    "cycles::src/shared/repo-detector.ts::src/shared/repo-detector.ts::src/shared/repo-info-utils.ts"
+    "test_coverage::src/cli/types.ts::transitive_only"
   ],
   "plan_start_scores": {},
   "execution_log": [
@@ -28140,6 +28123,46 @@
       "actor": "user",
       "note": "Moved repo-detector, repo-info-utils, repo-types, repo-metadata-provider out of src/shared/ into dedicated src/repo/ domain folder. Extracted RepoInfo type hierarchy into types.ts so utils no longer reaches back to detector, breaking the cycle.",
       "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T04:49:26+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "cycles::src/shared/repo-detector.ts::src/shared/repo-detector.ts::src/shared/repo-info-utils.ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved repo-detector, repo-info-utils, repo-types, repo-metadata-provider out of src/shared/ into dedicated src/repo/ domain folder. Extracted RepoInfo type hierarchy into types.ts so utils no longer reaches back to detector, breaking the cycle.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually moved the four repo-* files from src/shared/ into a new src/repo/ domain folder and split the RepoInfo types out into repo/types.ts so that utils.ts only depends on types.ts, eliminating the import cycle between detector and utils. I am not gaming the score by resolving without fixing."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:49:26+00:00",
+      "action": "auto_cluster",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-04-16T04:55:37+00:00",
+      "action": "reorder",
+      "issue_ids": [
+        "test_coverage::src/cli/types.ts::transitive_only"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "target": null,
+        "offset": null
+      }
     }
   ],
   "epic_triage_meta": {
@@ -28645,7 +28668,9 @@
       "cluster_name": null
     }
   ],
-  "uncommitted_issues": [],
+  "uncommitted_issues": [
+    "cycles::src/shared/repo-detector.ts::src/shared/repo-detector.ts::src/shared/repo-info-utils.ts"
+  ],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 195,

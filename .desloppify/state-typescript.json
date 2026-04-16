@@ -4,16 +4,16 @@
   "last_scan": "2026-04-16T04:31:57+00:00",
   "scan_count": 197,
   "overall_score": 92.1,
-  "objective_score": 92.5,
+  "objective_score": 92.6,
   "strict_score": 90.9,
   "verified_strict_score": 90.3,
   "stats": {
     "total": 1609,
     "auto_resolved": 1093,
     "deferred": 0,
-    "false_positive": 80,
+    "false_positive": 81,
     "fixed": 226,
-    "open": 208,
+    "open": 207,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -38,9 +38,9 @@
       "3": {
         "auto_resolved": 646,
         "deferred": 0,
-        "false_positive": 28,
+        "false_positive": 29,
         "fixed": 16,
-        "open": 177,
+        "open": 176,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -2975,18 +2975,18 @@
       }
     },
     "Test health": {
-      "score": 68.8,
-      "strict": 63.9,
+      "score": 69.6,
+      "strict": 64.7,
       "verified_strict_score": 62.8,
       "checks": 1159,
-      "failing": 29,
+      "failing": 28,
       "tier": 4,
       "detectors": {
         "test_coverage": {
           "potential": 1159,
-          "pass_rate": 0.6877011521934934,
-          "failing": 29,
-          "weighted_failures": 361.9543646077411
+          "pass_rate": 0.6961549563100876,
+          "failing": 28,
+          "weighted_failures": 352.15640563660844
         }
       }
     },
@@ -52870,11 +52870,11 @@
         "importer_count": 2,
         "loc_weight": 9.797958971132712
       },
-      "status": "open",
-      "note": "Reopened (\u00d73) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-06T08:52:20+00:00",
       "last_seen": "2026-04-16T04:31:57+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T04:55:37+00:00",
       "reopen_count": 3,
       "lang": "typescript",
       "zone": "production",
@@ -52883,7 +52883,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed src/cli/types.ts against the code: it contains only TypeScript type aliases, interfaces, and factory type definitions (no runtime code), so direct unit tests are not meaningful. I am not gaming the score by suppressing a real defect.",
+        "attested_at": "2026-04-16T04:55:37+00:00",
+        "scan_verified": false
+      }
     },
     "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity": {
       "id": "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity",
