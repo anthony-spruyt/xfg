@@ -83,7 +83,7 @@ export class CommitPushManager implements ICommitPushManager {
       this.log.info(`Committed: ${result.sha} (verified: ${result.verified})`);
       return { success: true };
     } catch (error) {
-      return this.rethrowIfUnexpectedCommitError(
+      return this.classifyCommitError(
         error,
         isDirectMode,
         pushBranch,
@@ -92,7 +92,7 @@ export class CommitPushManager implements ICommitPushManager {
     }
   }
 
-  private rethrowIfUnexpectedCommitError(
+  private classifyCommitError(
     error: unknown,
     isDirectMode: boolean,
     pushBranch: string,

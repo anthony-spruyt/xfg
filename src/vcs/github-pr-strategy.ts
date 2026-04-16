@@ -37,7 +37,7 @@ function buildPRUrlRegex(host: string): RegExp {
 }
 
 export class GitHubPRStrategy extends BasePRStrategy {
-  async checkExistingPR(
+  async findExistingPRUrl(
     options: CloseExistingPROptions
   ): Promise<string | null> {
     const { repoInfo, branchName, workDir, retries = 3, token } = options;
@@ -82,7 +82,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     assertGitHubRepo(repoInfo, "GitHub PR strategy");
 
     // First check if there's an existing PR (pass token through)
-    const existingUrl = await this.checkExistingPR({
+    const existingUrl = await this.findExistingPRUrl({
       repoInfo,
       branchName,
       baseBranch,

@@ -43,7 +43,7 @@ describe("GitLabPRStrategy with mock executor", () => {
     }
   });
 
-  describe("checkExistingPR", () => {
+  describe("findExistingPRUrl", () => {
     test("returns MR URL when MR exists", async () => {
       mockExecutor.responses.set(
         "glab mr list",
@@ -61,7 +61,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
 
       assert.equal(
         result,
@@ -86,7 +86,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
 
       assert.equal(result, null);
     });
@@ -105,7 +105,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
 
       assert.equal(result, null);
     });
@@ -126,7 +126,7 @@ describe("GitLabPRStrategy with mock executor", () => {
       };
 
       await assert.rejects(
-        () => strategy.checkExistingPR(options),
+        () => strategy.findExistingPRUrl(options),
         /401 Unauthorized/
       );
     });
@@ -146,7 +146,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
       assert.equal(result, null);
     });
 
@@ -167,7 +167,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
       assert.equal(result, null);
     });
   });
@@ -321,7 +321,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         "https://gitlab.com/myorg/myrepo/-/merge_requests/999"
       );
       assert.ok(result.message.includes("already exists"));
-      // Should only call checkExistingPR, not create
+      // Should only call findExistingPRUrl, not create
       assert.equal(mockExecutor.calls.length, 1);
     });
 
@@ -350,7 +350,7 @@ describe("GitLabPRStrategy with mock executor", () => {
         result.url,
         "https://gitlab.com/myorg/myrepo/-/merge_requests/888"
       );
-      // Should call both checkExistingPR and create
+      // Should call both findExistingPRUrl and create
       assert.equal(mockExecutor.calls.length, 2);
     });
 
@@ -423,7 +423,7 @@ describe("GitLabPRStrategy with nested groups", () => {
       retries: 0,
     };
 
-    const result = await strategy.checkExistingPR(options);
+    const result = await strategy.findExistingPRUrl(options);
 
     assert.equal(
       result,
@@ -445,7 +445,7 @@ describe("GitLabPRStrategy with nested groups", () => {
       retries: 0,
     };
 
-    await strategy.checkExistingPR(options);
+    await strategy.findExistingPRUrl(options);
 
     assert.ok(
       mockExecutor.calls[0].command.includes("org/group/subgroup/repo")
@@ -982,7 +982,7 @@ describe("GitLabPRStrategy type guards", () => {
     }
   });
 
-  test("checkExistingPR throws for non-GitLab repo", async () => {
+  test("findExistingPRUrl throws for non-GitLab repo", async () => {
     const strategy = new GitLabPRStrategy(mockExecutor.mock);
     const options: PRStrategyOptions = {
       repoInfo: azureRepoInfo,
@@ -995,7 +995,7 @@ describe("GitLabPRStrategy type guards", () => {
     };
 
     await assert.rejects(
-      () => strategy.checkExistingPR(options),
+      () => strategy.findExistingPRUrl(options),
       /requires GitLab repositories/
     );
   });
@@ -1078,7 +1078,7 @@ describe("GitLabPRStrategy self-hosted", () => {
       retries: 0,
     };
 
-    const result = await strategy.checkExistingPR(options);
+    const result = await strategy.findExistingPRUrl(options);
 
     assert.equal(
       result,
@@ -1140,7 +1140,7 @@ describe("GitLabPRStrategy logger coverage", () => {
     }
   });
 
-  test("checkExistingPR logs debug on error with stderr", async () => {
+  test("findExistingPRUrl logs debug on error with stderr", async () => {
     const debugMessages: string[] = [];
     const mockLogger = {
       debug(msg: string) {
@@ -1156,7 +1156,7 @@ describe("GitLabPRStrategy logger coverage", () => {
     mockExecutor.responses.set("glab mr list", errorWithStderr);
 
     const strategy = new GitLabPRStrategy(mockExecutor.mock, mockLogger);
-    const result = await strategy.checkExistingPR({
+    const result = await strategy.findExistingPRUrl({
       repoInfo: gitlabRepoInfo,
       branchName: "test-branch",
       baseBranch: "main",
@@ -1244,9 +1244,9 @@ describe("GitLabPRStrategy closeExistingPR with unparseable URL", () => {
     host: "gitlab.com",
   };
 
-  test("returns false when checkExistingPR returns unparseable URL", async () => {
+  test("returns false when findExistingPRUrl returns unparseable URL", async () => {
     class TestableGitLabPRStrategy extends GitLabPRStrategy {
-      override async checkExistingPR(): Promise<string | null> {
+      override async findExistingPRUrl(): Promise<string | null> {
         return "https://not-a-gitlab-url.com/invalid";
       }
     }

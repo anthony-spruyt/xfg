@@ -43,7 +43,7 @@ describe("AdoPRStrategy with mock executor", () => {
     }
   });
 
-  describe("checkExistingPR", () => {
+  describe("findExistingPRUrl", () => {
     test("returns PR URL when PR exists", async () => {
       mockExecutor.responses.set("az repos pr list", "456");
 
@@ -58,7 +58,7 @@ describe("AdoPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
 
       assert.ok(result?.includes("dev.azure.com"));
       assert.ok(result?.includes("pullrequest/456"));
@@ -80,7 +80,7 @@ describe("AdoPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
 
       assert.equal(result, null);
     });
@@ -101,7 +101,7 @@ describe("AdoPRStrategy with mock executor", () => {
       };
 
       await assert.rejects(
-        () => strategy.checkExistingPR(options),
+        () => strategy.findExistingPRUrl(options),
         /401 Unauthorized/
       );
     });
@@ -121,7 +121,7 @@ describe("AdoPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
       assert.equal(result, null);
     });
 
@@ -142,7 +142,7 @@ describe("AdoPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
       assert.equal(result, null);
     });
   });
@@ -984,7 +984,7 @@ describe("AdoPRStrategy logger coverage", () => {
     }
   });
 
-  test("checkExistingPR logs debug on error with stderr", async () => {
+  test("findExistingPRUrl logs debug on error with stderr", async () => {
     const debugMessages: string[] = [];
     const mockLogger = {
       debug(msg: string) {
@@ -1000,7 +1000,7 @@ describe("AdoPRStrategy logger coverage", () => {
     mockExecutor.responses.set("az repos pr list", errorWithStderr);
 
     const strategy = new AdoPRStrategy(mockExecutor.mock, mockLogger);
-    const result = await strategy.checkExistingPR({
+    const result = await strategy.findExistingPRUrl({
       repoInfo: azureRepoInfo,
       branchName: "test-branch",
       baseBranch: "main",
@@ -1075,5 +1075,5 @@ describe("AdoPRStrategy logger coverage", () => {
 });
 
 // Note: "unparseable URL" test removed — closeExistingPR now uses findExistingPRId
-// directly instead of going through checkExistingPR → parsePRUrl, eliminating
+// directly instead of going through findExistingPRUrl → parsePRUrl, eliminating
 // the URL roundtrip that could produce unparseable results.

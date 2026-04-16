@@ -39,7 +39,7 @@ describe("GitHubPRStrategy with mock executor", () => {
     }
   });
 
-  describe("checkExistingPR", () => {
+  describe("findExistingPRUrl", () => {
     test("returns PR URL when PR exists", async () => {
       mockExecutor.responses.set(
         "gh pr list",
@@ -57,7 +57,7 @@ describe("GitHubPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
 
       assert.equal(result, "https://github.com/owner/repo/pull/123");
       assert.equal(mockExecutor.calls.length, 1);
@@ -79,7 +79,7 @@ describe("GitHubPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
 
       assert.equal(result, null);
     });
@@ -100,7 +100,7 @@ describe("GitHubPRStrategy with mock executor", () => {
       };
 
       await assert.rejects(
-        () => strategy.checkExistingPR(options),
+        () => strategy.findExistingPRUrl(options),
         /401 Unauthorized/
       );
     });
@@ -120,7 +120,7 @@ describe("GitHubPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
       assert.equal(result, null);
     });
 
@@ -141,7 +141,7 @@ describe("GitHubPRStrategy with mock executor", () => {
         retries: 0,
       };
 
-      const result = await strategy.checkExistingPR(options);
+      const result = await strategy.findExistingPRUrl(options);
       assert.equal(result, null);
     });
   });
@@ -346,7 +346,7 @@ describe("GitHubPRStrategy with mock executor", () => {
       assert.equal(result.success, true);
       assert.equal(result.url, "https://github.com/owner/repo/pull/existing");
       assert.ok(result.message.includes("already exists"));
-      // Should only call checkExistingPR, not create
+      // Should only call findExistingPRUrl, not create
       assert.equal(mockExecutor.calls.length, 1);
     });
 
@@ -372,7 +372,7 @@ describe("GitHubPRStrategy with mock executor", () => {
 
       assert.equal(result.success, true);
       assert.equal(result.url, "https://github.com/owner/repo/pull/999");
-      // Should call both checkExistingPR and create
+      // Should call both findExistingPRUrl and create
       assert.equal(mockExecutor.calls.length, 2);
     });
 
@@ -714,7 +714,7 @@ describe("GitHubPRStrategy closeExistingPR", () => {
   });
 
   test("returns false when PR number cannot be extracted from URL (issue #93)", async () => {
-    // When checkExistingPR returns a URL but we can't extract the PR number,
+    // When findExistingPRUrl returns a URL but we can't extract the PR number,
     // we return false with a warning (consistent with other error handling)
     mockExecutor.responses.set(
       "gh pr list",
@@ -811,7 +811,7 @@ describe("GitHubPRStrategy with GitHub Enterprise Server", () => {
       retries: 0,
     };
 
-    await strategy.checkExistingPR(options);
+    await strategy.findExistingPRUrl(options);
 
     assert.ok(mockExecutor.calls[0].command.includes("--repo"));
     assert.ok(
@@ -1198,7 +1198,7 @@ describe("GitHubPRStrategy with token parameter", () => {
     }
   });
 
-  test("checkExistingPR uses GH_TOKEN env prefix when token is provided", async () => {
+  test("findExistingPRUrl uses GH_TOKEN env prefix when token is provided", async () => {
     mockExecutor.responses.set(
       "gh pr list",
       "https://github.com/owner/repo/pull/123"
@@ -1216,7 +1216,7 @@ describe("GitHubPRStrategy with token parameter", () => {
       token: "ghs_test_token_12345",
     };
 
-    await strategy.checkExistingPR(options);
+    await strategy.findExistingPRUrl(options);
 
     assert.ok(mockExecutor.calls[0].command.startsWith("gh pr list"));
     assert.equal(
@@ -1342,7 +1342,7 @@ describe("GitHubPRStrategy with token parameter", () => {
       // No token provided
     };
 
-    await strategy.checkExistingPR(options);
+    await strategy.findExistingPRUrl(options);
 
     assert.ok(
       mockExecutor.calls[0].command.startsWith("gh pr list"),
@@ -1381,7 +1381,7 @@ describe("GitHubPRStrategy logger coverage", () => {
     }
   });
 
-  test("checkExistingPR logs debug on error with stderr", async () => {
+  test("findExistingPRUrl logs debug on error with stderr", async () => {
     const debugMessages: string[] = [];
     const mockLogger = {
       debug(msg: string) {
@@ -1397,7 +1397,7 @@ describe("GitHubPRStrategy logger coverage", () => {
     mockExecutor.responses.set("gh pr list", errorWithStderr);
 
     const strategy = new GitHubPRStrategy(mockExecutor.mock, mockLogger);
-    const result = await strategy.checkExistingPR({
+    const result = await strategy.findExistingPRUrl({
       repoInfo: githubRepoInfo,
       branchName: "test-branch",
       baseBranch: "main",

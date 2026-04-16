@@ -78,7 +78,7 @@ describe("createPRStrategy", () => {
 });
 
 describe("GitHubPRStrategy type guards", () => {
-  test("checkExistingPR throws for non-GitHub repo", async () => {
+  test("findExistingPRUrl throws for non-GitHub repo", async () => {
     const strategy = new GitHubPRStrategy(mockExecutor);
     const azureRepoInfo: AzureDevOpsRepoInfo = {
       type: "azure-devops",
@@ -99,7 +99,7 @@ describe("GitHubPRStrategy type guards", () => {
     };
 
     await assert.rejects(
-      () => strategy.checkExistingPR(options),
+      () => strategy.findExistingPRUrl(options),
       /requires GitHub repositories/
     );
   });
@@ -132,7 +132,7 @@ describe("GitHubPRStrategy type guards", () => {
 });
 
 describe("AdoPRStrategy type guards", () => {
-  test("checkExistingPR throws for non-Azure repo", async () => {
+  test("findExistingPRUrl throws for non-Azure repo", async () => {
     const strategy = new AdoPRStrategy(mockExecutor);
     const githubRepoInfo: GitHubRepoInfo = {
       type: "github",
@@ -152,7 +152,7 @@ describe("AdoPRStrategy type guards", () => {
     };
 
     await assert.rejects(
-      () => strategy.checkExistingPR(options),
+      () => strategy.findExistingPRUrl(options),
       /requires Azure DevOps repositories/
     );
   });
@@ -185,26 +185,26 @@ describe("AdoPRStrategy type guards", () => {
 
 // Mock strategy for testing PRWorkflowExecutor
 class MockPRStrategy implements IPRStrategy {
-  checkExistingPRResult: string | null = null;
+  findExistingPRUrlResult: string | null = null;
   createResult: PRResult = {
     success: true,
     url: "https://example.com/pr/1",
     message: "PR created",
   };
-  checkExistingPRCalled = false;
+  findExistingPRUrlCalled = false;
   createCalled = false;
   shouldThrowOnCheck = false;
   shouldThrowOnCreate = false;
   throwMessage = "Mock error";
 
-  async checkExistingPR(
+  async findExistingPRUrl(
     _options: CloseExistingPROptions
   ): Promise<string | null> {
-    this.checkExistingPRCalled = true;
+    this.findExistingPRUrlCalled = true;
     if (this.shouldThrowOnCheck) {
       throw new Error(this.throwMessage);
     }
-    return this.checkExistingPRResult;
+    return this.findExistingPRUrlResult;
   }
 
   async create(_options: PRStrategyOptions): Promise<PRResult> {
@@ -249,18 +249,18 @@ describe("PRWorkflowExecutor", () => {
     workDir: "/tmp/test",
   };
 
-  test("delegates to strategy.checkExistingPR", async () => {
+  test("delegates to strategy.findExistingPRUrl", async () => {
     const mockStrategy = new MockPRStrategy();
     const executor = new PRWorkflowExecutor(mockStrategy);
 
     await executor.execute(defaultOptions);
 
-    assert.equal(mockStrategy.checkExistingPRCalled, true);
+    assert.equal(mockStrategy.findExistingPRUrlCalled, true);
   });
 
   test("returns existing PR if found without calling create", async () => {
     const mockStrategy = new MockPRStrategy();
-    mockStrategy.checkExistingPRResult = "https://example.com/pr/existing";
+    mockStrategy.findExistingPRUrlResult = "https://example.com/pr/existing";
     const executor = new PRWorkflowExecutor(mockStrategy);
 
     const result = await executor.execute(defaultOptions);
@@ -268,13 +268,13 @@ describe("PRWorkflowExecutor", () => {
     assert.equal(result.success, true);
     assert.equal(result.url, "https://example.com/pr/existing");
     assert.ok(result.message.includes("already exists"));
-    assert.equal(mockStrategy.checkExistingPRCalled, true);
+    assert.equal(mockStrategy.findExistingPRUrlCalled, true);
     assert.equal(mockStrategy.createCalled, false);
   });
 
   test("delegates to strategy.create when no existing PR", async () => {
     const mockStrategy = new MockPRStrategy();
-    mockStrategy.checkExistingPRResult = null;
+    mockStrategy.findExistingPRUrlResult = null;
     mockStrategy.createResult = {
       success: true,
       url: "https://example.com/pr/new",
@@ -286,11 +286,11 @@ describe("PRWorkflowExecutor", () => {
 
     assert.equal(result.success, true);
     assert.equal(result.url, "https://example.com/pr/new");
-    assert.equal(mockStrategy.checkExistingPRCalled, true);
+    assert.equal(mockStrategy.findExistingPRUrlCalled, true);
     assert.equal(mockStrategy.createCalled, true);
   });
 
-  test("handles errors from checkExistingPR and returns failure", async () => {
+  test("handles errors from findExistingPRUrl and returns failure", async () => {
     const mockStrategy = new MockPRStrategy();
     mockStrategy.shouldThrowOnCheck = true;
     mockStrategy.throwMessage = "Network timeout";
@@ -305,7 +305,7 @@ describe("PRWorkflowExecutor", () => {
 
   test("handles errors from create and returns failure", async () => {
     const mockStrategy = new MockPRStrategy();
-    mockStrategy.checkExistingPRResult = null;
+    mockStrategy.findExistingPRUrlResult = null;
     mockStrategy.shouldThrowOnCreate = true;
     mockStrategy.throwMessage = "API rate limit exceeded";
     const executor = new PRWorkflowExecutor(mockStrategy);
@@ -319,8 +319,8 @@ describe("PRWorkflowExecutor", () => {
 
   test("handles non-Error throws", async () => {
     const mockStrategy = new MockPRStrategy();
-    // Override checkExistingPR to throw a string
-    mockStrategy.checkExistingPR = async () => {
+    // Override findExistingPRUrl to throw a string
+    mockStrategy.findExistingPRUrl = async () => {
       throw "string error";
     };
     const executor = new PRWorkflowExecutor(mockStrategy);
