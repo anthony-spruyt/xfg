@@ -40,6 +40,7 @@ import {
   type SettingsResult,
   type SyncOptions,
   type ApplyRepoSettingsContext,
+  type SettingsProcessorFactories,
   type RulesetProcessorFactory,
   type RepoSettingsProcessorFactory,
   type LabelsProcessorFactory,
@@ -217,18 +218,9 @@ async function runAndStoreResult(
 function buildSettingsDescriptors(
   ctx: ApplyRepoSettingsContext
 ): SettingsDescriptor[] {
-  const {
-    repoConfig,
-    repoInfo,
-    options,
-    token,
-    repoName,
-    settingsCollector,
-    rulesetProcessorFactory,
-    repoSettingsProcessorFactory,
-    labelsProcessorFactory,
-    codeScanningProcessorFactory,
-  } = ctx;
+  const { repoConfig, repoInfo, options, token, repoName, settingsCollector } =
+    ctx;
+  const { factories } = ctx;
   const sharedOpts = {
     dryRun: options.dryRun,
     noDelete: options.noDelete,
@@ -241,7 +233,7 @@ function buildSettingsDescriptors(
       label: "Rulesets",
       run: () =>
         runAndStoreResult(
-          rulesetProcessorFactory,
+          factories.rulesets,
           repoConfig,
           repoInfo,
           sharedOpts,
@@ -257,7 +249,7 @@ function buildSettingsDescriptors(
       label: "Labels",
       run: () =>
         runAndStoreResult(
-          labelsProcessorFactory,
+          factories.labels,
           repoConfig,
           repoInfo,
           sharedOpts,
@@ -273,7 +265,7 @@ function buildSettingsDescriptors(
       label: "Repo Settings",
       run: () =>
         runAndStoreResult(
-          repoSettingsProcessorFactory,
+          factories.repo,
           repoConfig,
           repoInfo,
           { dryRun: options.dryRun, token },
@@ -289,7 +281,7 @@ function buildSettingsDescriptors(
       label: "Code Scanning",
       run: () =>
         runAndStoreResult(
-          codeScanningProcessorFactory,
+          factories.codeScanning,
           repoConfig,
           repoInfo,
           sharedOpts,
@@ -401,18 +393,7 @@ interface RepoIterationContext {
   reportResults: SyncResultEntry[];
   lifecycleReportInputs: LifecycleAction[];
   settingsCollector: ResultsCollector;
-  rulesetProcessorFactory: NonNullable<
-    SyncDependencies["rulesetProcessorFactory"]
-  >;
-  repoSettingsProcessorFactory: NonNullable<
-    SyncDependencies["repoSettingsProcessorFactory"]
-  >;
-  labelsProcessorFactory: NonNullable<
-    SyncDependencies["labelsProcessorFactory"]
-  >;
-  codeScanningProcessorFactory: NonNullable<
-    SyncDependencies["codeScanningProcessorFactory"]
-  >;
+  factories: SettingsProcessorFactories;
 }
 
 interface RepoPhaseParams {
@@ -519,10 +500,7 @@ async function processSingleRepo(
     options,
     token: repoToken,
     settingsCollector: ctx.settingsCollector,
-    rulesetProcessorFactory: ctx.rulesetProcessorFactory,
-    repoSettingsProcessorFactory: ctx.repoSettingsProcessorFactory,
-    labelsProcessorFactory: ctx.labelsProcessorFactory,
-    codeScanningProcessorFactory: ctx.codeScanningProcessorFactory,
+    factories: ctx.factories,
   });
 }
 
@@ -647,13 +625,21 @@ export async function runSync(
   _defaultExecutor = undefined;
   _logger = undefined;
 
-  const {
-    lifecycleManager,
-    rulesetProcessorFactory = createDefaultRulesetProcessorFactory(),
-    repoSettingsProcessorFactory = createDefaultRepoSettingsProcessorFactory(),
-    labelsProcessorFactory = createDefaultLabelsProcessorFactory(),
-    codeScanningProcessorFactory = createDefaultCodeScanningProcessorFactory(),
-  } = deps;
+  const { lifecycleManager, settingsProcessorFactories } = deps;
+  const factories: SettingsProcessorFactories = {
+    rulesets:
+      settingsProcessorFactories?.rulesets ??
+      createDefaultRulesetProcessorFactory(),
+    labels:
+      settingsProcessorFactories?.labels ??
+      createDefaultLabelsProcessorFactory(),
+    repo:
+      settingsProcessorFactories?.repo ??
+      createDefaultRepoSettingsProcessorFactory(),
+    codeScanning:
+      settingsProcessorFactories?.codeScanning ??
+      createDefaultCodeScanningProcessorFactory(),
+  };
   const configPath = resolve(options.config);
 
   if (!existsSync(configPath)) {
@@ -719,10 +705,7 @@ export async function runSync(
     reportResults: [],
     lifecycleReportInputs: [],
     settingsCollector: new ResultsCollector(),
-    rulesetProcessorFactory,
-    repoSettingsProcessorFactory,
-    labelsProcessorFactory,
-    codeScanningProcessorFactory,
+    factories,
   };
 
   for (let i = 0; i < config.repos.length; i++) {

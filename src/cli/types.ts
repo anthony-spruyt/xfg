@@ -25,16 +25,22 @@ export type LabelsProcessorFactory = SettingsProcessorFactory<ILabelsProcessor>;
 export type CodeScanningProcessorFactory =
   SettingsProcessorFactory<ICodeScanningProcessor>;
 
+export type SettingsKind = "rulesets" | "labels" | "repo" | "codeScanning";
+
+export interface SettingsProcessorFactories {
+  rulesets: RulesetProcessorFactory;
+  labels: LabelsProcessorFactory;
+  repo: RepoSettingsProcessorFactory;
+  codeScanning: CodeScanningProcessorFactory;
+}
+
 /**
  * Dependencies for the sync command (dependency injection).
  */
 export interface SyncDependencies {
   processorFactory?: ProcessorFactory;
   lifecycleManager?: IRepoLifecycleManager;
-  rulesetProcessorFactory?: RulesetProcessorFactory;
-  repoSettingsProcessorFactory?: RepoSettingsProcessorFactory;
-  labelsProcessorFactory?: LabelsProcessorFactory;
-  codeScanningProcessorFactory?: CodeScanningProcessorFactory;
+  settingsProcessorFactories?: Partial<SettingsProcessorFactories>;
 }
 
 export interface SharedOptions {
@@ -82,16 +88,5 @@ export interface ApplyRepoSettingsContext {
   options: SyncOptions;
   token: string | undefined;
   settingsCollector: ResultsCollector;
-  rulesetProcessorFactory: NonNullable<
-    SyncDependencies["rulesetProcessorFactory"]
-  >;
-  repoSettingsProcessorFactory: NonNullable<
-    SyncDependencies["repoSettingsProcessorFactory"]
-  >;
-  labelsProcessorFactory: NonNullable<
-    SyncDependencies["labelsProcessorFactory"]
-  >;
-  codeScanningProcessorFactory: NonNullable<
-    SyncDependencies["codeScanningProcessorFactory"]
-  >;
+  factories: SettingsProcessorFactories;
 }
