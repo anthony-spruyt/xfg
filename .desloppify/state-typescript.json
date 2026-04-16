@@ -11,9 +11,9 @@
     "total": 1609,
     "auto_resolved": 1093,
     "deferred": 0,
-    "false_positive": 83,
+    "false_positive": 84,
     "fixed": 226,
-    "open": 205,
+    "open": 204,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -38,9 +38,9 @@
       "3": {
         "auto_resolved": 646,
         "deferred": 0,
-        "false_positive": 30,
+        "false_positive": 31,
         "fixed": 16,
-        "open": 175,
+        "open": 174,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -2849,7 +2849,7 @@
       "strict": 94.5,
       "verified_strict_score": 96.4,
       "checks": 687,
-      "failing": 42,
+      "failing": 41,
       "tier": 3,
       "detectors": {
         "unused": {
@@ -2867,7 +2867,7 @@
         "smells": {
           "potential": 122,
           "pass_rate": 0.8450819672131147,
-          "failing": 38,
+          "failing": 37,
           "weighted_failures": 18.9
         },
         "orphaned": {
@@ -8677,11 +8677,11 @@
           644
         ]
       },
-      "status": "open",
-      "note": "Reopened (\u00d76) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-03T09:10:57+00:00",
       "last_seen": "2026-04-16T04:31:57+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T04:57:50+00:00",
       "reopen_count": 6,
       "lang": "typescript",
       "zone": "production",
@@ -8690,7 +8690,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed src/cli/sync-command.ts at lines 196 and 644: both functions (runAndStoreResult and runSync) clearly use the await keyword inside their bodies. runAndStoreResult awaits runSettingsProcessor at line 205, and runSync has multiple awaits throughout its body. The async_no_await detector is misreporting here. I am not gaming the score by suppressing a real defect.",
+        "attested_at": "2026-04-16T04:57:50+00:00",
+        "scan_verified": false
+      }
     },
     "smells::src/vcs/pr-creator.ts::async_no_await": {
       "id": "smells::src/vcs/pr-creator.ts::async_no_await",
