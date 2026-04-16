@@ -1,5 +1,5 @@
 import pRetry, { AbortError } from "p-retry";
-import { sanitizeCredentials } from "./sanitize-utils.js";
+import { sanitizeCredentials } from "../vcs/sanitize-utils.js";
 import { ValidationError } from "./errors.js";
 
 /**

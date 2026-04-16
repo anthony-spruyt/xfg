@@ -1,11 +1,8 @@
 import type { RepoConfig, GitHubRepoSettings } from "../../config/index.js";
-import type { GitHubRepoInfo, RepoInfo } from "../../shared/repo-detector.js";
+import type { GitHubRepoInfo, RepoInfo } from "../../repo/index.js";
 import type { IRepoSettingsStrategy } from "./types.js";
-import type {
-  IRepoMetadataProvider,
-  RepoMetadata,
-} from "../../shared/repo-metadata-provider.js";
-import { diffRepoSettings, hasChanges } from "./diff.js";
+import type { IRepoMetadataProvider, RepoMetadata } from "../../repo/index.js";
+import { diffRepoSettings, hasRepoSettingsChanges } from "./diff.js";
 import {
   formatRepoSettingsPlan,
   type RepoSettingsPlanResult,
@@ -95,7 +92,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     // Compute diff
     const changes = diffRepoSettings(currentSettings, desiredSettings);
 
-    if (!hasChanges(changes)) {
+    if (!hasRepoSettingsChanges(changes)) {
       const unchangedCount = changes.filter(
         (c) => c.action === "unchanged"
       ).length;

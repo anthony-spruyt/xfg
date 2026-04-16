@@ -10,7 +10,7 @@ import {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
   GitLabRepoInfo,
-} from "../../../src/shared/repo-detector.js";
+} from "../../../src/repo/index.js";
 import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
 
 const mockExecutor: ICommandExecutor = { exec: async () => "" };

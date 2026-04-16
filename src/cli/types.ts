@@ -8,8 +8,9 @@ import type {
   ILabelsProcessor,
   ICodeScanningProcessor,
   BaseProcessorResult,
+  ActiveAction,
 } from "../settings/index.js";
-import type { RepoInfo } from "../shared/repo-detector.js";
+import type { RepoInfo } from "../repo/index.js";
 import type { ResultsCollector } from "./results-collector.js";
 
 export type ProcessorFactory = () => IRepositoryProcessor;
@@ -56,7 +57,7 @@ export interface SyncResultEntry {
   success: boolean;
   fileChanges: Array<{
     path: string;
-    action: "create" | "update" | "delete";
+    action: ActiveAction;
     diffLines?: string[];
   }>;
   prUrl?: string;

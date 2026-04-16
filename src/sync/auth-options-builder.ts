@@ -1,5 +1,5 @@
-import { type RepoInfo, isGitHubRepo } from "../shared/repo-detector.js";
-import type { GitHubRepoInfo } from "../shared/repo-detector.js";
+import { type RepoInfo, isGitHubRepo } from "../repo/index.js";
+import type { GitHubRepoInfo } from "../repo/index.js";
 import type { GitAuthOptions, GitHubAppTokenManager } from "../vcs/index.js";
 import type { AuthResult, IAuthOptionsBuilder } from "./types.js";
 import type { ILogger } from "../shared/logger.js";

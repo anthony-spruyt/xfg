@@ -851,8 +851,8 @@ function validateRepoFiles(
     for (const groupName of expandedGroups) {
       const group = config.groups[groupName];
       if (group?.files) {
-        for (const fn of Object.keys(group.files)) {
-          if (fn !== "inherit") knownFiles.add(fn);
+        for (const fileName of Object.keys(group.files)) {
+          if (fileName !== "inherit") knownFiles.add(fileName);
         }
       }
     }
@@ -860,8 +860,8 @@ function validateRepoFiles(
   if (config.conditionalGroups) {
     for (const cg of config.conditionalGroups) {
       if (cg.files) {
-        for (const fn of Object.keys(cg.files)) {
-          if (fn !== "inherit") knownFiles.add(fn);
+        for (const fileName of Object.keys(cg.files)) {
+          if (fileName !== "inherit") knownFiles.add(fileName);
         }
       }
     }

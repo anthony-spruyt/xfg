@@ -6,6 +6,14 @@ import type { DebugWarnLog } from "../shared/logger.js";
 
 export const MANIFEST_FILENAME = ".xfg.json";
 
+/*
+ * Legacy manifest versions (V1/V2/V3) are retained for automatic migration of
+ * manifests written by older xfg releases. They are detection-only shapes —
+ * new writes always use V4. Sunset policy: keep these types until the next
+ * major version bump (xfg v7), at which point drop V1/V2 support and require
+ * users on ancient manifests to re-sync before upgrading.
+ */
+
 // V1 manifest structure (legacy - for migration detection only)
 interface XfgManifestV1 {
   version: 1;

@@ -111,6 +111,6 @@ export function diffRepoSettings(
 /**
  * Checks if there are any changes to apply.
  */
-export function hasChanges(changes: RepoSettingsChange[]): boolean {
+export function hasRepoSettingsChanges(changes: RepoSettingsChange[]): boolean {
   return changes.some((c) => c.action !== "unchanged");
 }

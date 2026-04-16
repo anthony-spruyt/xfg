@@ -3,6 +3,7 @@ export type {
   PRMergeConfig,
   FileChange,
   FileAction,
+  FileActionKind,
   IGitOps,
   ILocalGitOps,
   IPRStrategy,

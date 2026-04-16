@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import { formatScalarValue } from "../../shared/string-utils.js";
+import { countActions } from "../base-processor.js";
 import type { RepoSettingsChange } from "./diff.js";
 
 export interface RepoSettingsPlanEntry {
@@ -56,8 +57,7 @@ export function formatRepoSettingsPlan(
 ): RepoSettingsPlanResult {
   const lines: string[] = [];
   const warnings: string[] = [];
-  let creates = 0;
-  let updates = 0;
+  const { create: creates, update: updates } = countActions(changes);
   const entries: RepoSettingsPlanEntry[] = [];
 
   if (changes.length === 0) {
@@ -74,7 +74,6 @@ export function formatRepoSettingsPlan(
       lines.push(
         chalk.green(`    + ${change.property}: ${formatValue(change.newValue)}`)
       );
-      creates++;
       entries.push({
         property: change.property,
         action: "create",
@@ -86,7 +85,6 @@ export function formatRepoSettingsPlan(
           `    ~ ${change.property}: ${formatValue(change.oldValue)} → ${formatValue(change.newValue)}`
         )
       );
-      updates++;
       entries.push({
         property: change.property,
         action: "update",

@@ -1,4 +1,4 @@
-import type { RepoInfo } from "../../shared/repo-detector.js";
+import type { RepoInfo } from "../../repo/index.js";
 import type { GhApiOptions } from "../../shared/gh-api-utils.js";
 
 export interface GitHubLabel {

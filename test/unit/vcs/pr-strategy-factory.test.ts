@@ -1,9 +1,9 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import { createPRStrategy } from "../../../src/vcs/pr-strategy-factory.js";
-import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
-import type { AzureDevOpsRepoInfo } from "../../../src/shared/repo-detector.js";
-import type { GitLabRepoInfo } from "../../../src/shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../../../src/repo/index.js";
+import type { AzureDevOpsRepoInfo } from "../../../src/repo/index.js";
+import type { GitLabRepoInfo } from "../../../src/repo/index.js";
 import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
 
 const mockExecutor: ICommandExecutor = { exec: async () => "" };
@@ -21,7 +21,7 @@ describe("createPRStrategy", () => {
     assert.ok(strategy);
   });
 
-  test("returns AzurePRStrategy for Azure DevOps repos", () => {
+  test("returns AdoPRStrategy for Azure DevOps repos", () => {
     const repoInfo: AzureDevOpsRepoInfo = {
       type: "azure-devops",
       gitUrl: "git@ssh.dev.azure.com:test/repo.git",

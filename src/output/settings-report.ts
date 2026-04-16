@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import type { PropertyDiff } from "../settings/index.js";
+import type { PropertyDiff, ActiveAction } from "../settings/index.js";
 import type { Ruleset, Label } from "../config/index.js";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatScalarValue } from "../shared/string-utils.js";
@@ -23,21 +23,21 @@ export interface RepoChanges {
 
 export interface SettingChange {
   name: string;
-  action: "create" | "update";
+  action: Exclude<ActiveAction, "delete">;
   oldValue?: unknown;
   newValue: unknown;
 }
 
 export interface RulesetChange {
   name: string;
-  action: "create" | "update" | "delete";
+  action: ActiveAction;
   propertyDiffs?: PropertyDiff[];
   config?: Ruleset;
 }
 
 export interface LabelChange {
   name: string;
-  action: "create" | "update" | "delete";
+  action: ActiveAction;
   newName?: string;
   propertyChanges?: {
     property: string;

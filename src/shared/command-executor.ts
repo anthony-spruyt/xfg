@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { sanitizeCredentials } from "./sanitize-utils.js";
+import { sanitizeCredentials } from "../vcs/sanitize-utils.js";
 
 export interface ExecOptions {
   /** Additional environment variables to set for the command */

@@ -6,7 +6,7 @@ import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
 import type {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
-} from "../../../src/shared/repo-detector.js";
+} from "../../../src/repo/index.js";
 
 describe("GitHubLifecycleProvider", () => {
   const mockRepoInfo: GitHubRepoInfo = {

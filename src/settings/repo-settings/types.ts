@@ -1,4 +1,4 @@
-import type { RepoInfo } from "../../shared/repo-detector.js";
+import type { RepoInfo } from "../../repo/index.js";
 import type {
   GitHubRepoSettings,
   RepoVisibility,

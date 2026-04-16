@@ -2,6 +2,8 @@
 export {
   type BaseProcessorResult,
   type ISettingsProcessor,
+  type SettingsAction,
+  type ActiveAction,
   countActions,
   isActiveAction,
 } from "./base-processor.js";

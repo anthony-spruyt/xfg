@@ -10,7 +10,7 @@ import type {
   IMigrationSource,
 } from "../../../src/lifecycle/types.js";
 import type { RepoConfig } from "../../../src/config/types.js";
-import type { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
 
 const stubExecutor: ICommandExecutor = { exec: async () => "" };

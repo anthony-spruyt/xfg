@@ -1,4 +1,4 @@
-import type { RepoInfo } from "../shared/repo-detector.js";
+import type { RepoInfo } from "../repo/index.js";
 import type { MergeMode, MergeStrategy } from "../config/index.js";
 
 export interface GitAuthOptions {
@@ -146,6 +146,8 @@ export interface FileAction {
   fileName: string;
   action: "create" | "update" | "skip" | "delete";
 }
+
+export type FileActionKind = FileAction["action"];
 
 export interface FileChange {
   path: string;

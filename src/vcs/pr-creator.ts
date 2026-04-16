@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { RepoInfo } from "../shared/repo-detector.js";
+import type { RepoInfo } from "../repo/index.js";
 import { createPRStrategy } from "./pr-strategy-factory.js";
 import { PRWorkflowExecutor } from "./pr-strategy.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";

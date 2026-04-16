@@ -10,7 +10,7 @@ import {
   type InterpolationConfig,
 } from "./interpolation-engine.js";
 
-import type { RepoInfo } from "./repo-detector.js";
+import type { RepoInfo } from "../repo/index.js";
 import { ValidationError } from "./errors.js";
 
 type TemplateContent = Record<string, unknown> | string | string[];

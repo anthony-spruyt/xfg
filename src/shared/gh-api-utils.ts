@@ -1,7 +1,7 @@
 import { escapeShellArg } from "./shell-utils.js";
 import { withRetry } from "./retry-utils.js";
 import type { ICommandExecutor } from "./command-executor.js";
-import type { GitHubRepoInfo } from "./repo-detector.js";
+import type { GitHubRepoInfo } from "../repo/index.js";
 import { toErrorMessage } from "./type-guards.js";
 
 import type { DebugWarnLog } from "./logger.js";
@@ -188,10 +188,10 @@ async function ghApiCall(
   ) {
     const payloadJson = JSON.stringify(payload);
     const command = `echo ${escapeShellArg(payloadJson)} | ${baseCommand} --input -`;
-    return await withRetry(() => execAndParse(command), retryOpts);
+    return withRetry(() => execAndParse(command), retryOpts);
   }
 
-  return await withRetry(() => execAndParse(baseCommand), retryOpts);
+  return withRetry(() => execAndParse(baseCommand), retryOpts);
 }
 
 /**

@@ -1,10 +1,7 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { escapeShellArg } from "../shared/shell-utils.js";
-import {
-  assertGitLabRepo,
-  type GitLabRepoInfo,
-} from "../shared/repo-detector.js";
+import { assertGitLabRepo, type GitLabRepoInfo } from "../repo/index.js";
 import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";
@@ -20,7 +17,7 @@ import {
   getStderr,
 } from "../shared/command-executor.js";
 import { parseApiJson } from "../shared/json-utils.js";
-import { sanitizeCredentials } from "../shared/sanitize-utils.js";
+import { sanitizeCredentials } from "./sanitize-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";

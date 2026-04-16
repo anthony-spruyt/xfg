@@ -3,11 +3,11 @@ import {
   isGitHubRepo,
   isAzureDevOpsRepo,
   isGitLabRepo,
-} from "../shared/repo-detector.js";
+} from "../repo/index.js";
 import type { IPRStrategy } from "./types.js";
 import { SyncError } from "../shared/errors.js";
 import { GitHubPRStrategy } from "./github-pr-strategy.js";
-import { AzurePRStrategy } from "./azure-pr-strategy.js";
+import { AdoPRStrategy } from "./ado-pr-strategy.js";
 import { GitLabPRStrategy } from "./gitlab-pr-strategy.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";
@@ -21,7 +21,7 @@ export function createPRStrategy(
     return new GitHubPRStrategy(executor, log);
   }
   if (isAzureDevOpsRepo(repoInfo)) {
-    return new AzurePRStrategy(executor, log);
+    return new AdoPRStrategy(executor, log);
   }
   if (isGitLabRepo(repoInfo)) {
     return new GitLabPRStrategy(executor, log);

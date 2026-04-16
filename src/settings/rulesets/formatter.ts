@@ -194,9 +194,6 @@ function getActionStyle(action: DiffAction): {
   }
 }
 
-/**
- * Render a leaf tree node (no children) with its value.
- */
 function hasComplexValue(value: unknown): boolean {
   return (
     isPlainObject(value) ||

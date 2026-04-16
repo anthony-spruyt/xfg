@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { GitHubPRStrategy } from "../../../src/vcs/github-pr-strategy.js";
 import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
-import { GitHubRepoInfo } from "../../../src/shared/repo-detector.js";
+import { GitHubRepoInfo } from "../../../src/repo/index.js";
 import type { PRStrategyOptions } from "../../../src/vcs/types.js";
 import {
   createMockExecutor,
