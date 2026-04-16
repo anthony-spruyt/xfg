@@ -58,7 +58,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
 
     const { token } = options;
 
-    const exists = await provider.exists(repoInfo, token);
+    const exists = await provider.exists({ repo: repoInfo, token });
 
     if (exists) {
       // Repo exists - nothing to do (ignore upstream/source)
@@ -97,7 +97,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
       };
     }
 
-    await provider.create(repoInfo, settings, options.token);
+    await provider.create({ repo: repoInfo, settings, token: options.token });
     await this.waitForRepoReady(provider, repoInfo, options.token);
 
     return {
@@ -130,7 +130,12 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
     const upstreamInfo = parseGitUrl(repoConfig.upstream!, {
       githubHosts: options.githubHosts,
     });
-    await provider.fork(upstreamInfo, repoInfo, settings, options.token);
+    await provider.fork({
+      upstream: upstreamInfo,
+      target: repoInfo,
+      settings,
+      token: options.token,
+    });
     await this.waitForRepoReady(provider, repoInfo, options.token);
 
     return {
@@ -167,12 +172,12 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
 
       // Create target and push content
       const provider = this.factory.getProvider(repoInfo.type);
-      await provider.receiveMigration(
-        repoInfo,
+      await provider.receiveMigration({
+        repo: repoInfo,
         sourceDir,
         settings,
-        options.token
-      );
+        token: options.token,
+      });
       await this.waitForRepoReady(provider, repoInfo, options.token);
 
       return {
@@ -202,7 +207,7 @@ export class RepoLifecycleManager implements IRepoLifecycleManager {
   ): Promise<void> {
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
-      if (await provider.exists(repoInfo, token)) {
+      if (await provider.exists({ repo: repoInfo, token })) {
         return;
       }
       await new Promise((resolve) => setTimeout(resolve, pollMs));

@@ -72,7 +72,7 @@ export class AdoPRStrategy extends BasePRStrategy {
     }
   }
 
-  async checkExistingPR(
+  async findExistingPRUrl(
     options: CloseExistingPROptions
   ): Promise<string | null> {
     const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;

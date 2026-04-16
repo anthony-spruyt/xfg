@@ -108,7 +108,7 @@ export interface CloseExistingPROptions {
 
 /**
  * Interface for PR creation strategies (platform-specific implementations).
- * Strategies focus on platform-specific logic (checkExistingPR, create, merge).
+ * Strategies focus on platform-specific logic (findExistingPRUrl, create, merge).
  * Use PRWorkflowExecutor for full workflow orchestration with error handling.
  *
  * Error contract: create() and merge() may throw on infrastructure failures
@@ -121,7 +121,7 @@ export interface IPRStrategy {
    * Check if a PR already exists for the given branch.
    * @returns PR URL if exists, null if not found or on error
    */
-  checkExistingPR(options: CloseExistingPROptions): Promise<string | null>;
+  findExistingPRUrl(options: CloseExistingPROptions): Promise<string | null>;
 
   /**
    * Close an existing PR and delete its branch.

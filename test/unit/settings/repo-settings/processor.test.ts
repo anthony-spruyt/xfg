@@ -63,7 +63,7 @@ class MockStrategy implements IRepoSettingsStrategy {
     options?: GhApiOptions;
   }> = [];
 
-  async getSettings(
+  async get(
     repoInfo: RepoInfo,
     options?: GhApiOptions
   ): Promise<CurrentRepoSettings> {
@@ -71,7 +71,7 @@ class MockStrategy implements IRepoSettingsStrategy {
     return this.getSettingsResult;
   }
 
-  async updateSettings(
+  async update(
     repoInfo: RepoInfo,
     settings: GitHubRepoSettings,
     options?: GhApiOptions
@@ -79,7 +79,7 @@ class MockStrategy implements IRepoSettingsStrategy {
     this.updateSettingsCalls.push({ repoInfo, settings, options });
   }
 
-  async setVulnerabilityAlerts(
+  async updateVulnerabilityAlerts(
     repoInfo: RepoInfo,
     enable: boolean,
     options?: GhApiOptions
@@ -422,11 +422,11 @@ describe("RepoSettingsProcessor", () => {
 
   test("should handle errors gracefully", async () => {
     const errorStrategy: IRepoSettingsStrategy = {
-      getSettings: async () => {
+      get: async () => {
         throw new Error("API Error");
       },
-      updateSettings: async () => {},
-      setVulnerabilityAlerts: async () => {},
+      update: async () => {},
+      updateVulnerabilityAlerts: async () => {},
       setAutomatedSecurityFixes: async () => {},
       setPrivateVulnerabilityReporting: async () => {},
       branchExists: async () => true,

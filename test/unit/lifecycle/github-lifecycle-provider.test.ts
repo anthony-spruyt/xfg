@@ -24,7 +24,7 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
-      const result = await provider.exists(mockRepoInfo);
+      const result = await provider.exists({ repo: mockRepoInfo });
 
       assert.equal(result, true);
     });
@@ -42,7 +42,7 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await provider.exists(mockRepoInfo);
+      const result = await provider.exists({ repo: mockRepoInfo });
 
       assert.equal(result, false);
     });
@@ -60,7 +60,10 @@ describe("GitHubLifecycleProvider", () => {
         cwd: "/test",
       });
 
-      await assert.rejects(() => provider.exists(mockRepoInfo), /Network/);
+      await assert.rejects(
+        () => provider.exists({ repo: mockRepoInfo }),
+        /Network/
+      );
     });
 
     test("uses correct gh api command", async () => {
@@ -69,7 +72,7 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
-      await provider.exists(mockRepoInfo);
+      await provider.exists({ repo: mockRepoInfo });
 
       assert.equal(calls.length, 1);
       assert.ok(calls[0].command.includes("gh api"));
@@ -97,7 +100,7 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       await assert.rejects(
-        () => provider.exists(adoRepo),
+        () => provider.exists({ repo: adoRepo }),
         /requires GitHub repo/
       );
     });
@@ -114,7 +117,7 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await provider.exists(mockRepoInfo);
+      const result = await provider.exists({ repo: mockRepoInfo });
 
       assert.equal(result, false);
     });
@@ -131,7 +134,7 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await provider.exists(mockRepoInfo);
+      const result = await provider.exists({ repo: mockRepoInfo });
 
       assert.equal(result, false);
     });
@@ -142,7 +145,7 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
-      await provider.exists(mockRepoInfo);
+      await provider.exists({ repo: mockRepoInfo });
 
       assert.ok(!calls[0].command.includes("--hostname"));
     });
@@ -161,7 +164,7 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
-      await provider.exists(gheRepoInfo);
+      await provider.exists({ repo: gheRepoInfo });
 
       assert.equal(calls.length, 1);
       assert.ok(calls[0].command.includes("--hostname"));
@@ -181,7 +184,7 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.create(mockRepoInfo);
+      await provider.create({ repo: mockRepoInfo });
 
       // calls[0] = gh repo create, calls[1] = GET README sha, calls[2] = DELETE README
       assert.equal(calls.length, 3);
@@ -204,7 +207,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.create(mockRepoInfo, { visibility: "private" });
+      await provider.create({
+        repo: mockRepoInfo,
+        settings: { visibility: "private" },
+      });
 
       assert.ok(calls[0].command.includes("--private"));
     });
@@ -219,7 +225,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.create(mockRepoInfo, { visibility: "internal" });
+      await provider.create({
+        repo: mockRepoInfo,
+        settings: { visibility: "internal" },
+      });
 
       assert.ok(calls[0].command.includes("--internal"));
     });
@@ -234,7 +243,7 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.create(mockRepoInfo);
+      await provider.create({ repo: mockRepoInfo });
 
       assert.ok(calls[0].command.includes("--private"));
     });
@@ -249,7 +258,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.create(mockRepoInfo, { visibility: "public" });
+      await provider.create({
+        repo: mockRepoInfo,
+        settings: { visibility: "public" },
+      });
 
       assert.ok(calls[0].command.includes("--public"));
     });
@@ -264,7 +276,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.create(mockRepoInfo, { description: "Test repo" });
+      await provider.create({
+        repo: mockRepoInfo,
+        settings: { description: "Test repo" },
+      });
 
       assert.ok(calls[0].command.includes("--description"));
       assert.ok(calls[0].command.includes("Test repo"));
@@ -280,7 +295,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.create(mockRepoInfo, { hasIssues: false });
+      await provider.create({
+        repo: mockRepoInfo,
+        settings: { hasIssues: false },
+      });
 
       assert.ok(calls[0].command.includes("--disable-issues"));
     });
@@ -295,7 +313,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.create(mockRepoInfo, { hasWiki: false });
+      await provider.create({
+        repo: mockRepoInfo,
+        settings: { hasWiki: false },
+      });
 
       assert.ok(calls[0].command.includes("--disable-wiki"));
     });
@@ -310,7 +331,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.create(mockRepoInfo, { hasIssues: true });
+      await provider.create({
+        repo: mockRepoInfo,
+        settings: { hasIssues: true },
+      });
 
       assert.ok(!calls[0].command.includes("--disable-issues"));
     });
@@ -326,7 +350,7 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.create(mockRepoInfo);
+      await provider.create({ repo: mockRepoInfo });
 
       // calls[0] = gh repo create with --add-readme
       // calls[1] = gh api .../contents/README.md --jq '.sha' (GET sha)
@@ -369,7 +393,7 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       await assert.rejects(
-        () => provider.create(adoRepo),
+        () => provider.create({ repo: adoRepo }),
         /requires GitHub repo/
       );
     });
@@ -388,7 +412,7 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       await assert.rejects(
-        () => provider.create(mockRepoInfo),
+        () => provider.create({ repo: mockRepoInfo }),
         /Permission denied/
       );
     });
@@ -422,7 +446,10 @@ describe("GitHubLifecycleProvider", () => {
           retries: 0,
           cwd: "/test",
         });
-        await provider.create(mockRepoInfo, { defaultBranch: "main" });
+        await provider.create({
+          repo: mockRepoInfo,
+          settings: { defaultBranch: "main" },
+        });
 
         // Should have: create, get default_branch, rename, poll default_branch, get README sha, delete README
         assert.ok(calls.length >= 5);
@@ -450,7 +477,10 @@ describe("GitHubLifecycleProvider", () => {
           retries: 0,
           cwd: "/test",
         });
-        await provider.create(mockRepoInfo, { defaultBranch: "main" });
+        await provider.create({
+          repo: mockRepoInfo,
+          settings: { defaultBranch: "main" },
+        });
 
         // Should have: create, get default_branch, get README sha, delete README (no rename)
         assert.equal(calls.length, 4);
@@ -468,7 +498,7 @@ describe("GitHubLifecycleProvider", () => {
           retries: 0,
           cwd: "/test",
         });
-        await provider.create(mockRepoInfo);
+        await provider.create({ repo: mockRepoInfo });
 
         // Should have: create, get README sha, delete README (no default_branch check)
         assert.equal(calls.length, 3);
@@ -502,7 +532,10 @@ describe("GitHubLifecycleProvider", () => {
           retries: 0,
           cwd: "/test",
         });
-        await provider.create(mockRepoInfo, { defaultBranch: "main" });
+        await provider.create({
+          repo: mockRepoInfo,
+          settings: { defaultBranch: "main" },
+        });
 
         // Should have recovered from the error and continued polling
         const pollCalls = calls.filter((c) =>
@@ -534,7 +567,11 @@ describe("GitHubLifecycleProvider", () => {
         });
 
         await assert.rejects(
-          () => provider.create(mockRepoInfo, { defaultBranch: "main" }),
+          () =>
+            provider.create({
+              repo: mockRepoInfo,
+              settings: { defaultBranch: "main" },
+            }),
           /Rename failed/
         );
 
@@ -569,7 +606,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.fork!(upstreamRepoInfo, mockRepoInfo);
+      await provider.fork!({
+        upstream: upstreamRepoInfo,
+        target: mockRepoInfo,
+      });
 
       // Find the fork command (not the API check)
       const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
@@ -604,7 +644,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.fork!(upstreamRepoInfo, personalRepoInfo);
+      await provider.fork!({
+        upstream: upstreamRepoInfo,
+        target: personalRepoInfo,
+      });
 
       // Find the fork command (not the API check)
       const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
@@ -629,7 +672,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.fork!(upstreamRepoInfo, mockRepoInfo);
+      await provider.fork!({
+        upstream: upstreamRepoInfo,
+        target: mockRepoInfo,
+      });
 
       const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
       assert.ok(forkCall);
@@ -650,7 +696,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.fork!(upstreamRepoInfo, mockRepoInfo);
+      await provider.fork!({
+        upstream: upstreamRepoInfo,
+        target: mockRepoInfo,
+      });
 
       // Should default to --org when we can't determine owner type
       const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
@@ -673,8 +722,12 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.fork!(upstreamRepoInfo, mockRepoInfo, {
-        visibility: "private",
+      await provider.fork!({
+        upstream: upstreamRepoInfo,
+        target: mockRepoInfo,
+        settings: {
+          visibility: "private",
+        },
       });
 
       // Should call gh repo edit after fork
@@ -702,8 +755,12 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.fork!(upstreamRepoInfo, mockRepoInfo, {
-        description: "My custom fork",
+      await provider.fork!({
+        upstream: upstreamRepoInfo,
+        target: mockRepoInfo,
+        settings: {
+          description: "My custom fork",
+        },
       });
 
       // Should call gh repo edit after fork
@@ -727,7 +784,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.fork!(upstreamRepoInfo, mockRepoInfo);
+      await provider.fork!({
+        upstream: upstreamRepoInfo,
+        target: mockRepoInfo,
+      });
 
       // Should NOT call gh repo edit
       const editCall = calls.find((c) => c.command.includes("gh repo edit"));
@@ -755,7 +815,7 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       await assert.rejects(
-        () => provider.fork!(adoRepo, mockRepoInfo),
+        () => provider.fork!({ upstream: adoRepo, target: mockRepoInfo }),
         /requires GitHub repo/
       );
     });
@@ -781,7 +841,7 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       await assert.rejects(
-        () => provider.fork!(upstreamRepoInfo, adoRepo),
+        () => provider.fork!({ upstream: upstreamRepoInfo, target: adoRepo }),
         /requires GitHub repo/
       );
     });
@@ -801,7 +861,8 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       await assert.rejects(
-        () => provider.fork!(upstreamRepoInfo, mockRepoInfo),
+        () =>
+          provider.fork!({ upstream: upstreamRepoInfo, target: mockRepoInfo }),
         /Cannot fork private repo/
       );
     });
@@ -826,7 +887,8 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       await assert.rejects(
-        () => provider.fork!(sameOwnerUpstream, mockRepoInfo),
+        () =>
+          provider.fork!({ upstream: sameOwnerUpstream, target: mockRepoInfo }),
         /Cannot fork test-org\/original-repo to the same owner/
       );
     });
@@ -854,7 +916,7 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       await assert.rejects(
-        () => provider.fork!(upstream, target),
+        () => provider.fork!({ upstream: upstream, target: target }),
         /Cannot fork.*same owner/
       );
     });
@@ -873,8 +935,12 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.fork!(upstreamRepoInfo, mockRepoInfo, {
-        defaultBranch: "main",
+      await provider.fork!({
+        upstream: upstreamRepoInfo,
+        target: mockRepoInfo,
+        settings: {
+          defaultBranch: "main",
+        },
       });
 
       // Should not call any branch rename API
@@ -923,7 +989,10 @@ describe("GitHubLifecycleProvider", () => {
         cwd: "/test",
       });
 
-      await provider.fork!(upstreamRepoInfo2, mockRepoInfo);
+      await provider.fork!({
+        upstream: upstreamRepoInfo2,
+        target: mockRepoInfo,
+      });
 
       // Should have polled exists() 3 times (2 not-found + 1 success)
       assert.equal(apiCallCount, 3);
@@ -957,7 +1026,8 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       await assert.rejects(
-        () => provider.fork!(upstreamRepoInfo2, mockRepoInfo),
+        () =>
+          provider.fork!({ upstream: upstreamRepoInfo2, target: mockRepoInfo }),
         /Timed out waiting for fork.*to become available/
       );
     });
@@ -980,7 +1050,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
+      await provider.receiveMigration({
+        repo: mockRepoInfo,
+        sourceDir: "/tmp/source-mirror",
+      });
 
       // calls[0] = remote remove origin
       // calls[1] = for-each-ref (all refs)
@@ -1027,7 +1100,11 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       await assert.rejects(
-        () => provider.receiveMigration(adoRepo, "/tmp/source"),
+        () =>
+          provider.receiveMigration({
+            repo: adoRepo,
+            sourceDir: "/tmp/source",
+          }),
         /requires GitHub repo/
       );
     });
@@ -1045,8 +1122,12 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.receiveMigration(mockRepoInfo, "/tmp/source", {
-        visibility: "private",
+      await provider.receiveMigration({
+        repo: mockRepoInfo,
+        sourceDir: "/tmp/source",
+        settings: {
+          visibility: "private",
+        },
       });
 
       // calls[0] = git remote remove origin, calls[1] = git for-each-ref,
@@ -1075,7 +1156,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
+      await provider.receiveMigration({
+        repo: mockRepoInfo,
+        sourceDir: "/tmp/source-mirror",
+      });
 
       // Should still reach gh repo create despite remote remove failure
       const createCall = calls.find((c) =>
@@ -1100,7 +1184,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
+      await provider.receiveMigration({
+        repo: mockRepoInfo,
+        sourceDir: "/tmp/source-mirror",
+      });
 
       // Should still reach gh repo create despite ref cleanup failure
       const createCall = calls.find((c) =>
@@ -1127,8 +1214,12 @@ describe("GitHubLifecycleProvider", () => {
           retries: 0,
           cwd: "/test",
         });
-        await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror", {
-          defaultBranch: "main",
+        await provider.receiveMigration({
+          repo: mockRepoInfo,
+          sourceDir: "/tmp/source-mirror",
+          settings: {
+            defaultBranch: "main",
+          },
         });
 
         const branchRenameCall = calls.find((c) =>
@@ -1159,8 +1250,12 @@ describe("GitHubLifecycleProvider", () => {
           retries: 0,
           cwd: "/test",
         });
-        await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror", {
-          defaultBranch: "main",
+        await provider.receiveMigration({
+          repo: mockRepoInfo,
+          sourceDir: "/tmp/source-mirror",
+          settings: {
+            defaultBranch: "main",
+          },
         });
 
         assert.ok(!calls.some((c) => c.command.includes("branch -m")));
@@ -1182,7 +1277,10 @@ describe("GitHubLifecycleProvider", () => {
           retries: 0,
           cwd: "/test",
         });
-        await provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror");
+        await provider.receiveMigration({
+          repo: mockRepoInfo,
+          sourceDir: "/tmp/source-mirror",
+        });
 
         assert.ok(!calls.some((c) => c.command.includes("symbolic-ref HEAD")));
         assert.ok(!calls.some((c) => c.command.includes("branch -m")));
@@ -1205,8 +1303,12 @@ describe("GitHubLifecycleProvider", () => {
 
         await assert.rejects(
           () =>
-            provider.receiveMigration(mockRepoInfo, "/tmp/source-mirror", {
-              defaultBranch: "main",
+            provider.receiveMigration({
+              repo: mockRepoInfo,
+              sourceDir: "/tmp/source-mirror",
+              settings: {
+                defaultBranch: "main",
+              },
             }),
           /refs\/heads\//
         );
@@ -1221,7 +1323,7 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
-      await provider.exists(mockRepoInfo, "ghs_test_token");
+      await provider.exists({ repo: mockRepoInfo, token: "ghs_test_token" });
 
       assert.equal(calls.length, 1);
       assert.ok(calls[0].command.startsWith("gh api"));
@@ -1234,7 +1336,7 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
-      await provider.exists(mockRepoInfo);
+      await provider.exists({ repo: mockRepoInfo });
 
       assert.equal(calls.length, 1);
       assert.ok(calls[0].command.startsWith("gh api"));
@@ -1251,7 +1353,7 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.create(mockRepoInfo, undefined, "ghs_test_token");
+      await provider.create({ repo: mockRepoInfo, token: "ghs_test_token" });
 
       // calls[0] = gh repo create, calls[1] = GET README sha, calls[2] = DELETE README
       assert.equal(calls.length, 3);
@@ -1272,12 +1374,11 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.receiveMigration(
-        mockRepoInfo,
-        "/tmp/source",
-        undefined,
-        "ghs_test_token"
-      );
+      await provider.receiveMigration({
+        repo: mockRepoInfo,
+        sourceDir: "/tmp/source",
+        token: "ghs_test_token",
+      });
 
       // calls[0] = git remote remove origin, calls[1] = git for-each-ref, calls[2] = gh repo create
       assert.equal(calls.length, 3);
@@ -1307,12 +1408,11 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.fork!(
-        upstreamRepoInfo,
-        mockRepoInfo,
-        undefined,
-        "ghs_test_token"
-      );
+      await provider.fork!({
+        upstream: upstreamRepoInfo,
+        target: mockRepoInfo,
+        token: "ghs_test_token",
+      });
 
       // isOrganization API call should have token via env
       const apiCall = calls.find((c) => c.command.includes("users/"));
@@ -1349,7 +1449,10 @@ describe("GitHubLifecycleProvider", () => {
         retries: 0,
         cwd: "/test",
       });
-      await provider.fork!(upstreamRepoInfo, mockRepoInfo);
+      await provider.fork!({
+        upstream: upstreamRepoInfo,
+        target: mockRepoInfo,
+      });
 
       // Should still fork with --org flag (defaults to org when check fails)
       const forkCall = calls.find((c) => c.command.includes("gh repo fork"));

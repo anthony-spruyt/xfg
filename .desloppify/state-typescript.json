@@ -12,8 +12,8 @@
     "auto_resolved": 1095,
     "deferred": 0,
     "false_positive": 87,
-    "fixed": 247,
-    "open": 233,
+    "fixed": 262,
+    "open": 218,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 5,
-        "fixed": 97,
-        "open": 8,
+        "fixed": 103,
+        "open": 2,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 50,
-        "fixed": 113,
-        "open": 44,
+        "fixed": 120,
+        "open": 37,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -39,8 +39,8 @@
         "auto_resolved": 648,
         "deferred": 0,
         "false_positive": 32,
-        "fixed": 17,
-        "open": 180,
+        "fixed": 19,
+        "open": 178,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -94,8 +94,8 @@
       "source": "holistic",
       "assessed_at": "2026-04-16T05:39:25+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-16T05:39:25+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T09:20:50+00:00"
     },
     "convention_outlier": {
       "score": 91.5,
@@ -134,13 +134,16 @@
         "Type Discipline": 93.0
       },
       "needs_review_refresh": true,
-      "refresh_reason": "review_issue_false_positive",
-      "stale_since": "2026-04-16T07:26:38+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T09:14:45+00:00"
     },
     "api_surface_coherence": {
       "score": 92.0,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T09:37:00+00:00"
     },
     "authorization_consistency": {
       "score": 95.0,
@@ -193,20 +196,26 @@
     "low_level_elegance": {
       "score": 89.0,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T09:04:35+00:00"
     },
     "design_coherence": {
       "score": 89.0,
       "source": "holistic",
       "assessed_at": "2026-04-16T05:39:25+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-16T05:39:33+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T09:14:44+00:00"
     },
     "contract_coherence": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T09:36:59+00:00"
     },
     "dependency_health": {
       "score": 94.5,
@@ -235,7 +244,7 @@
       "assessed_at": "2026-04-16T05:39:25+00:00",
       "needs_review_refresh": true,
       "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T07:52:34+00:00"
+      "stale_since": "2026-04-16T09:36:59+00:00"
     },
     "test_strategy": {
       "score": 92.0,
@@ -3043,13 +3052,13 @@
       "strict": 90.5,
       "verified_strict_score": 90.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.905,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.95,
           "assessment_score": 90.5,
           "placeholder": false,
@@ -3100,13 +3109,13 @@
       "strict": 92.0,
       "verified_strict_score": 92.0,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.92,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.8,
           "assessment_score": 92.0,
           "placeholder": false,
@@ -3142,13 +3151,13 @@
       "strict": 92.5,
       "verified_strict_score": 92.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.925,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.75,
           "assessment_score": 92.5,
           "placeholder": false,
@@ -3184,13 +3193,13 @@
       "strict": 93.5,
       "verified_strict_score": 93.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.935,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.65,
           "assessment_score": 93.5,
           "placeholder": false,
@@ -3226,13 +3235,13 @@
       "strict": 89.0,
       "verified_strict_score": 89.0,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.89,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 1.1,
           "assessment_score": 89.0,
           "placeholder": false,
@@ -3352,13 +3361,13 @@
       "strict": 89.0,
       "verified_strict_score": 89.0,
       "checks": 10,
-      "failing": 5,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.89,
-          "failing": 5,
+          "failing": 0,
           "weighted_failures": 1.1,
           "assessment_score": 89.0,
           "placeholder": false,
@@ -3394,13 +3403,13 @@
       "strict": 91.5,
       "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.915,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
@@ -68664,11 +68673,11 @@
         "reasoning": "",
         "summary_hash": "9e22bfd1"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "src/repo/index.ts barrel exists with all public re-exports (types, detector, utils, metadata-provider).",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:20:50+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -68676,7 +68685,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually src/repo/index.ts barrel exists with all public re-exports (types, detector, utils, metadata-provider). and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:20:50+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::cross_module_architecture::shared_imports_repo_type": {
       "id": "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
@@ -68703,11 +68718,11 @@
         "reasoning": "",
         "summary_hash": "f419f2f1"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Inverted dependency: gh-api-utils defines local GitHubApiTarget, xfg-template defines local RepoDisplayInfo \u2014 both structurally compatible with repo types. shared/ no longer imports repo/.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:20:49+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -68715,7 +68730,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Inverted dependency: gh-api-utils defines local GitHubApiTarget, xfg-template defines local RepoDisplayInfo \u2014 both structurally compatible with repo types. shared/ no longer imports repo/. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:20:49+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli": {
       "id": "review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli",
@@ -69087,11 +69108,11 @@
         "reasoning": "",
         "summary_hash": "b17158fc"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Renamed IPRStrategy.checkExistingPR->findExistingPRUrl.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:36:59+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69099,7 +69120,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Renamed IPRStrategy.checkExistingPR->findExistingPRUrl. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:36:59+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::naming_quality::gitops_underscore_field_outlier": {
       "id": "review::.::holistic::naming_quality::gitops_underscore_field_outlier",
@@ -69251,11 +69278,11 @@
         "reasoning": "",
         "summary_hash": "4310e945"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Collapsed four factory fields into a single SettingsProcessorFactories record, reducing ceremony while preserving per-kind typing via interface members.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:14:45+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69263,7 +69290,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Collapsed four factory fields into a single SettingsProcessorFactories record, reducing ceremony while preserving per-kind typing via interface members. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:14:45+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::dependency_health::engines_node_floor_mismatch": {
       "id": "review::.::holistic::dependency_health::engines_node_floor_mismatch",
@@ -69331,11 +69364,11 @@
         "reasoning": "",
         "summary_hash": "5b4cb102"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Helper extraction cluster complete; twin blocks collapsed.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:04:33+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69343,7 +69376,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Helper extraction cluster complete; twin blocks collapsed. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:04:33+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets": {
       "id": "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets",
@@ -69368,11 +69407,11 @@
         "reasoning": "",
         "summary_hash": "3641af2c"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Helper extraction cluster complete; twin blocks collapsed.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:04:34+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69380,7 +69419,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Helper extraction cluster complete; twin blocks collapsed. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:04:34+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks": {
       "id": "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks",
@@ -69404,11 +69449,11 @@
         "reasoning": "",
         "summary_hash": "78967a75"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Helper extraction cluster complete; twin blocks collapsed.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:04:35+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69416,7 +69461,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Helper extraction cluster complete; twin blocks collapsed. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:04:35+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins": {
       "id": "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins",
@@ -69440,11 +69491,11 @@
         "reasoning": "",
         "summary_hash": "253c1112"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Helper extraction cluster complete; twin blocks collapsed.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:04:34+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69452,7 +69503,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Helper extraction cluster complete; twin blocks collapsed. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:04:34+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record": {
       "id": "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record",
@@ -69477,11 +69534,11 @@
         "reasoning": "",
         "summary_hash": "d6b0cac1"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Helper extraction cluster complete; twin blocks collapsed.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:04:35+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69489,7 +69546,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Helper extraction cluster complete; twin blocks collapsed. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:04:35+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::mid_level_elegance::session_options_runcontext_outlier": {
       "id": "review::.::holistic::mid_level_elegance::session_options_runcontext_outlier",
@@ -69683,11 +69746,11 @@
         "reasoning": "",
         "summary_hash": "b4383132"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Migrated IRepoLifecycleProvider methods to options bags; token inside options.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:37:00+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69695,7 +69758,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Migrated IRepoLifecycleProvider methods to options bags; token inside options. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:37:00+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift": {
       "id": "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
@@ -69722,11 +69791,11 @@
         "reasoning": "",
         "summary_hash": "b1627a6e"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Renamed IRepoSettingsStrategy methods: getSettings->get, updateSettings->update, setVulnerabilityAlerts->updateVulnerabilityAlerts.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:37:00+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69734,7 +69803,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Renamed IRepoSettingsStrategy methods: getSettings->get, updateSettings->update, setVulnerabilityAlerts->updateVulnerabilityAlerts. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:37:00+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::authorization_consistency::force_merge_audit_log_only": {
       "id": "review::.::holistic::authorization_consistency::force_merge_audit_log_only",
@@ -70139,11 +70214,11 @@
         "reasoning": "",
         "summary_hash": "02713cf2"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Replaced 4 flat factory fields with SettingsProcessorFactories record on RepoIterationContext, SyncDependencies, and ApplyRepoSettingsContext.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:14:43+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70151,7 +70226,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Replaced 4 flat factory fields with SettingsProcessorFactories record on RepoIterationContext, SyncDependencies, and ApplyRepoSettingsContext. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:14:43+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::design_coherence::validate_settings_multi_concern": {
       "id": "review::.::holistic::design_coherence::validate_settings_multi_concern",
@@ -70174,11 +70255,11 @@
         "reasoning": "",
         "summary_hash": "e2fe3086"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Split validateSettings into 5 per-concern dispatchers: validateSettingsRulesets/Labels/DeleteOrphaned/Repo/CodeScanning. validateSettings now thin orchestrator.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:14:44+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70186,7 +70267,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Split validateSettings into 5 per-concern dispatchers: validateSettingsRulesets/Labels/DeleteOrphaned/Repo/CodeScanning. validateSettings now thin orchestrator. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:14:44+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::contract_coherence::rethrow_name_but_returns": {
       "id": "review::.::holistic::contract_coherence::rethrow_name_but_returns",
@@ -70209,11 +70296,11 @@
         "reasoning": "",
         "summary_hash": "a87de593"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Renamed rethrowIfUnexpectedCommitError->classifyCommitError.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:36:58+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70221,7 +70308,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Renamed rethrowIfUnexpectedCommitError->classifyCommitError. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:36:58+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return": {
       "id": "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
@@ -70244,11 +70337,11 @@
         "reasoning": "",
         "summary_hash": "d8839b3c"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Clarified JSDoc: dry-run mode returns true without inspecting working tree.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:36:59+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70256,7 +70349,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Clarified JSDoc: dry-run mode returns true without inspecting working tree. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:36:59+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::logic_clarity::deepequal_redundant_return": {
       "id": "review::.::holistic::logic_clarity::deepequal_redundant_return",

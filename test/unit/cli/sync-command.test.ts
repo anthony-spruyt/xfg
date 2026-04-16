@@ -464,7 +464,9 @@ ${VALID_RULESET}
         {
           processorFactory: () => createMockProcessor(),
           lifecycleManager: noopLifecycleManager,
-          rulesetProcessorFactory: () => mockRulesetProcessor,
+          settingsProcessorFactories: {
+            rulesets: () => mockRulesetProcessor,
+          },
         }
       );
 
@@ -498,7 +500,9 @@ ${VALID_LABELS}
         {
           processorFactory: () => createMockProcessor(),
           lifecycleManager: noopLifecycleManager,
-          labelsProcessorFactory: () => mockLabelsProcessor,
+          settingsProcessorFactories: {
+            labels: () => mockLabelsProcessor,
+          },
         }
       );
 
@@ -532,7 +536,9 @@ repos:
         {
           processorFactory: () => createMockProcessor(),
           lifecycleManager: noopLifecycleManager,
-          repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+          settingsProcessorFactories: {
+            repo: () => mockRepoSettingsProcessor,
+          },
         }
       );
 
@@ -572,7 +578,9 @@ ${VALID_RULESET}
         {
           processorFactory: () => createMockProcessor(),
           lifecycleManager: noopLifecycleManager,
-          rulesetProcessorFactory: () => mockRulesetProcessor,
+          settingsProcessorFactories: {
+            rulesets: () => mockRulesetProcessor,
+          },
         }
       );
 
@@ -606,7 +614,9 @@ ${VALID_LABELS}
         {
           processorFactory: () => createMockProcessor(),
           lifecycleManager: noopLifecycleManager,
-          labelsProcessorFactory: () => mockLabelsProcessor,
+          settingsProcessorFactories: {
+            labels: () => mockLabelsProcessor,
+          },
         }
       );
 
@@ -637,7 +647,9 @@ ${VALID_RULESET}
         {
           processorFactory: () => createMockProcessor(),
           lifecycleManager: noopLifecycleManager,
-          rulesetProcessorFactory: () => mockRulesetProcessor,
+          settingsProcessorFactories: {
+            rulesets: () => mockRulesetProcessor,
+          },
         }
       );
 
@@ -674,7 +686,9 @@ ${VALID_RULESET}
             {
               processorFactory: () => createMockProcessor(),
               lifecycleManager: noopLifecycleManager,
-              rulesetProcessorFactory: () => mockRulesetProcessor,
+              settingsProcessorFactories: {
+                rulesets: () => mockRulesetProcessor,
+              },
             }
           ),
         /One or more repositories had errors during sync/
@@ -709,7 +723,9 @@ ${VALID_RULESET}
             {
               processorFactory: () => createMockProcessor(),
               lifecycleManager: noopLifecycleManager,
-              rulesetProcessorFactory: () => mockRulesetProcessor,
+              settingsProcessorFactories: {
+                rulesets: () => mockRulesetProcessor,
+              },
             }
           ),
         /One or more repositories had errors during sync/
@@ -749,7 +765,9 @@ ${VALID_LABELS}
               processorFactory: () =>
                 createMockProcessor({ success: true, message: "Files synced" }),
               lifecycleManager: noopLifecycleManager,
-              labelsProcessorFactory: () => mockLabelsProcessor,
+              settingsProcessorFactories: {
+                labels: () => mockLabelsProcessor,
+              },
             }
           ),
         /One or more repositories had errors during sync/
@@ -782,9 +800,11 @@ ${VALID_LABELS}
         {
           processorFactory: () => createMockProcessor(),
           lifecycleManager: noopLifecycleManager,
-          rulesetProcessorFactory: () => mockRulesetProcessor,
-          labelsProcessorFactory: () => mockLabelsProcessor,
-          repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+          settingsProcessorFactories: {
+            rulesets: () => mockRulesetProcessor,
+            labels: () => mockLabelsProcessor,
+            repo: () => mockRepoSettingsProcessor,
+          },
         }
       );
 
@@ -836,7 +856,9 @@ ${VALID_LABELS}
         {
           processorFactory: () => createMockProcessor(),
           lifecycleManager: noopLifecycleManager,
-          labelsProcessorFactory: () => mockLabelsProcessor,
+          settingsProcessorFactories: {
+            labels: () => mockLabelsProcessor,
+          },
         }
       );
 
@@ -873,7 +895,9 @@ ${VALID_LABELS}
             {
               processorFactory: () => createMockProcessor(),
               lifecycleManager: noopLifecycleManager,
-              labelsProcessorFactory: () => mockLabelsProcessor,
+              settingsProcessorFactories: {
+                labels: () => mockLabelsProcessor,
+              },
             }
           ),
         /One or more repositories had errors during sync/
@@ -923,7 +947,9 @@ repos:
         {
           processorFactory: () => createMockProcessor(),
           lifecycleManager: noopLifecycleManager,
-          repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+          settingsProcessorFactories: {
+            repo: () => mockRepoSettingsProcessor,
+          },
         }
       );
 
@@ -976,7 +1002,9 @@ repos:
         {
           processorFactory: () => createMockProcessor(),
           lifecycleManager: noopLifecycleManager,
-          repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+          settingsProcessorFactories: {
+            repo: () => mockRepoSettingsProcessor,
+          },
         }
       );
 
@@ -1011,7 +1039,9 @@ repos:
         {
           processorFactory: () => createMockProcessor(),
           lifecycleManager: noopLifecycleManager,
-          repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+          settingsProcessorFactories: {
+            repo: () => mockRepoSettingsProcessor,
+          },
         }
       );
 
@@ -1047,7 +1077,9 @@ repos:
             {
               processorFactory: () => createMockProcessor(),
               lifecycleManager: noopLifecycleManager,
-              repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+              settingsProcessorFactories: {
+                repo: () => mockRepoSettingsProcessor,
+              },
             }
           ),
         /One or more repositories had errors during sync/
@@ -1086,7 +1118,9 @@ repos:
             {
               processorFactory: () => createMockProcessor(),
               lifecycleManager: noopLifecycleManager,
-              repoSettingsProcessorFactory: () => mockRepoSettingsProcessor,
+              settingsProcessorFactories: {
+                repo: () => mockRepoSettingsProcessor,
+              },
             }
           ),
         /One or more repositories had errors during sync/
@@ -1123,7 +1157,9 @@ ${VALID_RULESET}
         {
           processorFactory: () => createMockProcessor(),
           lifecycleManager: noopLifecycleManager,
-          rulesetProcessorFactory: () => mockRulesetProcessor,
+          settingsProcessorFactories: {
+            rulesets: () => mockRulesetProcessor,
+          },
         }
       );
 

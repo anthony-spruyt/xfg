@@ -27,7 +27,7 @@ export abstract class BasePRStrategy implements IPRStrategy {
     this.log = log;
   }
 
-  abstract checkExistingPR(
+  abstract findExistingPRUrl(
     options: CloseExistingPROptions
   ): Promise<string | null>;
   abstract closeExistingPR(options: CloseExistingPROptions): Promise<boolean>;
@@ -64,7 +64,7 @@ export class PRWorkflowExecutor {
 
   async execute(options: PRStrategyOptions): Promise<PRResult> {
     try {
-      const existingUrl = await this.strategy.checkExistingPR(options);
+      const existingUrl = await this.strategy.findExistingPRUrl(options);
       if (existingUrl) {
         return {
           url: existingUrl,

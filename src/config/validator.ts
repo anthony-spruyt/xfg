@@ -213,6 +213,118 @@ function buildRootSettingsContext(config: RawConfig): RootSettingsContext {
 /**
  * Validates settings object containing rulesets, labels, and repo settings.
  */
+function validateSettingsRulesets(
+  settings: Record<string, unknown>,
+  context: string,
+  rootCtx?: RootSettingsContext
+): void {
+  if (settings.rulesets === undefined) return;
+  if (!isPlainObject(settings.rulesets)) {
+    throw new ValidationError(`${context}: rulesets must be an object`);
+  }
+
+  const rulesets = settings.rulesets;
+  for (const [name, ruleset] of Object.entries(rulesets)) {
+    if (name === "inherit") continue;
+
+    if (ruleset === false) {
+      if (rootCtx && !rootCtx.rulesetNames.includes(name)) {
+        throw new ValidationError(
+          `${context}: Cannot opt out of '${name}' - not defined in root settings.rulesets`
+        );
+      }
+      continue;
+    }
+
+    validateRuleset(ruleset, name, context);
+  }
+}
+
+function validateSettingsLabels(
+  settings: Record<string, unknown>,
+  context: string,
+  rootCtx?: RootSettingsContext
+): void {
+  if (settings.labels === undefined) return;
+  if (!isPlainObject(settings.labels)) {
+    throw new ValidationError(`${context}: labels must be an object`);
+  }
+  const labels = settings.labels;
+  for (const [name, label] of Object.entries(labels)) {
+    if (name === "inherit") continue;
+    if (label === false) {
+      if (rootCtx && !rootCtx.labelNames.includes(name)) {
+        throw new ValidationError(
+          `${context}: Cannot opt out of label '${name}' - not defined in root settings.labels`
+        );
+      }
+      continue;
+    }
+    validateLabel(label, name, context);
+  }
+}
+
+function validateSettingsDeleteOrphaned(
+  settings: Record<string, unknown>,
+  context: string
+): void {
+  if (
+    settings.deleteOrphaned !== undefined &&
+    typeof settings.deleteOrphaned !== "boolean"
+  ) {
+    throw new ValidationError(
+      `${context}: settings.deleteOrphaned must be a boolean`
+    );
+  }
+}
+
+function validateSettingsRepo(
+  settings: Record<string, unknown>,
+  context: string,
+  rootCtx?: RootSettingsContext
+): void {
+  if (settings.repo === undefined) return;
+  if (settings.repo === false) {
+    if (!rootCtx) {
+      throw new ValidationError(
+        `${context}: repo: false is not valid at root level. Define repo settings or remove the field.`
+      );
+    }
+    if (!rootCtx.hasRepoSettings) {
+      throw new ValidationError(
+        `${context}: Cannot opt out of repo settings — not defined in root settings.repo`
+      );
+    }
+    return;
+  }
+  validateRepoSettings(settings.repo, context);
+}
+
+function validateSettingsCodeScanning(
+  settings: Record<string, unknown>,
+  context: string,
+  rootCtx?: RootSettingsContext
+): void {
+  if (settings.codeScanning === undefined) return;
+  if (settings.codeScanning === false) {
+    if (!rootCtx) {
+      throw new ValidationError(
+        `${context}: codeScanning: false is not valid at root level. Define codeScanning settings or remove the field.`
+      );
+    }
+    if (!rootCtx.hasCodeScanningSettings) {
+      throw new ValidationError(
+        `${context}: Cannot opt out of code scanning settings — not defined in root settings.codeScanning`
+      );
+    }
+    return;
+  }
+  validateCodeScanningSettings(
+    settings.codeScanning,
+    `${context} codeScanning`
+  );
+}
+
 function validateSettings(
   settings: unknown,
   context: string,
@@ -222,97 +334,11 @@ function validateSettings(
     throw new ValidationError(`${context}: settings must be an object`);
   }
 
-  if (settings.rulesets !== undefined) {
-    if (!isPlainObject(settings.rulesets)) {
-      throw new ValidationError(`${context}: rulesets must be an object`);
-    }
-
-    const rulesets = settings.rulesets;
-    for (const [name, ruleset] of Object.entries(rulesets)) {
-      // Skip reserved key
-      if (name === "inherit") continue;
-
-      if (ruleset === false) {
-        if (rootCtx && !rootCtx.rulesetNames.includes(name)) {
-          throw new ValidationError(
-            `${context}: Cannot opt out of '${name}' - not defined in root settings.rulesets`
-          );
-        }
-        continue; // Skip further validation for false entries
-      }
-
-      validateRuleset(ruleset, name, context);
-    }
-  }
-
-  if (settings.labels !== undefined) {
-    if (!isPlainObject(settings.labels)) {
-      throw new ValidationError(`${context}: labels must be an object`);
-    }
-    const labels = settings.labels;
-    for (const [name, label] of Object.entries(labels)) {
-      if (name === "inherit") continue;
-      if (label === false) {
-        if (rootCtx && !rootCtx.labelNames.includes(name)) {
-          throw new ValidationError(
-            `${context}: Cannot opt out of label '${name}' - not defined in root settings.labels`
-          );
-        }
-        continue;
-      }
-      validateLabel(label, name, context);
-    }
-  }
-
-  if (
-    settings.deleteOrphaned !== undefined &&
-    typeof settings.deleteOrphaned !== "boolean"
-  ) {
-    throw new ValidationError(
-      `${context}: settings.deleteOrphaned must be a boolean`
-    );
-  }
-
-  if (settings.repo !== undefined) {
-    if (settings.repo === false) {
-      if (!rootCtx) {
-        // Root level — repo: false not valid here
-        throw new ValidationError(
-          `${context}: repo: false is not valid at root level. Define repo settings or remove the field.`
-        );
-      }
-      // Per-repo level — check root has repo settings to opt out of
-      if (!rootCtx.hasRepoSettings) {
-        throw new ValidationError(
-          `${context}: Cannot opt out of repo settings — not defined in root settings.repo`
-        );
-      }
-      // Valid opt-out, skip further repo validation
-    } else {
-      validateRepoSettings(settings.repo, context);
-    }
-  }
-
-  if (settings.codeScanning !== undefined) {
-    if (settings.codeScanning === false) {
-      if (!rootCtx) {
-        throw new ValidationError(
-          `${context}: codeScanning: false is not valid at root level. Define codeScanning settings or remove the field.`
-        );
-      }
-      // Per-repo level — check root has codeScanning settings to opt out of
-      if (!rootCtx.hasCodeScanningSettings) {
-        throw new ValidationError(
-          `${context}: Cannot opt out of code scanning settings — not defined in root settings.codeScanning`
-        );
-      }
-    } else {
-      validateCodeScanningSettings(
-        settings.codeScanning,
-        `${context} codeScanning`
-      );
-    }
-  }
+  validateSettingsRulesets(settings, context, rootCtx);
+  validateSettingsLabels(settings, context, rootCtx);
+  validateSettingsDeleteOrphaned(settings, context);
+  validateSettingsRepo(settings, context, rootCtx);
+  validateSettingsCodeScanning(settings, context, rootCtx);
 }
 
 const VALID_CODE_SCANNING_STATES = ["configured", "not-configured"];
@@ -905,6 +931,29 @@ function validateRepoFiles(
   }
 }
 
+function enrichSettingsContext(
+  rootCtx: RootSettingsContext,
+  settings: RawRepoSettings | RawRootSettings | undefined
+): void {
+  if (!settings) return;
+  if (settings.rulesets) {
+    for (const name of Object.keys(settings.rulesets)) {
+      if (name !== "inherit") rootCtx.rulesetNames.push(name);
+    }
+  }
+  if (settings.labels) {
+    for (const name of Object.keys(settings.labels)) {
+      if (name !== "inherit") rootCtx.labelNames.push(name);
+    }
+  }
+  if (settings.repo !== undefined && settings.repo !== false) {
+    rootCtx.hasRepoSettings = true;
+  }
+  if (settings.codeScanning !== undefined && settings.codeScanning !== false) {
+    rootCtx.hasCodeScanningSettings = true;
+  }
+}
+
 function validateRepoSettingsEntry(
   config: RawConfig,
   repo: RawConfig["repos"][number],
@@ -917,52 +966,12 @@ function validateRepoSettingsEntry(
   if (repo.groups && config.groups) {
     const expandedGroups = expandRepoGroups(repo.groups, config.groups);
     for (const groupName of expandedGroups) {
-      const group = config.groups[groupName];
-      if (group?.settings?.rulesets) {
-        for (const name of Object.keys(group.settings.rulesets)) {
-          if (name !== "inherit") rootCtx.rulesetNames.push(name);
-        }
-      }
-      if (group?.settings?.labels) {
-        for (const name of Object.keys(group.settings.labels)) {
-          if (name !== "inherit") rootCtx.labelNames.push(name);
-        }
-      }
-      if (
-        group?.settings?.repo !== undefined &&
-        group.settings.repo !== false
-      ) {
-        rootCtx.hasRepoSettings = true;
-      }
-      if (
-        group?.settings?.codeScanning !== undefined &&
-        group.settings.codeScanning !== false
-      ) {
-        rootCtx.hasCodeScanningSettings = true;
-      }
+      enrichSettingsContext(rootCtx, config.groups[groupName]?.settings);
     }
   }
   if (config.conditionalGroups) {
     for (const cg of config.conditionalGroups) {
-      if (cg.settings?.rulesets) {
-        for (const name of Object.keys(cg.settings.rulesets)) {
-          if (name !== "inherit") rootCtx.rulesetNames.push(name);
-        }
-      }
-      if (cg.settings?.labels) {
-        for (const name of Object.keys(cg.settings.labels)) {
-          if (name !== "inherit") rootCtx.labelNames.push(name);
-        }
-      }
-      if (cg.settings?.repo !== undefined && cg.settings.repo !== false) {
-        rootCtx.hasRepoSettings = true;
-      }
-      if (
-        cg.settings?.codeScanning !== undefined &&
-        cg.settings.codeScanning !== false
-      ) {
-        rootCtx.hasCodeScanningSettings = true;
-      }
+      enrichSettingsContext(rootCtx, cg.settings);
     }
   }
 

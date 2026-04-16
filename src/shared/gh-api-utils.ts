@@ -1,13 +1,17 @@
 import { escapeShellArg } from "./shell-utils.js";
 import { withRetry } from "./retry-utils.js";
 import type { ICommandExecutor } from "./command-executor.js";
-import type { GitHubRepoInfo } from "../repo/index.js";
 import { toErrorMessage } from "./type-guards.js";
 
 import type { DebugWarnLog } from "./logger.js";
 
+export interface GitHubApiTarget {
+  host: string;
+  owner: string;
+}
+
 interface ITokenManager {
-  getTokenForRepo(repoInfo: GitHubRepoInfo): Promise<string | null>;
+  getTokenForRepo(repoInfo: GitHubApiTarget): Promise<string | null>;
 }
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -39,7 +43,9 @@ interface GhApiCallOptions {
  * Get the hostname flag for gh commands.
  * Returns "--hostname HOST" for GHE, empty string for github.com.
  */
-export function getHostnameFlag(repoInfo: GitHubRepoInfo): string {
+export function getHostnameFlag(
+  repoInfo: Pick<GitHubApiTarget, "host">
+): string {
   if (repoInfo.host !== "github.com") {
     return `--hostname ${escapeShellArg(repoInfo.host)}`;
   }
@@ -223,7 +229,7 @@ export class GhApiClient {
 }
 
 interface ResolveGitHubTokenOptions {
-  repoInfo: GitHubRepoInfo;
+  repoInfo: GitHubApiTarget;
   tokenManager: ITokenManager | null;
   context: string;
   log?: DebugWarnLog;

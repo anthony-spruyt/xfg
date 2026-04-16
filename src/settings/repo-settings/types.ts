@@ -49,15 +49,12 @@ export interface IRepoSettingsStrategy {
   /**
    * Gets current repository settings.
    */
-  getSettings(
-    repoInfo: RepoInfo,
-    options?: GhApiOptions
-  ): Promise<CurrentRepoSettings>;
+  get(repoInfo: RepoInfo, options?: GhApiOptions): Promise<CurrentRepoSettings>;
 
   /**
    * Updates repository settings.
    */
-  updateSettings(
+  update(
     repoInfo: RepoInfo,
     settings: GitHubRepoSettings,
     options?: GhApiOptions
@@ -66,7 +63,7 @@ export interface IRepoSettingsStrategy {
   /**
    * Enables or disables vulnerability alerts.
    */
-  setVulnerabilityAlerts(
+  updateVulnerabilityAlerts(
     repoInfo: RepoInfo,
     enable: boolean,
     options?: GhApiOptions

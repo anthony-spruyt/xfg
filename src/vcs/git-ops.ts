@@ -274,7 +274,7 @@ export class GitOps implements ILocalGitOps {
   /**
    * Stage all changes and commit with the given message.
    * Uses --no-verify to skip pre-commit hooks (config sync should always succeed).
-   * @returns true if a commit was made (or would be made in dry-run mode), false if there were no staged changes
+   * @returns true if a commit was made, or false if there were no staged changes. In dry-run mode, always returns true without inspecting the working tree.
    */
   async commit(message: string): Promise<boolean> {
     if (this.dryRun) {

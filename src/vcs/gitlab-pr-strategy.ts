@@ -89,7 +89,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     }
   }
 
-  async checkExistingPR(
+  async findExistingPRUrl(
     options: CloseExistingPROptions
   ): Promise<string | null> {
     const { repoInfo, branchName, workDir, retries = 3 } = options;
@@ -136,7 +136,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     assertGitLabRepo(repoInfo, "GitLab PR strategy");
 
     // First check if there's an existing MR
-    const existingUrl = await this.checkExistingPR({
+    const existingUrl = await this.findExistingPRUrl({
       repoInfo,
       branchName,
       baseBranch,

@@ -72,7 +72,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
 
     // Fetch current settings and metadata in parallel
     const [currentSettings, metadata] = await Promise.all([
-      this.strategy.getSettings(githubRepo, strategyOptions),
+      this.strategy.get(githubRepo, strategyOptions),
       this.metadataProvider.getMetadata(githubRepo, strategyOptions),
     ]);
 
@@ -177,13 +177,13 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
 
     // Update main settings via PATCH /repos
     if (Object.keys(mainSettings).length > 0) {
-      await this.strategy.updateSettings(repoInfo, mainSettings, options);
+      await this.strategy.update(repoInfo, mainSettings, options);
     }
 
     // Handle vulnerability alerts (separate endpoint)
     // Must be done before automated security fixes
     if (vulnerabilityAlerts !== undefined) {
-      await this.strategy.setVulnerabilityAlerts(
+      await this.strategy.updateVulnerabilityAlerts(
         repoInfo,
         vulnerabilityAlerts,
         options
