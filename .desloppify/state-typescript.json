@@ -12,8 +12,8 @@
     "auto_resolved": 1095,
     "deferred": 0,
     "false_positive": 87,
-    "fixed": 257,
-    "open": 223,
+    "fixed": 262,
+    "open": 218,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 5,
-        "fixed": 102,
-        "open": 3,
+        "fixed": 103,
+        "open": 2,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 50,
-        "fixed": 117,
-        "open": 40,
+        "fixed": 120,
+        "open": 37,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -39,8 +39,8 @@
         "auto_resolved": 648,
         "deferred": 0,
         "false_positive": 32,
-        "fixed": 18,
-        "open": 179,
+        "fixed": 19,
+        "open": 178,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -140,7 +140,10 @@
     "api_surface_coherence": {
       "score": 92.0,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T09:37:00+00:00"
     },
     "authorization_consistency": {
       "score": 95.0,
@@ -209,7 +212,10 @@
     "contract_coherence": {
       "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T09:36:59+00:00"
     },
     "dependency_health": {
       "score": 94.5,
@@ -238,7 +244,7 @@
       "assessed_at": "2026-04-16T05:39:25+00:00",
       "needs_review_refresh": true,
       "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T07:52:34+00:00"
+      "stale_since": "2026-04-16T09:36:59+00:00"
     },
     "test_strategy": {
       "score": 92.0,
@@ -3103,13 +3109,13 @@
       "strict": 92.0,
       "verified_strict_score": 92.0,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.92,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.8,
           "assessment_score": 92.0,
           "placeholder": false,
@@ -3145,13 +3151,13 @@
       "strict": 92.5,
       "verified_strict_score": 92.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.925,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.75,
           "assessment_score": 92.5,
           "placeholder": false,
@@ -3397,13 +3403,13 @@
       "strict": 91.5,
       "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.915,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
@@ -69102,11 +69108,11 @@
         "reasoning": "",
         "summary_hash": "b17158fc"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Renamed IPRStrategy.checkExistingPR->findExistingPRUrl.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:36:59+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69114,7 +69120,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Renamed IPRStrategy.checkExistingPR->findExistingPRUrl. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:36:59+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::naming_quality::gitops_underscore_field_outlier": {
       "id": "review::.::holistic::naming_quality::gitops_underscore_field_outlier",
@@ -69734,11 +69746,11 @@
         "reasoning": "",
         "summary_hash": "b4383132"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Migrated IRepoLifecycleProvider methods to options bags; token inside options.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:37:00+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69746,7 +69758,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Migrated IRepoLifecycleProvider methods to options bags; token inside options. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:37:00+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift": {
       "id": "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
@@ -69773,11 +69791,11 @@
         "reasoning": "",
         "summary_hash": "b1627a6e"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Renamed IRepoSettingsStrategy methods: getSettings->get, updateSettings->update, setVulnerabilityAlerts->updateVulnerabilityAlerts.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:37:00+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69785,7 +69803,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Renamed IRepoSettingsStrategy methods: getSettings->get, updateSettings->update, setVulnerabilityAlerts->updateVulnerabilityAlerts. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:37:00+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::authorization_consistency::force_merge_audit_log_only": {
       "id": "review::.::holistic::authorization_consistency::force_merge_audit_log_only",
@@ -70272,11 +70296,11 @@
         "reasoning": "",
         "summary_hash": "a87de593"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Renamed rethrowIfUnexpectedCommitError->classifyCommitError.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:36:58+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70284,7 +70308,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Renamed rethrowIfUnexpectedCommitError->classifyCommitError. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:36:58+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return": {
       "id": "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
@@ -70307,11 +70337,11 @@
         "reasoning": "",
         "summary_hash": "d8839b3c"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Clarified JSDoc: dry-run mode returns true without inspecting working tree.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T09:36:59+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70319,7 +70349,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Clarified JSDoc: dry-run mode returns true without inspecting working tree. and I am not gaming the score.",
+        "attested_at": "2026-04-16T09:36:59+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::logic_clarity::deepequal_redundant_return": {
       "id": "review::.::holistic::logic_clarity::deepequal_redundant_return",

@@ -1,13 +1,8 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-16T09:20:50+00:00",
+  "updated": "2026-04-16T09:37:00+00:00",
   "queue_order": [
-    "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
-    "review::.::holistic::contract_coherence::rethrow_name_but_returns",
-    "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
-    "review::.::holistic::naming_quality::check_existing_pr_returns_url",
-    "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
     "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
     "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
     "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons",
@@ -404,7 +399,7 @@
       "skipped_at_scan": 199
     }
   },
-  "active_cluster": "cross-module-architecture-layering",
+  "active_cluster": "api-and-contract-coherence",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -2683,8 +2678,8 @@
     "review::.::holistic::cross_module_architecture::repo_module_missing_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
       "created_at": "2026-04-16T07:26:24+00:00",
-      "cluster": "cross-module-architecture-layering",
-      "updated_at": "2026-04-16T07:26:24+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T09:20:50+00:00"
     },
     "review::.::holistic::cross_module_architecture::shared_imports_repo_type": {
       "issue_id": "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
@@ -2695,26 +2690,26 @@
     "review::.::holistic::contract_coherence::rethrow_name_but_returns": {
       "issue_id": "review::.::holistic::contract_coherence::rethrow_name_but_returns",
       "created_at": "2026-04-16T07:26:26+00:00",
-      "cluster": "api-and-contract-coherence",
-      "updated_at": "2026-04-16T07:26:26+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T09:36:58+00:00"
     },
     "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return": {
       "issue_id": "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
       "created_at": "2026-04-16T07:26:26+00:00",
-      "cluster": "api-and-contract-coherence",
-      "updated_at": "2026-04-16T07:26:26+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T09:36:59+00:00"
     },
     "review::.::holistic::naming_quality::check_existing_pr_returns_url": {
       "issue_id": "review::.::holistic::naming_quality::check_existing_pr_returns_url",
       "created_at": "2026-04-16T07:26:26+00:00",
-      "cluster": "api-and-contract-coherence",
-      "updated_at": "2026-04-16T07:26:26+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T09:36:59+00:00"
     },
     "review::.::holistic::api_surface_coherence::lifecycle_token_positional": {
       "issue_id": "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
       "created_at": "2026-04-16T07:26:26+00:00",
-      "cluster": "api-and-contract-coherence",
-      "updated_at": "2026-04-16T07:26:26+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T09:37:00+00:00"
     },
     "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift": {
       "issue_id": "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
@@ -4546,8 +4541,8 @@
       "name": "cross-module-architecture-layering",
       "description": "Relocate gh-api-utils and xfg-template RepoInfo couplings out of src/shared/ to restore shared-as-leaf layering, and fix the repo barrel import angle at the same time",
       "issue_ids": [
-        "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
-        "review::.::holistic::cross_module_architecture::shared_imports_repo_type"
+        "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
+        "review::.::holistic::cross_module_architecture::repo_module_missing_barrel"
       ],
       "created_at": "2026-04-16T07:25:43+00:00",
       "updated_at": "2026-04-16T09:20:40+00:00",
@@ -4588,14 +4583,14 @@
       "name": "api-and-contract-coherence",
       "description": "Rename rethrowIfUnexpectedCommitError to classifyCommitError, IPRStrategy.checkExistingPR to findExistingPRUrl, fix IRepoSettingsStrategy verbs, migrate IRepoLifecycleProvider to options bag, clarify GitOps.commit dry-run JSDoc",
       "issue_ids": [
+        "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
         "review::.::holistic::contract_coherence::rethrow_name_but_returns",
         "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
         "review::.::holistic::naming_quality::check_existing_pr_returns_url",
-        "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
-        "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift"
+        "review::.::holistic::api_surface_coherence::lifecycle_token_positional"
       ],
       "created_at": "2026-04-16T07:25:47+00:00",
-      "updated_at": "2026-04-16T07:29:36+00:00",
+      "updated_at": "2026-04-16T09:36:50+00:00",
       "auto": false,
       "cluster_key": "",
       "action": null,
@@ -4611,7 +4606,8 @@
           "issue_refs": [
             "review::.::holistic::contract_coherence::rethrow_name_but_returns",
             "review::.::holistic::naming_quality::check_existing_pr_returns_url"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Align IRepoSettingsStrategy verbs with sibling strategies and migrate IRepoLifecycleProvider to options bag",
@@ -4620,7 +4616,8 @@
           "issue_refs": [
             "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
             "review::.::holistic::api_surface_coherence::lifecycle_token_positional"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Clarify GitOps.commit dry-run contract in JSDoc",
@@ -4628,7 +4625,8 @@
           "effort": "trivial",
           "issue_refs": [
             "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return"
-          ]
+          ],
+          "done": true
         }
       ]
     },
@@ -31736,6 +31734,191 @@
       "actor": "user",
       "note": "src/repo/index.ts barrel exists with all public re-exports (types, detector, utils, metadata-provider).",
       "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T09:20:50+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::repo_module_missing_barrel"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "src/repo/index.ts barrel exists with all public re-exports (types, detector, utils, metadata-provider).",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually src/repo/index.ts barrel exists with all public re-exports (types, detector, utils, metadata-provider). and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:23:59+00:00",
+      "action": "focus",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "action": "clear",
+        "previous": "cross-module-architecture-layering"
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:27:13+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-and-contract-coherence",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:27:14+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
+        "review::.::holistic::cross_module_architecture::repo_module_missing_barrel"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "sha": "1573f9dafb58",
+        "branch": "desloppify/round-8-part-2"
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:33:55+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-and-contract-coherence",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:36:50+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-and-contract-coherence",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:36:58+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::contract_coherence::rethrow_name_but_returns"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed rethrowIfUnexpectedCommitError->classifyCommitError.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T09:36:58+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::contract_coherence::rethrow_name_but_returns"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed rethrowIfUnexpectedCommitError->classifyCommitError.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Renamed rethrowIfUnexpectedCommitError->classifyCommitError. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:36:59+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Clarified JSDoc: dry-run mode returns true without inspecting working tree.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T09:36:59+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Clarified JSDoc: dry-run mode returns true without inspecting working tree.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Clarified JSDoc: dry-run mode returns true without inspecting working tree. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:36:59+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::check_existing_pr_returns_url"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed IPRStrategy.checkExistingPR->findExistingPRUrl.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T09:36:59+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::naming_quality::check_existing_pr_returns_url"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed IPRStrategy.checkExistingPR->findExistingPRUrl.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Renamed IPRStrategy.checkExistingPR->findExistingPRUrl. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:37:00+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::lifecycle_token_positional"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Migrated IRepoLifecycleProvider methods to options bags; token inside options.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T09:37:00+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::lifecycle_token_positional"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Migrated IRepoLifecycleProvider methods to options bags; token inside options.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Migrated IRepoLifecycleProvider methods to options bags; token inside options. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T09:37:00+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed IRepoSettingsStrategy methods: getSettings->get, updateSettings->update, setVulnerabilityAlerts->updateVulnerabilityAlerts.",
+      "detail": {}
     }
   ],
   "epic_triage_meta": {
@@ -33346,10 +33529,24 @@
       "recorded_at": "2026-04-16T09:14:51+00:00",
       "note": null,
       "cluster_name": null
+    },
+    {
+      "sha": "1573f9dafb58",
+      "branch": "desloppify/round-8-part-2",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
+        "review::.::holistic::cross_module_architecture::repo_module_missing_barrel"
+      ],
+      "recorded_at": "2026-04-16T09:27:14+00:00",
+      "note": null,
+      "cluster_name": null
     }
   ],
   "uncommitted_issues": [
-    "review::.::holistic::cross_module_architecture::shared_imports_repo_type"
+    "review::.::holistic::contract_coherence::rethrow_name_but_returns",
+    "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
+    "review::.::holistic::naming_quality::check_existing_pr_returns_url",
+    "review::.::holistic::api_surface_coherence::lifecycle_token_positional"
   ],
   "commit_tracking_branch": null,
   "refresh_state": {
