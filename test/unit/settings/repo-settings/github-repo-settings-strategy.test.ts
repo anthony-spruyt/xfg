@@ -85,7 +85,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       // 4 commands: base settings + 3 security endpoints
       assert.equal(mockExecutor.commands.length, 4);
@@ -116,7 +116,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       assert.equal(result.owner_type, "Organization");
     });
@@ -140,7 +140,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       assert.equal(result.owner_type, "User");
     });
@@ -163,7 +163,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       assert.equal(result.owner_type, undefined);
     });
@@ -186,7 +186,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       assert.equal(result.vulnerability_alerts, true);
     });
@@ -207,7 +207,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       assert.equal(result.vulnerability_alerts, false);
     });
@@ -227,10 +227,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         cwd: "/test",
       });
 
-      await assert.rejects(
-        async () => strategy.getSettings(githubRepo),
-        /HTTP 500/
-      );
+      await assert.rejects(async () => strategy.get(githubRepo), /HTTP 500/);
     });
 
     test("should return automated_security_fixes true when endpoint returns 204", async () => {
@@ -249,7 +246,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       assert.equal(result.automated_security_fixes, true);
     });
@@ -272,7 +269,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       // Should return true based on API response, not vulnerability_alerts state
       // This allows diff to correctly show change is needed when vuln alerts are enabled
@@ -298,7 +295,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       assert.equal(result.automated_security_fixes, false);
     });
@@ -319,10 +316,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         cwd: "/test",
       });
 
-      await assert.rejects(
-        async () => strategy.getSettings(githubRepo),
-        /HTTP 401/
-      );
+      await assert.rejects(async () => strategy.get(githubRepo), /HTTP 401/);
     });
 
     test("should return private_vulnerability_reporting true when enabled", async () => {
@@ -341,7 +335,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       assert.equal(result.private_vulnerability_reporting, true);
     });
@@ -362,7 +356,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       assert.equal(result.private_vulnerability_reporting, false);
     });
@@ -383,7 +377,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       assert.equal(result.private_vulnerability_reporting, false);
     });
@@ -405,10 +399,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         cwd: "/test",
       });
 
-      await assert.rejects(
-        async () => strategy.getSettings(githubRepo),
-        /HTTP 500/
-      );
+      await assert.rejects(async () => strategy.get(githubRepo), /HTTP 500/);
     });
   });
 
@@ -420,7 +411,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      await strategy.updateSettings(githubRepo, {
+      await strategy.update(githubRepo, {
         hasIssues: false,
         allowSquashMerge: true,
       });
@@ -437,7 +428,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      await strategy.updateSettings(githubRepo, {
+      await strategy.update(githubRepo, {
         webCommitSignoffRequired: true,
       });
 
@@ -455,7 +446,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      await strategy.updateSettings(githubRepo, {
+      await strategy.update(githubRepo, {
         defaultBranch: "develop",
       });
 
@@ -471,7 +462,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      await strategy.updateSettings(githubRepo, {
+      await strategy.update(githubRepo, {
         description: "My repo description",
       });
 
@@ -486,7 +477,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      await strategy.updateSettings(githubRepo, {});
+      await strategy.update(githubRepo, {});
 
       assert.equal(mockExecutor.commands.length, 0);
     });
@@ -500,7 +491,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      await strategy.setVulnerabilityAlerts(githubRepo, true);
+      await strategy.updateVulnerabilityAlerts(githubRepo, true);
 
       assert.equal(mockExecutor.commands.length, 1);
       assert.ok(mockExecutor.commands[0].includes("-X PUT"));
@@ -514,7 +505,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      await strategy.setVulnerabilityAlerts(githubRepo, false);
+      await strategy.updateVulnerabilityAlerts(githubRepo, false);
 
       assert.equal(mockExecutor.commands.length, 1);
       assert.ok(mockExecutor.commands[0].includes("-X DELETE"));
@@ -603,7 +594,7 @@ describe("GitHubRepoSettingsStrategy", () => {
       });
 
       await assert.rejects(
-        async () => strategy.getSettings(azureRepo),
+        async () => strategy.get(azureRepo),
         /GitHub Repo Settings strategy requires GitHub repositories/
       );
     });
@@ -628,7 +619,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      await strategy.getSettings(gheRepo, { host: "github.example.com" });
+      await strategy.get(gheRepo, { host: "github.example.com" });
 
       assert.ok(mockExecutor.commands[0].includes("--hostname"));
       assert.ok(mockExecutor.commands[0].includes("github.example.com"));
@@ -718,7 +709,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 1,
         cwd: "/test",
       });
-      await strategy.updateSettings(githubRepo, { hasIssues: true });
+      await strategy.update(githubRepo, { hasIssues: true });
 
       assert.ok(
         callCount >= 2,
@@ -747,7 +738,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         cwd: "/test",
       });
       await assert.rejects(
-        async () => strategy.updateSettings(githubRepo, { hasIssues: true }),
+        async () => strategy.update(githubRepo, { hasIssues: true }),
         /404/
       );
 
@@ -784,7 +775,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 1,
         cwd: "/test",
       });
-      const result = await strategy.getSettings(githubRepo);
+      const result = await strategy.get(githubRepo);
 
       assert.equal(result.vulnerability_alerts, false);
       assert.equal(

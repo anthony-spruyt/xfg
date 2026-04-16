@@ -31,6 +31,31 @@ export interface CreateRepoSettings {
   defaultBranch?: string;
 }
 
+export interface LifecycleExistsParams {
+  repo: RepoInfo;
+  token?: string;
+}
+
+export interface LifecycleCreateParams {
+  repo: RepoInfo;
+  settings?: CreateRepoSettings;
+  token?: string;
+}
+
+export interface LifecycleForkParams {
+  upstream: RepoInfo;
+  target: RepoInfo;
+  settings?: CreateRepoSettings;
+  token?: string;
+}
+
+export interface LifecycleReceiveMigrationParams {
+  repo: RepoInfo;
+  sourceDir: string;
+  settings?: CreateRepoSettings;
+  token?: string;
+}
+
 /**
  * Provider for platform-specific lifecycle operations.
  * Implementations handle create/fork/receive for a specific platform.
@@ -42,37 +67,23 @@ export interface IRepoLifecycleProvider {
    * Check if a repository exists on this platform.
    * @throws LifecycleError on network/auth failures (NOT for "repo not found")
    */
-  exists(repoInfo: RepoInfo, token?: string): Promise<boolean>;
+  exists(params: LifecycleExistsParams): Promise<boolean>;
 
   /**
    * Create an empty repository.
    */
-  create(
-    repoInfo: RepoInfo,
-    settings?: CreateRepoSettings,
-    token?: string
-  ): Promise<void>;
+  create(params: LifecycleCreateParams): Promise<void>;
 
   /**
    * Fork from an upstream repository.
    * Optional - not all platforms support forking.
    */
-  fork?(
-    upstream: RepoInfo,
-    target: RepoInfo,
-    settings?: CreateRepoSettings,
-    token?: string
-  ): Promise<void>;
+  fork?(params: LifecycleForkParams): Promise<void>;
 
   /**
    * Receive migrated content (repo already created, push content).
    */
-  receiveMigration(
-    repoInfo: RepoInfo,
-    sourceDir: string,
-    settings?: CreateRepoSettings,
-    token?: string
-  ): Promise<void>;
+  receiveMigration(params: LifecycleReceiveMigrationParams): Promise<void>;
 }
 
 /**

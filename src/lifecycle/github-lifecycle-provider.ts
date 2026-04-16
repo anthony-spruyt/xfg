@@ -18,6 +18,10 @@ import type {
   IRepoLifecycleProvider,
   LifecyclePlatform,
   CreateRepoSettings,
+  LifecycleExistsParams,
+  LifecycleCreateParams,
+  LifecycleForkParams,
+  LifecycleReceiveMigrationParams,
 } from "./types.js";
 
 /**
@@ -185,7 +189,8 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     return { tokenEnv, prefix: `gh api ${hostnamePart}`, apiPath };
   }
 
-  async exists(repoInfo: RepoInfo, token?: string): Promise<boolean> {
+  async exists(params: LifecycleExistsParams): Promise<boolean> {
+    const { repo: repoInfo, token } = params;
     this.assertGitHub(repoInfo);
 
     const { tokenEnv, prefix, apiPath } = this.buildGhApiPrefix(
@@ -214,11 +219,8 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     }
   }
 
-  async create(
-    repoInfo: RepoInfo,
-    settings?: CreateRepoSettings,
-    token?: string
-  ): Promise<void> {
+  async create(params: LifecycleCreateParams): Promise<void> {
+    const { repo: repoInfo, settings, token } = params;
     this.assertGitHub(repoInfo);
 
     const tokenEnv = buildTokenEnv(token);
@@ -286,12 +288,8 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     await this.deleteReadme(repoInfo, token);
   }
 
-  async fork(
-    upstream: RepoInfo,
-    target: RepoInfo,
-    settings?: CreateRepoSettings,
-    token?: string
-  ): Promise<void> {
+  async fork(params: LifecycleForkParams): Promise<void> {
+    const { upstream, target, settings, token } = params;
     this.assertGitHub(upstream);
     this.assertGitHub(target);
 
@@ -359,7 +357,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     while (Date.now() < deadline) {
       try {
-        const ready = await this.exists(repoInfo, token);
+        const ready = await this.exists({ repo: repoInfo, token });
         if (ready) {
           return;
         }
@@ -416,11 +414,9 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   }
 
   async receiveMigration(
-    repoInfo: RepoInfo,
-    sourceDir: string,
-    settings?: CreateRepoSettings,
-    token?: string
+    params: LifecycleReceiveMigrationParams
   ): Promise<void> {
+    const { repo: repoInfo, sourceDir, settings, token } = params;
     this.assertGitHub(repoInfo);
 
     const tokenEnv = buildTokenEnv(token);

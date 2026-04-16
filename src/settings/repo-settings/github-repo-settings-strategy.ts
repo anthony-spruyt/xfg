@@ -92,7 +92,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     this.api = new GhApiClient(executor, options.retries ?? 3, options.cwd);
   }
 
-  async getSettings(
+  async get(
     repoInfo: RepoInfo,
     options?: GhApiOptions
   ): Promise<CurrentRepoSettings> {
@@ -124,7 +124,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     return settings;
   }
 
-  async updateSettings(
+  async update(
     repoInfo: RepoInfo,
     settings: GitHubRepoSettings,
     options?: GhApiOptions
@@ -142,7 +142,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     await this.api.call("PATCH", endpoint, { payload, options });
   }
 
-  async setVulnerabilityAlerts(
+  async updateVulnerabilityAlerts(
     repoInfo: RepoInfo,
     enable: boolean,
     options?: GhApiOptions
