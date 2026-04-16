@@ -12,8 +12,8 @@
     "auto_resolved": 1095,
     "deferred": 0,
     "false_positive": 87,
-    "fixed": 242,
-    "open": 238,
+    "fixed": 247,
+    "open": 233,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 5,
-        "fixed": 95,
-        "open": 10,
+        "fixed": 97,
+        "open": 8,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 50,
-        "fixed": 110,
-        "open": 47,
+        "fixed": 113,
+        "open": 44,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -169,15 +169,18 @@
     "package_organization": {
       "score": 88.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T08:33:34+00:00"
     },
     "high_level_elegance": {
       "score": 91.0,
       "source": "holistic",
       "assessed_at": "2026-04-16T05:39:25+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "review_issue_false_positive",
-      "stale_since": "2026-04-16T07:26:50+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T08:33:48+00:00"
     },
     "mid_level_elegance": {
       "score": 92.0,
@@ -237,7 +240,10 @@
     "test_strategy": {
       "score": 92.0,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-16T08:33:37+00:00"
     },
     "type_safety": {
       "score": 89.5,
@@ -3262,13 +3268,13 @@
       "strict": 91.0,
       "verified_strict_score": 91.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.91,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.9,
           "assessment_score": 91.0,
           "placeholder": false,
@@ -3409,13 +3415,13 @@
       "strict": 88.5,
       "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 3,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.885,
-          "failing": 3,
+          "failing": 0,
           "weighted_failures": 1.15,
           "assessment_score": 88.5,
           "placeholder": false,
@@ -3430,13 +3436,13 @@
       "strict": 92.0,
       "verified_strict_score": 92.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.92,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.8,
           "assessment_score": 92.0,
           "placeholder": false,
@@ -68780,11 +68786,11 @@
         "reasoning": "",
         "summary_hash": "4c199305"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Moved src/output/unified-summary.ts to src/cli/unified-summary.ts. Its only consumer is src/cli/sync-command.ts. Updated internal imports in the moved file to reference ../output/* for the individual report modules.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T08:33:48+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -68792,7 +68798,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Moved src/output/unified-summary.ts to src/cli/unified-summary.ts. Its only consumer is src/cli/sync-command.ts. Updated internal imports in the moved file to reference ../output/* for the individual report modules. and I am not gaming the score.",
+        "attested_at": "2026-04-16T08:33:48+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::high_level_elegance::vcs_barrel_mixes_classes_and_factories": {
       "id": "review::.::holistic::high_level_elegance::vcs_barrel_mixes_classes_and_factories",
@@ -69627,11 +69639,11 @@
         "reasoning": "",
         "summary_hash": "47c38741"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Flat kebab-case test names replaced by directory-mirrored layout. ruleset-*.test.ts -> settings/rulesets/*.test.ts, labels-*.test.ts -> settings/labels/*.test.ts, repo-settings-*.test.ts -> settings/repo-settings/*.test.ts, etc. Each test file now sits next to its production peer in the mirrored tree.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T08:33:37+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69639,7 +69651,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Flat kebab-case test names replaced by directory-mirrored layout. ruleset-*.test.ts -> settings/rulesets/*.test.ts, labels-*.test.ts -> settings/labels/*.test.ts, repo-settings-*.test.ts -> settings/repo-settings/*.test.ts, etc. Each test file now sits next to its production peer in the mirrored tree. and I am not gaming the score.",
+        "attested_at": "2026-04-16T08:33:37+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::api_surface_coherence::lifecycle_token_positional": {
       "id": "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
@@ -69916,11 +69934,11 @@
         "reasoning": "",
         "summary_hash": "f8a4862a"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Mirrored src/ layout under test/unit/: moved tests into vcs/, settings/{labels,repo-settings,rulesets}/, shared/, sync/, config/, output/, cli/, repo/ subdirectories. Only index.test.ts and error-sanitization.integration.test.ts remain flat (cross-cutting). Updated all relative imports and .secretlintignore entries.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T08:33:34+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69928,7 +69946,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Mirrored src/ layout under test/unit/: moved tests into vcs/, settings/{labels,repo-settings,rulesets}/, shared/, sync/, config/, output/, cli/, repo/ subdirectories. Only index.test.ts and error-sanitization.integration.test.ts remain flat (cross-cutting). Updated all relative imports and .secretlintignore entries. and I am not gaming the score.",
+        "attested_at": "2026-04-16T08:33:34+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::package_organization::sanitize_utils_vcs_only": {
       "id": "review::.::holistic::package_organization::sanitize_utils_vcs_only",
@@ -69955,11 +69979,11 @@
         "reasoning": "",
         "summary_hash": "41031957"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Moved src/shared/sanitize-utils.ts to src/vcs/sanitize-utils.ts. Primary consumers are vcs/*-pr-strategy.ts (github, ado, gitlab). Shared retry-utils and command-executor still use sanitizeCredentials but now import from ../vcs/sanitize-utils.js.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T08:33:31+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69967,7 +69991,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Moved src/shared/sanitize-utils.ts to src/vcs/sanitize-utils.ts. Primary consumers are vcs/*-pr-strategy.ts (github, ado, gitlab). Shared retry-utils and command-executor still use sanitizeCredentials but now import from ../vcs/sanitize-utils.js. and I am not gaming the score.",
+        "attested_at": "2026-04-16T08:33:31+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::package_organization::repo_missing_index_barrel": {
       "id": "review::.::holistic::package_organization::repo_missing_index_barrel",
@@ -69994,11 +70024,11 @@
         "reasoning": "",
         "summary_hash": "870187ff"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Added src/repo/index.ts barrel re-exporting types (RepoInfo and platform variants), type guards, detectRepoType/parseGitUrl, and GitHubRepoMetadataProvider. Migrated all 43+ cross-module importers to use ../repo/index.js. Removed now-redundant re-exports from detector.ts and updated metadata-provider.ts to source from types/utils directly.",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-16T08:33:25+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70006,7 +70036,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Added src/repo/index.ts barrel re-exporting types (RepoInfo and platform variants), type guards, detectRepoType/parseGitUrl, and GitHubRepoMetadataProvider. Migrated all 43+ cross-module importers to use ../repo/index.js. Removed now-redundant re-exports from detector.ts and updated metadata-provider.ts to source from types/utils directly. and I am not gaming the score.",
+        "attested_at": "2026-04-16T08:33:25+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons": {
       "id": "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons",

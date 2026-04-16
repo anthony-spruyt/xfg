@@ -1,13 +1,8 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-16T07:53:11+00:00",
+  "updated": "2026-04-16T08:34:05+00:00",
   "queue_order": [
-    "review::.::holistic::package_organization::repo_missing_index_barrel",
-    "review::.::holistic::package_organization::sanitize_utils_vcs_only",
-    "review::.::holistic::package_organization::test_layout_partially_mirrored",
-    "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping",
-    "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output",
     "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks",
     "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets",
     "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins",
@@ -418,7 +413,7 @@
       "skipped_at_scan": 199
     }
   },
-  "active_cluster": null,
+  "active_cluster": "structure-nav-layout",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -2559,32 +2554,32 @@
     "review::.::holistic::package_organization::repo_missing_index_barrel": {
       "issue_id": "review::.::holistic::package_organization::repo_missing_index_barrel",
       "created_at": "2026-04-16T07:26:08+00:00",
-      "cluster": "structure-nav-layout",
-      "updated_at": "2026-04-16T07:26:08+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T08:33:25+00:00"
     },
     "review::.::holistic::package_organization::sanitize_utils_vcs_only": {
       "issue_id": "review::.::holistic::package_organization::sanitize_utils_vcs_only",
       "created_at": "2026-04-16T07:26:08+00:00",
-      "cluster": "structure-nav-layout",
-      "updated_at": "2026-04-16T07:26:08+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T08:33:31+00:00"
     },
     "review::.::holistic::package_organization::test_layout_partially_mirrored": {
       "issue_id": "review::.::holistic::package_organization::test_layout_partially_mirrored",
       "created_at": "2026-04-16T07:26:08+00:00",
-      "cluster": "structure-nav-layout",
-      "updated_at": "2026-04-16T07:26:08+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T08:33:35+00:00"
     },
     "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping": {
       "issue_id": "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping",
       "created_at": "2026-04-16T07:26:08+00:00",
-      "cluster": "structure-nav-layout",
-      "updated_at": "2026-04-16T07:26:08+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T08:33:37+00:00"
     },
     "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output": {
       "issue_id": "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output",
       "created_at": "2026-04-16T07:26:08+00:00",
-      "cluster": "structure-nav-layout",
-      "updated_at": "2026-04-16T07:26:08+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T08:33:48+00:00"
     },
     "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks": {
       "issue_id": "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks",
@@ -4358,7 +4353,8 @@
           "effort": "medium",
           "issue_refs": [
             "repo_missing_index_barrel"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Relocate sanitize-utils into src/vcs/ and move unified-summary into src/cli/",
@@ -4367,7 +4363,8 @@
           "issue_refs": [
             "sanitize_utils_vcs_only",
             "unified_summary_is_cli_stitcher_in_output"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Stage test/unit/ directory migration to mirror src/ in four validated batches",
@@ -4376,7 +4373,8 @@
           "issue_refs": [
             "review::.::holistic::package_organization::test_layout_partially_mirrored",
             "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping"
-          ]
+          ],
+          "done": true
         }
       ]
     },
@@ -31191,6 +31189,160 @@
         "action": "clear",
         "previous": "convention-and-naming-quick-wins"
       }
+    },
+    {
+      "timestamp": "2026-04-16T08:33:25+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::package_organization::repo_missing_index_barrel"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added src/repo/index.ts barrel re-exporting types (RepoInfo and platform variants), type guards, detectRepoType/parseGitUrl, and GitHubRepoMetadataProvider. Migrated all 43+ cross-module importers to use ../repo/index.js. Removed now-redundant re-exports from detector.ts and updated metadata-provider.ts to source from types/utils directly.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T08:33:25+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::package_organization::repo_missing_index_barrel"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added src/repo/index.ts barrel re-exporting types (RepoInfo and platform variants), type guards, detectRepoType/parseGitUrl, and GitHubRepoMetadataProvider. Migrated all 43+ cross-module importers to use ../repo/index.js. Removed now-redundant re-exports from detector.ts and updated metadata-provider.ts to source from types/utils directly.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Added src/repo/index.ts barrel re-exporting types (RepoInfo and platform variants), type guards, detectRepoType/parseGitUrl, and GitHubRepoMetadataProvider. Migrated all 43+ cross-module importers to use ../repo/index.js. Removed now-redundant re-exports from detector.ts and updated metadata-provider.ts to source from types/utils directly. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T08:33:31+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::package_organization::sanitize_utils_vcs_only"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved src/shared/sanitize-utils.ts to src/vcs/sanitize-utils.ts. Primary consumers are vcs/*-pr-strategy.ts (github, ado, gitlab). Shared retry-utils and command-executor still use sanitizeCredentials but now import from ../vcs/sanitize-utils.js.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T08:33:31+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::package_organization::sanitize_utils_vcs_only"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved src/shared/sanitize-utils.ts to src/vcs/sanitize-utils.ts. Primary consumers are vcs/*-pr-strategy.ts (github, ado, gitlab). Shared retry-utils and command-executor still use sanitizeCredentials but now import from ../vcs/sanitize-utils.js.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Moved src/shared/sanitize-utils.ts to src/vcs/sanitize-utils.ts. Primary consumers are vcs/*-pr-strategy.ts (github, ado, gitlab). Shared retry-utils and command-executor still use sanitizeCredentials but now import from ../vcs/sanitize-utils.js. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T08:33:33+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved src/output/unified-summary.ts to src/cli/unified-summary.ts. Its only consumer is src/cli/sync-command.ts. Updated internal imports in the moved file to reference ../output/* for the individual report modules.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T08:33:34+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::package_organization::test_layout_partially_mirrored"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Mirrored src/ layout under test/unit/: moved tests into vcs/, settings/{labels,repo-settings,rulesets}/, shared/, sync/, config/, output/, cli/, repo/ subdirectories. Only index.test.ts and error-sanitization.integration.test.ts remain flat (cross-cutting). Updated all relative imports and .secretlintignore entries.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T08:33:35+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::package_organization::test_layout_partially_mirrored"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Mirrored src/ layout under test/unit/: moved tests into vcs/, settings/{labels,repo-settings,rulesets}/, shared/, sync/, config/, output/, cli/, repo/ subdirectories. Only index.test.ts and error-sanitization.integration.test.ts remain flat (cross-cutting). Updated all relative imports and .secretlintignore entries.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Mirrored src/ layout under test/unit/: moved tests into vcs/, settings/{labels,repo-settings,rulesets}/, shared/, sync/, config/, output/, cli/, repo/ subdirectories. Only index.test.ts and error-sanitization.integration.test.ts remain flat (cross-cutting). Updated all relative imports and .secretlintignore entries. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T08:33:37+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Flat kebab-case test names replaced by directory-mirrored layout. ruleset-*.test.ts -> settings/rulesets/*.test.ts, labels-*.test.ts -> settings/labels/*.test.ts, repo-settings-*.test.ts -> settings/repo-settings/*.test.ts, etc. Each test file now sits next to its production peer in the mirrored tree.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T08:33:37+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Flat kebab-case test names replaced by directory-mirrored layout. ruleset-*.test.ts -> settings/rulesets/*.test.ts, labels-*.test.ts -> settings/labels/*.test.ts, repo-settings-*.test.ts -> settings/repo-settings/*.test.ts, etc. Each test file now sits next to its production peer in the mirrored tree.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Flat kebab-case test names replaced by directory-mirrored layout. ruleset-*.test.ts -> settings/rulesets/*.test.ts, labels-*.test.ts -> settings/labels/*.test.ts, repo-settings-*.test.ts -> settings/repo-settings/*.test.ts, etc. Each test file now sits next to its production peer in the mirrored tree. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T08:33:48+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved src/output/unified-summary.ts to src/cli/unified-summary.ts. Its only consumer is src/cli/sync-command.ts. Updated internal imports in the moved file to reference ../output/* for the individual report modules.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T08:33:48+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved src/output/unified-summary.ts to src/cli/unified-summary.ts. Its only consumer is src/cli/sync-command.ts. Updated internal imports in the moved file to reference ../output/* for the individual report modules.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Moved src/output/unified-summary.ts to src/cli/unified-summary.ts. Its only consumer is src/cli/sync-command.ts. Updated internal imports in the moved file to reference ../output/* for the individual report modules. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-16T08:34:05+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::package_organization::repo_missing_index_barrel",
+        "review::.::holistic::package_organization::sanitize_utils_vcs_only",
+        "review::.::holistic::package_organization::test_layout_partially_mirrored",
+        "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping",
+        "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "sha": "ae65389593d1",
+        "branch": "desloppify/round-8"
+      }
     }
   ],
   "epic_triage_meta": {
@@ -32759,6 +32911,20 @@
         "review::.::holistic::naming_quality::gitops_underscore_field_outlier"
       ],
       "recorded_at": "2026-04-16T07:52:44+00:00",
+      "note": null,
+      "cluster_name": null
+    },
+    {
+      "sha": "ae65389593d1",
+      "branch": "desloppify/round-8",
+      "issue_ids": [
+        "review::.::holistic::package_organization::repo_missing_index_barrel",
+        "review::.::holistic::package_organization::sanitize_utils_vcs_only",
+        "review::.::holistic::package_organization::test_layout_partially_mirrored",
+        "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping",
+        "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output"
+      ],
+      "recorded_at": "2026-04-16T08:34:05+00:00",
       "note": null,
       "cluster_name": null
     }
