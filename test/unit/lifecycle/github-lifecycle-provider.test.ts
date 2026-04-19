@@ -1034,7 +1034,7 @@ describe("GitHubLifecycleProvider", () => {
   });
 
   describe("receiveMigration()", () => {
-    test("uses gh repo create --source --push in single command", async () => {
+    test("creates repo then pushes mirror content separately", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
           [
@@ -1055,28 +1055,27 @@ describe("GitHubLifecycleProvider", () => {
         sourceDir: "/tmp/source-mirror",
       });
 
-      // calls[0] = remote remove origin
+      // calls[0] = remote remove origin (cleanup from mirror clone)
       // calls[1] = for-each-ref (all refs)
       // calls[2] = update-ref -d refs/pull/1/head
       // calls[3] = update-ref -d refs/merge-requests/1/head
-      // calls[4] = gh repo create
-      assert.equal(calls.length, 5);
-      assert.ok(calls[0].command.includes("git -C"));
+      // calls[4] = gh repo create (without --source --push)
+      // calls[5] = git remote add origin (authenticated URL)
+      // calls[6] = git push --mirror origin
+      assert.equal(calls.length, 7);
       assert.ok(calls[0].command.includes("remote remove origin"));
       assert.ok(
         calls[1].command.includes("for-each-ref --format='%(refname)'")
       );
-      assert.ok(!calls[1].command.includes("refs/pull/"));
-      // Should delete non-heads/non-tags refs
       assert.ok(calls[2].command.includes("update-ref -d"));
       assert.ok(calls[2].command.includes("refs/pull/1/head"));
       assert.ok(calls[3].command.includes("update-ref -d"));
       assert.ok(calls[3].command.includes("refs/merge-requests/1/head"));
-      // Final call is gh repo create
       assert.ok(calls[4].command.includes("gh repo create"));
-      assert.ok(calls[4].command.includes("--source"));
-      assert.ok(calls[4].command.includes("'/tmp/source-mirror'"));
-      assert.ok(calls[4].command.includes("--push"));
+      assert.ok(!calls[4].command.includes("--source"));
+      assert.ok(!calls[4].command.includes("--push"));
+      assert.ok(calls[5].command.includes("remote add origin"));
+      assert.ok(calls[6].command.includes("push --mirror origin"));
     });
 
     test("rejects non-GitHub repo", async () => {
@@ -1380,10 +1379,14 @@ describe("GitHubLifecycleProvider", () => {
         token: "ghs_test_token",
       });
 
-      // calls[0] = git remote remove origin, calls[1] = git for-each-ref, calls[2] = gh repo create
-      assert.equal(calls.length, 3);
+      // calls[0] = git remote remove origin, calls[1] = git for-each-ref,
+      // calls[2] = gh repo create, calls[3] = git remote add origin, calls[4] = git push --mirror
+      assert.equal(calls.length, 5);
       assert.ok(calls[2].command.startsWith("gh repo create"));
       assert.equal(calls[2].options?.env?.GH_TOKEN, "ghs_test_token");
+      assert.ok(calls[3].command.includes("remote add origin"));
+      assert.ok(calls[3].command.includes("x-access-token:ghs_test_token@"));
+      assert.equal(calls[4].options?.env?.GH_TOKEN, "ghs_test_token");
     });
 
     test("fork() passes GH_TOKEN via env for all gh commands when token provided", async () => {

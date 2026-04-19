@@ -501,23 +501,53 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       }
     }
 
-    // Use gh repo create --source --push to create and mirror in one step.
-    // For bare repos (from git clone --mirror), --push mirrors all refs.
-    // This uses gh CLI authentication, avoiding raw git auth issues with GHE.
-    const parts: string[] = [
-      "gh repo create",
-      escapeShellArg(`${repoInfo.owner}/${repoInfo.repo}`),
-      "--source",
-      escapeShellArg(sourceDir),
-      "--push",
-    ];
+    // Split create and push into two steps. gh repo create --source --push
+    // does both atomically, but if the git backend hasn't propagated after
+    // the GraphQL create, the push fails with "Repository not found". A
+    // retry then hits "Name already exists" on the create step.
+    const repoSlug = `${repoInfo.owner}/${repoInfo.repo}`;
+    const createParts: string[] = ["gh repo create", escapeShellArg(repoSlug)];
+    buildRepoCreateFlags(createParts, settings);
 
-    buildRepoCreateFlags(parts, settings);
+    try {
+      await withRetry(
+        () =>
+          this.executor.exec(createParts.join(" "), this.cwd, {
+            env: tokenEnv,
+          }),
+        {
+          retries: this.retries,
+          permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
+          log: this.log
+            ? { info: (m: string) => this.log!.warn(m) }
+            : undefined,
+        }
+      );
+    } catch (error) {
+      if (!/already\s*exists/i.test(toErrorMessage(error))) {
+        throw error;
+      }
+    }
 
-    const command = parts.join(" ");
+    // Push mirror content via authenticated URL. Retries handle the git
+    // backend propagation delay (POST_CREATE_PERMANENT_PATTERNS allows
+    // retry on 404/not-found).
+    const remoteUrl = token
+      ? `https://x-access-token:${token}@${repoInfo.host}/${repoSlug}.git`
+      : `https://${repoInfo.host}/${repoSlug}.git`;
+
+    await this.executor.exec(
+      `git -C ${escapeShellArg(sourceDir)} remote add origin ${escapeShellArg(remoteUrl)}`,
+      this.cwd
+    );
 
     await withRetry(
-      () => this.executor.exec(command, this.cwd, { env: tokenEnv }),
+      () =>
+        this.executor.exec(
+          `git -C ${escapeShellArg(sourceDir)} push --mirror origin`,
+          this.cwd,
+          { env: tokenEnv }
+        ),
       {
         retries: this.retries,
         permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
