@@ -250,7 +250,16 @@ repos:
       cwd: projectRoot,
     });
 
-    const settingsAfter = await getRepoSettings();
-    assert.equal(settingsAfter.description, randomDescription);
+    await withTestRetry(
+      async () => {
+        const settingsAfter = await getRepoSettings();
+        assert.equal(settingsAfter.description, randomDescription);
+      },
+      {
+        description: "description applied",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
+    );
   });
 });
