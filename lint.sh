@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2193,SC2157 # $$ is xfg template escaping, becomes $ after processing
+# shellcheck disable=SC1091 # lint-config.sh path resolved at runtime
 set -euo pipefail
 
 # This file is automatically updated - do not modify directly
@@ -46,15 +46,30 @@ if [[ "${1:-}" == "--ci" ]]; then
 
   docker run "${docker_args[@]}" "$MEGALINTER_IMAGE"
 else
-  # Local mode - with fixes and user permissions
-  rm -rf "$REPO_ROOT/.output"
+  # Local mode - with fixes and user permissions.
+  # .output may be root-owned from an earlier rootful-podman run, so fall
+  # back to sudo if a plain rm is rejected.
+  rm -rf "$REPO_ROOT/.output" 2>/dev/null || sudo -n rm -rf "$REPO_ROOT/.output"
   mkdir "$REPO_ROOT/.output"
 
   LINT_EXIT_CODE=0
 
-  docker run \
+  # Inside a WSL2 devcontainer (nested userns), rootless podman's newuidmap
+  # fails because the outer namespace did not delegate subuid ranges. Use
+  # `sudo podman` with --network=host so no slirp4netns / subuid setup is
+  # required. The container still runs linters as the invoking user via -u.
+  if [[ "$(id -u)" != "0" ]] && command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+    runner=(sudo -n podman)
+    network_arg=(--network=host)
+  else
+    runner=(docker)
+    network_arg=()
+  fi
+
+  "${runner[@]}" run \
     -a STDOUT \
     -a STDERR \
+    "${network_arg[@]}" \
     -u "$(id -u):$(id -g)" \
     -w /tmp/lint \
     -e HOME=/tmp \

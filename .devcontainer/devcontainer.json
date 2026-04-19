@@ -1,27 +1,43 @@
 {
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
   "name": "Ubuntu",
-  "image": "mcr.microsoft.com/devcontainers/base:jammy@sha256:0e50c6443341c5302ad4728049013750eb9ca35b1a3cbf003ba5fcbd5e033798",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "containerUser": "vscode",
+  "remoteUser": "vscode",
   "runArgs": [
     "--env-file",
-    "${localEnv:HOME}/.secrets/.env"
+    "${localEnv:HOME}/.secrets/.env",
+    "--security-opt",
+    "seccomp=${localWorkspaceFolder}/.devcontainer/podman-seccomp.json",
+    "--device",
+    "/dev/fuse"
   ],
   "mounts": [
     "source=${localEnv:HOME}/.ssh/agent.sock,target=/ssh-agent,type=bind",
-    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind"
+    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind",
+    "source=${localWorkspaceFolderBasename}-containers,target=/var/lib/containers,type=volume"
   ],
   "containerEnv": {
     "SSH_AUTH_SOCK": "/ssh-agent"
   },
   "features": {
-    "ghcr.io/devcontainers-extra/features/pre-commit": {},
-    "ghcr.io/devcontainers/features/github-cli": {},
-    "ghcr.io/devcontainers/features/docker-in-docker": {},
-    "ghcr.io/devcontainers/features/node": {},
-    "ghcr.io/devcontainers/features/python": {
-      "version": "latest"
+    "ghcr.io/devcontainers-extra/features/pre-commit": {
+      "version": "4.5.1"
     },
-    "ghcr.io/devcontainers-extra/features/renovate-cli": {},
+    "ghcr.io/devcontainers/features/github-cli": {
+      "version": "2.89.0"
+    },
+    "ghcr.io/devcontainers/features/node": {
+      "version": "24.14.1"
+    },
+    "ghcr.io/devcontainers/features/python": {
+      "version": "3.12"
+    },
+    "ghcr.io/devcontainers-extra/features/renovate-cli": {
+      "version": "43.122.0"
+    },
     "ghcr.io/devcontainers/features/azure-cli": {}
   },
   "initializeCommand": "bash ${localWorkspaceFolder}/.devcontainer/initialize.sh",

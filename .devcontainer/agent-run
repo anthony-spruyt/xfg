@@ -1,0 +1,139 @@
+#!/bin/bash
+# agent-run: policy-enforcing wrapper around `podman run` for AI agents.
+#
+# Enforces safe defaults for images pulled and executed by agents:
+#   - rootless userns mapping (--userns=auto)
+#   - read-only root filesystem with /tmp + /var/tmp tmpfs
+#   - no-new-privileges, all capabilities dropped
+#   - pids/memory/cpu limits to contain runaway workloads
+#   - slirp4netns without host loopback by default
+#
+# Forbidden user args are rejected before podman is invoked. This is not a
+# security boundary (a determined agent can bypass by calling podman directly);
+# it is a guardrail that makes the safe path the easy path. Real isolation
+# comes from rootless podman + (phase 2) Kata runtime on the Coder pod.
+#
+# Usage:
+#   agent-run [podman-run-args...] IMAGE [CMD...]
+
+set -euo pipefail
+
+# Hard-rejected flags. Also catches `--flag=true` and `--flag=value` variants
+# via prefix match, and space-separated `--flag value` via the look-ahead below.
+readonly FORBIDDEN_FLAGS=(
+  --privileged
+  --pid
+  --network
+  --ipc
+  --uts
+  --userns
+  --cgroupns
+  --cap-add
+)
+
+# Rejected substring patterns (matched anywhere in an arg). These are values
+# that are unsafe in any flag context (e.g. mounting the docker socket).
+readonly FORBIDDEN_SUBSTR=(
+  "seccomp=unconfined"
+  "apparmor=unconfined"
+  "label=disable"
+  "/var/run/docker.sock"
+  "/run/docker.sock"
+  "/run/podman/podman.sock"
+)
+
+# Values that make a namespace/privilege-related flag dangerous.
+readonly FORBIDDEN_VALUES=(
+  host
+  true
+  ALL
+  all
+)
+
+is_forbidden_flag() {
+  local f="$1"
+  for flag in "${FORBIDDEN_FLAGS[@]}"; do
+    [[ "$f" == "$flag" ]] && return 0
+  done
+  return 1
+}
+
+is_forbidden_value() {
+  local v="$1"
+  for val in "${FORBIDDEN_VALUES[@]}"; do
+    [[ "$v" == "$val" ]] && return 0
+  done
+  return 1
+}
+
+# --privileged with no value is always forbidden.
+# For flags with a value: reject if value ∈ FORBIDDEN_VALUES.
+i=1
+while [[ $i -le $# ]]; do
+  arg="${!i}"
+
+  for pat in "${FORBIDDEN_SUBSTR[@]}"; do
+    if [[ "$arg" == *"$pat"* ]]; then
+      echo "agent-run: forbidden pattern in arg: $arg (matched: $pat)" >&2
+      exit 64
+    fi
+  done
+
+  # Bare --privileged (no value).
+  if [[ "$arg" == "--privileged" ]]; then
+    echo "agent-run: forbidden flag: --privileged" >&2
+    exit 64
+  fi
+
+  # --flag=value form.
+  if [[ "$arg" == *=* ]]; then
+    flag="${arg%%=*}"
+    value="${arg#*=}"
+    if is_forbidden_flag "$flag" && is_forbidden_value "$value"; then
+      echo "agent-run: forbidden flag=value: $arg" >&2
+      exit 64
+    fi
+  # --flag value form (space-separated).
+  elif is_forbidden_flag "$arg"; then
+    next_i=$((i + 1))
+    if [[ $next_i -le $# ]]; then
+      next="${!next_i}"
+      if is_forbidden_value "$next"; then
+        echo "agent-run: forbidden flag+value: $arg $next" >&2
+        exit 64
+      fi
+    fi
+  fi
+
+  i=$((i + 1))
+done
+
+# Policy defaults. Override via AGENT_RUN_* env vars where sensible.
+AGENT_NET="${AGENT_RUN_NET:-slirp4netns:allow_host_loopback=false}"
+AGENT_MEM="${AGENT_RUN_MEM:-2g}"
+AGENT_PIDS="${AGENT_RUN_PIDS:-512}"
+AGENT_CPUS="${AGENT_RUN_CPUS:-2}"
+
+# Rootless podman is preferred. In WSL2 nested userns, newuidmap fails because
+# the outer namespace did not delegate subuid ranges; fall back to `sudo podman`
+# with --userns=auto still providing a dedicated user namespace.
+runner=(podman)
+if ! podman info >/dev/null 2>&1; then
+  if [[ "$(id -u)" != "0" ]] && command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+    runner=(sudo -n podman)
+  fi
+fi
+
+exec "${runner[@]}" run --rm \
+  --userns=auto \
+  --read-only \
+  --tmpfs /tmp:rw,exec,nosuid,nodev,size=256m \
+  --tmpfs /var/tmp:rw,exec,nosuid,nodev,size=64m \
+  --security-opt no-new-privileges \
+  --cap-drop=ALL \
+  --pids-limit="$AGENT_PIDS" \
+  --memory="$AGENT_MEM" \
+  --memory-swap="$AGENT_MEM" \
+  --cpus="$AGENT_CPUS" \
+  --network="$AGENT_NET" \
+  "$@"
