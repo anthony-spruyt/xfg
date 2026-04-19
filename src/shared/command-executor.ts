@@ -11,10 +11,10 @@ export interface ICommandExecutor {
 }
 
 export class ShellCommandExecutor implements ICommandExecutor {
-  private readonly getEnv: () => Record<string, string | undefined>;
+  private readonly baseEnv: Record<string, string | undefined>;
 
   constructor(baseEnv: Record<string, string | undefined>) {
-    this.getEnv = () => baseEnv;
+    this.baseEnv = baseEnv;
   }
 
   async exec(
@@ -23,17 +23,13 @@ export class ShellCommandExecutor implements ICommandExecutor {
     options?: ExecOptions
   ): Promise<string> {
     try {
-      // When no per-command env overrides, omit env to inherit parent process
-      // environment directly (avoids CodeQL js/indirect-command-line-injection).
-      // Only construct an explicit env when merging per-command vars.
-      const env = options?.env
-        ? ({ ...this.getEnv(), ...options.env } as NodeJS.ProcessEnv)
-        : undefined;
       return execFileSync("sh", ["-c", command], {
         cwd,
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
-        env,
+        env: options?.env
+          ? { ...this.baseEnv, ...options.env }
+          : (this.baseEnv as NodeJS.ProcessEnv),
       }).trim();
     } catch (error) {
       // Normalise and sanitise the exec error so downstream retry logic
