@@ -41,7 +41,7 @@ gh workflow run release.yaml -f version=patch  # or minor/major
 
 ## External Dependencies
 
-- Node.js >= 18
+- Node.js >= 20
 - `git`, `gh`, `az`, `glab` CLIs (platform-specific, must be authenticated)
 
 ## Architecture Principles
