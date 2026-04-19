@@ -140,7 +140,8 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
     try {
       return await getBranchRef(branchName);
     } catch (err) {
-      const is404 = err instanceof Error && /404|Not Found/i.test(err.message);
+      const is404 =
+        err instanceof Error && /\b404\b|Not Found/i.test(err.message);
       if (!is404 || !baseBranch) throw err;
 
       const baseSha = await getBranchRef(baseBranch);
