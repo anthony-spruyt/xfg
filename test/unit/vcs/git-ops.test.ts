@@ -1079,4 +1079,82 @@ describe("GitOps", () => {
       );
     });
   });
+
+  test("getFileMode returns '100755' for executable tracked file", async () => {
+    const runner: ICommandExecutor = {
+      async exec(command: string) {
+        assert.match(command, /^git ls-files -s -- /);
+        return "100755 abcdef0123 0\tpath/to/file.sh\n";
+      },
+    };
+    const gitOps = new GitOps({ workDir: "/tmp/repo", executor: runner });
+    const mode = await gitOps.getFileMode("path/to/file.sh");
+    assert.equal(mode, "100755");
+  });
+
+  test("getFileMode returns '100644' for non-executable tracked file", async () => {
+    const runner: ICommandExecutor = {
+      async exec() {
+        return "100644 abcdef0123 0\tREADME.md\n";
+      },
+    };
+    const gitOps = new GitOps({ workDir: "/tmp/repo", executor: runner });
+    assert.equal(await gitOps.getFileMode("README.md"), "100644");
+  });
+
+  test("getFileMode returns null when file is not tracked", async () => {
+    const runner: ICommandExecutor = {
+      async exec() {
+        return "";
+      },
+    };
+    const gitOps = new GitOps({ workDir: "/tmp/repo", executor: runner });
+    assert.equal(await gitOps.getFileMode("untracked.txt"), null);
+  });
+
+  test("getFileMode rejects path traversal", async () => {
+    const runner: ICommandExecutor = {
+      async exec() {
+        return "";
+      },
+    };
+    const gitOps = new GitOps({ workDir: "/tmp/repo", executor: runner });
+    await assert.rejects(
+      () => gitOps.getFileMode("../escape"),
+      /Path traversal/
+    );
+  });
+
+  test("clearExecutable chmods 0644 and runs git update-index --chmod=-x", async () => {
+    const commands: string[] = [];
+    const runner: ICommandExecutor = {
+      async exec(command: string) {
+        commands.push(command);
+        return "";
+      },
+    };
+    // Create a real fixture file so chmodSync has something to change.
+    const tmpDir = await import("node:fs").then((m) =>
+      m.mkdtempSync("/tmp/gitops-")
+    );
+    const { writeFileSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    writeFileSync(join(tmpDir, "foo.sh"), "#!/bin/sh\n", { mode: 0o755 });
+    const gitOps = new GitOps({ workDir: tmpDir, executor: runner });
+    await gitOps.clearExecutable("foo.sh");
+    assert.ok(commands.some((c) => /git update-index --chmod=-x/.test(c)));
+  });
+
+  test("clearExecutable rejects path traversal", async () => {
+    const runner: ICommandExecutor = {
+      async exec() {
+        return "";
+      },
+    };
+    const gitOps = new GitOps({ workDir: "/tmp/repo", executor: runner });
+    await assert.rejects(
+      () => gitOps.clearExecutable("../escape"),
+      /Path traversal/
+    );
+  });
 });

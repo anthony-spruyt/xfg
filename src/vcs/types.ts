@@ -18,6 +18,8 @@ export interface ILocalGitOps {
   createBranch(branchName: string): Promise<void>;
   writeFile(fileName: string, content: string): void;
   setExecutable(fileName: string): Promise<void>;
+  clearExecutable(fileName: string): Promise<void>;
+  getFileMode(fileName: string): Promise<"100755" | "100644" | null>;
   getFileContent(fileName: string): string | null;
   wouldChange(fileName: string, content: string): boolean;
   hasChanges(): Promise<boolean>;

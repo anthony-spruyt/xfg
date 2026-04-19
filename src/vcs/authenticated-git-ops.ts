@@ -74,6 +74,14 @@ export class AuthenticatedGitOps implements IGitOps {
     return this.localOps.setExecutable(fileName);
   }
 
+  clearExecutable(fileName: string): Promise<void> {
+    return this.localOps.clearExecutable(fileName);
+  }
+
+  getFileMode(fileName: string): Promise<"100755" | "100644" | null> {
+    return this.localOps.getFileMode(fileName);
+  }
+
   getFileContent(fileName: string): string | null {
     return this.localOps.getFileContent(fileName);
   }

@@ -35,6 +35,10 @@ function createMockLocalOps(): ILocalGitOps {
     },
     writeFile() {},
     async setExecutable() {},
+    async clearExecutable() {},
+    async getFileMode() {
+      return "100644" as const;
+    },
     getFileContent() {
       return null;
     },
