@@ -1157,4 +1157,54 @@ describe("GitOps", () => {
       /Path traversal/
     );
   });
+
+  describe("clearExecutable additional coverage", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("does not execute in dry-run mode", async () => {
+      const commands: string[] = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(command: string) {
+          commands.push(command);
+          return "";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir,
+        dryRun: true,
+        executor: mockExecutor,
+      });
+      writeFileSync(join(workDir, "script.sh"), "#!/bin/bash\n", {
+        mode: 0o755,
+      });
+      await gitOps.clearExecutable("script.sh");
+      assert.equal(
+        commands.length,
+        0,
+        "Should not execute commands in dry-run mode"
+      );
+    });
+
+    test("wraps chmod errors in SyncError", async () => {
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
+      await assert.rejects(
+        async () => gitOps.clearExecutable("nonexistent.sh"),
+        (err: unknown) =>
+          err instanceof SyncError &&
+          err.message.includes("Failed to clear executable permissions")
+      );
+    });
+  });
+
+  test("getFileMode returns null for unrecognized mode", async () => {
+    const runner: ICommandExecutor = {
+      async exec() {
+        return "120000 abcdef0123 0\tsymlink\n";
+      },
+    };
+    const gitOps = new GitOps({ workDir: "/tmp/repo", executor: runner });
+    assert.equal(await gitOps.getFileMode("symlink"), null);
+  });
 });

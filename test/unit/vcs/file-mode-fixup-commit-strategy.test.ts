@@ -1199,4 +1199,202 @@ describe("FileModeFixupCommitStrategy", () => {
       "no REST calls should be made for an unsafe branch name"
     );
   });
+
+  test("mode-only without baseBranch: rethrows 404 from branch ref lookup", async () => {
+    const get404: MockResponse = {
+      status: 404,
+      body: JSON.stringify({ message: "Not Found" }),
+    };
+    const responses = new Map<string, MockResponse>([
+      ["/git/ref/heads/chore/sync-config", get404],
+    ]);
+    const strategy = new FileModeFixupCommitStrategy(
+      {
+        async commit() {
+          throw new Error("inner should NOT be called");
+        },
+      },
+      mockExecutor,
+      createMockClientFactory(responses)
+    );
+    await assert.rejects(
+      () =>
+        strategy.commit({
+          repoInfo: githubRepoInfo,
+          branchName: "chore/sync-config",
+          message: "chore: sync",
+          fileChanges: [
+            {
+              path: "scripts/run",
+              content: null,
+              mode: "100755",
+              modeOnly: true,
+            },
+          ],
+          workDir: "/tmp/repo",
+        }),
+      /Not Found/
+    );
+  });
+
+  test("mode-only: rethrows non-404 error from branch ref lookup", async () => {
+    const get500: MockResponse = {
+      status: 500,
+      body: "Internal Server Error",
+    };
+    const responses = new Map<string, MockResponse>([
+      ["/git/ref/heads/chore/sync-config", get500],
+    ]);
+    const strategy = new FileModeFixupCommitStrategy(
+      {
+        async commit() {
+          throw new Error("inner should NOT be called");
+        },
+      },
+      mockExecutor,
+      createMockClientFactory(responses)
+    );
+    await assert.rejects(
+      () =>
+        strategy.commit({
+          repoInfo: githubRepoInfo,
+          branchName: "chore/sync-config",
+          baseBranch: "main",
+          message: "chore: sync",
+          fileChanges: [
+            {
+              path: "scripts/run",
+              content: null,
+              mode: "100755",
+              modeOnly: true,
+            },
+          ],
+          workDir: "/tmp/repo",
+        }),
+      /Internal Server Error/
+    );
+  });
+
+  test("404 fallback race: POST /git/refs 422 -> re-GET branch ref", async () => {
+    const calls: ApiCall[] = [];
+    const get404: MockResponse = {
+      status: 404,
+      body: JSON.stringify({ message: "Not Found" }),
+    };
+    const post422: MockResponse = {
+      status: 422,
+      body: JSON.stringify({ message: "Reference already exists" }),
+    };
+    const responses = new Map<string, MockResponse | MockResponse[]>([
+      [
+        "/git/ref/heads/chore/sync-config",
+        [get404, JSON.stringify({ object: { sha: "race-winner-sha" } })],
+      ],
+      ["/git/ref/heads/main", JSON.stringify({ object: { sha: "base-sha" } })],
+      ["/git/refs", post422],
+      [
+        "/git/commits/race-winner-sha",
+        JSON.stringify({
+          sha: "race-winner-sha",
+          tree: { sha: "tree-sha" },
+        }),
+      ],
+      [
+        "/git/trees/tree-sha",
+        JSON.stringify({
+          sha: "tree-sha",
+          tree: [
+            {
+              path: "scripts/run",
+              mode: "100644",
+              type: "blob",
+              sha: "blob-sha",
+            },
+          ],
+        }),
+      ],
+      ["/git/trees", JSON.stringify({ sha: "new-tree-sha" })],
+      ["/git/commits", JSON.stringify({ sha: "new-commit-sha" })],
+      ["/git/refs/heads/chore/sync-config", JSON.stringify({})],
+    ]);
+    const strategy = new FileModeFixupCommitStrategy(
+      {
+        async commit() {
+          throw new Error("inner should NOT be called");
+        },
+      },
+      mockExecutor,
+      createMockClientFactory(responses, calls)
+    );
+    const result = await strategy.commit({
+      repoInfo: githubRepoInfo,
+      branchName: "chore/sync-config",
+      baseBranch: "main",
+      message: "chore: sync",
+      fileChanges: [
+        {
+          path: "scripts/run",
+          content: null,
+          mode: "100755",
+          modeOnly: true,
+        },
+      ],
+      workDir: "/tmp/repo",
+    });
+    assert.equal(result.sha, "new-commit-sha");
+    const getBranchRefCalls = calls.filter(
+      (c) =>
+        c.method === "GET" &&
+        c.endpoint.includes("/git/ref/heads/chore/sync-config")
+    );
+    assert.equal(
+      getBranchRefCalls.length,
+      2,
+      "expected re-GET after POST raced"
+    );
+  });
+
+  test("404 fallback: rethrows non-422 POST error", async () => {
+    const get404: MockResponse = {
+      status: 404,
+      body: JSON.stringify({ message: "Not Found" }),
+    };
+    const post500: MockResponse = {
+      status: 500,
+      body: "Internal Server Error",
+    };
+    const responses = new Map<string, MockResponse>([
+      ["/git/ref/heads/chore/sync-config", get404],
+      ["/git/ref/heads/main", JSON.stringify({ object: { sha: "base-sha" } })],
+      ["/git/refs", post500],
+    ]);
+    const strategy = new FileModeFixupCommitStrategy(
+      {
+        async commit() {
+          throw new Error("inner should NOT be called");
+        },
+      },
+      mockExecutor,
+      createMockClientFactory(responses)
+    );
+    await assert.rejects(
+      () =>
+        strategy.commit({
+          repoInfo: githubRepoInfo,
+          branchName: "chore/sync-config",
+          baseBranch: "main",
+          message: "chore: sync",
+          fileChanges: [
+            {
+              path: "scripts/run",
+              content: null,
+              mode: "100755",
+              modeOnly: true,
+            },
+          ],
+          workDir: "/tmp/repo",
+        }),
+      /Internal Server Error/
+    );
+  });
 });

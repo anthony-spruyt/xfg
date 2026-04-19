@@ -149,6 +149,25 @@ describe("FileWriter mode drift", () => {
     assert.deepEqual(cleared, ["scripts/run"]);
   });
 
+  test("second pass calls clearExecutable for content-change downgrade (non-dry-run)", async () => {
+    const cleared: string[] = [];
+    const files: FileContent[] = [
+      makeFile("scripts/run", "new content\n", false),
+    ];
+    await new FileWriter().writeFiles(files, ctx, {
+      gitOps: makeGitOpsStub({
+        getFileMode: async () => "100755",
+        getFileContent: () => "old content\n",
+        wouldChange: () => true,
+        clearExecutable: async (name: string) => {
+          cleared.push(name);
+        },
+      }),
+      log: silentLogger,
+    });
+    assert.deepEqual(cleared, ["scripts/run"]);
+  });
+
   test("dry-run reports mode-only drift as MODIFIED and does not render content diff", async () => {
     const infos: string[] = [];
     const fileDiffs: Array<{ name: string }> = [];
