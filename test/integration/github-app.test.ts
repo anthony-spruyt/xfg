@@ -281,6 +281,268 @@ repos:
   });
 });
 
+describe("GitHub App Mode Drift Test", { skip: SKIP_TESTS }, () => {
+  let modeRepoName: string;
+  let modeTestRepo: string;
+  let modeTmpDir: string;
+
+  before(async () => {
+    modeTmpDir = join(tmpdir(), `xfg-app-mode-drift-${Date.now()}`);
+    mkdirSync(modeTmpDir, { recursive: true });
+    modeRepoName = generateRepoName("app-mode");
+    modeTestRepo = `${OWNER}/${modeRepoName}`;
+    await createRepo(OWNER, modeRepoName);
+  });
+
+  after(async () => {
+    await deleteRepo(OWNER, modeRepoName);
+    rmSync(modeTmpDir, { recursive: true, force: true });
+  });
+
+  beforeEach(async () => {
+    await resetTestRepo(modeTestRepo);
+  });
+
+  async function getTreeMode(
+    repo: string,
+    filePath: string
+  ): Promise<string | undefined> {
+    const treeJson = await execWithRetry(
+      `gh api repos/${repo}/git/trees/HEAD?recursive=1`
+    );
+    const tree = JSON.parse(treeJson).tree as Array<{
+      path: string;
+      mode: string;
+      type: string;
+    }>;
+    return tree.find((e) => e.path === filePath && e.type === "blob")?.mode;
+  }
+
+  test("mode-only upgrade: 100644 -> 100755 when content unchanged (App path)", async () => {
+    const fileContent = "#!/bin/bash\necho hello\n";
+    const seedConfig = writeConfig(
+      modeTmpDir,
+      `id: mode-drift-upgrade-seed
+files:
+  mode-test.sh:
+    content: |
+      ${fileContent.replace(/\n/g, "\n      ").trimEnd()}
+    executable: false
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${modeTestRepo}.git
+`
+    );
+    await exec(`node dist/cli.js sync --config ${seedConfig}`, xfgEnv);
+    assert.equal(
+      await getTreeMode(modeTestRepo, "mode-test.sh"),
+      "100644",
+      "seed: mode-test.sh should be 100644"
+    );
+
+    const upgradeConfig = writeConfig(
+      modeTmpDir,
+      `id: mode-drift-upgrade
+files:
+  mode-test.sh:
+    content: |
+      ${fileContent.replace(/\n/g, "\n      ").trimEnd()}
+    executable: true
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${modeTestRepo}.git
+`
+    );
+    const output = await exec(
+      `node dist/cli.js sync --config ${upgradeConfig}`,
+      xfgEnv
+    );
+    console.log(output);
+
+    assert.equal(
+      await getTreeMode(modeTestRepo, "mode-test.sh"),
+      "100755",
+      "after upgrade: mode-test.sh should be 100755"
+    );
+  });
+
+  test("mode-only downgrade: 100755 -> 100644 when content unchanged (App path)", async () => {
+    const fileContent = "#!/bin/bash\necho downgrade\n";
+    const seedConfig = writeConfig(
+      modeTmpDir,
+      `id: mode-drift-downgrade-seed
+files:
+  mode-test.sh:
+    content: |
+      ${fileContent.replace(/\n/g, "\n      ").trimEnd()}
+    executable: true
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${modeTestRepo}.git
+`
+    );
+    await exec(`node dist/cli.js sync --config ${seedConfig}`, xfgEnv);
+    assert.equal(
+      await getTreeMode(modeTestRepo, "mode-test.sh"),
+      "100755",
+      "seed: mode-test.sh should be 100755"
+    );
+
+    const downgradeConfig = writeConfig(
+      modeTmpDir,
+      `id: mode-drift-downgrade
+files:
+  mode-test.sh:
+    content: |
+      ${fileContent.replace(/\n/g, "\n      ").trimEnd()}
+    executable: false
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${modeTestRepo}.git
+`
+    );
+    const output = await exec(
+      `node dist/cli.js sync --config ${downgradeConfig}`,
+      xfgEnv
+    );
+    console.log(output);
+
+    assert.equal(
+      await getTreeMode(modeTestRepo, "mode-test.sh"),
+      "100644",
+      "after downgrade: mode-test.sh should be 100644"
+    );
+  });
+
+  test("mixed: content change + mode-only upgrade in same sync (App path)", async () => {
+    const seedConfig = writeConfig(
+      modeTmpDir,
+      `id: mode-drift-mixed-seed
+files:
+  content-change-script:
+    content: "old content"
+    executable: false
+  mode-only-script:
+    content: "keep same"
+    executable: false
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${modeTestRepo}.git
+`
+    );
+    await exec(`node dist/cli.js sync --config ${seedConfig}`, xfgEnv);
+    assert.equal(
+      await getTreeMode(modeTestRepo, "content-change-script"),
+      "100644"
+    );
+    assert.equal(await getTreeMode(modeTestRepo, "mode-only-script"), "100644");
+
+    const mixedConfig = writeConfig(
+      modeTmpDir,
+      `id: mode-drift-mixed
+files:
+  content-change-script:
+    content: "new content"
+    executable: true
+  mode-only-script:
+    content: "keep same"
+    executable: true
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${modeTestRepo}.git
+`
+    );
+    const output = await exec(
+      `node dist/cli.js sync --config ${mixedConfig}`,
+      xfgEnv
+    );
+    console.log(output);
+
+    assert.equal(
+      await getTreeMode(modeTestRepo, "content-change-script"),
+      "100755",
+      "content-change-script should be 100755"
+    );
+    assert.equal(
+      await getTreeMode(modeTestRepo, "mode-only-script"),
+      "100755",
+      "mode-only-script should be 100755"
+    );
+  });
+
+  test("mode-only downgrade via PAT path: 100755 -> 100644 without App creds", async () => {
+    const patOnlyEnv = {
+      cwd: projectRoot,
+      env: {
+        XFG_GITHUB_CLIENT_ID: undefined,
+        XFG_GITHUB_APP_PRIVATE_KEY: undefined,
+      },
+    };
+    const fileContent = "#!/bin/bash\necho pat-downgrade\n";
+
+    const seedConfig = writeConfig(
+      modeTmpDir,
+      `id: pat-mode-drift-seed
+files:
+  pat-mode-test.sh:
+    content: |
+      ${fileContent.replace(/\n/g, "\n      ").trimEnd()}
+    executable: true
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${modeTestRepo}.git
+`
+    );
+    await exec(`node dist/cli.js sync --config ${seedConfig}`, xfgEnv);
+    assert.equal(
+      await getTreeMode(modeTestRepo, "pat-mode-test.sh"),
+      "100755",
+      "seed: pat-mode-test.sh should be 100755"
+    );
+
+    const downgradeConfig = writeConfig(
+      modeTmpDir,
+      `id: pat-mode-drift-downgrade
+files:
+  pat-mode-test.sh:
+    content: |
+      ${fileContent.replace(/\n/g, "\n      ").trimEnd()}
+    executable: false
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${modeTestRepo}.git
+`
+    );
+    const output = await exec(
+      `node dist/cli.js sync --config ${downgradeConfig}`,
+      patOnlyEnv
+    );
+    console.log(output);
+
+    assert.equal(
+      await getTreeMode(modeTestRepo, "pat-mode-test.sh"),
+      "100644",
+      "after PAT downgrade: pat-mode-test.sh should be 100644"
+    );
+  });
+});
+
 // Force PAT-only auth
 const patOnlyEnv = {
   env: {

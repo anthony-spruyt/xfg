@@ -132,8 +132,16 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
 
     validateSafeBranchName(branchName);
 
-    const additions = fileChanges.filter((fc) => fc.content !== null);
-    const deletions = fileChanges.filter((fc) => fc.content === null);
+    const contentFileChanges = fileChanges.filter((fc) => !fc.modeOnly);
+    const additions = contentFileChanges.filter((fc) => fc.content !== null);
+    const deletions = contentFileChanges.filter((fc) => fc.content === null);
+
+    if (additions.length === 0 && deletions.length === 0) {
+      throw new GraphQLApiError(
+        "GraphQLCommitStrategy: no content changes to commit. " +
+          "This strategy should not be invoked when all file changes are modeOnly."
+      );
+    }
 
     // Base64 encoding adds ~33% overhead to raw content size
     const totalSize = additions.reduce((sum, fc) => {

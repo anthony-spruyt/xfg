@@ -115,6 +115,14 @@ export function createMockAuthenticatedGitOps(
       }
     },
 
+    async clearExecutable(_fileName: string): Promise<void> {
+      // no-op in mock — track if needed via config callback
+    },
+
+    async getFileMode(_fileName: string): Promise<"100755" | "100644" | null> {
+      return "100644";
+    },
+
     getFileContent(fileName: string): string | null {
       if (typeof config.fileContent === "function") {
         return config.fileContent(fileName);

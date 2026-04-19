@@ -135,6 +135,45 @@ export class GitOps implements ILocalGitOps {
   }
 
   /**
+   * Clears the executable bit on a file both on the filesystem and in git's index.
+   * Symmetric inverse of setExecutable.
+   * @param fileName - The file path relative to the work directory
+   */
+  async clearExecutable(fileName: string): Promise<void> {
+    if (this.dryRun) return;
+    const filePath = this.validatePath(fileName);
+    try {
+      chmodSync(filePath, 0o644);
+    } catch (error) {
+      throw new SyncError(
+        `Failed to clear executable permissions on '${fileName}': ${toErrorMessage(error)}`
+      );
+    }
+    await this.exec(
+      `git update-index --chmod=-x -- ${escapeShellArg(fileName)}`,
+      this.workDir
+    );
+  }
+
+  /**
+   * Returns the git index mode for a tracked file ("100755" or "100644"),
+   * or null if the file is not tracked.
+   * @param fileName - The file path relative to the work directory
+   */
+  async getFileMode(fileName: string): Promise<"100755" | "100644" | null> {
+    this.validatePath(fileName);
+    const output = await this.exec(
+      `git ls-files -s -- ${escapeShellArg(fileName)}`,
+      this.workDir
+    );
+    const line = output.trim();
+    if (!line) return null;
+    const mode = line.split(/\s+/, 1)[0];
+    if (mode === "100755" || mode === "100644") return mode;
+    return null;
+  }
+
+  /**
    * Get the content of a file in the workspace.
    * Returns null if the file doesn't exist.
    */

@@ -18,6 +18,8 @@ export interface ILocalGitOps {
   createBranch(branchName: string): Promise<void>;
   writeFile(fileName: string, content: string): void;
   setExecutable(fileName: string): Promise<void>;
+  clearExecutable(fileName: string): Promise<void>;
+  getFileMode(fileName: string): Promise<"100755" | "100644" | null>;
   getFileContent(fileName: string): string | null;
   wouldChange(fileName: string, content: string): boolean;
   hasChanges(): Promise<boolean>;
@@ -151,15 +153,19 @@ export type FileActionKind = FileAction["action"];
 
 export interface FileChange {
   path: string;
-  content: string | null; // null = deletion
+  content: string | null;
   /** Git file mode. Only set for executable files ("100755"). "100644" is included
    *  in the union for type completeness — non-executable files omit this field. */
   mode?: "100755" | "100644";
+  /** True when this entry represents a mode change only (no content diff).
+   *  GraphQL strategies should skip these; FileModeFixupCommitStrategy handles them. */
+  modeOnly?: true;
 }
 
 export interface CommitOptions {
   repoInfo: RepoInfo;
   branchName: string;
+  baseBranch?: string;
   message: string;
   fileChanges: FileChange[];
   workDir: string;

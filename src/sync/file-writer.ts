@@ -58,6 +58,7 @@ export class FileWriter implements IFileWriter {
 
     const fileChanges = new Map<string, FileWriteResult>();
     const diffStats = createDiffStats();
+    const modeCache = new Map<string, "100755" | "100644" | null>();
 
     for (const file of files) {
       const filePath = join(workDir, file.fileName);
@@ -113,17 +114,23 @@ export class FileWriter implements IFileWriter {
       const existingContent = gitOps.getFileContent(file.fileName);
       const changed = gitOps.wouldChange(file.fileName, fileContent);
 
+      const desiredMode: "100755" | "100644" = shouldBeExecutable(file)
+        ? "100755"
+        : "100644";
+      const currentMode = await gitOps.getFileMode(file.fileName);
+      modeCache.set(file.fileName, currentMode);
+      const modeDiffers = currentMode !== null && currentMode !== desiredMode;
+
       if (changed) {
         const writeResult: FileWriteResult = {
           fileName: file.fileName,
           content: fileContent,
           action,
-          // mode is only set on changed files — unchanged files won't trigger a
-          // fixup commit, which is correct since their mode was set on a prior sync
-          ...(shouldBeExecutable(file) ? { mode: "100755" as const } : {}),
+          ...(desiredMode === "100755" || modeDiffers
+            ? { mode: desiredMode }
+            : {}),
         };
 
-        // Compute raw diff lines for text files (all modes)
         if (!isBinaryFile(file.fileName)) {
           writeResult.diffLines = computeUnifiedDiff(
             existingContent,
@@ -132,17 +139,33 @@ export class FileWriter implements IFileWriter {
         }
 
         fileChanges.set(file.fileName, writeResult);
+      } else if (modeDiffers) {
+        fileChanges.set(file.fileName, {
+          fileName: file.fileName,
+          content: null,
+          action: "update",
+          mode: desiredMode,
+          modeOnly: true,
+        });
       }
 
       if (dryRun) {
-        const status = getFileStatus(existingContent !== null, changed);
-        incrementDiffStats(diffStats, status);
-
-        const diffLines = generateDiff(existingContent, fileContent);
-        log.fileDiff(file.fileName, status, diffLines);
+        if (changed) {
+          const status = getFileStatus(existingContent !== null, changed);
+          incrementDiffStats(diffStats, status);
+          const diffLines = generateDiff(existingContent, fileContent);
+          log.fileDiff(file.fileName, status, diffLines);
+        } else if (modeDiffers) {
+          incrementDiffStats(diffStats, "MODIFIED");
+          log.info(
+            `Would change mode: ${file.fileName} ${currentMode} -> ${desiredMode}`
+          );
+        }
       } else if (changed) {
         incrementDiffStats(diffStats, action === "create" ? "NEW" : "MODIFIED");
         gitOps.writeFile(file.fileName, fileContent);
+      } else if (modeDiffers) {
+        incrementDiffStats(diffStats, "MODIFIED");
       }
     }
 
@@ -154,9 +177,23 @@ export class FileWriter implements IFileWriter {
         continue;
       }
 
-      if (shouldBeExecutable(file)) {
-        log.info(`Setting executable: ${file.fileName}`);
+      const desired = shouldBeExecutable(file);
+      const currentMode = modeCache.get(file.fileName) ?? null;
+
+      if (desired && currentMode !== "100755") {
+        log.info(
+          ctx.dryRun
+            ? `Would set executable: ${file.fileName}`
+            : `Setting executable: ${file.fileName}`
+        );
         await gitOps.setExecutable(file.fileName);
+      } else if (!desired && currentMode === "100755") {
+        log.info(
+          ctx.dryRun
+            ? `Would clear executable: ${file.fileName}`
+            : `Clearing executable: ${file.fileName}`
+        );
+        await gitOps.clearExecutable(file.fileName);
       }
     }
 

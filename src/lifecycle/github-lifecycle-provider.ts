@@ -53,9 +53,14 @@ const FORK_READY_TIMEOUT_MS = 60_000;
 /**
  * After repo creation, GitHub may return 404 due to eventual consistency.
  * Exclude 404/not-found from permanent errors so withRetry retries them.
+ * The test string must trigger all not-found-family patterns in
+ * CORE_PERMANENT_ERROR_PATTERNS: /404\b/, /not\s*found/i,
+ * /repository\s*not\s*found/i, and /does\s*not\s*exist/i.
  */
+const POST_CREATE_TEST_STRING =
+  "404 Repository not found. Resource does not exist";
 const POST_CREATE_PERMANENT_PATTERNS = DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
-  (p) => !p.test("404 Not Found")
+  (p) => !p.test(POST_CREATE_TEST_STRING)
 );
 
 /**

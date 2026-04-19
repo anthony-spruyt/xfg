@@ -51,6 +51,7 @@ export class CommitPushManager implements ICommitPushManager {
         path,
         content: info.content,
         ...(info.mode ? { mode: info.mode } : {}),
+        ...(info.modeOnly ? { modeOnly: true as const } : {}),
       }));
 
     this.log.info("Staging changes...");
@@ -72,6 +73,7 @@ export class CommitPushManager implements ICommitPushManager {
       const result = await commitStrategy.commit({
         repoInfo,
         branchName: pushBranch,
+        baseBranch: options.baseBranch,
         message: commitMessage,
         fileChanges: changes,
         workDir,

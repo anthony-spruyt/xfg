@@ -106,6 +106,12 @@ export function createMockGitOps(
       calls.setExecutable.push({ fileName });
     },
 
+    async clearExecutable(_fileName: string): Promise<void> {},
+
+    async getFileMode(_fileName: string): Promise<"100755" | "100644" | null> {
+      return "100644";
+    },
+
     getFileContent(fileName: string): string | null {
       if (typeof config.fileContent === "function") {
         return config.fileContent(fileName);

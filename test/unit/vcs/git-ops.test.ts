@@ -1079,4 +1079,132 @@ describe("GitOps", () => {
       );
     });
   });
+
+  test("getFileMode returns '100755' for executable tracked file", async () => {
+    const runner: ICommandExecutor = {
+      async exec(command: string) {
+        assert.match(command, /^git ls-files -s -- /);
+        return "100755 abcdef0123 0\tpath/to/file.sh\n";
+      },
+    };
+    const gitOps = new GitOps({ workDir: "/tmp/repo", executor: runner });
+    const mode = await gitOps.getFileMode("path/to/file.sh");
+    assert.equal(mode, "100755");
+  });
+
+  test("getFileMode returns '100644' for non-executable tracked file", async () => {
+    const runner: ICommandExecutor = {
+      async exec() {
+        return "100644 abcdef0123 0\tREADME.md\n";
+      },
+    };
+    const gitOps = new GitOps({ workDir: "/tmp/repo", executor: runner });
+    assert.equal(await gitOps.getFileMode("README.md"), "100644");
+  });
+
+  test("getFileMode returns null when file is not tracked", async () => {
+    const runner: ICommandExecutor = {
+      async exec() {
+        return "";
+      },
+    };
+    const gitOps = new GitOps({ workDir: "/tmp/repo", executor: runner });
+    assert.equal(await gitOps.getFileMode("untracked.txt"), null);
+  });
+
+  test("getFileMode rejects path traversal", async () => {
+    const runner: ICommandExecutor = {
+      async exec() {
+        return "";
+      },
+    };
+    const gitOps = new GitOps({ workDir: "/tmp/repo", executor: runner });
+    await assert.rejects(
+      () => gitOps.getFileMode("../escape"),
+      /Path traversal/
+    );
+  });
+
+  test("clearExecutable chmods 0644 and runs git update-index --chmod=-x", async () => {
+    const commands: string[] = [];
+    const runner: ICommandExecutor = {
+      async exec(command: string) {
+        commands.push(command);
+        return "";
+      },
+    };
+    // Create a real fixture file so chmodSync has something to change.
+    const tmpDir = await import("node:fs").then((m) =>
+      m.mkdtempSync("/tmp/gitops-")
+    );
+    const { writeFileSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    writeFileSync(join(tmpDir, "foo.sh"), "#!/bin/sh\n", { mode: 0o755 });
+    const gitOps = new GitOps({ workDir: tmpDir, executor: runner });
+    await gitOps.clearExecutable("foo.sh");
+    assert.ok(commands.some((c) => /git update-index --chmod=-x/.test(c)));
+  });
+
+  test("clearExecutable rejects path traversal", async () => {
+    const runner: ICommandExecutor = {
+      async exec() {
+        return "";
+      },
+    };
+    const gitOps = new GitOps({ workDir: "/tmp/repo", executor: runner });
+    await assert.rejects(
+      () => gitOps.clearExecutable("../escape"),
+      /Path traversal/
+    );
+  });
+
+  describe("clearExecutable additional coverage", () => {
+    beforeEach(() => {
+      mkdirSync(workDir, { recursive: true });
+    });
+
+    test("does not execute in dry-run mode", async () => {
+      const commands: string[] = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(command: string) {
+          commands.push(command);
+          return "";
+        },
+      };
+      const gitOps = new GitOps({
+        workDir,
+        dryRun: true,
+        executor: mockExecutor,
+      });
+      writeFileSync(join(workDir, "script.sh"), "#!/bin/bash\n", {
+        mode: 0o755,
+      });
+      await gitOps.clearExecutable("script.sh");
+      assert.equal(
+        commands.length,
+        0,
+        "Should not execute commands in dry-run mode"
+      );
+    });
+
+    test("wraps chmod errors in SyncError", async () => {
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
+      await assert.rejects(
+        async () => gitOps.clearExecutable("nonexistent.sh"),
+        (err: unknown) =>
+          err instanceof SyncError &&
+          err.message.includes("Failed to clear executable permissions")
+      );
+    });
+  });
+
+  test("getFileMode returns null for unrecognized mode", async () => {
+    const runner: ICommandExecutor = {
+      async exec() {
+        return "120000 abcdef0123 0\tsymlink\n";
+      },
+    };
+    const gitOps = new GitOps({ workDir: "/tmp/repo", executor: runner });
+    assert.equal(await gitOps.getFileMode("symlink"), null);
+  });
 });

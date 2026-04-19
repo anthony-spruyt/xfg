@@ -28,6 +28,7 @@ export interface FileWriteResult {
   /** Git file mode. Only set for executable files ("100755"). "100644" is included
    *  in the union for type completeness — non-executable files omit this field. */
   mode?: "100755" | "100644";
+  modeOnly?: true;
 }
 
 export interface FileWriteContext {
@@ -155,6 +156,7 @@ export interface CommitPushOptions extends RunContext {
   fileChanges: Map<string, FileWriteResult>;
   commitMessage: string;
   pushBranch: string;
+  baseBranch: string;
   isDirectMode: boolean;
   hasAppCredentials?: boolean;
 }

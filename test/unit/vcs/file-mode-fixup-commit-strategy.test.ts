@@ -37,24 +37,35 @@ interface ApiCall {
   payload?: unknown;
 }
 
+type MockResponse = string | { status: number; body: string };
+
 function createMockClientFactory(
-  responses: Map<string, string>,
+  responses: Map<string, MockResponse | MockResponse[]>,
   calls: ApiCall[] = []
 ): GhApiClientFactory {
-  return (executor, retries, cwd) => {
-    const client = new GhApiClient(executor, retries, cwd);
+  const responseQueues = new Map<string, MockResponse[]>();
+  for (const [key, val] of responses) {
+    responseQueues.set(key, Array.isArray(val) ? [...val] : [val]);
+  }
+
+  return (_executor, retries, cwd) => {
+    const client = new GhApiClient(_executor, retries, cwd);
     client.call = async (method, endpoint, params) => {
       calls.push({ method, endpoint, payload: params?.payload });
-      // Match the longest (most specific) pattern to avoid insertion-order dependence
       let bestMatch = "";
-      let bestResponse = "{}";
-      for (const [pattern, response] of responses) {
+      let bestQueue: MockResponse[] = ["{}"];
+      for (const [pattern, queue] of responseQueues) {
         if (endpoint.includes(pattern) && pattern.length > bestMatch.length) {
           bestMatch = pattern;
-          bestResponse = response;
+          bestQueue = queue;
         }
       }
-      return bestResponse;
+      const resp = bestQueue.length > 1 ? bestQueue.shift()! : bestQueue[0];
+      if (typeof resp === "string") return resp;
+      if (resp.status >= 400) {
+        throw new Error(resp.body);
+      }
+      return resp.body;
     };
     return client;
   };
@@ -840,6 +851,550 @@ describe("FileModeFixupCommitStrategy", () => {
       capturedRetries,
       7,
       "Should pass retries option to client factory"
+    );
+  });
+
+  test("mode-only changes: skips inner commit and builds fixup from branch HEAD", async () => {
+    let innerCalled = false;
+    const inner: ICommitStrategy = {
+      async commit(): Promise<CommitResult> {
+        innerCalled = true;
+        throw new Error("inner should NOT be called for mode-only changes");
+      },
+    };
+
+    const calls: ApiCall[] = [];
+    const responses = new Map<string, MockResponse>([
+      [
+        "/git/ref/heads/chore/sync-config",
+        JSON.stringify({ object: { sha: "branch-head-sha" } }),
+      ],
+      [
+        "/git/commits/branch-head-sha",
+        JSON.stringify({
+          sha: "branch-head-sha",
+          tree: { sha: "tree-sha" },
+        }),
+      ],
+      [
+        "/git/trees/tree-sha",
+        JSON.stringify({
+          sha: "tree-sha",
+          tree: [
+            {
+              path: "scripts/run",
+              mode: "100644",
+              type: "blob",
+              sha: "blob-sha",
+            },
+          ],
+        }),
+      ],
+      ["/git/trees", JSON.stringify({ sha: "new-tree-sha" })],
+      ["/git/commits", JSON.stringify({ sha: "new-commit-sha" })],
+      ["/git/refs/heads/chore/sync-config", JSON.stringify({})],
+    ]);
+    const clientFactory = createMockClientFactory(responses, calls);
+
+    const strategy = new FileModeFixupCommitStrategy(
+      inner,
+      mockExecutor,
+      clientFactory
+    );
+    const result = await strategy.commit({
+      repoInfo: githubRepoInfo,
+      branchName: "chore/sync-config",
+      message: "chore: sync",
+      fileChanges: [
+        { path: "scripts/run", content: null, mode: "100755", modeOnly: true },
+      ],
+      workDir: "/tmp/repo",
+    });
+
+    assert.equal(innerCalled, false);
+    assert.equal(result.sha, "new-commit-sha");
+    assert.ok(
+      calls.some(
+        (c) => c.method === "GET" && c.endpoint.includes("/git/ref/heads/")
+      ),
+      "expected GET on git/ref/heads/<branch>"
+    );
+  });
+
+  test("mixed content + mode-only: inner runs, fixup includes mode-only entries", async () => {
+    const innerResult: CommitResult = {
+      sha: "inner-sha",
+      verified: true,
+      pushed: true,
+    };
+    const inner = createMockInnerStrategy(innerResult);
+    const responses = new Map<string, MockResponse>([
+      [
+        "/git/commits/inner-sha",
+        JSON.stringify({
+          sha: "inner-sha",
+          tree: { sha: "tree-sha" },
+        }),
+      ],
+      [
+        "/git/trees/tree-sha",
+        JSON.stringify({
+          sha: "tree-sha",
+          tree: [
+            {
+              path: "scripts/run",
+              mode: "100644",
+              type: "blob",
+              sha: "blob-sha",
+            },
+            {
+              path: "normal.txt",
+              mode: "100644",
+              type: "blob",
+              sha: "normal-sha",
+            },
+          ],
+        }),
+      ],
+      ["/git/trees", JSON.stringify({ sha: "new-tree-sha" })],
+      ["/git/commits", JSON.stringify({ sha: "new-commit-sha" })],
+      ["/git/refs/heads/chore/sync-config", JSON.stringify({})],
+    ]);
+
+    const strategy = new FileModeFixupCommitStrategy(
+      inner,
+      mockExecutor,
+      createMockClientFactory(responses)
+    );
+    const result = await strategy.commit({
+      repoInfo: githubRepoInfo,
+      branchName: "chore/sync-config",
+      message: "chore: sync",
+      fileChanges: [
+        { path: "normal.txt", content: "hi\n" },
+        { path: "scripts/run", content: null, mode: "100755", modeOnly: true },
+      ],
+      workDir: "/tmp/repo",
+    });
+
+    assert.equal(result.sha, "new-commit-sha");
+  });
+
+  test("content-change downgrade: fixup patches tree mode from 100755 to 100644", async () => {
+    const innerResult: CommitResult = {
+      sha: "inner-sha",
+      verified: true,
+      pushed: true,
+    };
+    const inner = createMockInnerStrategy(innerResult);
+    const calls: ApiCall[] = [];
+    const responses = new Map<string, MockResponse>([
+      [
+        "/git/commits/inner-sha",
+        JSON.stringify({
+          sha: "inner-sha",
+          tree: { sha: "tree-sha" },
+        }),
+      ],
+      [
+        "/git/trees/tree-sha",
+        JSON.stringify({
+          sha: "tree-sha",
+          tree: [
+            {
+              path: "scripts/run",
+              mode: "100755",
+              type: "blob",
+              sha: "blob-sha",
+            },
+          ],
+        }),
+      ],
+      ["/git/trees", JSON.stringify({ sha: "new-tree-sha" })],
+      ["/git/commits", JSON.stringify({ sha: "new-commit-sha" })],
+      ["/git/refs/heads/chore/sync-config", JSON.stringify({})],
+    ]);
+    const strategy = new FileModeFixupCommitStrategy(
+      inner,
+      mockExecutor,
+      createMockClientFactory(responses, calls)
+    );
+    await strategy.commit({
+      repoInfo: githubRepoInfo,
+      branchName: "chore/sync-config",
+      message: "chore: sync",
+      fileChanges: [
+        { path: "scripts/run", content: "new content\n", mode: "100644" },
+      ],
+      workDir: "/tmp/repo",
+    });
+    const createTreeCall = calls.find(
+      (c) => c.method === "POST" && c.endpoint.endsWith("/git/trees")
+    );
+    assert.ok(createTreeCall);
+    assert.match(JSON.stringify(createTreeCall!.payload), /"mode":"100644"/);
+  });
+
+  test("mode-only when branch does not exist on remote: creates branch from base and applies fixup", async () => {
+    const calls: ApiCall[] = [];
+    const get404: MockResponse = {
+      status: 404,
+      body: JSON.stringify({ message: "Not Found" }),
+    };
+    const responses = new Map<string, MockResponse | MockResponse[]>([
+      ["/git/ref/heads/chore/sync-config", get404],
+      ["/git/ref/heads/main", JSON.stringify({ object: { sha: "base-sha" } })],
+      [
+        "/git/refs",
+        JSON.stringify({
+          ref: "refs/heads/chore/sync-config",
+          object: { sha: "base-sha" },
+        }),
+      ],
+      [
+        "/git/commits/base-sha",
+        JSON.stringify({
+          sha: "base-sha",
+          tree: { sha: "tree-sha" },
+        }),
+      ],
+      [
+        "/git/trees/tree-sha",
+        JSON.stringify({
+          sha: "tree-sha",
+          tree: [
+            {
+              path: "scripts/run",
+              mode: "100644",
+              type: "blob",
+              sha: "blob-sha",
+            },
+          ],
+        }),
+      ],
+      ["/git/trees", JSON.stringify({ sha: "new-tree-sha" })],
+      ["/git/commits", JSON.stringify({ sha: "new-commit-sha" })],
+    ]);
+    const strategy = new FileModeFixupCommitStrategy(
+      {
+        async commit() {
+          throw new Error("inner should NOT be called");
+        },
+      },
+      mockExecutor,
+      createMockClientFactory(responses, calls)
+    );
+    const result = await strategy.commit({
+      repoInfo: githubRepoInfo,
+      branchName: "chore/sync-config",
+      baseBranch: "main",
+      message: "chore: sync",
+      fileChanges: [
+        { path: "scripts/run", content: null, mode: "100755", modeOnly: true },
+      ],
+      workDir: "/tmp/repo",
+    });
+    assert.equal(result.sha, "new-commit-sha");
+    assert.ok(
+      calls.some(
+        (c) => c.method === "POST" && c.endpoint.endsWith("/git/refs")
+      ),
+      "expected branch creation via POST /git/refs"
+    );
+  });
+
+  test("mode-only downgrade (100755 -> 100644) writes 100644 to the fixup tree", async () => {
+    const responses = new Map<string, MockResponse>([
+      [
+        "/git/ref/heads/chore/sync-config",
+        JSON.stringify({ object: { sha: "branch-head-sha" } }),
+      ],
+      [
+        "/git/commits/branch-head-sha",
+        JSON.stringify({
+          sha: "branch-head-sha",
+          tree: { sha: "tree-sha" },
+        }),
+      ],
+      [
+        "/git/trees/tree-sha",
+        JSON.stringify({
+          sha: "tree-sha",
+          tree: [
+            {
+              path: "scripts/run",
+              mode: "100755",
+              type: "blob",
+              sha: "blob-sha",
+            },
+          ],
+        }),
+      ],
+      ["/git/trees", JSON.stringify({ sha: "new-tree-sha" })],
+      ["/git/commits", JSON.stringify({ sha: "new-commit-sha" })],
+      ["/git/refs/heads/chore/sync-config", JSON.stringify({})],
+    ]);
+    const calls: ApiCall[] = [];
+    const clientFactory = createMockClientFactory(responses, calls);
+
+    const strategy = new FileModeFixupCommitStrategy(
+      createMockInnerStrategy({
+        sha: "ignored",
+        verified: true,
+        pushed: true,
+      }),
+      mockExecutor,
+      clientFactory
+    );
+    await strategy.commit({
+      repoInfo: githubRepoInfo,
+      branchName: "chore/sync-config",
+      message: "chore: sync",
+      fileChanges: [
+        { path: "scripts/run", content: null, mode: "100644", modeOnly: true },
+      ],
+      workDir: "/tmp/repo",
+    });
+
+    const createTreeCall = calls.find(
+      (c) => c.method === "POST" && c.endpoint.endsWith("/git/trees")
+    );
+    assert.ok(createTreeCall);
+    assert.match(JSON.stringify(createTreeCall!.payload), /"mode":"100644"/);
+  });
+
+  test("rejects unsafe branch name before making any REST call", async () => {
+    const calls: ApiCall[] = [];
+    const clientFactory = createMockClientFactory(new Map(), calls);
+    const strategy = new FileModeFixupCommitStrategy(
+      {
+        async commit() {
+          throw new Error("inner should NOT be called");
+        },
+      },
+      mockExecutor,
+      clientFactory
+    );
+    await assert.rejects(
+      () =>
+        strategy.commit({
+          repoInfo: githubRepoInfo,
+          branchName: "../../evil",
+          message: "chore: sync",
+          fileChanges: [
+            {
+              path: "scripts/run",
+              content: null,
+              mode: "100755",
+              modeOnly: true,
+            },
+          ],
+          workDir: "/tmp/repo",
+        }),
+      /Invalid branch name/
+    );
+    assert.equal(
+      calls.length,
+      0,
+      "no REST calls should be made for an unsafe branch name"
+    );
+  });
+
+  test("mode-only without baseBranch: rethrows 404 from branch ref lookup", async () => {
+    const get404: MockResponse = {
+      status: 404,
+      body: JSON.stringify({ message: "Not Found" }),
+    };
+    const responses = new Map<string, MockResponse>([
+      ["/git/ref/heads/chore/sync-config", get404],
+    ]);
+    const strategy = new FileModeFixupCommitStrategy(
+      {
+        async commit() {
+          throw new Error("inner should NOT be called");
+        },
+      },
+      mockExecutor,
+      createMockClientFactory(responses)
+    );
+    await assert.rejects(
+      () =>
+        strategy.commit({
+          repoInfo: githubRepoInfo,
+          branchName: "chore/sync-config",
+          message: "chore: sync",
+          fileChanges: [
+            {
+              path: "scripts/run",
+              content: null,
+              mode: "100755",
+              modeOnly: true,
+            },
+          ],
+          workDir: "/tmp/repo",
+        }),
+      /Not Found/
+    );
+  });
+
+  test("mode-only: rethrows non-404 error from branch ref lookup", async () => {
+    const get500: MockResponse = {
+      status: 500,
+      body: "Internal Server Error",
+    };
+    const responses = new Map<string, MockResponse>([
+      ["/git/ref/heads/chore/sync-config", get500],
+    ]);
+    const strategy = new FileModeFixupCommitStrategy(
+      {
+        async commit() {
+          throw new Error("inner should NOT be called");
+        },
+      },
+      mockExecutor,
+      createMockClientFactory(responses)
+    );
+    await assert.rejects(
+      () =>
+        strategy.commit({
+          repoInfo: githubRepoInfo,
+          branchName: "chore/sync-config",
+          baseBranch: "main",
+          message: "chore: sync",
+          fileChanges: [
+            {
+              path: "scripts/run",
+              content: null,
+              mode: "100755",
+              modeOnly: true,
+            },
+          ],
+          workDir: "/tmp/repo",
+        }),
+      /Internal Server Error/
+    );
+  });
+
+  test("404 fallback race: POST /git/refs 422 -> re-GET branch ref", async () => {
+    const calls: ApiCall[] = [];
+    const get404: MockResponse = {
+      status: 404,
+      body: JSON.stringify({ message: "Not Found" }),
+    };
+    const post422: MockResponse = {
+      status: 422,
+      body: JSON.stringify({ message: "Reference already exists" }),
+    };
+    const responses = new Map<string, MockResponse | MockResponse[]>([
+      [
+        "/git/ref/heads/chore/sync-config",
+        [get404, JSON.stringify({ object: { sha: "race-winner-sha" } })],
+      ],
+      ["/git/ref/heads/main", JSON.stringify({ object: { sha: "base-sha" } })],
+      ["/git/refs", post422],
+      [
+        "/git/commits/race-winner-sha",
+        JSON.stringify({
+          sha: "race-winner-sha",
+          tree: { sha: "tree-sha" },
+        }),
+      ],
+      [
+        "/git/trees/tree-sha",
+        JSON.stringify({
+          sha: "tree-sha",
+          tree: [
+            {
+              path: "scripts/run",
+              mode: "100644",
+              type: "blob",
+              sha: "blob-sha",
+            },
+          ],
+        }),
+      ],
+      ["/git/trees", JSON.stringify({ sha: "new-tree-sha" })],
+      ["/git/commits", JSON.stringify({ sha: "new-commit-sha" })],
+      ["/git/refs/heads/chore/sync-config", JSON.stringify({})],
+    ]);
+    const strategy = new FileModeFixupCommitStrategy(
+      {
+        async commit() {
+          throw new Error("inner should NOT be called");
+        },
+      },
+      mockExecutor,
+      createMockClientFactory(responses, calls)
+    );
+    const result = await strategy.commit({
+      repoInfo: githubRepoInfo,
+      branchName: "chore/sync-config",
+      baseBranch: "main",
+      message: "chore: sync",
+      fileChanges: [
+        {
+          path: "scripts/run",
+          content: null,
+          mode: "100755",
+          modeOnly: true,
+        },
+      ],
+      workDir: "/tmp/repo",
+    });
+    assert.equal(result.sha, "new-commit-sha");
+    const getBranchRefCalls = calls.filter(
+      (c) =>
+        c.method === "GET" &&
+        c.endpoint.includes("/git/ref/heads/chore/sync-config")
+    );
+    assert.equal(
+      getBranchRefCalls.length,
+      2,
+      "expected re-GET after POST raced"
+    );
+  });
+
+  test("404 fallback: rethrows non-422 POST error", async () => {
+    const get404: MockResponse = {
+      status: 404,
+      body: JSON.stringify({ message: "Not Found" }),
+    };
+    const post500: MockResponse = {
+      status: 500,
+      body: "Internal Server Error",
+    };
+    const responses = new Map<string, MockResponse>([
+      ["/git/ref/heads/chore/sync-config", get404],
+      ["/git/ref/heads/main", JSON.stringify({ object: { sha: "base-sha" } })],
+      ["/git/refs", post500],
+    ]);
+    const strategy = new FileModeFixupCommitStrategy(
+      {
+        async commit() {
+          throw new Error("inner should NOT be called");
+        },
+      },
+      mockExecutor,
+      createMockClientFactory(responses)
+    );
+    await assert.rejects(
+      () =>
+        strategy.commit({
+          repoInfo: githubRepoInfo,
+          branchName: "chore/sync-config",
+          baseBranch: "main",
+          message: "chore: sync",
+          fileChanges: [
+            {
+              path: "scripts/run",
+              content: null,
+              mode: "100755",
+              modeOnly: true,
+            },
+          ],
+          workDir: "/tmp/repo",
+        }),
+      /Internal Server Error/
     );
   });
 });

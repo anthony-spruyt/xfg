@@ -35,6 +35,10 @@ function createMockLocalOps(): ILocalGitOps {
     },
     writeFile() {},
     async setExecutable() {},
+    async clearExecutable() {},
+    async getFileMode() {
+      return "100644" as const;
+    },
     getFileContent() {
       return null;
     },
@@ -985,6 +989,41 @@ describe("AuthenticatedGitOps", () => {
 
       const result = await authOps.getDefaultBranchLocal();
       assert.deepStrictEqual(result, { branch: "develop", method: "custom" });
+    });
+
+    test("clearExecutable delegates to localOps", async () => {
+      let cleared = "";
+      const localOps = {
+        ...createMockLocalOps(),
+        async clearExecutable(fileName: string) {
+          cleared = fileName;
+        },
+      };
+      const authOps = createAuthOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+      await authOps.clearExecutable("script.sh");
+      assert.equal(cleared, "script.sh");
+    });
+
+    test("getFileMode delegates to localOps", async () => {
+      const localOps = {
+        ...createMockLocalOps(),
+        async getFileMode() {
+          return "100755" as const;
+        },
+      };
+      const authOps = createAuthOps(
+        localOps,
+        { exec: async () => "" },
+        "/tmp/test",
+        3
+      );
+      const mode = await authOps.getFileMode("script.sh");
+      assert.equal(mode, "100755");
     });
   });
 });
