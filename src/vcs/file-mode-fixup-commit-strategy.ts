@@ -162,11 +162,11 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
   }
 
   /**
-   * Create a fixup commit that changes file modes from 100644 to 100755.
+   * Create a fixup commit that patches file modes (100644 ↔ 100755).
    *
    * Flow:
-   * 1. GET the content commit to find its tree SHA
-   * 2. GET the tree (recursive) to find blob SHAs for executable files
+   * 1. GET the parent commit to find its tree SHA
+   * 2. GET the tree (recursive) to find blob SHAs for target files
    * 3. POST a new tree with updated modes (base_tree carries forward unchanged)
    * 4. POST a new commit with the new tree
    * 5. PATCH the branch ref to point to the new commit

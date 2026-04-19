@@ -58,6 +58,7 @@ export class FileWriter implements IFileWriter {
 
     const fileChanges = new Map<string, FileWriteResult>();
     const diffStats = createDiffStats();
+    const modeCache = new Map<string, "100755" | "100644" | null>();
 
     for (const file of files) {
       const filePath = join(workDir, file.fileName);
@@ -117,6 +118,7 @@ export class FileWriter implements IFileWriter {
         ? "100755"
         : "100644";
       const currentMode = await gitOps.getFileMode(file.fileName);
+      modeCache.set(file.fileName, currentMode);
       const modeDiffers = currentMode !== null && currentMode !== desiredMode;
 
       if (changed) {
@@ -176,16 +178,16 @@ export class FileWriter implements IFileWriter {
       }
 
       const desired = shouldBeExecutable(file);
-      const currentMode = await gitOps.getFileMode(file.fileName);
+      const currentMode = modeCache.get(file.fileName) ?? null;
 
-      if (desired) {
+      if (desired && currentMode !== "100755") {
         log.info(
           ctx.dryRun
             ? `Would set executable: ${file.fileName}`
             : `Setting executable: ${file.fileName}`
         );
         await gitOps.setExecutable(file.fileName);
-      } else if (currentMode === "100755") {
+      } else if (!desired && currentMode === "100755") {
         log.info(
           ctx.dryRun
             ? `Would clear executable: ${file.fileName}`
