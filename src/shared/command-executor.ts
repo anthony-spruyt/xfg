@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { sanitizeCredentials } from "../vcs/sanitize-utils.js";
 
 export interface ExecOptions {
@@ -23,7 +23,7 @@ export class ShellCommandExecutor implements ICommandExecutor {
     options?: ExecOptions
   ): Promise<string> {
     try {
-      return execSync(command, {
+      return execFileSync("sh", ["-c", command], {
         cwd,
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
