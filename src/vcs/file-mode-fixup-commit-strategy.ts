@@ -9,6 +9,7 @@ import { isGitHubRepo, type GitHubRepoInfo } from "../repo/index.js";
 import { GhApiClient, type GhApiOptions } from "../shared/gh-api-utils.js";
 import { parseApiJson } from "../shared/json-utils.js";
 import { SyncError } from "../shared/errors.js";
+import { validateSafeBranchName } from "./graphql-commit-strategy.js";
 
 interface GitCommitResponse {
   sha: string;
@@ -65,33 +66,99 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
   ) {}
 
   async commit(options: CommitOptions): Promise<CommitResult> {
-    const innerResult = await this.inner.commit(options);
+    validateSafeBranchName(options.branchName);
 
-    // Only non-deleted files can have their mode fixed (deletions have content === null)
     const executableFiles = options.fileChanges.filter(
-      (fc) => fc.mode === "100755" && fc.content !== null
+      (fc) => fc.modeOnly === true || fc.mode !== undefined
     );
+    const hasContentChanges = options.fileChanges.some((fc) => !fc.modeOnly);
 
     if (executableFiles.length === 0) {
-      return innerResult;
+      return this.inner.commit(options);
     }
 
-    // Safety net: only GitHub repos use the REST Git Data API for fixup.
-    // Currently only composed for GitHub repos in createCommitStrategy(),
-    // but guard defensively in case the decorator is reused elsewhere.
     if (!isGitHubRepo(options.repoInfo)) {
-      return innerResult;
+      return this.inner.commit(options);
+    }
+
+    let parentSha: string;
+    let baseResult: CommitResult;
+
+    if (hasContentChanges) {
+      baseResult = await this.inner.commit(options);
+      parentSha = baseResult.sha;
+    } else {
+      parentSha = await this.resolveBranchHeadSha(
+        options.repoInfo,
+        options.branchName,
+        options.baseBranch,
+        options.workDir,
+        options.retries ?? 3,
+        options.token
+      );
+      baseResult = { sha: parentSha, verified: true, pushed: true };
     }
 
     return await this.createFixupCommit(
       options.repoInfo,
       options.branchName,
-      innerResult,
+      baseResult,
       executableFiles,
       options.workDir,
       options.retries ?? 3,
       options.token
     );
+  }
+
+  private async resolveBranchHeadSha(
+    repoInfo: GitHubRepoInfo,
+    branchName: string,
+    baseBranch: string | undefined,
+    workDir: string,
+    retries: number,
+    token?: string
+  ): Promise<string> {
+    validateSafeBranchName(branchName);
+    if (baseBranch !== undefined) {
+      validateSafeBranchName(baseBranch);
+    }
+
+    const client = this.clientFactory(this.executor, retries, workDir);
+    const apiOpts: GhApiOptions = { token, host: repoInfo.host };
+    const repoPath = `repos/${repoInfo.owner}/${repoInfo.repo}`;
+    const getBranchRef = async (ref: string): Promise<string> => {
+      const raw = await client.call("GET", `${repoPath}/git/ref/heads/${ref}`, {
+        options: apiOpts,
+      });
+      const parsed = parseApiJson<{ object: { sha: string } }>(
+        raw,
+        "GET git ref"
+      );
+      return parsed.object.sha;
+    };
+
+    try {
+      return await getBranchRef(branchName);
+    } catch (err) {
+      const is404 = err instanceof Error && /404|Not Found/i.test(err.message);
+      if (!is404 || !baseBranch) throw err;
+
+      const baseSha = await getBranchRef(baseBranch);
+
+      try {
+        await client.call("POST", `${repoPath}/git/refs`, {
+          payload: { ref: `refs/heads/${branchName}`, sha: baseSha },
+          options: apiOpts,
+        });
+        return baseSha;
+      } catch (createErr) {
+        const alreadyExists =
+          createErr instanceof Error &&
+          /Reference already exists/i.test(createErr.message);
+        if (!alreadyExists) throw createErr;
+        return await getBranchRef(branchName);
+      }
+    }
   }
 
   /**
@@ -141,35 +208,32 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
     );
     const treeData = parseApiJson<GitTreeResponse>(treeRaw, "GET git tree");
 
-    const executablePaths = new Set(executableFiles.map((f) => f.path));
     const treeEntries: Array<{
       path: string;
       mode: string;
       type: string;
       sha: string;
     }> = [];
+    const requestedPaths = new Set(executableFiles.map((f) => f.path));
 
     for (const entry of treeData.tree) {
-      if (
-        executablePaths.has(entry.path) &&
-        entry.type === "blob" &&
-        entry.mode !== "100755"
-      ) {
-        treeEntries.push({
-          path: entry.path,
-          mode: "100755",
-          type: "blob",
-          sha: entry.sha,
-        });
-      }
+      const requested = executableFiles.find((f) => f.path === entry.path);
+      if (!requested || entry.type !== "blob") continue;
+      const desiredMode = requested.mode ?? "100755";
+      if (entry.mode === desiredMode) continue;
+      treeEntries.push({
+        path: entry.path,
+        mode: desiredMode,
+        type: "blob",
+        sha: entry.sha,
+      });
     }
 
-    // If tree was truncated (>100k entries), check that all executable files were found
     if (treeData.truncated) {
       const foundPaths = new Set(
         treeData.tree.filter((e) => e.type === "blob").map((e) => e.path)
       );
-      const missing = [...executablePaths].filter((p) => !foundPaths.has(p));
+      const missing = [...requestedPaths].filter((p) => !foundPaths.has(p));
       if (missing.length > 0) {
         throw new SyncError(
           `File mode fixup incomplete: tree response was truncated (>100k entries) ` +
