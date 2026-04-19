@@ -521,6 +521,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       {
         retries: this.retries,
         permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
+        log: this.log ? { info: (m: string) => this.log!.warn(m) } : undefined,
       }
     );
   }
