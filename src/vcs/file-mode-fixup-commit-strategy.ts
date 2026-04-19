@@ -215,10 +215,10 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
       type: string;
       sha: string;
     }> = [];
-    const requestedPaths = new Set(executableFiles.map((f) => f.path));
+    const requestedByPath = new Map(executableFiles.map((f) => [f.path, f]));
 
     for (const entry of treeData.tree) {
-      const requested = executableFiles.find((f) => f.path === entry.path);
+      const requested = requestedByPath.get(entry.path);
       if (!requested || entry.type !== "blob") continue;
       const desiredMode = requested.mode ?? "100755";
       if (entry.mode === desiredMode) continue;
@@ -234,7 +234,9 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
       const foundPaths = new Set(
         treeData.tree.filter((e) => e.type === "blob").map((e) => e.path)
       );
-      const missing = [...requestedPaths].filter((p) => !foundPaths.has(p));
+      const missing = [...requestedByPath.keys()].filter(
+        (p) => !foundPaths.has(p)
+      );
       if (missing.length > 0) {
         throw new SyncError(
           `File mode fixup incomplete: tree response was truncated (>100k entries) ` +
