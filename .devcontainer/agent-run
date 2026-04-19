@@ -116,24 +116,32 @@ AGENT_CPUS="${AGENT_RUN_CPUS:-2}"
 
 # Rootless podman is preferred. In WSL2 nested userns, newuidmap fails because
 # the outer namespace did not delegate subuid ranges; fall back to `sudo podman`
-# with --userns=auto still providing a dedicated user namespace.
+# with --network=host --uts=host (matching lint.sh). Cgroups are also unavailable
+# in WSL2 devcontainers, so resource limits must be skipped.
 runner=(podman)
+ns_args=(--userns=auto)
+limit_args=(
+  --pids-limit="$AGENT_PIDS"
+  --memory="$AGENT_MEM"
+  --memory-swap="$AGENT_MEM"
+  --cpus="$AGENT_CPUS"
+)
 if ! podman info >/dev/null 2>&1; then
   if [[ "$(id -u)" != "0" ]] && command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
     runner=(sudo -n podman)
+    AGENT_NET="host"
+    ns_args=(--uts=host)
+    limit_args=()
   fi
 fi
 
 exec "${runner[@]}" run --rm \
-  --userns=auto \
+  "${ns_args[@]}" \
   --read-only \
   --tmpfs /tmp:rw,exec,nosuid,nodev,size=256m \
   --tmpfs /var/tmp:rw,exec,nosuid,nodev,size=64m \
   --security-opt no-new-privileges \
   --cap-drop=ALL \
-  --pids-limit="$AGENT_PIDS" \
-  --memory="$AGENT_MEM" \
-  --memory-swap="$AGENT_MEM" \
-  --cpus="$AGENT_CPUS" \
+  "${limit_args[@]}" \
   --network="$AGENT_NET" \
   "$@"
