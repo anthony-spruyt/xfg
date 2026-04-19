@@ -9,7 +9,7 @@
   "alwaysThinkingEnabled": true,
   "fastMode": false,
   "prefersReducedMotion": true,
-  "model": "opus[1m]",
+  "model": "claude-opus-4-6[1m]",
   "autoUpdatesChannel": "latest",
   "defaultMode": "acceptEdits",
   "permissions": {
