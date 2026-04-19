@@ -102,6 +102,7 @@ export class SyncWorkflow implements ISyncWorkflow {
         fileChanges: workResult.fileChanges,
         commitMessage: workResult.commitMessage,
         pushBranch,
+        baseBranch: session.baseBranch,
         isDirectMode,
         hasAppCredentials: options.hasAppCredentials,
       });
