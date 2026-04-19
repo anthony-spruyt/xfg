@@ -427,10 +427,12 @@ repos:
       modeTmpDir,
       `id: mode-drift-mixed-seed
 files:
-  content-change.sh:
+  content-change-script:
     content: "old content"
-  mode-only.sh:
+    executable: false
+  mode-only-script:
     content: "keep same"
+    executable: false
 prOptions:
   merge: direct
   deleteBranch: true
@@ -440,19 +442,19 @@ repos:
     );
     await exec(`node dist/cli.js sync --config ${seedConfig}`, xfgEnv);
     assert.equal(
-      await getTreeMode(modeTestRepo, "content-change.sh"),
+      await getTreeMode(modeTestRepo, "content-change-script"),
       "100644"
     );
-    assert.equal(await getTreeMode(modeTestRepo, "mode-only.sh"), "100644");
+    assert.equal(await getTreeMode(modeTestRepo, "mode-only-script"), "100644");
 
     const mixedConfig = writeConfig(
       modeTmpDir,
       `id: mode-drift-mixed
 files:
-  content-change.sh:
+  content-change-script:
     content: "new content"
     executable: true
-  mode-only.sh:
+  mode-only-script:
     content: "keep same"
     executable: true
 prOptions:
@@ -469,14 +471,74 @@ repos:
     console.log(output);
 
     assert.equal(
-      await getTreeMode(modeTestRepo, "content-change.sh"),
+      await getTreeMode(modeTestRepo, "content-change-script"),
       "100755",
-      "content-change.sh should be 100755"
+      "content-change-script should be 100755"
     );
     assert.equal(
-      await getTreeMode(modeTestRepo, "mode-only.sh"),
+      await getTreeMode(modeTestRepo, "mode-only-script"),
       "100755",
-      "mode-only.sh should be 100755"
+      "mode-only-script should be 100755"
+    );
+  });
+
+  test("mode-only downgrade via PAT path: 100755 -> 100644 without App creds", async () => {
+    const patOnlyEnv = {
+      cwd: projectRoot,
+      env: {
+        XFG_GITHUB_CLIENT_ID: undefined,
+        XFG_GITHUB_APP_PRIVATE_KEY: undefined,
+      },
+    };
+    const fileContent = "#!/bin/bash\necho pat-downgrade\n";
+
+    const seedConfig = writeConfig(
+      modeTmpDir,
+      `id: pat-mode-drift-seed
+files:
+  pat-mode-test.sh:
+    content: |
+      ${fileContent.replace(/\n/g, "\n      ").trimEnd()}
+    executable: true
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${modeTestRepo}.git
+`
+    );
+    await exec(`node dist/cli.js sync --config ${seedConfig}`, xfgEnv);
+    assert.equal(
+      await getTreeMode(modeTestRepo, "pat-mode-test.sh"),
+      "100755",
+      "seed: pat-mode-test.sh should be 100755"
+    );
+
+    const downgradeConfig = writeConfig(
+      modeTmpDir,
+      `id: pat-mode-drift-downgrade
+files:
+  pat-mode-test.sh:
+    content: |
+      ${fileContent.replace(/\n/g, "\n      ").trimEnd()}
+    executable: false
+prOptions:
+  merge: direct
+  deleteBranch: true
+repos:
+  - git: https://github.com/${modeTestRepo}.git
+`
+    );
+    const output = await exec(
+      `node dist/cli.js sync --config ${downgradeConfig}`,
+      patOnlyEnv
+    );
+    console.log(output);
+
+    assert.equal(
+      await getTreeMode(modeTestRepo, "pat-mode-test.sh"),
+      "100644",
+      "after PAT downgrade: pat-mode-test.sh should be 100644"
     );
   });
 });
@@ -531,84 +593,6 @@ repos:
 `
     );
     await exec(`node dist/cli.js sync --config ${rulesetConfig}`, patOnlyEnv);
-  });
-
-  test("mode-only downgrade via PAT path: 100755 -> 100644 without App creds", async () => {
-    const fileContent = "#!/bin/bash\necho pat-downgrade\n";
-
-    // Seed with executable: true via App auth
-    const seedConfig = writeConfig(
-      signedTmpDir,
-      `id: pat-mode-drift-seed
-files:
-  pat-mode-test.sh:
-    content: |
-      ${fileContent.replace(/\n/g, "\n      ").trimEnd()}
-    executable: true
-prOptions:
-  merge: direct
-  deleteBranch: true
-repos:
-  - git: https://github.com/${signedTestRepo}.git
-`
-    );
-    await exec(`node dist/cli.js sync --config ${seedConfig}`, xfgEnv);
-
-    const treeJsonBefore = await execWithRetry(
-      `gh api repos/${signedTestRepo}/git/trees/HEAD?recursive=1`
-    );
-    const treeBefore = JSON.parse(treeJsonBefore).tree as Array<{
-      path: string;
-      mode: string;
-      type: string;
-    }>;
-    const beforeMode = treeBefore.find(
-      (e) => e.path === "pat-mode-test.sh" && e.type === "blob"
-    )?.mode;
-    assert.equal(
-      beforeMode,
-      "100755",
-      "seed: pat-mode-test.sh should be 100755"
-    );
-
-    // Re-sync with executable: false via PAT-only auth
-    const downgradeConfig = writeConfig(
-      signedTmpDir,
-      `id: pat-mode-drift-downgrade
-files:
-  pat-mode-test.sh:
-    content: |
-      ${fileContent.replace(/\n/g, "\n      ").trimEnd()}
-    executable: false
-prOptions:
-  merge: direct
-  deleteBranch: true
-repos:
-  - git: https://github.com/${signedTestRepo}.git
-`
-    );
-    const output = await exec(
-      `node dist/cli.js sync --config ${downgradeConfig}`,
-      patOnlyEnv
-    );
-    console.log(output);
-
-    const treeJsonAfter = await execWithRetry(
-      `gh api repos/${signedTestRepo}/git/trees/HEAD?recursive=1`
-    );
-    const treeAfter = JSON.parse(treeJsonAfter).tree as Array<{
-      path: string;
-      mode: string;
-      type: string;
-    }>;
-    const afterMode = treeAfter.find(
-      (e) => e.path === "pat-mode-test.sh" && e.type === "blob"
-    )?.mode;
-    assert.equal(
-      afterMode,
-      "100644",
-      "after PAT downgrade: pat-mode-test.sh should be 100644"
-    );
   });
 
   test("sync creates PR on repo with required_signatures on all branches", async () => {
