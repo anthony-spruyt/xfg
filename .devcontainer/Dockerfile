@@ -10,4 +10,6 @@ RUN printf 'Acquire::Retries "5";\nAcquire::http::Timeout "30";\nAcquire::http::
 # Default to non-root. Devcontainer features explicitly USER root when
 # installing; envbuilder/kaniko respects those directives. Final image
 # defaulting to vscode matches remoteUser and satisfies trivy DS-0002.
+HEALTHCHECK NONE
+
 USER vscode
