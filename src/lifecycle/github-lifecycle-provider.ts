@@ -59,9 +59,12 @@ const FORK_READY_TIMEOUT_MS = 60_000;
  */
 const POST_CREATE_TEST_STRING =
   "404 Repository not found. Resource does not exist";
-const POST_CREATE_PERMANENT_PATTERNS = DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
-  (p) => !p.test(POST_CREATE_TEST_STRING)
-);
+const POST_CREATE_PERMANENT_PATTERNS = [
+  ...DEFAULT_PERMANENT_ERROR_PATTERNS.filter(
+    (p) => !p.test(POST_CREATE_TEST_STRING)
+  ),
+  /already\s*exists/i,
+];
 
 /**
  * Interval between fork readiness checks (2 seconds).

@@ -11,6 +11,7 @@ import {
   createRepo,
   deleteRepo,
   writeConfig,
+  withTestRetry,
   waitForRulesetVisible as waitForRulesetVisibleBase,
 } from "./test-helpers.js";
 
@@ -159,10 +160,19 @@ describe("GitHub Settings Integration Test", () => {
     });
 
     // List endpoint to get ID, then fetch by ID to get rules
-    const rulesetListStr = await execWithRetry(
-      `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+    // Wrap in withTestRetry: GitHub API may return empty when ruleset not yet visible
+    const rulesetListItem = await withTestRetry(
+      async () => {
+        const str = await exec(
+          `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+        );
+        if (!str.trim()) {
+          throw new Error(`Ruleset "${RULESET_NAME}" not visible yet`);
+        }
+        return JSON.parse(str) as { id: number };
+      },
+      { description: "ruleset list visible", retries: 5, baseDelayMs: 3000 }
     );
-    const rulesetListItem = JSON.parse(rulesetListStr);
     await waitForRulesetVisible(rulesetListItem.id);
 
     const rulesetBeforeStr = await execWithRetry(
