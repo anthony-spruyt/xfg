@@ -53,10 +53,11 @@ const defaultClientFactory: GhApiClientFactory = (executor, retries, cwd) =>
  * The GitHub GraphQL createCommitOnBranch mutation cannot set file modes.
  * After the inner strategy (GraphQLCommitStrategy) creates the content commit,
  * this decorator creates a second commit via the REST Git Data API that
- * patches tree modes from 100644 to 100755 for executable files.
+ * patches tree modes to match the desired mode (100755 or 100644).
  *
- * Only activates when fileChanges contain entries with mode "100755".
- * When no executable files are present, delegates directly to the inner strategy.
+ * Activates when fileChanges contain entries with an explicit `mode` field
+ * or `modeOnly` flag. When no such entries are present, delegates directly
+ * to the inner strategy.
  */
 export class FileModeFixupCommitStrategy implements ICommitStrategy {
   constructor(
@@ -246,7 +247,7 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
     }
 
     if (treeEntries.length === 0) {
-      // All requested files are either already 100755 or absent from the tree.
+      // All requested files already have the desired mode or are absent from the tree.
       // Absent files in a non-truncated tree means createCommitOnBranch did not
       // include them (e.g., concurrent deletion) — safe to skip since there is
       // no blob to patch.
