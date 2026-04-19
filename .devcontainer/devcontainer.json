@@ -2,7 +2,10 @@
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
   "name": "Ubuntu",
   "build": {
-    "dockerfile": "Dockerfile"
+    "dockerfile": "Dockerfile",
+    "args": {
+      "NEXUS_URL": "${localEnv:NEXUS_URL}"
+    }
   },
   "containerUser": "vscode",
   "remoteUser": "vscode",

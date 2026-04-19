@@ -60,7 +60,7 @@ else
   # required. The container still runs linters as the invoking user via -u.
   if [[ "$(id -u)" != "0" ]] && command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
     runner=(sudo -n podman)
-    network_arg=(--network=host)
+    network_arg=(--network=host --uts=host)
   else
     runner=(docker)
     network_arg=()
