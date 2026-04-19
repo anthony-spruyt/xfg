@@ -1007,6 +1007,84 @@ describe("GraphQLCommitStrategy", () => {
         );
       }
     });
+
+    test("skips modeOnly entries from GraphQL payload", async () => {
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      const queryRefResponse = JSON.stringify({
+        data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
+      });
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) return queryRefResponse;
+        return JSON.stringify({
+          data: { createCommitOnBranch: { commit: { oid: "sha123" } } },
+        });
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
+      const result = await strategy.commit({
+        repoInfo: githubRepoInfo,
+        branchName: "main",
+        message: "Mixed commit",
+        fileChanges: [
+          { path: "normal.txt", content: "hello" },
+          {
+            path: "scripts/run",
+            content: null,
+            mode: "100755" as const,
+            modeOnly: true as const,
+          },
+        ],
+        workDir: testDir,
+      });
+
+      assert.equal(result.sha, "sha123");
+      const commitCall = mockExecutor.calls.find((c) =>
+        c.command.includes("createCommitOnBranch")
+      );
+      assert.ok(commitCall);
+      assert.ok(
+        !commitCall.command.includes("scripts/run"),
+        "modeOnly entry should not appear in GraphQL payload"
+      );
+      assert.ok(
+        commitCall.command.includes("normal.txt"),
+        "content entry should appear in GraphQL payload"
+      );
+    });
+
+    test("throws when all entries are modeOnly", async () => {
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
+      await assert.rejects(
+        () =>
+          strategy.commit({
+            repoInfo: githubRepoInfo,
+            branchName: "main",
+            message: "Mode-only commit",
+            fileChanges: [
+              {
+                path: "scripts/run",
+                content: null,
+                mode: "100755" as const,
+                modeOnly: true as const,
+              },
+            ],
+            workDir: testDir,
+          }),
+        /no content changes to commit/i
+      );
+      // Should not have made any GraphQL API calls
+      const graphqlCalls = mockExecutor.calls.filter((c) =>
+        c.command.includes("gh api graphql")
+      );
+      assert.equal(
+        graphqlCalls.length,
+        0,
+        "Should not call GraphQL API when all entries are modeOnly"
+      );
+    });
   });
 
   describe("ensureBranchExistsOnRemote (GraphQL ref operations)", () => {
