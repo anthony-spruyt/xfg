@@ -13,6 +13,7 @@ import {
   repoExistsNoRetry,
   isForkedFrom,
   writeConfig,
+  withTestRetry,
 } from "./test-helpers.js";
 
 const OWNER = "spruyt-labs";
@@ -68,16 +69,21 @@ repos:
       `Repo ${repoName} should exist after sync`
     );
 
-    // Verify file was pushed
-    const fileContent = await execWithRetry(
-      `gh api repos/${OWNER}/${repoName}/contents/lifecycle-test.json --jq '.content' | base64 -d`
+    await withTestRetry(
+      async () => {
+        const fileContent = await execWithRetry(
+          `gh api repos/${OWNER}/${repoName}/contents/lifecycle-test.json --jq '.content' | base64 -d`
+        );
+        assert.ok(fileContent, "lifecycle-test.json should exist");
+        const json = JSON.parse(fileContent);
+        assert.equal(json.created, true, "File should contain created: true");
+      },
+      {
+        description: "file visible on default branch",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
-    assert.ok(
-      fileContent,
-      "lifecycle-test.json should exist on default branch"
-    );
-    const json = JSON.parse(fileContent);
-    assert.equal(json.created, true, "File should contain created: true");
 
     console.log("  Create lifecycle test passed");
   });
@@ -242,14 +248,18 @@ repos:
       `Repo ${repoName} should exist after sync`
     );
 
-    // Verify description was applied
-    const description = await execWithRetry(
-      `gh api repos/${OWNER}/${repoName} --jq '.description'`
-    );
-    assert.equal(
-      description,
-      "Created by xfg lifecycle test",
-      "Repo description should match config"
+    await withTestRetry(
+      async () => {
+        const description = await execWithRetry(
+          `gh api repos/${OWNER}/${repoName} --jq '.description'`
+        );
+        assert.equal(
+          description,
+          "Created by xfg lifecycle test",
+          "Repo description should match config"
+        );
+      },
+      { description: "description applied", retries: 5, baseDelayMs: 3000 }
     );
 
     console.log("  Create with settings test passed");
@@ -290,13 +300,18 @@ repos:
       `Repo ${repoName} should exist after sync`
     );
 
-    const defaultBranch = await execWithRetry(
-      `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
-    );
-    assert.equal(
-      defaultBranch,
-      "develop",
-      "Default branch should be 'develop'"
+    await withTestRetry(
+      async () => {
+        const defaultBranch = await execWithRetry(
+          `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
+        );
+        assert.equal(
+          defaultBranch,
+          "develop",
+          "Default branch should be 'develop'"
+        );
+      },
+      { description: "default branch renamed", retries: 5, baseDelayMs: 3000 }
     );
 
     console.log("  Create with defaultBranch test passed");
@@ -341,13 +356,18 @@ repos:
         `Repo ${repoName} should exist after migrate`
       );
 
-      const defaultBranch = await execWithRetry(
-        `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
-      );
-      assert.equal(
-        defaultBranch,
-        "main",
-        "Default branch should be 'main' after rename"
+      await withTestRetry(
+        async () => {
+          const defaultBranch = await execWithRetry(
+            `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
+          );
+          assert.equal(
+            defaultBranch,
+            "main",
+            "Default branch should be 'main' after rename"
+          );
+        },
+        { description: "default branch renamed", retries: 5, baseDelayMs: 3000 }
       );
 
       console.log("  Migrate with defaultBranch test passed");

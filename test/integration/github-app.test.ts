@@ -14,6 +14,7 @@ import {
   resetTestRepo,
   waitForCommitVerified,
   waitForPrVisible,
+  withTestRetry,
 } from "./test-helpers.js";
 
 const OWNER = "spruyt-labs";
@@ -86,15 +87,24 @@ repos:
     const prNumber = String(pr.number);
     assert.ok(prNumber, `Expected PR on ${SYNC_BRANCH}`);
 
-    const commitSha = await execWithRetry(
-      `gh api repos/${testRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
-    );
-    const author = await execWithRetry(
-      `gh api repos/${testRepo}/commits/${commitSha} --jq '.commit.author.name'`
-    );
-    assert.notStrictEqual(author, "github-actions[bot]");
+    await withTestRetry(
+      async () => {
+        const commitSha = await execWithRetry(
+          `gh api repos/${testRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
+        );
+        const author = await execWithRetry(
+          `gh api repos/${testRepo}/commits/${commitSha} --jq '.commit.author.name'`
+        );
+        assert.notStrictEqual(author, "github-actions[bot]");
 
-    await waitForCommitVerified(testRepo, commitSha);
+        await waitForCommitVerified(testRepo, commitSha);
+      },
+      {
+        description: "verify PR commit author and signature",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
+    );
   });
 
   test("direct mode pushes verified commit to main", async () => {
@@ -119,20 +129,29 @@ repos:
     );
     console.log(output);
 
-    const fileSha = await execWithRetry(
-      `gh api repos/${testRepo}/contents/${DIRECT_FILE} --jq '.sha'`
-    );
-    assert.ok(fileSha, `Expected ${DIRECT_FILE} on main`);
+    await withTestRetry(
+      async () => {
+        const fileSha = await execWithRetry(
+          `gh api repos/${testRepo}/contents/${DIRECT_FILE} --jq '.sha'`
+        );
+        assert.ok(fileSha, `Expected ${DIRECT_FILE} on main`);
 
-    const mainSha = await execWithRetry(
-      `gh api repos/${testRepo}/commits/main --jq '.sha'`
-    );
-    const author = await execWithRetry(
-      `gh api repos/${testRepo}/commits/${mainSha} --jq '.commit.author.name'`
-    );
-    assert.notStrictEqual(author, "github-actions[bot]");
+        const mainSha = await execWithRetry(
+          `gh api repos/${testRepo}/commits/main --jq '.sha'`
+        );
+        const author = await execWithRetry(
+          `gh api repos/${testRepo}/commits/${mainSha} --jq '.commit.author.name'`
+        );
+        assert.notStrictEqual(author, "github-actions[bot]");
 
-    await waitForCommitVerified(testRepo, mainSha);
+        await waitForCommitVerified(testRepo, mainSha);
+      },
+      {
+        description: "verify direct push file, author, and signature",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
+    );
   });
 
   test("settings command with bypass_actors is idempotent", async () => {
@@ -336,10 +355,19 @@ repos:
 `
     );
     await exec(`node dist/cli.js sync --config ${seedConfig}`, xfgEnv);
-    assert.equal(
-      await getTreeMode(modeTestRepo, "mode-test.sh"),
-      "100644",
-      "seed: mode-test.sh should be 100644"
+    await withTestRetry(
+      async () => {
+        assert.equal(
+          await getTreeMode(modeTestRepo, "mode-test.sh"),
+          "100644",
+          "seed: mode-test.sh should be 100644"
+        );
+      },
+      {
+        description: "verify seed mode 100644 for upgrade test",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
 
     const upgradeConfig = writeConfig(
@@ -363,10 +391,19 @@ repos:
     );
     console.log(output);
 
-    assert.equal(
-      await getTreeMode(modeTestRepo, "mode-test.sh"),
-      "100755",
-      "after upgrade: mode-test.sh should be 100755"
+    await withTestRetry(
+      async () => {
+        assert.equal(
+          await getTreeMode(modeTestRepo, "mode-test.sh"),
+          "100755",
+          "after upgrade: mode-test.sh should be 100755"
+        );
+      },
+      {
+        description: "verify mode upgraded to 100755",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
   });
 
@@ -388,10 +425,19 @@ repos:
 `
     );
     await exec(`node dist/cli.js sync --config ${seedConfig}`, xfgEnv);
-    assert.equal(
-      await getTreeMode(modeTestRepo, "mode-test.sh"),
-      "100755",
-      "seed: mode-test.sh should be 100755"
+    await withTestRetry(
+      async () => {
+        assert.equal(
+          await getTreeMode(modeTestRepo, "mode-test.sh"),
+          "100755",
+          "seed: mode-test.sh should be 100755"
+        );
+      },
+      {
+        description: "verify seed mode 100755 for downgrade test",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
 
     const downgradeConfig = writeConfig(
@@ -415,10 +461,19 @@ repos:
     );
     console.log(output);
 
-    assert.equal(
-      await getTreeMode(modeTestRepo, "mode-test.sh"),
-      "100644",
-      "after downgrade: mode-test.sh should be 100644"
+    await withTestRetry(
+      async () => {
+        assert.equal(
+          await getTreeMode(modeTestRepo, "mode-test.sh"),
+          "100644",
+          "after downgrade: mode-test.sh should be 100644"
+        );
+      },
+      {
+        description: "verify mode downgraded to 100644",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
   });
 
@@ -441,11 +496,23 @@ repos:
 `
     );
     await exec(`node dist/cli.js sync --config ${seedConfig}`, xfgEnv);
-    assert.equal(
-      await getTreeMode(modeTestRepo, "content-change-script"),
-      "100644"
+    await withTestRetry(
+      async () => {
+        assert.equal(
+          await getTreeMode(modeTestRepo, "content-change-script"),
+          "100644"
+        );
+        assert.equal(
+          await getTreeMode(modeTestRepo, "mode-only-script"),
+          "100644"
+        );
+      },
+      {
+        description: "verify seed modes 100644 for mixed test",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
-    assert.equal(await getTreeMode(modeTestRepo, "mode-only-script"), "100644");
 
     const mixedConfig = writeConfig(
       modeTmpDir,
@@ -470,15 +537,24 @@ repos:
     );
     console.log(output);
 
-    assert.equal(
-      await getTreeMode(modeTestRepo, "content-change-script"),
-      "100755",
-      "content-change-script should be 100755"
-    );
-    assert.equal(
-      await getTreeMode(modeTestRepo, "mode-only-script"),
-      "100755",
-      "mode-only-script should be 100755"
+    await withTestRetry(
+      async () => {
+        assert.equal(
+          await getTreeMode(modeTestRepo, "content-change-script"),
+          "100755",
+          "content-change-script should be 100755"
+        );
+        assert.equal(
+          await getTreeMode(modeTestRepo, "mode-only-script"),
+          "100755",
+          "mode-only-script should be 100755"
+        );
+      },
+      {
+        description: "verify mixed modes upgraded to 100755",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
   });
 
@@ -508,10 +584,19 @@ repos:
 `
     );
     await exec(`node dist/cli.js sync --config ${seedConfig}`, xfgEnv);
-    assert.equal(
-      await getTreeMode(modeTestRepo, "pat-mode-test.sh"),
-      "100755",
-      "seed: pat-mode-test.sh should be 100755"
+    await withTestRetry(
+      async () => {
+        assert.equal(
+          await getTreeMode(modeTestRepo, "pat-mode-test.sh"),
+          "100755",
+          "seed: pat-mode-test.sh should be 100755"
+        );
+      },
+      {
+        description: "verify seed mode 100755 for PAT downgrade test",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
 
     const downgradeConfig = writeConfig(
@@ -535,10 +620,19 @@ repos:
     );
     console.log(output);
 
-    assert.equal(
-      await getTreeMode(modeTestRepo, "pat-mode-test.sh"),
-      "100644",
-      "after PAT downgrade: pat-mode-test.sh should be 100644"
+    await withTestRetry(
+      async () => {
+        assert.equal(
+          await getTreeMode(modeTestRepo, "pat-mode-test.sh"),
+          "100644",
+          "after PAT downgrade: pat-mode-test.sh should be 100644"
+        );
+      },
+      {
+        description: "verify PAT mode downgraded to 100644",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
   });
 });
@@ -617,9 +711,18 @@ repos:
     const pr = await waitForPrVisible(signedTestRepo, SYNC_BRANCH, "number");
     assert.ok(pr.number);
 
-    const commitSha = await execWithRetry(
-      `gh api repos/${signedTestRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
+    await withTestRetry(
+      async () => {
+        const commitSha = await execWithRetry(
+          `gh api repos/${signedTestRepo}/commits/${SYNC_BRANCH} --jq '.sha'`
+        );
+        await waitForCommitVerified(signedTestRepo, commitSha);
+      },
+      {
+        description: "verify signed commit on PR branch",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
-    await waitForCommitVerified(signedTestRepo, commitSha);
   });
 });

@@ -169,15 +169,23 @@ describe("GitHub Repo Settings Integration Test", () => {
       cwd: projectRoot,
     });
 
-    const s = await getRepoSettings();
-    assert.equal(s.has_wiki, false);
-    assert.equal(s.has_projects, false);
-    assert.equal(s.allow_squash_merge, true);
-    assert.equal(s.allow_merge_commit, false);
-    assert.equal(s.allow_rebase_merge, false);
-    assert.equal(s.delete_branch_on_merge, true);
+    await withTestRetry(
+      async () => {
+        const s = await getRepoSettings();
+        assert.equal(s.has_wiki, false);
+        assert.equal(s.has_projects, false);
+        assert.equal(s.allow_squash_merge, true);
+        assert.equal(s.allow_merge_commit, false);
+        assert.equal(s.allow_rebase_merge, false);
+        assert.equal(s.delete_branch_on_merge, true);
+      },
+      {
+        description: "repo settings applied",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
+    );
 
-    // Security settings have eventual consistency — poll until they reflect the mutation
     await withTestRetry(
       async () => {
         const sec = await getSecuritySettings();
@@ -242,7 +250,16 @@ repos:
       cwd: projectRoot,
     });
 
-    const settingsAfter = await getRepoSettings();
-    assert.equal(settingsAfter.description, randomDescription);
+    await withTestRetry(
+      async () => {
+        const settingsAfter = await getRepoSettings();
+        assert.equal(settingsAfter.description, randomDescription);
+      },
+      {
+        description: "description applied",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
+    );
   });
 });

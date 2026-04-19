@@ -11,6 +11,7 @@ import {
   createRepo,
   deleteRepo,
   writeConfig,
+  withTestRetry,
   waitForRulesetVisible as waitForRulesetVisibleBase,
 } from "./test-helpers.js";
 
@@ -106,15 +107,25 @@ describe("GitHub Settings Integration Test", () => {
     console.log(output);
 
     console.log("\nVerifying ruleset was created...");
-    const rulesetsAfter = await execWithRetry(
-      `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+    const ruleset = await withTestRetry(
+      async () => {
+        const str = await exec(
+          `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+        );
+        assert.ok(str.trim(), "Expected a ruleset to be created");
+        const parsed = JSON.parse(str) as {
+          id: number;
+          name: string;
+          enforcement: string;
+          target: string;
+        };
+        assert.equal(parsed.name, RULESET_NAME);
+        assert.equal(parsed.enforcement, "active");
+        assert.equal(parsed.target, "branch");
+        return parsed;
+      },
+      { description: "ruleset created", retries: 5, baseDelayMs: 3000 }
     );
-    assert.ok(rulesetsAfter, "Expected a ruleset to be created");
-
-    const ruleset = JSON.parse(rulesetsAfter);
-    assert.equal(ruleset.name, RULESET_NAME);
-    assert.equal(ruleset.enforcement, "active");
-    assert.equal(ruleset.target, "branch");
 
     await waitForRulesetVisible(ruleset.id);
   });
@@ -127,10 +138,16 @@ describe("GitHub Settings Integration Test", () => {
       cwd: projectRoot,
     });
 
-    const rulesetCreated = await execWithRetry(
-      `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+    const rulesetBefore = await withTestRetry(
+      async () => {
+        const str = await exec(
+          `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+        );
+        if (!str.trim()) throw new Error("Ruleset not visible yet");
+        return JSON.parse(str) as { id: number };
+      },
+      { description: "initial ruleset visible", retries: 5, baseDelayMs: 3000 }
     );
-    const rulesetBefore = JSON.parse(rulesetCreated);
     await waitForRulesetVisible(rulesetBefore.id);
 
     console.log("\nRunning xfg sync again (update)...");
@@ -138,15 +155,20 @@ describe("GitHub Settings Integration Test", () => {
       cwd: projectRoot,
     });
 
-    const rulesetAfter = JSON.parse(
-      await execWithRetry(
-        `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
-      )
-    );
-    assert.equal(
-      rulesetAfter.id,
-      rulesetBefore.id,
-      "Same ID = update not recreate"
+    await withTestRetry(
+      async () => {
+        const str = await exec(
+          `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+        );
+        if (!str.trim()) throw new Error("Ruleset not visible after update");
+        const rulesetAfter = JSON.parse(str) as { id: number };
+        assert.equal(
+          rulesetAfter.id,
+          rulesetBefore.id,
+          "Same ID = update not recreate"
+        );
+      },
+      { description: "ruleset updated", retries: 5, baseDelayMs: 3000 }
     );
   });
 
@@ -159,19 +181,37 @@ describe("GitHub Settings Integration Test", () => {
     });
 
     // List endpoint to get ID, then fetch by ID to get rules
-    const rulesetListStr = await execWithRetry(
-      `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+    // Wrap in withTestRetry: GitHub API may return empty when ruleset not yet visible
+    const rulesetListItem = await withTestRetry(
+      async () => {
+        const str = await exec(
+          `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+        );
+        if (!str.trim()) {
+          throw new Error(`Ruleset "${RULESET_NAME}" not visible yet`);
+        }
+        return JSON.parse(str) as { id: number };
+      },
+      { description: "ruleset list visible", retries: 5, baseDelayMs: 3000 }
     );
-    const rulesetListItem = JSON.parse(rulesetListStr);
     await waitForRulesetVisible(rulesetListItem.id);
 
-    const rulesetBeforeStr = await execWithRetry(
-      `gh api repos/${testRepo}/rulesets/${rulesetListItem.id}`
+    const rulesetBefore = await withTestRetry(
+      async () => {
+        const str = await exec(
+          `gh api repos/${testRepo}/rulesets/${rulesetListItem.id}`
+        );
+        if (!str.trim()) throw new Error("Ruleset detail not visible yet");
+        const parsed = JSON.parse(str) as {
+          id: number;
+          rules: Array<{ type: string }>;
+        };
+        assert.equal(parsed.rules.length, 1, "Should start with 1 rule");
+        assert.equal(parsed.rules[0].type, "pull_request");
+        return parsed;
+      },
+      { description: "ruleset detail visible", retries: 5, baseDelayMs: 3000 }
     );
-    const rulesetBefore = JSON.parse(rulesetBeforeStr);
-
-    assert.equal(rulesetBefore.rules.length, 1, "Should start with 1 rule");
-    assert.equal(rulesetBefore.rules[0].type, "pull_request");
 
     // Now sync with $arrayMerge: append to add required_signatures
     const appendConfig = writeConfig(
@@ -214,23 +254,35 @@ repos:
     });
 
     console.log("\nVerifying ruleset has both rules...");
-    const rulesetAfterStr = await execWithRetry(
-      `gh api repos/${testRepo}/rulesets/${rulesetBefore.id}`
-    );
-    const rulesetAfter = JSON.parse(rulesetAfterStr);
-
-    assert.equal(
-      rulesetAfter.id,
-      rulesetBefore.id,
-      "Same ruleset ID = updated not recreated"
-    );
-    assert.equal(rulesetAfter.rules.length, 2, "Should now have 2 rules");
-
-    const ruleTypes = rulesetAfter.rules.map((r: { type: string }) => r.type);
-    assert.ok(ruleTypes.includes("pull_request"), "Should keep pull_request");
-    assert.ok(
-      ruleTypes.includes("required_signatures"),
-      "Should add required_signatures"
+    await withTestRetry(
+      async () => {
+        const str = await exec(
+          `gh api repos/${testRepo}/rulesets/${rulesetBefore.id}`
+        );
+        if (!str.trim()) throw new Error("Ruleset detail not visible yet");
+        const rulesetAfter = JSON.parse(str) as {
+          id: number;
+          rules: Array<{ type: string }>;
+        };
+        assert.equal(
+          rulesetAfter.id,
+          rulesetBefore.id,
+          "Same ruleset ID = updated not recreated"
+        );
+        assert.equal(rulesetAfter.rules.length, 2, "Should now have 2 rules");
+        const ruleTypes = rulesetAfter.rules.map(
+          (r: { type: string }) => r.type
+        );
+        assert.ok(
+          ruleTypes.includes("pull_request"),
+          "Should keep pull_request"
+        );
+        assert.ok(
+          ruleTypes.includes("required_signatures"),
+          "Should add required_signatures"
+        );
+      },
+      { description: "ruleset append verified", retries: 5, baseDelayMs: 3000 }
     );
   });
 
