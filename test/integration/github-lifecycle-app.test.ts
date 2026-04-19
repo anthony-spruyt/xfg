@@ -5,7 +5,6 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
   exec,
-  execWithRetry,
   projectRoot,
   generateRepoName,
   deleteRepo,
@@ -13,6 +12,7 @@ import {
   repoExistsNoRetry,
   isForkedFrom,
   writeConfig,
+  withTestRetry,
 } from "./test-helpers.js";
 
 const OWNER = "spruyt-labs";
@@ -90,15 +90,24 @@ repos:
       );
 
       // Verify file was pushed
-      const fileContent = await execWithRetry(
-        `gh api repos/${OWNER}/${repoName}/contents/lifecycle-test.json --jq '.content' | base64 -d`
+      await withTestRetry(
+        async () => {
+          const fileContent = await exec(
+            `gh api repos/${OWNER}/${repoName}/contents/lifecycle-test.json --jq '.content' | base64 -d`
+          );
+          assert.ok(
+            fileContent,
+            "lifecycle-test.json should exist on default branch"
+          );
+          const json = JSON.parse(fileContent);
+          assert.equal(json.created, true, "File should contain created: true");
+        },
+        {
+          description: "verify file content after create",
+          retries: 5,
+          baseDelayMs: 3000,
+        }
       );
-      assert.ok(
-        fileContent,
-        "lifecycle-test.json should exist on default branch"
-      );
-      const json = JSON.parse(fileContent);
-      assert.equal(json.created, true, "File should contain created: true");
 
       console.log("  Create lifecycle test (App) passed");
     });
@@ -144,41 +153,52 @@ repos:
       );
 
       // Verify file modes via the Git tree API
-      const treeJson = await execWithRetry(
-        `gh api repos/${OWNER}/${repoName}/git/trees/HEAD?recursive=1`
-      );
-      const tree = JSON.parse(treeJson).tree as Array<{
-        path: string;
-        mode: string;
-        type: string;
-      }>;
+      await withTestRetry(
+        async () => {
+          const treeJson = await exec(
+            `gh api repos/${OWNER}/${repoName}/git/trees/HEAD?recursive=1`
+          );
+          const tree = JSON.parse(treeJson).tree as Array<{
+            path: string;
+            mode: string;
+            type: string;
+          }>;
 
-      const deploySh = tree.find(
-        (e) => e.path === "deploy.sh" && e.type === "blob"
-      );
-      assert.ok(deploySh, "deploy.sh should exist in tree");
-      assert.equal(
-        deploySh!.mode,
-        "100755",
-        "deploy.sh should be executable (100755)"
-      );
+          const deploySh = tree.find(
+            (e) => e.path === "deploy.sh" && e.type === "blob"
+          );
+          assert.ok(deploySh, "deploy.sh should exist in tree");
+          assert.equal(
+            deploySh!.mode,
+            "100755",
+            "deploy.sh should be executable (100755)"
+          );
 
-      const runMe = tree.find((e) => e.path === "run-me" && e.type === "blob");
-      assert.ok(runMe, "run-me should exist in tree");
-      assert.equal(
-        runMe!.mode,
-        "100755",
-        "run-me should be executable (100755) via explicit executable: true"
-      );
+          const runMe = tree.find(
+            (e) => e.path === "run-me" && e.type === "blob"
+          );
+          assert.ok(runMe, "run-me should exist in tree");
+          assert.equal(
+            runMe!.mode,
+            "100755",
+            "run-me should be executable (100755) via explicit executable: true"
+          );
 
-      const configJson = tree.find(
-        (e) => e.path === "config.json" && e.type === "blob"
-      );
-      assert.ok(configJson, "config.json should exist in tree");
-      assert.equal(
-        configJson!.mode,
-        "100644",
-        "config.json should NOT be executable (100644)"
+          const configJson = tree.find(
+            (e) => e.path === "config.json" && e.type === "blob"
+          );
+          assert.ok(configJson, "config.json should exist in tree");
+          assert.equal(
+            configJson!.mode,
+            "100644",
+            "config.json should NOT be executable (100644)"
+          );
+        },
+        {
+          description: "verify file modes in git tree",
+          retries: 5,
+          baseDelayMs: 3000,
+        }
       );
 
       console.log("  Executable file mode test (App) passed");
@@ -217,9 +237,18 @@ repos:
       );
 
       // Verify it's a fork of the source
-      assert.ok(
-        await isForkedFrom(OWNER, repoName, FORK_SOURCE),
-        `Repo ${repoName} should be a fork of ${FORK_SOURCE}`
+      await withTestRetry(
+        async () => {
+          assert.ok(
+            await isForkedFrom(OWNER, repoName, FORK_SOURCE),
+            `Repo ${repoName} should be a fork of ${FORK_SOURCE}`
+          );
+        },
+        {
+          description: "verify fork parent",
+          retries: 5,
+          baseDelayMs: 3000,
+        }
       );
 
       console.log("  Fork lifecycle test (App) passed");
@@ -303,9 +332,18 @@ repos:
         );
 
         // Verify it's NOT a fork (migrated repos are standalone)
-        assert.ok(
-          !(await isForkedFrom(OWNER, repoName, "aspruyt/fxg-test")),
-          `Repo ${repoName} should not be a fork`
+        await withTestRetry(
+          async () => {
+            assert.ok(
+              !(await isForkedFrom(OWNER, repoName, "aspruyt/fxg-test")),
+              `Repo ${repoName} should not be a fork`
+            );
+          },
+          {
+            description: "verify migrated repo is not a fork",
+            retries: 5,
+            baseDelayMs: 3000,
+          }
         );
 
         console.log("  Migrate lifecycle test (App) passed");
@@ -347,13 +385,22 @@ repos:
       );
 
       // Verify description was applied (using GH_TOKEN for verification)
-      const description = await execWithRetry(
-        `gh api repos/${OWNER}/${repoName} --jq '.description'`
-      );
-      assert.equal(
-        description,
-        "Created by xfg lifecycle test",
-        "Repo description should match config"
+      await withTestRetry(
+        async () => {
+          const description = await exec(
+            `gh api repos/${OWNER}/${repoName} --jq '.description'`
+          );
+          assert.equal(
+            description,
+            "Created by xfg lifecycle test",
+            "Repo description should match config"
+          );
+        },
+        {
+          description: "verify repo description",
+          retries: 5,
+          baseDelayMs: 3000,
+        }
       );
 
       console.log("  Create with settings test (App) passed");
@@ -394,13 +441,22 @@ repos:
         `Repo ${repoName} should exist after sync`
       );
 
-      const defaultBranch = await execWithRetry(
-        `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
-      );
-      assert.equal(
-        defaultBranch,
-        "develop",
-        "Default branch should be 'develop'"
+      await withTestRetry(
+        async () => {
+          const defaultBranch = await exec(
+            `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
+          );
+          assert.equal(
+            defaultBranch,
+            "develop",
+            "Default branch should be 'develop'"
+          );
+        },
+        {
+          description: "verify default branch is develop",
+          retries: 5,
+          baseDelayMs: 3000,
+        }
       );
 
       console.log("  Create with defaultBranch test (App) passed");
@@ -445,13 +501,22 @@ repos:
           `Repo ${repoName} should exist after migrate`
         );
 
-        const defaultBranch = await execWithRetry(
-          `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
-        );
-        assert.equal(
-          defaultBranch,
-          "main",
-          "Default branch should be 'main' after rename"
+        await withTestRetry(
+          async () => {
+            const defaultBranch = await exec(
+              `gh api repos/${OWNER}/${repoName} --jq '.default_branch'`
+            );
+            assert.equal(
+              defaultBranch,
+              "main",
+              "Default branch should be 'main' after rename"
+            );
+          },
+          {
+            description: "verify default branch is main after migrate",
+            retries: 5,
+            baseDelayMs: 3000,
+          }
         );
 
         console.log("  Migrate with defaultBranch test (App) passed");

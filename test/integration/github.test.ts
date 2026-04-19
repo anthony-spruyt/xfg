@@ -14,6 +14,7 @@ import {
   resetTestRepo,
   waitForFileVisible as waitForFileVisibleBase,
   waitForPrVisible,
+  withTestRetry,
 } from "./test-helpers.js";
 
 const OWNER = "spruyt-labs";
@@ -86,19 +87,28 @@ repos:
     assert.ok(pr.number);
     assert.ok((pr.title as string).includes("sync"));
 
-    const fileContent = await execWithRetry(
-      `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
+    await withTestRetry(
+      async () => {
+        const fileContent = await execWithRetry(
+          `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
+        );
+        const json = JSON.parse(fileContent);
+        assert.equal(json.prop1, "main");
+        assert.equal(json.baseOnly, "inherited-from-root");
+        assert.equal(json.addedByOverlay, true);
+        // Assert properties specifically introduced by the service-config group layer
+        assert.equal(json.prop2.prop3, "MyService");
+        assert.deepEqual(json.prop4.prop5, [
+          { prop6: "platform" },
+          { prop7: "engineering" },
+        ]);
+      },
+      {
+        description: "verify synced file content on PR branch",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
-    const json = JSON.parse(fileContent);
-    assert.equal(json.prop1, "main");
-    assert.equal(json.baseOnly, "inherited-from-root");
-    assert.equal(json.addedByOverlay, true);
-    // Assert properties specifically introduced by the service-config group layer
-    assert.equal(json.prop2.prop3, "MyService");
-    assert.deepEqual(json.prop4.prop5, [
-      { prop6: "platform" },
-      { prop7: "engineering" },
-    ]);
   });
 
   test("re-sync closes existing PR and creates fresh one", async () => {
@@ -141,14 +151,23 @@ repos:
     const prAfter = await waitForPrVisible(testRepo, BRANCH_NAME, "number");
     assert.ok(prAfter.number);
 
-    try {
-      const oldPRState = await exec(
-        `gh pr view ${prNumberBefore} --repo ${testRepo} --json state --jq '.state'`
-      );
-      assert.equal(oldPRState, "CLOSED");
-    } catch {
-      /* deleted or closed */
-    }
+    await withTestRetry(
+      async () => {
+        try {
+          const oldPRState = await exec(
+            `gh pr view ${prNumberBefore} --repo ${testRepo} --json state --jq '.state'`
+          );
+          assert.equal(oldPRState, "CLOSED");
+        } catch {
+          /* deleted or closed */
+        }
+      },
+      {
+        description: "verify old PR is closed after re-sync",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
+    );
   });
 
   test("createOnly skips file when it exists on base branch", async () => {
@@ -262,29 +281,47 @@ repos:
 
     const pr = await waitForPrVisible(testRepo, testBranch, "number,title");
 
-    const fileContent = await execWithRetry(
-      `gh api repos/${testRepo}/contents/${templateFile}?ref=${testBranch} --jq '.content' | base64 -d`
-    );
-    const json = JSON.parse(fileContent);
+    await withTestRetry(
+      async () => {
+        const fileContent = await execWithRetry(
+          `gh api repos/${testRepo}/contents/${templateFile}?ref=${testBranch} --jq '.content' | base64 -d`
+        );
+        const json = JSON.parse(fileContent);
 
-    // Dynamic assertions using ephemeral repo name
-    assert.equal(json.repoName, repoName);
-    assert.equal(json.repoOwner, OWNER);
-    assert.equal(json.repoFullName, testRepo);
-    assert.equal(json.platform, "github");
-    assert.equal(json.custom, "custom-value");
-    assert.equal(json.escaped, "${xfg:repo.name}");
-    assert.equal(json.static, "not-interpolated");
-
-    const prBody = await execWithRetry(
-      `gh pr view ${pr.number} --repo ${testRepo} --json body --jq '.body'`
+        // Dynamic assertions using ephemeral repo name
+        assert.equal(json.repoName, repoName);
+        assert.equal(json.repoOwner, OWNER);
+        assert.equal(json.repoFullName, testRepo);
+        assert.equal(json.platform, "github");
+        assert.equal(json.custom, "custom-value");
+        assert.equal(json.escaped, "${xfg:repo.name}");
+        assert.equal(json.static, "not-interpolated");
+      },
+      {
+        description: "verify template-interpolated file content",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
-    assert.ok(prBody.includes(testRepo));
-    assert.ok(prBody.includes("1 file(s)"));
-    assert.ok(prBody.includes("template-test.json"));
-    assert.ok(prBody.includes(`- Repository: ${repoName}`));
-    assert.ok(prBody.includes(`- Owner: ${OWNER}`));
-    assert.ok(prBody.includes("- Platform: github"));
+
+    await withTestRetry(
+      async () => {
+        const prBody = await execWithRetry(
+          `gh pr view ${pr.number} --repo ${testRepo} --json body --jq '.body'`
+        );
+        assert.ok(prBody.includes(testRepo));
+        assert.ok(prBody.includes("1 file(s)"));
+        assert.ok(prBody.includes("template-test.json"));
+        assert.ok(prBody.includes(`- Repository: ${repoName}`));
+        assert.ok(prBody.includes(`- Owner: ${OWNER}`));
+        assert.ok(prBody.includes("- Platform: github"));
+      },
+      {
+        description: "verify template-interpolated PR body",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
+    );
   });
 
   test("direct mode pushes directly to main branch without creating PR", async () => {
@@ -341,17 +378,35 @@ prOptions:
       cwd: projectRoot,
     });
 
-    const fileContent = await execWithRetry(
-      `gh api repos/${testRepo}/contents/${orphanFile} --jq '.content' | base64 -d`
+    await withTestRetry(
+      async () => {
+        const fileContent = await execWithRetry(
+          `gh api repos/${testRepo}/contents/${orphanFile} --jq '.content' | base64 -d`
+        );
+        const json = JSON.parse(fileContent);
+        assert.equal(json.orphanTest, true);
+      },
+      {
+        description: "verify orphan file exists after first sync",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
-    const json = JSON.parse(fileContent);
-    assert.equal(json.orphanTest, true);
 
-    const manifestContent = await execWithRetry(
-      `gh api repos/${testRepo}/contents/${manifestFile} --jq '.content' | base64 -d`
+    await withTestRetry(
+      async () => {
+        const manifestContent = await execWithRetry(
+          `gh api repos/${testRepo}/contents/${manifestFile} --jq '.content' | base64 -d`
+        );
+        const manifest = JSON.parse(manifestContent);
+        assert.ok(manifest.configs[configId]?.files?.includes(orphanFile));
+      },
+      {
+        description: "verify manifest tracks orphan file",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
-    const manifest = JSON.parse(manifestContent);
-    assert.ok(manifest.configs[configId]?.files?.includes(orphanFile));
 
     const configPath2 = writeConfig(
       tmpDir,
@@ -373,12 +428,23 @@ prOptions:
       cwd: projectRoot,
     });
 
-    try {
-      await exec(`gh api repos/${testRepo}/contents/${orphanFile} --jq '.sha'`);
-      assert.fail("orphan-test.json should have been deleted");
-    } catch {
-      /* correctly deleted */
-    }
+    await withTestRetry(
+      async () => {
+        try {
+          await exec(
+            `gh api repos/${testRepo}/contents/${orphanFile} --jq '.sha'`
+          );
+          assert.fail("orphan-test.json should have been deleted");
+        } catch {
+          /* correctly deleted */
+        }
+      },
+      {
+        description: "verify orphan file deleted after second sync",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
+    );
   });
 
   test("handles divergent branch when existing PR is present (issue #183)", async () => {
@@ -472,12 +538,21 @@ repos:
     const prInfo = await waitForPrVisible(testRepo, testBranch, "number");
     assert.ok(prInfo.number);
 
-    const fileContent = await execWithRetry(
-      `gh api repos/${testRepo}/contents/${orphanBranchFile}?ref=${testBranch} --jq '.content' | base64 -d`
+    await withTestRetry(
+      async () => {
+        const fileContent = await execWithRetry(
+          `gh api repos/${testRepo}/contents/${orphanBranchFile}?ref=${testBranch} --jq '.content' | base64 -d`
+        );
+        const json = JSON.parse(fileContent);
+        assert.ok(!json.orphanBranchVersion);
+        assert.equal(json.syncedByXfg, true);
+      },
+      {
+        description: "verify orphan branch file replaced by synced content",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
-    const json = JSON.parse(fileContent);
-    assert.ok(!json.orphanBranchVersion);
-    assert.equal(json.syncedByXfg, true);
   });
 
   test("lifecycle: upstream field is ignored when repo already exists", async () => {
@@ -505,11 +580,20 @@ repos:
     const prInfo = await waitForPrVisible(testRepo, testBranch, "number");
     assert.ok(prInfo.number);
 
-    const fileContent = await execWithRetry(
-      `gh api repos/${testRepo}/contents/${testFile}?ref=${testBranch} --jq '.content' | base64 -d`
+    await withTestRetry(
+      async () => {
+        const fileContent = await execWithRetry(
+          `gh api repos/${testRepo}/contents/${testFile}?ref=${testBranch} --jq '.content' | base64 -d`
+        );
+        const json = JSON.parse(fileContent);
+        assert.equal(json.lifecycleTest, true);
+      },
+      {
+        description: "verify lifecycle upstream file content on PR branch",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
-    const json = JSON.parse(fileContent);
-    assert.equal(json.lifecycleTest, true);
     assert.ok(!output.toLowerCase().includes("forked"));
   });
 
@@ -538,11 +622,20 @@ repos:
     const prInfo = await waitForPrVisible(testRepo, testBranch, "number");
     assert.ok(prInfo.number);
 
-    const fileContent = await execWithRetry(
-      `gh api repos/${testRepo}/contents/${testFile}?ref=${testBranch} --jq '.content' | base64 -d`
+    await withTestRetry(
+      async () => {
+        const fileContent = await execWithRetry(
+          `gh api repos/${testRepo}/contents/${testFile}?ref=${testBranch} --jq '.content' | base64 -d`
+        );
+        const json = JSON.parse(fileContent);
+        assert.equal(json.lifecycleTest, true);
+      },
+      {
+        description: "verify lifecycle source file content on PR branch",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
-    const json = JSON.parse(fileContent);
-    assert.equal(json.lifecycleTest, true);
     assert.ok(!output.toLowerCase().includes("migrated"));
   });
 
@@ -703,15 +796,24 @@ repos:
     const pr = await waitForPrVisible(testRepo, BRANCH_NAME);
     assert.ok(pr.number);
 
-    const raw = await execWithRetry(
-      `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
+    await withTestRetry(
+      async () => {
+        const raw = await execWithRetry(
+          `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
+        );
+        const json = JSON.parse(raw);
+        assert.equal(json.base, true, "root content");
+        assert.equal(json.groupA, true, "explicit group-a content");
+        assert.equal(json.groupB, true, "explicit group-b content");
+        assert.equal(json.fromConditional, true, "conditional group content");
+        assert.equal(json.repoOverride, true, "repo override content");
+      },
+      {
+        description: "verify conditional group file content on PR branch",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
-    const json = JSON.parse(raw);
-    assert.equal(json.base, true, "root content");
-    assert.equal(json.groupA, true, "explicit group-a content");
-    assert.equal(json.groupB, true, "explicit group-b content");
-    assert.equal(json.fromConditional, true, "conditional group content");
-    assert.equal(json.repoOverride, true, "repo override content");
   });
 
   test("sync with directory-based multi-file config", async () => {
@@ -750,12 +852,25 @@ files:
     const pr = await waitForPrVisible(testRepo, BRANCH_NAME);
     assert.ok(pr.number);
 
-    const raw = await execWithRetry(
-      `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
+    await withTestRetry(
+      async () => {
+        const raw = await execWithRetry(
+          `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
+        );
+        const json = JSON.parse(raw);
+        assert.equal(json.fromBase, true, "content from base.yaml fragment");
+        assert.equal(
+          json.shared,
+          "base-value",
+          "shared content from base.yaml"
+        );
+        assert.equal(json.fromRepo, true, "repo override from repos.yaml");
+      },
+      {
+        description: "verify multi-file config content on PR branch",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
-    const json = JSON.parse(raw);
-    assert.equal(json.fromBase, true, "content from base.yaml fragment");
-    assert.equal(json.shared, "base-value", "shared content from base.yaml");
-    assert.equal(json.fromRepo, true, "repo override from repos.yaml");
   });
 });
