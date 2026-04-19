@@ -5,7 +5,7 @@ set -euo pipefail
 # .devcontainer/podman-seccomp.json and commit the updated JSON alongside.
 
 # renovate: depName=containers/common datasource=github-releases
-PODMAN_SECCOMP_VERSION="v0.64.1"
+PODMAN_SECCOMP_VERSION="v0.64.2"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET="$SCRIPT_DIR/podman-seccomp.json"
