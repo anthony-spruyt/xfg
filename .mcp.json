@@ -1,10 +1,24 @@
 {
   "mcpServers": {
+    "bravesearch": {
+      "type": "http",
+      "url": "https://brave-search-mcp.lan.${EXTERNAL_DOMAIN}/mcp",
+      "headers": {
+        "X-API-KEY": "${BRAVE_SEARCH_MCP_API_KEY}"
+      }
+    },
     "cclsp": {
       "type": "stdio",
       "command": "cclsp",
       "env": {
         "CCLSP_CONFIG_PATH": "/workspaces/xfg/.claude/cclsp.json"
+      }
+    },
+    "github": {
+      "type": "http",
+      "url": "https://github-mcp.lan.${EXTERNAL_DOMAIN}/mcp",
+      "headers": {
+        "X-API-KEY": "${GITHUB_MCP_API_KEY}"
       }
     }
   }
