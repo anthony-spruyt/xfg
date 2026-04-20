@@ -3,16 +3,12 @@
   "configs": {
     "repo-operator": {
       "files": [
-        ".devcontainer/agent-run",
         ".devcontainer/devcontainer.json",
         ".devcontainer/Dockerfile",
         ".devcontainer/initialize.sh",
-        ".devcontainer/package.json",
         ".devcontainer/podman-seccomp.json",
-        ".devcontainer/post-create.sh",
         ".devcontainer/README.md",
         ".devcontainer/setup-devcontainer.sh",
-        ".devcontainer/update-podman-seccomp.sh",
         ".editorconfig",
         ".eslintrc.json",
         ".github/actionlint.yaml",

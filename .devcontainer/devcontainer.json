@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
-  "name": "Ubuntu",
+  "name": "devcontainer-common",
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
@@ -26,25 +26,13 @@
     "SSH_AUTH_SOCK": "/ssh-agent"
   },
   "features": {
-    "ghcr.io/devcontainers-extra/features/pre-commit": {
-      "version": "4.5.1"
-    },
-    "ghcr.io/devcontainers/features/github-cli": {
-      "version": "2.89.0"
-    },
-    "ghcr.io/devcontainers/features/node": {
-      "version": "24.14.1"
-    },
-    "ghcr.io/devcontainers/features/python": {
-      "version": "3.12"
-    },
     "ghcr.io/devcontainers-extra/features/renovate-cli": {
       "version": "43.122.0"
     },
     "ghcr.io/devcontainers/features/azure-cli": {}
   },
   "initializeCommand": "bash ${localWorkspaceFolder}/.devcontainer/initialize.sh",
-  "postCreateCommand": "bash -lc \"cd ${containerWorkspaceFolder} && ./.devcontainer/post-create.sh\"",
+  "postCreateCommand": "bash -lc \"cd ${containerWorkspaceFolder} && devcontainer-post-create\"",
   "customizations": {
     "vscode": {
       "extensions": [
