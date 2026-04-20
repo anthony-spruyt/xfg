@@ -14,6 +14,9 @@ https://host/owner/repo.git
 https://dev.azure.com/myorg/myproject/_git/legacy-app
 https://dev.azure.com/myorg/legacy/_git/old-api
 
+# Internal/LAN URLs
+.*\.lan.*
+
 # Git URL prefixes (not valid HTTP URLs)
 git+https://github.com/anthony-spruyt/xfg.git
 
