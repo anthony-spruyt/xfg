@@ -1,53 +1,32 @@
 {
-  "command": "show",
-  "query": "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
-  "status_filter": "open",
-  "total": 1,
-  "summary": {
-    "by_tier": {
-      "T1": 1
-    },
-    "by_detector": {
-      "review": 1
-    },
-    "files": 1
-  },
-  "by_file": {
-    ".": [
-      {
-        "id": "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
-        "tier": 1,
-        "confidence": "high",
-        "summary": "receiveMigration bundles 4 distinct operations (ref cleanup, branch rename, create repo, push mirror) in one 133-line method",
-        "detail": {
-          "holistic": true,
-          "dimension": "design_coherence",
-          "related_files": [
-            "src/lifecycle/github-lifecycle-provider.ts"
-          ],
-          "evidence": [
-            "Lines 424-557: receiveMigration performs 4 sequential operations: (1) remove origin remote + clean non-standard refs (lines 434-471), (2) rename default branch (lines 474-502), (3) create empty repo via gh CLI (lines 508-530), (4) add remote + push mirror content (lines 535-556)",
-            "A previous review marked this as 'fixed' with decomposition into cleanMirrorRefs, renameMirrorDefaultBranch, createEmptyRepo, pushMirrorContent methods, but those methods do not exist in the current code"
-          ],
-          "suggestion": "Extract 4 private methods: cleanMirrorRefs(sourceDir), renameMirrorDefaultBranch(sourceDir, targetBranch), createRepo(repoInfo, settings, tokenEnv), pushMirrorToRemote(sourceDir, remoteUrl, tokenEnv). receiveMigration becomes a ~20-line orchestrator calling these in sequence.",
-          "reasoning": "",
-          "summary_hash": "1134a048"
-        }
-      }
-    ]
-  },
-  "total_matching": 1,
-  "noise_budget": 0,
-  "noise_global_budget": 0,
+  "command": "resolve",
+  "patterns": [
+    "redundant_typeof_check_code_scanning"
+  ],
+  "status": "fixed",
+  "resolved": [
+    "review::.::holistic::logic_clarity::redundant_typeof_check_code_scanning"
+  ],
+  "count": 1,
+  "next_command": "desloppify next",
+  "overall_score": 89.8,
+  "objective_score": 98.8,
+  "strict_score": 88.5,
+  "verified_strict_score": 90.3,
+  "prev_overall_score": 89.8,
+  "prev_objective_score": 98.8,
+  "prev_strict_score": 88.5,
+  "prev_verified_strict_score": 90.3,
+  "attestation": "I have actually Simplified redundant typeof === object check to simple truthy check in validator.ts hasActionableSettings and I am not gaming the score.",
   "narrative": {
     "phase": "refinement",
-    "headline": " (20 review work items \u2014 run `desloppify show review --status open`)",
+    "headline": " (7 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
           "name": "Abstraction fit",
           "strict": 82.0,
-          "failing": 1,
+          "failing": 0,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -55,7 +34,7 @@
         {
           "name": "Low elegance",
           "strict": 82.0,
-          "failing": 2,
+          "failing": 1,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -63,7 +42,7 @@
         {
           "name": "Mid elegance",
           "strict": 82.0,
-          "failing": 2,
+          "failing": 0,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -218,8 +197,8 @@
       {
         "type": "refactor",
         "detector": "review",
-        "count": 20,
-        "description": "20 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
+        "count": 7,
+        "description": "7 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
         "command": "desloppify show review --status open",
         "impact": 0.0,
         "dimension": "Unknown",
@@ -241,7 +220,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 195,
+        "total_count": 156,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -308,7 +287,7 @@
         }
       },
       "can_parallelize": false,
-      "hint": "Work through actions in priority order. Rescan after each fix to track progress. Review: 20 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "Work through actions in priority order. Rescan after each fix to track progress. Review: 7 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -354,7 +333,7 @@
       "command": "desloppify show flat_dirs --status open",
       "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "Work through actions in priority order. Rescan after each fix to track progress. Review: 20 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "Work through actions in priority order. Rescan after each fix to track progress. Review: 7 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -373,7 +352,22 @@
       "state": "above",
       "warning": null
     },
-    "reminders": [],
+    "reminders": [
+      {
+        "type": "rereview_needed",
+        "message": "Subjective results may be stale after resolve. Re-run `desloppify review --prepare` to refresh, or reset with `desloppify scan --reset-subjective` before a clean rerun.",
+        "command": "desloppify review --prepare",
+        "priority": 1,
+        "severity": "high"
+      },
+      {
+        "type": "rescan_needed",
+        "message": "Rescan to verify \u2014 cascading effects may create new issues.",
+        "command": "desloppify scan",
+        "priority": 1,
+        "severity": "high"
+      }
+    ],
     "reminder_history": {
       "auto_fixers_available": 3,
       "zone_classification": 3,
@@ -387,7 +381,9 @@
       "review_issues_pending": 3,
       "wontfix_growing": 3,
       "fp_calibration_test_coverage_production": 3,
-      "fp_calibration_smells_production": 3
+      "fp_calibration_smells_production": 3,
+      "rereview_needed": 1,
+      "rescan_needed": 1
     }
   },
   "config": {
