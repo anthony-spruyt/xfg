@@ -1,7 +1,6 @@
 import { escapeShellArg } from "./shell-utils.js";
 import { withRetry } from "./retry-utils.js";
 import type { ICommandExecutor } from "./command-executor.js";
-import { toErrorMessage } from "./type-guards.js";
 
 export interface GitHubApiTarget {
   host: string;
