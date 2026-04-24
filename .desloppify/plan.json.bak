@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T14:29:18+00:00",
+  "updated": "2026-04-24T14:35:23+00:00",
   "queue_order": [
     "triage::strategize",
     "triage::observe",
@@ -37323,6 +37323,66 @@
           "sense-check"
         ]
       }
+    },
+    {
+      "timestamp": "2026-04-24T14:29:18+00:00",
+      "action": "triage_strategize",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "reuse": false,
+        "score_trend": "declining",
+        "focus_dimensions": []
+      }
+    },
+    {
+      "timestamp": "2026-04-24T14:33:19+00:00",
+      "action": "triage_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 20,
+        "cited_ids": [],
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-04-24T14:35:23+00:00",
+      "action": "triage_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 20,
+        "cited_ids": [
+          "review::.::holistic::abstraction_fitness::authenticated_git_ops_18_pass_through_delegations",
+          "review::.::holistic::contract_coherence::repo_settings_diff_unchanged_omission",
+          "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",
+          "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
+          "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
+          "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
+          "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
+          "review::.::holistic::error_consistency::github_summary_debug_level_io_error",
+          "review::.::holistic::high_level_elegance::output_missing_barrel_index",
+          "review::.::holistic::logic_clarity::duplicate_deep_equal",
+          "review::.::holistic::logic_clarity::redundant_typeof_check_code_scanning",
+          "review::.::holistic::low_level_elegance::receivemigration_monolith",
+          "review::.::holistic::low_level_elegance::settings_descriptor_repetition",
+          "review::.::holistic::mid_level_elegance::dual_path_token_resolution",
+          "review::.::holistic::mid_level_elegance::settings_descriptor_glue_callbacks",
+          "review::.::holistic::naming_quality::findOrCreate_silent_mutation",
+          "review::.::holistic::naming_quality::generic_process_verb",
+          "review::.::holistic::test_strategy::interaction_verification_coupling",
+          "review::.::holistic::test_strategy::output_formatter_test_gap",
+          "review::.::holistic::type_safety::base_result_unsafe_downcast"
+        ],
+        "reuse": false
+      }
     }
   ],
   "epic_triage_meta": {
@@ -37336,6 +37396,65 @@
         "anti_pattern_count": 0,
         "confirmed_at": "2026-04-24T14:29:18+00:00",
         "confirmed_text": "auto-confirmed"
+      },
+      "observe": {
+        "stage": "observe",
+        "report": "OBSERVE STAGE: Code-verified assessment of all 20 open review findings.\n\n## Per-Issue Assessments\n\n- id: review::.::holistic::design_coherence::receive_migration_multi_responsibility\n  verdict: genuine\n  verdict_reasoning: Confirmed receiveMigration at lines 424-557 of github-lifecycle-provider.ts is ~133 lines performing 4 distinct operations: (1) remove origin remote (434-443), (2) clean non-standard refs (450-471), (3) rename default branch (474-502), (4) create repo + push mirror (508-556). Previously marked fixed but decomposition methods never applied.\n  files_read: [src/lifecycle/github-lifecycle-provider.ts]\n  recommendation: Extract into private helpers. Highest-value refactor.\n\n- id: review::.::holistic::logic_clarity::duplicate_deep_equal\n  verdict: genuine\n  verdict_reasoning: Two deepEqual implementations in same rulesets module. diff.ts line 83 uses typeof==='object'. diff-algorithm.ts line 12 uses isPlainObject(). Both are recursive equality checks with subtly different null handling.\n  files_read: [src/settings/rulesets/diff.ts, src/settings/rulesets/diff-algorithm.ts]\n  recommendation: Remove private deepEqual from diff.ts, import from diff-algorithm.ts. Quick win.\n\n- id: review::.::holistic::abstraction_fitness::authenticated_git_ops_18_pass_through_delegations\n  verdict: not-worth-it\n  verdict_reasoning: ILocalGitOps has 17 methods (not 18). AuthenticatedGitOps delegates all 17 at lines 61-127. Standard Decorator pattern for adding auth to network ops. Proxy/Object.assign would lose type safety. Splitting consumers would require changing every call site.\n  files_read: [src/vcs/authenticated-git-ops.ts, src/vcs/types.ts]\n  recommendation: Skip. Explicit delegation is intentional for DI-based codebase.\n\n- id: review::.::holistic::contract_coherence::repo_settings_diff_unchanged_omission\n  verdict: genuine\n  verdict_reasoning: diffRepoSettings (diff.ts lines 78-109) never produces action='unchanged' but RepoSettingsAction includes 'unchanged'. hasRepoSettingsChanges checks action !== 'unchanged' which is always true, making it equivalent to changes.length > 0.\n  files_read: [src/settings/repo-settings/diff.ts]\n  recommendation: Narrow RepoSettingsAction to exclude 'unchanged'. Small fix.\n\n- id: review::.::holistic::convention_outlier::code_scanning_test_name_prefix\n  verdict: genuine\n  verdict_reasoning: code-scanning test dir uses prefixed names (code-scanning-diff.test.ts etc.) while sibling dirs (labels/, repo-settings/, rulesets/) use unprefixed names (diff.test.ts etc.).\n  files_read: [test/unit/settings/code-scanning/, test/unit/settings/labels/, test/unit/settings/rulesets/]\n  recommendation: Rename to remove prefix. Trivial.\n\n- id: review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix\n  verdict: genuine\n  verdict_reasoning: src/lifecycle/ contains lifecycle-formatter.ts and lifecycle-helpers.ts. All peer modules use unprefixed names like formatter.ts since directory provides context.\n  files_read: [src/lifecycle/, src/settings/code-scanning/]\n  recommendation: Rename to formatter.ts and helpers.ts. Small mechanical change.\n\n- id: review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass\n  verdict: genuine\n  verdict_reasoning: output/lifecycle-report.ts line 4 imports LifecycleActionKind directly from '../lifecycle/types.js'. The barrel src/lifecycle/index.ts does NOT export LifecycleActionKind.\n  files_read: [src/output/lifecycle-report.ts, src/lifecycle/index.ts]\n  recommendation: Add export to barrel, update import. Trivial.\n\n- id: review::.::holistic::error_consistency::github_summary_debug_level_io_error\n  verdict: not-worth-it\n  verdict_reasoning: log?.debug on line 19 of github-summary.ts for I/O failure. This is a best-effort cosmetic operation (GITHUB_STEP_SUMMARY). Promoting to warn creates noise for non-critical operation.\n  files_read: [src/output/github-summary.ts]\n  recommendation: Skip. Debug level appropriate for best-effort cosmetic operation.\n\n- id: review::.::holistic::high_level_elegance::output_missing_barrel_index\n  verdict: genuine\n  verdict_reasoning: src/output/ has no index.ts. All other top-level packages have barrels. cli/ has ~13 direct imports from output/ submodules.\n  files_read: [src/output/, src/cli/unified-summary.ts, src/cli/sync-command.ts]\n  recommendation: Create src/output/index.ts. Good consistency win.\n\n- id: review::.::holistic::logic_clarity::redundant_typeof_check_code_scanning\n  verdict: genuine\n  verdict_reasoning: Line 1169 of validator.ts: typeof === 'object' check is redundant after truthy check since CodeScanningSettings is always an object type.\n  files_read: [src/config/validator.ts]\n  recommendation: Simplify to if (settings.codeScanning). Trivial one-line fix.\n\n- id: review::.::holistic::low_level_elegance::receivemigration_monolith\n  verdict: genuine\n  verdict_reasoning: Duplicate of receive_migration_multi_responsibility. Same method, same file. Line count claim of ~80 is inaccurate (actual is ~133 lines).\n  files_read: [src/lifecycle/github-lifecycle-provider.ts]\n  recommendation: Merge with design_coherence finding. Single fix addresses both.\n\n- id: review::.::holistic::low_level_elegance::settings_descriptor_repetition\n  verdict: not-worth-it\n  verdict_reasoning: buildSettingsDescriptors at lines 203-281 creates 4 descriptors with similar structure. But each differs in key, label, factory, options shape, and callback. 78 lines total, perfectly readable. Data-driven alternative saves ~30 lines at cost of indirection.\n  files_read: [src/cli/sync-command.ts]\n  recommendation: Skip. Modest repetition (4 entries), each self-contained and clear.\n\n- id: review::.::holistic::mid_level_elegance::dual_path_token_resolution\n  verdict: genuine\n  verdict_reasoning: sync-command.ts lines 452-461 resolves token via resolveGitHubToken. AuthOptionsBuilder.resolve() lines 24-37 uses pre-resolved token or falls back to resolveGitHubToken again. Implicit coordination contract.\n  files_read: [src/cli/sync-command.ts, src/sync/auth-options-builder.ts]\n  recommendation: Document contract or consolidate ownership. Medium effort.\n\n- id: review::.::holistic::mid_level_elegance::settings_descriptor_glue_callbacks\n  verdict: not-worth-it\n  verdict_reasoning: Overlaps with settings_descriptor_repetition. Type assertions necessary for generic pattern. Registry/map would still need assertions.\n  files_read: [src/cli/sync-command.ts]\n  recommendation: Skip. Overlaps with sibling finding.\n\n- id: review::.::holistic::naming_quality::findOrCreate_silent_mutation\n  verdict: not-worth-it\n  verdict_reasoning: findOrCreate is a universally recognized pattern (ActiveRecord, Sequelize, Prisma). Name explicitly communicates both operations. ResultsCollector is 33 lines with clear intent.\n  files_read: [src/cli/results-collector.ts]\n  recommendation: Skip. Well-known pattern name.\n\n- id: review::.::holistic::naming_quality::generic_process_verb\n  verdict: not-worth-it\n  verdict_reasoning: ISettingsProcessor.process() is standard Strategy pattern method name. All 4 implementations use it consistently. The public method does more than applying (includes guards, token resolution, error wrapping). Generic name is intentional.\n  files_read: [src/settings/base-processor.ts, src/settings/labels/processor.ts]\n  recommendation: Skip. process() accurately describes the full operation.\n\n- id: review::.::holistic::test_strategy::interaction_verification_coupling\n  verdict: exaggerated\n  verdict_reasoning: Labels processor test uses MockLabelsStrategy tracking calls. But tests verify behavioral outcomes through the mock - dry run no-mutations is legitimate behavioral test. Order test verifies delete-before-create contract. Not pure interaction tests.\n  files_read: [test/unit/settings/labels/processor.test.ts]\n  recommendation: Minor. Current approach reasonable for strategy-pattern processor.\n\n- id: review::.::holistic::test_strategy::output_formatter_test_gap\n  verdict: genuine\n  verdict_reasoning: test/unit/output/ has formatter helper tests but not main report builder tests. formatSettingsReportCLI (378 LOC) and formatSyncReportCLI (140 LOC) lack dedicated tests.\n  files_read: [test/unit/output/, src/output/settings-report.ts, src/output/sync-report.ts]\n  recommendation: Add tests for main report builders. Medium effort.\n\n- id: review::.::holistic::type_safety::base_result_unsafe_downcast\n  verdict: genuine\n  verdict_reasoning: baseResult<TResult> at line 61-64 does `return result as TResult`. Comment explains all subtypes add only optional fields. No compile-time enforcement. Risk is real but low with 4 result types.\n  files_read: [src/settings/base-processor.ts]\n  recommendation: Low priority. Comment-level contract adequate for 4 implementations.\n\n- id: review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting\n  verdict: genuine\n  verdict_reasoning: output/sync-report.ts line 4 imports formatDiffLine from sync/. formatDiffLine is pure chalk coloring with no sync-domain logic. Creates backwards dependency.\n  files_read: [src/output/sync-report.ts, src/sync/diff-utils.ts]\n  recommendation: Move formatDiffLine to shared/ or output/. Small refactor.\n\n## Summary\n12 genuine, 6 not-worth-it, 1 exaggerated, 1 duplicate (receivemigration_monolith duplicates receive_migration_multi_responsibility)",
+        "cited_ids": [
+          "review::.::holistic::abstraction_fitness::authenticated_git_ops_18_pass_through_delegations",
+          "review::.::holistic::contract_coherence::repo_settings_diff_unchanged_omission",
+          "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",
+          "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
+          "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
+          "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
+          "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
+          "review::.::holistic::error_consistency::github_summary_debug_level_io_error",
+          "review::.::holistic::high_level_elegance::output_missing_barrel_index",
+          "review::.::holistic::logic_clarity::duplicate_deep_equal",
+          "review::.::holistic::logic_clarity::redundant_typeof_check_code_scanning",
+          "review::.::holistic::low_level_elegance::receivemigration_monolith",
+          "review::.::holistic::low_level_elegance::settings_descriptor_repetition",
+          "review::.::holistic::mid_level_elegance::dual_path_token_resolution",
+          "review::.::holistic::mid_level_elegance::settings_descriptor_glue_callbacks",
+          "review::.::holistic::naming_quality::findOrCreate_silent_mutation",
+          "review::.::holistic::naming_quality::generic_process_verb",
+          "review::.::holistic::test_strategy::interaction_verification_coupling",
+          "review::.::holistic::test_strategy::output_formatter_test_gap",
+          "review::.::holistic::type_safety::base_result_unsafe_downcast"
+        ],
+        "timestamp": "2026-04-24T14:35:23+00:00",
+        "issue_count": 20,
+        "dimension_names": [
+          "convention_outlier",
+          "cross_module_architecture",
+          "logic_clarity",
+          "low_level_elegance",
+          "mid_level_elegance",
+          "naming_quality",
+          "test_strategy",
+          "abstraction_fitness",
+          "contract_coherence",
+          "design_coherence",
+          "error_consistency",
+          "high_level_elegance",
+          "type_safety"
+        ],
+        "dimension_counts": {
+          "cross_module_architecture": 2,
+          "high_level_elegance": 1,
+          "convention_outlier": 2,
+          "error_consistency": 1,
+          "naming_quality": 2,
+          "abstraction_fitness": 1,
+          "low_level_elegance": 2,
+          "mid_level_elegance": 2,
+          "test_strategy": 2,
+          "design_coherence": 1,
+          "contract_coherence": 1,
+          "logic_clarity": 2,
+          "type_safety": 1
+        },
+        "assessments": []
       }
     },
     "issue_snapshot_hash": "02f46b0ec47e8f0d",
@@ -37640,123 +37759,7 @@
       "strategy": "Execute quick-wins first (7 single-edit fixes across 7 dimensions), then sanitize-utils-layering (4 items, highest multi-dimension ROI), then api-verb-consistency, contract-safety, type-safety-casts. Defer module-scoped-mutables and result-type-refactor as T4.",
       "completion_mode": "manual_triage"
     },
-    "issue_dispositions": {
-      "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils": {
-        "decision": "cluster",
-        "target": "sanitize-utils-layering",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::dependency_health::shared_vcs_circular_import": {
-        "decision": "cluster",
-        "target": "sanitize-utils-layering",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling": {
-        "decision": "cluster",
-        "target": "sanitize-utils-layering",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils": {
-        "decision": "cluster",
-        "target": "sanitize-utils-layering",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state": {
-        "decision": "cluster",
-        "target": "module-scoped-mutables",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::initialization_coupling::run_scope_module_state": {
-        "decision": "cluster",
-        "target": "module-scoped-mutables",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings": {
-        "decision": "cluster",
-        "target": "api-verb-consistency",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names": {
-        "decision": "cluster",
-        "target": "api-verb-consistency",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy": {
-        "decision": "cluster",
-        "target": "api-verb-consistency",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning": {
-        "decision": "cluster",
-        "target": "quick-wins",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::error_consistency::extends_resolver_bare_error": {
-        "decision": "cluster",
-        "target": "quick-wins",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive": {
-        "decision": "cluster",
-        "target": "quick-wins",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::package_organization::misplaced_repo_metadata_test": {
-        "decision": "cluster",
-        "target": "quick-wins",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::design_coherence::display_name_duplication": {
-        "decision": "cluster",
-        "target": "quick-wins",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat": {
-        "decision": "cluster",
-        "target": "quick-wins",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern": {
-        "decision": "cluster",
-        "target": "quick-wins",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::contract_coherence::base_result_unsafe_cast": {
-        "decision": "cluster",
-        "target": "contract-safety",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::contract_coherence::get_or_create_mutates": {
-        "decision": "cluster",
-        "target": "contract-safety",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::type_safety::unguarded_error_property_access": {
-        "decision": "cluster",
-        "target": "type-safety-casts",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::type_safety::unverified_string_cast_in_diff": {
-        "decision": "cluster",
-        "target": "type-safety-casts",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag": {
-        "decision": "cluster",
-        "target": "result-type-refactor",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::design_coherence::receive_migration_multi_phase": {
-        "decision": "cluster",
-        "target": "method-decomposition",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::design_coherence::settings_formatter_duplication": {
-        "decision": "cluster",
-        "target": "method-decomposition",
-        "decision_source": "reflect"
-      }
-    },
+    "issue_dispositions": {},
     "last_completion_mode": "manual_triage",
     "strategist_briefing": {
       "executive_summary": "Strict score improved 88.3\u219288.5 after fixing 12 items. Fresh blind review scored all 20 dimensions, importing 20 new findings. Five dimensions at 82.0 floor.",
