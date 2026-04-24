@@ -12,6 +12,7 @@ import type {
 } from "../settings/index.js";
 import type { RepoInfo } from "../repo/index.js";
 import type { ResultsCollector } from "./results-collector.js";
+import type { Logger } from "../shared/logger.js";
 
 export type ProcessorFactory = () => IRepositoryProcessor;
 
@@ -89,4 +90,5 @@ export interface ApplyRepoSettingsContext {
   token: string | undefined;
   settingsCollector: ResultsCollector;
   factories: SettingsProcessorFactories;
+  logger: Logger;
 }

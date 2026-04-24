@@ -1,14 +1,12 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T13:35:55+00:00",
+  "updated": "2026-04-24T13:42:52+00:00",
   "queue_order": [
     "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
-    "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
-    "review::.::holistic::initialization_coupling::run_scope_module_state",
     "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
     "subjective::api_surface_coherence",
     "subjective::contract_coherence",
@@ -1157,7 +1155,7 @@
       "skipped_at_scan": 204
     }
   },
-  "active_cluster": "method-decomposition",
+  "active_cluster": "module-scoped-mutables",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -3622,14 +3620,14 @@
     "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state": {
       "issue_id": "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
       "created_at": "2026-04-24T10:39:45+00:00",
-      "cluster": "module-scoped-mutables",
-      "updated_at": "2026-04-24T10:39:45+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T13:42:45+00:00"
     },
     "review::.::holistic::initialization_coupling::run_scope_module_state": {
       "issue_id": "review::.::holistic::initialization_coupling::run_scope_module_state",
       "created_at": "2026-04-24T10:39:45+00:00",
-      "cluster": "module-scoped-mutables",
-      "updated_at": "2026-04-24T10:39:45+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T13:42:52+00:00"
     },
     "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag": {
       "issue_id": "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
@@ -5812,7 +5810,8 @@
           "issue_refs": [
             "sync_command_module_scoped_mutable_state"
           ],
-          "effort": "small"
+          "effort": "small",
+          "done": true
         },
         {
           "title": "Remove module-level let variables and getLogger/getDefaultExecutor",
@@ -5820,7 +5819,8 @@
           "issue_refs": [
             "run_scope_module_state"
           ],
-          "effort": "small"
+          "effort": "small",
+          "done": true
         },
         {
           "title": "Update tests",
@@ -5828,7 +5828,8 @@
           "issue_refs": [
             "sync_command_module_scoped_mutable_state"
           ],
-          "effort": "small"
+          "effort": "small",
+          "done": true
         }
       ]
     },
@@ -9328,8 +9329,6 @@
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
-    "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
-    "review::.::holistic::initialization_coupling::run_scope_module_state",
     "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag"
   ],
   "plan_start_scores": {
@@ -37093,6 +37092,56 @@
         "status": "fixed",
         "attestation": "I have actually extracted the duplicated create/update formatting loop into a shared utility. Build and all 2680 tests pass. I am not gaming the score."
       }
+    },
+    {
+      "timestamp": "2026-04-24T13:42:45+00:00",
+      "action": "done",
+      "issue_ids": [
+        "sync_command_module_scoped_mutable_state"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed _runScopeExecutor/_runScopeLogger module-level let variables and getLogger()/getDefaultExecutor() accessor functions. Added logger and executor fields to RepoIterationContext. All ~40 call sites now use ctx.logger/ctx.executor. Factory functions accept executor as parameter.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T13:42:45+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed _runScopeExecutor/_runScopeLogger module-level let variables and getLogger()/getDefaultExecutor() accessor functions. Added logger and executor fields to RepoIterationContext. All ~40 call sites now use ctx.logger/ctx.executor. Factory functions accept executor as parameter.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually eliminated all module-scoped mutable state from sync-command.ts by threading logger and executor through RepoIterationContext. Build and all 2680 tests pass. I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T13:42:51+00:00",
+      "action": "done",
+      "issue_ids": [
+        "run_scope_module_state"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Same fix as sync_command_module_scoped_mutable_state \u2014 removed _runScopeExecutor/_runScopeLogger and getLogger()/getDefaultExecutor() module-level variables. Logger and executor now flow through RepoIterationContext.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T13:42:52+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::initialization_coupling::run_scope_module_state"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Same fix as sync_command_module_scoped_mutable_state \u2014 removed _runScopeExecutor/_runScopeLogger and getLogger()/getDefaultExecutor() module-level variables. Logger and executor now flow through RepoIterationContext.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually eliminated the module-level mutable state. Both findings addressed in the same refactor. Build and all 2680 tests pass. I am not gaming the score."
+      }
     }
   ],
   "epic_triage_meta": {
@@ -38151,7 +38200,9 @@
     "review::.::holistic::type_safety::unguarded_error_property_access",
     "review::.::holistic::type_safety::unverified_string_cast_in_diff",
     "review::.::holistic::design_coherence::receive_migration_multi_phase",
-    "review::.::holistic::design_coherence::settings_formatter_duplication"
+    "review::.::holistic::design_coherence::settings_formatter_duplication",
+    "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+    "review::.::holistic::initialization_coupling::run_scope_module_state"
   ],
   "commit_tracking_branch": null,
   "refresh_state": {
