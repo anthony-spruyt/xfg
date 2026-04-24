@@ -141,8 +141,9 @@ export class AdoPRStrategy extends BasePRStrategy {
         );
       }
     } catch (error) {
-      const message = toErrorMessage(error);
-      this.log?.warn(`Failed to delete branch ${branchName}: ${message}`);
+      this.log?.warn(
+        `PR #${prId} abandoned but branch ${branchName} deletion failed: ${toErrorMessage(error)}`
+      );
     }
 
     return { status: "closed" };

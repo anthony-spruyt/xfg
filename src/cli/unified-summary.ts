@@ -248,7 +248,7 @@ export function formatUnifiedSummaryMarkdown(
     // Blank line between lifecycle and sync sections
     if (hasLcChange && hasSyncChanges) diffLines.push("");
 
-    if (syncRepo) renderSyncLines(syncRepo, diffLines);
+    if (syncRepo) diffLines.push(...renderSyncLines(syncRepo));
 
     // Blank line between files and settings sections
     if (hasSyncChanges && hasSettingsChanges) diffLines.push("");

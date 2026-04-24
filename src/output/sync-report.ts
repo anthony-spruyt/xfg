@@ -85,8 +85,7 @@ export function formatSyncReportMarkdown(
     lines.push(`### ${repo.repoName}`);
     lines.push("");
 
-    const diffLines: string[] = [];
-    renderSyncLines(repo, diffLines);
+    const diffLines = renderSyncLines(repo);
 
     if (diffLines.length > 0) {
       lines.push("```diff");
@@ -102,32 +101,32 @@ export function formatSyncReportMarkdown(
   return lines.join("\n");
 }
 
-export function renderSyncLines(
-  syncRepo: RepoFileChanges,
-  diffLines: string[]
-): void {
+export function renderSyncLines(syncRepo: RepoFileChanges): string[] {
+  const lines: string[] = [];
+
   for (let i = 0; i < syncRepo.files.length; i++) {
     const file = syncRepo.files[i];
 
-    // Blank line between files for readability
-    if (i > 0) diffLines.push("");
+    if (i > 0) lines.push("");
 
     if (file.action === "create") {
-      diffLines.push(`+ ${file.path}`);
+      lines.push(`+ ${file.path}`);
     } else if (file.action === "update") {
-      diffLines.push(`! ${file.path}`);
+      lines.push(`! ${file.path}`);
     } else if (file.action === "delete") {
-      diffLines.push(`- ${file.path}`);
+      lines.push(`- ${file.path}`);
     }
 
     if (file.diffLines) {
-      diffLines.push(...file.diffLines);
+      lines.push(...file.diffLines);
     }
   }
 
   if (syncRepo.error) {
-    diffLines.push(`- Error: ${syncRepo.error}`);
+    lines.push(`- Error: ${syncRepo.error}`);
   }
+
+  return lines;
 }
 
 export function writeSyncReportSummary(
