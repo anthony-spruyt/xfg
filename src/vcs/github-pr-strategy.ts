@@ -7,6 +7,7 @@ import { BasePRStrategy } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
   CloseExistingPROptions,
+  ClosePRResult,
   MergeOptions,
   MergeResult,
 } from "./types.js";
@@ -69,7 +70,9 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
   }
 
-  async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
+  async closeExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<ClosePRResult> {
     const {
       repoInfo,
       branchName,
@@ -81,7 +84,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     assertGitHubRepo(repoInfo, "GitHub PR strategy");
 
-    // First check if there's an existing PR (pass token through)
     const existingUrl = await this.findExistingPRUrl({
       repoInfo,
       branchName,
@@ -92,14 +94,15 @@ export class GitHubPRStrategy extends BasePRStrategy {
     });
 
     if (!existingUrl) {
-      return false;
+      return { status: "no_pr" };
     }
 
-    // Extract PR number from URL
     const prNumber = existingUrl.match(/\/pull\/(\d+)/)?.[1];
     if (!prNumber) {
-      this.log?.warn(`Could not extract PR number from URL: ${existingUrl}`);
-      return false;
+      return {
+        status: "close_failed",
+        message: `Could not extract PR number from URL: ${existingUrl}`,
+      };
     }
 
     const repoFlag = getRepoFlag(repoInfo);
@@ -111,11 +114,11 @@ export class GitHubPRStrategy extends BasePRStrategy {
         () => this.executor.exec(command, workDir, { env: tokenEnv }),
         { retries, log: this.log }
       );
-      return true;
+      return { status: "closed" };
     } catch (error) {
       const message = toErrorMessage(error);
       this.log?.warn(`Failed to close existing PR #${prNumber}: ${message}`);
-      return false;
+      return { status: "close_failed", message };
     }
   }
 

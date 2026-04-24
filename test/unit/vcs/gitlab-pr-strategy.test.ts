@@ -480,7 +480,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
     }
   });
 
-  test("returns false when no MR exists", async () => {
+  test("returns no_pr when no MR exists", async () => {
     mockExecutor.responses.set("glab mr list", "[]");
 
     const strategy = new GitLabPRStrategy(mockExecutor.mock);
@@ -492,7 +492,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.deepStrictEqual(result, { status: "no_pr" });
   });
 
   test("closes MR and deletes branch when MR exists", async () => {
@@ -512,7 +512,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, true);
+    assert.deepStrictEqual(result, { status: "closed" });
     const closeCall = mockExecutor.calls.find((c) =>
       c.command.includes("glab mr close")
     );
@@ -520,7 +520,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
     assert.ok(closeCall.command.includes("123"));
   });
 
-  test("returns false when close command fails", async () => {
+  test("returns close_failed when close command fails", async () => {
     mockExecutor.responses.set(
       "glab mr list",
       '[{"iid": 123, "title": "Test MR"}]'
@@ -536,7 +536,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.equal(result.status, "close_failed");
   });
 
   test("deletes branch after closing MR", async () => {
@@ -563,7 +563,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
     assert.ok(deleteBranchCall.command.includes("test-branch"));
   });
 
-  test("returns true even when branch deletion fails", async () => {
+  test("returns closed even when branch deletion fails", async () => {
     mockExecutor.responses.set(
       "glab mr list",
       '[{"iid": 123, "title": "Test MR"}]'
@@ -583,8 +583,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    // Should still return true because MR was closed successfully
-    assert.equal(result, true);
+    assert.deepStrictEqual(result, { status: "closed" });
   });
 });
 
@@ -1193,7 +1192,7 @@ describe("GitLabPRStrategy logger coverage", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.equal(result.status, "close_failed");
     assert.ok(
       warnMessages.some((m) => m.includes("Failed to close existing MR"))
     );
@@ -1228,8 +1227,7 @@ describe("GitLabPRStrategy logger coverage", () => {
       retries: 0,
     });
 
-    // MR was closed successfully, branch deletion is non-critical
-    assert.equal(result, true);
+    assert.deepStrictEqual(result, { status: "closed" });
     assert.ok(warnMessages.some((m) => m.includes("Failed to delete branch")));
   });
 });
@@ -1268,9 +1266,10 @@ describe("GitLabPRStrategy closeExistingPR with unparseable URL", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.equal(result.status, "close_failed");
     assert.ok(
-      warnings.some((w) => w.includes("Could not extract MR IID from URL"))
+      result.status === "close_failed" &&
+        result.message.includes("Could not extract MR IID from URL")
     );
   });
 });

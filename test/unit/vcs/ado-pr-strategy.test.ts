@@ -706,7 +706,7 @@ describe("AdoPRStrategy closeExistingPR", () => {
     }
   });
 
-  test("returns false when no PR exists", async () => {
+  test("returns no_pr when no PR exists", async () => {
     mockExecutor.responses.set("az repos pr list", "");
 
     const strategy = new AdoPRStrategy(mockExecutor.mock);
@@ -718,7 +718,7 @@ describe("AdoPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.deepStrictEqual(result, { status: "no_pr" });
   });
 
   test("closes PR (abandons) and deletes branch when PR exists", async () => {
@@ -735,7 +735,7 @@ describe("AdoPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, true);
+    assert.deepStrictEqual(result, { status: "closed" });
     const abandonCall = mockExecutor.calls.find((c) =>
       c.command.includes("az repos pr update")
     );
@@ -770,10 +770,10 @@ describe("AdoPRStrategy closeExistingPR", () => {
     );
   });
 
-  test("returns true even when branch deletion fails", async () => {
+  test("returns closed even when branch deletion fails", async () => {
     mockExecutor.responses.set("az repos pr list", "123");
     mockExecutor.responses.set("az repos pr update", "");
-    mockExecutor.responses.set("az repos ref list", "abc123def456"); // object_id for branch
+    mockExecutor.responses.set("az repos ref list", "abc123def456");
     mockExecutor.responses.set(
       "az repos ref delete",
       new Error("Branch deletion failed")
@@ -788,11 +788,10 @@ describe("AdoPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    // Should still return true because PR was abandoned successfully
-    assert.equal(result, true);
+    assert.deepStrictEqual(result, { status: "closed" });
   });
 
-  test("returns false when abandon command fails", async () => {
+  test("returns close_failed when abandon command fails", async () => {
     mockExecutor.responses.set("az repos pr list", "123");
     mockExecutor.responses.set(
       "az repos pr update",
@@ -808,7 +807,7 @@ describe("AdoPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.equal(result.status, "close_failed");
   });
 });
 
@@ -1037,7 +1036,7 @@ describe("AdoPRStrategy logger coverage", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.equal(result.status, "close_failed");
     assert.ok(warnMessages.some((m) => m.includes("Failed to abandon PR")));
   });
 
@@ -1068,8 +1067,7 @@ describe("AdoPRStrategy logger coverage", () => {
       retries: 0,
     });
 
-    // PR was abandoned successfully, branch deletion failed but is non-critical
-    assert.equal(result, true);
+    assert.deepStrictEqual(result, { status: "closed" });
     assert.ok(warnMessages.some((m) => m.includes("Failed to delete branch")));
   });
 });

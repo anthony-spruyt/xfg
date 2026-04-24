@@ -8,6 +8,7 @@ import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
   CloseExistingPROptions,
+  ClosePRResult,
   MergeOptions,
   MergeResult,
 } from "./types.js";
@@ -130,12 +131,13 @@ export class GitLabPRStrategy extends BasePRStrategy {
     }
   }
 
-  async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
+  async closeExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<ClosePRResult> {
     const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
 
     assertGitLabRepo(repoInfo, "GitLab PR strategy");
 
-    // First check if there's an existing MR
     const existingUrl = await this.findExistingPRUrl({
       repoInfo,
       branchName,
@@ -145,19 +147,19 @@ export class GitLabPRStrategy extends BasePRStrategy {
     });
 
     if (!existingUrl) {
-      return false;
+      return { status: "no_pr" };
     }
 
-    // Extract MR IID from URL
     const mrInfo = this.parseMRUrl(existingUrl);
     if (!mrInfo) {
-      this.log?.warn(`Could not extract MR IID from URL: ${existingUrl}`);
-      return false;
+      return {
+        status: "close_failed",
+        message: `Could not extract MR IID from URL: ${existingUrl}`,
+      };
     }
 
     const repoFlag = this.getRepoFlag(repoInfo);
 
-    // Close the MR
     const closeCommand = `glab mr close ${escapeShellArg(mrInfo.mrIid)} -R ${escapeShellArg(repoFlag)}`;
 
     try {
@@ -170,7 +172,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
       this.log?.warn(
         `Failed to close existing MR !${mrInfo.mrIid}: ${message}`
       );
-      return false;
+      return { status: "close_failed", message };
     }
 
     const deleteBranchCommand = `git push origin --delete ${escapeShellArg(branchName)}`;
@@ -181,12 +183,11 @@ export class GitLabPRStrategy extends BasePRStrategy {
         log: this.log,
       });
     } catch (error) {
-      // Branch deletion failure is not critical
       const message = toErrorMessage(error);
       this.log?.warn(`Failed to delete branch ${branchName}: ${message}`);
     }
 
-    return true;
+    return { status: "closed" };
   }
 
   async create(options: PRStrategyOptions): Promise<PRResult> {

@@ -12,6 +12,7 @@ import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
   CloseExistingPROptions,
+  ClosePRResult,
   MergeOptions,
   MergeResult,
 } from "./types.js";
@@ -91,7 +92,9 @@ export class AdoPRStrategy extends BasePRStrategy {
     return prId ? this.buildPRUrl(azureRepoInfo, prId) : null;
   }
 
-  async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
+  async closeExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<ClosePRResult> {
     const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
 
     assertAzureDevOpsRepo(repoInfo, "Azure PR strategy");
@@ -107,10 +110,9 @@ export class AdoPRStrategy extends BasePRStrategy {
     );
 
     if (!prId) {
-      return false;
+      return { status: "no_pr" };
     }
 
-    // Abandon the PR (Azure DevOps equivalent of closing)
     const abandonCommand = `az repos pr update --id ${escapeShellArg(prId)} --status abandoned --org ${escapeShellArg(orgUrl)}`;
 
     try {
@@ -121,7 +123,7 @@ export class AdoPRStrategy extends BasePRStrategy {
     } catch (error) {
       const message = toErrorMessage(error);
       this.log?.warn(`Failed to abandon PR #${prId}: ${message}`);
-      return false;
+      return { status: "close_failed", message };
     }
 
     try {
@@ -139,12 +141,11 @@ export class AdoPRStrategy extends BasePRStrategy {
         );
       }
     } catch (error) {
-      // Branch deletion failure is not critical - PR is already abandoned
       const message = toErrorMessage(error);
       this.log?.warn(`Failed to delete branch ${branchName}: ${message}`);
     }
 
-    return true;
+    return { status: "closed" };
   }
 
   async create(options: PRStrategyOptions): Promise<PRResult> {

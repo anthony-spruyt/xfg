@@ -26,6 +26,15 @@ export const CORE_PERMANENT_ERROR_PATTERNS: RegExp[] = [
   /GITLAB_TOKEN\s+environment\s+variable/i,
 ];
 
+export const BRANCH_PROTECTION_ERROR_PATTERNS: RegExp[] = [
+  /rejected/i,
+  /protected\s*branch/i,
+  /protected/i,
+  /denied/i,
+  /required\s*status\s*check/i,
+  /push\s*rules?\s*prevent/i,
+];
+
 /**
  * Default patterns indicating permanent errors that should NOT be retried.
  * Extends CORE_PERMANENT_ERROR_PATTERNS with git-CLI-specific patterns.

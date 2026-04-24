@@ -673,7 +673,7 @@ describe("GitHubPRStrategy closeExistingPR", () => {
     }
   });
 
-  test("returns false when no PR exists", async () => {
+  test("returns no_pr when no PR exists", async () => {
     mockExecutor.responses.set("gh pr list", "");
 
     const strategy = new GitHubPRStrategy(mockExecutor.mock);
@@ -685,10 +685,10 @@ describe("GitHubPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.deepStrictEqual(result, { status: "no_pr" });
   });
 
-  test("closes PR and returns true when PR exists", async () => {
+  test("closes PR and returns closed when PR exists", async () => {
     mockExecutor.responses.set(
       "gh pr list",
       "https://github.com/owner/repo/pull/123"
@@ -704,7 +704,7 @@ describe("GitHubPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, true);
+    assert.deepStrictEqual(result, { status: "closed" });
     const closeCall = mockExecutor.calls.find((c) =>
       c.command.includes("gh pr close")
     );
@@ -713,9 +713,7 @@ describe("GitHubPRStrategy closeExistingPR", () => {
     assert.ok(closeCall.command.includes("--delete-branch"));
   });
 
-  test("returns false when PR number cannot be extracted from URL (issue #93)", async () => {
-    // When findExistingPRUrl returns a URL but we can't extract the PR number,
-    // we return false with a warning (consistent with other error handling)
+  test("returns close_failed when PR number cannot be extracted from URL (issue #93)", async () => {
     mockExecutor.responses.set(
       "gh pr list",
       "https://github.com/owner/repo/invalid-url-format"
@@ -730,10 +728,10 @@ describe("GitHubPRStrategy closeExistingPR", () => {
       workDir: testDirClose,
       retries: 0,
     });
-    assert.strictEqual(result, false);
+    assert.equal(result.status, "close_failed");
   });
 
-  test("returns false when close command fails", async () => {
+  test("returns close_failed when close command fails", async () => {
     mockExecutor.responses.set(
       "gh pr list",
       "https://github.com/owner/repo/pull/123"
@@ -749,11 +747,10 @@ describe("GitHubPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.equal(result.status, "close_failed");
   });
 
-  test("returns false when PR URL cannot be parsed", async () => {
-    // Return a URL that doesn't match /pull/(\d+)/
+  test("returns close_failed when PR URL cannot be parsed", async () => {
     mockExecutor.responses.set(
       "gh pr list",
       "https://github.com/owner/repo/issues/999"
@@ -768,7 +765,7 @@ describe("GitHubPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.equal(result.status, "close_failed");
   });
 });
 
@@ -1435,7 +1432,7 @@ describe("GitHubPRStrategy logger coverage", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.equal(result.status, "close_failed");
     assert.ok(
       warnMessages.some((m) => m.includes("Failed to close existing PR"))
     );

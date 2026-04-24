@@ -215,8 +215,10 @@ class MockPRStrategy implements IPRStrategy {
     return this.createResult;
   }
 
-  async closeExistingPR(_options: CloseExistingPROptions): Promise<boolean> {
-    return true;
+  async closeExistingPR(
+    _options: CloseExistingPROptions
+  ): Promise<import("../../../src/vcs/types.js").ClosePRResult> {
+    return { status: "closed" };
   }
 
   async merge(
