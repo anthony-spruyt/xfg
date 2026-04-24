@@ -2,17 +2,22 @@
   "command": "next",
   "items": [
     {
-      "id": "workflow::run-scan",
-      "confidence": "high",
-      "detector": "workflow",
-      "file": ".",
-      "summary": "Run post-flight scan to refresh queue and surface follow-up review work.",
+      "id": "smells::src/shared/gh-api-utils.ts::async_no_await",
+      "confidence": "medium",
+      "detector": "smells",
+      "file": "src/shared/gh-api-utils.ts",
+      "summary": "1x Async functions without await",
       "detail": {
-        "phase": "postflight_scan"
+        "smell_id": "async_no_await",
+        "severity": "medium",
+        "count": 1,
+        "lines": [
+          244
+        ]
       },
-      "status": null,
-      "kind": "workflow_action",
-      "primary_command": "desloppify scan",
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify autofix dead-useeffect --dry-run",
       "queue_position": 1
     }
   ],
@@ -73,8 +78,18 @@
       ],
       "stagnant_dimensions": [
         {
+          "name": "Security",
+          "strict": 95.6,
+          "stuck_scans": 5
+        },
+        {
           "name": "File health",
           "strict": 96.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Abstraction fit",
+          "strict": 90.5,
           "stuck_scans": 5
         },
         {
@@ -83,13 +98,58 @@
           "stuck_scans": 5
         },
         {
+          "name": "API coherence",
+          "strict": 92.0,
+          "stuck_scans": 5
+        },
+        {
           "name": "Auth consistency",
           "strict": 95.0,
           "stuck_scans": 5
         },
         {
+          "name": "Contracts",
+          "strict": 92.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Convention drift",
+          "strict": 91.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Cross-module arch",
+          "strict": 93.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Dep health",
+          "strict": 94.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Design coherence",
+          "strict": 89.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Error consistency",
+          "strict": 92.0,
+          "stuck_scans": 5
+        },
+        {
           "name": "High elegance",
           "strict": 91.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Stale migration",
+          "strict": 97.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Init coupling",
+          "strict": 94.5,
           "stuck_scans": 5
         },
         {
@@ -105,6 +165,26 @@
         {
           "name": "Mid elegance",
           "strict": 92.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Naming quality",
+          "strict": 91.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Structure nav",
+          "strict": 88.5,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Test strategy",
+          "strict": 92.0,
+          "stuck_scans": 5
+        },
+        {
+          "name": "Type safety",
+          "strict": 89.5,
           "stuck_scans": 5
         }
       ]
@@ -212,8 +292,8 @@
       {
         "type": "manual_fix",
         "detector": "smells",
-        "count": 75,
-        "description": "75 smells issues \u2014 inspect with `desloppify next` and fix manually",
+        "count": 77,
+        "description": "77 smells issues \u2014 inspect with `desloppify next` and fix manually",
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
@@ -224,7 +304,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 134,
+        "total_count": 136,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -248,7 +328,7 @@
             6,
             10
           ],
-          "file_count": 82,
+          "file_count": 83,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -289,13 +369,13 @@
         {
           "name": "dead-useeffect",
           "detector": "smells",
-          "open_count": 75,
+          "open_count": 77,
           "command": "desloppify autofix dead-useeffect --dry-run"
         },
         {
           "name": "empty-if-chain",
           "detector": "smells",
-          "open_count": 75,
+          "open_count": 77,
           "command": "desloppify autofix empty-if-chain --dry-run"
         }
       ],
@@ -317,7 +397,7 @@
       }
     },
     "debt": {
-      "overall_gap": 0.8,
+      "overall_gap": 0.9,
       "wontfix_count": 2,
       "worst_dimension": "Duplication",
       "worst_gap": 12.8,
@@ -337,7 +417,7 @@
       {
         "type": "wontfix_gap",
         "severity": "medium",
-        "message": "Strict/lenient gap is 0.8 pts with 2 wontfix issues"
+        "message": "Strict/lenient gap is 0.9 pts with 2 wontfix issues"
       }
     ],
     "strict_target": {
@@ -350,7 +430,7 @@
     "reminders": [
       {
         "type": "fp_calibration_smells_production",
-        "message": "48% of smells issues in production zone are false positives. Consider reviewing detection rules for production files.",
+        "message": "46% of smells issues in production zone are false positives. Consider reviewing detection rules for production files.",
         "command": null,
         "priority": 2,
         "severity": "medium"
@@ -360,7 +440,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 3,
-      "report_scores": 144,
+      "report_scores": 145,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
@@ -369,7 +449,7 @@
       "review_issues_pending": 3,
       "wontfix_growing": 3,
       "fp_calibration_test_coverage_production": 3,
-      "fp_calibration_smells_production": 2
+      "fp_calibration_smells_production": 3
     }
   },
   "agent_notes": [
@@ -608,7 +688,7 @@
       }
     ],
     "total_ordered": 17,
-    "total_skipped": 112,
+    "total_skipped": 110,
     "plan_overrides_narrative": true
   },
   "overall_score": 93.0,
@@ -678,10 +758,10 @@
     },
     {
       "name": "Code quality",
-      "score": 99.0,
-      "strict": 96.0,
+      "score": 98.9,
+      "strict": 95.9,
       "checks": 690,
-      "failing": 21,
+      "failing": 22,
       "tier": 3,
       "subjective": false
     },

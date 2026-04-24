@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T09:01:00+00:00",
+  "updated": "2026-04-24T09:48:00+00:00",
   "queue_order": [
     "subjective::abstraction_fitness",
     "subjective::ai_generated_debt",
@@ -1088,60 +1088,50 @@
       "kind": "false_positive",
       "reason": null,
       "note": null,
-      "attestation": "I have reviewed this in prior pass \u2014 false positive persisting after rescan. Original attestation stands. Not gaming the score.",
-      "created_at": "2026-04-24T09:00:56+00:00",
+      "attestation": "I have reviewed this file \u2014 it contains only TypeScript type aliases and interfaces with zero runtime code. Types are erased at compile time. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-24T09:36:45+00:00",
       "review_after": null,
-      "skipped_at_scan": 201
-    },
-    "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts": {
-      "issue_id": "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this in prior pass \u2014 false positive persisting after rescan. Original attestation stands. Not gaming the score.",
-      "created_at": "2026-04-24T09:00:56+00:00",
-      "review_after": null,
-      "skipped_at_scan": 201
+      "skipped_at_scan": 202
     },
     "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
       "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
       "kind": "false_positive",
       "reason": null,
       "note": null,
-      "attestation": "I have reviewed this in prior pass \u2014 false positive persisting after rescan. Original attestation stands. Not gaming the score.",
-      "created_at": "2026-04-24T09:00:57+00:00",
+      "attestation": "I have reviewed this code \u2014 'secretScanning' is a property key mapping GitHub's Secret Scanning feature name to an API field. No actual secret is present. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-24T09:46:53+00:00",
       "review_after": null,
-      "skipped_at_scan": 201
+      "skipped_at_scan": 202
     },
     "smells::src/cli/sync-command.ts::async_no_await": {
       "issue_id": "smells::src/cli/sync-command.ts::async_no_await",
       "kind": "false_positive",
       "reason": null,
       "note": null,
-      "attestation": "I have reviewed this in prior pass \u2014 false positive persisting after rescan. Original attestation stands. Not gaming the score.",
-      "created_at": "2026-04-24T09:00:58+00:00",
+      "attestation": "I have reviewed both flagged functions \u2014 runAndStoreResult uses await on line 210, runSync uses await on lines 473/492/496/499/523/582/715. Both genuinely need async. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-24T09:47:20+00:00",
       "review_after": null,
-      "skipped_at_scan": 201
+      "skipped_at_scan": 202
     },
     "smells::src/cli/sync-command.ts::nested_closure": {
       "issue_id": "smells::src/cli/sync-command.ts::nested_closure",
       "kind": "false_positive",
       "reason": null,
       "note": null,
-      "attestation": "I have reviewed this in prior pass \u2014 false positive persisting after rescan. Original attestation stands. Not gaming the score.",
-      "created_at": "2026-04-24T09:00:59+00:00",
+      "attestation": "I have reviewed this function \u2014 buildSettingsDescriptors uses a standard builder pattern returning descriptor objects with run closures. Each inner closure is a single-line property assignment. Extracting to module level would add parameter passing without readability benefit. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-24T09:47:44+00:00",
       "review_after": null,
-      "skipped_at_scan": 201
+      "skipped_at_scan": 202
     },
     "smells::src/shared/gh-api-utils.ts::async_no_await": {
       "issue_id": "smells::src/shared/gh-api-utils.ts::async_no_await",
       "kind": "false_positive",
       "reason": null,
       "note": null,
-      "attestation": "I have reviewed this in prior pass \u2014 false positive persisting after rescan. Original attestation stands. Not gaming the score.",
-      "created_at": "2026-04-24T09:01:00+00:00",
+      "attestation": "I have reviewed this function \u2014 resolveGitHubToken uses await on line 249 (tokenManager?.getTokenForRepo). I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-24T09:48:00+00:00",
       "review_after": null,
-      "skipped_at_scan": 201
+      "skipped_at_scan": 202
     }
   },
   "active_cluster": null,
@@ -2068,85 +2058,85 @@
       "issue_id": "review::.::holistic::api_surface_coherence::parseApiJson_misplaced_in_gh_module",
       "created_at": "2026-03-18T11:51:36+00:00",
       "cluster": "api-consolidation",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::type_safety::interpolate_value_untyped_return": {
       "issue_id": "review::.::holistic::type_safety::interpolate_value_untyped_return",
       "created_at": "2026-03-18T11:51:36+00:00",
       "cluster": "api-consolidation",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::type_safety::action_param_typed_as_string": {
       "issue_id": "review::.::holistic::type_safety::action_param_typed_as_string",
       "created_at": "2026-03-18T11:51:36+00:00",
       "cluster": "api-consolidation",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions": {
       "issue_id": "review::.::holistic::design_coherence::rulesets_diff_duplicates_count_actions",
       "created_at": "2026-03-18T11:51:37+00:00",
       "cluster": "design-coherence-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::design_coherence::incomplete_summary_format_consolidation": {
       "issue_id": "review::.::holistic::design_coherence::incomplete_summary_format_consolidation",
       "created_at": "2026-03-18T11:51:37+00:00",
       "cluster": "design-coherence-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::logic_clarity::count_actions_multi_pass": {
       "issue_id": "review::.::holistic::logic_clarity::count_actions_multi_pass",
       "created_at": "2026-03-18T11:51:37+00:00",
       "cluster": "design-coherence-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::pr_creator_bypasses_vcs_barrel",
       "created_at": "2026-03-18T11:51:38+00:00",
       "cluster": "module-boundary-fixes",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers": {
       "issue_id": "review::.::holistic::cross_module_architecture::shared_barrel_zero_consumers",
       "created_at": "2026-03-18T11:51:38+00:00",
       "cluster": "module-boundary-fixes",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation": {
       "issue_id": "review::.::holistic::mid_level_elegance::pr_strategy_triple_instantiation",
       "created_at": "2026-03-18T11:51:38+00:00",
       "cluster": "module-boundary-fixes",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean": {
       "issue_id": "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
       "created_at": "2026-03-18T11:51:43+00:00",
       "cluster": "quick-wins",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments": {
       "issue_id": "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
       "created_at": "2026-03-18T11:51:43+00:00",
       "cluster": "quick-wins",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals": {
       "issue_id": "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
       "created_at": "2026-03-18T11:51:43+00:00",
       "cluster": "quick-wins",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons": {
       "issue_id": "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
       "created_at": "2026-03-18T11:51:43+00:00",
       "cluster": "quick-wins",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::test_strategy::gh_api_utils_zero_coverage": {
       "issue_id": "review::.::holistic::test_strategy::gh_api_utils_zero_coverage",
       "created_at": "2026-03-18T11:51:44+00:00",
       "cluster": "test-coverage",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "test_coverage::src/cli/program.ts::untested_module": {
       "issue_id": "test_coverage::src/cli/program.ts::untested_module",
@@ -2164,433 +2154,433 @@
       "issue_id": "review::.::holistic::abstraction_fitness::gh-api-utils-mixed-concerns",
       "cluster": "token-resolution",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels": {
       "issue_id": "review::.::holistic::package_organization::gh-api-utils-mixed-abstraction-levels",
       "cluster": "token-resolution",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::mid_level_elegance::token-resolution-dual-path": {
       "issue_id": "review::.::holistic::mid_level_elegance::token-resolution-dual-path",
       "cluster": "token-resolution",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param": {
       "issue_id": "review::.::holistic::authorization_consistency::azure-gitlab-ignore-token-param",
       "cluster": "accepted-debt",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return": {
       "issue_id": "review::.::holistic::convention_outlier::github-pr-merge-unknown-mode-inconsistent-return",
       "cluster": "accepted-debt",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check": {
       "issue_id": "review::.::holistic::ai_generated_debt::retry-utils-generic-error-check",
       "cluster": "accepted-debt",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::api_surface_coherence::FileChange-name-collision": {
       "issue_id": "review::.::holistic::api_surface_coherence::FileChange-name-collision",
       "cluster": "stale-findings",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation": {
       "issue_id": "review::.::holistic::api_surface_coherence::FileChange-vs-FileChangeDetail-vs-FileAction-proliferation",
       "cluster": "stale-findings",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::incomplete_migration::logger-process-env-direct-read": {
       "issue_id": "review::.::holistic::incomplete_migration::logger-process-env-direct-read",
       "cluster": "stale-findings",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::cross_module_architecture::incomplete_shared_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::incomplete_shared_barrel",
       "cluster": "barrel-hygiene",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::cross_module_architecture::incomplete_vcs_barrel": {
       "issue_id": "review::.::holistic::cross_module_architecture::incomplete_vcs_barrel",
       "cluster": "barrel-hygiene",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::cross_module_architecture::fileaction_imported_from_reexport": {
       "issue_id": "review::.::holistic::cross_module_architecture::fileaction_imported_from_reexport",
       "cluster": "barrel-hygiene",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::cross_module_architecture::sync_types_imports_concrete_vcs_file": {
       "issue_id": "review::.::holistic::cross_module_architecture::sync_types_imports_concrete_vcs_file",
       "cluster": "barrel-hygiene",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::mid_level_elegance::file_action_import_bypass": {
       "issue_id": "review::.::holistic::mid_level_elegance::file_action_import_bypass",
       "cluster": "barrel-hygiene",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::cross_module_architecture::github_summary_process_env": {
       "issue_id": "review::.::holistic::cross_module_architecture::github_summary_process_env",
       "cluster": "barrel-hygiene",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::design_coherence::duplicate_lifecycle_types": {
       "issue_id": "review::.::holistic::design_coherence::duplicate_lifecycle_types",
       "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::naming_quality::lifecycle_report_input_redundant_type": {
       "issue_id": "review::.::holistic::naming_quality::lifecycle_report_input_redundant_type",
       "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::convention_outlier::lifecycle_duplicate_interface": {
       "issue_id": "review::.::holistic::convention_outlier::lifecycle_duplicate_interface",
       "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::convention_outlier::is_object_naming_drift": {
       "issue_id": "review::.::holistic::convention_outlier::is_object_naming_drift",
       "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::naming_quality::isObject_vs_isPlainObject_divergence": {
       "issue_id": "review::.::holistic::naming_quality::isObject_vs_isPlainObject_divergence",
       "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::low_level_elegance::manifest_migration_duplication": {
       "issue_id": "review::.::holistic::low_level_elegance::manifest_migration_duplication",
       "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::low_level_elegance::validator_duplicate_group_checks": {
       "issue_id": "review::.::holistic::low_level_elegance::validator_duplicate_group_checks",
       "cluster": "type-dedup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::contract_coherence::parseManifestContent_stale_docstring": {
       "issue_id": "review::.::holistic::contract_coherence::parseManifestContent_stale_docstring",
       "cluster": "stale-docs",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::contract_coherence::resolveGitHubToken_skipped_docstring": {
       "issue_id": "review::.::holistic::contract_coherence::resolveGitHubToken_skipped_docstring",
       "cluster": "stale-docs",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::contract_coherence::validateForSync_stale_throws_clause": {
       "issue_id": "review::.::holistic::contract_coherence::validateForSync_stale_throws_clause",
       "cluster": "stale-docs",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::ai_generated_debt::restating_type_docstrings": {
       "issue_id": "review::.::holistic::ai_generated_debt::restating_type_docstrings",
       "cluster": "stale-docs",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::design_coherence::validate_settings_param_sprawl": {
       "issue_id": "review::.::holistic::design_coherence::validate_settings_param_sprawl",
       "cluster": "param-sprawl",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::api_surface_coherence::runLifecycleCheck_6_positional_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::runLifecycleCheck_6_positional_params",
       "cluster": "param-sprawl",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::low_level_elegance::sync_command_positional_params": {
       "issue_id": "review::.::holistic::low_level_elegance::sync_command_positional_params",
       "cluster": "param-sprawl",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::error_consistency::github_summary_no_error_handling": {
       "issue_id": "review::.::holistic::error_consistency::github_summary_no_error_handling",
       "cluster": "error-gaps",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::error_consistency::close_pr_error_swallowed": {
       "issue_id": "review::.::holistic::error_consistency::close_pr_error_swallowed",
       "cluster": "error-gaps",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::error_consistency::commit_error_string_matching": {
       "issue_id": "review::.::holistic::error_consistency::commit_error_string_matching",
       "cluster": "error-gaps",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::type_safety::validation_arrays_not_type_linked": {
       "issue_id": "review::.::holistic::type_safety::validation_arrays_not_type_linked",
       "cluster": "type-narrowing",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::type_safety::current_repo_settings_broad_string_types": {
       "issue_id": "review::.::holistic::type_safety::current_repo_settings_broad_string_types",
       "cluster": "type-narrowing",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::type_safety::double_cast_in_merge_ruleset": {
       "issue_id": "review::.::holistic::type_safety::double_cast_in_merge_ruleset",
       "cluster": "type-narrowing",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count": {
       "issue_id": "review::.::holistic::logic_clarity::redundant_truthiness_deleted_count",
       "cluster": "code-cleanup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::logic_clarity::unreachable_merge_mode_branches": {
       "issue_id": "review::.::holistic::logic_clarity::unreachable_merge_mode_branches",
       "cluster": "code-cleanup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs": {
       "issue_id": "review::.::holistic::package_organization::branch_utils_misplaced_in_vcs",
       "cluster": "code-cleanup",
       "created_at": "2026-03-19T10:10:47+00:00",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments": {
       "issue_id": "review::.::holistic::ai_generated_debt::restating_no_action_needed_comments",
       "created_at": "2026-03-19T11:32:01+00:00",
       "cluster": "quick-cleanups",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::convention_outlier::residual_filepath_comments": {
       "issue_id": "review::.::holistic::convention_outlier::residual_filepath_comments",
       "created_at": "2026-03-19T11:32:01+00:00",
       "cluster": "quick-cleanups",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops": {
       "issue_id": "review::.::holistic::error_consistency::to_error_message_inconsistency_git_ops",
       "created_at": "2026-03-19T11:32:02+00:00",
       "cluster": "quick-cleanups",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::naming_quality::handle_commit_error_param_mismatch": {
       "issue_id": "review::.::holistic::naming_quality::handle_commit_error_param_mismatch",
       "created_at": "2026-03-19T11:32:02+00:00",
       "cluster": "quick-cleanups",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::low_level_elegance::inline_label_action_formatting": {
       "issue_id": "review::.::holistic::low_level_elegance::inline_label_action_formatting",
       "created_at": "2026-03-19T11:32:03+00:00",
       "cluster": "quick-cleanups",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale": {
       "issue_id": "review::.::holistic::incomplete_migration::parseApiJson_backward_compat_reexport_stale",
       "created_at": "2026-03-19T11:32:40+00:00",
       "cluster": "import-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types": {
       "issue_id": "review::.::holistic::cross_module_architecture::sync_bypasses_vcs_barrel_for_types",
       "created_at": "2026-03-19T11:32:40+00:00",
       "cluster": "import-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::design_coherence::labels_manual_filter_counting": {
       "issue_id": "review::.::holistic::design_coherence::labels_manual_filter_counting",
       "created_at": "2026-03-19T11:32:41+00:00",
       "cluster": "consolidate-utilities",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::design_coherence::sync_diff_line_duplication": {
       "issue_id": "review::.::holistic::design_coherence::sync_diff_line_duplication",
       "created_at": "2026-03-19T11:32:42+00:00",
       "cluster": "consolidate-utilities",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented": {
       "issue_id": "review::.::holistic::design_coherence::ruleset_diff_summary_reinvented",
       "created_at": "2026-03-19T11:32:42+00:00",
       "cluster": "consolidate-utilities",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::type_safety::parallel_action_type_aliases": {
       "issue_id": "review::.::holistic::type_safety::parallel_action_type_aliases",
       "created_at": "2026-03-19T11:32:42+00:00",
       "cluster": "consolidate-utilities",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::contract_coherence::format_pr_body_as_string_cast": {
       "issue_id": "review::.::holistic::contract_coherence::format_pr_body_as_string_cast",
       "created_at": "2026-03-19T11:32:43+00:00",
       "cluster": "type-safety-fixes",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads": {
       "issue_id": "review::.::holistic::type_safety::interpolate_xfg_content_missing_overloads",
       "created_at": "2026-03-19T11:32:44+00:00",
       "cluster": "type-safety-fixes",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency": {
       "issue_id": "review::.::holistic::error_consistency::writefilesync_error_wrapping_inconsistency",
       "created_at": "2026-03-19T11:33:40+00:00",
       "cluster": "error-handling",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::naming_quality::diff_action_vocabulary_divergence": {
       "issue_id": "review::.::holistic::naming_quality::diff_action_vocabulary_divergence",
       "created_at": "2026-03-19T11:33:40+00:00",
       "cluster": "naming-alignment",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::convention_outlier::azure_devops_prefix_drift": {
       "issue_id": "review::.::holistic::convention_outlier::azure_devops_prefix_drift",
       "created_at": "2026-03-19T11:33:41+00:00",
       "cluster": "naming-alignment",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::mid_level_elegance::redundant_manifest_load": {
       "issue_id": "review::.::holistic::mid_level_elegance::redundant_manifest_load",
       "created_at": "2026-03-19T11:33:41+00:00",
       "cluster": "mid-level-refactor",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map": {
       "issue_id": "review::.::holistic::mid_level_elegance::shared_mutable_filechanges_map",
       "created_at": "2026-03-19T11:33:42+00:00",
       "cluster": "mid-level-refactor",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::authenticated_git_ops_6_params",
       "created_at": "2026-03-19T11:33:42+00:00",
       "cluster": "api-refactor",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers": {
       "issue_id": "review::.::holistic::cross_module_architecture::output_barrel_zero_consumers",
       "created_at": "2026-03-20T02:17:39+00:00",
       "cluster": "output-structural-debt",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle": {
       "issue_id": "review::.::holistic::cross_module_architecture::output_sync_report_unified_summary_cycle",
       "created_at": "2026-03-20T02:17:39+00:00",
       "cluster": "output-structural-debt",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::dependency_health::type_only_import_cycle_output": {
       "issue_id": "review::.::holistic::dependency_health::type_only_import_cycle_output",
       "created_at": "2026-03-20T02:17:39+00:00",
       "cluster": "output-structural-debt",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::incomplete_migration::old_summary_api_dead_code": {
       "issue_id": "review::.::holistic::incomplete_migration::old_summary_api_dead_code",
       "created_at": "2026-03-20T02:17:40+00:00",
       "cluster": "output-dead-code",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter": {
       "issue_id": "review::.::holistic::ai_generated_debt::duplicated_restating_comments_formatter",
       "created_at": "2026-03-20T02:17:40+00:00",
       "cluster": "quick-consistency-fixes",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector": {
       "issue_id": "review::.::holistic::ai_generated_debt::restating_check_comments_repo_detector",
       "created_at": "2026-03-20T02:17:40+00:00",
       "cluster": "quick-consistency-fixes",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::type_safety::inline_action_unions_github_summary": {
       "issue_id": "review::.::holistic::type_safety::inline_action_unions_github_summary",
       "created_at": "2026-03-20T02:17:40+00:00",
       "cluster": "quick-consistency-fixes",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::resolve_github_token_positional_params",
       "created_at": "2026-03-20T02:17:40+00:00",
       "cluster": "quick-consistency-fixes",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors": {
       "issue_id": "review::.::holistic::error_consistency::gitops_writeFile_unwrapped_fs_errors",
       "created_at": "2026-03-20T02:17:40+00:00",
       "cluster": "quick-consistency-fixes",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::initialization_coupling::module_scope_lazy_singletons": {
       "issue_id": "review::.::holistic::initialization_coupling::module_scope_lazy_singletons",
       "created_at": "2026-03-20T02:17:40+00:00",
       "cluster": "cli-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::test_strategy::untested_cli_entry_point": {
       "issue_id": "review::.::holistic::test_strategy::untested_cli_entry_point",
       "created_at": "2026-03-20T02:17:40+00:00",
       "cluster": "cli-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::high_level_elegance::orphaned_summary_utils": {
       "issue_id": "review::.::holistic::high_level_elegance::orphaned_summary_utils",
       "created_at": "2026-03-22T02:07:30+00:00",
       "cluster": "dead-summary-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::incomplete_migration::dead_old_summary_api": {
       "issue_id": "review::.::holistic::incomplete_migration::dead_old_summary_api",
       "created_at": "2026-03-22T02:07:30+00:00",
       "cluster": "dead-summary-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast": {
       "issue_id": "review::.::holistic::contract_coherence::with_github_guards_unsafe_cast",
       "created_at": "2026-03-22T02:07:31+00:00",
       "cluster": "type-safety-docs",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::type_safety::as_tresult_cast_in_guards": {
       "issue_id": "review::.::holistic::type_safety::as_tresult_cast_in_guards",
       "created_at": "2026-03-22T02:07:31+00:00",
       "cluster": "type-safety-docs",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "exports::.output/updated_sources/src/shared/gh-api-utils.ts::GhApiOptions": {
       "issue_id": "exports::.output/updated_sources/src/shared/gh-api-utils.ts::GhApiOptions",
@@ -2716,67 +2706,67 @@
       "issue_id": "review::.::holistic::cross_module_architecture::renderSyncLines_misplaced_in_aggregator",
       "created_at": "2026-03-22T03:53:35+00:00",
       "cluster": "output-renderSyncLines-fix",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::high_level_elegance::renderSyncLines_ownership_inversion": {
       "issue_id": "review::.::holistic::high_level_elegance::renderSyncLines_ownership_inversion",
       "created_at": "2026-03-22T03:53:35+00:00",
       "cluster": "output-renderSyncLines-fix",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::low_level_elegance::lifecycle_duplicate_flag_building": {
       "issue_id": "review::.::holistic::low_level_elegance::lifecycle_duplicate_flag_building",
       "created_at": "2026-03-22T03:53:35+00:00",
       "cluster": "lifecycle-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::low_level_elegance::lifecycle_polling_loop_style_divergence": {
       "issue_id": "review::.::holistic::low_level_elegance::lifecycle_polling_loop_style_divergence",
       "created_at": "2026-03-22T03:53:35+00:00",
       "cluster": "lifecycle-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::ai_generated_debt::orphan_docblock_normalizer": {
       "issue_id": "review::.::holistic::ai_generated_debt::orphan_docblock_normalizer",
       "created_at": "2026-03-22T03:53:35+00:00",
       "cluster": "comment-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::ai_generated_debt::type_labeling_comments_repo_detector": {
       "issue_id": "review::.::holistic::ai_generated_debt::type_labeling_comments_repo_detector",
       "created_at": "2026-03-22T03:53:35+00:00",
       "cluster": "comment-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::low_level_elegance::file_writer_split_loop_unannounced": {
       "issue_id": "review::.::holistic::low_level_elegance::file_writer_split_loop_unannounced",
       "created_at": "2026-03-22T03:53:35+00:00",
       "cluster": "comment-cleanup",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::design_coherence::settings_report_duplicate_counting": {
       "issue_id": "review::.::holistic::design_coherence::settings_report_duplicate_counting",
       "created_at": "2026-03-22T03:53:36+00:00",
       "cluster": "design-fixes",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::api_surface_coherence::ruleset_update_5_params": {
       "issue_id": "review::.::holistic::api_surface_coherence::ruleset_update_5_params",
       "created_at": "2026-03-22T03:53:36+00:00",
       "cluster": "design-fixes",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::test_strategy::ts_github_summary_untested": {
       "issue_id": "review::.::holistic::test_strategy::ts_github_summary_untested",
       "created_at": "2026-03-22T03:53:36+00:00",
       "cluster": "test-coverage",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "review::.::holistic::initialization_coupling::program_ts_module_level_file_io": {
       "issue_id": "review::.::holistic::initialization_coupling::program_ts_module_level_file_io",
       "created_at": "2026-03-22T03:53:36+00:00",
       "cluster": "init-fix",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:36:45+00:00"
     },
     "test_coverage::src/output/github-summary.ts::transitive_only": {
       "issue_id": "test_coverage::src/output/github-summary.ts::transitive_only",
@@ -3502,103 +3492,103 @@
       "issue_id": "subjective::abstraction_fitness",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::ai_generated_debt": {
       "issue_id": "subjective::ai_generated_debt",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::api_surface_coherence": {
       "issue_id": "subjective::api_surface_coherence",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::authorization_consistency": {
       "issue_id": "subjective::authorization_consistency",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::contract_coherence": {
       "issue_id": "subjective::contract_coherence",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::convention_outlier": {
       "issue_id": "subjective::convention_outlier",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::design_coherence": {
       "issue_id": "subjective::design_coherence",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::error_consistency": {
       "issue_id": "subjective::error_consistency",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::high_level_elegance": {
       "issue_id": "subjective::high_level_elegance",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::incomplete_migration": {
       "issue_id": "subjective::incomplete_migration",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::initialization_coupling": {
       "issue_id": "subjective::initialization_coupling",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::logic_clarity": {
       "issue_id": "subjective::logic_clarity",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::mid_level_elegance": {
       "issue_id": "subjective::mid_level_elegance",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::naming_quality": {
       "issue_id": "subjective::naming_quality",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::package_organization": {
       "issue_id": "subjective::package_organization",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::test_strategy": {
       "issue_id": "subjective::test_strategy",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     },
     "subjective::type_safety": {
       "issue_id": "subjective::type_safety",
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:00:22+00:00"
+      "updated_at": "2026-04-24T09:46:36+00:00"
     }
   },
   "clusters": {
@@ -8942,12 +8932,7 @@
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {
-    "strict": 91.5,
-    "overall": 92.8,
-    "objective": 97.9,
-    "verified": 90.3
-  },
+  "plan_start_scores": {},
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -34359,6 +34344,171 @@
         "kind": "false_positive",
         "reason": null
       }
+    },
+    {
+      "timestamp": "2026-04-24T09:36:14+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:36:14+00:00",
+      "action": "clear_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T09:36:14+00:00",
+      "action": "complete_postflight_scan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "scan_count": 202
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:36:45+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "test_coverage::src/cli/types.ts::transitive_only"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:36:45+00:00",
+      "action": "auto_cluster",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:36:45+00:00",
+      "action": "sync_communicate_score",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "auto_resolved": true
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:46:36+00:00",
+      "action": "done",
+      "issue_ids": [
+        "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added 47 secondary assertions across 43 tests \u2014 verifying return types, placeholder absence, structural properties, and input immutability",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T09:46:36+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added 47 secondary assertions across 43 tests \u2014 verifying return types, placeholder absence, structural properties, and input immutability",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Added 47 secondary assertions across 43 tests \u2014 verifying return types, placeholder absence, structural properties, and input immutability and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:46:42+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Deepened xfg-template test assertions",
+      "detail": {
+        "sha": "351531bfbd10",
+        "branch": "desloppify/code-health-apr24"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:46:53+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:47:20+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:47:44+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::nested_closure"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:48:00+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/shared/gh-api-utils.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
     }
   ],
   "epic_triage_meta": {
@@ -36043,6 +36193,16 @@
       ],
       "recorded_at": "2026-04-24T08:53:30+00:00",
       "note": null,
+      "cluster_name": null
+    },
+    {
+      "sha": "351531bfbd10",
+      "branch": "desloppify/code-health-apr24",
+      "issue_ids": [
+        "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts"
+      ],
+      "recorded_at": "2026-04-24T09:46:42+00:00",
+      "note": "Deepened xfg-template test assertions",
       "cluster_name": null
     }
   ],
