@@ -22,7 +22,7 @@ export class GitHubCodeScanningStrategy implements ICodeScanningStrategy {
     this.api = new GhApiClient(executor, options.retries ?? 3, options.cwd);
   }
 
-  async getDefaultSetup(
+  async get(
     repoInfo: RepoInfo,
     options?: GhApiOptions
   ): Promise<CurrentCodeScanningSettings> {
@@ -37,7 +37,7 @@ export class GitHubCodeScanningStrategy implements ICodeScanningStrategy {
     );
   }
 
-  async updateDefaultSetup(
+  async update(
     repoInfo: RepoInfo,
     settings: { state: string; query_suite?: string; languages?: string[] },
     options?: GhApiOptions

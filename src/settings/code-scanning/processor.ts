@@ -86,7 +86,7 @@ export class CodeScanningProcessor implements ICodeScanningProcessor {
     }
 
     // Fetch current settings
-    const currentSettings = await this.strategy.getDefaultSetup(
+    const currentSettings = await this.strategy.get(
       githubRepo,
       strategyOptions
     );
@@ -126,11 +126,7 @@ export class CodeScanningProcessor implements ICodeScanningProcessor {
       payload.languages = desiredSettings.languages;
     }
 
-    await this.strategy.updateDefaultSetup(
-      githubRepo,
-      payload,
-      strategyOptions
-    );
+    await this.strategy.update(githubRepo, payload, strategyOptions);
 
     const appliedCount = changes.filter((c) => c.action !== "unchanged").length;
     return buildApplyResult(repoName, changeCounts, appliedCount, {

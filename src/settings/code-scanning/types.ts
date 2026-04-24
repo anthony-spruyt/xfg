@@ -15,12 +15,12 @@ export interface CurrentCodeScanningSettings {
  * Abstracts the GitHub API calls for testability.
  */
 export interface ICodeScanningStrategy {
-  getDefaultSetup(
+  get(
     repoInfo: RepoInfo,
     options?: GhApiOptions
   ): Promise<CurrentCodeScanningSettings>;
 
-  updateDefaultSetup(
+  update(
     repoInfo: RepoInfo,
     settings: { state: string; query_suite?: string; languages?: string[] },
     options?: GhApiOptions
