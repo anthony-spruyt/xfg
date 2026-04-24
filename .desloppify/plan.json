@@ -1,10 +1,19 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T15:26:32+00:00",
+  "updated": "2026-04-24T15:31:42+00:00",
   "queue_order": [
-    "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
-    "review::.::holistic::convention_outlier::code_scanning_test_name_prefix"
+    "subjective::abstraction_fitness",
+    "subjective::contract_coherence",
+    "subjective::convention_outlier",
+    "subjective::design_coherence",
+    "subjective::error_consistency",
+    "subjective::high_level_elegance",
+    "subjective::logic_clarity",
+    "subjective::mid_level_elegance",
+    "subjective::naming_quality",
+    "subjective::test_strategy",
+    "subjective::type_safety"
   ],
   "deferred": [],
   "skipped": {
@@ -1259,7 +1268,7 @@
       "skipped_at_scan": 205
     }
   },
-  "active_cluster": null,
+  "active_cluster": "convention-renames",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -3802,14 +3811,14 @@
     "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix": {
       "issue_id": "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
       "created_at": "2026-04-24T14:53:23+00:00",
-      "cluster": "convention-renames",
-      "updated_at": "2026-04-24T14:53:23+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T15:31:37+00:00"
     },
     "review::.::holistic::convention_outlier::code_scanning_test_name_prefix": {
       "issue_id": "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",
       "created_at": "2026-04-24T14:53:23+00:00",
-      "cluster": "convention-renames",
-      "updated_at": "2026-04-24T14:53:23+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T15:31:36+00:00"
     }
   },
   "clusters": {
@@ -6218,8 +6227,8 @@
       "name": "convention-renames",
       "description": "Rename code-scanning test files and lifecycle module files to remove redundant prefixes",
       "issue_ids": [
-        "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
-        "review::.::holistic::convention_outlier::code_scanning_test_name_prefix"
+        "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",
+        "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix"
       ],
       "created_at": "2026-04-24T14:53:12+00:00",
       "updated_at": "2026-04-24T14:56:57+00:00",
@@ -6237,7 +6246,8 @@
           "issue_refs": [
             "code_scanning_test_name_prefix"
           ],
-          "detail": "Rename code-scanning-diff.test.ts to diff.test.ts, code-scanning-formatter.test.ts to formatter.test.ts, code-scanning-processor.test.ts to processor.test.ts in test/unit/settings/code-scanning/."
+          "detail": "Rename code-scanning-diff.test.ts to diff.test.ts, code-scanning-formatter.test.ts to formatter.test.ts, code-scanning-processor.test.ts to processor.test.ts in test/unit/settings/code-scanning/.",
+          "done": true
         },
         {
           "title": "Rename lifecycle-formatter.ts to formatter.ts, lifecycle-helpers.ts to helpers.ts, update imports",
@@ -6245,7 +6255,8 @@
           "issue_refs": [
             "lifecycle_redundant_file_prefix"
           ],
-          "detail": "Rename src/lifecycle/lifecycle-formatter.ts to formatter.ts, lifecycle-helpers.ts to helpers.ts. Update test files and all import paths referencing old names."
+          "detail": "Rename src/lifecycle/lifecycle-formatter.ts to formatter.ts, lifecycle-helpers.ts to helpers.ts. Update test files and all import paths referencing old names.",
+          "done": true
         }
       ],
       "depends_on_clusters": [
@@ -9664,14 +9675,11 @@
       "candidates": []
     }
   },
-  "promoted_ids": [
-    "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
-    "review::.::holistic::convention_outlier::code_scanning_test_name_prefix"
-  ],
+  "promoted_ids": [],
   "plan_start_scores": {
-    "strict": 91.6,
-    "overall": 92.8,
-    "objective": 98.2,
+    "strict": 88.5,
+    "overall": 89.8,
+    "objective": 98.8,
     "verified": 90.3
   },
   "execution_log": [
@@ -38702,6 +38710,93 @@
         "action": "clear",
         "previous": "output-module-structure"
       }
+    },
+    {
+      "timestamp": "2026-04-24T15:31:36+00:00",
+      "action": "done",
+      "issue_ids": [
+        "code_scanning_test_name_prefix"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed code-scanning-diff.test.ts, code-scanning-formatter.test.ts, code-scanning-processor.test.ts to remove domain prefix",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T15:31:36+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::code_scanning_test_name_prefix"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed code-scanning-diff.test.ts, code-scanning-formatter.test.ts, code-scanning-processor.test.ts to remove domain prefix",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Renamed code-scanning-diff.test.ts, code-scanning-formatter.test.ts, code-scanning-processor.test.ts to remove domain prefix and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:31:37+00:00",
+      "action": "done",
+      "issue_ids": [
+        "lifecycle_redundant_file_prefix"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed lifecycle-formatter.ts to formatter.ts, lifecycle-helpers.ts to helpers.ts, updated all imports and tests",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T15:31:37+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed lifecycle-formatter.ts to formatter.ts, lifecycle-helpers.ts to helpers.ts, updated all imports and tests",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Renamed lifecycle-formatter.ts to formatter.ts, lifecycle-helpers.ts to helpers.ts, updated all imports and tests and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:31:37+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:31:37+00:00",
+      "action": "sync_communicate_score",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "auto_resolved": true
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:31:42+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",
+        "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "convention-renames cluster: removed redundant file name prefixes in code-scanning tests and lifecycle module",
+      "detail": {
+        "sha": "733279586955",
+        "branch": "desloppify/code-health-apr24"
+      }
     }
   ],
   "epic_triage_meta": {
@@ -39753,6 +39848,17 @@
       "recorded_at": "2026-04-24T15:26:11+00:00",
       "note": "output-module-structure cluster: barrel index, barrel bypass fix, formatDiffLine relocation",
       "cluster_name": null
+    },
+    {
+      "sha": "733279586955",
+      "branch": "desloppify/code-health-apr24",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",
+        "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix"
+      ],
+      "recorded_at": "2026-04-24T15:31:42+00:00",
+      "note": "convention-renames cluster: removed redundant file name prefixes in code-scanning tests and lifecycle module",
+      "cluster_name": null
     }
   ],
   "uncommitted_issues": [],
@@ -39763,5 +39869,11 @@
     "_subjective_migration_pruned": true,
     "postflight_scan_completed_at_scan_count": 205
   },
-  "scan_count_at_plan_start": 203
+  "scan_count_at_plan_start": 203,
+  "previous_plan_start_scores": {
+    "strict": 91.6,
+    "overall": 92.8,
+    "objective": 98.2,
+    "verified": 90.3
+  }
 }

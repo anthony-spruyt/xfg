@@ -12,8 +12,8 @@
     "auto_resolved": 1160,
     "deferred": 0,
     "false_positive": 175,
-    "fixed": 304,
-    "open": 137,
+    "fixed": 306,
+    "open": 135,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 91,
-        "fixed": 140,
-        "open": 3,
+        "fixed": 142,
+        "open": 1,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -100,7 +100,10 @@
     "convention_outlier": {
       "score": 90.5,
       "source": "holistic",
-      "assessed_at": "2026-04-24T14:27:46+00:00"
+      "assessed_at": "2026-04-24T14:27:46+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T15:31:37+00:00"
     },
     "error_consistency": {
       "score": 90.2,
@@ -3152,13 +3155,13 @@
       "strict": 90.5,
       "verified_strict_score": 90.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.905,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.95,
           "assessment_score": 90.5,
           "placeholder": false,
@@ -74667,11 +74670,11 @@
         "reasoning": "",
         "summary_hash": "92c5867e"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Renamed code-scanning-diff.test.ts, code-scanning-formatter.test.ts, code-scanning-processor.test.ts to remove domain prefix",
       "first_seen": "2026-04-24T14:27:46+00:00",
       "last_seen": "2026-04-24T14:27:46+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T15:31:36+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -74679,7 +74682,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Renamed code-scanning-diff.test.ts, code-scanning-formatter.test.ts, code-scanning-processor.test.ts to remove domain prefix and I am not gaming the score.",
+        "attested_at": "2026-04-24T15:31:36+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix": {
       "id": "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
@@ -74705,11 +74714,11 @@
         "reasoning": "",
         "summary_hash": "25a79606"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Renamed lifecycle-formatter.ts to formatter.ts, lifecycle-helpers.ts to helpers.ts, updated all imports and tests",
       "first_seen": "2026-04-24T14:27:46+00:00",
       "last_seen": "2026-04-24T14:27:46+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T15:31:37+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -74717,7 +74726,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Renamed lifecycle-formatter.ts to formatter.ts, lifecycle-helpers.ts to helpers.ts, updated all imports and tests and I am not gaming the score.",
+        "attested_at": "2026-04-24T15:31:37+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::error_consistency::github_summary_debug_level_io_error": {
       "id": "review::.::holistic::error_consistency::github_summary_debug_level_io_error",
