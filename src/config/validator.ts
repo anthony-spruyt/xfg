@@ -1177,7 +1177,7 @@ export function hasActionableSettings(
     return true;
   }
 
-  if (settings.codeScanning && typeof settings.codeScanning === "object") {
+  if (settings.codeScanning) {
     return true;
   }
 

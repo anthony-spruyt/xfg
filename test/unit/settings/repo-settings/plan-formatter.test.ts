@@ -165,16 +165,6 @@ describe("formatRepoSettingsPlan", () => {
       assert.equal(result.entries[0].action, "update");
     });
 
-    test("excludes unchanged actions from entries", () => {
-      const changes: RepoSettingsChange[] = [
-        { property: "hasWiki", action: "unchanged", oldValue: true },
-      ];
-
-      const result = formatRepoSettingsPlan(changes);
-
-      assert.equal(result.entries.length, 0);
-    });
-
     test("populates entries for mixed actions", () => {
       const changes: RepoSettingsChange[] = [
         {

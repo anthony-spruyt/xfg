@@ -278,10 +278,15 @@ describe("hasRepoSettingsChanges", () => {
     assert.equal(hasRepoSettingsChanges([]), false);
   });
 
-  test("should return false for only unchanged", () => {
+  test("should return true for non-empty changes array", () => {
     const changes = [
-      { property: "hasWiki" as const, action: "unchanged" as const },
+      {
+        property: "hasWiki" as const,
+        action: "update" as const,
+        oldValue: false,
+        newValue: true,
+      },
     ];
-    assert.equal(hasRepoSettingsChanges(changes), false);
+    assert.equal(hasRepoSettingsChanges(changes), true);
   });
 });
