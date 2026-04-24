@@ -4,11 +4,8 @@ import {
   type GitHubRepoInfo,
   type RepoInfo,
 } from "../../repo/index.js";
-import {
-  GhApiClient,
-  isHttp404Error,
-  type GhApiOptions,
-} from "../../shared/gh-api-utils.js";
+import { GhApiClient, type GhApiOptions } from "../../shared/gh-api-utils.js";
+import { isHttp404Error } from "../../shared/gh-token-utils.js";
 import { parseApiJson } from "../../shared/json-utils.js";
 import type { GitHubRepoSettings } from "../../config/index.js";
 import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";

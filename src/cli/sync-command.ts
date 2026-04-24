@@ -66,7 +66,7 @@ import { buildLifecycleReport } from "./lifecycle-report-builder.js";
 import { writeUnifiedSummary } from "./unified-summary.js";
 import type { ProcessorResult } from "../sync/index.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { resolveGitHubToken } from "../shared/gh-api-utils.js";
+import { resolveGitHubToken } from "../shared/gh-token-utils.js";
 import {
   RepoLifecycleManager,
   runLifecycleCheck,

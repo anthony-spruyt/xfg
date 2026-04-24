@@ -3,15 +3,9 @@ import { withRetry } from "./retry-utils.js";
 import type { ICommandExecutor } from "./command-executor.js";
 import { toErrorMessage } from "./type-guards.js";
 
-import type { DebugWarnLog } from "./logger.js";
-
 export interface GitHubApiTarget {
   host: string;
   owner: string;
-}
-
-interface ITokenManager {
-  getTokenForRepo(repoInfo: GitHubApiTarget): Promise<string | null>;
 }
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -236,47 +230,4 @@ export class GhApiClient {
       _retryDelay: params?._retryDelay,
     });
   }
-}
-
-interface ResolveGitHubTokenOptions {
-  repoInfo: GitHubApiTarget;
-  tokenManager: ITokenManager | null;
-  context: string;
-  log?: DebugWarnLog;
-  envToken?: string;
-}
-
-/**
- * Resolve a GitHub token for a repo: GitHub App token → envToken fallback.
- * Returns { token, skipped } where skipped=true means no App installation found
- * for this owner (token will be undefined). Both sync and settings paths use this.
- */
-export async function resolveGitHubToken(
-  options: ResolveGitHubTokenOptions
-): Promise<{ token: string | undefined; skipped: boolean }> {
-  const { repoInfo, tokenManager, context, log, envToken } = options;
-  try {
-    const appToken = await tokenManager?.getTokenForRepo(repoInfo);
-    if (appToken === null) {
-      // null = no installation found for this owner
-      return { token: undefined, skipped: true };
-    }
-    // string = app token; undefined = no manager configured
-    return { token: appToken ?? envToken, skipped: false };
-  } catch (error) {
-    const errorMsg = `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}`;
-    if (envToken) {
-      log?.debug(`${errorMsg}; falling back to GH_TOKEN`);
-    } else {
-      log?.warn(`${errorMsg}; no fallback token available`);
-    }
-    return { token: envToken, skipped: false };
-  }
-}
-
-/**
- * Check if an error message indicates an HTTP 404 response from the GitHub API.
- */
-export function isHttp404Error(error: unknown): boolean {
-  return toErrorMessage(error).includes("HTTP 404");
 }

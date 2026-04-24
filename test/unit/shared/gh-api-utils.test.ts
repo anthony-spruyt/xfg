@@ -3,13 +3,15 @@ import { strict as assert } from "node:assert";
 import {
   getHostnameFlag,
   buildTokenEnv,
-  isHttp404Error,
-  resolveGitHubToken,
   GhApiClient,
   parseResponseBody,
   attachRetryAfter,
   attachValidationDetails,
 } from "../../../src/shared/gh-api-utils.js";
+import {
+  isHttp404Error,
+  resolveGitHubToken,
+} from "../../../src/shared/gh-token-utils.js";
 import { parseApiJson } from "../../../src/shared/json-utils.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 
