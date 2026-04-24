@@ -2,459 +2,174 @@
   "command": "next",
   "items": [
     {
-      "id": "test_coverage::src/repo/utils.ts::transitive_only",
-      "confidence": "medium",
-      "detector": "test_coverage",
-      "file": "src/repo/utils.ts",
-      "summary": "No direct tests (74 LOC, 1 importers) \u2014 covered only via imports from tested modules",
+      "id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
+      "confidence": "high",
+      "detector": "security",
+      "file": "src/settings/repo-settings/diff.ts",
+      "summary": "Hardcoded secret in variable 'secretScanning'",
       "detail": {
-        "kind": "transitive_only",
-        "loc": 74,
-        "importer_count": 1,
-        "loc_weight": 8.602325267042627
+        "kind": "hardcoded_secret_name",
+        "severity": "high",
+        "line": 41,
+        "content": "  secretScanning: \"_secret_scanning\",",
+        "remediation": "Move secret to environment variable or secrets manager"
       },
       "status": "open",
       "kind": "issue",
-      "primary_command": "desloppify plan resolve \"test_coverage::src/repo/utils.ts::transitive_only\" --note \"<what you did>\" --confirm",
-      "queue_position": 1,
-      "plan_cluster": {
-        "name": "auto/test_coverage-transitive_only",
-        "description": "Fix 5 test coverage issues",
-        "total_items": 5,
-        "action_steps": []
-      }
+      "primary_command": "desloppify plan resolve \"security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41\" --note \"<what you did>\" --confirm",
+      "queue_position": 1
     },
     {
-      "id": "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts",
+      "id": "smells::src/settings/labels/formatter.ts::high_cyclomatic_complexity",
       "confidence": "medium",
-      "detector": "test_coverage",
-      "file": "src/shared/xfg-template.ts",
-      "summary": "Shallow tests: xfg-template.test.ts has 43 assertions across 44 test functions",
+      "detector": "smells",
+      "file": "src/settings/labels/formatter.ts",
+      "summary": "1x High cyclomatic complexity (>15 branches)",
       "detail": {
-        "kind": "shallow_tests",
-        "test_file": "test/unit/shared/xfg-template.test.ts",
-        "assertions": 43,
-        "test_functions": 44,
-        "loc_weight": 14.798648586948742
+        "smell_id": "high_cyclomatic_complexity",
+        "severity": "medium",
+        "count": 1,
+        "lines": [
+          30
+        ]
       },
       "status": "open",
       "kind": "issue",
-      "primary_command": "desloppify plan resolve \"test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts\" --note \"<what you did>\" --confirm",
+      "primary_command": "desloppify autofix dead-useeffect --dry-run",
       "queue_position": 2
     },
     {
-      "id": "auto/exports-type",
-      "action_type": "manual_fix",
-      "summary": "Fix 23 exports issues",
-      "member_count": 23,
-      "members": [
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::LabelsProcessorFactory",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/cli/index.ts",
-          "summary": "Dead export: LabelsProcessorFactory",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::LabelsProcessorFactory\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RepoSettingsProcessorFactory",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/cli/index.ts",
-          "summary": "Dead export: RepoSettingsProcessorFactory",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RepoSettingsProcessorFactory\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RulesetProcessorFactory",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/cli/index.ts",
-          "summary": "Dead export: RulesetProcessorFactory",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::RulesetProcessorFactory\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SharedOptions",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/cli/index.ts",
-          "summary": "Dead export: SharedOptions",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SharedOptions\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SyncOptions",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/cli/index.ts",
-          "summary": "Dead export: SyncOptions",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/cli/index.ts::SyncOptions\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/sync-command.ts::SharedOptions",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/cli/sync-command.ts",
-          "summary": "Dead export: SharedOptions",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/cli/sync-command.ts::SharedOptions\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/types.ts::SharedOptions",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/cli/types.ts",
-          "summary": "Dead export: SharedOptions",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/cli/types.ts::SharedOptions\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/config/index.ts::ContentValue",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/config/index.ts",
-          "summary": "Dead export: ContentValue",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/config/index.ts::ContentValue\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::ILabelsProcessor",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
-          "summary": "Dead export: ILabelsProcessor",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::ILabelsProcessor\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::IRulesetProcessor",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
-          "summary": "Dead export: IRulesetProcessor",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::IRulesetProcessor\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::LabelsProcessorFactory",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
-          "summary": "Dead export: LabelsProcessorFactory",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::LabelsProcessorFactory\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RepoSettingsProcessorFactory",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
-          "summary": "Dead export: RepoSettingsProcessorFactory",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RepoSettingsProcessorFactory\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RulesetProcessorFactory",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
-          "summary": "Dead export: RulesetProcessorFactory",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::RulesetProcessorFactory\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SharedOptions",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
-          "summary": "Dead export: SharedOptions",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SharedOptions\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SyncOptions",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/index.ts",
-          "summary": "Dead export: SyncOptions",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/index.ts::SyncOptions\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/authenticated-git-ops.ts::AuthenticatedGitOpsOptions",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/authenticated-git-ops.ts",
-          "summary": "Dead export: AuthenticatedGitOpsOptions",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/vcs/authenticated-git-ops.ts::AuthenticatedGitOpsOptions\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CloseExistingPROptions",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
-          "summary": "Dead export: CloseExistingPROptions",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CloseExistingPROptions\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitOptions",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
-          "summary": "Dead export: CommitOptions",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitOptions\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitResult",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
-          "summary": "Dead export: CommitResult",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::CommitResult\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::INetworkGitOps",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
-          "summary": "Dead export: INetworkGitOps",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::INetworkGitOps\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeOptions",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
-          "summary": "Dead export: MergeOptions",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeOptions\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeResult",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
-          "summary": "Dead export: MergeResult",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::MergeResult\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::PRStrategyOptions",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/vcs/index.ts",
-          "summary": "Dead export: PRStrategyOptions",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/vcs/index.ts::PRStrategyOptions\" --note \"<what you did>\" --confirm"
-        }
-      ],
-      "cluster_name": "auto/exports-type",
-      "cluster_auto": true,
-      "detector": "exports",
-      "kind": "cluster",
-      "primary_command": "run `knip --fix` to remove dead exports"
-    },
-    {
-      "id": "auto/exports-export",
-      "action_type": "manual_fix",
-      "summary": "Fix 3 exports issues",
-      "member_count": 3,
-      "members": [
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/cli/program.ts::program",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/cli/program.ts",
-          "summary": "Dead export: program",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/cli/program.ts::program\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::computeUnifiedDiff",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/sync/index.ts",
-          "summary": "Dead export: computeUnifiedDiff",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::computeUnifiedDiff\" --note \"<what you did>\" --confirm"
-        },
-        {
-          "id": "exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::isBinaryFile",
-          "confidence": "high",
-          "detector": "exports",
-          "file": ".worktrees/ci-skip-integration-on-pr/src/sync/index.ts",
-          "summary": "Dead export: isBinaryFile",
-          "status": "open",
-          "kind": "issue",
-          "primary_command": "desloppify plan resolve \"exports::.worktrees/ci-skip-integration-on-pr/src/sync/index.ts::isBinaryFile\" --note \"<what you did>\" --confirm"
-        }
-      ],
-      "cluster_name": "auto/exports-export",
-      "cluster_auto": true,
-      "detector": "exports",
-      "kind": "cluster",
-      "primary_command": "run `knip --fix` to remove dead exports"
-    },
-    {
-      "id": "smells::src/config/normalizer.ts::high_cyclomatic_complexity",
+      "id": "smells::src/settings/rulesets/diff-algorithm.ts::high_cyclomatic_complexity",
       "confidence": "medium",
       "detector": "smells",
-      "file": "src/config/normalizer.ts",
-      "summary": "5x High cyclomatic complexity (>15 branches)",
+      "file": "src/settings/rulesets/diff-algorithm.ts",
+      "summary": "1x High cyclomatic complexity (>15 branches)",
       "detail": {
         "smell_id": "high_cyclomatic_complexity",
         "severity": "medium",
-        "count": 5,
+        "count": 1,
         "lines": [
-          122,
-          180,
-          223,
-          455,
-          650
+          96
         ]
       },
       "status": "open",
       "kind": "issue",
       "primary_command": "desloppify autofix dead-useeffect --dry-run",
-      "queue_position": 29
+      "queue_position": 3
     },
     {
-      "id": "smells::src/config/validator.ts::high_cyclomatic_complexity",
+      "id": "smells::src/settings/rulesets/formatter.ts::high_cyclomatic_complexity",
       "confidence": "medium",
       "detector": "smells",
-      "file": "src/config/validator.ts",
-      "summary": "3x High cyclomatic complexity (>15 branches)",
+      "file": "src/settings/rulesets/formatter.ts",
+      "summary": "1x High cyclomatic complexity (>15 branches)",
       "detail": {
         "smell_id": "high_cyclomatic_complexity",
         "severity": "medium",
-        "count": 3,
+        "count": 1,
         "lines": [
-          62,
-          682,
-          1042
+          200
         ]
       },
       "status": "open",
       "kind": "issue",
       "primary_command": "desloppify autofix dead-useeffect --dry-run",
-      "queue_position": 30
+      "queue_position": 4
     },
     {
-      "id": "smells::src/cli/sync-command.ts::async_no_await",
+      "id": "smells::src/settings/rulesets/github-ruleset-strategy.ts::high_cyclomatic_complexity",
       "confidence": "medium",
       "detector": "smells",
-      "file": "src/cli/sync-command.ts",
-      "summary": "2x Async functions without await",
+      "file": "src/settings/rulesets/github-ruleset-strategy.ts",
+      "summary": "1x High cyclomatic complexity (>15 branches)",
+      "detail": {
+        "smell_id": "high_cyclomatic_complexity",
+        "severity": "medium",
+        "count": 1,
+        "lines": [
+          19
+        ]
+      },
+      "status": "open",
+      "kind": "issue",
+      "primary_command": "desloppify autofix dead-useeffect --dry-run",
+      "queue_position": 5
+    },
+    {
+      "id": "smells::src/shared/gh-api-utils.ts::async_no_await",
+      "confidence": "medium",
+      "detector": "smells",
+      "file": "src/shared/gh-api-utils.ts",
+      "summary": "1x Async functions without await",
       "detail": {
         "smell_id": "async_no_await",
         "severity": "medium",
-        "count": 2,
+        "count": 1,
         "lines": [
-          201,
-          624
+          244
         ]
       },
       "status": "open",
       "kind": "issue",
       "primary_command": "desloppify autofix dead-useeffect --dry-run",
-      "queue_position": 31
+      "queue_position": 6
     },
     {
-      "id": "smells::src/config/validators/ruleset-validator.ts::high_cyclomatic_complexity",
+      "id": "smells::src/shared/gh-api-utils.ts::high_cyclomatic_complexity",
       "confidence": "medium",
       "detector": "smells",
-      "file": "src/config/validators/ruleset-validator.ts",
-      "summary": "2x High cyclomatic complexity (>15 branches)",
+      "file": "src/shared/gh-api-utils.ts",
+      "summary": "1x High cyclomatic complexity (>15 branches)",
       "detail": {
         "smell_id": "high_cyclomatic_complexity",
         "severity": "medium",
-        "count": 2,
+        "count": 1,
         "lines": [
-          115,
-          236
+          105
         ]
       },
       "status": "open",
       "kind": "issue",
       "primary_command": "desloppify autofix dead-useeffect --dry-run",
-      "queue_position": 32
+      "queue_position": 7
     },
     {
-      "id": "smells::src/output/settings-report.ts::high_cyclomatic_complexity",
+      "id": "smells::src/shared/type-guards.ts::async_no_await",
       "confidence": "medium",
       "detector": "smells",
-      "file": "src/output/settings-report.ts",
-      "summary": "2x High cyclomatic complexity (>15 branches)",
+      "file": "src/shared/type-guards.ts",
+      "summary": "1x Async functions without await",
       "detail": {
-        "smell_id": "high_cyclomatic_complexity",
+        "smell_id": "async_no_await",
         "severity": "medium",
-        "count": 2,
+        "count": 1,
         "lines": [
-          55,
-          218
+          15
         ]
       },
       "status": "open",
       "kind": "issue",
       "primary_command": "desloppify autofix dead-useeffect --dry-run",
-      "queue_position": 33
+      "queue_position": 8
     },
     {
-      "id": "smells::src/settings/code-scanning/diff.ts::sort_no_comparator",
-      "confidence": "medium",
-      "detector": "smells",
-      "file": "src/settings/code-scanning/diff.ts",
-      "summary": "2x .sort() without comparator function",
+      "id": "stale_exclude::.worktrees::.worktrees",
+      "confidence": "low",
+      "detector": "stale_exclude",
+      "file": ".worktrees",
+      "summary": "Excluded directory '.worktrees' has 0 references from scanned code \u2014 may be stale",
       "detail": {
-        "smell_id": "sort_no_comparator",
-        "severity": "medium",
-        "count": 2,
-        "lines": [
-          62,
-          63
-        ]
+        "directory": ".worktrees",
+        "references": 0
       },
       "status": "open",
       "kind": "issue",
-      "primary_command": "desloppify autofix dead-useeffect --dry-run",
-      "queue_position": 34
+      "primary_command": "desloppify plan resolve \"stale_exclude::.worktrees::.worktrees\" --note \"<what you did>\" --confirm",
+      "queue_position": 9
     }
   ],
   "queue": {
-    "total": 10,
+    "total": 9,
     "mode": "execution"
   },
   "narrative": {
@@ -495,8 +210,8 @@
         },
         {
           "name": "Test health",
-          "lenient": 98.0,
-          "strict": 92.5,
+          "lenient": 100.0,
+          "strict": 94.5,
           "gap": 5.5,
           "wontfix_count": 0
         },
@@ -511,7 +226,7 @@
       "stagnant_dimensions": [
         {
           "name": "Code quality",
-          "strict": 94.2,
+          "strict": 95.4,
           "stuck_scans": 5
         },
         {
@@ -620,29 +335,14 @@
       },
       {
         "type": "refactor",
-        "detector": "test_coverage",
-        "count": 2,
-        "description": "2 test_coverage issues in 1 cluster(s) \u2014 run `desloppify next`",
-        "command": "desloppify next",
-        "impact": 0.0,
-        "dimension": "Test health",
-        "priority": 7,
-        "clusters": [
-          "auto/test_coverage-transitive_only"
-        ],
-        "cluster_count": 1,
-        "lane": "test_coverage"
-      },
-      {
-        "type": "refactor",
         "detector": "signature",
         "count": 1,
         "description": "1 signature work items \u2014 consolidate inconsistent function signatures",
         "command": "desloppify show signature --status open",
         "impact": 0.0,
         "dimension": "Unknown",
-        "priority": 8,
-        "lane": "refactor_0"
+        "priority": 7,
+        "lane": "refactor_1"
       },
       {
         "type": "refactor",
@@ -652,8 +352,8 @@
         "command": "desloppify show responsibility_cohesion --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 9,
-        "lane": "refactor_1"
+        "priority": 8,
+        "lane": "refactor_2"
       },
       {
         "type": "refactor",
@@ -663,35 +363,19 @@
         "command": "desloppify show boilerplate_duplication --status open",
         "impact": 0.0,
         "dimension": "Duplication",
-        "priority": 10,
-        "lane": "refactor_2"
+        "priority": 9,
+        "lane": "refactor_3"
       },
       {
         "type": "manual_fix",
         "detector": "smells",
-        "count": 97,
-        "description": "97 smells issues \u2014 inspect with `desloppify next` and fix manually",
+        "count": 82,
+        "description": "82 smells issues \u2014 inspect with `desloppify next` and fix manually",
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 11,
+        "priority": 10,
         "lane": "refactor_0"
-      },
-      {
-        "type": "manual_fix",
-        "detector": "exports",
-        "count": 26,
-        "description": "26 exports issues in 2 cluster(s) \u2014 run `desloppify next`",
-        "command": "desloppify next",
-        "impact": 0.0,
-        "dimension": "Code quality",
-        "priority": 12,
-        "clusters": [
-          "auto/exports-export",
-          "auto/exports-type"
-        ],
-        "cluster_count": 2,
-        "lane": "refactor_3"
       },
       {
         "type": "manual_fix",
@@ -701,7 +385,7 @@
         "command": "desloppify show stale_exclude --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 13,
+        "priority": 11,
         "lane": "refactor_4"
       },
       {
@@ -712,14 +396,14 @@
         "command": "desloppify show security --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 14,
+        "priority": 12,
         "lane": "refactor_5"
       }
     ],
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 186,
+        "total_count": 143,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -741,17 +425,16 @@
           "actions": [
             5,
             6,
-            8,
-            11
+            10
           ],
-          "file_count": 95,
+          "file_count": 87,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "refactor_1": {
           "actions": [
-            9
+            7
           ],
           "file_count": 1,
           "total_impact": 0.0,
@@ -760,25 +443,25 @@
         },
         "refactor_2": {
           "actions": [
-            10
+            8
           ],
-          "file_count": 3,
+          "file_count": 1,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "refactor_3": {
           "actions": [
-            12
+            9
           ],
-          "file_count": 9,
+          "file_count": 3,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "refactor_4": {
           "actions": [
-            13
+            11
           ],
           "file_count": 1,
           "total_impact": 0.0,
@@ -787,38 +470,29 @@
         },
         "refactor_5": {
           "actions": [
-            14
+            12
           ],
           "file_count": 1,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
-        },
-        "test_coverage": {
-          "actions": [
-            7
-          ],
-          "file_count": 2,
-          "total_impact": 0.0,
-          "automation": "manual",
-          "run_first": false
         }
       },
-      "can_parallelize": true,
-      "hint": "8 independent workstreams, safe to parallelize. Rescan after each phase to verify."
+      "can_parallelize": false,
+      "hint": "Try a different dimension to break the plateau."
     },
     "tools": {
       "fixers": [
         {
           "name": "dead-useeffect",
           "detector": "smells",
-          "open_count": 97,
+          "open_count": 82,
           "command": "desloppify autofix dead-useeffect --dry-run"
         },
         {
           "name": "empty-if-chain",
           "detector": "smells",
-          "open_count": 97,
+          "open_count": 82,
           "command": "desloppify autofix empty-if-chain --dry-run"
         }
       ],
@@ -851,7 +525,7 @@
       "command": "desloppify show flat_dirs --status open",
       "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "8 independent workstreams, safe to parallelize. Rescan after each phase to verify.",
+    "why_now": "Try a different dimension to break the plateau.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -865,12 +539,20 @@
     ],
     "strict_target": {
       "target": 85.0,
-      "current": 91.5,
-      "gap": -6.5,
+      "current": 91.7,
+      "gap": -6.7,
       "state": "above",
       "warning": null
     },
-    "reminders": [],
+    "reminders": [
+      {
+        "type": "fp_calibration_smells_production",
+        "message": "36% of smells issues in production zone are false positives. Consider reviewing detection rules for production files.",
+        "command": null,
+        "priority": 2,
+        "severity": "medium"
+      }
+    ],
     "reminder_history": {
       "auto_fixers_available": 3,
       "zone_classification": 3,
@@ -883,7 +565,8 @@
       "badge_recommendation": 3,
       "review_issues_pending": 3,
       "wontfix_growing": 3,
-      "fp_calibration_test_coverage_production": 3
+      "fp_calibration_test_coverage_production": 3,
+      "fp_calibration_smells_production": 1
     }
   },
   "agent_notes": [
@@ -1137,12 +820,12 @@
       }
     ],
     "total_ordered": 17,
-    "total_skipped": 61,
+    "total_skipped": 104,
     "plan_overrides_narrative": true
   },
-  "overall_score": 92.8,
-  "objective_score": 97.9,
-  "strict_score": 91.5,
+  "overall_score": 92.9,
+  "objective_score": 98.6,
+  "strict_score": 91.7,
   "scorecard_dimensions": [
     {
       "name": "File health",
@@ -1207,10 +890,10 @@
     },
     {
       "name": "Code quality",
-      "score": 96.9,
-      "strict": 94.2,
+      "score": 98.3,
+      "strict": 95.4,
       "checks": 690,
-      "failing": 43,
+      "failing": 28,
       "tier": 3,
       "subjective": false
     },
@@ -1353,10 +1036,10 @@
     },
     {
       "name": "Test health",
-      "score": 98.0,
-      "strict": 92.5,
+      "score": 100.0,
+      "strict": 94.5,
       "checks": 1178,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "subjective": false
     },

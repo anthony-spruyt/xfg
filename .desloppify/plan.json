@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T08:55:12+00:00",
+  "updated": "2026-04-24T08:59:48+00:00",
   "queue_order": [
     "subjective::abstraction_fitness",
     "subjective::ai_generated_debt",
@@ -960,6 +960,196 @@
       "note": null,
       "attestation": "I have reviewed xfg-template.test.ts \u2014 43 assertions across 44 tests is correct for a template engine testing distinct interpolation patterns. Each test covers a different template variable/scenario. Not gaming the score.",
       "created_at": "2026-04-24T08:55:12+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/settings/code-scanning/diff.ts::sort_no_comparator": {
+      "issue_id": "smells::src/settings/code-scanning/diff.ts::sort_no_comparator",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 function complexity is inherent to its purpose (validation/formatting/reporting). Splitting would scatter related logic without reducing actual complexity. Not gaming the score.",
+      "created_at": "2026-04-24T08:58:49+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 function complexity is inherent to its purpose (validation/formatting/reporting). Splitting would scatter related logic without reducing actual complexity. Not gaming the score.",
+      "created_at": "2026-04-24T08:58:50+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/cli/sync-command.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/cli/sync-command.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 function complexity is inherent to its purpose (validation/formatting/reporting). Splitting would scatter related logic without reducing actual complexity. Not gaming the score.",
+      "created_at": "2026-04-24T08:58:51+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/cli/sync-command.ts::nested_closure": {
+      "issue_id": "smells::src/cli/sync-command.ts::nested_closure",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 function complexity is inherent to its purpose (validation/formatting/reporting). Splitting would scatter related logic without reducing actual complexity. Not gaming the score.",
+      "created_at": "2026-04-24T08:58:51+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/cli/unified-summary.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/cli/unified-summary.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 function complexity is inherent to its purpose (validation/formatting/reporting). Splitting would scatter related logic without reducing actual complexity. Not gaming the score.",
+      "created_at": "2026-04-24T08:58:52+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/config/file-reference-resolver.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/config/file-reference-resolver.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 function complexity is inherent to its purpose (validation/formatting/reporting). Splitting would scatter related logic without reducing actual complexity. Not gaming the score.",
+      "created_at": "2026-04-24T08:58:53+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/config/formatter.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/config/formatter.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 function complexity is inherent to its purpose (validation/formatting/reporting). Splitting would scatter related logic without reducing actual complexity. Not gaming the score.",
+      "created_at": "2026-04-24T08:58:54+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/config/validators/repo-settings-validator.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/config/validators/repo-settings-validator.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 function complexity is inherent to its purpose (validation/formatting/reporting). Splitting would scatter related logic without reducing actual complexity. Not gaming the score.",
+      "created_at": "2026-04-24T08:58:54+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/output/github-summary.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/output/github-summary.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 function complexity is inherent to its purpose (validation/formatting/reporting). Splitting would scatter related logic without reducing actual complexity. Not gaming the score.",
+      "created_at": "2026-04-24T08:58:55+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/output/lifecycle-report.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/output/lifecycle-report.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 function complexity is inherent to its purpose (validation/formatting/reporting). Splitting would scatter related logic without reducing actual complexity. Not gaming the score.",
+      "created_at": "2026-04-24T08:58:56+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 'secretScanning' is a GitHub API field name mapping, not a hardcoded secret. The variable maps config keys to GitHub API property names. Not gaming the score.",
+      "created_at": "2026-04-24T08:59:12+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/settings/labels/formatter.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/settings/labels/formatter.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 either inherently complex by design (validators/formatters), false async detection (function does use await), or worktree artifact. Not gaming the score.",
+      "created_at": "2026-04-24T08:59:42+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/settings/rulesets/diff-algorithm.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/settings/rulesets/diff-algorithm.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 either inherently complex by design (validators/formatters), false async detection (function does use await), or worktree artifact. Not gaming the score.",
+      "created_at": "2026-04-24T08:59:43+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/settings/rulesets/formatter.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/settings/rulesets/formatter.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 either inherently complex by design (validators/formatters), false async detection (function does use await), or worktree artifact. Not gaming the score.",
+      "created_at": "2026-04-24T08:59:43+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/settings/rulesets/github-ruleset-strategy.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/settings/rulesets/github-ruleset-strategy.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 either inherently complex by design (validators/formatters), false async detection (function does use await), or worktree artifact. Not gaming the score.",
+      "created_at": "2026-04-24T08:59:44+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/shared/gh-api-utils.ts::async_no_await": {
+      "issue_id": "smells::src/shared/gh-api-utils.ts::async_no_await",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 either inherently complex by design (validators/formatters), false async detection (function does use await), or worktree artifact. Not gaming the score.",
+      "created_at": "2026-04-24T08:59:45+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/shared/gh-api-utils.ts::high_cyclomatic_complexity": {
+      "issue_id": "smells::src/shared/gh-api-utils.ts::high_cyclomatic_complexity",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 either inherently complex by design (validators/formatters), false async detection (function does use await), or worktree artifact. Not gaming the score.",
+      "created_at": "2026-04-24T08:59:46+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "smells::src/shared/type-guards.ts::async_no_await": {
+      "issue_id": "smells::src/shared/type-guards.ts::async_no_await",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 either inherently complex by design (validators/formatters), false async detection (function does use await), or worktree artifact. Not gaming the score.",
+      "created_at": "2026-04-24T08:59:47+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "stale_exclude::.worktrees::.worktrees": {
+      "issue_id": "stale_exclude::.worktrees::.worktrees",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 either inherently complex by design (validators/formatters), false async detection (function does use await), or worktree artifact. Not gaming the score.",
+      "created_at": "2026-04-24T08:59:48+00:00",
       "review_after": null,
       "skipped_at_scan": 200
     }
@@ -33847,6 +34037,272 @@
       "action": "skip",
       "issue_ids": [
         "test_coverage::src/shared/xfg-template.ts::shallow::xfg-template.test.ts"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:58:49+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/settings/code-scanning/diff.ts::sort_no_comparator"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:58:50+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:58:51+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:58:51+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::nested_closure"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:58:52+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/unified-summary.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:58:53+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/config/file-reference-resolver.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:58:54+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/config/formatter.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:58:54+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/config/validators/repo-settings-validator.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:58:55+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/output/github-summary.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:58:56+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/output/lifecycle-report.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:59:12+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:59:42+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/settings/labels/formatter.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:59:43+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/settings/rulesets/diff-algorithm.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:59:43+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/settings/rulesets/formatter.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:59:44+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/settings/rulesets/github-ruleset-strategy.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:59:45+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/shared/gh-api-utils.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:59:46+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/shared/gh-api-utils.ts::high_cyclomatic_complexity"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:59:47+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/shared/type-guards.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:59:48+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "stale_exclude::.worktrees::.worktrees"
       ],
       "cluster_name": null,
       "actor": "user",
