@@ -12,8 +12,8 @@
     "auto_resolved": 1095,
     "deferred": 0,
     "false_positive": 87,
-    "fixed": 264,
-    "open": 216,
+    "fixed": 266,
+    "open": 214,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 50,
-        "fixed": 122,
-        "open": 35,
+        "fixed": 124,
+        "open": 33,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -110,8 +110,8 @@
       "source": "holistic",
       "assessed_at": "2026-04-16T05:39:25+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-16T05:39:33+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T04:39:38+00:00"
     },
     "abstraction_fitness": {
       "score": 90.5,
@@ -3259,13 +3259,13 @@
       "strict": 92.0,
       "verified_strict_score": 92.0,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.92,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.8,
           "assessment_score": 92.0,
           "placeholder": false,
@@ -69033,11 +69033,11 @@
         "reasoning": "",
         "summary_hash": "fe55e93f"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Replaced substring matching with BRANCH_PROTECTION_ERROR_PATTERNS regex array in retry-utils",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T04:39:37+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69045,7 +69045,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Replaced substring matching with BRANCH_PROTECTION_ERROR_PATTERNS regex array in retry-utils and I am not gaming the score.",
+        "attested_at": "2026-04-24T04:39:37+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous": {
       "id": "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous",
@@ -69071,11 +69077,11 @@
         "reasoning": "",
         "summary_hash": "f4c6095e"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Changed closeExistingPR return type from boolean to ClosePRResult discriminated union across all 3 strategies",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T04:39:38+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69083,7 +69089,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Changed closeExistingPR return type from boolean to ClosePRResult discriminated union across all 3 strategies and I am not gaming the score.",
+        "attested_at": "2026-04-24T04:39:38+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::naming_quality::check_existing_pr_returns_url": {
       "id": "review::.::holistic::naming_quality::check_existing_pr_returns_url",

@@ -1,10 +1,8 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T04:20:25+00:00",
+  "updated": "2026-04-24T04:39:38+00:00",
   "queue_order": [
-    "review::.::holistic::error_consistency::branch_protection_string_match",
-    "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous",
     "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
     "strategy::redirect-effort-to-test-health",
     "strategy::abstraction-fitness-false-positive-sweep",
@@ -396,7 +394,7 @@
       "skipped_at_scan": 199
     }
   },
-  "active_cluster": "initialization-coupling-fixes",
+  "active_cluster": "error-consistency-newly-surfaced",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -2729,14 +2727,14 @@
     "review::.::holistic::error_consistency::branch_protection_string_match": {
       "issue_id": "review::.::holistic::error_consistency::branch_protection_string_match",
       "created_at": "2026-04-16T07:26:29+00:00",
-      "cluster": "error-consistency-newly-surfaced",
-      "updated_at": "2026-04-16T07:26:29+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T04:39:37+00:00"
     },
     "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous": {
       "issue_id": "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous",
       "created_at": "2026-04-16T07:26:29+00:00",
-      "cluster": "error-consistency-newly-surfaced",
-      "updated_at": "2026-04-16T07:26:29+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T04:39:38+00:00"
     },
     "review::.::holistic::mid_level_elegance::code_scanning_report_glue": {
       "issue_id": "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
@@ -4693,7 +4691,8 @@
           "issue_refs": [
             "branch_protection_string_match",
             "close_existing_pr_false_is_ambiguous"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Replace substring match with pattern array and discriminate close-existing-PR returns",
@@ -4702,7 +4701,8 @@
           "issue_refs": [
             "review::.::holistic::error_consistency::branch_protection_string_match",
             "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous"
-          ]
+          ],
+          "done": true
         }
       ]
     },
@@ -31994,6 +31994,76 @@
         "status": "fixed",
         "attestation": "I have actually Replaced module-scope let singletons with per-runSync scoped instances and I am not gaming the score."
       }
+    },
+    {
+      "timestamp": "2026-04-24T04:20:45+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::contract_coherence::rethrow_name_but_returns",
+        "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
+        "review::.::holistic::naming_quality::check_existing_pr_returns_url",
+        "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
+        "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
+        "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
+        "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "sha": "2b938320e27c",
+        "branch": "desloppify/code-health-apr24"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T04:39:37+00:00",
+      "action": "done",
+      "issue_ids": [
+        "branch_protection_string_match"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Replaced substring matching with BRANCH_PROTECTION_ERROR_PATTERNS regex array in retry-utils",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T04:39:37+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::branch_protection_string_match"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Replaced substring matching with BRANCH_PROTECTION_ERROR_PATTERNS regex array in retry-utils",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Replaced substring matching with BRANCH_PROTECTION_ERROR_PATTERNS regex array in retry-utils and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T04:39:38+00:00",
+      "action": "done",
+      "issue_ids": [
+        "close_existing_pr_false_is_ambiguous"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Changed closeExistingPR return type from boolean to ClosePRResult discriminated union across all 3 strategies",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T04:39:38+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Changed closeExistingPR return type from boolean to ClosePRResult discriminated union across all 3 strategies",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Changed closeExistingPR return type from boolean to ClosePRResult discriminated union across all 3 strategies and I am not gaming the score."
+      }
     }
   ],
   "epic_triage_meta": {
@@ -33615,16 +33685,27 @@
       "recorded_at": "2026-04-16T09:27:14+00:00",
       "note": null,
       "cluster_name": null
+    },
+    {
+      "sha": "2b938320e27c",
+      "branch": "desloppify/code-health-apr24",
+      "issue_ids": [
+        "review::.::holistic::contract_coherence::rethrow_name_but_returns",
+        "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
+        "review::.::holistic::naming_quality::check_existing_pr_returns_url",
+        "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
+        "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
+        "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
+        "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons"
+      ],
+      "recorded_at": "2026-04-24T04:20:45+00:00",
+      "note": null,
+      "cluster_name": null
     }
   ],
   "uncommitted_issues": [
-    "review::.::holistic::contract_coherence::rethrow_name_but_returns",
-    "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
-    "review::.::holistic::naming_quality::check_existing_pr_returns_url",
-    "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
-    "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
-    "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
-    "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons"
+    "review::.::holistic::error_consistency::branch_protection_string_match",
+    "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous"
   ],
   "commit_tracking_branch": null,
   "refresh_state": {

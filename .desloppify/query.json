@@ -1,11 +1,11 @@
 {
   "command": "resolve",
   "patterns": [
-    "sync_command_module_level_let_singletons"
+    "close_existing_pr_false_is_ambiguous"
   ],
   "status": "fixed",
   "resolved": [
-    "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons"
+    "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous"
   ],
   "count": 1,
   "next_command": "desloppify next",
@@ -17,10 +17,10 @@
   "prev_objective_score": 92.7,
   "prev_strict_score": 90.2,
   "prev_verified_strict_score": 90.3,
-  "attestation": "I have actually Replaced module-scope let singletons with per-runSync scoped instances and I am not gaming the score.",
+  "attestation": "I have actually Changed closeExistingPR return type from boolean to ClosePRResult discriminated union across all 3 strategies and I am not gaming the score.",
   "narrative": {
     "phase": "refinement",
-    "headline": "\u26a0 1 security issue \u2014 review before other cleanup.  (3 review work items \u2014 run `desloppify show review --status open`)",
+    "headline": "\u26a0 1 security issue \u2014 review before other cleanup.  (1 review work item \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -213,8 +213,8 @@
       {
         "type": "refactor",
         "detector": "review",
-        "count": 3,
-        "description": "3 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
+        "count": 1,
+        "description": "1 review work item need investigation \u2014 run `desloppify show review --status open` to see them",
         "command": "desloppify show review --status open",
         "impact": 0.0,
         "dimension": "Unknown",
@@ -269,7 +269,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 222,
+        "total_count": 216,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -363,7 +363,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "9 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 3 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "9 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 1 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -409,7 +409,7 @@
       "command": "desloppify show flat_dirs --status open",
       "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "9 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 3 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "9 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 1 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
