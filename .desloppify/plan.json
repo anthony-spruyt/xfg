@@ -1,15 +1,35 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T13:43:36+00:00",
+  "updated": "2026-04-24T14:29:18+00:00",
   "queue_order": [
-    "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
-    "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
-    "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
-    "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
-    "subjective::api_surface_coherence",
-    "subjective::contract_coherence",
-    "subjective::mid_level_elegance"
+    "triage::strategize",
+    "triage::observe",
+    "triage::reflect",
+    "triage::organize",
+    "triage::enrich",
+    "triage::sense-check",
+    "triage::commit",
+    "review::.::holistic::abstraction_fitness::authenticated_git_ops_18_pass_through_delegations",
+    "review::.::holistic::contract_coherence::repo_settings_diff_unchanged_omission",
+    "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",
+    "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
+    "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
+    "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
+    "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
+    "review::.::holistic::error_consistency::github_summary_debug_level_io_error",
+    "review::.::holistic::high_level_elegance::output_missing_barrel_index",
+    "review::.::holistic::logic_clarity::duplicate_deep_equal",
+    "review::.::holistic::logic_clarity::redundant_typeof_check_code_scanning",
+    "review::.::holistic::low_level_elegance::receivemigration_monolith",
+    "review::.::holistic::low_level_elegance::settings_descriptor_repetition",
+    "review::.::holistic::mid_level_elegance::dual_path_token_resolution",
+    "review::.::holistic::mid_level_elegance::settings_descriptor_glue_callbacks",
+    "review::.::holistic::naming_quality::findOrCreate_silent_mutation",
+    "review::.::holistic::naming_quality::generic_process_verb",
+    "review::.::holistic::test_strategy::interaction_verification_coupling",
+    "review::.::holistic::test_strategy::output_formatter_test_gap",
+    "review::.::holistic::type_safety::base_result_unsafe_downcast"
   ],
   "deferred": [],
   "skipped": {
@@ -4182,17 +4202,17 @@
       "name": "quick-wins",
       "description": "Trivial fixes: simplify boolean return, remove formulaic comments, extract leaf renderer, defer sync-command singletons \u2014 improves logic_clarity, ai_generated_debt, low_level_elegance, initialization_coupling",
       "issue_ids": [
-        "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
-        "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
-        "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
-        "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
         "review::.::holistic::design_coherence::display_name_duplication",
         "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
         "review::.::holistic::error_consistency::extends_resolver_bare_error",
         "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
         "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
         "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
-        "review::.::holistic::package_organization::misplaced_repo_metadata_test"
+        "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+        "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+        "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+        "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+        "review::.::holistic::initialization_coupling::sync_command_module_level_singletons"
       ],
       "created_at": "2026-03-18T11:51:29+00:00",
       "updated_at": "2026-04-24T10:43:37+00:00",
@@ -9333,12 +9353,7 @@
       "candidates": []
     }
   },
-  "promoted_ids": [
-    "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
-    "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
-    "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
-    "review::.::holistic::initialization_coupling::sync_command_module_level_singletons"
-  ],
+  "promoted_ids": [],
   "plan_start_scores": {
     "strict": 91.6,
     "overall": 92.8,
@@ -37164,10 +37179,178 @@
         "kind": "false_positive",
         "reason": null
       }
+    },
+    {
+      "timestamp": "2026-04-24T14:27:46+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::abstraction_fitness::authenticated_git_ops_18_pass_through_delegations",
+          "review::.::holistic::contract_coherence::repo_settings_diff_unchanged_omission",
+          "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",
+          "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
+          "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
+          "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
+          "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
+          "review::.::holistic::error_consistency::github_summary_debug_level_io_error",
+          "review::.::holistic::high_level_elegance::output_missing_barrel_index",
+          "review::.::holistic::logic_clarity::duplicate_deep_equal",
+          "review::.::holistic::logic_clarity::redundant_typeof_check_code_scanning",
+          "review::.::holistic::low_level_elegance::receivemigration_monolith",
+          "review::.::holistic::low_level_elegance::settings_descriptor_repetition",
+          "review::.::holistic::mid_level_elegance::dual_path_token_resolution",
+          "review::.::holistic::mid_level_elegance::settings_descriptor_glue_callbacks",
+          "review::.::holistic::naming_quality::findOrCreate_silent_mutation",
+          "review::.::holistic::naming_quality::generic_process_verb",
+          "review::.::holistic::test_strategy::interaction_verification_coupling",
+          "review::.::holistic::test_strategy::output_formatter_test_gap",
+          "review::.::holistic::type_safety::base_result_unsafe_downcast"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::abstraction_fitness::authenticated_git_ops_18_pass_through_delegations",
+          "review::.::holistic::contract_coherence::repo_settings_diff_unchanged_omission",
+          "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",
+          "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
+          "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
+          "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
+          "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
+          "review::.::holistic::error_consistency::github_summary_debug_level_io_error",
+          "review::.::holistic::high_level_elegance::output_missing_barrel_index",
+          "review::.::holistic::logic_clarity::duplicate_deep_equal",
+          "review::.::holistic::logic_clarity::redundant_typeof_check_code_scanning",
+          "review::.::holistic::low_level_elegance::receivemigration_monolith",
+          "review::.::holistic::low_level_elegance::settings_descriptor_repetition",
+          "review::.::holistic::mid_level_elegance::dual_path_token_resolution",
+          "review::.::holistic::mid_level_elegance::settings_descriptor_glue_callbacks",
+          "review::.::holistic::naming_quality::findOrCreate_silent_mutation",
+          "review::.::holistic::naming_quality::generic_process_verb",
+          "review::.::holistic::test_strategy::interaction_verification_coupling",
+          "review::.::holistic::test_strategy::output_formatter_test_gap",
+          "review::.::holistic::type_safety::base_result_unsafe_downcast"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 20,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 77,
+        "stale_pruned_from_queue": [
+          "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+          "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+          "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+          "review::.::holistic::low_level_elegance::renderTree_nested_conditionals"
+        ],
+        "covered_subjective_pruned_from_queue": [
+          "subjective::api_surface_coherence",
+          "subjective::contract_coherence",
+          "subjective::mid_level_elegance"
+        ],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T14:28:01+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+        "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+        "review::.::holistic::contract_coherence::get_or_create_mutates",
+        "review::.::holistic::type_safety::unguarded_error_property_access",
+        "review::.::holistic::type_safety::unverified_string_cast_in_diff",
+        "review::.::holistic::design_coherence::receive_migration_multi_phase",
+        "review::.::holistic::design_coherence::settings_formatter_duplication",
+        "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+        "review::.::holistic::initialization_coupling::run_scope_module_state"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Review import \u2014 20 dimensions scored by blind subagent review",
+      "detail": {
+        "sha": "e40b4d8600f6",
+        "branch": "desloppify/code-health-apr24"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T14:28:20+00:00",
+      "action": "triage_auto_start",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "source": "runner_auto_start",
+        "runner": "claude",
+        "injected_stage_ids": [
+          "strategize",
+          "observe",
+          "reflect",
+          "organize",
+          "enrich",
+          "sense-check"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-04-24T14:29:18+00:00",
+      "action": "triage_strategize",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "reuse": false,
+        "score_trend": "declining",
+        "focus_dimensions": []
+      }
     }
   ],
   "epic_triage_meta": {
-    "triage_stages": {},
+    "triage_stages": {
+      "strategize": {
+        "stage": "strategize",
+        "report": "{\"executive_summary\":\"Strict score improved 88.3\u219288.5 after fixing 12 items. Fresh blind review scored all 20 dimensions, importing 20 new findings. Five dimensions at 82.0 floor.\",\"score_trend\":\"improving\",\"debt_trend\":\"shrinking\",\"focus_dimensions\":[\"abstraction_fitness\",\"low_level_elegance\",\"mid_level_elegance\",\"naming_quality\",\"test_strategy\"],\"observe_guidance\":\"Focus on 20 new findings. Group by dimension. Identify quick wins vs architectural.\",\"reflect_guidance\":\"Prioritize fixes that improve multiple low-scoring dimensions. receiveMigration decomposition already done.\",\"organize_guidance\":\"Cluster by fix locality. Single-file fixes first.\",\"sense_check_guidance\":\"Verify no duplicate findings. Check receiveMigration correctly marked fixed.\"}",
+        "timestamp": "2026-04-24T14:29:18+00:00",
+        "score_trend": "declining",
+        "focus_dimensions": [],
+        "anti_pattern_count": 0,
+        "confirmed_at": "2026-04-24T14:29:18+00:00",
+        "confirmed_text": "auto-confirmed"
+      }
+    },
     "issue_snapshot_hash": "02f46b0ec47e8f0d",
     "triaged_ids": [
       "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
@@ -37589,24 +37772,21 @@
     },
     "last_completion_mode": "manual_triage",
     "strategist_briefing": {
-      "executive_summary": "Score dropped 91.6\u219288.3 after honest subjective re-review. Expected recalibration. 23 new review items.",
+      "executive_summary": "Strict score improved 88.3\u219288.5 after fixing 12 items. Fresh blind review scored all 20 dimensions, importing 20 new findings. Five dimensions at 82.0 floor.",
       "score_trend": "declining",
       "debt_trend": "stable",
-      "observe_guidance": "Focus on 5 lowest-scoring dimensions and shared root causes.",
-      "reflect_guidance": "Drop is from recalibration not code changes.",
-      "organize_guidance": "Group by root cause: sanitize-utils layering, API verb inconsistency, module-scoped mutables.",
-      "sense_check_guidance": "Verify no findings penalize intentional SOLID patterns.",
-      "risk_flags": [
-        "mid_level_elegance 78.5 biggest drag"
-      ],
       "focus_dimensions": [
+        "abstraction_fitness",
+        "low_level_elegance",
         "mid_level_elegance",
-        "contract_coherence",
-        "api_surface_coherence",
-        "logic_clarity",
-        "design_coherence"
+        "naming_quality",
+        "test_strategy"
       ],
-      "computed_at": "2026-04-24T10:36:43+00:00",
+      "observe_guidance": "Focus on 20 new findings. Group by dimension. Identify quick wins vs architectural.",
+      "reflect_guidance": "Prioritize fixes that improve multiple low-scoring dimensions. receiveMigration decomposition already done.",
+      "organize_guidance": "Cluster by fix locality. Single-file fixes first.",
+      "sense_check_guidance": "Verify no duplicate findings. Check receiveMigration correctly marked fixed.",
+      "computed_at": "2026-04-24T14:29:18+00:00",
       "lookback_scans": 5
     },
     "cluster_verdicts": [
@@ -37631,6 +37811,28 @@
         "false_positive_rate": 1.0,
         "recommendation": "skip. Same worktree-artifact issue. Skip --false-positive."
       }
+    ],
+    "active_triage_issue_ids": [
+      "review::.::holistic::abstraction_fitness::authenticated_git_ops_18_pass_through_delegations",
+      "review::.::holistic::contract_coherence::repo_settings_diff_unchanged_omission",
+      "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",
+      "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
+      "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
+      "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
+      "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
+      "review::.::holistic::error_consistency::github_summary_debug_level_io_error",
+      "review::.::holistic::high_level_elegance::output_missing_barrel_index",
+      "review::.::holistic::logic_clarity::duplicate_deep_equal",
+      "review::.::holistic::logic_clarity::redundant_typeof_check_code_scanning",
+      "review::.::holistic::low_level_elegance::receivemigration_monolith",
+      "review::.::holistic::low_level_elegance::settings_descriptor_repetition",
+      "review::.::holistic::mid_level_elegance::dual_path_token_resolution",
+      "review::.::holistic::mid_level_elegance::settings_descriptor_glue_callbacks",
+      "review::.::holistic::naming_quality::findOrCreate_silent_mutation",
+      "review::.::holistic::naming_quality::generic_process_verb",
+      "review::.::holistic::test_strategy::interaction_verification_coupling",
+      "review::.::holistic::test_strategy::output_formatter_test_gap",
+      "review::.::holistic::type_safety::base_result_unsafe_downcast"
     ]
   },
   "commit_log": [
@@ -38213,22 +38415,30 @@
       "recorded_at": "2026-04-24T10:57:04+00:00",
       "note": "sanitize-utils layering fix",
       "cluster_name": null
+    },
+    {
+      "sha": "e40b4d8600f6",
+      "branch": "desloppify/code-health-apr24",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+        "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+        "review::.::holistic::contract_coherence::get_or_create_mutates",
+        "review::.::holistic::type_safety::unguarded_error_property_access",
+        "review::.::holistic::type_safety::unverified_string_cast_in_diff",
+        "review::.::holistic::design_coherence::receive_migration_multi_phase",
+        "review::.::holistic::design_coherence::settings_formatter_duplication",
+        "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+        "review::.::holistic::initialization_coupling::run_scope_module_state"
+      ],
+      "recorded_at": "2026-04-24T14:28:01+00:00",
+      "note": "Review import \u2014 20 dimensions scored by blind subagent review",
+      "cluster_name": null
     }
   ],
-  "uncommitted_issues": [
-    "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
-    "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
-    "review::.::holistic::contract_coherence::get_or_create_mutates",
-    "review::.::holistic::type_safety::unguarded_error_property_access",
-    "review::.::holistic::type_safety::unverified_string_cast_in_diff",
-    "review::.::holistic::design_coherence::receive_migration_multi_phase",
-    "review::.::holistic::design_coherence::settings_formatter_duplication",
-    "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
-    "review::.::holistic::initialization_coupling::run_scope_module_state"
-  ],
+  "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
-    "subjective_review_completed_at_scan_count": 204,
+    "subjective_review_completed_at_scan_count": 205,
     "lifecycle_phase": "plan",
     "_subjective_migration_pruned": true,
     "postflight_scan_completed_at_scan_count": 204
