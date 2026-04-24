@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatCountEntry } from "./settings-report.js";
-import { formatDiffLine } from "../sync/index.js";
+import { formatDiffLine } from "./diff-format.js";
 import type { SyncReport, RepoFileChanges, ReportFileChange } from "./types.js";
 
 export type { SyncReport, RepoFileChanges, ReportFileChange };

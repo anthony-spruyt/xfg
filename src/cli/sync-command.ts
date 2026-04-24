@@ -54,15 +54,15 @@ import {
   buildSettingsReport,
   type ProcessorResults,
 } from "./settings-report-builder.js";
-import { formatSettingsReportCLI } from "../output/settings-report.js";
-import { buildSyncReport } from "./sync-report-builder.js";
-import { formatSyncReportCLI } from "../output/sync-report.js";
-import { buildLifecycleReport } from "./lifecycle-report-builder.js";
 import {
+  formatSettingsReportCLI,
+  formatSyncReportCLI,
   formatLifecycleReportCLI,
   hasLifecycleChanges,
   type LifecycleAction,
-} from "../output/lifecycle-report.js";
+} from "../output/index.js";
+import { buildSyncReport } from "./sync-report-builder.js";
+import { buildLifecycleReport } from "./lifecycle-report-builder.js";
 import { writeUnifiedSummary } from "./unified-summary.js";
 import type { ProcessorResult } from "../sync/index.js";
 import { toErrorMessage } from "../shared/type-guards.js";

@@ -1,4 +1,4 @@
-export { formatDiffLine } from "./diff-utils.js";
+export { formatDiffLine } from "../output/diff-format.js";
 export type {
   FileChangeDetail,
   GitOpsFactory,

@@ -1,4 +1,4 @@
-export type { IRepoLifecycleManager } from "./types.js";
+export type { IRepoLifecycleManager, LifecycleActionKind } from "./types.js";
 
 export { RepoLifecycleManager } from "./repo-lifecycle-manager.js";
 export {

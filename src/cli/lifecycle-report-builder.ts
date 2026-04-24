@@ -1,7 +1,4 @@
-import type {
-  LifecycleReport,
-  LifecycleAction,
-} from "../output/lifecycle-report.js";
+import type { LifecycleReport, LifecycleAction } from "../output/index.js";
 
 export function buildLifecycleReport(
   results: LifecycleAction[]

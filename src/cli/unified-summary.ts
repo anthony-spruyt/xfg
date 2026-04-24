@@ -1,16 +1,14 @@
-import type {
-  LifecycleReport,
-  LifecycleAction,
-} from "../output/lifecycle-report.js";
-import { hasLifecycleChanges } from "../output/lifecycle-report.js";
-import { writeGitHubStepSummary } from "../output/github-summary.js";
-import type { SyncReport } from "../output/types.js";
-import { renderSyncLines } from "../output/sync-report.js";
-import type { SettingsReport } from "../output/settings-report.js";
 import {
+  hasLifecycleChanges,
+  writeGitHubStepSummary,
+  renderSyncLines,
   renderRepoSettingsDiffLines,
   formatCountEntry,
-} from "../output/settings-report.js";
+  type LifecycleReport,
+  type LifecycleAction,
+  type SyncReport,
+  type SettingsReport,
+} from "../output/index.js";
 
 // =============================================================================
 // Types

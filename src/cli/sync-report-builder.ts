@@ -3,7 +3,7 @@ import type {
   SyncReport,
   RepoFileChanges,
   ReportFileChange,
-} from "../output/sync-report.js";
+} from "../output/index.js";
 
 interface SyncResultInput {
   repoName: string;
