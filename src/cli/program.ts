@@ -77,8 +77,7 @@ program
   .name("xfg")
   .description(
     "Manage files, settings, and repositories across GitHub, Azure DevOps, and GitLab"
-  )
-  .version(getVersion());
+  );
 
 // Sync command (file synchronization)
 const syncCommand = new Command("sync")
@@ -110,4 +109,4 @@ const syncCommand = new Command("sync")
 addSharedOptions(syncCommand);
 program.addCommand(syncCommand);
 
-export { program };
+export { program, getVersion };

@@ -48,17 +48,21 @@ import {
 } from "./types.js";
 import type { IRepositoryProcessor } from "../sync/index.js";
 
-let _defaultExecutor: ShellCommandExecutor | undefined;
-let _logger: Logger | undefined;
+let _runScopeExecutor: ShellCommandExecutor | undefined;
+let _runScopeLogger: Logger | undefined;
 
 function getDefaultExecutor(): ShellCommandExecutor {
-  return (_defaultExecutor ??= new ShellCommandExecutor(process.env));
+  if (!_runScopeExecutor) {
+    throw new Error("getDefaultExecutor called outside runSync scope");
+  }
+  return _runScopeExecutor;
 }
 
 function getLogger(): Logger {
-  return (_logger ??= new Logger(
-    !!(process.env.DEBUG || process.env.XFG_DEBUG)
-  ));
+  if (!_runScopeLogger) {
+    throw new Error("getLogger called outside runSync scope");
+  }
+  return _runScopeLogger;
 }
 
 function createDefaultRulesetProcessorFactory(): RulesetProcessorFactory {
@@ -621,9 +625,8 @@ export async function runSync(
   options: SyncOptions,
   deps: SyncDependencies = {}
 ): Promise<void> {
-  // Reset module-level singletons to ensure fresh state per invocation
-  _defaultExecutor = undefined;
-  _logger = undefined;
+  _runScopeExecutor = new ShellCommandExecutor(process.env);
+  _runScopeLogger = new Logger(!!(process.env.DEBUG || process.env.XFG_DEBUG));
 
   const { lifecycleManager, settingsProcessorFactories } = deps;
   const factories: SettingsProcessorFactories = {
