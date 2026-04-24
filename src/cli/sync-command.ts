@@ -214,7 +214,7 @@ async function runAndStoreResult(
     opts
   );
   if (!result.skipped) {
-    assign(settingsCollector.getOrCreate(repoName), result);
+    assign(settingsCollector.findOrCreate(repoName), result);
   }
   return result;
 }

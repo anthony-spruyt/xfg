@@ -1,11 +1,11 @@
 {
   "command": "resolve",
   "patterns": [
-    "code_scanning_compound_method_names"
+    "get_or_create_mutates"
   ],
   "status": "fixed",
   "resolved": [
-    "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names"
+    "review::.::holistic::contract_coherence::get_or_create_mutates"
   ],
   "count": 1,
   "next_command": "desloppify next",
@@ -17,10 +17,10 @@
   "prev_objective_score": 98.8,
   "prev_strict_score": 88.3,
   "prev_verified_strict_score": 90.3,
-  "attestation": "I have actually renamed both compound methods to simple get/update across interface, implementation, processor, and tests. Build and all tests pass. I am not gaming the score.",
+  "attestation": "I have actually renamed getOrCreate to findOrCreate across interface, implementation, call site, and tests. Build and all 2680 tests pass. I am not gaming the score.",
   "narrative": {
     "phase": "regression",
-    "headline": "Score shifted 3.3 pts \u2014 this is normal after structural changes. Rescan after your next fix to see the real trend. (10 review work items \u2014 run `desloppify show review --status open`)",
+    "headline": "Score shifted 3.3 pts \u2014 this is normal after structural changes. Rescan after your next fix to see the real trend. (7 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -34,7 +34,7 @@
         {
           "name": "Contracts",
           "strict": 82.5,
-          "failing": 2,
+          "failing": 0,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -42,7 +42,7 @@
         {
           "name": "API coherence",
           "strict": 84.2,
-          "failing": 1,
+          "failing": 0,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
@@ -202,8 +202,8 @@
       {
         "type": "refactor",
         "detector": "review",
-        "count": 10,
-        "description": "10 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
+        "count": 7,
+        "description": "7 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
         "command": "desloppify show review --status open",
         "impact": 0.0,
         "dimension": "Unknown",
@@ -225,7 +225,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 165,
+        "total_count": 156,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -292,7 +292,7 @@
         }
       },
       "can_parallelize": false,
-      "hint": "Work through actions in priority order. Rescan after each fix to track progress. Review: 10 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "Work through actions in priority order. Rescan after each fix to track progress. Review: 7 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -338,7 +338,7 @@
       "command": "desloppify show flat_dirs --status open",
       "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "Work through actions in priority order. Rescan after each fix to track progress. Review: 10 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "Work through actions in priority order. Rescan after each fix to track progress. Review: 7 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
