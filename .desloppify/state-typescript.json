@@ -12,8 +12,8 @@
     "auto_resolved": 1160,
     "deferred": 0,
     "false_positive": 162,
-    "fixed": 283,
-    "open": 151,
+    "fixed": 287,
+    "open": 147,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 6,
-        "fixed": 109,
-        "open": 6,
+        "fixed": 113,
+        "open": 2,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -94,8 +94,8 @@
       "source": "holistic",
       "assessed_at": "2026-04-24T10:35:24+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-24T10:35:24+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T10:57:01+00:00"
     },
     "convention_outlier": {
       "score": 92.5,
@@ -163,12 +163,15 @@
       "assessed_at": "2026-04-24T10:35:24+00:00",
       "needs_review_refresh": true,
       "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-24T10:51:55+00:00"
+      "stale_since": "2026-04-24T10:57:03+00:00"
     },
     "high_level_elegance": {
       "score": 88.5,
       "source": "holistic",
-      "assessed_at": "2026-04-24T10:35:24+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T10:57:01+00:00"
     },
     "mid_level_elegance": {
       "score": 78.5,
@@ -201,8 +204,8 @@
       "source": "holistic",
       "assessed_at": "2026-04-24T10:35:24+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-24T10:35:24+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T10:57:02+00:00"
     },
     "initialization_coupling": {
       "score": 89.0,
@@ -3164,13 +3167,13 @@
       "strict": 88.5,
       "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.885,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.15,
           "assessment_score": 88.5,
           "placeholder": false,
@@ -3185,13 +3188,13 @@
       "strict": 90.0,
       "verified_strict_score": 90.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.9,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.0,
           "assessment_score": 90.0,
           "placeholder": false,
@@ -3248,13 +3251,13 @@
       "strict": 88.5,
       "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.885,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.15,
           "assessment_score": 88.5,
           "placeholder": false,
@@ -3395,13 +3398,13 @@
       "strict": 88.5,
       "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.885,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.15,
           "assessment_score": 88.5,
           "placeholder": false,
@@ -73549,11 +73552,11 @@
         "reasoning": "",
         "summary_hash": "c5a42db7"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Moved src/vcs/sanitize-utils.ts to src/shared/sanitize-utils.ts, updated all 5 import paths",
       "first_seen": "2026-04-24T10:35:24+00:00",
       "last_seen": "2026-04-24T10:35:24+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T10:57:01+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -73561,7 +73564,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Moved src/vcs/sanitize-utils.ts to src/shared/sanitize-utils.ts, updated all 5 import paths and I am not gaming the score.",
+        "attested_at": "2026-04-24T10:57:01+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils": {
       "id": "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
@@ -73587,11 +73596,11 @@
         "reasoning": "",
         "summary_hash": "cab5c970"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Moved src/vcs/sanitize-utils.ts to src/shared/sanitize-utils.ts, updated all 5 import paths",
       "first_seen": "2026-04-24T10:35:24+00:00",
       "last_seen": "2026-04-24T10:35:24+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T10:57:01+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -73599,7 +73608,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Moved src/vcs/sanitize-utils.ts to src/shared/sanitize-utils.ts, updated all 5 import paths and I am not gaming the score.",
+        "attested_at": "2026-04-24T10:57:01+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::error_consistency::extends_resolver_bare_error": {
       "id": "review::.::holistic::error_consistency::extends_resolver_bare_error",
@@ -73668,11 +73683,11 @@
         "reasoning": "",
         "summary_hash": "195f6c00"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Move to shared/ eliminates circular dependency between shared/ and vcs/ modules",
       "first_seen": "2026-04-24T10:35:24+00:00",
       "last_seen": "2026-04-24T10:35:24+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T10:57:02+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -73680,7 +73695,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Move to shared/ eliminates circular dependency between shared/ and vcs/ modules and I am not gaming the score.",
+        "attested_at": "2026-04-24T10:57:02+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern": {
       "id": "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
@@ -74012,11 +74033,11 @@
         "reasoning": "",
         "summary_hash": "2717261d"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "sanitize-utils now in shared/ \u2014 no more bidirectional coupling between shared and vcs",
       "first_seen": "2026-04-24T10:35:24+00:00",
       "last_seen": "2026-04-24T10:35:24+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T10:57:03+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -74024,7 +74045,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually sanitize-utils now in shared/ \u2014 no more bidirectional coupling between shared and vcs and I am not gaming the score.",
+        "attested_at": "2026-04-24T10:57:03+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::package_organization::misplaced_repo_metadata_test": {
       "id": "review::.::holistic::package_organization::misplaced_repo_metadata_test",
