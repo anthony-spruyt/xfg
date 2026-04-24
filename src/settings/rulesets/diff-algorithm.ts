@@ -112,7 +112,8 @@ function diffObjectArrays(
     >();
     for (let i = 0; i < currentArr.length; i++) {
       const item = currentArr[i] as Record<string, unknown>;
-      const type = item.type as string;
+      const type =
+        typeof item.type === "string" ? item.type : String(item.type ?? "");
       if (type) currentByType.set(type, { item, index: i });
     }
 
@@ -120,7 +121,10 @@ function diffObjectArrays(
 
     for (let i = 0; i < desiredArr.length; i++) {
       const desiredItem = desiredArr[i] as Record<string, unknown>;
-      const type = desiredItem.type as string;
+      const type =
+        typeof desiredItem.type === "string"
+          ? desiredItem.type
+          : String(desiredItem.type ?? "");
       const label = `[${i}] (${type})`;
       const currentEntry = currentByType.get(type);
 

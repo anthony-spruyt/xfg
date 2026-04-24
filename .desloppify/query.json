@@ -1,11 +1,11 @@
 {
   "command": "resolve",
   "patterns": [
-    "unguarded_error_property_access"
+    "unverified_string_cast_in_diff"
   ],
   "status": "fixed",
   "resolved": [
-    "review::.::holistic::type_safety::unguarded_error_property_access"
+    "review::.::holistic::type_safety::unverified_string_cast_in_diff"
   ],
   "count": 1,
   "next_command": "desloppify next",
@@ -17,10 +17,10 @@
   "prev_objective_score": 98.8,
   "prev_strict_score": 88.3,
   "prev_verified_strict_score": 90.3,
-  "attestation": "I have actually added a proper type guard and applied it in both functions. Build and all tests pass. I am not gaming the score.",
+  "attestation": "I have actually replaced both unsafe string casts with proper typeof checks. Build and all tests pass. I am not gaming the score.",
   "narrative": {
     "phase": "regression",
-    "headline": "Score shifted 3.3 pts \u2014 this is normal after structural changes. Rescan after your next fix to see the real trend. (6 review work items \u2014 run `desloppify show review --status open`)",
+    "headline": "Score shifted 3.3 pts \u2014 this is normal after structural changes. Rescan after your next fix to see the real trend. (5 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -202,8 +202,8 @@
       {
         "type": "refactor",
         "detector": "review",
-        "count": 6,
-        "description": "6 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
+        "count": 5,
+        "description": "5 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
         "command": "desloppify show review --status open",
         "impact": 0.0,
         "dimension": "Unknown",
@@ -225,7 +225,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 153,
+        "total_count": 150,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -292,7 +292,7 @@
         }
       },
       "can_parallelize": false,
-      "hint": "Work through actions in priority order. Rescan after each fix to track progress. Review: 6 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "Work through actions in priority order. Rescan after each fix to track progress. Review: 5 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -338,7 +338,7 @@
       "command": "desloppify show flat_dirs --status open",
       "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "Work through actions in priority order. Rescan after each fix to track progress. Review: 6 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "Work through actions in priority order. Rescan after each fix to track progress. Review: 5 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
