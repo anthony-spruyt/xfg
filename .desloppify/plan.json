@@ -1,18 +1,12 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T10:47:06+00:00",
+  "updated": "2026-04-24T10:52:00+00:00",
   "queue_order": [
     "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
-    "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
-    "review::.::holistic::error_consistency::extends_resolver_bare_error",
-    "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
-    "review::.::holistic::package_organization::misplaced_repo_metadata_test",
-    "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
-    "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
     "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
     "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
     "review::.::holistic::dependency_health::shared_vcs_circular_import",
@@ -1156,7 +1150,7 @@
       "skipped_at_scan": 204
     }
   },
-  "active_cluster": null,
+  "active_cluster": "quick-wins",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -3513,26 +3507,26 @@
     "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning": {
       "issue_id": "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
       "created_at": "2026-04-24T10:39:18+00:00",
-      "cluster": "quick-wins",
-      "updated_at": "2026-04-24T10:39:18+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T10:51:38+00:00"
     },
     "review::.::holistic::error_consistency::extends_resolver_bare_error": {
       "issue_id": "review::.::holistic::error_consistency::extends_resolver_bare_error",
       "created_at": "2026-04-24T10:39:18+00:00",
-      "cluster": "quick-wins",
-      "updated_at": "2026-04-24T10:39:18+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T10:51:39+00:00"
     },
     "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive": {
       "issue_id": "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
       "created_at": "2026-04-24T10:39:19+00:00",
-      "cluster": "quick-wins",
-      "updated_at": "2026-04-24T10:39:19+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T10:51:40+00:00"
     },
     "review::.::holistic::package_organization::misplaced_repo_metadata_test": {
       "issue_id": "review::.::holistic::package_organization::misplaced_repo_metadata_test",
       "created_at": "2026-04-24T10:39:20+00:00",
-      "cluster": "quick-wins",
-      "updated_at": "2026-04-24T10:39:20+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T10:51:55+00:00"
     },
     "review::.::holistic::design_coherence::display_name_duplication": {
       "issue_id": "review::.::holistic::design_coherence::display_name_duplication",
@@ -3543,14 +3537,14 @@
     "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat": {
       "issue_id": "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
       "created_at": "2026-04-24T10:39:21+00:00",
-      "cluster": "quick-wins",
-      "updated_at": "2026-04-24T10:39:21+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T10:51:41+00:00"
     },
     "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern": {
       "issue_id": "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
       "created_at": "2026-04-24T10:39:21+00:00",
-      "cluster": "quick-wins",
-      "updated_at": "2026-04-24T10:39:21+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T10:51:42+00:00"
     },
     "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils": {
       "issue_id": "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
@@ -4178,13 +4172,13 @@
         "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
         "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
         "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+        "review::.::holistic::design_coherence::display_name_duplication",
         "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
         "review::.::holistic::error_consistency::extends_resolver_bare_error",
         "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
-        "review::.::holistic::package_organization::misplaced_repo_metadata_test",
-        "review::.::holistic::design_coherence::display_name_duplication",
         "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
-        "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern"
+        "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+        "review::.::holistic::package_organization::misplaced_repo_metadata_test"
       ],
       "created_at": "2026-03-18T11:51:29+00:00",
       "updated_at": "2026-04-24T10:43:37+00:00",
@@ -5599,7 +5593,8 @@
           "issue_refs": [
             "shared_imports_vcs_sanitize_utils,shared_vcs_circular_import,sanitize_utils_bidirectional_coupling"
           ],
-          "effort": "small"
+          "effort": "small",
+          "done": true
         },
         {
           "title": "Update imports in shared/command-executor.ts, shared/retry-utils.ts",
@@ -5683,7 +5678,8 @@
           "issue_refs": [
             "mixed_set_update_verbs_repo_settings,code_scanning_compound_method_names"
           ],
-          "effort": "small"
+          "effort": "small",
+          "done": true
         }
       ]
     },
@@ -5788,7 +5784,8 @@
           "issue_refs": [
             "sync_command_module_scoped_mutable_state,run_scope_module_state"
           ],
-          "effort": "small"
+          "effort": "small",
+          "done": true
         },
         {
           "title": "Thread through free functions as parameter",
@@ -9310,12 +9307,6 @@
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
-    "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
-    "review::.::holistic::error_consistency::extends_resolver_bare_error",
-    "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
-    "review::.::holistic::package_organization::misplaced_repo_metadata_test",
-    "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
-    "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
     "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
     "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
     "review::.::holistic::dependency_health::shared_vcs_circular_import",
@@ -36617,6 +36608,175 @@
         "kind": "false_positive",
         "reason": null
       }
+    },
+    {
+      "timestamp": "2026-04-24T10:51:38+00:00",
+      "action": "done",
+      "issue_ids": [
+        "gitlab_force_merge_no_warning"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added this.log?.warn() before force merge in gitlab-pr-strategy.ts",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:51:38+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added this.log?.warn() before force merge in gitlab-pr-strategy.ts",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Added this.log?.warn() before force merge in gitlab-pr-strategy.ts and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:51:39+00:00",
+      "action": "done",
+      "issue_ids": [
+        "extends_resolver_bare_error"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Replaced 3 bare Error throws with ValidationError in extends-resolver.ts",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:51:39+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::extends_resolver_bare_error"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Replaced 3 bare Error throws with ValidationError in extends-resolver.ts",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Replaced 3 bare Error throws with ValidationError in extends-resolver.ts and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:51:40+00:00",
+      "action": "done",
+      "issue_ids": [
+        "lifecycle_report_switch_not_exhaustive"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added exhaustive default case with never check in lifecycle-report.ts",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:51:40+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added exhaustive default case with never check in lifecycle-report.ts",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Added exhaustive default case with never check in lifecycle-report.ts and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:51:41+00:00",
+      "action": "done",
+      "issue_ids": [
+        "trivial_function_docstring_bloat"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed trivial JSDoc from base-processor.ts type aliases and countActions",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:51:41+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed trivial JSDoc from base-processor.ts type aliases and countActions",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Removed trivial JSDoc from base-processor.ts type aliases and countActions and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:51:42+00:00",
+      "action": "done",
+      "issue_ids": [
+        "merge_pr_options_verbose_field_pattern"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Simplified mergePROptions with spread pattern in normalizer.ts",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:51:42+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Simplified mergePROptions with spread pattern in normalizer.ts",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Simplified mergePROptions with spread pattern in normalizer.ts and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:51:55+00:00",
+      "action": "done",
+      "issue_ids": [
+        "misplaced_repo_metadata_test"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved test/unit/shared/repo-metadata-provider.test.ts to test/unit/repo/ to match source module location",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:51:55+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::package_organization::misplaced_repo_metadata_test"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved test/unit/shared/repo-metadata-provider.test.ts to test/unit/repo/ to match source module location",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Moved test/unit/shared/repo-metadata-provider.test.ts to test/unit/repo/ to match source module location and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:52:00+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+        "review::.::holistic::error_consistency::extends_resolver_bare_error",
+        "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+        "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+        "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+        "review::.::holistic::package_organization::misplaced_repo_metadata_test"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Quick-wins: 6 fixes + 1 false positive skip",
+      "detail": {
+        "sha": "fc88f8303da4",
+        "branch": "desloppify/code-health-apr24"
+      }
     }
   ],
   "epic_triage_meta": {
@@ -37637,6 +37797,21 @@
       ],
       "recorded_at": "2026-04-24T09:46:42+00:00",
       "note": "Deepened xfg-template test assertions",
+      "cluster_name": null
+    },
+    {
+      "sha": "fc88f8303da4",
+      "branch": "desloppify/code-health-apr24",
+      "issue_ids": [
+        "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+        "review::.::holistic::error_consistency::extends_resolver_bare_error",
+        "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+        "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+        "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+        "review::.::holistic::package_organization::misplaced_repo_metadata_test"
+      ],
+      "recorded_at": "2026-04-24T10:52:00+00:00",
+      "note": "Quick-wins: 6 fixes + 1 false positive skip",
       "cluster_name": null
     }
   ],

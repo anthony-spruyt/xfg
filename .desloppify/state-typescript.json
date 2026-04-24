@@ -12,8 +12,8 @@
     "auto_resolved": 1160,
     "deferred": 0,
     "false_positive": 162,
-    "fixed": 277,
-    "open": 157,
+    "fixed": 283,
+    "open": 151,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 6,
-        "fixed": 105,
-        "open": 10,
+        "fixed": 109,
+        "open": 6,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 79,
-        "fixed": 127,
-        "open": 12,
+        "fixed": 129,
+        "open": 10,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -105,7 +105,10 @@
     "error_consistency": {
       "score": 88.5,
       "source": "holistic",
-      "assessed_at": "2026-04-24T10:35:24+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T10:51:39+00:00"
     },
     "abstraction_fitness": {
       "score": 89.5,
@@ -136,12 +139,18 @@
     "authorization_consistency": {
       "score": 90.5,
       "source": "holistic",
-      "assessed_at": "2026-04-24T10:35:24+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T10:51:38+00:00"
     },
     "ai_generated_debt": {
       "score": 88.0,
       "source": "holistic",
-      "assessed_at": "2026-04-24T10:35:24+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T10:51:41+00:00"
     },
     "incomplete_migration": {
       "score": 95.0,
@@ -151,7 +160,10 @@
     "package_organization": {
       "score": 88.5,
       "source": "holistic",
-      "assessed_at": "2026-04-24T10:35:24+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T10:51:55+00:00"
     },
     "high_level_elegance": {
       "score": 88.5,
@@ -166,7 +178,10 @@
     "low_level_elegance": {
       "score": 88.5,
       "source": "holistic",
-      "assessed_at": "2026-04-24T10:35:24+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T10:51:42+00:00"
     },
     "design_coherence": {
       "score": 87.5,
@@ -197,7 +212,10 @@
     "logic_clarity": {
       "score": 85.0,
       "source": "holistic",
-      "assessed_at": "2026-04-24T10:35:24+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T10:51:40+00:00"
     },
     "naming_quality": {
       "score": 93.2,
@@ -3041,13 +3059,13 @@
       "strict": 88.0,
       "verified_strict_score": 88.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.88,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.2,
           "assessment_score": 88.0,
           "placeholder": false,
@@ -3083,13 +3101,13 @@
       "strict": 90.5,
       "verified_strict_score": 90.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.905,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.95,
           "assessment_score": 90.5,
           "placeholder": false,
@@ -3209,13 +3227,13 @@
       "strict": 88.5,
       "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.885,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.15,
           "assessment_score": 88.5,
           "placeholder": false,
@@ -3293,13 +3311,13 @@
       "strict": 85.0,
       "verified_strict_score": 85.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.85,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.5,
           "assessment_score": 85.0,
           "placeholder": false,
@@ -3314,13 +3332,13 @@
       "strict": 88.5,
       "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.885,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.15,
           "assessment_score": 88.5,
           "placeholder": false,
@@ -3377,13 +3395,13 @@
       "strict": 88.5,
       "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.885,
-          "failing": 2,
+          "failing": 1,
           "weighted_failures": 1.15,
           "assessment_score": 88.5,
           "placeholder": false,
@@ -73605,11 +73623,11 @@
         "reasoning": "",
         "summary_hash": "25072124"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Replaced 3 bare Error throws with ValidationError in extends-resolver.ts",
       "first_seen": "2026-04-24T10:35:24+00:00",
       "last_seen": "2026-04-24T10:35:24+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T10:51:39+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -73617,7 +73635,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Replaced 3 bare Error throws with ValidationError in extends-resolver.ts and I am not gaming the score.",
+        "attested_at": "2026-04-24T10:51:39+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::dependency_health::shared_vcs_circular_import": {
       "id": "review::.::holistic::dependency_health::shared_vcs_circular_import",
@@ -73678,11 +73702,11 @@
         "reasoning": "",
         "summary_hash": "f12571f4"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Simplified mergePROptions with spread pattern in normalizer.ts",
       "first_seen": "2026-04-24T10:35:24+00:00",
       "last_seen": "2026-04-24T10:35:24+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T10:51:42+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -73690,7 +73714,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Simplified mergePROptions with spread pattern in normalizer.ts and I am not gaming the score.",
+        "attested_at": "2026-04-24T10:51:42+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state": {
       "id": "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
@@ -73893,11 +73923,11 @@
         "reasoning": "",
         "summary_hash": "23f24925"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Added this.log?.warn() before force merge in gitlab-pr-strategy.ts",
       "first_seen": "2026-04-24T10:35:24+00:00",
       "last_seen": "2026-04-24T10:35:24+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T10:51:38+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -73905,7 +73935,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Added this.log?.warn() before force merge in gitlab-pr-strategy.ts and I am not gaming the score.",
+        "attested_at": "2026-04-24T10:51:38+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat": {
       "id": "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
@@ -73931,11 +73967,11 @@
         "reasoning": "",
         "summary_hash": "40acc03a"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Removed trivial JSDoc from base-processor.ts type aliases and countActions",
       "first_seen": "2026-04-24T10:35:24+00:00",
       "last_seen": "2026-04-24T10:35:24+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T10:51:41+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -73943,7 +73979,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Removed trivial JSDoc from base-processor.ts type aliases and countActions and I am not gaming the score.",
+        "attested_at": "2026-04-24T10:51:41+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling": {
       "id": "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
@@ -74005,11 +74047,11 @@
         "reasoning": "",
         "summary_hash": "1563456c"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Moved test/unit/shared/repo-metadata-provider.test.ts to test/unit/repo/ to match source module location",
       "first_seen": "2026-04-24T10:35:24+00:00",
       "last_seen": "2026-04-24T10:35:24+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T10:51:55+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -74017,7 +74059,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Moved test/unit/shared/repo-metadata-provider.test.ts to test/unit/repo/ to match source module location and I am not gaming the score.",
+        "attested_at": "2026-04-24T10:51:55+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::initialization_coupling::run_scope_module_state": {
       "id": "review::.::holistic::initialization_coupling::run_scope_module_state",
@@ -74255,11 +74303,11 @@
         "reasoning": "",
         "summary_hash": "cec2e50c"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Added exhaustive default case with never check in lifecycle-report.ts",
       "first_seen": "2026-04-24T10:35:24+00:00",
       "last_seen": "2026-04-24T10:35:24+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T10:51:40+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -74267,7 +74315,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Added exhaustive default case with never check in lifecycle-report.ts and I am not gaming the score.",
+        "attested_at": "2026-04-24T10:51:40+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::type_safety::unguarded_error_property_access": {
       "id": "review::.::holistic::type_safety::unguarded_error_property_access",

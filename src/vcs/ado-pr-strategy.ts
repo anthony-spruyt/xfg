@@ -21,7 +21,7 @@ import type { ICommandExecutor } from "../shared/command-executor.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
-import { sanitizeCredentials } from "./sanitize-utils.js";
+import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 
 export class AdoPRStrategy extends BasePRStrategy {
