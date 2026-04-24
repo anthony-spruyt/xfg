@@ -3,17 +3,17 @@
   "created": "2026-03-03T09:08:56+00:00",
   "last_scan": "2026-04-24T09:48:47+00:00",
   "scan_count": 203,
-  "overall_score": 92.9,
-  "objective_score": 98.5,
+  "overall_score": 93.0,
+  "objective_score": 98.8,
   "strict_score": 91.7,
   "verified_strict_score": 90.3,
   "stats": {
     "total": 1735,
     "auto_resolved": 1160,
     "deferred": 0,
-    "false_positive": 156,
+    "false_positive": 161,
     "fixed": 277,
-    "open": 140,
+    "open": 135,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -29,18 +29,18 @@
       "2": {
         "auto_resolved": 364,
         "deferred": 0,
-        "false_positive": 78,
+        "false_positive": 79,
         "fixed": 127,
-        "open": 2,
+        "open": 1,
         "triaged_out": 0,
         "wontfix": 2
       },
       "3": {
         "auto_resolved": 713,
         "deferred": 0,
-        "false_positive": 72,
+        "false_positive": 76,
         "fixed": 25,
-        "open": 138,
+        "open": 134,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -2905,11 +2905,11 @@
   },
   "dimension_scores": {
     "Code quality": {
-      "score": 98.7,
-      "strict": 95.9,
+      "score": 99.0,
+      "strict": 96.0,
       "verified_strict_score": 96.4,
       "checks": 690,
-      "failing": 24,
+      "failing": 21,
       "tier": 3,
       "detectors": {
         "unused": {
@@ -2926,9 +2926,9 @@
         },
         "smells": {
           "potential": 120,
-          "pass_rate": 0.9441666666666666,
-          "failing": 19,
-          "weighted_failures": 6.7
+          "pass_rate": 0.9600000000000001,
+          "failing": 16,
+          "weighted_failures": 4.8
         },
         "orphaned": {
           "potential": 119,
@@ -2975,11 +2975,11 @@
       }
     },
     "Security": {
-      "score": 99.6,
-      "strict": 95.2,
+      "score": 100.0,
+      "strict": 95.6,
       "verified_strict_score": 98.5,
       "checks": 238,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "cycles": {
@@ -2990,9 +2990,9 @@
         },
         "security": {
           "potential": 119,
-          "pass_rate": 0.9915966386554622,
-          "failing": 1,
-          "weighted_failures": 1.0
+          "pass_rate": 1.0,
+          "failing": 0,
+          "weighted_failures": 0.0
         }
       }
     },
@@ -3035,18 +3035,18 @@
       }
     },
     "Test health": {
-      "score": 99.2,
-      "strict": 93.6,
+      "score": 100.0,
+      "strict": 94.5,
       "verified_strict_score": 63.4,
       "checks": 1178,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "test_coverage": {
           "potential": 1178,
-          "pass_rate": 0.9918576714374997,
-          "failing": 1,
-          "weighted_failures": 9.591663046625438
+          "pass_rate": 1.0,
+          "failing": 0,
+          "weighted_failures": 0.0
         }
       }
     },
@@ -8654,11 +8654,11 @@
           624
         ]
       },
-      "status": "open",
-      "note": "Reopened (\u00d710) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-03T09:10:57+00:00",
       "last_seen": "2026-04-24T09:48:47+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T09:49:21+00:00",
       "reopen_count": 10,
       "lang": "typescript",
       "zone": "production",
@@ -8667,7 +8667,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed both functions \u2014 they use await. I am not gaming the score by suppressing a real defect.",
+        "attested_at": "2026-04-24T09:49:21+00:00",
+        "scan_verified": false
+      }
     },
     "smells::src/vcs/pr-creator.ts::async_no_await": {
       "id": "smells::src/vcs/pr-creator.ts::async_no_await",
@@ -10354,11 +10360,11 @@
         "content": "  secretScanning: \"_secret_scanning\",",
         "remediation": "Move secret to environment variable or secrets manager"
       },
-      "status": "open",
-      "note": "Reopened (\u00d716) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-03T09:10:57+00:00",
       "last_seen": "2026-04-24T09:48:47+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T09:49:20+00:00",
       "reopen_count": 16,
       "zone": "production",
       "lang": "typescript",
@@ -10381,7 +10387,13 @@
       },
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this code \u2014 secretScanning is a GitHub feature name property key, not a secret. I am not gaming the score by suppressing a real defect.",
+        "attested_at": "2026-04-24T09:49:20+00:00",
+        "scan_verified": false
+      }
     },
     "security::src/cli/program.ts::security::json_parse_unguarded::src/cli/program.ts::12": {
       "id": "security::src/cli/program.ts::security::json_parse_unguarded::src/cli/program.ts::12",
@@ -45130,11 +45142,11 @@
           244
         ]
       },
-      "status": "open",
-      "note": "Reopened (\u00d78) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-05T02:29:11+00:00",
       "last_seen": "2026-04-24T09:48:47+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T09:49:22+00:00",
       "reopen_count": 8,
       "lang": "typescript",
       "zone": "production",
@@ -45143,7 +45155,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this function \u2014 it uses await on line 249. I am not gaming the score by suppressing a real defect.",
+        "attested_at": "2026-04-24T09:49:22+00:00",
+        "scan_verified": false
+      }
     },
     "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::29b3172d9474944d": {
       "id": "boilerplate_duplication::src/vcs/azure-pr-strategy.ts::29b3172d9474944d",
@@ -52861,11 +52879,11 @@
         "importer_count": 2,
         "loc_weight": 9.591663046625438
       },
-      "status": "open",
-      "note": "Reopened (\u00d77) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-06T08:52:20+00:00",
       "last_seen": "2026-04-24T09:48:47+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T09:49:19+00:00",
       "reopen_count": 7,
       "lang": "typescript",
       "zone": "production",
@@ -52874,7 +52892,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this file \u2014 pure type definitions, zero runtime code. I am not gaming the score by suppressing a real defect.",
+        "attested_at": "2026-04-24T09:49:19+00:00",
+        "scan_verified": false
+      }
     },
     "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity": {
       "id": "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity",
@@ -53381,11 +53405,11 @@
           222
         ]
       },
-      "status": "open",
-      "note": "Reopened (\u00d75) \u2014 reappeared in scan (was false_positive)",
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-03-06T08:53:37+00:00",
       "last_seen": "2026-04-24T09:48:47+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T09:49:21+00:00",
       "reopen_count": 5,
       "lang": "typescript",
       "zone": "production",
@@ -53394,7 +53418,13 @@
       "suppression_pattern": null,
       "work_item_kind": "mechanical_defect",
       "issue_kind": "mechanical_defect",
-      "origin": "scan"
+      "origin": "scan",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this \u2014 idiomatic builder pattern with single-line closures. I am not gaming the score by suppressing a real defect.",
+        "attested_at": "2026-04-24T09:49:21+00:00",
+        "scan_verified": false
+      }
     },
     "smells::src/cli/sync-command.ts::stub_function": {
       "id": "smells::src/cli/sync-command.ts::stub_function",

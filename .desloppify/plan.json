@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T09:48:48+00:00",
+  "updated": "2026-04-24T09:49:22+00:00",
   "queue_order": [
     "subjective::abstraction_fitness",
     "subjective::ai_generated_debt",
@@ -1082,6 +1082,56 @@
       "created_at": "2026-04-24T08:59:48+00:00",
       "review_after": null,
       "skipped_at_scan": 200
+    },
+    "test_coverage::src/cli/types.ts::transitive_only": {
+      "issue_id": "test_coverage::src/cli/types.ts::transitive_only",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this file \u2014 pure type definitions, zero runtime code. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-24T09:49:19+00:00",
+      "review_after": null,
+      "skipped_at_scan": 203
+    },
+    "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41": {
+      "issue_id": "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this code \u2014 secretScanning is a GitHub feature name property key, not a secret. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-24T09:49:20+00:00",
+      "review_after": null,
+      "skipped_at_scan": 203
+    },
+    "smells::src/cli/sync-command.ts::async_no_await": {
+      "issue_id": "smells::src/cli/sync-command.ts::async_no_await",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed both functions \u2014 they use await. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-24T09:49:21+00:00",
+      "review_after": null,
+      "skipped_at_scan": 203
+    },
+    "smells::src/cli/sync-command.ts::nested_closure": {
+      "issue_id": "smells::src/cli/sync-command.ts::nested_closure",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 idiomatic builder pattern with single-line closures. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-24T09:49:21+00:00",
+      "review_after": null,
+      "skipped_at_scan": 203
+    },
+    "smells::src/shared/gh-api-utils.ts::async_no_await": {
+      "issue_id": "smells::src/shared/gh-api-utils.ts::async_no_await",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this function \u2014 it uses await on line 249. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-24T09:49:22+00:00",
+      "review_after": null,
+      "skipped_at_scan": 203
     }
   },
   "active_cluster": null,
@@ -34509,6 +34559,76 @@
       "detail": {
         "scan_count": 203
       }
+    },
+    {
+      "timestamp": "2026-04-24T09:49:19+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "test_coverage::src/cli/types.ts::transitive_only"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:49:20+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "security::src/settings/repo-settings/diff.ts::security::hardcoded_secret_name::src/settings/repo-settings/diff.ts::41"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:49:21+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:49:21+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/cli/sync-command.ts::nested_closure"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:49:22+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/shared/gh-api-utils.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
     }
   ],
   "epic_triage_meta": {
@@ -36211,8 +36331,7 @@
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 198,
     "lifecycle_phase": "plan",
-    "_subjective_migration_pruned": true,
-    "postflight_scan_completed_at_scan_count": 203
+    "_subjective_migration_pruned": true
   },
   "scan_count_at_plan_start": 203,
   "previous_plan_start_scores": {}
