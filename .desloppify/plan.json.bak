@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T04:39:38+00:00",
+  "updated": "2026-04-24T04:43:50+00:00",
   "queue_order": [
     "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
     "strategy::redirect-effort-to-test-health",
@@ -394,7 +394,7 @@
       "skipped_at_scan": 199
     }
   },
-  "active_cluster": "error-consistency-newly-surfaced",
+  "active_cluster": null,
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -32064,6 +32064,44 @@
         "status": "fixed",
         "attestation": "I have actually Changed closeExistingPR return type from boolean to ClosePRResult discriminated union across all 3 strategies and I am not gaming the score."
       }
+    },
+    {
+      "timestamp": "2026-04-24T04:39:54+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::branch_protection_string_match",
+        "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "sha": "70c8d9ca93ff",
+        "branch": "desloppify/code-health-apr24"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T04:40:14+00:00",
+      "action": "focus",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "action": "clear",
+        "previous": "error-consistency-newly-surfaced"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T04:43:50+00:00",
+      "action": "done",
+      "issue_ids": [
+        "code_scanning_report_glue"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Unified codeScanning counting through countActions by delaying the settings count pass until after codeScanning entries are folded in",
+      "detail": {}
     }
   ],
   "epic_triage_meta": {
@@ -33701,12 +33739,20 @@
       "recorded_at": "2026-04-24T04:20:45+00:00",
       "note": null,
       "cluster_name": null
+    },
+    {
+      "sha": "70c8d9ca93ff",
+      "branch": "desloppify/code-health-apr24",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::branch_protection_string_match",
+        "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous"
+      ],
+      "recorded_at": "2026-04-24T04:39:54+00:00",
+      "note": null,
+      "cluster_name": null
     }
   ],
-  "uncommitted_issues": [
-    "review::.::holistic::error_consistency::branch_protection_string_match",
-    "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous"
-  ],
+  "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 198,

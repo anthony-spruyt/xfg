@@ -12,8 +12,8 @@
     "auto_resolved": 1095,
     "deferred": 0,
     "false_positive": 87,
-    "fixed": 266,
-    "open": 214,
+    "fixed": 267,
+    "open": 213,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 5,
-        "fixed": 103,
-        "open": 2,
+        "fixed": 104,
+        "open": 1,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -190,8 +190,8 @@
       "source": "holistic",
       "assessed_at": "2026-04-16T05:39:25+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "review_issue_false_positive",
-      "stale_since": "2026-04-16T07:26:44+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T04:43:50+00:00"
     },
     "low_level_elegance": {
       "score": 89.0,
@@ -3385,13 +3385,13 @@
       "strict": 92.0,
       "verified_strict_score": 92.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.92,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.8,
           "assessment_score": 92.0,
           "placeholder": false,
@@ -69634,11 +69634,11 @@
         "reasoning": "",
         "summary_hash": "e6f3c94e"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Unified codeScanning counting through countActions by delaying the settings count pass until after codeScanning entries are folded in",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T04:43:50+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -69646,7 +69646,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Unified codeScanning counting through countActions by delaying the settings count pass until after codeScanning entries are folded in and I am not gaming the score.",
+        "attested_at": "2026-04-24T04:43:50+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::mid_level_elegance::settings_result_dual_view_casts": {
       "id": "review::.::holistic::mid_level_elegance::settings_result_dual_view_casts",

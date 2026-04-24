@@ -1,11 +1,11 @@
 {
   "command": "resolve",
   "patterns": [
-    "close_existing_pr_false_is_ambiguous"
+    "code_scanning_report_glue"
   ],
   "status": "fixed",
   "resolved": [
-    "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous"
+    "review::.::holistic::mid_level_elegance::code_scanning_report_glue"
   ],
   "count": 1,
   "next_command": "desloppify next",
@@ -17,10 +17,10 @@
   "prev_objective_score": 92.7,
   "prev_strict_score": 90.2,
   "prev_verified_strict_score": 90.3,
-  "attestation": "I have actually Changed closeExistingPR return type from boolean to ClosePRResult discriminated union across all 3 strategies and I am not gaming the score.",
+  "attestation": "I have actually Unified codeScanning counting through countActions by delaying the settings count pass until after codeScanning entries are folded in and I am not gaming the score.",
   "narrative": {
     "phase": "refinement",
-    "headline": "\u26a0 1 security issue \u2014 review before other cleanup.  (1 review work item \u2014 run `desloppify show review --status open`)",
+    "headline": "\u26a0 1 security issue \u2014 review before other cleanup. ",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -211,17 +211,6 @@
         "lane": "refactor_2"
       },
       {
-        "type": "refactor",
-        "detector": "review",
-        "count": 1,
-        "description": "1 review work item need investigation \u2014 run `desloppify show review --status open` to see them",
-        "command": "desloppify show review --status open",
-        "impact": 0.0,
-        "dimension": "Unknown",
-        "priority": 10,
-        "lane": "refactor_3"
-      },
-      {
         "type": "manual_fix",
         "detector": "smells",
         "count": 97,
@@ -229,7 +218,7 @@
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 11,
+        "priority": 10,
         "lane": "refactor_0"
       },
       {
@@ -240,8 +229,8 @@
         "command": "desloppify show exports --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 12,
-        "lane": "refactor_4"
+        "priority": 11,
+        "lane": "refactor_3"
       },
       {
         "type": "manual_fix",
@@ -251,8 +240,8 @@
         "command": "desloppify show stale_exclude --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 13,
-        "lane": "refactor_5"
+        "priority": 12,
+        "lane": "refactor_4"
       },
       {
         "type": "manual_fix",
@@ -262,14 +251,14 @@
         "command": "desloppify show security --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 14,
-        "lane": "refactor_6"
+        "priority": 13,
+        "lane": "refactor_5"
       }
     ],
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 216,
+        "total_count": 213,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -291,7 +280,7 @@
             4,
             5,
             7,
-            11
+            10
           ],
           "file_count": 94,
           "total_impact": 0.0,
@@ -318,9 +307,9 @@
         },
         "refactor_3": {
           "actions": [
-            10
+            11
           ],
-          "file_count": 1,
+          "file_count": 9,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -329,7 +318,7 @@
           "actions": [
             12
           ],
-          "file_count": 9,
+          "file_count": 1,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -337,15 +326,6 @@
         "refactor_5": {
           "actions": [
             13
-          ],
-          "file_count": 1,
-          "total_impact": 0.0,
-          "automation": "manual",
-          "run_first": false
-        },
-        "refactor_6": {
-          "actions": [
-            14
           ],
           "file_count": 1,
           "total_impact": 0.0,
@@ -363,7 +343,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "9 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 1 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "8 independent workstreams, safe to parallelize. Rescan after each phase to verify."
     },
     "tools": {
       "fixers": [
@@ -409,7 +389,7 @@
       "command": "desloppify show flat_dirs --status open",
       "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "9 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 1 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "8 independent workstreams, safe to parallelize. Rescan after each phase to verify.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"

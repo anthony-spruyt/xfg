@@ -1,9 +1,25 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T04:39:54+00:00",
+  "updated": "2026-04-24T04:43:50+00:00",
   "queue_order": [
-    "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
+    "subjective::abstraction_fitness",
+    "subjective::ai_generated_debt",
+    "subjective::api_surface_coherence",
+    "subjective::authorization_consistency",
+    "subjective::contract_coherence",
+    "subjective::convention_outlier",
+    "subjective::design_coherence",
+    "subjective::error_consistency",
+    "subjective::high_level_elegance",
+    "subjective::incomplete_migration",
+    "subjective::initialization_coupling",
+    "subjective::logic_clarity",
+    "subjective::mid_level_elegance",
+    "subjective::naming_quality",
+    "subjective::package_organization",
+    "subjective::test_strategy",
+    "subjective::type_safety",
     "strategy::redirect-effort-to-test-health",
     "strategy::abstraction-fitness-false-positive-sweep",
     "strategy::duplication-boilerplate-cluster",
@@ -394,7 +410,7 @@
       "skipped_at_scan": 199
     }
   },
-  "active_cluster": "error-consistency-newly-surfaced",
+  "active_cluster": null,
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -2739,8 +2755,8 @@
     "review::.::holistic::mid_level_elegance::code_scanning_report_glue": {
       "issue_id": "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
       "created_at": "2026-04-16T07:26:30+00:00",
-      "cluster": "mid-elegance-settings-report-delta",
-      "updated_at": "2026-04-16T07:26:30+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T04:43:50+00:00"
     }
   },
   "clusters": {
@@ -4719,7 +4735,7 @@
       "action": null,
       "action_type": "manual_fix",
       "execution_policy": "planned_only",
-      "execution_status": "active",
+      "execution_status": "done",
       "user_modified": true,
       "depends_on_clusters": [
         "convention-and-naming-quick-wins"
@@ -4731,7 +4747,8 @@
           "effort": "small",
           "issue_refs": [
             "review::.::holistic::mid_level_elegance::code_scanning_report_glue"
-          ]
+          ],
+          "done": true
         }
       ]
     }
@@ -32079,6 +32096,65 @@
         "sha": "70c8d9ca93ff",
         "branch": "desloppify/code-health-apr24"
       }
+    },
+    {
+      "timestamp": "2026-04-24T04:40:14+00:00",
+      "action": "focus",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "action": "clear",
+        "previous": "error-consistency-newly-surfaced"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T04:43:50+00:00",
+      "action": "done",
+      "issue_ids": [
+        "code_scanning_report_glue"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Unified codeScanning counting through countActions by delaying the settings count pass until after codeScanning entries are folded in",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T04:43:50+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::mid_level_elegance::code_scanning_report_glue"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Unified codeScanning counting through countActions by delaying the settings count pass until after codeScanning entries are folded in",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Unified codeScanning counting through countActions by delaying the settings count pass until after codeScanning entries are folded in and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T04:43:50+00:00",
+      "action": "cluster_done",
+      "issue_ids": [
+        "review::.::holistic::mid_level_elegance::code_scanning_report_glue"
+      ],
+      "cluster_name": "mid-elegance-settings-report-delta",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T04:43:50+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
     }
   ],
   "epic_triage_meta": {
@@ -33729,7 +33805,9 @@
       "cluster_name": null
     }
   ],
-  "uncommitted_issues": [],
+  "uncommitted_issues": [
+    "review::.::holistic::mid_level_elegance::code_scanning_report_glue"
+  ],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 198,
