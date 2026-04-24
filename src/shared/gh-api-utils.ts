@@ -83,9 +83,19 @@ export function parseResponseBody(raw: string): string {
  *
  * No-op if stdout is absent or does not contain a numeric Retry-After header.
  */
+function hasStdout(error: unknown): error is { stdout: string | Buffer } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "stdout" in error &&
+    (typeof (error as Record<string, unknown>).stdout === "string" ||
+      Buffer.isBuffer((error as Record<string, unknown>).stdout))
+  );
+}
+
 export function attachRetryAfter(error: unknown): void {
-  const stdout = (error as { stdout?: string | Buffer }).stdout;
-  if (!stdout) return;
+  if (!hasStdout(error)) return;
+  const stdout = error.stdout;
 
   const stdoutStr = typeof stdout === "string" ? stdout : stdout.toString();
   const match = stdoutStr.match(/^retry-after:\s*(\d+)\s*$/im);
@@ -103,8 +113,8 @@ export function attachRetryAfter(error: unknown): void {
  * No-op if stdout is absent or does not contain parseable error JSON.
  */
 export function attachValidationDetails(error: unknown): void {
-  const stdout = (error as { stdout?: string | Buffer }).stdout;
-  if (!stdout) return;
+  if (!hasStdout(error)) return;
+  const stdout = error.stdout;
 
   const stdoutStr = typeof stdout === "string" ? stdout : stdout.toString();
   const body = parseResponseBody(stdoutStr);

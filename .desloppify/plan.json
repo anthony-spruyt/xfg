@@ -1,13 +1,12 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T13:19:15+00:00",
+  "updated": "2026-04-24T13:23:11+00:00",
   "queue_order": [
     "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
-    "review::.::holistic::type_safety::unguarded_error_property_access",
     "review::.::holistic::type_safety::unverified_string_cast_in_diff",
     "review::.::holistic::design_coherence::receive_migration_multi_phase",
     "review::.::holistic::design_coherence::settings_formatter_duplication",
@@ -1161,7 +1160,7 @@
       "skipped_at_scan": 204
     }
   },
-  "active_cluster": "contract-safety",
+  "active_cluster": "type-safety-casts",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -3614,8 +3613,8 @@
     "review::.::holistic::type_safety::unguarded_error_property_access": {
       "issue_id": "review::.::holistic::type_safety::unguarded_error_property_access",
       "created_at": "2026-04-24T10:39:43+00:00",
-      "cluster": "type-safety-casts",
-      "updated_at": "2026-04-24T10:39:43+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T13:23:11+00:00"
     },
     "review::.::holistic::type_safety::unverified_string_cast_in_diff": {
       "issue_id": "review::.::holistic::type_safety::unverified_string_cast_in_diff",
@@ -5751,8 +5750,8 @@
       "name": "type-safety-casts",
       "description": "Add type guards for unsafe property access and casts",
       "issue_ids": [
-        "review::.::holistic::type_safety::unguarded_error_property_access",
-        "review::.::holistic::type_safety::unverified_string_cast_in_diff"
+        "review::.::holistic::type_safety::unverified_string_cast_in_diff",
+        "review::.::holistic::type_safety::unguarded_error_property_access"
       ],
       "created_at": "2026-04-24T10:39:42+00:00",
       "updated_at": "2026-04-24T10:44:27+00:00",
@@ -5770,7 +5769,8 @@
           "issue_refs": [
             "unguarded_error_property_access"
           ],
-          "effort": "small"
+          "effort": "small",
+          "done": true
         },
         {
           "title": "Add runtime check before string cast in diff-algorithm.ts",
@@ -9328,7 +9328,6 @@
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
-    "review::.::holistic::type_safety::unguarded_error_property_access",
     "review::.::holistic::type_safety::unverified_string_cast_in_diff",
     "review::.::holistic::design_coherence::receive_migration_multi_phase",
     "review::.::holistic::design_coherence::settings_formatter_duplication",
@@ -36997,6 +36996,31 @@
         "status": "fixed",
         "attestation": "I have actually renamed getOrCreate to findOrCreate across interface, implementation, call site, and tests. Build and all 2680 tests pass. I am not gaming the score."
       }
+    },
+    {
+      "timestamp": "2026-04-24T13:23:11+00:00",
+      "action": "done",
+      "issue_ids": [
+        "unguarded_error_property_access"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added hasStdout type guard function checking typeof/Buffer.isBuffer before accessing error.stdout. Applied to both attachRetryAfter and attachValidationDetails, replacing unsafe casts.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T13:23:11+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::type_safety::unguarded_error_property_access"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added hasStdout type guard function checking typeof/Buffer.isBuffer before accessing error.stdout. Applied to both attachRetryAfter and attachValidationDetails, replacing unsafe casts.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually added a proper type guard and applied it in both functions. Build and all tests pass. I am not gaming the score."
+      }
     }
   ],
   "epic_triage_meta": {
@@ -38051,7 +38075,8 @@
   "uncommitted_issues": [
     "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
     "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
-    "review::.::holistic::contract_coherence::get_or_create_mutates"
+    "review::.::holistic::contract_coherence::get_or_create_mutates",
+    "review::.::holistic::type_safety::unguarded_error_property_access"
   ],
   "commit_tracking_branch": null,
   "refresh_state": {
