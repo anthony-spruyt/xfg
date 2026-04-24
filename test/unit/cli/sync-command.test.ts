@@ -159,6 +159,40 @@ repos:
 
       const output = consoleOutput.join("\n");
       assert.ok(output.includes("PR created"));
+
+      // Verify processor was called exactly once
+      const processMock = mockProcessor.process as MockFn;
+      assert.equal(
+        processMock.mock.calls.length,
+        1,
+        "processor.process should be called once"
+      );
+
+      // Verify processor received the correct repo config and repo info
+      const callArgs = processMock.mock.calls[0].arguments;
+      assert.ok(callArgs[0], "first argument (repoConfig) should be defined");
+      assert.equal(
+        (callArgs[0] as { git: string }).git,
+        "https://github.com/test/repo",
+        "processor should receive the repo config with correct git URL"
+      );
+      assert.ok(callArgs[1], "second argument (repoInfo) should be defined");
+      assert.equal(
+        (callArgs[1] as { owner: string; repo: string }).owner,
+        "test",
+        "processor should receive parsed repoInfo with correct owner"
+      );
+      assert.equal(
+        (callArgs[1] as { owner: string; repo: string }).repo,
+        "repo",
+        "processor should receive parsed repoInfo with correct repo name"
+      );
+      assert.ok(callArgs[2], "third argument (options) should be defined");
+      assert.equal(
+        (callArgs[2] as { dryRun?: boolean }).dryRun,
+        true,
+        "processor should receive dryRun option"
+      );
     });
 
     test("handles skipped result", async () => {
@@ -248,7 +282,20 @@ repos:
       );
 
       const output = consoleOutput.join("\n");
-      assert.ok(output.includes("CREATE"));
+      // Verify lifecycle report shows the repo would be created
+      assert.ok(
+        output.includes("CREATE"),
+        "output should indicate repo creation via lifecycle report"
+      );
+      assert.ok(
+        output.includes("test/repo"),
+        "output should include the repo name in lifecycle report"
+      );
+      // Verify dry-run mode banner was displayed
+      assert.ok(
+        output.includes("DRY RUN"),
+        "output should indicate dry-run mode"
+      );
     });
 
     test("handles processor exception", async () => {

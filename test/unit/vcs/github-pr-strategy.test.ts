@@ -61,8 +61,18 @@ describe("GitHubPRStrategy with mock executor", () => {
 
       assert.equal(result, "https://github.com/owner/repo/pull/123");
       assert.equal(mockExecutor.calls.length, 1);
-      assert.ok(mockExecutor.calls[0].command.includes("gh pr list"));
-      assert.ok(mockExecutor.calls[0].command.includes("test-branch"));
+      const listCmd = mockExecutor.calls[0].command;
+      assert.ok(listCmd.includes("gh pr list"));
+      assert.ok(
+        listCmd.includes("--repo 'owner/repo'"),
+        "should target correct repo"
+      );
+      assert.ok(
+        listCmd.includes("--head 'test-branch'"),
+        "should filter by branch"
+      );
+      assert.ok(listCmd.includes("--json url"), "should request url field");
+      assert.ok(listCmd.includes("--jq"), "should use jq to extract url");
     });
 
     test("returns null when no PR exists", async () => {
@@ -169,8 +179,21 @@ describe("GitHubPRStrategy with mock executor", () => {
       assert.equal(result.success, true);
       assert.equal(result.url, "https://github.com/owner/repo/pull/456");
       assert.equal(mockExecutor.calls.length, 1);
-      assert.ok(mockExecutor.calls[0].command.includes("gh pr create"));
-      assert.ok(mockExecutor.calls[0].command.includes("Test PR"));
+      const createCmd = mockExecutor.calls[0].command;
+      assert.ok(createCmd.includes("gh pr create"));
+      assert.ok(
+        createCmd.includes("--title 'Test PR'"),
+        "should include PR title"
+      );
+      assert.ok(
+        createCmd.includes("--base 'main'"),
+        "should include base branch"
+      );
+      assert.ok(
+        createCmd.includes("--head 'test-branch'"),
+        "should include head branch"
+      );
+      assert.ok(createCmd.includes("--body-file"), "should use body file");
     });
 
     test("extracts URL from verbose output", async () => {

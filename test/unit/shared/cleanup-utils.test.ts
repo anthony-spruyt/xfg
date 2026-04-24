@@ -3,30 +3,68 @@ import assert from "node:assert/strict";
 import { safeCleanup } from "../../../src/shared/cleanup-utils.js";
 
 describe("safeCleanup", () => {
-  test("executes sync cleanup function", async () => {
-    let called = false;
-    const log = { debug() {} };
+  test("executes sync cleanup and does not log on success", async () => {
+    const calls: string[] = [];
+    const log = {
+      debug(msg: string) {
+        calls.push(msg);
+      },
+    };
+    let receivedArg: string | undefined;
     await safeCleanup(
       () => {
-        called = true;
+        receivedArg = "sync-done";
       },
-      "test",
+      "test-sync",
       log
     );
-    assert.ok(called);
+    assert.equal(receivedArg, "sync-done");
+    assert.deepStrictEqual(calls, [], "debug should not be called on success");
   });
 
-  test("executes async cleanup function", async () => {
-    let called = false;
-    const log = { debug() {} };
+  test("executes async cleanup and does not log on success", async () => {
+    const calls: string[] = [];
+    const log = {
+      debug(msg: string) {
+        calls.push(msg);
+      },
+    };
+    let receivedArg: string | undefined;
     await safeCleanup(
       async () => {
-        called = true;
+        receivedArg = "async-done";
       },
-      "test",
+      "test-async",
       log
     );
-    assert.ok(called);
+    assert.equal(receivedArg, "async-done");
+    assert.deepStrictEqual(calls, [], "debug should not be called on success");
+  });
+
+  test("does not propagate sync errors", async () => {
+    const log = { debug() {} };
+    await assert.doesNotReject(() =>
+      safeCleanup(
+        () => {
+          throw new Error("should be swallowed");
+        },
+        "sync-err",
+        log
+      )
+    );
+  });
+
+  test("does not propagate async errors", async () => {
+    const log = { debug() {} };
+    await assert.doesNotReject(() =>
+      safeCleanup(
+        async () => {
+          throw new Error("should be swallowed");
+        },
+        "async-err",
+        log
+      )
+    );
   });
 
   test("swallows sync errors and logs debug", async () => {

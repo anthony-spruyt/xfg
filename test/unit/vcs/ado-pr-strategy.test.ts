@@ -63,7 +63,35 @@ describe("AdoPRStrategy with mock executor", () => {
       assert.ok(result?.includes("dev.azure.com"));
       assert.ok(result?.includes("pullrequest/456"));
       assert.equal(mockExecutor.calls.length, 1);
-      assert.ok(mockExecutor.calls[0].command.includes("az repos pr list"));
+      const command = mockExecutor.calls[0].command;
+      assert.ok(command.includes("az repos pr list"));
+      // Verify command includes correct org, project, repo, and branch args
+      assert.ok(
+        command.includes("--repository") && command.includes("myrepo"),
+        `Command should include --repository myrepo. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--source-branch") && command.includes("test-branch"),
+        `Command should include --source-branch test-branch. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--target-branch") && command.includes("main"),
+        `Command should include --target-branch main. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--org") &&
+          command.includes("https://dev.azure.com/myorg"),
+        `Command should include --org with org URL. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--project") && command.includes("myproject"),
+        `Command should include --project myproject. Got: ${command}`
+      );
+      // Verify URL uses org/project/repo from config, not just the mock PR ID
+      assert.equal(
+        result,
+        "https://dev.azure.com/myorg/myproject/_git/myrepo/pullrequest/456"
+      );
     });
 
     test("returns null when no PR exists", async () => {
@@ -168,7 +196,39 @@ describe("AdoPRStrategy with mock executor", () => {
       assert.ok(result.url?.includes("dev.azure.com"));
       assert.ok(result.url?.includes("pullrequest/789"));
       assert.equal(mockExecutor.calls.length, 1);
-      assert.ok(mockExecutor.calls[0].command.includes("az repos pr create"));
+      const command = mockExecutor.calls[0].command;
+      assert.ok(command.includes("az repos pr create"));
+      // Verify command includes correct org, project, repo, and branch args
+      assert.ok(
+        command.includes("--repository") && command.includes("myrepo"),
+        `Command should include --repository myrepo. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--source-branch") && command.includes("test-branch"),
+        `Command should include --source-branch test-branch. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--target-branch") && command.includes("main"),
+        `Command should include --target-branch main. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--title") && command.includes("Test PR"),
+        `Command should include --title. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--org") &&
+          command.includes("https://dev.azure.com/myorg"),
+        `Command should include --org with org URL. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--project") && command.includes("myproject"),
+        `Command should include --project myproject. Got: ${command}`
+      );
+      // Verify URL uses org/project/repo from config
+      assert.equal(
+        result.url,
+        "https://dev.azure.com/myorg/myproject/_git/myrepo/pullrequest/789"
+      );
     });
 
     test("cleans up description file after success", async () => {
