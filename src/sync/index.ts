@@ -1,4 +1,3 @@
-export { formatDiffLine } from "../output/diff-format.js";
 export type {
   FileChangeDetail,
   GitOpsFactory,

@@ -1,7 +1,11 @@
 import type { MergeMode } from "../config/index.js";
-import type { FileChangeDetail } from "../sync/index.js";
+import type { ActiveAction } from "../settings/index.js";
 
-export type ReportFileChange = FileChangeDetail;
+export interface ReportFileChange {
+  path: string;
+  action: ActiveAction;
+  diffLines?: string[];
+}
 
 export interface SyncReport {
   repos: RepoFileChanges[];

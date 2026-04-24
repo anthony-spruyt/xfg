@@ -350,6 +350,26 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     }
   }
 
+  private async pollWithDeadline(
+    check: () => Promise<boolean>,
+    opts: { timeoutMs: number; pollMs: number; debugLabel: string }
+  ): Promise<boolean> {
+    const deadline = Date.now() + opts.timeoutMs;
+    while (Date.now() < deadline) {
+      try {
+        if (await check()) return true;
+      } catch (error) {
+        this.log?.debug(`Polling ${opts.debugLabel}: ${toErrorMessage(error)}`);
+      }
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) break;
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.min(opts.pollMs, remaining))
+      );
+    }
+    return false;
+  }
+
   /**
    * Wait for a forked repo to become available via the GitHub API.
    * GitHub forks are created asynchronously; polls exists() with a timeout.
@@ -359,30 +379,20 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     options?: { timeoutMs?: number; pollMs?: number; token?: string }
   ): Promise<void> {
     const timeoutMs = options?.timeoutMs ?? FORK_READY_TIMEOUT_MS;
-    const intervalMs = options?.pollMs ?? FORK_POLL_INTERVAL_MS;
+    const pollMs = options?.pollMs ?? FORK_POLL_INTERVAL_MS;
     const token = options?.token;
-    const deadline = Date.now() + timeoutMs;
 
-    while (Date.now() < deadline) {
-      try {
-        const ready = await this.exists({ repo: repoInfo, token });
-        if (ready) {
-          return;
-        }
-      } catch (error) {
-        this.log?.debug(`Polling fork readiness: ${toErrorMessage(error)}`);
-      }
-      const remaining = deadline - Date.now();
-      if (remaining <= 0) break;
-      await new Promise((resolve) =>
-        setTimeout(resolve, Math.min(intervalMs, remaining))
+    const ready = await this.pollWithDeadline(
+      () => this.exists({ repo: repoInfo, token }),
+      { timeoutMs, pollMs, debugLabel: "fork readiness" }
+    );
+
+    if (!ready) {
+      throw new LifecycleError(
+        `Timed out waiting for fork ${repoInfo.owner}/${repoInfo.repo} to become available ` +
+          `after ${timeoutMs / 1000}s. The fork may still be processing on GitHub.`
       );
     }
-
-    throw new LifecycleError(
-      `Timed out waiting for fork ${repoInfo.owner}/${repoInfo.repo} to become available ` +
-        `after ${timeoutMs / 1000}s. The fork may still be processing on GitHub.`
-    );
   }
 
   /**
@@ -622,10 +632,10 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       repoInfo,
       options?.token
     );
-    const deadline = Date.now() + timeoutMs;
 
-    while (Date.now() < deadline) {
-      try {
+    // Best-effort wait — don't throw on timeout since rename already succeeded
+    await this.pollWithDeadline(
+      async () => {
         const branch = (
           await this.executor.exec(
             `${prefix}${apiPath} --jq '.default_branch'`,
@@ -633,20 +643,10 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
             { env: tokenEnv }
           )
         ).trim();
-        if (branch === expectedBranch) {
-          return;
-        }
-      } catch (error) {
-        this.log?.debug(`Polling default branch: ${toErrorMessage(error)}`);
-      }
-      const remaining = deadline - Date.now();
-      if (remaining <= 0) break;
-      await new Promise((resolve) =>
-        setTimeout(resolve, Math.min(pollMs, remaining))
-      );
-    }
-
-    // Don't throw — rename succeeded, this is just a best-effort wait
+        return branch === expectedBranch;
+      },
+      { timeoutMs, pollMs, debugLabel: "default branch" }
+    );
   }
 
   /**

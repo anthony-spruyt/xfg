@@ -1,6 +1,5 @@
 export type { FileStatus } from "../shared/file-status.js";
 export { formatStatusBadge } from "../shared/file-status.js";
-export { formatDiffLine } from "../output/diff-format.js";
 import { formatDiffLine } from "../output/diff-format.js";
 import type { FileStatus } from "../shared/file-status.js";
 
