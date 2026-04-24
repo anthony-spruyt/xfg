@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T15:26:11+00:00",
+  "updated": "2026-04-24T15:26:32+00:00",
   "queue_order": [
     "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
     "review::.::holistic::convention_outlier::code_scanning_test_name_prefix"
@@ -1259,7 +1259,7 @@
       "skipped_at_scan": 205
     }
   },
-  "active_cluster": "output-module-structure",
+  "active_cluster": null,
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -38689,6 +38689,18 @@
       "detail": {
         "sha": "565dcbc8b71d",
         "branch": "desloppify/code-health-apr24"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:26:32+00:00",
+      "action": "focus",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "action": "clear",
+        "previous": "output-module-structure"
       }
     }
   ],

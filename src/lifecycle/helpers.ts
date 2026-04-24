@@ -1,6 +1,6 @@
 import { resolve, join } from "node:path";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
-import { formatLifecycleAction } from "./lifecycle-formatter.js";
+import { formatLifecycleAction } from "./formatter.js";
 import type { RepoConfig, GitHubRepoSettings } from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
 import type {

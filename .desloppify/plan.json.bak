@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T15:26:04+00:00",
+  "updated": "2026-04-24T15:26:11+00:00",
   "queue_order": [
     "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
     "review::.::holistic::convention_outlier::code_scanning_test_name_prefix"
@@ -38674,6 +38674,22 @@
         "status": "fixed",
         "attestation": "I have actually Created src/output/index.ts barrel re-exporting all public APIs, updated cli/ imports to use barrel and I am not gaming the score."
       }
+    },
+    {
+      "timestamp": "2026-04-24T15:26:11+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
+        "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
+        "review::.::holistic::high_level_elegance::output_missing_barrel_index"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "output-module-structure cluster: barrel index, barrel bypass fix, formatDiffLine relocation",
+      "detail": {
+        "sha": "565dcbc8b71d",
+        "branch": "desloppify/code-health-apr24"
+      }
     }
   ],
   "epic_triage_meta": {
@@ -39713,13 +39729,21 @@
       "recorded_at": "2026-04-24T15:14:46+00:00",
       "note": "lifecycle-decomposition cluster: receiveMigration decomposed into 4 private helpers",
       "cluster_name": null
+    },
+    {
+      "sha": "565dcbc8b71d",
+      "branch": "desloppify/code-health-apr24",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
+        "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
+        "review::.::holistic::high_level_elegance::output_missing_barrel_index"
+      ],
+      "recorded_at": "2026-04-24T15:26:11+00:00",
+      "note": "output-module-structure cluster: barrel index, barrel bypass fix, formatDiffLine relocation",
+      "cluster_name": null
     }
   ],
-  "uncommitted_issues": [
-    "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
-    "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
-    "review::.::holistic::high_level_elegance::output_missing_barrel_index"
-  ],
+  "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 205,

@@ -1,23 +1,62 @@
 {
-  "command": "resolve",
-  "patterns": [
-    "output_missing_barrel_index"
+  "command": "next",
+  "items": [
+    {
+      "id": "convention-renames",
+      "action_type": "manual_fix",
+      "summary": "Rename code-scanning test files and lifecycle module files to remove redundant prefixes",
+      "member_count": 2,
+      "members": [
+        {
+          "id": "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
+          "confidence": "medium",
+          "detector": "review",
+          "file": ".",
+          "summary": "Lifecycle module redundantly prefixes file names with lifecycle- unlike peer modules",
+          "status": "open",
+          "kind": "issue",
+          "primary_command": "desloppify plan resolve \"review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix\" --note \"<what you did>\" --confirm"
+        },
+        {
+          "id": "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",
+          "confidence": "medium",
+          "detector": "review",
+          "file": ".",
+          "summary": "Code-scanning test files use domain-prefixed names unlike sibling settings test directories",
+          "status": "open",
+          "kind": "issue",
+          "primary_command": "desloppify plan resolve \"review::.::holistic::convention_outlier::code_scanning_test_name_prefix\" --note \"<what you did>\" --confirm"
+        }
+      ],
+      "cluster_name": "convention-renames",
+      "cluster_auto": false,
+      "detector": "review",
+      "kind": "cluster",
+      "primary_command": "desloppify next --cluster convention-renames --count 10",
+      "action_steps": [
+        {
+          "title": "Rename code-scanning test files: remove domain prefix from 3 test files",
+          "effort": "trivial",
+          "issue_refs": [
+            "code_scanning_test_name_prefix"
+          ],
+          "detail": "Rename code-scanning-diff.test.ts to diff.test.ts, code-scanning-formatter.test.ts to formatter.test.ts, code-scanning-processor.test.ts to processor.test.ts in test/unit/settings/code-scanning/."
+        },
+        {
+          "title": "Rename lifecycle-formatter.ts to formatter.ts, lifecycle-helpers.ts to helpers.ts, update imports",
+          "effort": "small",
+          "issue_refs": [
+            "lifecycle_redundant_file_prefix"
+          ],
+          "detail": "Rename src/lifecycle/lifecycle-formatter.ts to formatter.ts, lifecycle-helpers.ts to helpers.ts. Update test files and all import paths referencing old names."
+        }
+      ]
+    }
   ],
-  "status": "fixed",
-  "resolved": [
-    "review::.::holistic::high_level_elegance::output_missing_barrel_index"
-  ],
-  "count": 1,
-  "next_command": "desloppify next",
-  "overall_score": 89.8,
-  "objective_score": 98.8,
-  "strict_score": 88.5,
-  "verified_strict_score": 90.3,
-  "prev_overall_score": 89.8,
-  "prev_objective_score": 98.8,
-  "prev_strict_score": 88.5,
-  "prev_verified_strict_score": 90.3,
-  "attestation": "I have actually Created src/output/index.ts barrel re-exporting all public APIs, updated cli/ imports to use barrel and I am not gaming the score.",
+  "queue": {
+    "total": 1,
+    "mode": "execution"
+  },
   "narrative": {
     "phase": "refinement",
     "headline": "All T1 items cleared! (2 review work items \u2014 run `desloppify show review --status open`)",
@@ -352,22 +391,7 @@
       "state": "above",
       "warning": null
     },
-    "reminders": [
-      {
-        "type": "rereview_needed",
-        "message": "Subjective results may be stale after resolve. Re-run `desloppify review --prepare` to refresh, or reset with `desloppify scan --reset-subjective` before a clean rerun.",
-        "command": "desloppify review --prepare",
-        "priority": 1,
-        "severity": "high"
-      },
-      {
-        "type": "rescan_needed",
-        "message": "Rescan to verify \u2014 cascading effects may create new issues.",
-        "command": "desloppify scan",
-        "priority": 1,
-        "severity": "high"
-      }
-    ],
+    "reminders": [],
     "reminder_history": {
       "auto_fixers_available": 3,
       "zone_classification": 3,
@@ -381,11 +405,749 @@
       "review_issues_pending": 3,
       "wontfix_growing": 3,
       "fp_calibration_test_coverage_production": 3,
-      "fp_calibration_smells_production": 3,
-      "rereview_needed": 1,
-      "rescan_needed": 1
+      "fp_calibration_smells_production": 3
     }
   },
+  "agent_notes": [
+    "Do NOT use `desloppify plan skip` unless the user explicitly asks you to skip an item.",
+    "If you cannot fix an item, report it and move to the next one.",
+    "For cluster items: if the autofix_hint finds 0 results, drill into individual issues with the primary_command."
+  ],
+  "plan": {
+    "active": true,
+    "focus": null,
+    "clusters": [
+      {
+        "name": "token-resolution",
+        "description": "Extract resolveGitHubToken from gh-api-utils.ts into dedicated auth module, centralize token resolution to happen once per repo",
+        "item_count": 3
+      },
+      {
+        "name": "accepted-debt",
+        "description": "Intentional design decisions to skip: unused token param in Azure/GitLab (documented interface sharing), merge mode convention (internally consistent), isPermanentError string matching (pragmatic)",
+        "item_count": 3
+      },
+      {
+        "name": "stale-findings",
+        "description": "Findings likely already fixed in prior commits (FileChange consolidation, Logger DI fix). Verify with rescan then resolve.",
+        "item_count": 3
+      },
+      {
+        "name": "barrel-hygiene",
+        "description": "Complete barrel exports in shared/ and vcs/, fix all cross-module import bypasses",
+        "item_count": 6
+      },
+      {
+        "name": "type-dedup",
+        "description": "Eliminate duplicate types, functions, and logic across codebase",
+        "item_count": 7
+      },
+      {
+        "name": "stale-docs",
+        "description": "Fix stale docstrings and JSDoc that contradict implementation",
+        "item_count": 4
+      },
+      {
+        "name": "param-sprawl",
+        "description": "Reduce positional parameter counts by grouping into context objects",
+        "item_count": 3
+      },
+      {
+        "name": "error-gaps",
+        "description": "Fix inconsistent error handling: swallowed errors, string matching, missing try/catch",
+        "item_count": 3
+      },
+      {
+        "name": "type-narrowing",
+        "description": "Strengthen type safety: link validation arrays to types, narrow string fields, remove double casts",
+        "item_count": 3
+      },
+      {
+        "name": "code-cleanup",
+        "description": "Fix logic issues: redundant checks, unreachable code, misplaced utilities",
+        "item_count": 3
+      },
+      {
+        "name": "api-consolidation",
+        "description": "Move misplaced utilities, add type overloads, narrow action parameter types \u2014 improves type_safety, api_surface_coherence",
+        "item_count": 3
+      },
+      {
+        "name": "design-coherence-cleanup",
+        "description": "Complete round 3 consolidation: use countActions utility, use formatCountEntry, single-pass countActions \u2014 improves design_coherence, logic_clarity",
+        "item_count": 3
+      },
+      {
+        "name": "module-boundary-fixes",
+        "description": "Fix vcs barrel exports, remove dead shared barrel, share PR strategy instance \u2014 improves cross_module_architecture, mid_level_elegance",
+        "item_count": 3
+      },
+      {
+        "name": "quick-wins",
+        "description": "Trivial fixes: simplify boolean return, remove formulaic comments, extract leaf renderer, defer sync-command singletons \u2014 improves logic_clarity, ai_generated_debt, low_level_elegance, initialization_coupling",
+        "item_count": 11
+      },
+      {
+        "name": "test-coverage",
+        "description": "Write unit tests for gh-api-utils.ts pure functions and resolveGitHubToken branching \u2014 improves test_strategy",
+        "item_count": 2
+      },
+      {
+        "name": "quick-cleanups",
+        "description": "Single-edit cleanups: remove comments, fix param name, use existing helpers",
+        "item_count": 5
+      },
+      {
+        "name": "import-cleanup",
+        "description": "Fix import paths to use canonical locations and barrel exports",
+        "item_count": 2
+      },
+      {
+        "name": "consolidate-utilities",
+        "description": "Reuse existing shared utilities instead of reimplementing",
+        "item_count": 4
+      },
+      {
+        "name": "type-safety-fixes",
+        "description": "Add function overloads and remove unsafe casts",
+        "item_count": 2
+      },
+      {
+        "name": "error-handling",
+        "description": "Consistent error wrapping across PR strategies",
+        "item_count": 1
+      },
+      {
+        "name": "naming-alignment",
+        "description": "Align naming conventions across codebase",
+        "item_count": 2
+      },
+      {
+        "name": "mid-level-refactor",
+        "description": "Reduce redundant IO and implicit mutation contracts",
+        "item_count": 2
+      },
+      {
+        "name": "api-refactor",
+        "description": "Align constructor signatures with options bag pattern",
+        "item_count": 1
+      },
+      {
+        "name": "output-structural-debt",
+        "description": "Fix import cycle between sync-report.ts and unified-summary.ts, delete dead output barrel",
+        "item_count": 3
+      },
+      {
+        "name": "output-dead-code",
+        "description": "Remove dead old summary API (formatSummary/writeSummary/SummaryData) superseded by unified-summary",
+        "item_count": 1
+      },
+      {
+        "name": "quick-consistency-fixes",
+        "description": "Standalone 1-2 file fixes: restating comments, options bag, error wrapping, type alias usage",
+        "item_count": 5
+      },
+      {
+        "name": "cli-cleanup",
+        "description": "Fix module-level singletons and add unit tests for CLI entry point",
+        "item_count": 2
+      },
+      {
+        "name": "dead-summary-cleanup",
+        "description": "Remove dead old summary API code: delete summary-utils.ts, remove formatSummary/writeSummary/SummaryData and all private helpers from github-summary.ts, update tests",
+        "item_count": 2
+      },
+      {
+        "name": "type-safety-docs",
+        "description": "Add documenting comment to withGitHubGuards in base-processor.ts explaining the TResult cast invariant",
+        "item_count": 2
+      },
+      {
+        "name": "output-renderSyncLines-fix",
+        "description": "Move renderSyncLines from unified-summary.ts to sync-report.ts, fixing dependency inversion",
+        "item_count": 2
+      },
+      {
+        "name": "lifecycle-cleanup",
+        "description": "Extract shared flag-building helper and standardize polling loop idiom in github-lifecycle-provider.ts",
+        "item_count": 2
+      },
+      {
+        "name": "comment-cleanup",
+        "description": "Fix mispositioned/restating comments: orphan docblock, type-labeling comments, missing loop explanation",
+        "item_count": 3
+      },
+      {
+        "name": "design-fixes",
+        "description": "Use countActions utility in settings-report-builder.ts and refactor ruleset update params",
+        "item_count": 2
+      },
+      {
+        "name": "init-fix",
+        "description": "Defer package.json readFileSync from module scope to lazy callback in program.ts",
+        "item_count": 1
+      },
+      {
+        "name": "type-safety-literal-consolidation",
+        "description": "Promote canonical RepoPlatform alias and export ActiveAction/LifecycleActionKind/FileActionKind; replace six inline literal unions across lifecycle, output, and sync type shapes with the shared aliases",
+        "item_count": 6
+      },
+      {
+        "name": "structure-nav-layout",
+        "description": "Add src/repo/index.ts barrel, relocate sanitize-utils into src/vcs/, move unified-summary.ts to src/cli/, and stage test/unit/ mirror migration in four validate-after-each steps",
+        "item_count": 5
+      },
+      {
+        "name": "low-elegance-helper-extraction",
+        "description": "Extract shared helpers to collapse parallel walk/merge/enrichment/push blocks: resolveContentInFilesMap, grouped-record filter, enrichSettingsContext, mergeNamedEntries, pushFailure",
+        "item_count": 5
+      },
+      {
+        "name": "convention-and-naming-quick-wins",
+        "description": "Trivial single-file renames, deletions, and version bumps across multiple dimensions: docstring move, ado/azure prefix align, counter helper use, node floor bump, naming cleanups, deepEqual return fix",
+        "item_count": 10
+      },
+      {
+        "name": "design-coherence-factory-consolidation",
+        "description": "Introduce SettingsProcessorFactories record collapsing four parallel factory fields, and split validateSettings into per-concern dispatchers while keeping thin orchestrator shell",
+        "item_count": 3
+      },
+      {
+        "name": "cross-module-architecture-layering",
+        "description": "Relocate gh-api-utils and xfg-template RepoInfo couplings out of src/shared/ to restore shared-as-leaf layering, and fix the repo barrel import angle at the same time",
+        "item_count": 2
+      },
+      {
+        "name": "api-and-contract-coherence",
+        "description": "Rename rethrowIfUnexpectedCommitError to classifyCommitError, IPRStrategy.checkExistingPR to findExistingPRUrl, fix IRepoSettingsStrategy verbs, migrate IRepoLifecycleProvider to options bag, clarify GitOps.commit dry-run JSDoc",
+        "item_count": 5
+      },
+      {
+        "name": "initialization-coupling-fixes",
+        "description": "Defer program.ts readFileSync version read to lazy callback, and move sync-command.ts module-level let singletons into per-invocation const bindings",
+        "item_count": 2
+      },
+      {
+        "name": "error-consistency-newly-surfaced",
+        "description": "After cross-checking against the 101 resolved error_consistency patterns, replace commit-push-manager substring matching with typed error classification and replace ambiguous false returns from closeExistingPR with discriminated status",
+        "item_count": 2
+      },
+      {
+        "name": "mid-elegance-settings-report-delta",
+        "description": "Fix the settings-report-builder codeScanning counter bypass by routing codeScanning entries through countActions instead of a parallel csCreates/csUpdates counter",
+        "item_count": 1
+      },
+      {
+        "name": "auto/stale-review",
+        "description": "Re-review 17 stale subjective dimensions",
+        "item_count": 0
+      },
+      {
+        "name": "sanitize-utils-layering",
+        "description": "Move sanitize-utils.ts from vcs/ to shared/ to fix layering violation",
+        "item_count": 4
+      },
+      {
+        "name": "api-verb-consistency",
+        "description": "Standardize API method naming across settings strategies",
+        "item_count": 3
+      },
+      {
+        "name": "contract-safety",
+        "description": "Fix contract issues: unsafe cast and misleading method name",
+        "item_count": 2
+      },
+      {
+        "name": "type-safety-casts",
+        "description": "Add type guards for unsafe property access and casts",
+        "item_count": 2
+      },
+      {
+        "name": "module-scoped-mutables",
+        "description": "Replace module-scoped mutable state with explicit DI in sync-command.ts",
+        "item_count": 2
+      },
+      {
+        "name": "result-type-refactor",
+        "description": "Replace flat optional ProcessorResult with discriminated union",
+        "item_count": 1
+      },
+      {
+        "name": "method-decomposition",
+        "description": "Extract long methods into focused sub-methods",
+        "item_count": 2
+      },
+      {
+        "name": "quick-code-fixes",
+        "description": "Three independent one-file fixes: remove duplicate deepEqual, simplify redundant typeof check, narrow RepoSettingsAction type",
+        "item_count": 3
+      },
+      {
+        "name": "lifecycle-decomposition",
+        "description": "Decompose receiveMigration 133-line method into 4 private helpers. Improves design_coherence + low_level_elegance + mid_level_elegance",
+        "item_count": 2
+      },
+      {
+        "name": "output-module-structure",
+        "description": "Create output barrel index.ts, fix lifecycle barrel bypass, move formatDiffLine from sync/ to output/",
+        "item_count": 3
+      },
+      {
+        "name": "convention-renames",
+        "description": "Rename code-scanning test files and lifecycle module files to remove redundant prefixes",
+        "item_count": 2
+      }
+    ],
+    "total_ordered": 2,
+    "total_skipped": 125,
+    "plan_overrides_narrative": true
+  },
+  "overall_score": 89.8,
+  "objective_score": 98.8,
+  "strict_score": 88.5,
+  "scorecard_dimensions": [
+    {
+      "name": "File health",
+      "score": 96.5,
+      "strict": 96.5,
+      "checks": 119,
+      "failing": 6,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "AI generated debt",
+      "score": 90.5,
+      "strict": 90.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "ai_generated_debt"
+      ]
+    },
+    {
+      "name": "API coherence",
+      "score": 92.5,
+      "strict": 92.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "api_surface_coherence"
+      ]
+    },
+    {
+      "name": "Abstraction fit",
+      "score": 82.0,
+      "strict": 82.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "abstraction_fitness"
+      ]
+    },
+    {
+      "name": "Auth consistency",
+      "score": 92.0,
+      "strict": 92.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "authorization_consistency"
+      ]
+    },
+    {
+      "name": "Code quality",
+      "score": 99.0,
+      "strict": 96.0,
+      "checks": 690,
+      "failing": 21,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "Contracts",
+      "score": 89.5,
+      "strict": 89.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "contract_coherence"
+      ]
+    },
+    {
+      "name": "Convention drift",
+      "score": 90.5,
+      "strict": 90.5,
+      "checks": 10,
+      "failing": 2,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "convention_outlier"
+      ]
+    },
+    {
+      "name": "Cross-module arch",
+      "score": 90.2,
+      "strict": 90.2,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "cross_module_architecture"
+      ]
+    },
+    {
+      "name": "Design coherence",
+      "score": 86.5,
+      "strict": 86.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "design_coherence"
+      ]
+    },
+    {
+      "name": "Duplication",
+      "score": 98.8,
+      "strict": 86.0,
+      "checks": 303,
+      "failing": 5,
+      "tier": 3,
+      "subjective": false
+    },
+    {
+      "name": "Elegance",
+      "score": 84.5,
+      "strict": 84.5,
+      "checks": 30,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "high_level_elegance",
+        "low_level_elegance",
+        "mid_level_elegance"
+      ]
+    },
+    {
+      "name": "Error consistency",
+      "score": 90.2,
+      "strict": 90.2,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "error_consistency"
+      ]
+    },
+    {
+      "name": "Logic clarity",
+      "score": 89.2,
+      "strict": 89.2,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "logic_clarity"
+      ]
+    },
+    {
+      "name": "Naming quality",
+      "score": 82.0,
+      "strict": 82.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "naming_quality"
+      ]
+    },
+    {
+      "name": "Security",
+      "score": 100.0,
+      "strict": 95.6,
+      "checks": 238,
+      "failing": 0,
+      "tier": 4,
+      "subjective": false
+    },
+    {
+      "name": "Stale migration",
+      "score": 97.0,
+      "strict": 97.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "incomplete_migration"
+      ]
+    },
+    {
+      "name": "Structure nav",
+      "score": 88.0,
+      "strict": 88.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "package_organization"
+      ]
+    },
+    {
+      "name": "Test health",
+      "score": 100.0,
+      "strict": 94.5,
+      "checks": 1178,
+      "failing": 0,
+      "tier": 4,
+      "subjective": false
+    },
+    {
+      "name": "Test strategy",
+      "score": 82.0,
+      "strict": 82.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "test_strategy"
+      ]
+    }
+  ],
+  "subjective_measures": [
+    {
+      "name": "AI generated debt",
+      "score": 90.5,
+      "strict": 90.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "ai_generated_debt"
+      ]
+    },
+    {
+      "name": "API coherence",
+      "score": 92.5,
+      "strict": 92.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "api_surface_coherence"
+      ]
+    },
+    {
+      "name": "Abstraction fit",
+      "score": 82.0,
+      "strict": 82.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "abstraction_fitness"
+      ]
+    },
+    {
+      "name": "Auth consistency",
+      "score": 92.0,
+      "strict": 92.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "authorization_consistency"
+      ]
+    },
+    {
+      "name": "Contracts",
+      "score": 89.5,
+      "strict": 89.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "contract_coherence"
+      ]
+    },
+    {
+      "name": "Convention drift",
+      "score": 90.5,
+      "strict": 90.5,
+      "checks": 10,
+      "failing": 2,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "convention_outlier"
+      ]
+    },
+    {
+      "name": "Cross-module arch",
+      "score": 90.2,
+      "strict": 90.2,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "cross_module_architecture"
+      ]
+    },
+    {
+      "name": "Design coherence",
+      "score": 86.5,
+      "strict": 86.5,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "design_coherence"
+      ]
+    },
+    {
+      "name": "Elegance",
+      "score": 84.5,
+      "strict": 84.5,
+      "checks": 30,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "high_level_elegance",
+        "low_level_elegance",
+        "mid_level_elegance"
+      ]
+    },
+    {
+      "name": "Error consistency",
+      "score": 90.2,
+      "strict": 90.2,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "error_consistency"
+      ]
+    },
+    {
+      "name": "Logic clarity",
+      "score": 89.2,
+      "strict": 89.2,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "logic_clarity"
+      ]
+    },
+    {
+      "name": "Naming quality",
+      "score": 82.0,
+      "strict": 82.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "naming_quality"
+      ]
+    },
+    {
+      "name": "Stale migration",
+      "score": 97.0,
+      "strict": 97.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "incomplete_migration"
+      ]
+    },
+    {
+      "name": "Structure nav",
+      "score": 88.0,
+      "strict": 88.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "package_organization"
+      ]
+    },
+    {
+      "name": "Test strategy",
+      "score": 82.0,
+      "strict": 82.0,
+      "checks": 10,
+      "failing": 0,
+      "tier": 4,
+      "subjective": true,
+      "placeholder": false,
+      "cli_keys": [
+        "test_strategy"
+      ]
+    }
+  ],
   "config": {
     "target_strict_score": 100,
     "review_max_age_days": 30,
