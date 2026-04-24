@@ -1128,7 +1128,11 @@ describe("AdoPRStrategy logger coverage", () => {
     });
 
     assert.deepStrictEqual(result, { status: "closed" });
-    assert.ok(warnMessages.some((m) => m.includes("Failed to delete branch")));
+    assert.ok(
+      warnMessages.some(
+        (m) => m.includes("branch") && m.includes("deletion failed")
+      )
+    );
   });
 });
 
